@@ -178,6 +178,10 @@
     </Grid.RowDefinitions>
 
     <TextBlock
+      x:Name="_installedVersionsCount"
+      Focusable="True"
+      AutomationProperties.Name="{Binding Text}"
+      FocusVisualStyle="{x:Null}"
       Grid.Row="0"
       Text="{Binding InstalledVersionsCount, Converter={StaticResource InstalledVersionsCountConverter}}" />
 

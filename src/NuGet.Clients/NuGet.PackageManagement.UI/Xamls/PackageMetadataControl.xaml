@@ -33,6 +33,10 @@
     <!-- descriptions -->
     <TextBlock
       Grid.Row="0"
+      x:Name="_descriptionLabel"
+      Focusable="True"
+      AutomationProperties.Name="{Binding Text}"
+      FocusVisualStyle="{x:Null}"
       Text="{x:Static nuget:Resources.Label_Description}"
       FontWeight="Bold" />
     <TextBox
@@ -72,6 +76,10 @@
         Grid.Column="0"
         Margin="0,8,0,0"
         FontWeight="Bold"
+        x:Name="_versionLabel"
+        Focusable="True"
+        AutomationProperties.Name="{Binding Text}"
+        FocusVisualStyle="{x:Null}"
         Text="{x:Static nuget:Resources.Label_Version}" />
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
@@ -89,6 +97,10 @@
         Grid.Column="0"
         Margin="0,8,0,0"
         FontWeight="Bold"
+        x:Name="_ownersLabel"
+        Focusable="True"
+        AutomationProperties.Name="{Binding Text}"
+        FocusVisualStyle="{x:Null}"
         Text="{x:Static nuget:Resources.Label_Owners}" />
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
@@ -106,6 +118,10 @@
         Grid.Column="0"
         Margin="0,8,0,0"
         FontWeight="Bold"
+        x:Name="_authorsLabel"
+        Focusable="True"
+        AutomationProperties.Name="{Binding Text}"
+        FocusVisualStyle="{x:Null}"
         Text="{x:Static nuget:Resources.Label_Authors}" />
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
@@ -123,6 +139,10 @@
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
+        x:Name="_licenseLabel"
+        Focusable="True"
+        AutomationProperties.Name="{Binding Text}"
+        FocusVisualStyle="{x:Null}"
         Text="{x:Static nuget:Resources.Label_License}" />
       <TextBlock
         Visibility="{Binding Path=LicenseUrl,Converter={StaticResource NullToVisibilityConverter}}"
@@ -145,6 +165,10 @@
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
+        x:Name="_downloadsLabel"
+        Focusable="True"
+        AutomationProperties.Name="{Binding Text}"
+        FocusVisualStyle="{x:Null}"
         Text="{x:Static nuget:Resources.Label_Downloads}" />
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
@@ -162,6 +186,10 @@
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
+        x:Name="_datePublishedLabel"
+        Focusable="True"
+        AutomationProperties.Name="{Binding Text}"
+        FocusVisualStyle="{x:Null}"
         Text="{x:Static nuget:Resources.Label_DatePublished}" />
       <TextBox
         Name="datePublished"
@@ -180,6 +208,10 @@
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
+        x:Name="_projectUrlLabel"
+        Focusable="True"
+        AutomationProperties.Name="{Binding Text}"
+        FocusVisualStyle="{x:Null}"
         Text="{x:Static nuget:Resources.Label_ProjectUrl}" />
 
       <TextBlock
@@ -203,6 +235,10 @@
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
+        x:Name="_reportAbuseLabel"
+        Focusable="True"
+        AutomationProperties.Name="{Binding Text}"
+        FocusVisualStyle="{x:Null}"
         Text="{x:Static nuget:Resources.Label_ReportAbuse}" />
 
       <TextBlock
@@ -226,6 +262,10 @@
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
+        x:Name="_tagsLabel"
+        Focusable="True"
+        AutomationProperties.Name="{Binding Text}"
+        FocusVisualStyle="{x:Null}"
         Text="{x:Static nuget:Resources.Label_Tags}" />
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
@@ -244,6 +284,10 @@
       <TextBlock
         FontWeight="Bold"
         Margin="0,8,0,0"
+        x:Name="_dependenciesLabel"
+        Focusable="True"
+        AutomationProperties.Name="{Binding Text}"
+        FocusVisualStyle="{x:Null}"
         Text="{x:Static nuget:Resources.Label_Dependencies}" />
 
       <ItemsControl
@@ -259,13 +303,18 @@
               <TextBlock
                 Text="{Binding TargetFramework,Converter={StaticResource NuGetFrameworkToStringConverter}}"
                 FontWeight="Bold"
+                x:Name="_targetFramework"
+                Focusable="True"
+                AutomationProperties.Name="{Binding Text}"
+                FocusVisualStyle="{x:Null}"
                 Visibility="{Binding TargetFramework,Converter={StaticResource NuGetFrameworkToVisibilityConverter}}" />
               <ItemsControl
                 ItemsSource="{Binding Dependencies}"
                 IsTabStop="False">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
-                    <TextBox 
+                    <TextBox
+                      x:Name="_dependencies"
                       Style="{DynamicResource SelectableTextBlockStyle}"
                       Text="{Binding Mode=OneWay}"/>
                   </DataTemplate>
@@ -274,6 +323,10 @@
               <TextBlock
                 FontStyle="Italic"
                 Text="{x:Static nuget:Resources.Text_NoDependencies}"
+                x:Name="_noDependencies"
+                Focusable="True"
+                AutomationProperties.Name="{Binding Text}"
+                FocusVisualStyle="{x:Null}"
                 Visibility="{Binding Dependencies,Converter={StaticResource EmptyEnumerableToVisibilityConverter}}" />
             </StackPanel>
           </DataTemplate>
@@ -284,6 +337,10 @@
         Margin="0,8,0,0"
         Visibility="{Binding Path=HasDependencies,Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
         FontStyle="Italic"
+        x:Name="_hasDependencies"
+        Focusable="True"
+        AutomationProperties.Name="{Binding Text}"
+        FocusVisualStyle="{x:Null}"
         Text="{x:Static nuget:Resources.Text_NoDependencies}" />
     </StackPanel>
   </Grid>

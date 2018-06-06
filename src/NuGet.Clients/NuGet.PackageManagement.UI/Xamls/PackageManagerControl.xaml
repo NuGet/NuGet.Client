@@ -93,6 +93,10 @@
               <TextBlock
                 Margin="24,12,24,12"
                 TextWrapping="Wrap"
+                x:Name="_legalDisclaimerText"
+                Focusable="True"
+                AutomationProperties.Name="{Binding Text}"
+                FocusVisualStyle="{x:Null}"
                 Text="{x:Static nuget:Resources.Text_LegalDisclaimer}" />
               <CheckBox
                 Margin="24,0,24,12"
