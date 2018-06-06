@@ -799,7 +799,4 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="ShowError_SettingActivatedFailed" xml:space="preserve">
     <value>Failed to initialize NuGet Package Manager Settings. Please report a problem using Help &gt; Send Feedback &gt; Report a Problem.</value>
   </data>
-  <data name="Search_ToolTipProperty" xml:space="preserve">
-    <value>Type words to search</value>
-  </data>
 </root>
