@@ -54,12 +54,15 @@ namespace NuGetConsole
 
         public void Write(string text)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            if (_outputWindowPane != null)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _outputWindowPane?.OutputStringThreadSafe(text);
-            });
+                    _outputWindowPane.OutputStringThreadSafe(text);
+                });
+            }
         }
 
         public void Write(string text, Color? foreground, Color? background) => Write(text);

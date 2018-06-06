@@ -23,8 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                int exists;
-                var hr = _store.CollectionExists(collection, out exists);
+                var hr = _store.CollectionExists(collection, out var exists);
                 return ErrorHandler.Succeeded(hr) && exists == 1;
             });
         }
@@ -35,8 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                int value;
-                var hr = _store.GetBoolOrDefault(collection, propertyName, defaultValue ? 1 : 0, out value);
+                var hr = _store.GetBoolOrDefault(collection, propertyName, defaultValue ? 1 : 0, out var value);
                 return ErrorHandler.Succeeded(hr) ? value != 0 : false;
             });
         }
@@ -47,8 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                int value;
-                var hr = _store.GetIntOrDefault(collection, propertyName, defaultValue, out value);
+                var hr = _store.GetIntOrDefault(collection, propertyName, defaultValue, out var value);
                 return ErrorHandler.Succeeded(hr) ? value : 0;
             });
         }
@@ -59,8 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                string value;
-                var hr = _store.GetStringOrDefault(collection, propertyName, defaultValue, out value);
+                var hr = _store.GetStringOrDefault(collection, propertyName, defaultValue, out var value);
                 return ErrorHandler.Succeeded(hr) ? value : null;
             });
         }

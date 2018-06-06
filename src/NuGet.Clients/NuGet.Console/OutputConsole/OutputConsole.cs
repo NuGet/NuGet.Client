@@ -124,10 +124,9 @@ namespace NuGetConsole
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                IVsWindowFrame toolWindow = null;
                 _vsUiShell.FindToolWindow(0,
                     ref GuidList.guidVsWindowKindOutput,
-                    out toolWindow);
+                    out var toolWindow);
                 toolWindow?.Show();
 
                 VsOutputWindowPane.Activate();

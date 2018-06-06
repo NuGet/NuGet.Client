@@ -604,7 +604,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        internal void SearchPackagesAndRefreshUpdateCount(bool useCacheForUpdates)
+        private void SearchPackagesAndRefreshUpdateCount(bool useCacheForUpdates)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {

@@ -43,9 +43,9 @@ namespace NuGetConsole.Implementation.PowerConsole
                 if (_hostInfos == null)
                 {
                     _hostInfos = new Dictionary<string, HostInfo>();
-                    foreach (var p in HostProviders)
+                    foreach (var hostProvider in HostProviders)
                     {
-                        var info = new HostInfo(this, p);
+                        var info = new HostInfo(this, hostProvider);
                         _hostInfos[info.HostName] = info;
                     }
                 }
@@ -130,10 +130,9 @@ namespace NuGetConsole.Implementation.PowerConsole
                 if (vsUIShell != null)
                 {
                     var guid = typeof(PowerConsoleToolWindow).GUID;
-                    IVsWindowFrame frame;
 
                     ErrorHandler.ThrowOnFailure(
-                        vsUIShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fForceCreate, ref guid, out frame));
+                        vsUIShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fForceCreate, ref guid, out var frame));
 
                     if (frame != null)
                     {
