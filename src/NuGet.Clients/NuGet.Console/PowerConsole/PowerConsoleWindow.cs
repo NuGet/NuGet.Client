@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.VisualStudio;
 
 namespace NuGetConsole.Implementation.PowerConsole
 {
@@ -42,9 +43,9 @@ namespace NuGetConsole.Implementation.PowerConsole
                 if (_hostInfos == null)
                 {
                     _hostInfos = new Dictionary<string, HostInfo>();
-                    foreach (Lazy<IHostProvider, IHostMetadata> p in HostProviders)
+                    foreach (var hostProvider in HostProviders)
                     {
-                        HostInfo info = new HostInfo(this, p);
+                        var info = new HostInfo(this, hostProvider);
                         _hostInfos[info.HostName] = info;
                     }
                 }
@@ -70,14 +71,14 @@ namespace NuGetConsole.Implementation.PowerConsole
         {
             get
             {
-                HostInfo hi = ActiveHostInfo;
+                var hi = ActiveHostInfo;
                 return (hi != null && hi.WpfConsole != null && hi.WpfConsole.Host != null) ?
                     ActiveHostInfo.WpfConsole.Host.ActivePackageSource :
                     null;
             }
             set
             {
-                HostInfo hi = ActiveHostInfo;
+                var hi = ActiveHostInfo;
                 if (hi != null
                     && hi.WpfConsole != null
                     && hi.WpfConsole.Host != null)
@@ -101,16 +102,16 @@ namespace NuGetConsole.Implementation.PowerConsole
         {
             get
             {
-                HostInfo hi = ActiveHostInfo;
+                var hi = ActiveHostInfo;
                 return (hi != null && hi.WpfConsole != null && hi.WpfConsole.Host != null) ?
                     ActiveHostInfo.WpfConsole.Host.DefaultProject :
-                    String.Empty;
+                    string.Empty;
             }
         }
 
         public void SetDefaultProjectIndex(int selectedIndex)
         {
-            HostInfo hi = ActiveHostInfo;
+            var hi = ActiveHostInfo;
             if (hi != null
                 && hi.WpfConsole != null
                 && hi.WpfConsole.Host != null)
@@ -119,23 +120,26 @@ namespace NuGetConsole.Implementation.PowerConsole
             }
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Show()
         {
-            IVsUIShell vsUIShell = ServiceProvider.GetService<IVsUIShell>(typeof(SVsUIShell));
-            if (vsUIShell != null)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                Guid guid = typeof(PowerConsoleToolWindow).GUID;
-                IVsWindowFrame frame;
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                ErrorHandler.ThrowOnFailure(
-                    vsUIShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fForceCreate, ref guid, out frame));
-
-                if (frame != null)
+                var vsUIShell = ServiceProvider.GetService<IVsUIShell>(typeof(SVsUIShell));
+                if (vsUIShell != null)
                 {
-                    ErrorHandler.ThrowOnFailure(frame.Show());
+                    var guid = typeof(PowerConsoleToolWindow).GUID;
+
+                    ErrorHandler.ThrowOnFailure(
+                        vsUIShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fForceCreate, ref guid, out var frame));
+
+                    if (frame != null)
+                    {
+                        ErrorHandler.ThrowOnFailure(frame.Show());
+                    }
                 }
-            }
+            });
         }
 
         public void Start()

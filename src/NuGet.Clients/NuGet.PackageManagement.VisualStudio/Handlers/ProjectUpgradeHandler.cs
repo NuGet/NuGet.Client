@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Packaging.Core;
 using NuGet.VisualStudio;
@@ -25,9 +26,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Constructs and Registers ("Advises") for Project retargeting events if the IVsSolutionEvents service is available
         /// Otherwise, it simply exits
         /// </summary>
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public ProjectUpgradeHandler(IServiceProvider serviceProvider, ISolutionManager solutionManager)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (serviceProvider == null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
@@ -135,12 +137,17 @@ namespace NuGet.PackageManagement.VisualStudio
         #endregion
 
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Dispose()
         {
             if (_cookie != 0 && _vsSolution2 != null)
             {
-                _vsSolution2.UnadviseSolutionEvents(_cookie);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    _vsSolution2.UnadviseSolutionEvents(_cookie);
+                    _cookie = VSConstants.VSCOOKIE_NIL;
+                });
             }
         }
     }
