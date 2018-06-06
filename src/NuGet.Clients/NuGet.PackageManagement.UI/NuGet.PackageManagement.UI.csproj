@@ -63,6 +63,8 @@
     <Compile Include="Converters\BooleanToGridRowHeightConverter.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Converters\InverseBooleanConverter.cs" />
+    <Compile Include="Converters\ActualWidthToMaxWidthConverter.cs" />
+    <Compile Include="Converters\DoubleToPercentageConverter.cs" />
     <Compile Include="Converters\RadioBoolToIntConverter.cs" />
     <Compile Include="Converters\TooltipConverter.cs" />
     <Compile Include="Converters\BooleanToFontWeightConverter.cs" />
