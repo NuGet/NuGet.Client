@@ -14,14 +14,22 @@ namespace NuGet.Packaging.Signing
     {
         public static SignatureVerificationStatus GetSignatureVerificationStatus(SignatureVerificationStatusFlags flags)
         {
+            if (flags == SignatureVerificationStatusFlags.NoErrors)
+            {
+                return SignatureVerificationStatus.Valid;
+            }
+
             if ((flags & SignatureVerificationStatusFlags.Suspect) != 0)
             {
                 return SignatureVerificationStatus.Suspect;
             }
 
-            if (flags == SignatureVerificationStatusFlags.NoErrors)
+            if ((flags & ~(SignatureVerificationStatusFlags.Illegal |
+                SignatureVerificationStatusFlags.Untrusted |
+                SignatureVerificationStatusFlags.NoValidTimestamp |
+                SignatureVerificationStatusFlags.MultipleTimestamps)) == 0)
             {
-                return SignatureVerificationStatus.Valid;
+                return SignatureVerificationStatus.Disallowed;
             }
 
             return SignatureVerificationStatus.Unknown;

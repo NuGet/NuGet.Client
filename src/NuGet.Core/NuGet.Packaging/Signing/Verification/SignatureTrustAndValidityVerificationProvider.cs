@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,7 +55,6 @@ namespace NuGet.Packaging.Signing
             PrimarySignature signature,
             SignedPackageVerifierSettings settings)
         {
-            var issues = new List<SignatureLog>();
             var certificateExtraStore = signature.SignedCms.Certificates;
             var repositoryCountersignatureExists = SignatureUtility.HasRepositoryCountersignature(signature);
             var isRepositoryCountersignatureVerificationRequested = settings.VerificationTarget.HasFlag(VerificationTarget.Repository) &&
@@ -61,12 +62,12 @@ namespace NuGet.Packaging.Signing
             var allowDeferralToRepositoryCountersignature = isRepositoryCountersignatureVerificationRequested &&
                 repositoryCountersignatureExists;
             var status = SignatureVerificationStatus.Unknown;
+            var issues = Enumerable.Empty<SignatureLog>();
 
             // Only accept untrusted root if the signature has a countersignature that we can validate against
             var verifySettings = new SignatureVerifySettings(
                 allowIllegal: settings.AllowIllegal,
                 allowUntrusted: settings.AllowUntrusted,
-                reportUntrusted: !allowDeferralToRepositoryCountersignature,
                 allowUnknownRevocation: settings.AllowUnknownRevocation,
                 reportUnknownRevocation: settings.ReportUnknownRevocation);
 
@@ -75,10 +76,14 @@ namespace NuGet.Packaging.Signing
             if (settings.SignaturePlacement.HasFlag(SignaturePlacement.PrimarySignature) &&
                 VerificationUtility.IsVerificationTarget(signature.Type, settings.VerificationTarget))
             {
-                primarySummary = VerifyValidityAndTrust(signature, settings, verifySettings, certificateExtraStore, issues);
+                primarySummary = VerifyValidityAndTrust(signature, settings, verifySettings, certificateExtraStore);
+
+                issues = issues.Concat(primarySummary.Issues);
 
                 status = primarySummary.Status;
             }
+
+            Debug.Assert(isRepositoryCountersignatureVerificationRequested != (settings.RepositoryCountersignatureVerificationBehavior == SignatureVerificationBehavior.Never));
 
             bool shouldVerifyRepositoryCountersignature;
 
@@ -94,7 +99,7 @@ namespace NuGet.Packaging.Signing
                         repositoryCountersignatureExists &&
                         (primarySummary == null ||
                             (primarySummary != null &&
-                            (PrimarySignatureHasUntrustedRoot(primarySummary) || PrimarySignatureNeedsTimestamp(primarySummary))));
+                            (HasUntrustedRoot(primarySummary) || IsSignatureExpired(primarySummary))));
                     break;
 
                 case SignatureVerificationBehavior.Always:
@@ -125,49 +130,41 @@ namespace NuGet.Packaging.Signing
                     verifySettings = new SignatureVerifySettings(
                         allowIllegal: settings.AllowIllegal,
                         allowUntrusted: settings.AllowUntrusted,
-                        reportUntrusted: true,
                         allowUnknownRevocation: settings.AllowUnknownRevocation,
                         reportUnknownRevocation: settings.ReportUnknownRevocation);
 
-                    var countersignatureSummary = VerifyValidityAndTrust(countersignature, settings, verifySettings, certificateExtraStore, issues);
+                    var countersignatureSummary = VerifyValidityAndTrust(countersignature, settings, verifySettings, certificateExtraStore);
 
                     if (primarySummary == null)
                     {
                         status = countersignatureSummary.Status;
                     }
-                    else if (PrimarySignatureNeedsTimestamp(primarySummary))
+                    else if (IsSignatureExpired(primarySummary))
                     {
                         if (countersignatureSummary.Status == SignatureVerificationStatus.Valid &&
                             countersignatureSummary.Timestamp != null &&
                             Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureSummary.Timestamp))
                         {
-                            var index = issues.FindIndex(log => log.Code == NuGetLogCode.NU3037);
-
-                            if (index > -1)
-                            {
-                                issues.RemoveAt(index);
-                            }
+                            // Exclude the issue of the primary signature being expired since the repository countersignature fulfills the role of a trusted timestamp.
+                            issues = issues.Where(log => log.Code != NuGetLogCode.NU3037);
 
                             status = SignatureVerificationStatus.Valid;
                         }
-                        else
-                        {
-                            issues.Add(
-                                SignatureLog.Issue(
-                                    !settings.AllowUntrusted,
-                                    NuGetLogCode.NU3037,
-                                    string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_SignatureNotTimeValid, signature.FriendlyName)));
-                        }
                     }
                     else if (countersignatureSummary.Status == SignatureVerificationStatus.Valid &&
-                        PrimarySignatureHasUntrustedRoot(primarySummary))
+                        HasUntrustedRoot(primarySummary))
                     {
+                        // Exclude the issue of the primary signature being untrusted since the repository countersignature fulfills the role of a trust anchor.
+                        issues = issues.Where(log => log.Code != NuGetLogCode.NU3018);
+
                         status = SignatureVerificationStatus.Valid;
                     }
                     else
                     {
                         status = (SignatureVerificationStatus)Math.Min((int)primarySummary.Status, (int)countersignatureSummary.Status);
                     }
+
+                    issues = issues.Concat(countersignatureSummary.Issues);
                 }
             }
 
@@ -177,9 +174,9 @@ namespace NuGet.Packaging.Signing
         private SignatureVerificationSummary GetTimestamp(
             Signature signature,
             SignedPackageVerifierSettings verifierSettings,
-            List<SignatureLog> issues,
             out Timestamp timestamp)
         {
+            var issues = new List<SignatureLog>();
             SignatureVerificationStatus status;
             SignatureVerificationStatusFlags statusFlags;
 
@@ -196,49 +193,54 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            return new SignatureVerificationSummary(signature.Type, status, statusFlags);
+            return new SignatureVerificationSummary(signature.Type, status, statusFlags, issues);
         }
 
         private SignatureVerificationSummary VerifyValidityAndTrust(
             Signature signature,
             SignedPackageVerifierSettings verifierSettings,
             SignatureVerifySettings settings,
-            X509Certificate2Collection certificateExtraStore,
-            List<SignatureLog> issues)
+            X509Certificate2Collection certificateExtraStore)
         {
             Timestamp timestamp;
-            var timestampStatus = GetTimestamp(signature, verifierSettings, issues, out timestamp);
+            var timestampSummary = GetTimestamp(signature, verifierSettings, out timestamp);
 
-            if (timestampStatus.Status != SignatureVerificationStatus.Valid && !verifierSettings.AllowIgnoreTimestamp)
+            if (timestampSummary.Status != SignatureVerificationStatus.Valid && !verifierSettings.AllowIgnoreTimestamp)
             {
                 return new SignatureVerificationSummary(
                     signature.Type,
                     SignatureVerificationStatus.Disallowed,
-                    SignatureVerificationStatusFlags.NoValidTimestamp);
+                    SignatureVerificationStatusFlags.NoValidTimestamp,
+                    timestampSummary.Issues);
             }
 
             var status = signature.Verify(
                 timestamp,
                 settings,
                 _fingerprintAlgorithm,
-                certificateExtraStore,
-                issues);
+                certificateExtraStore);
 
-            return status;
+            return new SignatureVerificationSummary(
+                status.SignatureType,
+                status.Status,
+                status.Flags,
+                status.Timestamp,
+                status.ExpirationTime,
+                timestampSummary.Issues.Concat(status.Issues));
         }
 
-        private static bool PrimarySignatureHasUntrustedRoot(SignatureVerificationSummary primarySummary)
+        private static bool HasUntrustedRoot(SignatureVerificationSummary summary)
         {
-            return primarySummary.SignatureType != SignatureType.Repository &&
-                primarySummary.Status != SignatureVerificationStatus.Valid &&
-                primarySummary.Flags.HasFlag(SignatureVerificationStatusFlags.UntrustedRoot);
+            return summary.SignatureType != SignatureType.Repository &&
+                summary.Status != SignatureVerificationStatus.Valid &&
+                summary.Flags.HasFlag(SignatureVerificationStatusFlags.UntrustedRoot);
         }
 
-        private static bool PrimarySignatureNeedsTimestamp(SignatureVerificationSummary primarySummary)
+        private static bool IsSignatureExpired(SignatureVerificationSummary summary)
         {
-            return primarySummary.SignatureType != SignatureType.Repository &&
-                primarySummary.Status != SignatureVerificationStatus.Valid &&
-                primarySummary.Flags == SignatureVerificationStatusFlags.CertificateExpired;
+            return summary.SignatureType != SignatureType.Repository &&
+                summary.Status != SignatureVerificationStatus.Valid &&
+                summary.Flags == SignatureVerificationStatusFlags.CertificateExpired;
         }
 
 #else

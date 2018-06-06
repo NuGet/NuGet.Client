@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
@@ -27,18 +27,22 @@ namespace NuGet.Packaging.Signing
             Timestamp timestamp,
             SignatureVerifySettings settings,
             HashAlgorithmName fingerprintAlgorithm,
-            X509Certificate2Collection certificateExtraStore,
-            List<SignatureLog> issues)
+            X509Certificate2Collection certificateExtraStore)
         {
-            if (issues == null)
-            {
-                throw new ArgumentNullException(nameof(issues));
-            }
-
+            var issues = new List<SignatureLog>();
             settings = settings ?? SignatureVerifySettings.Default;
 
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
-            return base.Verify(timestamp, settings, fingerprintAlgorithm, certificateExtraStore, issues);
+
+            var summary = base.Verify(timestamp, settings, fingerprintAlgorithm, certificateExtraStore);
+
+            return new SignatureVerificationSummary(
+                summary.SignatureType,
+                summary.Status,
+                summary.Flags,
+                summary.Timestamp,
+                summary.ExpirationTime,
+                issues.Concat(summary.Issues));
         }
 #endif
     }

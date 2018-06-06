@@ -19,11 +19,6 @@ namespace NuGet.Packaging.Signing
         public bool AllowUntrusted { get; }
 
         /// <summary>
-        /// Indicates if untrusted status should be reported.
-        /// </summary>
-        public bool ReportUntrusted { get; }
-
-        /// <summary>
         /// Specifies that a signing certificate's chain with unknown revocation is allowed.
         /// If set to true, offline revocation is allowed.
         /// </summary>
@@ -37,13 +32,11 @@ namespace NuGet.Packaging.Signing
         public SignatureVerifySettings(
             bool allowIllegal,
             bool allowUntrusted,
-            bool reportUntrusted,
             bool allowUnknownRevocation,
             bool reportUnknownRevocation)
         {
             AllowIllegal = allowIllegal;
             AllowUntrusted = allowUntrusted;
-            ReportUntrusted = reportUntrusted;
             AllowUnknownRevocation = allowUnknownRevocation;
             ReportUnknownRevocation = reportUnknownRevocation;
         }
@@ -54,7 +47,6 @@ namespace NuGet.Packaging.Signing
         public static SignatureVerifySettings Default { get; } = new SignatureVerifySettings(
             allowIllegal: false,
             allowUntrusted: true,
-            reportUntrusted: true,
             allowUnknownRevocation: true,
             reportUnknownRevocation: true);
     }

@@ -39,24 +39,21 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignatureVerifySettings(
                 allowIllegal: false,
                 allowUntrusted: false,
-                reportUntrusted: true,
                 allowUnknownRevocation: false,
                 reportUnknownRevocation: true);
 
             using (var test = await VerifyTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
-                var issues = new List<SignatureLog>();
                 var result = test.PrimarySignature.Verify(
                     timestamp: null,
                     settings: settings,
                     fingerprintAlgorithm: HashAlgorithmName.SHA256,
-                    certificateExtraStore: test.PrimarySignature.SignedCms.Certificates,
-                    issues: issues);
+                    certificateExtraStore: test.PrimarySignature.SignedCms.Certificates);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, result.Status);
-                Assert.Equal(1, issues.Count(issue => issue.Level == LogLevel.Error));
+                Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Error));
 
-                AssertUntrustedRoot(issues, LogLevel.Error);
+                AssertUntrustedRoot(result.Issues, LogLevel.Error);
             }
         }
 
@@ -66,22 +63,19 @@ namespace NuGet.Packaging.FuncTest
             var settings = new SignatureVerifySettings(
                 allowIllegal: false,
                 allowUntrusted: true,
-                reportUntrusted: true,
                 allowUnknownRevocation: false,
                 reportUnknownRevocation: true);
 
             using (var test = await VerifyTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
-                var issues = new List<SignatureLog>();
                 var result = test.PrimarySignature.Verify(
                     timestamp: null,
                     settings: settings,
                     fingerprintAlgorithm: HashAlgorithmName.SHA256,
-                    certificateExtraStore: test.PrimarySignature.SignedCms.Certificates,
-                    issues: issues);
+                    certificateExtraStore: test.PrimarySignature.SignedCms.Certificates);
 
                 Assert.Equal(SignatureVerificationStatus.Valid, result.Status);
-                Assert.Equal(0, issues.Count(issue => issue.Level == LogLevel.Error));
+                Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Error));
             }
         }
 
