@@ -55,9 +55,19 @@ namespace NuGet.Protocol.Plugins.Tests
                 ), result);
         }
 
-        [Theory]
+        [PlatformTheory(Platform.Linux, Platform.Darwin)]
+        [InlineData(@"/opt/coolpath/dotnet/sdk/2.0.0/NuGet.Protocol.dll",
+            @"/opt/coolpath/dotnet/sdk/2.0.0/NuGetPlugins")]
+        [InlineData(null, null)]
+        public void PluginDiscoveryUtility_GetsNuGetPluginPathGivenNuGetAssembliesInXPLATSDK(string given, string expected)
+        {
+            var result = PluginDiscoveryUtility.GetNuGetPluginsDirectoryRelativeToNuGetAssembly(given);
+            Assert.Equal(expected, result);
+        }
+
+        [PlatformTheory(Platform.Windows)]
         [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.Protocol.dll",
-            @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGetPlugins")]
+    @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGetPlugins")]
         [InlineData(null, null)]
         public void PluginDiscoveryUtility_GetsNuGetPluginPathGivenNuGetAssemblies(string given, string expected)
         {
@@ -76,14 +86,5 @@ namespace NuGet.Protocol.Plugins.Tests
             Assert.Equal(expected, result);
         }
 #endif
-        [Fact]
-        public void Test()
-        {
-            var path = @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet";
-
-            var newPath = Path.GetDirectoryName(path);
-            string.Equals(path, newPath);
-        }
-
     }
 }
