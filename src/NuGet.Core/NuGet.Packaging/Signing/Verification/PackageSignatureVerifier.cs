@@ -107,10 +107,8 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         private static bool IsValid(IEnumerable<PackageVerificationResult> verificationResults, SignedPackageVerifierSettings settings)
         {
-            var hasItems = verificationResults.Any();
-            var allValid = verificationResults.All(e => e.Trust == SignatureVerificationStatus.Valid);
-
-            return hasItems && allValid;
+            return verificationResults.Any() &&
+                verificationResults.All(e => e.Trust == SignatureVerificationStatus.Valid);
         }
     }
 }

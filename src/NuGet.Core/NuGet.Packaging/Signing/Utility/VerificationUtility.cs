@@ -24,6 +24,7 @@ namespace NuGet.Packaging.Signing
                 return SignatureVerificationStatus.Suspect;
             }
 
+            // If the only flags are these known ones, return disallowed.
             if ((flags & ~(SignatureVerificationStatusFlags.Illegal |
                 SignatureVerificationStatusFlags.Untrusted |
                 SignatureVerificationStatusFlags.NoValidTimestamp |
