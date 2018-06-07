@@ -6,7 +6,6 @@
     <Description>NuGet's client configuration settings implementation.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.6</TargetFrameworks>
     <TargetFramework />
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
