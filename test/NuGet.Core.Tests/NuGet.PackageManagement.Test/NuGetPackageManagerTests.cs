@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Moq;
+using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -6100,6 +6101,297 @@ namespace NuGet.Test
 
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
                     Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
+            }
+        }
+
+        [Fact]
+        public async Task TestPacMan_PreviewInstallPackage_BuildIntegrated_RaiseTelemetryEventsWithErrorCode()
+        {
+
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            // set up telemetry service
+            var telemetrySession = new Mock<ITelemetrySession>();
+
+            var telemetryEvents = new List<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
+
+            var nugetProjectContext = new TestNuGetProjectContext();
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager(true))
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                var json = new JObject
+                {
+                    ["dependencies"] = new JObject(),
+                    ["frameworks"] = new JObject
+                    {
+                        ["net46"] = new JObject()
+                    }
+                };
+
+                var buildIntegratedProject = solutionManager.AddBuildIntegratedProject(json: json);
+
+                // Act
+                var target = new PackageIdentity("NuGet.Versioning", new NuGetVersion("99.9.9"));
+
+                await nuGetPackageManager.PreviewInstallPackageAsync(
+                    buildIntegratedProject,
+                    target,
+                    new ResolutionContext(),
+                    nugetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(15, telemetryEvents.Count);
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateRestoreGraph").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateAssetsFile").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ValidateRestoreGraphs").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreResult").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreNoOpInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreTargetGraph").Count());
+                Assert.Equal(1, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
+
+                Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
+                    Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
+
+                Assert.True((string)telemetryEvents
+                    .Where(p => p.Name == "ProjectRestoreInformation").
+                    Last()["ErrorCodes"] == NuGetLogCode.NU1100.ToString());
+            }
+        }
+
+        [Fact]
+        public async Task TestPacMan_PreviewInstallPackage_BuildIntegrated_RaiseTelemetryEventsWithDupedErrorCodes()
+        {
+
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            // set up telemetry service
+            var telemetrySession = new Mock<ITelemetrySession>();
+
+            var telemetryEvents = new List<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
+
+            var nugetProjectContext = new TestNuGetProjectContext();
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager(true))
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                var json = new JObject
+                {
+                    ["dependencies"] = new JObject()
+                    {
+                        new JProperty("NuGet.Frameworks", "99.0.0")
+                    },
+                    ["frameworks"] = new JObject
+                    {
+                        ["net46"] = new JObject()
+                    }
+                };
+
+                var buildIntegratedProject = solutionManager.AddBuildIntegratedProject(json: json);
+
+                // Act
+                var target = new PackageIdentity("NuGet.Versioning", new NuGetVersion("99.9.9"));
+
+                await nuGetPackageManager.PreviewInstallPackageAsync(
+                    buildIntegratedProject,
+                    target,
+                    new ResolutionContext(),
+                    nugetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(15, telemetryEvents.Count);
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateRestoreGraph").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateAssetsFile").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ValidateRestoreGraphs").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreResult").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreNoOpInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreTargetGraph").Count());
+                Assert.Equal(1, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
+
+                Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
+                    Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
+
+                Assert.True((string)telemetryEvents
+                    .Where(p => p.Name == "ProjectRestoreInformation").
+                    Last()["ErrorCodes"] == NuGetLogCode.NU1100.ToString());
+            }
+        }
+
+
+        [Fact]
+        public async Task TestPacMan_PreviewInstallPackage_BuildIntegrated_RaiseTelemetryEventsWithWarningCode()
+        {
+
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            // set up telemetry service
+            var telemetrySession = new Mock<ITelemetrySession>();
+
+            var telemetryEvents = new List<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
+
+            var nugetProjectContext = new TestNuGetProjectContext();
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager(true))
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                var json = new JObject
+                {
+                    ["dependencies"] = new JObject(),
+                    ["frameworks"] = new JObject
+                    {
+                        ["net46"] = new JObject()
+                    }
+                };
+
+                var buildIntegratedProject = solutionManager.AddBuildIntegratedProject(json: json);
+
+                // Act
+                var target = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.6.9"));
+
+                await nuGetPackageManager.PreviewInstallPackageAsync(
+                    buildIntegratedProject,
+                    target,
+                    new ResolutionContext(),
+                    nugetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(15, telemetryEvents.Count);
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateRestoreGraph").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateAssetsFile").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ValidateRestoreGraphs").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreResult").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreNoOpInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreTargetGraph").Count());
+                Assert.Equal(1, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
+
+                Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
+                    Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
+
+                Assert.True((string)telemetryEvents
+                    .Where(p => p.Name == "ProjectRestoreInformation").
+                    Last()["WarningCodes"] == NuGetLogCode.NU1603.ToString());
+            }
+        }
+
+        [Fact]
+        public async Task TestPacMan_PreviewInstallPackage_BuildIntegrated_RaiseTelemetryEventsWithDupedWarningCodes()
+        {
+
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            // set up telemetry service
+            var telemetrySession = new Mock<ITelemetrySession>();
+
+            var telemetryEvents = new List<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
+
+            var nugetProjectContext = new TestNuGetProjectContext();
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager(true))
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    NullSettings.Instance,
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                var json = new JObject
+                {
+                    ["dependencies"] = new JObject()
+                    {
+                        new JProperty("NuGet.Frameworks", "4.6.9")
+                    },
+                    ["frameworks"] = new JObject
+                    {
+                        ["net46"] = new JObject()
+                    }
+                };
+
+                var buildIntegratedProject = solutionManager.AddBuildIntegratedProject(json: json);
+
+                // Act
+                var target = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.6.9"));
+
+                await nuGetPackageManager.PreviewInstallPackageAsync(
+                    buildIntegratedProject,
+                    target,
+                    new ResolutionContext(),
+                    nugetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.Equal(15, telemetryEvents.Count);
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateRestoreGraph").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateAssetsFile").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ValidateRestoreGraphs").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreResult").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "RestoreNoOpInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreTargetGraph").Count());
+                Assert.Equal(1, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
+
+                Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
+                    Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
+
+                Assert.True((string)telemetryEvents
+                    .Where(p => p.Name == "ProjectRestoreInformation").
+                    Last()["WarningCodes"] == NuGetLogCode.NU1603.ToString());
             }
         }
 

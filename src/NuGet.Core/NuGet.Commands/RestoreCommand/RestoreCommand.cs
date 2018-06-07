@@ -40,9 +40,7 @@ namespace NuGet.Commands
         private const string ProjectRestoreInformation = "ProjectRestoreInformation";
         private const string ProjectId = "ProjectId";
         private const string ErrorCodes = "ErrorCodes";
-        private const string ErrorMessages = "ErrorMessages";
         private const string WarningCodes = "WarningCodes";
-        private const string WarningMessages = "WarningMessages";
         private const string RestoreSuccess = "RestoreSuccess";
 
         // names for child events for ProjectRestoreInformation
@@ -251,21 +249,17 @@ namespace NuGet.Commands
                         cacheFile.Success = _success;
                     }
 
-                    var errorCodes = ConcatAsString(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Code));
-                    var errorMessages = ConcatAsString(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Message));
-                    var warningCodes = ConcatAsString(logs.Where(l => l.Level == LogLevel.Warning).Select(l => l.Code));
-                    var warningMessages = ConcatAsString(logs.Where(l => l.Level == LogLevel.Warning).Select(l => l.Message));
+                    var errorCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Code)));
+                    var warningCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Warning).Select(l => l.Code)));
 
                     if (!string.IsNullOrEmpty(errorCodes))
                     {
                         telemetry.TelemetryEvent[ErrorCodes] = errorCodes;
-                        telemetry.TelemetryEvent.AddPiiData(ErrorMessages, errorMessages);
                     }
 
                     if (!string.IsNullOrEmpty(warningCodes))
                     {
                         telemetry.TelemetryEvent[WarningCodes] = warningCodes;
-                        telemetry.TelemetryEvent.AddPiiData(WarningMessages, warningMessages);
                     }
 
                     telemetry.TelemetryEvent[RestoreSuccess] = _success;
