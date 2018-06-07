@@ -3,8 +3,6 @@ using NuGet.Test.Utility;
 using Xunit;
 using System.Linq;
 using System;
-using NuGet.Common;
-using System.Diagnostics;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
@@ -20,7 +18,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [Theory]
         [InlineData("VSTSCredProv", "VSTSCredProv", true)]
         [InlineData("VSTSCredProv", "MyGetProv", false)]
-        public void PluginDiscoveryUtilitySimpleTest(string pluginFolderName, string pluginFileName, bool success)
+        public void PluginDiscoveryUtility_SimpleTest(string pluginFolderName, string pluginFileName, bool success)
         {
             using (var test = TestDirectory.Create())
             {
@@ -44,7 +42,7 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public void PluginDiscoveryUtilityGetsNuGetHomePluginPath()
+        public void PluginDiscoveryUtility_GetsNuGetHomePluginPath()
         {
             var result = PluginDiscoveryUtility.GetNuGetHomePluginsPath();
 
@@ -56,5 +54,36 @@ namespace NuGet.Protocol.Plugins.Tests
 #endif
                 ), result);
         }
+
+        [Theory]
+        [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.Protocol.dll",
+            @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGetPlugins")]
+        [InlineData(null, null)]
+        public void PluginDiscoveryUtility_GetsNuGetPluginPathGivenNuGetAssemblies(string given, string expected)
+        {
+            var result = PluginDiscoveryUtility.GetNuGetPluginsDirectoryRelativeToNuGetAssembly(given);
+            Assert.Equal(expected, result);
+        }
+
+#if IS_DESKTOP
+        [Theory]
+        [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe",
+            @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGetPlugins")]
+        [InlineData(null, null)]
+        public void PluginDiscoveryUtility_GetsNuGetPluginPathGivenMSBuildExeLocation(string given, string expected)
+        {
+            var result = PluginDiscoveryUtility.GetInternalPluginRelativeToMSBuildExe(given);
+            Assert.Equal(expected, result);
+        }
+#endif
+        [Fact]
+        public void Test()
+        {
+            var path = @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet";
+
+            var newPath = Path.GetDirectoryName(path);
+            string.Equals(path, newPath);
+        }
+
     }
 }
