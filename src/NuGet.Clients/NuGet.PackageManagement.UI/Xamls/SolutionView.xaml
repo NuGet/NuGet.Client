@@ -179,9 +179,6 @@
 
     <TextBlock
       x:Name="_installedVersionsCount"
-      Focusable="True"
-      AutomationProperties.Name="{Binding Text}"
-      FocusVisualStyle="{x:Null}"
       Grid.Row="0"
       Text="{Binding InstalledVersionsCount, Converter={StaticResource InstalledVersionsCountConverter}}" />
 
@@ -194,6 +191,7 @@
       ItemsSource="{Binding Projects}"
       Background="{DynamicResource {x:Static local:Brushes.ListPaneBackground}}"
       Foreground="{DynamicResource {x:Static local:Brushes.UIText}}"
+      AutomationProperties.LabeledBy="{Binding ElementName=_installedVersionsCount}"
       KeyboardNavigation.TabNavigation="Local"
       SelectionMode="Single">
 

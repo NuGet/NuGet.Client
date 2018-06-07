@@ -10,7 +10,8 @@
   x:Name="_self"
   mc:Ignorable="d"
   d:DesignHeight="523"
-  d:DesignWidth="900">
+  d:DesignWidth="900"
+  AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageManager}">
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -94,9 +95,10 @@
             <nuget:InfiniteScrollList
               Grid.Row="0"
               x:Name="_packageList"
+              AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackagesList}"
               SelectionChanged="PackageList_SelectionChanged"
               UpdateButtonClicked="PackageList_UpdateButtonClicked"
-              Width="{Binding ActualWidth, ElementName=_left_side}"/>
+              Width="{Binding ActualWidth, ElementName=_left_side}" />
 
             <Border
               Grid.Row="2"
@@ -105,27 +107,20 @@
               BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
               Background="{DynamicResource {x:Static nuget:Brushes.LegalMessageBackground}}"
               Width="{Binding ActualWidth, ElementName=_leftSide}">
-              <Grid>
-                <Grid.RowDefinitions>
-                  <RowDefinition Height="Auto" />
-                  <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <TextBlock
-                  Grid.Row="0"
-                  Margin="24,12,24,12"
-                  TextWrapping="Wrap"
+              <TextBlock
+                TextWrapping="Wrap"
+                Margin="24,12,24,12">
+                <Run
                   x:Name="_legalDisclaimerText"
-                  Focusable="True"
-                  AutomationProperties.Name="{Binding Text}"
-                  FocusVisualStyle="{x:Null}"
                   Text="{x:Static nuget:Resources.Text_LegalDisclaimer}" />
+                <LineBreak />
                 <CheckBox
-                  Grid.Row="1"
-                  Margin="24,0,24,12"
+                  Margin="0,12,0,12"
+                  AutomationProperties.LabeledBy="{Binding ElementName=_legalDisclaimerText}"
                   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
                   Content="{x:Static nuget:Resources.DoNotShowThisAgain}"
                   Checked="SuppressDisclaimerChecked" />
-              </Grid>
+              </TextBlock>
             </Border>
           </Grid>
 
@@ -135,6 +130,8 @@
             Grid.RowSpan="2"
             HorizontalAlignment="Center"
             VerticalAlignment="Stretch"
+            AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_ThumbName}"
+            AutomationProperties.HelpText="{x:Static nuget:Resources.Accessibility_ThumbHelp}"
             Background="{DynamicResource {x:Static nuget:Brushes.SplitterBackgroundKey}}"
             BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
             BorderThickness="1,0" />
@@ -142,6 +139,7 @@
           <!-- right side -->
           <nuget:DetailControl
             x:Name="_packageDetail"
+            AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackagesDetails}"
             Grid.Column="2"
             Grid.RowSpan="2" />
         </Grid>

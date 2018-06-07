@@ -25,7 +25,8 @@
   </UserControl.CommandBindings>
   <ScrollViewer
     x:Name="_root"
-    HorizontalScrollBarVisibility="Disabled">
+    HorizontalScrollBarVisibility="Disabled"
+    AutomationProperties.Name="{Binding Text, ElementName=_packageId}">
     <Grid
       Margin="24,0,7,0">
       <Grid.RowDefinitions>
@@ -58,9 +59,12 @@
         <Image
           Grid.Column="0"
           Margin="0,0,8,0"
+          AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageIcon}"
           Style="{StaticResource PackageIconImageStyle}" />
         <TextBox
           Grid.Column="1"
+          Name="_packageId"
+          AutomationProperties.Name="{Binding Path=Id, Mode=OneWay}"
           Style="{DynamicResource SelectableTextBlockStyle}"
           Text="{Binding Path=Id, Mode=OneWay}"
           FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font155PercentSizeConverter}}" />
@@ -72,6 +76,7 @@
           Width="16"
           Height="16"
           VerticalAlignment="Top"
+          AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PrefixReserved}"
           Visibility="{Binding Path=PrefixReserved, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
           ToolTip="{x:Static nuget:Resources.Tooltip_PrefixReserved}"
           Moniker="{x:Static nuget:PackageIconMonikers.PrefixReservedIndicator}" />
@@ -102,6 +107,8 @@
         HorizontalAlignment="Stretch"
         VerticalAlignment="Top"
         Margin="-24,0,-7,0"
+        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_ThumbName}"
+        AutomationProperties.HelpText="{x:Static nuget:Resources.Accessibility_ThumbHelp}"
         Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}"
         Background="{DynamicResource {x:Static nuget:Brushes.SplitterBackgroundKey}}"
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
@@ -118,6 +125,7 @@
             x:Name="_optionsBlockedTextBox"
             Margin="0,12,0,16"
             TextWrapping="WrapWithOverflow"
+            AutomationProperties.Name="{Binding OptionsBlockedMessage}"
             Visibility="{Binding Path=OptionsBlockedMessage,Converter={StaticResource NullToVisibilityConverter}}">
             <Run Text="{Binding OptionsBlockedMessage}"/>
             <Hyperlink
@@ -137,6 +145,7 @@
       
       <nuget:PackageMetadataControl
         Grid.Row="5"
+        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
         Margin="0,12,0,0"
         DataContext="{Binding PackageMetadata}" />
     </Grid>
