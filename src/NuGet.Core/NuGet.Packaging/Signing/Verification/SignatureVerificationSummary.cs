@@ -31,7 +31,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Expiration Date and Time for signature
         /// </summary>
-        /// <remarks>This field will only be set if the flag CertificateExpired is present <see cref="Flags" /></remarks>
+        /// <remarks>This field will only be set if the certificate is expired.</remarks>
         public DateTimeOffset? ExpirationTime { get; }
 
         public IEnumerable<SignatureLog> Issues { get; set; }

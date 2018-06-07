@@ -238,9 +238,7 @@ namespace NuGet.Packaging.Signing
 
         private static bool IsSignatureExpired(SignatureVerificationSummary summary)
         {
-            return summary.SignatureType != SignatureType.Repository &&
-                summary.Status != SignatureVerificationStatus.Valid &&
-                summary.Flags == SignatureVerificationStatusFlags.CertificateExpired;
+            return summary.SignatureType != SignatureType.Repository && summary.ExpirationTime.HasValue;
         }
 
 #else

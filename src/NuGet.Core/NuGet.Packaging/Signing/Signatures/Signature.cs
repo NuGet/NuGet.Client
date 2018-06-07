@@ -275,7 +275,11 @@ namespace NuGet.Packaging.Signing
                                 NuGetLogCode.NU3037,
                                 string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_SignatureNotTimeValid, FriendlyName)));
 
-                        flags |= SignatureVerificationStatusFlags.CertificateExpired;
+                        if (!settings.AllowUntrusted)
+                        {
+                            flags |= SignatureVerificationStatusFlags.CertificateExpired;
+                        }
+
                         expirationTime = DateTime.SpecifyKind(certificate.NotAfter, DateTimeKind.Local);
                     }
                 }
