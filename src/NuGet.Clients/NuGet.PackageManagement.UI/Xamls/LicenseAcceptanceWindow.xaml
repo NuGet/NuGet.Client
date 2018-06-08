@@ -32,9 +32,7 @@
           <TextBlock
             TextWrapping="Wrap"
             x:Name="_packageLicenseText"
-            Focusable="True"
-            AutomationProperties.Name="{Binding Text}"
-            FocusVisualStyle="{x:Null}">
+            AutomationProperties.Name="{Binding Text}">
                     <Run
               Text="{Binding Id, Mode=OneTime}"
               FontWeight="Bold" />
@@ -46,6 +44,7 @@
               Text="{Binding Authors, Mode=OneTime}" />
           </TextBlock>
           <TextBlock
+            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}">
                     <Hyperlink
               AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
@@ -76,9 +75,7 @@
       Grid.Row="0"
       Margin="12,8,12,0"
       x:Name="_licenseAcceptanceText"
-      Focusable="True"
       AutomationProperties.Name="{Binding Text}"
-      FocusVisualStyle="{x:Null}"
       Text="{x:Static nuget:Resources.Text_LicenseAcceptance}"
       FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}" />
 
@@ -86,9 +83,7 @@
       Grid.Row="1"
       Margin="12,4,12,0"
       x:Name="_licenseHeaderText"
-      Focusable="True"
       AutomationProperties.Name="{Binding Text}"
-      FocusVisualStyle="{x:Null}"
       Text="{x:Static nuget:Resources.Text_LicenseHeaderText}"
       TextWrapping="Wrap" />
 
@@ -109,7 +104,8 @@
               Padding="3"
               CanContentScroll="True"
               VerticalScrollBarVisibility="Visible"
-              HorizontalScrollBarVisibility="Disabled">
+              HorizontalScrollBarVisibility="Disabled"
+              AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}">
               <ItemsPresenter></ItemsPresenter>
             </ScrollViewer>
           </Border>
@@ -120,39 +116,38 @@
       Grid.Row="3"
       Margin="12,0,12,12"
       x:Name="_licenseText"
-      Focusable="True"
       AutomationProperties.Name="{Binding Text}"
-      FocusVisualStyle="{x:Null}"
       Text="{x:Static nuget:Resources.Text_LicenseText}"
-      TextWrapping="Wrap"></TextBlock>
-
+      TextWrapping="Wrap" />
     <Grid
-      Grid.Row="5">
+      Grid.Row="5"
+      HorizontalAlignment="Right">
       <Grid.ColumnDefinitions>
         <ColumnDefinition />
         <ColumnDefinition
-          Width="auto" />
+            Width="auto" />
         <ColumnDefinition
-          Width="auto" />
+            Width="auto" />
       </Grid.ColumnDefinitions>
 
       <Button
-        Name="_acceptButton"
-        Grid.Column="1"
-        MinWidth="86"
-        MinHeight="24"
-        Margin="0,12"
-        Content="{x:Static nuget:Resources.Button_IAccept}"
-        AutomationProperties.AutomationId="AcceptButton"
-        Click="OnAcceptButtonClick" />
+          Name="_acceptButton"
+          Grid.Column="1"
+          MinWidth="86"
+          MinHeight="24"
+          Margin="0,12"
+          Content="{x:Static nuget:Resources.Button_IAccept}"
+          AutomationProperties.AutomationId="AcceptButton"
+        AutomationProperties.LabeledBy="{Binding ElementName=_licenseText}"
+          Click="OnAcceptButtonClick" />
       <Button
-        Grid.Column="2"
-        MinWidth="86"
-        MinHeight="24"
-        Margin="6,12,12,12"
-        Content="{x:Static nuget:Resources.Button_IDecline}"
-        AutomationProperties.AutomationId="DeclineButton"
-        Click="OnDeclineButtonClick" />
+          Grid.Column="2"
+          MinWidth="86"
+          MinHeight="24"
+          Margin="6,12,12,12"
+          Content="{x:Static nuget:Resources.Button_IDecline}"
+          AutomationProperties.AutomationId="DeclineButton"
+          Click="OnDeclineButtonClick" />
     </Grid>
   </Grid>
 </nuget:VsDialogWindow>
