@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using NuGet.Common;
 
 namespace NuGet.Protocol.Plugins
@@ -10,11 +11,45 @@ namespace NuGet.Protocol.Plugins
     {
         public static Lazy<string> InternalPluginDiscoveryRoot { get; set; }
 
+        private static string NuGetPluginsDirectory = "NuGetPlugins";
+
         public static string GetInternalPlugins()
         {
-            var rootDirectory = InternalPluginDiscoveryRoot?.Value ?? System.Reflection.Assembly.GetEntryAssembly()?.Location;
+            return InternalPluginDiscoveryRoot?.Value ??
+                GetNuGetPluginsDirectoryRelativeToNuGetAssembly(typeof(PluginDiscoveryUtility).GetTypeInfo().Assembly.Location); // NuGet.*.dll
+        }
+#if IS_DESKTOP
+        /// <summary>
+        /// Given Visual Studio 2017 MSBuild.exe path, return the NuGet plugins directory which is in CommonExtensions\NuGet\NuGetPlugins
+        /// </summary>
+        /// <param name="msbuildExePath">The MsBuildExe path. Needs to be a valid path. file:// not supported.</param>
+        /// <returns>The NuGet plugins directory, null if <paramref name="msbuildExePath"/> is null</returns>
+        /// <remarks>The MSBuild.exe is in MSBuild\15.0\Bin\MsBuild.exe, the NuGetPlugins directory is in Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGetPlugins</remarks>
+        public static string GetInternalPluginRelativeToMSBuildExe(string msbuildExePath)
+        {
+            var parentDirectory = "..";
+            return !string.IsNullOrEmpty(msbuildExePath) ?
+                Path.GetFullPath(Path.Combine(
+                    Path.GetDirectoryName(msbuildExePath),
+                    Path.Combine(parentDirectory, parentDirectory, parentDirectory, "Common7", "IDE", "CommonExtensions", "Microsoft", "NuGet", NuGetPluginsDirectory)
+                    )) :
+                null;
+        }
+#endif
 
-            return rootDirectory ?? Path.GetDirectoryName(rootDirectory);
+        /// <summary>
+        /// Given a NuGet assembly path, returns the NuGet plugins directory
+        /// </summary>
+        /// <param name="nugetAssemblyPath">The path to a NuGet assembly in CommonExtensions\NuGet, needs to be a valid path. file:// not supported</param>
+        /// <returns>The NuGet plugins directory in CommonExtensions\NuGet\NuGetPlugins, null if the <paramref name="nugetAssemblyPath"/> is null</returns>
+        public static string GetNuGetPluginsDirectoryRelativeToNuGetAssembly(string nugetAssemblyPath)
+        {
+            return !string.IsNullOrEmpty(nugetAssemblyPath) ?
+                    Path.Combine(
+                        Path.GetDirectoryName(nugetAssemblyPath),
+                        NuGetPluginsDirectory
+                        ) :
+                    null;
         }
 
         public static string GetNuGetHomePluginsPath()
@@ -52,7 +87,6 @@ namespace NuGet.Protocol.Plugins
                     }
                 }
             }
-
             return paths;
         }
     }
