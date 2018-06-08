@@ -497,7 +497,7 @@ namespace NuGet.Packaging.FuncTest
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary);
 
             using (var dir = TestDirectory.Create())
-            using (var trustedCertificate = _testFixture.TrustedTestCertificateWillExpireIn5Seconds)
+            using (var trustedCertificate = _testFixture.TrustedTestCertificateWillExpireIn10Seconds)
             using (var willExpireCert = new X509Certificate2(trustedCertificate.Source.Cert))
             using (var repoTestCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
@@ -552,7 +552,7 @@ namespace NuGet.Packaging.FuncTest
             var verifier = new PackageSignatureVerifier(_trustProviders);
 
             using (var testDirectory = TestDirectory.Create())
-            using (var untrustedCertificate = _testFixture.UntrustedTestCertificateWillExpireIn5Seconds.Cert)
+            using (var untrustedCertificate = _testFixture.UntrustedTestCertificateWillExpireIn10Seconds.Cert)
             using (var repositoryCertificate = new X509Certificate2(_testFixture.TrustedRepositoryCertificate.Source.Cert))
             {
                 DateTimeOffset certExpiration = DateTime.SpecifyKind(untrustedCertificate.NotAfter, DateTimeKind.Local);
@@ -610,7 +610,7 @@ namespace NuGet.Packaging.FuncTest
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists);
 
             using (var dir = TestDirectory.Create())
-            using (var trustedCertificate = _testFixture.TrustedTestCertificateWillExpireIn5Seconds)
+            using (var trustedCertificate = _testFixture.TrustedTestCertificateWillExpireIn10Seconds)
             using (var willExpireCert = new X509Certificate2(trustedCertificate.Source.Cert))
             using (var repoTestCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
