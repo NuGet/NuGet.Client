@@ -134,17 +134,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var duration = 1.12;
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
-            var operationId = Guid.NewGuid().ToString();
+            var parentId = Guid.NewGuid().ToString();
 
             // Act
-            service.EmitTelemetryEvent(new ActionTelemetryStepEvent(operationId, stepName, duration));
+            service.EmitTelemetryEvent(new ActionTelemetryStepEvent(parentId, stepName, duration));
 
             // Assert
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(ActionTelemetryStepEvent.NugetActionStepsEventName, lastTelemetryEvent.Name);
             Assert.Equal(3, lastTelemetryEvent.Count);
 
-            Assert.Equal(operationId, lastTelemetryEvent["OperationId"].ToString());
+            Assert.Equal(parentId, lastTelemetryEvent["ParentId"].ToString());
             Assert.Equal(stepName, lastTelemetryEvent["SubStepName"].ToString());
             Assert.Equal(duration, (double)lastTelemetryEvent["Duration"]);
         }
