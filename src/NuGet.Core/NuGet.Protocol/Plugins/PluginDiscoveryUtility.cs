@@ -21,7 +21,7 @@ namespace NuGet.Protocol.Plugins
 
 #if IS_DESKTOP
         /// <summary>
-        /// Given Visual Studio 2017 MSBuild.exe path, return the NuGet plugins directory which is in CommonExtensions\NuGet\NuGetPluginsDirectory
+        /// Given Visual Studio 2017 MSBuild.exe path, return the NuGet plugins directory which is in CommonExtensions\NuGet\NuGetPlugins
         /// </summary>
         /// <param name="msbuildExePath">The MsBuildExe path. Needs to be a valid path. file:// not supported.</param>
         /// <returns>The NuGet plugins directory, null if <paramref name="msbuildExePath"/> is null</returns>
