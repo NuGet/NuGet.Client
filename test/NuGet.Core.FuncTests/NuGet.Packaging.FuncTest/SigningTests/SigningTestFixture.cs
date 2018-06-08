@@ -94,6 +94,9 @@ namespace NuGet.Packaging.FuncTest
         // We should not memoize this call because it is a time-sensitive operation.
         public TrustedTestCert<TestCertificate> TrustedTestCertificateWillExpireIn5Seconds => SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn5Seconds();
 
+        // We should not memoize this call because it is a time-sensitive operation.
+        public TestCertificate UntrustedTestCertificateWillExpireIn5Seconds => TestCertificate.Generate(SigningTestUtility.CertificateModificationGeneratorExpireIn5Seconds);
+
         public IReadOnlyList<TrustedTestCert<TestCertificate>> TrustedTestCertificateWithReissuedCertificate
         {
             get

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -13,7 +12,7 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
-    public class SignatureTrustAndValidityVerificationProvider : ISignatureVerificationProvider
+    public sealed class SignatureTrustAndValidityVerificationProvider : ISignatureVerificationProvider
     {
         private readonly HashAlgorithmName _fingerprintAlgorithm;
 
@@ -64,7 +63,6 @@ namespace NuGet.Packaging.Signing
             var status = SignatureVerificationStatus.Unknown;
             var issues = Enumerable.Empty<SignatureLog>();
 
-            // Only accept untrusted root if the signature has a countersignature that we can validate against
             var verifySettings = new SignatureVerifySettings(
                 allowIllegal: settings.AllowIllegal,
                 allowUntrusted: settings.AllowUntrusted,
@@ -95,6 +93,9 @@ namespace NuGet.Packaging.Signing
                     break;
 
                 case SignatureVerificationBehavior.IfExistsAndIsNecessary:
+                    // The repository countersignature should be evaluated if settings allow it, if a repository countersignature exists
+                    // and if either settings only allow a repository countersignature to be evaluated or the primary signature has some
+                    // validation/trust issues that may benefit from a repository countersignature fallback.
                     shouldVerifyRepositoryCountersignature = isRepositoryCountersignatureVerificationRequested &&
                         repositoryCountersignatureExists &&
                         (primarySummary == null ||
@@ -139,29 +140,32 @@ namespace NuGet.Packaging.Signing
                     {
                         status = countersignatureSummary.Status;
                     }
-                    else if (IsSignatureExpired(primarySummary))
-                    {
-                        if (countersignatureSummary.Status == SignatureVerificationStatus.Valid &&
-                            countersignatureSummary.Timestamp != null &&
-                            Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureSummary.Timestamp))
-                        {
-                            // Exclude the issue of the primary signature being expired since the repository countersignature fulfills the role of a trusted timestamp.
-                            issues = issues.Where(log => log.Code != NuGetLogCode.NU3037);
-
-                            status = SignatureVerificationStatus.Valid;
-                        }
-                    }
-                    else if (countersignatureSummary.Status == SignatureVerificationStatus.Valid &&
-                        HasUntrustedRoot(primarySummary))
-                    {
-                        // Exclude the issue of the primary signature being untrusted since the repository countersignature fulfills the role of a trust anchor.
-                        issues = issues.Where(log => log.Code != NuGetLogCode.NU3018);
-
-                        status = SignatureVerificationStatus.Valid;
-                    }
                     else
                     {
-                        status = (SignatureVerificationStatus)Math.Min((int)primarySummary.Status, (int)countersignatureSummary.Status);
+                        if (countersignatureSummary.Status == SignatureVerificationStatus.Valid)
+                        {
+                            if (IsSignatureExpired(primarySummary) &&
+                                countersignatureSummary.Timestamp != null &&
+                                Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureSummary.Timestamp))
+                            {
+                                // Exclude the issue of the primary signature being expired since the repository countersignature fulfills the role of a trusted timestamp.
+                                issues = issues.Where(log => log.Code != NuGetLogCode.NU3037);
+
+                                status = SignatureVerificationStatus.Valid;
+                            }
+
+                            if (HasUntrustedRoot(primarySummary))
+                            {
+                                // Exclude the issue of the primary signature being untrusted since the repository countersignature fulfills the role of a trust anchor.
+                                issues = issues.Where(log => log.Code != NuGetLogCode.NU3018);
+
+                                status = SignatureVerificationStatus.Valid;
+                            }
+                        }
+
+                        // Both the primary signature and the repository countersignature were evaluated.
+                        // The overall status should be the more severe status of the two.
+                        status = (SignatureVerificationStatus)Math.Min((int)status, (int)countersignatureSummary.Status);
                     }
 
                     issues = issues.Concat(countersignatureSummary.Issues);

@@ -335,7 +335,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_SettingsNotRequireCheckCountersiganture_WithValidPrimarySignatureAndInvalidCountersignature_SucceedsAsync()
+        public async Task VerifySignaturesAsync_SettingsNotRequireCheckCountersignature_WithValidPrimarySignatureAndInvalidCountersignature_SucceedsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -429,7 +429,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task VerifySignaturesAsync_SettingsRequireCheckCountersiganture_WithValidPrimarySignatureAndValidCountersignature_SucceedsAsync()
+        public async Task VerifySignaturesAsync_SettingsRequireCheckCountersignature_WithValidPrimarySignatureAndValidCountersignature_SucceedsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
@@ -511,7 +511,7 @@ namespace NuGet.Packaging.FuncTest
                 var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoTestCertificate, signedPackagePath, dir, new Uri("https://v3serviceIndex.test/api/index.json"), timestampService.Url);
 
                 // Wait for cert to expire
-                while (certExpiration > DateTimeOffset.Now)
+                while (certExpiration >= DateTimeOffset.Now)
                 {
                     Thread.Sleep(100);
                 }
@@ -524,6 +524,64 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
+                    result.Valid.Should().BeTrue();
+                    resultsWithErrors.Count().Should().Be(0);
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifySignaturesAsync_WithExpiredAndUntrustedPrimarySignature_ValidCountersignature_AndPrimarySignatureValidAtCountersignTime_SucceedsAsync()
+        {
+            var nupkg = new SimpleTestPackageContext();
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var settings = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowIllegal: false,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: true,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: true,
+                allowUnknownRevocation: true,
+                reportUnknownRevocation: true,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true,
+                verificationTarget: VerificationTarget.All,
+                signaturePlacement: SignaturePlacement.Any,
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary);
+            var verifier = new PackageSignatureVerifier(_trustProviders);
+
+            using (var testDirectory = TestDirectory.Create())
+            using (var untrustedCertificate = _testFixture.UntrustedTestCertificateWillExpireIn5Seconds.Cert)
+            using (var repositoryCertificate = new X509Certificate2(_testFixture.TrustedRepositoryCertificate.Source.Cert))
+            {
+                DateTimeOffset certExpiration = DateTime.SpecifyKind(untrustedCertificate.NotAfter, DateTimeKind.Local);
+
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    untrustedCertificate,
+                    nupkg,
+                    testDirectory);
+
+                var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                    repositoryCertificate,
+                    signedPackagePath,
+                    testDirectory,
+                    new Uri("https://v3serviceIndex.test/api/index.json"),
+                    timestampService.Url);
+
+                // Ensure expiration of the author certificate.
+                var delay = certExpiration.AddSeconds(1) - DateTimeOffset.UtcNow;
+
+                if (delay > TimeSpan.Zero)
+                {
+                    Thread.Sleep(delay);
+                }
+
+                using (var packageReader = new PackageArchiveReader(countersignedPackagePath))
+                {
+                    var result = await verifier.VerifySignaturesAsync(packageReader, settings, CancellationToken.None);
+                    var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
+
                     result.Valid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
@@ -564,7 +622,7 @@ namespace NuGet.Packaging.FuncTest
                     dir);
 
                 // Wait for cert to expire
-                while (certExpiration > DateTimeOffset.Now)
+                while (certExpiration >= DateTimeOffset.Now)
                 {
                     Thread.Sleep(100);
                 }

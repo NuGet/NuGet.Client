@@ -48,7 +48,6 @@ namespace Test.Utility.Signing
         /// </summary>
         public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorForCodeSigningEkuCert = delegate (X509V3CertificateGenerator gen)
         {
-            // CodeSigning EKU
             var usages = new[] { KeyPurposeID.IdKPCodeSigning };
 
             gen.AddExtension(
@@ -63,7 +62,6 @@ namespace Test.Utility.Signing
         /// </summary>
         public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorExpiredCert = delegate (X509V3CertificateGenerator gen)
         {
-            // CodeSigning EKU
             var usages = new[] { KeyPurposeID.IdKPCodeSigning };
 
             gen.AddExtension(
@@ -81,7 +79,6 @@ namespace Test.Utility.Signing
         /// </summary>
         public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorNotYetValidCert = delegate (X509V3CertificateGenerator gen)
         {
-            // CodeSigning EKU
             var usages = new[] { KeyPurposeID.IdKPCodeSigning };
 
             gen.AddExtension(
@@ -98,11 +95,10 @@ namespace Test.Utility.Signing
 
         /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().
-        /// The generator will create a certificate that is valid but will expire in a 15 seconds
+        /// The generator will create a certificate that is valid but will expire in 5 seconds.
         /// </summary>
         public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorExpireIn5Seconds = delegate (X509V3CertificateGenerator gen)
         {
-            // CodeSigning EKU
             var usages = new[] { KeyPurposeID.IdKPCodeSigning };
 
             gen.AddExtension(
