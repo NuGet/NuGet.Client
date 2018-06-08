@@ -232,11 +232,13 @@ namespace NuGet.Options
         {
             // if user presses Enter after filling in Name/Source but doesn't click Update
             // the options will be closed without adding the source, try adding before closing
-            // Only apply if nothing was added
+            // Only apply if nothing was updated or the update was successfull
             var result = TryUpdateSource();
             if (result != TryUpdateSourceResults.NotUpdated
                 &&
-                result != TryUpdateSourceResults.Unchanged)
+                result != TryUpdateSourceResults.Unchanged
+                &&
+                result != TryUpdateSourceResults.Successful)
             {
                 return false;
             }
@@ -332,6 +334,7 @@ namespace NuGet.Options
 
             // auto-select the newly-added item
             PackageSourcesListBox.SelectedIndex = PackageSourcesListBox.Items.Count - 1;
+            UpdateUI();
         }
 
         private Configuration.PackageSource CreateNewPackageSource()
@@ -591,9 +594,10 @@ namespace NuGet.Options
             }
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void OnBrowseButtonClicked(object sender, EventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             const int MaxDirectoryLength = 1000;
 
             //const int BIF_RETURNONLYFSDIRS = 0x00000001;   // For finding a folder to start document searching.
@@ -601,14 +605,14 @@ namespace NuGet.Options
 
             var uiShell = (IVsUIShell2)_serviceProvider.GetService(typeof(SVsUIShell));
 
-            char[] rgch = new char[MaxDirectoryLength + 1];
+            var rgch = new char[MaxDirectoryLength + 1];
 
             // allocate a buffer in unmanaged memory for file name (string)
-            IntPtr bufferPtr = Marshal.AllocCoTaskMem((rgch.Length + 1) * 2);
+            var bufferPtr = Marshal.AllocCoTaskMem((rgch.Length + 1) * 2);
             // copy initial path to bufferPtr
             Marshal.Copy(rgch, 0, bufferPtr, rgch.Length);
 
-            VSBROWSEINFOW[] pBrowse = new VSBROWSEINFOW[1];
+            var pBrowse = new VSBROWSEINFOW[1];
             pBrowse[0] = new VSBROWSEINFOW
             {
                 lStructSize = (uint)Marshal.SizeOf(pBrowse[0]),
@@ -622,7 +626,7 @@ namespace NuGet.Options
 
             var browseInfo = new VSNSEBROWSEINFOW[1] { new VSNSEBROWSEINFOW() };
 
-            int ret = uiShell.GetDirectoryViaBrowseDlgEx(pBrowse, "", Resources.BrowseFolderDialogSelectButton, "", browseInfo);
+            var ret = uiShell.GetDirectoryViaBrowseDlgEx(pBrowse, "", Resources.BrowseFolderDialogSelectButton, "", browseInfo);
             if (ret == VSConstants.S_OK)
             {
                 var pathPtr = pBrowse[0].pwzDirName;
@@ -640,7 +644,7 @@ namespace NuGet.Options
         private string DetermineInitialDirectory()
         {
             // determine the inital directory to show in the folder dialog
-            string initialDir = NewPackageSource.Text;
+            var initialDir = NewPackageSource.Text;
 
             if (IsPathRootedSafe(initialDir)
                 && Directory.Exists(initialDir))

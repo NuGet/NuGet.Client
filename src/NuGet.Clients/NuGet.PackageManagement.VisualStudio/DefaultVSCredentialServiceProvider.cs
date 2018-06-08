@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
 using NuGet.Credentials;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
@@ -38,13 +38,12 @@ namespace NuGet.PackageManagement.VisualStudio
             _outputConsoleLogger = outputConsoleLogger ?? throw new ArgumentNullException(nameof(outputConsoleLogger));
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public async Task<NuGet.Configuration.ICredentialService> GetCredentialServiceAsync()
         {
             // Initialize the credential providers.
             var credentialProviders = new List<ICredentialProvider>();
             var dte = await _asyncServiceProvider.GetDTEAsync();
-            var webProxy = (IVsWebProxy)await _asyncServiceProvider.GetServiceAsync(typeof(SVsWebProxy));
+            var webProxy = await _asyncServiceProvider.GetServiceAsync<SVsWebProxy, IVsWebProxy>();
 
             TryAddCredentialProviders(
                 credentialProviders,
@@ -71,6 +70,12 @@ namespace NuGet.PackageManagement.VisualStudio
                     };
                 });
 
+            await TryAddCredentialProvidersAsync(
+                credentialProviders,
+                Strings.CredentialProviderFailed_PluginCredentialProvider,
+                async () => await (new SecureCredentialProviderBuilder(PluginManager.Instance, NullLogger.Instance).BuildAll())
+                );
+
             if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
             {
                 TryAddCredentialProviders(
@@ -85,9 +90,27 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Initialize the credential service.
-            var credentialService = new CredentialService(credentialProviders, nonInteractive: false);
+            var credentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => System.Threading.Tasks.Task.FromResult((IEnumerable<ICredentialProvider>)credentialProviders)), nonInteractive: false, handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
 
             return credentialService;
+        }
+
+        private async System.Threading.Tasks.Task TryAddCredentialProvidersAsync(
+            List<ICredentialProvider> credentialProviders,
+            string failureMessage,
+            Func<Task<IEnumerable<ICredentialProvider>>> factory)
+        {
+            try
+            {
+                foreach (var credentialProvider in await factory())
+                {
+                    credentialProviders.Add(credentialProvider);
+                }
+            }
+            catch (Exception exception)
+            {
+                LogCredentialProviderError(exception, failureMessage);
+            }
         }
 
         private void TryAddCredentialProviders(

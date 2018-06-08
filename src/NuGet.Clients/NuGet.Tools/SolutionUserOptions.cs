@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -80,9 +80,10 @@ namespace NuGetVSExtension
             }
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification ="NuGet/Home#4833 Baseline")]
         public bool LoadSettings()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
             if (solutionPersistence.LoadPackageUserOpts(this, NuGetOptionsStreamKey) != VSConstants.S_OK)
             {
@@ -92,9 +93,10 @@ namespace NuGetVSExtension
             return true;
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public bool PersistSettings()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
             if (solutionPersistence.SavePackageUserOpts(this, NuGetOptionsStreamKey) != VSConstants.S_OK)
             {
@@ -107,9 +109,10 @@ namespace NuGetVSExtension
         #region IVsPersistSolutionOpts
 
         // Called by the shell when a solution is opened and the SUO file is read.
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public int LoadUserOptions(IVsSolutionPersistence pPersistence, uint grfLoadOpts)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             pPersistence.LoadPackageUserOpts(this, NuGetOptionsStreamKey);
             return VSConstants.S_OK;
         }
@@ -141,9 +144,10 @@ namespace NuGetVSExtension
 
         // Called by the shell when the SUO file is saved. The provider calls the shell back to let it 
         // know which options keys it will use in the suo file.
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public int SaveUserOptions(IVsSolutionPersistence pPersistence)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             pPersistence.SavePackageUserOpts(this, NuGetOptionsStreamKey);
             return VSConstants.S_OK;
         }

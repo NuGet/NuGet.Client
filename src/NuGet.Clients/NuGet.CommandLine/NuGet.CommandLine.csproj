@@ -93,6 +93,7 @@
     <NuspecFile>NuGet.CommandLine.nuspec</NuspecFile>
     <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
     <NuspecBasePath>$(ArtifactsDirectory)$(VsixOutputDirName)</NuspecBasePath>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

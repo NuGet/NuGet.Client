@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,12 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// The current protocol version.
         /// </summary>
-        public static readonly SemanticVersion CurrentVersion = new SemanticVersion(major: 1, minor: 0, patch: 0);
+        public static readonly SemanticVersion CurrentVersion = new SemanticVersion(major: 2, minor: 0, patch: 0);
+
+        /// <summary>
+        /// The minimum supported protocol version.
+        /// </summary>
+        public static readonly SemanticVersion Version100 = new SemanticVersion(major: 1, minor: 0, patch: 0);
 
         /// <summary>
         /// The default handshake timeout.

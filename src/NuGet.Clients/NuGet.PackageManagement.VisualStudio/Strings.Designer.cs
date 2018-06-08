@@ -142,6 +142,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The plugin credential providers could not be loaded..
+        /// </summary>
+        public static string CredentialProviderFailed_PluginCredentialProvider {
+            get {
+                return ResourceManager.GetString("CredentialProviderFailed_PluginCredentialProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The Visual Studio or VSTS account provider failed to load..
         /// </summary>
         public static string CredentialProviderFailed_VisualStudioAccountProvider {

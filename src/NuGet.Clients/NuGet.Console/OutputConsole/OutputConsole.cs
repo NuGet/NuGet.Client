@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Windows.Media;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
 
 namespace NuGetConsole
@@ -21,11 +22,10 @@ namespace NuGetConsole
 
         private readonly IVsOutputWindow _vsOutputWindow;
         private readonly IVsUIShell _vsUiShell;
-        private readonly Lazy<IVsOutputWindowPane> _outputWindowPane;
+        private readonly AsyncLazy<IVsOutputWindowPane> _outputWindowPane;
 
-        private IVsOutputWindowPane VsOutputWindowPane => _outputWindowPane.Value;
+        private IVsOutputWindowPane VsOutputWindowPane => NuGetUIThreadHelper.JoinableTaskFactory.Run(_outputWindowPane.GetValueAsync);
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public OutputConsole(
             IVsOutputWindow vsOutputWindow,
             IVsUIShell vsUiShell)
@@ -43,10 +43,12 @@ namespace NuGetConsole
             _vsOutputWindow = vsOutputWindow;
             _vsUiShell = vsUiShell;
 
-            _outputWindowPane = new Lazy<IVsOutputWindowPane>(() =>
+            _outputWindowPane = new AsyncLazy<IVsOutputWindowPane>(async () =>
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 // create the Package Manager pane within the Output window
-                int hr = _vsOutputWindow.CreatePane(
+                var hr = _vsOutputWindow.CreatePane(
                     ref GuidList.guidNuGetOutputWindowPaneGuid,
                     Resources.OutputConsolePaneName,
                     fInitVisible: 1,
@@ -60,7 +62,8 @@ namespace NuGetConsole
                 ErrorHandler.ThrowOnFailure(hr);
 
                 return pane;
-            });
+
+            }, NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         #region IConsole
@@ -73,17 +76,21 @@ namespace NuGetConsole
 
         public int ConsoleWidth => DefaultConsoleWidth;
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Write(string text)
         {
-            if (String.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(text))
             {
                 return;
             }
 
             Start();
 
-            VsOutputWindowPane.OutputStringThreadSafe(text);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                VsOutputWindowPane.OutputStringThreadSafe(text);
+            });
         }
 
         public void Write(string text, Color? foreground, Color? background)
@@ -111,25 +118,32 @@ namespace NuGetConsole
         {
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Activate()
         {
-            IVsWindowFrame toolWindow = null;
-            _vsUiShell.FindToolWindow(0,
-                ref GuidList.guidVsWindowKindOutput,
-                out toolWindow);
-            toolWindow?.Show();
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            VsOutputWindowPane.Activate();
+                _vsUiShell.FindToolWindow(0,
+                    ref GuidList.guidVsWindowKindOutput,
+                    out var toolWindow);
+                toolWindow?.Show();
+
+                VsOutputWindowPane.Activate();
+            });
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Clear()
         {
             Start();
 
-            VsOutputWindowPane.Activate();
-            VsOutputWindowPane.Clear();
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                VsOutputWindowPane.Activate();
+                VsOutputWindowPane.Clear();
+            });
         }
 
         #endregion IConsole
@@ -140,7 +154,7 @@ namespace NuGetConsole
         {
             if (!IsStartCompleted)
             {
-                var ignore = _outputWindowPane.Value;
+                var ignore = VsOutputWindowPane;
                 StartCompleted?.Invoke(this, EventArgs.Empty);
             }
 

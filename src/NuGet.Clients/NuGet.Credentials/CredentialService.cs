@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.Credentials
@@ -40,18 +41,16 @@ namespace NuGet.Credentials
         /// </summary>
         /// <param name="providers">All available credential providers.</param>
         /// <param name="nonInteractive">If true, the nonInteractive flag will be passed to providers.
+        /// <param name="handlesDefaultCredentials"> If true, specifies that this credential service handles default credentials as well.
+        /// That means that DefaultCredentialsCredentialProvider instance is in the list of providers. It's set explicitly as a perfomance optimization.</param>
         /// NonInteractive requests must not promt the user for credentials.</param>
-        public CredentialService(IEnumerable<ICredentialProvider> providers, bool nonInteractive)
+        public CredentialService(AsyncLazy<IEnumerable<ICredentialProvider>> providers, bool nonInteractive, bool handlesDefaultCredentials)
         {
-            if (providers == null)
-            {
-                throw new ArgumentNullException(nameof(providers));
-            }
-
+            _providers = providers ?? throw new ArgumentNullException(nameof(providers));
             _nonInteractive = nonInteractive;
-            Providers = new List<ICredentialProvider>(providers);
-            HandlesDefaultCredentials = Providers.Any(provider => provider is DefaultCredentialsCredentialProvider);
+            HandlesDefaultCredentials = handlesDefaultCredentials;
         }
+
 
         /// <summary>
         /// Provides credentials for http requests.
@@ -86,7 +85,7 @@ namespace NuGet.Credentials
 
             ICredentials creds = null;
 
-            foreach (var provider in Providers)
+            foreach (var provider in await _providers)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -189,7 +188,8 @@ namespace NuGet.Credentials
         /// <summary>
         /// Gets the currently configured providers.
         /// </summary>
-        private IEnumerable<ICredentialProvider> Providers { get; }
+        private AsyncLazy<IEnumerable<ICredentialProvider>> _providers { get; }
+
 
         private bool TryFromCredentialCache(Uri uri, CredentialRequestType type, bool isRetry, ICredentialProvider provider,
             out CredentialResponse credentials)

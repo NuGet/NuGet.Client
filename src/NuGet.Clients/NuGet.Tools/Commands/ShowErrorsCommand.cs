@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
 
@@ -19,7 +20,6 @@ namespace NuGetVSExtension
         private readonly Lazy<IVsOutputWindow> _vsOutputWindow;
         private readonly Lazy<IVsUIShell> _vsUiShell;
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public ShowErrorsCommand(IServiceProvider serviceProvider)
         {
             if (serviceProvider == null)
@@ -59,18 +59,22 @@ namespace NuGetVSExtension
             return _vsUiShell?.Value != null && _vsOutputWindow?.Value != null;
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Execute(object parameter)
         {
-            IVsWindowFrame toolWindow = null;
-            _vsUiShell.Value.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
-            toolWindow?.Show();
-
-            IVsOutputWindowPane pane;
-            if (_vsOutputWindow.Value.GetPane(ref NuGetConsole.GuidList.guidNuGetOutputWindowPaneGuid, out pane) == VSConstants.S_OK)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                pane.Activate();
-            }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                IVsWindowFrame toolWindow = null;
+                _vsUiShell.Value.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
+                toolWindow?.Show();
+
+                IVsOutputWindowPane pane;
+                if (_vsOutputWindow.Value.GetPane(ref NuGetConsole.GuidList.guidNuGetOutputWindowPaneGuid, out pane) == VSConstants.S_OK)
+                {
+                    pane.Activate();
+                }
+            });
         }
     }
 }

@@ -6,23 +6,24 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Test
+namespace Test.Utility
 {
-    internal class TestNuGetProject : NuGetProject
+    public class TestNuGetProject : NuGetProject
     {
-        IList<Packaging.PackageReference> _installedPackages;
+        readonly IList<PackageReference> _installedPackages;
 
-        public TestNuGetProject(IList<Packaging.PackageReference> installedPackages)
+        public TestNuGetProject(IList<PackageReference> installedPackages)
             : base(CreateMetadata())
         {
             _installedPackages = installedPackages;
         }
 
-        public TestNuGetProject(string projectName, IList<Packaging.PackageReference> installedPackages)
+        public TestNuGetProject(string projectName, IList<PackageReference> installedPackages)
             : base(CreateMetadata(projectName))
         {
             _installedPackages = installedPackages;
@@ -43,9 +44,9 @@ namespace NuGet.Test
             };
         }
 
-        public override Task<IEnumerable<Packaging.PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
+        public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            return Task.FromResult<IEnumerable<Packaging.PackageReference>>(_installedPackages);
+            return Task.FromResult<IEnumerable<PackageReference>>(_installedPackages);
         }
 
         public override Task<bool> InstallPackageAsync(

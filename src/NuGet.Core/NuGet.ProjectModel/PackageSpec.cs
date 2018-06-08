@@ -91,6 +91,8 @@ namespace NuGet.ProjectModel
 
         public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; } = new List<TargetFrameworkInformation>();
 
+        public string ProjectId { get; set; }
+
         public RuntimeGraph RuntimeGraph { get; set; } = new RuntimeGraph();
 
         /// <summary>
@@ -136,6 +138,7 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(TargetFrameworks);
             hashCode.AddObject(RuntimeGraph);
             hashCode.AddObject(RestoreMetadata);
+            hashCode.AddObject(ProjectId);
 
             return hashCode.CombinedHash;
         }
@@ -158,7 +161,6 @@ namespace NuGet.ProjectModel
             }
 
             // Name and FilePath are not used for comparison since they are not serialized to JSON.
-
             return Title == other.Title &&
                    EqualityUtility.EqualsWithNullCheck(Version, other.Version) &&
                    IsDefaultVersion == other.IsDefaultVersion &&
@@ -174,6 +176,7 @@ namespace NuGet.ProjectModel
                    RequireLicenseAcceptance == other.RequireLicenseAcceptance &&
                    Copyright == other.Copyright &&
                    Language == other.Language &&
+                   ProjectId == other.ProjectId &&
                    EqualityUtility.EqualsWithNullCheck(BuildOptions, other.BuildOptions) &&
                    EqualityUtility.SequenceEqualWithNullCheck(Tags, other.Tags) &&
                    EqualityUtility.SequenceEqualWithNullCheck(ContentFiles, other.ContentFiles) &&
@@ -220,6 +223,7 @@ namespace NuGet.ProjectModel
             spec.RuntimeGraph = RuntimeGraph?.Clone();
             spec.RestoreSettings = RestoreSettings?.Clone();
             spec.RestoreMetadata = RestoreMetadata?.Clone();
+            spec.ProjectId = ProjectId;
             return spec;
         }
 

@@ -9,12 +9,12 @@ using System.Xml.Linq;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
     public sealed class NuGetUIProjectContext : INuGetProjectContext
     {
-        private readonly Dispatcher _uiDispatcher;
         private readonly INuGetUILogger _logger;
 
         public FileConflictAction FileConflictAction { get; set; }
@@ -35,7 +35,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             _logger = logger;
-            _uiDispatcher = Dispatcher.CurrentDispatcher;
             SourceControlManagerProvider = sourceControlManagerProvider;
 
             if (commonOperations != null)
@@ -50,27 +49,24 @@ namespace NuGet.PackageManagement.UI
         }
 
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD001", Justification = "NuGet/Home#4833 Baseline")]
         public FileConflictAction ShowFileConflictResolution(string message)
         {
-            if (!_uiDispatcher.CheckAccess())
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                var result = _uiDispatcher.Invoke(
-                    new Func<string, FileConflictAction>(ShowFileConflictResolution),
-                    message);
-                return (FileConflictAction)result;
-            }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var fileConflictDialog = new FileConflictDialog
+                var fileConflictDialog = new FileConflictDialog
                 {
                     Question = message
                 };
 
-            if (fileConflictDialog.ShowModal() == true)
-            {
-                return fileConflictDialog.UserSelection;
-            }
-            return FileConflictAction.IgnoreAll;
+                if (fileConflictDialog.ShowModal() == true)
+                {
+                    return fileConflictDialog.UserSelection;
+                }
+
+                return FileConflictAction.IgnoreAll;
+            });
         }
 
         public FileConflictAction ResolveFileConflict(string message)

@@ -159,5 +159,14 @@ namespace NuGet.Credentials {
                 return ResourceManager.GetString("ProviderException_MalformedResponse", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Using {0} as a credential provider plugin..
+        /// </summary>
+        internal static string SecurePluginNotice_UsingPluginAsProvider {
+            get {
+                return ResourceManager.GetString("SecurePluginNotice_UsingPluginAsProvider", resourceCulture);
+            }
+        }
     }
 }

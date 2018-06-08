@@ -64,7 +64,7 @@ namespace Test.Utility
             return msBuildNuGetProject;
         }
 
-        public NuGetProject AddBuildIntegratedProject(string projectName = null, NuGetFramework projectTargetFramework = null)
+        public NuGetProject AddBuildIntegratedProject(string projectName = null, NuGetFramework projectTargetFramework = null, JObject json = null)
         {
             var existingProject = Task.Run(async () => await GetNuGetProjectAsync(projectName));
             existingProject.Wait();
@@ -77,8 +77,9 @@ namespace Test.Utility
             projectName = string.IsNullOrEmpty(projectName) ? Guid.NewGuid().ToString() : projectName;
             var projectFullPath = Path.Combine(SolutionDirectory, projectName);
             Directory.CreateDirectory(projectFullPath);
+
             var projectJsonPath = Path.Combine(projectFullPath, "project.json");
-            CreateConfigJson(projectJsonPath);
+            CreateConfigJson(projectJsonPath, json?.ToString() ?? BasicConfig.ToString());
 
             projectTargetFramework = projectTargetFramework ?? NuGetFramework.Parse("net46");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext(),
@@ -87,39 +88,32 @@ namespace Test.Utility
             var projectFilePath = Path.Combine(projectFullPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
             NuGetProject nuGetProject = new ProjectJsonNuGetProject(projectJsonPath, projectFilePath);
             NuGetProjects.Add(nuGetProject);
+
             return nuGetProject;
         }
 
-        private static void CreateConfigJson(string path)
+        private static void CreateConfigJson(string path, string config)
         {
             using (var writer = new StreamWriter(path))
             {
-                writer.Write(BasicConfig.ToString());
+                writer.Write(config);
             }
         }
 
-        private static JObject BasicConfig
+        private static JObject BasicConfig => new JObject
         {
-            get
+            ["dependencies"] = new JObject
             {
-                var json = new JObject();
+                new JProperty("entityframework", "7.0.0-beta-*")
+            },
 
-                var frameworks = new JObject();
-                frameworks["net46"] = new JObject();
+            ["frameworks"] = new JObject
+            {
+                ["net46"] = new JObject()
+            },
 
-                var deps = new JObject();
-                var prop = new JProperty("entityframework", "7.0.0-beta-*");
-                deps.Add(prop);
-
-                json["dependencies"] = deps;
-
-                json["frameworks"] = frameworks;
-
-                json.Add("runtimes", JObject.Parse("{ \"win-anycpu\": { } }"));
-
-                return json;
-            }
-        }
+            ["runtimes"] = JObject.Parse("{ \"win-anycpu\": { } }")
+        };
 
         public Task<NuGetProject> GetNuGetProjectAsync(string nuGetProjectSafeName)
         {

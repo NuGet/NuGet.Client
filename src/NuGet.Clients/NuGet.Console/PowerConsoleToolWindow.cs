@@ -33,7 +33,6 @@ namespace NuGetConsole.Implementation
     /// This class implements the tool window.
     /// </summary>
     [Guid("0AD07096-BBA9-4900-A651-0598D26F6D24")]
-    [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
     public sealed class PowerConsoleToolWindow : ToolWindowPane, IOleCommandTarget, IPowerConsoleService
     {
         private JoinableTask _loadTask;
@@ -146,20 +145,22 @@ namespace NuGetConsole.Implementation
         {
             base.OnToolWindowCreated();
 
-            // Register key bindings to use in the editor
-            var windowFrame = (IVsWindowFrame)Frame;
-            if (windowFrame != null)
-            {
-                // Set F1 help keyword
-                WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmc);
-            }
-            var cmdUi = VSConstants.GUID_TextEditorFactory;
-            windowFrame.SetGuidProperty((int)__VSFPROPID.VSFPROPID_InheritKeyBindings, ref cmdUi);
-
             // start a task when VS us idle and dont await it immediately
-            _loadTask = ThreadHelper.JoinableTaskFactory.StartOnIdle(
+            _loadTask = NuGetUIThreadHelper.JoinableTaskFactory.StartOnIdle(
                 async () =>
                 {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    // Register key bindings to use in the editor
+                    var windowFrame = (IVsWindowFrame)Frame;
+                    if (windowFrame != null)
+                    {
+                        // Set F1 help keyword
+                        WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmc);
+                    }
+                    var cmdUi = VSConstants.GUID_TextEditorFactory;
+                    windowFrame.SetGuidProperty((int)__VSFPROPID.VSFPROPID_InheritKeyBindings, ref cmdUi);
+
                     // Load
                     await Task.Run(LoadConsoleEditorAsync);
 
@@ -185,6 +186,8 @@ namespace NuGetConsole.Implementation
         /// <returns></returns>
         protected override bool PreProcessMessage(ref Message m)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Now, await for the _loadTask which was started in OnToolWindowCreated API
             if (_loadTask != null && _loadTask.IsCompleted)
             {
@@ -531,8 +534,13 @@ namespace NuGetConsole.Implementation
 
             ConsoleParentPane.NotifyInitializationCompleted();
 
-            // force the UI to update the toolbar
-            VsUIShell.UpdateCommandUI(0 /* false = update UI asynchronously */);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // force the UI to update the toolbar
+                VsUIShell.UpdateCommandUI(0 /* false = update UI asynchronously */);
+            });
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleLoaded);
         }

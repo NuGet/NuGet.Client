@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using NuGet.Protocol;
 using NuGet.Configuration;
 using Xunit;
 
@@ -169,7 +168,7 @@ namespace NuGet.Protocol.Tests
             // Arrange
             var packageSource = new PackageSource("http://package.source.net");
             var clientHandler = new HttpClientHandler();
-            
+
             var credentialService = Mock.Of<ICredentialService>();
             Mock.Get(credentialService)
                 .Setup(

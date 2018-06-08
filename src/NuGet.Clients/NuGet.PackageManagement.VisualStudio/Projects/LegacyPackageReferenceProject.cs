@@ -337,6 +337,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 ContentFiles = new string[] { },
                 FilePath = _projectFullPath,
                 RuntimeGraph = runtimeGraph,
+                ProjectId = GetProjectId(),
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
                     ProjectStyle = ProjectStyle.PackageReference,

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
@@ -35,19 +34,8 @@ namespace NuGet.Protocol
             ICredentialService credentialService)
             : base(clientHandler)
         {
-            if (packageSource == null)
-            {
-                throw new ArgumentNullException(nameof(packageSource));
-            }
-
-            _packageSource = packageSource;
-
-            if (clientHandler == null)
-            {
-                throw new ArgumentNullException(nameof(clientHandler));
-            }
-
-            _clientHandler = clientHandler;
+            _packageSource = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
+            _clientHandler = clientHandler ?? throw new ArgumentNullException(nameof(clientHandler));
 
             // credential service is optional as credentials may be attached to a package source
             _credentialService = credentialService;
@@ -171,7 +159,7 @@ namespace NuGet.Protocol
                         Strings.Http_CredentialsForForbidden,
                         _packageSource.Source);
                 }
-                
+
                 var promptCredentials = await PromptForCredentialsAsync(
                     type,
                     message,
@@ -229,7 +217,7 @@ namespace NuGet.Protocol
 
                 promptCredentials = await _credentialService
                     .GetCredentialsAsync(_packageSource.SourceUri, proxy, type, message, token);
-                
+
                 if (promptCredentials == null)
                 {
                     // If this is the case, this means none of the credential providers were able to
@@ -252,8 +240,8 @@ namespace NuGet.Protocol
                 // If this is the case, this means there was a fatal exception when interacting
                 // with the credential service (or its underlying credential providers). Either way,
                 // block asking for credentials for the live of this operation.
-                log.LogError(ExceptionUtilities.DisplayMessage(e));                
-                promptCredentials = null;                
+                log.LogError(ExceptionUtilities.DisplayMessage(e));
+                promptCredentials = null;
                 authState.Block();
             }
             finally

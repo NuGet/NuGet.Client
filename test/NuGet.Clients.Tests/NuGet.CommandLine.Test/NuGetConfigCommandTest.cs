@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -99,7 +99,7 @@ namespace NuGet.CommandLine.Test
         }
 
 
-        [Fact(Skip="Expected to fail until plugins loaded as extensions fix is in")]
+        [Fact(Skip = "Expected to fail until plugins loaded as extensions fix is in")]
         public void ConfigCommand_MisconfiguredPluginCredentialProviderDoesNotBlockConfigCommand()
         {
             using (var testFolder = TestDirectory.Create())

@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Credentials;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -77,6 +78,20 @@ namespace NuGet.CommandLine
 
         protected internal CoreV2.NuGet.IPackageRepositoryFactory RepositoryFactory { get; set; }
 
+        private Lazy<string> MsBuildDirectory {
+            get
+            {
+                if (_defaultMsBuildDirectory == null)
+                {
+                    _defaultMsBuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(null, null, Console);
+
+                }
+                return _defaultMsBuildDirectory;
+            }
+        }
+
+        private Lazy<string> _defaultMsBuildDirectory;
+
         public CommandAttribute CommandAttribute
         {
             get
@@ -106,7 +121,7 @@ namespace NuGet.CommandLine
                 {
                     string configFileName = null;
 
-                    PackCommand packCommand = this as PackCommand;
+                    var packCommand = this as PackCommand;
                     if (packCommand != null && !string.IsNullOrEmpty(packCommand.ConfigFile))
                     {
                         configFileName = packCommand.ConfigFile;
@@ -129,6 +144,7 @@ namespace NuGet.CommandLine
                 }
 
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
+
                 SetDefaultCredentialProvider();
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
 
@@ -163,13 +179,19 @@ namespace NuGet.CommandLine
             get { return Console.Verbosity == Verbosity.Detailed; }
         }
 
+        protected virtual void SetDefaultCredentialProvider()
+        {
+            SetDefaultCredentialProvider(MsBuildDirectory);
+        }
+
         /// <summary>
         /// Set default credential provider for the HttpClient, which is used by V2 sources.
         /// Also set up authenticated proxy handling for V3 sources.
         /// </summary>
-        protected void SetDefaultCredentialProvider()
+        protected void SetDefaultCredentialProvider(Lazy<string> msbuildDirectory)
         {
-            CredentialService = new CredentialService(GetCredentialProviders(), NonInteractive);
+            Protocol.Plugins.PluginDiscoveryUtility.InternalPluginDiscoveryRoot = new Lazy<string>(() => Protocol.Plugins.PluginDiscoveryUtility.GetInternalPluginRelativeToMSBuildExe(msbuildDirectory.Value));
+            CredentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => GetCredentialProvidersAsync()), NonInteractive, handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
 
             CoreV2.NuGet.HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
 
@@ -182,18 +204,21 @@ namespace NuGet.CommandLine
             };
         }
 
-        private IEnumerable<NuGet.Credentials.ICredentialProvider> GetCredentialProviders()
+        private async Task<IEnumerable<ICredentialProvider>> GetCredentialProvidersAsync()
         {
             var extensionLocator = new ExtensionLocator();
-            var providers = new List<Credentials.ICredentialProvider>();
+            var providers = new List<ICredentialProvider>();
             var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings, Console)
                 .BuildAll(Verbosity.ToString())
                 .ToList();
+            var securePluginProviders =  await (new SecureCredentialProviderBuilder(PluginManager.Instance, Console)).BuildAll();
 
-            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console))); 
-            if (pluginProviders.Any())
+            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
+            providers.AddRange(securePluginProviders);
+            providers.AddRange(pluginProviders);
+
+            if (pluginProviders.Any() || securePluginProviders.Any())
             {
-                providers.AddRange(pluginProviders);
                 if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
                 {
                     providers.Add(new DefaultCredentialsCredentialProvider());

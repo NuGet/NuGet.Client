@@ -760,41 +760,5 @@ namespace NuGet.Commands.Test
                 }
             }
         }
-
-        [Fact]
-        public async Task RestoreRunner_WarnIfNoProjectAsync()
-        {
-            // If an input folder is provided to RestoreRunner that doesn't contain a project,
-            // it should report an error.
-
-            using (var workingDir = TestDirectory.Create())
-            {
-                // Arrange
-                var logger = new TestLogger();
-                var providerCache = new RestoreCommandProvidersCache();
-                using (var cacheContext = new SourceCacheContext())
-                {
-                    var restoreContext = new RestoreArgs()
-                    {
-                        CacheContext = cacheContext,
-                        DisableParallel = true,
-                        Inputs = new List<string>() { workingDir },
-                        Log = logger,
-                        RequestProviders = new List<IRestoreRequestProvider>()
-                        {
-                            new ProjectJsonRestoreRequestProvider(providerCache)
-                        }
-                    };
-
-                    // Act
-                    var summaries = await RestoreRunner.RunAsync(restoreContext);
-
-                    // Assert
-                    Assert.Equal(0, summaries.Count);
-                    var matchingError = logger.Messages.ToList().Find(error => error.Contains(workingDir));
-                    Assert.NotNull(matchingError);
-                }
-            }
-        }
     }
 }

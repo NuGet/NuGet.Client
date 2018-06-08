@@ -144,16 +144,29 @@ namespace NuGet.Protocol.Plugins
             ConnectionOptions options,
             CancellationToken sessionCancellationToken)
         {
+            var args = string.Join(" ", arguments);
+#if IS_DESKTOP
             var startInfo = new ProcessStartInfo(filePath)
             {
-                Arguments = string.Join(" ", arguments),
+                Arguments = args,
                 UseShellExecute = false,
                 RedirectStandardError = false,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
             };
-
+#else
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH"),
+                Arguments = $"\"{filePath}\" " + args,
+                UseShellExecute = false,
+                RedirectStandardError = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
+            };
+#endif
             var process = Process.Start(startInfo);
             var sender = new Sender(process.StandardInput);
             var receiver = new StandardOutputReceiver(new PluginProcess(process));

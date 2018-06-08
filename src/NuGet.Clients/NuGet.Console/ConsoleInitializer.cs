@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Security;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Threading;
+using NuGet.VisualStudio;
 using VsPackage = Microsoft.VisualStudio.Shell.Package;
 
 namespace NuGetConsole
@@ -15,12 +17,11 @@ namespace NuGetConsole
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class ConsoleInitializer : IConsoleInitializer
     {
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD011", Justification = "NuGet/Home#4833 Baseline")]
-        private readonly Lazy<Task<Action>> _initializeTask = new Lazy<Task<Action>>(GetInitializeTask);
+        private readonly AsyncLazy<Action> _initializeTask = new AsyncLazy<Action>(GetInitializeTask, NuGetUIThreadHelper.JoinableTaskFactory);
 
         public Task<Action> Initialize()
         {
-            return _initializeTask.Value;
+            return _initializeTask.GetValueAsync();
         }
 
         private static Task<Action> GetInitializeTask()

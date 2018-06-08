@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,10 +7,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
-    [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD001")]
     public partial class ProductUpdateBar : UserControl
     {
         private readonly IProductUpdateService _productUpdateService;
@@ -46,7 +46,11 @@ namespace NuGet.PackageManagement.UI
         private void OnUpdateAvailable(object sender, ProductUpdateAvailableEventArgs e)
         {
             // this event handler will be invoked on background thread. Has to use Dispatcher to show update bar.
-            Dispatcher.BeginInvoke(new Action<Version, Version>(ShowUpdateBar), e.CurrentVersion, e.NewVersion);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                ShowUpdateBar(e.CurrentVersion, e.NewVersion);
+            });
         }
 
         private void OnUpdateLinkClick(object sender, RoutedEventArgs e)
@@ -56,7 +60,10 @@ namespace NuGet.PackageManagement.UI
             UpdateStarting(this, EventArgs.Empty);
 
             // invoke with priority as Background so that our window is closed first before the Update method is called.
-            Dispatcher.BeginInvoke(new Action(_productUpdateService.Update), DispatcherPriority.Background);
+            NuGetUIThreadHelper.JoinableTaskFactory.StartOnIdle(() =>
+            {
+                _productUpdateService.Update();
+            });
         }
 
         private void OnDeclineUpdateLinkClick(object sender, RoutedEventArgs e)

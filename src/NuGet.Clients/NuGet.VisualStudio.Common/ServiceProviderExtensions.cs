@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -60,7 +60,15 @@ namespace NuGet.VisualStudio
             this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
             where TInterface : class
         {
-            return await site.GetServiceAsync(typeof(TService)) as TInterface;
+            var service = await site.GetServiceAsync(typeof(TService));
+
+            if (service != null)
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                return service as TInterface;
+            }
+
+            return null;
         }
     }
 }
