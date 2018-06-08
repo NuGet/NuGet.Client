@@ -18,7 +18,6 @@ namespace NuGet.Protocol.Plugins
             return InternalPluginDiscoveryRoot?.Value ??
                 GetNuGetPluginsDirectoryRelativeToNuGetAssembly(typeof(PluginDiscoveryUtility).GetTypeInfo().Assembly.Location); // NuGet.*.dll
         }
-
 #if IS_DESKTOP
         /// <summary>
         /// Given Visual Studio 2017 MSBuild.exe path, return the NuGet plugins directory which is in CommonExtensions\NuGet\NuGetPlugins
@@ -30,10 +29,10 @@ namespace NuGet.Protocol.Plugins
         {
             var parentDirectory = "..";
             return !string.IsNullOrEmpty(msbuildExePath) ?
-                PathUtility.GetAbsolutePath(
+                Path.GetFullPath(Path.Combine(
                     Path.GetDirectoryName(msbuildExePath),
                     Path.Combine(parentDirectory, parentDirectory, parentDirectory, "Common7", "IDE", "CommonExtensions", "Microsoft", "NuGet", NuGetPluginsDirectory)
-                    ) :
+                    )) :
                 null;
         }
 #endif
