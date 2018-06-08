@@ -14,27 +14,44 @@ namespace NuGet.Packaging.Signing
     {
         public static SignatureVerificationStatus GetSignatureVerificationStatus(SignatureVerificationStatusFlags flags)
         {
-            if ((flags & SignatureVerificationStatusFlags.Suspect) != 0)
-            {
-                return SignatureVerificationStatus.Suspect;
-            }
-
-            if ((flags & SignatureVerificationStatusFlags.Illegal) != 0)
-            {
-                return SignatureVerificationStatus.Illegal;
-            }
-
-            if ((flags & SignatureVerificationStatusFlags.Untrusted) != 0)
-            {
-                return SignatureVerificationStatus.Untrusted;
-            }
-
             if (flags == SignatureVerificationStatusFlags.NoErrors)
             {
                 return SignatureVerificationStatus.Valid;
             }
 
+            if ((flags & SignatureVerificationStatusFlags.Suspect) != 0)
+            {
+                return SignatureVerificationStatus.Suspect;
+            }
+
+            // If the only flags are these known ones, return disallowed.
+            if ((flags & ~(SignatureVerificationStatusFlags.Illegal |
+                SignatureVerificationStatusFlags.Untrusted |
+                SignatureVerificationStatusFlags.NoValidTimestamp |
+                SignatureVerificationStatusFlags.MultipleTimestamps)) == 0)
+            {
+                return SignatureVerificationStatus.Disallowed;
+            }
+
             return SignatureVerificationStatus.Unknown;
+        }
+
+        public static bool IsVerificationTarget(SignatureType signatureType, VerificationTarget target)
+        {
+            switch (signatureType)
+            {
+                case SignatureType.Unknown:
+                    return target.HasFlag(VerificationTarget.Unknown);
+
+                case SignatureType.Author:
+                    return target.HasFlag(VerificationTarget.Author);
+
+                case SignatureType.Repository:
+                    return target.HasFlag(VerificationTarget.Repository);
+
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         internal static SignatureVerificationStatusFlags ValidateSigningCertificate(X509Certificate2 certificate, bool treatIssuesAsErrors, string signatureFriendlyName, List<SignatureLog> issues)

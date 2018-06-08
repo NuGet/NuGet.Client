@@ -52,9 +52,12 @@ namespace NuGet.Packaging.FuncTest
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
+                reportUnknownRevocation: true,
                 allowNoClientCertificateList: true,
                 allowNoRepositoryCertificateList: true,
-                alwaysVerifyCountersignature: false);
+                verificationTarget: VerificationTarget.All,
+                signaturePlacement: SignaturePlacement.Any,
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary);
         }
 
         [CIOnlyFact]

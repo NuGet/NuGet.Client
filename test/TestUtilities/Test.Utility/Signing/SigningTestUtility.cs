@@ -48,7 +48,6 @@ namespace Test.Utility.Signing
         /// </summary>
         public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorForCodeSigningEkuCert = delegate (X509V3CertificateGenerator gen)
         {
-            // CodeSigning EKU
             var usages = new[] { KeyPurposeID.IdKPCodeSigning };
 
             gen.AddExtension(
@@ -63,7 +62,6 @@ namespace Test.Utility.Signing
         /// </summary>
         public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorExpiredCert = delegate (X509V3CertificateGenerator gen)
         {
-            // CodeSigning EKU
             var usages = new[] { KeyPurposeID.IdKPCodeSigning };
 
             gen.AddExtension(
@@ -81,7 +79,6 @@ namespace Test.Utility.Signing
         /// </summary>
         public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorNotYetValidCert = delegate (X509V3CertificateGenerator gen)
         {
-            // CodeSigning EKU
             var usages = new[] { KeyPurposeID.IdKPCodeSigning };
 
             gen.AddExtension(
@@ -98,11 +95,10 @@ namespace Test.Utility.Signing
 
         /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().
-        /// The generator will create a certificate that is valid but will expire in a 15 seconds
+        /// The generator will create a certificate that is valid but will expire in 10 seconds.
         /// </summary>
-        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorExpireIn5Seconds = delegate (X509V3CertificateGenerator gen)
+        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorExpireIn10Seconds = delegate (X509V3CertificateGenerator gen)
         {
-            // CodeSigning EKU
             var usages = new[] { KeyPurposeID.IdKPCodeSigning };
 
             gen.AddExtension(
@@ -110,8 +106,8 @@ namespace Test.Utility.Signing
                 critical: true,
                 extensionValue: new ExtendedKeyUsage(usages));
 
-            var notBefore = DateTime.UtcNow.Subtract(TimeSpan.FromHours(1));
-            var notAfter = DateTime.UtcNow.Add(TimeSpan.FromSeconds(5));
+            var notBefore = DateTime.UtcNow.AddHours(-1);
+            var notAfter = DateTime.UtcNow.AddSeconds(10);
 
             gen.SetNotBefore(notBefore);
             gen.SetNotAfter(notAfter);
@@ -534,9 +530,9 @@ namespace Test.Utility.Signing
             return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
         }
 
-        public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatExpiresIn5Seconds()
+        public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatExpiresIn10Seconds()
         {
-            var actionGenerator = CertificateModificationGeneratorExpireIn5Seconds;
+            var actionGenerator = CertificateModificationGeneratorExpireIn10Seconds;
 
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
@@ -551,11 +547,14 @@ namespace Test.Utility.Signing
                 first.AllowMultipleTimestamps == second.AllowMultipleTimestamps &&
                 first.AllowNoTimestamp == second.AllowNoTimestamp &&
                 first.AllowUnknownRevocation == second.AllowUnknownRevocation &&
+                first.ReportUnknownRevocation == second.ReportUnknownRevocation &&
                 first.AllowUnsigned == second.AllowUnsigned &&
                 first.AllowUntrusted == second.AllowUntrusted &&
                 first.AllowNoRepositoryCertificateList == second.AllowNoRepositoryCertificateList &&
                 first.AllowNoClientCertificateList == second.AllowNoClientCertificateList &&
-                first.AlwaysVerifyCountersignature == second.AlwaysVerifyCountersignature &&
+                first.VerificationTarget == second.VerificationTarget &&
+                first.SignaturePlacement == second.SignaturePlacement &&
+                first.RepositoryCountersignatureVerificationBehavior == second.RepositoryCountersignatureVerificationBehavior &&
                 AreCertificateHashAllowListEqual(first.ClientCertificateList, second.ClientCertificateList) &&
                 AreCertificateHashAllowListEqual(first.RepositoryCertificateList, second.RepositoryCertificateList);
         }

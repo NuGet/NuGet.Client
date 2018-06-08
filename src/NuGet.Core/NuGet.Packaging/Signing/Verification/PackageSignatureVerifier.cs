@@ -63,7 +63,9 @@ namespace NuGet.Packaging.Signing
                             SignatureLog.Issue(!settings.AllowIllegal, e.Code, e.Message),
                             SignatureLog.DebugLog(e.ToString())
                         };
-                        trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Illegal, issues));
+                        trustResults.Add(new InvalidSignaturePackageVerificationResult(
+                            settings.AllowIllegal ? SignatureVerificationStatus.Valid : SignatureVerificationStatus.Disallowed,
+                            issues));
                         valid = settings.AllowIllegal;
                     }
                     catch (CryptographicException e)
@@ -73,7 +75,9 @@ namespace NuGet.Packaging.Signing
                             SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3003, Strings.ErrorPackageSignatureInvalid),
                             SignatureLog.DebugLog(e.ToString())
                         };
-                        trustResults.Add(new InvalidSignaturePackageVerificationResult(SignatureVerificationStatus.Illegal, issues));
+                        trustResults.Add(new InvalidSignaturePackageVerificationResult(
+                            settings.AllowIllegal ? SignatureVerificationStatus.Valid : SignatureVerificationStatus.Disallowed,
+                            issues));
                         valid = settings.AllowIllegal;
                     }
                 }
@@ -85,7 +89,9 @@ namespace NuGet.Packaging.Signing
                 else
                 {
                     var issues = new[] { SignatureLog.Issue(fatal: true, code: NuGetLogCode.NU3004, message: Strings.ErrorPackageNotSigned) };
-                    trustResults.Add(new UnsignedPackageVerificationResult(SignatureVerificationStatus.Illegal, issues));
+                    trustResults.Add(new UnsignedPackageVerificationResult(
+                        settings.AllowIllegal ? SignatureVerificationStatus.Valid : SignatureVerificationStatus.Disallowed,
+                        issues));
                     valid = false;
                 }
 
@@ -101,13 +107,8 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         private static bool IsValid(IEnumerable<PackageVerificationResult> verificationResults, SignedPackageVerifierSettings settings)
         {
-            var hasItems = verificationResults.Any();
-            var valid = verificationResults.All(e =>
-                e.Trust == SignatureVerificationStatus.Valid ||
-                (settings.AllowIllegal && SignatureVerificationStatus.Illegal == e.Trust) ||
-                (settings.AllowUntrusted && SignatureVerificationStatus.Untrusted == e.Trust));
-
-            return valid && hasItems;
+            return verificationResults.Any() &&
+                verificationResults.All(e => e.Trust == SignatureVerificationStatus.Valid);
         }
     }
 }

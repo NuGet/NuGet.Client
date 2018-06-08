@@ -14,11 +14,16 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// The primary signature.
         /// </summary>
-        PrimarySignature = 0x01,
+        PrimarySignature = 1 << 0,
 
         /// <summary>
         /// A countersignature on the primary signature.
         /// </summary>
-        Countersignature = 0x10
+        Countersignature = 1 << 1,
+
+        /// <summary>
+        /// A primary signature or a countersignature.
+        /// </summary>
+        Any = PrimarySignature | Countersignature
     }
 }

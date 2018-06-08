@@ -173,7 +173,7 @@ namespace NuGet.Tests.Apex
 
             logger.LogInformation($"Matches: {matches.Count}");
 
-            matches.Any().Should().BeFalse($"A PackageReference with {packageName}/{packageVersion} was not found in {project.FullPath}");
+            matches.Any().Should().BeFalse($"A PackageReference with {packageName}/{packageVersion} was found in {project.FullPath}");
         }
 
         public static void AssertPackageReferenceDoesNotExist(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, ILogger logger)
@@ -186,7 +186,7 @@ namespace NuGet.Tests.Apex
 
             logger.LogInformation($"Matches: {matches.Count}");
 
-            matches.Any().Should().BeFalse($"A PackageReference for {packageName} was not found in {project.FullPath}");
+            matches.Any().Should().BeFalse($"A PackageReference for {packageName} was found in {project.FullPath}");
         }
 
         public static List<LibraryDependency> GetPackageReferences(ProjectTestExtension project)
@@ -264,7 +264,7 @@ namespace NuGet.Tests.Apex
             var inAssetsFile = IsPackageInstalledInAssetsFile(assetsFilePath, packageName, packageVersion);
             logger.LogInformation($"Exists: {inAssetsFile}");
 
-            inAssetsFile.Should().BeFalse(AppendErrors($"{packageName}/{packageVersion} should be installed in {project.Name}", visualStudio));
+            inAssetsFile.Should().BeFalse(AppendErrors($"{packageName}/{packageVersion} should not be installed in {project.Name}", visualStudio));
         }
 
         public static void AssertPackageNotInPackagesConfig(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, string packageVersion, ILogger logger)
@@ -290,7 +290,6 @@ namespace NuGet.Tests.Apex
 
             exists.Should().BeFalse(AppendErrors($"{packageName} should NOT be in {project.Name}", visualStudio));
         }
-
 
         public static bool IsPackageInstalledInAssetsFile(string assetsFilePath, string packageName, string packageVersion)
         {

@@ -55,7 +55,10 @@ namespace NuGet.Packaging.Test
             settings.AllowNoTimestamp.Should().BeTrue();
             settings.AllowMultipleTimestamps.Should().BeTrue();
             settings.AllowUnknownRevocation.Should().BeTrue();
-            settings.AlwaysVerifyCountersignature.Should().BeTrue();
+            settings.ReportUnknownRevocation.Should().BeFalse();
+            settings.VerificationTarget.Should().Be(VerificationTarget.All);
+            settings.SignaturePlacement.Should().Be(SignaturePlacement.Any);
+            settings.RepositoryCountersignatureVerificationBehavior.Should().Be(SignatureVerificationBehavior.IfExistsAndIsNecessary);
         }
 
         [Fact]
@@ -76,9 +79,12 @@ namespace NuGet.Packaging.Test
             settings.AllowNoTimestamp.Should().BeTrue();
             settings.AllowMultipleTimestamps.Should().BeTrue();
             settings.AllowUnknownRevocation.Should().BeTrue();
+            settings.ReportUnknownRevocation.Should().BeTrue();
             settings.AllowNoClientCertificateList.Should().BeTrue();
             settings.AllowNoRepositoryCertificateList.Should().BeFalse();
-            settings.AlwaysVerifyCountersignature.Should().BeTrue();
+            settings.VerificationTarget.Should().Be(VerificationTarget.All);
+            settings.SignaturePlacement.Should().Be(SignaturePlacement.Any);
+            settings.RepositoryCountersignatureVerificationBehavior.Should().Be(SignatureVerificationBehavior.IfExists);
         }
 
         [Fact]
@@ -274,9 +280,12 @@ namespace NuGet.Packaging.Test
                 allowMultipleTimestamps: true,
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
+                reportUnknownRevocation: false,
                 allowNoRepositoryCertificateList: true,
                 allowNoClientCertificateList: false,
-                alwaysVerifyCountersignature: true,
+                verificationTarget: VerificationTarget.All,
+                signaturePlacement: SignaturePlacement.Any,
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
                 repoAllowListEntries: null,
                 clientAllowListEntries: expectedClientAllowList);
 

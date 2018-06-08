@@ -476,6 +476,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid combination of arguments {0} and {1}..
+        /// </summary>
+        internal static string InvalidArgumentCombination {
+            get {
+                return ResourceManager.GetString("InvalidArgumentCombination", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The ASN.1 data is invalid..
         /// </summary>
         internal static string InvalidAsn1 {
@@ -1291,6 +1300,15 @@ namespace NuGet.Packaging {
         internal static string UnexpectedPackageSignatureVerificationError {
             get {
                 return ResourceManager.GetString("UnexpectedPackageSignatureVerificationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The enum value &apos;{0}&apos; is unrecognized..
+        /// </summary>
+        internal static string UnrecognizedEnumValue {
+            get {
+                return ResourceManager.GetString("UnrecognizedEnumValue", resourceCulture);
             }
         }
         

@@ -101,6 +101,16 @@ namespace NuGet.Packaging.Signing
         GeneralizedTimeOutsideValidity      = 1 << 16,
 
         /// <summary>
+        /// A valid timestamp was not found.
+        /// </summary>
+        NoValidTimestamp                    = 1 << 17,
+
+        /// <summary>
+        /// Multiple timestamps were found.
+        /// </summary>
+        MultipleTimestamps                  = 1 << 18,
+
+        /// <summary>
         /// Flags which indicate that the signed package is suspect.
         /// </summary>
         Suspect = IntegrityCheckFailed |
@@ -117,8 +127,7 @@ namespace NuGet.Packaging.Signing
             HasLifetimeSigningEku |
             CertificateValidityInTheFuture |
             HashAlgorithmUnsupported |
-            MessageImprintUnsupportedAlgorithm |
-            GeneralizedTimeOutsideValidity,
+            MessageImprintUnsupportedAlgorithm,
 
         /// <summary>
         /// Flags which indicate that the signed package is untrusted.
@@ -127,6 +136,7 @@ namespace NuGet.Packaging.Signing
             CertificateExpired |
             ChainBuildingFailure |
             UnknownRevocation |
-            UntrustedRoot
+            UntrustedRoot |
+            GeneralizedTimeOutsideValidity
     }
 }

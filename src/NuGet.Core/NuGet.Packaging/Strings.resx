@@ -680,4 +680,12 @@ Valid from:</comment>
   <data name="NoRepositorySignature" xml:space="preserve">
     <value>The package does not have a repository signature (primary or countersignature).</value>
   </data>
+  <data name="UnrecognizedEnumValue" xml:space="preserve">
+    <value>The enum value '{0}' is unrecognized.</value>
+    <comment>{0} is an undefined enum value</comment>
+  </data>
+  <data name="InvalidArgumentCombination" xml:space="preserve">
+    <value>Invalid combination of arguments {0} and {1}.</value>
+    <comment>{0} and {1} are parameter names</comment>
+  </data>
 </root>

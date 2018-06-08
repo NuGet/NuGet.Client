@@ -21,11 +21,10 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class SignatureTests
     {
-        private SigningSpecifications _specification => SigningSpecifications.V1;
-
-        private SigningTestFixture _testFixture;
-        private TrustedTestCert<TestCertificate> _trustedTestCert;
-        private TestCertificate _untrustedTestCertificate;
+        private readonly SigningSpecifications _specification = SigningSpecifications.V1;
+        private readonly SigningTestFixture _testFixture;
+        private readonly TrustedTestCert<TestCertificate> _trustedTestCert;
+        private readonly TestCertificate _untrustedTestCertificate;
 
         public SignatureTests(SigningTestFixture fixture)
         {
@@ -34,54 +33,49 @@ namespace NuGet.Packaging.FuncTest
             _untrustedTestCertificate = _testFixture.UntrustedTestCertificate;
         }
 
-
         [CIOnlyFact]
-        public async Task Verify_WithUntrustedSelfSignedCertificateAndNotAllowUntrustedRoot_FailsAsync()
+        public async Task Verify_WithUntrustedSelfSignedCertificateAndNotAllowUntrusted_FailsAsync()
         {
             var settings = new SignatureVerifySettings(
-                treatIssuesAsErrors: true,
-                allowUntrustedRoot: false,
+                allowIllegal: false,
+                allowUntrusted: false,
                 allowUnknownRevocation: false,
-                logOnSignatureExpired: true);
+                reportUnknownRevocation: true);
 
             using (var test = await VerifyTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
-                var issues = new List<SignatureLog>();
                 var result = test.PrimarySignature.Verify(
                     timestamp: null,
                     settings: settings,
                     fingerprintAlgorithm: HashAlgorithmName.SHA256,
-                    certificateExtraStore: test.PrimarySignature.SignedCms.Certificates,
-                    issues: issues);
+                    certificateExtraStore: test.PrimarySignature.SignedCms.Certificates);
 
-                Assert.Equal(SignatureVerificationStatus.Untrusted, result.Status);
-                Assert.Equal(1, issues.Count(issue => issue.Level == LogLevel.Error));
+                Assert.Equal(SignatureVerificationStatus.Disallowed, result.Status);
+                Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Error));
 
-                AssertUntrustedRoot(issues, LogLevel.Error);
+                AssertUntrustedRoot(result.Issues, LogLevel.Error);
             }
         }
 
         [CIOnlyFact]
-        public async Task Verify_WithUntrustedSelfSignedCertificateAndAllowUntrustedRoot_SucceedsAsync()
+        public async Task Verify_WithUntrustedSelfSignedCertificateAndAllowUntrusted_SucceedsAsync()
         {
             var settings = new SignatureVerifySettings(
-                treatIssuesAsErrors: true,
-                allowUntrustedRoot: true,
+                allowIllegal: false,
+                allowUntrusted: true,
                 allowUnknownRevocation: false,
-                logOnSignatureExpired: true);
+                reportUnknownRevocation: true);
 
             using (var test = await VerifyTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
-                var issues = new List<SignatureLog>();
                 var result = test.PrimarySignature.Verify(
                     timestamp: null,
                     settings: settings,
                     fingerprintAlgorithm: HashAlgorithmName.SHA256,
-                    certificateExtraStore: test.PrimarySignature.SignedCms.Certificates,
-                    issues: issues);
+                    certificateExtraStore: test.PrimarySignature.SignedCms.Certificates);
 
                 Assert.Equal(SignatureVerificationStatus.Valid, result.Status);
-                Assert.Equal(0, issues.Count(issue => issue.Level == LogLevel.Error));
+                Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Error));
             }
         }
 
@@ -148,5 +142,4 @@ namespace NuGet.Packaging.FuncTest
         }
     }
 }
-
 #endif

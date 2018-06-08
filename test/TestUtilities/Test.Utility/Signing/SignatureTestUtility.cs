@@ -21,7 +21,7 @@ using Xunit;
 
 namespace Test.Utility.Signing
 {
-    public class SignatureTestUtility
+    public static class SignatureTestUtility
     {
 #if IS_DESKTOP
         // Central Directory file header size excluding signature, file name, extra field and file comment
@@ -37,6 +37,21 @@ namespace Test.Utility.Signing
         {
             var certificateFingerprint = CertificateUtility.GetHash(cert, hashAlgorithm);
             return BitConverter.ToString(certificateFingerprint).Replace("-", "");
+        }
+
+        public static Task WaitForCertificateExpirationAsync(X509Certificate2 certificate)
+        {
+            DateTimeOffset notAfter = DateTime.SpecifyKind(certificate.NotAfter, DateTimeKind.Local);
+
+            // Ensure the certificate has expired.
+            var delay = notAfter.AddSeconds(1) - DateTimeOffset.UtcNow;
+
+            if (delay > TimeSpan.Zero)
+            {
+                return Task.Delay(delay);
+            }
+
+            return Task.CompletedTask;
         }
 
         public static PrimarySignature GenerateInvalidPrimarySignature(PrimarySignature signature)

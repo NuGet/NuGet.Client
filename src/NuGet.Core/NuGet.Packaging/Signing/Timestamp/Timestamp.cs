@@ -148,7 +148,12 @@ namespace NuGet.Packaging.Signing
                     CertificateChainUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, DateTime.Now, CertificateType.Timestamp);
 
                     var chainBuildSucceed = CertificateChainUtility.BuildCertificateChain(chain, timestamperCertificate, out var chainStatusList);
-                    issues.Add(SignatureLog.DetailedLog(CertificateUtility.X509ChainToString(chain, fingerprintAlgorithm)));
+                    var x509ChainString = CertificateUtility.X509ChainToString(chain, fingerprintAlgorithm);
+
+                    if (!string.IsNullOrWhiteSpace(x509ChainString))
+                    {
+                        issues.Add(SignatureLog.DetailedLog(x509ChainString));
+                    }
 
                     if (chainBuildSucceed)
                     {
