@@ -73,7 +73,7 @@ namespace NuGet.ProjectManagement
 
             PackagesConfigPath = Path.Combine(folderPath, "packages.config");
 
-            var projectName = GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+            var projectName = Path.GetFileNameWithoutExtension(GetMetadata<string>(NuGetProjectMetadataKeys.Name));
             PackagesProjectNameConfigPath = Path.Combine(folderPath, "packages." + projectName + ".config");
         }
 
