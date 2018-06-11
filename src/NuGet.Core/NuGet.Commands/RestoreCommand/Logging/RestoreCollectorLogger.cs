@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Shared;
 
@@ -243,14 +244,23 @@ namespace NuGet.Commands
 
         private static IRestoreLogMessage ToRestoreLogMessage(ILogMessage message)
         {
-            var restoreLogMessage = message as IRestoreLogMessage;
-
-            if (restoreLogMessage == null)
+            if (message is IRestoreLogMessage)
             {
-                restoreLogMessage = new RestoreLogMessage(message.Level, message.Code, message.Message);
+                return message as IRestoreLogMessage;
             }
-
-            return restoreLogMessage;
+            else if (message is SignatureLog)
+            {
+                return (message as SignatureLog).AsRestoreLogMessage();
+            }
+            else
+            {
+                return new RestoreLogMessage(message.Level, message.Code, message.Message)
+                {
+                    Time = message.Time,
+                    WarningLevel = message.WarningLevel,
+                    ProjectPath = message.ProjectPath
+                };
+            }
         }
     }
 }

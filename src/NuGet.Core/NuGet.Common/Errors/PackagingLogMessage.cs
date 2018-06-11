@@ -30,7 +30,7 @@ namespace NuGet.Common
             Level = logLevel;
             Code = logCode;
             Message = message;
-            Time = DateTimeOffset.UtcNow;
+            Time = DateTimeOffset.Now;
         }
 
         private PackagingLogMessage(LogLevel logLevel, string message)

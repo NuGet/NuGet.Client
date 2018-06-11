@@ -81,7 +81,7 @@ namespace NuGet.Commands
                     packageIdentity.ToString()));
                 logger.LogInformation($"{packagePath}{Environment.NewLine}");
 
-                var logMessages = verificationResult.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()).ToList();
+                var logMessages = verificationResult.Results.SelectMany(p => p.Issues).ToList();
                 await logger.LogMessagesAsync(logMessages);
 
                 if (logMessages.Any(m => m.Level >= LogLevel.Warning))

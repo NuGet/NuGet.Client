@@ -6,19 +6,28 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
-    public class SignatureLog : IEquatable<SignatureLog>
+    public class SignatureLog : ILogMessage, IEquatable<SignatureLog>
     {
-        public LogLevel Level { get; }
+        public LogLevel Level { get; set; }
 
-        public string Message { get; }
+        public string Message { get; set; }
 
-        public NuGetLogCode Code { get; }
+        public NuGetLogCode Code { get; set; }
+
+        public WarningLevel WarningLevel { get; set; }
+
+        public string ProjectPath { get; set; }
+
+        public DateTimeOffset Time { get; set; }
+
+        public string LibraryId { get; set; }
 
         private SignatureLog(LogLevel level, NuGetLogCode code, string message)
         {
             Level = level;
             Code = code;
             Message = message;
+            Time = DateTimeOffset.Now;
         }
 
         public static SignatureLog InformationLog(string message)
@@ -49,22 +58,6 @@ namespace NuGet.Packaging.Signing
         public static SignatureLog Error(NuGetLogCode code, string message)
         {
             return new SignatureLog(LogLevel.Error, code, message);
-        }
-
-        public ILogMessage ToLogMessage()
-        {
-            if (Level == LogLevel.Error)
-            {
-                return LogMessage.CreateError(Code, Message);
-            }
-            else if (Level == LogLevel.Warning)
-            {
-                return LogMessage.CreateWarning(Code, Message);
-            }
-            else
-            {
-                return new LogMessage(Level, Message);
-            }
         }
 
         public bool Equals(SignatureLog other)
