@@ -15,7 +15,6 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -56,7 +55,7 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)));
-                Assert.Equal(1, logger.Messages.Count(x => x.Contains(identity.ToString())));
+                Assert.Equal(2, logger.Messages.Count(x => x.Contains(identity.ToString())));
             }
         }
 
@@ -97,7 +96,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.False(File.Exists(resolver.GetPackageFilePath(identityA.Id, identityA.Version)));
                 Assert.True(File.Exists(resolver.GetPackageFilePath(identityB.Id, identityB.Version)));
-                Assert.Equal(1, logger.Messages.Count(x => x.Contains(identityB.ToString())));
+                Assert.Equal(2, logger.Messages.Count(x => x.Contains(identityB.ToString())));
             }
         }
 
@@ -172,7 +171,7 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)));
-                Assert.Equal(1, logger.Messages.Count(x => x.Contains(identity.ToString())));
+                Assert.Equal(2, logger.Messages.Count(x => x.Contains(identity.ToString())));
             }
         }
 
