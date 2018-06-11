@@ -782,6 +782,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PackageSignatureVerificationLog:{0}PackageIdentitiy: {1}{0}Source: {2}{0}Valid: {3}.
+        /// </summary>
+        internal static string PackageSignatureVerificationLog {
+            get {
+                return ResourceManager.GetString("PackageSignatureVerificationLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Packages node does not exists in packages.config at {0}..
         /// </summary>
         internal static string PackagesNodeNotExist {

@@ -1004,6 +1004,8 @@ namespace NuGet.Packaging
                        token,
                        parentId);
 
+                await LogPackageSignatureVerificationAsync(source, package, packageExtractionContext.Logger, verifyResult);
+
                 if (verifyResult.Valid)
                 {
                     // log any warnings
@@ -1011,7 +1013,7 @@ namespace NuGet.Packaging
 
                     foreach (var warning in warnings)
                     {
-                        packageExtractionContext.Logger.Log(warning);
+                        await packageExtractionContext.Logger.LogAsync(warning);
                     }
                 }
                 else
@@ -1019,6 +1021,17 @@ namespace NuGet.Packaging
                     throw new SignatureException(verifyResult.Results, package);
                 }
             }
+        }
+
+        private static async Task LogPackageSignatureVerificationAsync(
+            string source,
+            PackageIdentity package,
+            ILogger logger,
+            VerifySignaturesResult verifyResult)
+        {
+            await logger.LogAsync(
+                LogLevel.Verbose,
+                string.Format(CultureInfo.CurrentCulture, Strings.PackageSignatureVerificationLog, Environment.NewLine, package, source, verifyResult.Valid));
         }
 
         private static RepositorySignatureInfo GetRepositorySignatureInfo(string source)
