@@ -3,11 +3,15 @@
 
 using System;
 using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.Packaging.Signing
 {
+    /// <summary>
+    /// Log message for signature verification.
+    /// </summary>
     public class SignatureLog : ILogMessage, IEquatable<SignatureLog>
-    {
+    { 
         public LogLevel Level { get; set; }
 
         public string Message { get; set; }
@@ -44,6 +48,7 @@ namespace NuGet.Packaging.Signing
 
         public static SignatureLog DebugLog(string message)
         {
+            // create a log message and make the code undefined to not display the code in any logger
             return new SignatureLog(LogLevel.Debug, NuGetLogCode.Undefined, message);
         }
 
@@ -62,10 +67,20 @@ namespace NuGet.Packaging.Signing
 
         public bool Equals(SignatureLog other)
         {
-            return other != null &&
-                Equals(Level, other.Level) &&
+            if (other == null)
+            {
+                return false;
+            }
+            else if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Equals(Level, other.Level) &&
                 Equals(Code, other.Code) &&
-                string.Equals(Message, other.Message, StringComparison.Ordinal);
+                EqualityUtility.EqualsWithNullCheck(LibraryId, other.LibraryId) &&
+                EqualityUtility.EqualsWithNullCheck(ProjectPath, other.ProjectPath) &&
+                EqualityUtility.EqualsWithNullCheck(Message, other.Message);
         }
     }
 }
