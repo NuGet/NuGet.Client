@@ -72,7 +72,7 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Set this property if you want to get an interactive restore
         /// </summary>
-        public bool NuGetInteractive { get; set; }
+        public bool Interactive { get; set; }
 
         public override bool Execute()
         {
@@ -167,7 +167,7 @@ namespace NuGet.Build.Tasks
                     HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
                 }
 
-                DefaultCredentialServiceUtility.SetupDefaultCredentialService(log, !NuGetInteractive);
+                DefaultCredentialServiceUtility.SetupDefaultCredentialService(log, !Interactive);
 
                 _cts.Token.ThrowIfCancellationRequested();
 

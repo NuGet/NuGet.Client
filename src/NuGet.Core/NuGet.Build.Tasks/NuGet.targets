@@ -119,7 +119,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreRecursive="$(RestoreRecursive)"
       RestoreForce="$(RestoreForce)"
       HideWarningsAndErrors="$(HideWarningsAndErrors)"
-      NuGetInteractive="$(NuGetInteractive)"/>
+      Interactive="$(NuGetInteractive)"/>
   </Target>
 
   <!--
