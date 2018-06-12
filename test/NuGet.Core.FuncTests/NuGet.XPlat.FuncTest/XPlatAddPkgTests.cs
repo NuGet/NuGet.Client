@@ -31,20 +31,21 @@ namespace NuGet.XPlat.FuncTest
         // Argument parsing related tests
 
         [Theory]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dg-file", "dgfile_foo", "--project", "project_foo.csproj", "", "", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "--framework", "net46;netcoreapp1.0", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "-f", "net46 ; netcoreapp1.0 ; ", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "-f", "net46", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "--source", "a;b", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "-s", "a ; b ;", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "-s", "a", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "--package-directory", @"foo\dir", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "--no-restore")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "-n")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dg-file", "dgfile_foo", "--project", "project_foo.csproj", "", "", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "--framework", "net46;netcoreapp1.0", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "-f", "net46 ; netcoreapp1.0 ; ", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "-f", "net46", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "--source", "a;b", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "-s", "a ; b ;", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "-s", "a", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "--package-directory", @"foo\dir", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "--no-restore", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "-n", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "-n", "--interactive")]
         public void AddPkg_ArgParsing(string packageOption, string package, string versionOption, string version, string dgFileOption,
         string dgFilePath, string projectOption, string project, string frameworkOption, string frameworkString, string sourceOption,
-        string sourceString, string packageDirectoryOption, string packageDirectory, string noRestoreSwitch)
+        string sourceString, string packageDirectoryOption, string packageDirectory, string noRestoreSwitch, string interactiveSwitch)
         {
             // Arrange
             var projectPath = Path.Combine(Path.GetTempPath(), project);
@@ -88,6 +89,10 @@ namespace NuGet.XPlat.FuncTest
             if (!string.IsNullOrEmpty(noRestoreSwitch))
             {
                 argList.Add(noRestoreSwitch);
+            }
+            if (!string.IsNullOrEmpty(interactiveSwitch))
+            {
+                argList.Add(interactiveSwitch);
             }
 
             var logger = new TestCommandOutputLogger();
