@@ -93,7 +93,6 @@ namespace NuGet.Protocol
                 if (response.StatusCode == HttpStatusCode.Unauthorized ||
                     (configuration.PromptOn403 && response.StatusCode == HttpStatusCode.Forbidden))
                 {
-                    // Why is this null
                     promptCredentials = await AcquireCredentialsAsync(
                         response.StatusCode,
                         beforeLockVersion,
