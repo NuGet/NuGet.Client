@@ -224,6 +224,10 @@ namespace NuGetVSExtension
             _mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (null != _mcs)
             {
+                // Switch to Main Thread before calling AddCommand which calls GetService() which should
+                // always be called on UI thread.
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 // menu command for upgrading packages.config files to PackageReference - References context menu
                 var upgradeNuGetProjectCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpgradeNuGetProject);
                 var upgradeNuGetProjectCommand = new OleMenuCommand(ExecuteUpgradeNuGetProjectCommandAsync, null,
