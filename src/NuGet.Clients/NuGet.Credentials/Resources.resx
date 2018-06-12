@@ -154,4 +154,8 @@
     <value>Using {0} as a credential provider plugin.</value>
     <comment>{0} - plugin path</comment>
   </data>
+  <data name="SecurePluginWarning_UseInteractiveOption" xml:space="preserve">
+    <value>The plugin credential provider could not provide credentials. Authentication may require manual action. Consider re-running the command with the {0} flag.</value>
+    <comment>{0} - the flag itself...Interactive maybe?</comment>
+  </data>
 </root>

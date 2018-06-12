@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Credentials;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -291,6 +291,9 @@ namespace NuGet.CommandLine.XPlat
 
                 // Generate Restore Requests. There will always be 1 request here since we are restoring for 1 project.
                 var restoreRequests = await RestoreRunner.GetRequests(restoreContext);
+
+                //Setup the Credential Service
+                DefaultCredentialServiceUtility.SetupDefaultCredentialService(restoreContext.Log, packageReferenceArgs.Interactive);
 
                 // Run restore without commit. This will always return 1 Result pair since we are restoring for 1 request.
                 var restoreResult = await RestoreRunner.RunWithoutCommit(restoreRequests, restoreContext);

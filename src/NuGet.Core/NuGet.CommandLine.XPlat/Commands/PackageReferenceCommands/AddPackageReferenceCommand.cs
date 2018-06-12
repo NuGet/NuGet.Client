@@ -66,6 +66,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.AddPkg_PackageDirectoryDescription,
                     CommandOptionType.SingleValue);
 
+                var interactive = addpkg.Option(
+                    "--interactive",
+                    Strings.AddPkg_InteractiveDescription,
+                    CommandOptionType.NoValue);
+
                 addpkg.OnExecute(() =>
                 {
                     ValidateArgument(id, addpkg.Name);
@@ -86,7 +91,8 @@ namespace NuGet.CommandLine.XPlat
                         PackageDirectory = packageDirectory.Value(),
                         NoRestore = noRestore.HasValue(),
                         NoVersion = noVersion,
-                        DgFilePath = dgFilePath.Value()
+                        DgFilePath = dgFilePath.Value(),
+                        Interactive = interactive.HasValue()
                     };
                     var msBuild = new MSBuildAPIUtility(logger);
                     var addPackageRefCommandRunner = getCommandRunner();

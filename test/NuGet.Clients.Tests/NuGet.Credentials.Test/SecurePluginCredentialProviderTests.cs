@@ -98,7 +98,6 @@ namespace NuGet.Credentials.Test
             }
         }
 
-
         [PlatformFact(Platform.Windows)]
         public void TryCreate_DoesNotCreateNonCredentialsPluginTwice()
         {
