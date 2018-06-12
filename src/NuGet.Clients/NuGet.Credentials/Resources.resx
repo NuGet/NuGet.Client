@@ -155,7 +155,6 @@
     <comment>{0} - plugin path</comment>
   </data>
   <data name="SecurePluginWarning_UseInteractiveOption" xml:space="preserve">
-    <value>The plugin credential provider could not acquire credentials. Authentication may require manual action. Consider re-running the command with {0}</value>
-    <comment>{0} - the flag or switch</comment>
+    <value>The plugin credential provider could not acquire credentials. Authentication may require manual action. Consider re-running the command with --interactive.</value>
   </data>
 </root>

@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Plugins
                 return new WindowsEmbeddedSignatureVerifier();
             }
 
-            if(RuntimeEnvironmentHelper.IsLinux || RuntimeEnvironmentHelper.IsMacOSX)
+            if (RuntimeEnvironmentHelper.IsLinux || RuntimeEnvironmentHelper.IsMacOSX)
             {
                 return new UnixPlatformsEmbeddedSignatureVerifier();
             }

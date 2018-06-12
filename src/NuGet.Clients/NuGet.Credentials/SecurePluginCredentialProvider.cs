@@ -86,7 +86,7 @@ namespace NuGet.Credentials
             {
                 // There is a potential here for double logging as the CredentialService itself catches the exceptions and tries to log it.
                 // In reality the logger in the Credential Service will be null because the first request always comes from a resource provider (ServiceIndex provider) 
-                _logger.LogError(plugin.Message); 
+                _logger.LogError(plugin.Message);
                 throw new PluginException(plugin.Message); // Throwing here will block authentication and ensure that the complete operation fails 
             }
 
@@ -107,13 +107,13 @@ namespace NuGet.Credentials
                     MessageMethod.GetAuthenticationCredentials,
                     request,
                     cancellationToken);
-                if(credentialResponse.ResponseCode == MessageResponseCode.NotFound && nonInteractive)
+                if (credentialResponse.ResponseCode == MessageResponseCode.NotFound && nonInteractive)
                 {
                     _logger.LogWarning(
                         string.Format(
                                 CultureInfo.CurrentCulture,
-                                Resources.SecurePluginWarning_UseInteractiveOption,
-                                "--interactive or NuGetInteractive=true"));
+                                Resources.SecurePluginWarning_UseInteractiveOption)
+                                );
                 }
 
                 taskResponse = GetAuthenticationCredentialsResponseToCredentialResponse(credentialResponse);
