@@ -7,7 +7,6 @@ using NuGet.Shared;
 
 namespace NuGet.Packaging.Signing
 {
-
     /// <summary>
     /// Log message for signature verification.
     /// </summary>
