@@ -98,7 +98,7 @@ namespace NuGet.Packaging.Signing
                 var status = valid ? NuGetOperationStatus.Succeeded : NuGetOperationStatus.Failed;
                 telemetry.TelemetryEvent = new PackageSigningTelemetryEvent(isSigned ? PackageSignType.Signed : PackageSignType.Unsigned, status);
 
-                return new VerifySignaturesResult(valid, trustResults);
+                return new VerifySignaturesResult(valid, isSigned, trustResults);
             }
         }
 

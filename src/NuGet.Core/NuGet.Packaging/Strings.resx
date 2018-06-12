@@ -689,10 +689,9 @@ Valid from:</comment>
     <comment>{0} and {1} are parameter names</comment>
   </data>
   <data name="PackageSignatureVerificationLog" xml:space="preserve">
-    <value>PackageSignatureVerificationLog:{0}PackageIdentity: {1}{0}Source: {2}{0}PackageSignatureValidity: {3}</value>
-    <comment>0 - line separator
-1 - package id and version
-2 - package source url
-3 - validation result as a bool</comment>
+    <value>PackageSignatureVerificationLog: PackageIdentity: {0} Source: {1} PackageSignatureValidity: {2}</value>
+    <comment>0 - package id and version
+1 - package source url
+2 - validation result as a bool</comment>
   </data>
 </root>

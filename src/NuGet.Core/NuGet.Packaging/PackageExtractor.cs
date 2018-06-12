@@ -1004,21 +1004,24 @@ namespace NuGet.Packaging
                        token,
                        parentId);
 
-                await LogPackageSignatureVerificationAsync(source, package, packageExtractionContext.Logger, verifyResult);
-
-                if (verifyResult.Valid)
+                if (verifyResult.Signed)
                 {
-                    // log any warnings
-                    var warnings = verifyResult.Results.SelectMany(r => r.GetWarningIssues());
+                    await LogPackageSignatureVerificationAsync(source, package, packageExtractionContext.Logger, verifyResult);
 
-                    foreach (var warning in warnings)
+                    if (verifyResult.Valid)
                     {
-                        await packageExtractionContext.Logger.LogAsync(warning);
+                        // log any warnings
+                        var warnings = verifyResult.Results.SelectMany(r => r.GetWarningIssues());
+
+                        foreach (var warning in warnings)
+                        {
+                            await packageExtractionContext.Logger.LogAsync(warning);
+                        }
                     }
-                }
-                else
-                {
-                    throw new SignatureException(verifyResult.Results, package);
+                    else
+                    {
+                        throw new SignatureException(verifyResult.Results, package);
+                    }
                 }
             }
         }
@@ -1031,7 +1034,7 @@ namespace NuGet.Packaging
         {
             await logger.LogAsync(
                 LogLevel.Verbose,
-                string.Format(CultureInfo.CurrentCulture, Strings.PackageSignatureVerificationLog, Environment.NewLine, package, source, verifyResult.Valid));
+                string.Format(CultureInfo.CurrentCulture, Strings.PackageSignatureVerificationLog, package, source, verifyResult.Valid));
         }
 
         private static RepositorySignatureInfo GetRepositorySignatureInfo(string source)

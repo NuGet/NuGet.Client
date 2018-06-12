@@ -782,7 +782,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PackageSignatureVerificationLog:{0}PackageIdentity: {1}{0}Source: {2}{0}PackageSignatureValidity: {3}.
+        ///   Looks up a localized string similar to PackageSignatureVerificationLog: PackageIdentity: {0} Source: {1} PackageSignatureValidity: {2}.
         /// </summary>
         internal static string PackageSignatureVerificationLog {
             get {
