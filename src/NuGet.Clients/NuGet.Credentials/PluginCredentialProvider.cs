@@ -3,13 +3,13 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.Configuration;
+using NuGet.Protocol.Utility;
 
 namespace NuGet.Credentials
 {

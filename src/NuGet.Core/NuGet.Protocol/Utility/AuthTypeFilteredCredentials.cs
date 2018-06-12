@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Linq;
+using System.Net;
+using NuGet.Common;
 
-
-namespace NuGet.Credentials
+namespace NuGet.Protocol.Utility
 {
     /// <summary>
     /// Wraps another ICredentials object by returning null if the authType is not in a specified allow list
@@ -28,10 +28,10 @@ namespace NuGet.Credentials
             {
                 throw new ArgumentNullException(nameof(innerCredential));
             }
-            
+
             if (authTypes == null || !authTypes.Any())
             {
-                throw new ArgumentException(Resources.Error_Argument_May_Not_Be_Null_Or_Empty, nameof(authTypes));
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(authTypes));
             }
 
             _innerCredential = innerCredential;
@@ -43,6 +43,20 @@ namespace NuGet.Credentials
             return _authTypes.Any(x => StringComparer.OrdinalIgnoreCase.Equals(x, authType))
                 ? _innerCredential.GetCredential(uri, authType)
                 : null;
+        }
+
+        public static ICredentials ApplyFilterFromEnvironmentVariable(ICredentials innerCredential, IEnvironmentVariableReader environment = null)
+        {
+            environment = environment ?? new EnvironmentVariableWrapper();
+
+            var envVarValue = environment.GetEnvironmentVariable("NUGET_AUTHENTICATION_TYPES");
+            if (string.IsNullOrWhiteSpace(envVarValue))
+            {
+                return innerCredential;
+            }
+
+            var authTypes = envVarValue.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
+            return new AuthTypeFilteredCredentials(innerCredential, authTypes);
         }
     }
 }

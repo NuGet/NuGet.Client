@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Plugins;
+using NuGet.Protocol.Utility;
 
 namespace NuGet.Credentials
 {

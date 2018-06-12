@@ -1,9 +1,10 @@
-﻿extern alias CoreV2;
+extern alias CoreV2;
 
 using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using NuGet.Protocol.Utility;
 
 namespace NuGet.CommandLine
 {
@@ -39,7 +40,7 @@ namespace NuGet.CommandLine
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString(nameof(NuGetResources.SettingsCredentials_UsingSavedCredentials)),
                         credentials.UserName));
-                return credentials;
+                return AuthTypeFilteredCredentials.ApplyFilterFromEnvironmentVariable(credentials);
             }
             return null;
         }

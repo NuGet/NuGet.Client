@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Security;
 using System.Threading.Tasks;
@@ -6,6 +6,7 @@ using NuGet.Common;
 using NuGet.Credentials;
 using System.Threading;
 using NuGet.Configuration;
+using NuGet.Protocol.Utility;
 
 namespace NuGet.CommandLine
 {
@@ -70,11 +71,12 @@ namespace NuGet.CommandLine
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Console.ReadSecureString(password);
-                var credentials = new NetworkCredential
-                {
-                    UserName = username,
-                    SecurePassword = password
-                };
+                var credentials = AuthTypeFilteredCredentials.ApplyFilterFromEnvironmentVariable(
+                    new NetworkCredential
+                    {
+                        UserName = username,
+                        SecurePassword = password
+                    });
 
                 var cred = new CredentialResponse(credentials);
 
