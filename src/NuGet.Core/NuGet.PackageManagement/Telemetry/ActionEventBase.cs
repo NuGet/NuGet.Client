@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement
             ProjectIds = projectIds;
 
             // log each project id separately so that it can be joined with ProjectInformation telemetry event
-            for (var i=0; i< projectIds.Length; i++)
+            for (var i = 0; i < projectIds.Length; i++)
             {
                 this[$"ProjectId{i+1}"] = projectIds[i];
             }
