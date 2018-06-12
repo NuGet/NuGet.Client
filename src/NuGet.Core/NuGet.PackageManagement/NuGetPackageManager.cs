@@ -1016,6 +1016,12 @@ namespace NuGet.PackageManagement
                         preferredVersions.Remove(packageId);
                     }
                 }
+                else
+                {
+                    // we return an empty list here because this is trying to update a specific package in a project here which is not even installed in the project.
+                    // Bug: https://github.com/NuGet/Home/issues/737
+                    return new List<NuGetProjectAction>();
+                }
             }
             // We are apply update logic to the complete project - attempting to resolver all updates together
             else
