@@ -114,7 +114,7 @@ namespace NuGet.Credentials
                         string.Format(
                                 CultureInfo.CurrentCulture,
                                 Resources.SecurePluginWarning_UseInteractiveOption,
-                                "Interactive"));
+                                "--interactive or NuGetInteractive=true"));
                 }
 
                 taskResponse = GetAuthenticationCredentialsResponseToCredentialResponse(credentialResponse);

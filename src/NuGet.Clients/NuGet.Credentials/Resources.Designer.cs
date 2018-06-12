@@ -170,7 +170,7 @@ namespace NuGet.Credentials {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The plugin credential provider could not provide credentials. Authentication may require manual action. Consider re-running the command with the {0} flag..
+        ///   Looks up a localized string similar to The plugin credential provider could not acquire credentials. Authentication may require manual action. Consider re-running the command with {0}.
         /// </summary>
         internal static string SecurePluginWarning_UseInteractiveOption {
             get {
