@@ -125,6 +125,11 @@ namespace NuGet.Common
         NU1401 = 1401,
 
         /// <summary>
+        /// Package contains unsafe zip entry.
+        /// </summary>
+        NU1402 = 1402,
+
+        /// <summary>
         /// Package Signature is invalid
         /// </summary>
         NU1410 = 1410,

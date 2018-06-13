@@ -517,4 +517,11 @@ Valid from:</comment>
   <data name="StreamMustBeSeekable" xml:space="preserve">
     <value>The stream must be seekable.</value>
   </data>
+  <data name="ErrorUnableCheckPackageEntries" xml:space="preserve">
+    <value>An unexpected error occurred while checking package entries.</value>
+  </data>
+  <data name="ErrorUnsafePackageEntry" xml:space="preserve">
+    <value>The package '{0}' contains an entry which is unsafe for extraction.</value>
+    <comment>{0} is the package identity.</comment>
+  </data>
 </root>
