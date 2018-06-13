@@ -18,18 +18,24 @@ namespace NuGet.Packaging.Signing
         public bool Valid { get; }
 
         /// <summary>
+        /// True if the package is signed.
+        /// </summary>
+        public bool Signed { get; }
+
+        /// <summary>
         /// Individual trust results.
         /// </summary>
         public IReadOnlyList<PackageVerificationResult> Results { get; }
 
-        public VerifySignaturesResult(bool valid)
-            : this(valid, results: Enumerable.Empty<PackageVerificationResult>())
+        public VerifySignaturesResult(bool valid, bool signed)
+            : this(valid, signed, results: Enumerable.Empty<PackageVerificationResult>())
         {
         }
 
-        public VerifySignaturesResult(bool valid, IEnumerable<PackageVerificationResult> results)
+        public VerifySignaturesResult(bool valid, bool signed, IEnumerable<PackageVerificationResult> results)
         {
             Valid = valid;
+            Signed = signed;
             Results = results?.ToList().AsReadOnly() ?? throw new ArgumentNullException(nameof(results));
         }
     }

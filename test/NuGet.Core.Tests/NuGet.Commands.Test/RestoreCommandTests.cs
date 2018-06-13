@@ -1015,7 +1015,7 @@ namespace NuGet.Commands.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, _defaultSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(false));
+                    ReturnsAsync(new VerifySignaturesResult(valid: false, signed: true));
 
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
                 {
@@ -1084,7 +1084,7 @@ namespace NuGet.Commands.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, _defaultSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(true));
+                    ReturnsAsync(new VerifySignaturesResult(valid: true, signed: true));
 
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
                 {

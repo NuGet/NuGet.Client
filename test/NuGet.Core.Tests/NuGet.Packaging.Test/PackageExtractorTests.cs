@@ -2043,7 +2043,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(true));
+                    ReturnsAsync(new VerifySignaturesResult(valid: true, signed: true));
 
                 var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
@@ -2095,7 +2095,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(false));
+                    ReturnsAsync(new VerifySignaturesResult(valid: false, signed: true));
 
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
 
@@ -2148,7 +2148,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(false));
+                    ReturnsAsync(new VerifySignaturesResult(valid: false, signed: true));
 
                 var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
@@ -2199,7 +2199,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(true));
+                    ReturnsAsync(new VerifySignaturesResult(valid: true, signed: true));
 
                 var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
@@ -2247,7 +2247,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(false));
+                    ReturnsAsync(new VerifySignaturesResult(valid: false, signed: true));
 
                 var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
@@ -2295,7 +2295,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(false));
+                    ReturnsAsync(new VerifySignaturesResult(valid: false, signed: true));
 
                 var packageFileInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(root, nupkg);
 
@@ -2346,7 +2346,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(true));
+                    ReturnsAsync(new VerifySignaturesResult(valid: true, signed: true));
 
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
@@ -2394,7 +2394,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(false));
+                    ReturnsAsync(new VerifySignaturesResult(valid: false, signed: true));
 
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
@@ -2438,7 +2438,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(true));
+                    ReturnsAsync(new VerifySignaturesResult(valid: true, signed: true));
 
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
@@ -2486,7 +2486,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(false));
+                    ReturnsAsync(new VerifySignaturesResult(valid: false, signed: true));
 
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
@@ -2530,7 +2530,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(true));
+                    ReturnsAsync(new VerifySignaturesResult(valid: true, signed: true));
 
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
@@ -2579,7 +2579,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(false));
+                    ReturnsAsync(new VerifySignaturesResult(valid: false, signed: true));
 
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
@@ -2627,7 +2627,7 @@ namespace NuGet.Packaging.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, signedPackageVerifierSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(true));
+                    ReturnsAsync(new VerifySignaturesResult(valid: true, signed: true));
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 using (var packageReader = new PackageArchiveReader(packageStream))
@@ -2676,7 +2676,7 @@ namespace NuGet.Packaging.Test
                     It.IsAny<SignedPackageVerifierSettings>(),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(true));
+                    ReturnsAsync(new VerifySignaturesResult(valid: true, signed: true));
 
                 var repositorySignatureInfoAndAllowList = CreateTestRepositorySignatureInfoAndExpectedAllowList();
                 var repositorySignatureInfo = repositorySignatureInfoAndAllowList.Item1;
@@ -2749,7 +2749,7 @@ namespace NuGet.Packaging.Test
                     It.IsAny<SignedPackageVerifierSettings>(),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(true));
+                    ReturnsAsync(new VerifySignaturesResult(valid: true, signed: true));
 
                 var repositorySignatureInfoAndAllowList = CreateTestRepositorySignatureInfoAndExpectedAllowList();
                 var repositorySignatureInfo = repositorySignatureInfoAndAllowList.Item1;

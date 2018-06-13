@@ -688,4 +688,10 @@ Valid from:</comment>
     <value>Invalid combination of arguments {0} and {1}.</value>
     <comment>{0} and {1} are parameter names</comment>
   </data>
+  <data name="PackageSignatureVerificationLog" xml:space="preserve">
+    <value>PackageSignatureVerificationLog: PackageIdentity: {0} Source: {1} PackageSignatureValidity: {2}</value>
+    <comment>0 - package id and version
+1 - package source url
+2 - validation result as a bool</comment>
+  </data>
 </root>
