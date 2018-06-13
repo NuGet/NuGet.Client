@@ -98,7 +98,7 @@
               AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackagesList}"
               SelectionChanged="PackageList_SelectionChanged"
               UpdateButtonClicked="PackageList_UpdateButtonClicked"
-              Width="{Binding ActualWidth, ElementName=_left_side}" />
+              Width="{Binding ActualWidth, ElementName=_left_side}"/>
 
             <Border
               Grid.Row="2"
