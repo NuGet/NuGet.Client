@@ -395,11 +395,29 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An unexpected error occurred while checking package entries..
+        /// </summary>
+        internal static string ErrorUnableCheckPackageEntries {
+            get {
+                return ResourceManager.GetString("ErrorUnableCheckPackageEntries", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to delete temporary file &apos;{0}&apos;. Error: &apos;{1}&apos;..
         /// </summary>
         internal static string ErrorUnableToDeleteFile {
             get {
                 return ResourceManager.GetString("ErrorUnableToDeleteFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package &apos;{0}&apos; contains an entry which is unsafe for extraction..
+        /// </summary>
+        internal static string ErrorUnsafePackageEntry {
+            get {
+                return ResourceManager.GetString("ErrorUnsafePackageEntry", resourceCulture);
             }
         }
         
