@@ -155,6 +155,6 @@
     <comment>{0} - plugin path</comment>
   </data>
   <data name="SecurePluginWarning_UseInteractiveOption" xml:space="preserve">
-    <value>The plugin credential provider could not acquire credentials. Authentication may require manual action. Consider re-running the command with --interactive in dotnet.exe, /p:NuGetInteractive="true" in MSBuild or removing the -NonInteractive switch in NuGet.exe</value>
+    <value>The plugin credential provider could not acquire credentials. Authentication may require manual action. Consider re-running the command with --interactive for `dotnet`, /p:NuGetInteractive="true" for MSBuild or removing the -NonInteractive switch for `NuGet`</value>
   </data>
 </root>

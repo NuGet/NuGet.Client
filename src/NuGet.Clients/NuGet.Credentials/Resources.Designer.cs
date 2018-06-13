@@ -170,7 +170,7 @@ namespace NuGet.Credentials {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The plugin credential provider could not acquire credentials. Authentication may require manual action. Consider re-running the command with --interactive in dotnet.exe, /p:NuGetInteractive=&quot;true&quot; in MSBuild or removing the -NonInteractive switch in NuGet.exe.
+        ///   Looks up a localized string similar to The plugin credential provider could not acquire credentials. Authentication may require manual action. Consider re-running the command with --interactive for `dotnet`, /p:NuGetInteractive=&quot;true&quot; for MSBuild or removing the -NonInteractive switch for `NuGet`.
         /// </summary>
         internal static string SecurePluginWarning_UseInteractiveOption {
             get {
