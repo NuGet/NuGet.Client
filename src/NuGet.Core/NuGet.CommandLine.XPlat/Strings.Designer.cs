@@ -98,7 +98,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allow manual user action for operations like authentication..
+        ///   Looks up a localized string similar to Allow the command to block and require manual action for operations like authentication..
         /// </summary>
         internal static string AddPkg_InteractiveDescription {
             get {

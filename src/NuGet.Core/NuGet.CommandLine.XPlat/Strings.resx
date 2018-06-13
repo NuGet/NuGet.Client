@@ -472,6 +472,6 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>--no-service-endpoint does not append "api/v2/packages" to the source URL.</value>
   </data>
   <data name="AddPkg_InteractiveDescription" xml:space="preserve">
-    <value>Allow manual user action for operations like authentication.</value>
+    <value>Allow the command to block and require manual action for operations like authentication.</value>
   </data>
 </root>
