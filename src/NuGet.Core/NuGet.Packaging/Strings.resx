@@ -694,4 +694,10 @@ Valid from:</comment>
 1 - package source url
 2 - validation result as a bool</comment>
   </data>
+  <data name="ErrorUnableCheckPackageEntries" xml:space="preserve">
+    <value>An unexpected error occurred while checking package entries.</value>
+  </data>
+  <data name="ErrorUnsafePackageEntry" xml:space="preserve">
+    <value>The package contains an entry which is unsafe for extraction.</value>
+  </data>
 </root>
