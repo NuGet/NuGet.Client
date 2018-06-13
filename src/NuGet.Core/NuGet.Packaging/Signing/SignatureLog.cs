@@ -31,7 +31,7 @@ namespace NuGet.Packaging.Signing
             Level = level;
             Code = code;
             Message = message;
-            Time = DateTimeOffset.Now;
+            Time = DateTimeOffset.UtcNow;
         }
 
         public static SignatureLog InformationLog(string message)
