@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Security;
+using Test.Utility.Signing;
 using Xunit;
 using BcEssCertId = Org.BouncyCastle.Asn1.Ess.EssCertID;
 using BcGeneralName = Org.BouncyCastle.Asn1.X509.GeneralName;
@@ -45,7 +46,7 @@ namespace NuGet.Packaging.Test
                 var bcGeneralNames = new GeneralNames(
                     new BcGeneralName(BcGeneralName.DirectoryName, bcCertificate.IssuerDN));
                 var bcIssuerSerial = new BcIssuerSerial(bcGeneralNames, new DerInteger(bcCertificate.SerialNumber));
-                var hash = SignTestUtility.GetHash(certificate, Common.HashAlgorithmName.SHA256);
+                var hash = SigningTestUtility.GetHash(certificate, Common.HashAlgorithmName.SHA256);
                 var bcEssCertId = new BcEssCertId(hash, bcIssuerSerial);
                 var bytes = bcEssCertId.GetDerEncoded();
 
@@ -53,8 +54,8 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(1, essCertId.IssuerSerial.GeneralNames.Count);
                 Assert.Equal(certificate.IssuerName.Name, essCertId.IssuerSerial.GeneralNames[0].DirectoryName.Name);
-                SignTestUtility.VerifyByteArrays(hash, essCertId.CertificateHash);
-                SignTestUtility.VerifyByteArrays(bcIssuerSerial.Serial.Value.ToByteArray(), essCertId.IssuerSerial.SerialNumber);
+                SigningTestUtility.VerifyByteArrays(hash, essCertId.CertificateHash);
+                SigningTestUtility.VerifyByteArrays(bcIssuerSerial.Serial.Value.ToByteArray(), essCertId.IssuerSerial.SerialNumber);
             }
         }
 #endif

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
@@ -92,6 +93,41 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 warnings.First().Code.Should().Be(NuGetLogCode.NU3027);
                 warnings.First().Message.Should().Be(_NU3027Message);
                 warnings.First().LibraryId.Should().Be("X.9.0.0");
+            }
+        }
+
+        [Fact]
+        public void GetCertificateChain_WithUntrustedRoot_Throws()
+        {
+            using (var chainHolder = new X509ChainHolder())
+            using (var rootCertificate = SigningTestUtility.GetCertificate("root.crt"))
+            using (var intermediateCertificate = SigningTestUtility.GetCertificate("intermediate.crt"))
+            using (var leafCertificate = SigningTestUtility.GetCertificate("leaf.crt"))
+            {
+                var chain = chainHolder.Chain;
+                var extraStore = new X509Certificate2Collection() { rootCertificate, intermediateCertificate };
+                var logger = new TestLogger();
+
+                var exception = Assert.ThrowsAsync<SignatureException>(
+                    async () => CertificateChainUtility.GetCertificateChain(
+                        leafCertificate,
+                        extraStore,
+                        logger,
+                        CertificateType.Signature));
+
+                Assert.Equal(NuGetLogCode.NU3018, exception.Result.Code);
+                Assert.Equal("Certificate chain validation failed.", exception.Result.Message);
+
+                Assert.Equal(1, logger.Errors);
+                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 2 : 1, logger.Warnings);
+
+                SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Error);
+                SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
+                }
             }
         }
 

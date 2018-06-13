@@ -114,9 +114,9 @@ namespace NuGet.Packaging.Test
         public void GetCertificateChain_ReturnsCertificatesInOrder()
         {
             using (var chainHolder = new X509ChainHolder())
-            using (var rootCertificate = SignTestUtility.GetCertificate("root.crt"))
-            using (var intermediateCertificate = SignTestUtility.GetCertificate("intermediate.crt"))
-            using (var leafCertificate = SignTestUtility.GetCertificate("leaf.crt"))
+            using (var rootCertificate = SigningTestUtility.GetCertificate("root.crt"))
+            using (var intermediateCertificate = SigningTestUtility.GetCertificate("intermediate.crt"))
+            using (var leafCertificate = SigningTestUtility.GetCertificate("leaf.crt"))
             {
                 var chain = chainHolder.Chain;
 
@@ -255,7 +255,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void IsSelfIssued_WithPartialChain_ReturnsFalse()
         {
-            using (var certificate = SignTestUtility.GetCertificate("leaf.crt"))
+            using (var certificate = SigningTestUtility.GetCertificate("leaf.crt"))
             {
                 Assert.False(CertificateUtility.IsSelfIssued(certificate));
             }

@@ -46,7 +46,7 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(1, issuerSerial.GeneralNames.Count);
                 Assert.Equal(certificate.IssuerName.Name, issuerSerial.GeneralNames[0].DirectoryName.Name);
-                SignTestUtility.VerifySerialNumber(certificate, issuerSerial);
+                SigningTestUtility.VerifySerialNumber(certificate, issuerSerial);
             }
         }
 
@@ -60,7 +60,7 @@ namespace NuGet.Packaging.Test
             {
                 var issuerSerial = IssuerSerial.Create(certificate);
 
-                SignTestUtility.VerifySerialNumber(certificate, issuerSerial);
+                SigningTestUtility.VerifySerialNumber(certificate, issuerSerial);
             }
         }
 
@@ -74,7 +74,7 @@ namespace NuGet.Packaging.Test
             {
                 var issuerSerial = IssuerSerial.Create(certificate);
 
-                SignTestUtility.VerifySerialNumber(certificate, issuerSerial);
+                SigningTestUtility.VerifySerialNumber(certificate, issuerSerial);
             }
         }
 

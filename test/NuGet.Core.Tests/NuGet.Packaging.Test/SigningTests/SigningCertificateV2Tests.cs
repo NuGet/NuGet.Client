@@ -6,6 +6,7 @@ using System.Text;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using Org.BouncyCastle.Asn1;
+using Test.Utility.Signing;
 using Xunit;
 using BcAlgorithmIdentifier = Org.BouncyCastle.Asn1.X509.AlgorithmIdentifier;
 using BcEssCertIdV2 = Org.BouncyCastle.Asn1.Ess.EssCertIDv2;
@@ -53,10 +54,10 @@ namespace NuGet.Packaging.Test
                 var essCertIdV2 = signingCertificateV2.Certificates[0];
 
                 Assert.Equal(hashAlgorithmName, CryptoHashUtility.OidToHashAlgorithmName(essCertIdV2.HashAlgorithm.Algorithm.Value));
-                Assert.Equal(SignTestUtility.GetHash(certificate, hashAlgorithmName), essCertIdV2.CertificateHash);
+                Assert.Equal(SigningTestUtility.GetHash(certificate, hashAlgorithmName), essCertIdV2.CertificateHash);
                 Assert.Equal(1, essCertIdV2.IssuerSerial.GeneralNames.Count);
                 Assert.Equal(certificate.IssuerName.Name, essCertIdV2.IssuerSerial.GeneralNames[0].DirectoryName.Name);
-                SignTestUtility.VerifySerialNumber(certificate, essCertIdV2.IssuerSerial);
+                SigningTestUtility.VerifySerialNumber(certificate, essCertIdV2.IssuerSerial);
                 Assert.Null(signingCertificateV2.Policies);
             }
         }
@@ -93,13 +94,13 @@ namespace NuGet.Packaging.Test
                     Assert.Equal(
                         expectedEssCertIdV2.HashAlgorithm.Algorithm.Value,
                         actualEssCertIdV2.HashAlgorithm.Algorithm.Value);
-                    SignTestUtility.VerifyByteArrays(
+                    SigningTestUtility.VerifyByteArrays(
                         expectedEssCertIdV2.CertificateHash,
                         actualEssCertIdV2.CertificateHash);
                     Assert.Equal(
                         expectedEssCertIdV2.IssuerSerial.GeneralNames[0].DirectoryName.Name,
                         actualEssCertIdV2.IssuerSerial.GeneralNames[0].DirectoryName.Name);
-                    SignTestUtility.VerifyByteArrays(expectedEssCertIdV2.IssuerSerial.SerialNumber,
+                    SigningTestUtility.VerifyByteArrays(expectedEssCertIdV2.IssuerSerial.SerialNumber,
                         actualEssCertIdV2.IssuerSerial.SerialNumber);
                 }
             }
@@ -123,17 +124,17 @@ namespace NuGet.Packaging.Test
             Assert.Equal(3, signingCertificate.Certificates.Count);
             Assert.Null(signingCertificate.Policies);
 
-            SignTestUtility.VerifyByteArrays(
+            SigningTestUtility.VerifyByteArrays(
                 bcEssCertIdV2_1.GetCertHash(),
                 signingCertificate.Certificates[0].CertificateHash);
             Assert.Null(signingCertificate.Certificates[0].IssuerSerial);
 
-            SignTestUtility.VerifyByteArrays(
+            SigningTestUtility.VerifyByteArrays(
                 bcEssCertIdV2_2.GetCertHash(),
                 signingCertificate.Certificates[1].CertificateHash);
             Assert.Null(signingCertificate.Certificates[1].IssuerSerial);
 
-            SignTestUtility.VerifyByteArrays(
+            SigningTestUtility.VerifyByteArrays(
                 bcEssCertIdV2_3.GetCertHash(),
                 signingCertificate.Certificates[2].CertificateHash);
             Assert.Null(signingCertificate.Certificates[2].IssuerSerial);

@@ -16,6 +16,7 @@ using Org.BouncyCastle.Asn1.Cms;
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Cms;
 using Org.BouncyCastle.Crypto;
+using Test.Utility.Signing;
 using Xunit;
 using BcAttribute = Org.BouncyCastle.Asn1.Cms.Attribute;
 using BcCommitmentTypeIndication = Org.BouncyCastle.Asn1.Esf.CommitmentTypeIndication;
@@ -287,9 +288,9 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(1, signingCertificateV2.Certificates.Count);
 
                 var essCertIdV2 = signingCertificateV2.Certificates[0];
-                var expectedHash = SignTestUtility.GetHash(certificate, hashAlgorithmName);
+                var expectedHash = SigningTestUtility.GetHash(certificate, hashAlgorithmName);
 
-                SignTestUtility.VerifyByteArrays(expectedHash, essCertIdV2.CertificateHash);
+                SigningTestUtility.VerifyByteArrays(expectedHash, essCertIdV2.CertificateHash);
                 Assert.Equal(
                     hashAlgorithmName,
                     CryptoHashUtility.OidToHashAlgorithmName(essCertIdV2.HashAlgorithm.Algorithm.Value));
@@ -300,7 +301,7 @@ namespace NuGet.Packaging.Test
                 // Convert from little endian to big endian.
                 Array.Reverse(serialNumber);
 
-                SignTestUtility.VerifyByteArrays(
+                SigningTestUtility.VerifyByteArrays(
                     serialNumber,
                     essCertIdV2.IssuerSerial.SerialNumber);
             }

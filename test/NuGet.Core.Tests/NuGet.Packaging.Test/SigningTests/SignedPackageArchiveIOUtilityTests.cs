@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -309,7 +310,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void ReadSignedArchiveMetadata_WithSignedPackage_ReturnsMetadata()
         {
-            using (var stream = new MemoryStream(GetResource("SignedPackage.1.0.0.nupkg")))
+            using (var stream = new MemoryStream(SigningTestUtility.GetResourceBytes("SignedPackage.1.0.0.nupkg")))
             using (var reader = new BinaryReader(stream))
             {
                 var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
@@ -375,8 +376,8 @@ namespace NuGet.Packaging.Test
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
-                $"NuGet.Packaging.Test.compiler.resources.{name}",
-                typeof(SignedPackageArchiveUtilityTests));
+                $"Test.Utility.compiler.resources.{name}",
+                typeof(SigningTestUtility));
         }
 
         private static byte[] GetNonEmptyZip()
