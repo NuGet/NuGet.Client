@@ -228,6 +228,49 @@ namespace NuGet.Packaging
             }
         }
 
+        /// <summary>
+        /// Validate all files in package are not traversed outside of the expected extraction path.
+        /// Eg: file entry like ../../foo.dll can get outside of the expected extraction path.
+        /// </summary>
+        public async Task ValidatePackageEntriesAsync(CancellationToken token)
+        {
+            try
+            {
+                var files = await GetFilesAsync(token);
+                // This dummy destination is used to check if the file in package get outside of the extractionPath
+                var dummyDestination = NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetHome);
+
+                if (!dummyDestination.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                    dummyDestination += Path.DirectorySeparatorChar;
+
+                dummyDestination = Path.GetFullPath(dummyDestination);
+
+                var result = files.All(p =>
+                {
+                    var normalizedPath = Uri.UnescapeDataString(p.Replace('/', Path.DirectorySeparatorChar));
+                    var fullPath = Path.GetFullPath(Path.Combine(dummyDestination, normalizedPath));
+                    return fullPath.StartsWith(dummyDestination, StringComparison.Ordinal) && fullPath.Length != dummyDestination.Length;
+                });
+
+                if (!result)
+                {
+                    throw new UnsafePackageEntryException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ErrorUnsafePackageEntry));
+                }
+            }
+            catch (UnsafePackageEntryException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new PackagingException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ErrorUnableCheckPackageEntries), e);
+            }
+        }
+
         public override async Task<PrimarySignature> GetPrimarySignatureAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
