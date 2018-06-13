@@ -659,4 +659,10 @@ Valid from:</comment>
   <data name="ErrorAuthorTargetCannotBeACountersignature" xml:space="preserve">
     <value>Cannot target author signatures that are countersignatures.</value>
   </data>
+  <data name="ErrorUnableCheckPackageEntries" xml:space="preserve">
+    <value>An unexpected error occurred while checking package entries.</value>
+  </data>
+  <data name="ErrorUnsafePackageEntry" xml:space="preserve">
+    <value>The package contains an entry which is unsafe for extraction.</value>
+  </data>
 </root>
