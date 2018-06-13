@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -137,6 +139,7 @@ namespace NuGet.Packaging
             CancellationToken token)
         {
             var filesCopied = new List<string>();
+            var pacakgeIdentity = GetIdentity();
 
             foreach (var packageFile in packageFiles)
             {
@@ -156,11 +159,10 @@ namespace NuGet.Packaging
                 // in windows, we get the windows-style path
                 var normalizedPath = Uri.UnescapeDataString(packageFileName.Replace('/', Path.DirectorySeparatorChar));
 
+                destination = NormalizeDirectoryPath(destination);
+                ValidatePackageEntry(destination, normalizedPath, pacakgeIdentity);
+
                 var targetFilePath = Path.Combine(destination, normalizedPath);
-                if (!targetFilePath.StartsWith(destination, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
 
                 using (var stream = entry.Open())
                 {
@@ -196,6 +198,36 @@ namespace NuGet.Packaging
                 var packageFileFullPath = Path.Combine(packageDirectory, packageFile);
                 var entry = GetEntry(packageFile);
                 yield return new ZipFilePair(packageFileFullPath, entry);
+            }
+        }
+
+        /// <summary>
+        /// Validate all files in package are not traversed outside of the expected extraction path.
+        /// Eg: file entry like ../../foo.dll can get outside of the expected extraction path.
+        /// </summary>
+        public async Task ValidatePackageEntriesAsync(CancellationToken token)
+        {
+            try
+            {
+                var files = await GetFilesAsync(token);
+                var packageIdentity = await GetIdentityAsync(token);
+
+                // This dummy destination is used to check if the file in package get outside of the extractionPath
+                var dummyDestination = NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetHome);
+
+                dummyDestination = NormalizeDirectoryPath(dummyDestination);
+
+                ValidatePackageEntries(dummyDestination, files, packageIdentity);
+            }
+            catch (UnsafePackageEntryException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new PackagingException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ErrorUnableCheckPackageEntries), e);
             }
         }
     }

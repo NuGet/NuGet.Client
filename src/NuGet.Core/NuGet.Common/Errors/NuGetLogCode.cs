@@ -123,6 +123,11 @@ namespace NuGet.Common
         NU1401 = 1401,
 
         /// <summary>
+        /// Package contains unsafe zip entry.
+        /// </summary>
+        NU1402 = 1402,
+
+        /// <summary>
         /// Undefined warning
         /// </summary>
         NU1500 = 1500,
