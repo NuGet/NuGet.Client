@@ -267,6 +267,11 @@ namespace NuGet.Protocol.Plugins
                 return Enumerable.Empty<string>();
             }
 
+            // Normalized destination path 
+            var normalizedDestination = NormalizeDirectoryPath(destination);
+
+            ValidatePackageEntries(normalizedDestination, packageFiles, _packageIdentity);
+
             var packageId = _packageIdentity.Id;
             var packageVersion = _packageIdentity.Version.ToNormalizedString();
             var request = new CopyFilesInPackageRequest(

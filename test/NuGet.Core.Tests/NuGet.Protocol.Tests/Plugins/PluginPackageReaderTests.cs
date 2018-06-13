@@ -536,6 +536,58 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task CopyFilesAsync_UnsafeEnty_Fail()
+        {
+            var expectedFiles = new[] { "../a", "b", "c" };
+
+            using (var testDirectory = TestDirectory.Create())
+            using (var test = new PluginPackageReaderTest())
+            {
+                await Assert.ThrowsAsync<UnsafePackageEntryException>(() => test.Reader.CopyFilesAsync(
+                   testDirectory.Path,
+                   expectedFiles,
+                   extractFile: null,
+                   logger: NullLogger.Instance,
+                   cancellationToken: CancellationToken.None));
+            }
+        }
+
+        [Fact]
+        public async Task CopyFilesAsync_UnsafeRootEnty_Fail()
+        {
+            var rootPath = RuntimeEnvironmentHelper.IsWindows ? @"C:" : @"/";
+            var expectedFiles = new[] { $"{rootPath}/a", "b", "c" };
+
+            using (var testDirectory = TestDirectory.Create())
+            using (var test = new PluginPackageReaderTest())
+            {
+                await Assert.ThrowsAsync<UnsafePackageEntryException>(() => test.Reader.CopyFilesAsync(
+                   testDirectory.Path,
+                   expectedFiles,
+                   extractFile: null,
+                   logger: NullLogger.Instance,
+                   cancellationToken: CancellationToken.None));
+            }
+        }
+
+        [Fact]
+        public async Task CopyFilesAsync_UnsafeCurrentEnty_Fail()
+        {
+            var expectedFiles = new[] { ".", "b", "c" };
+
+            using (var testDirectory = TestDirectory.Create())
+            using (var test = new PluginPackageReaderTest())
+            {
+                await Assert.ThrowsAsync<UnsafePackageEntryException>(() => test.Reader.CopyFilesAsync(
+                   testDirectory.Path,
+                   expectedFiles,
+                   extractFile: null,
+                   logger: NullLogger.Instance,
+                   cancellationToken: CancellationToken.None));
+            }
+        }
+
+        [Fact]
         public void GetIdentity_Throws()
         {
             using (var test = new PluginPackageReaderTest())
