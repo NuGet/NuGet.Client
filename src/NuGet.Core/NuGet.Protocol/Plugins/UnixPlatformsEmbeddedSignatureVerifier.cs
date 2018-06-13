@@ -20,6 +20,10 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="PlatformNotSupportedException">Thrown if the current platform is unsupported.</exception>
         public override bool IsValid(string filePath)
         {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentException(nameof(filePath));
+            }
             // There's no embedded signature verification on Linux and MacOS platforms
             return true;
         }
