@@ -877,6 +877,99 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public async Task CopyFiles_ContainsInvalidEntry_Fail()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                   root,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "../../A.dll",
+                   "content/net40/B.nuspec");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act & Assert
+                    Assert.Throws<UnsafePackageEntryException>(() => packageReader.CopyFiles(
+                        root.Path,
+                        new[] { "../../A.dll", "content/net40/B.nuspec"},
+                        ExtractFile,
+                        NullLogger.Instance,
+                        CancellationToken.None));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CopyFiles_ContainsRootEntry_Fail()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var rootPath = RuntimeEnvironmentHelper.IsWindows ? @"C:" : @"/";
+
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                   root,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   $"{rootPath}/A.dll",
+                   "content/net40/B.nuspec");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act & Assert
+                    Assert.Throws<UnsafePackageEntryException>(() => packageReader.CopyFiles(
+                        root.Path,
+                        new[] { $"{rootPath}/A.dll", "content/net40/B.nuspec" },
+                        ExtractFile,
+                        NullLogger.Instance,
+                        CancellationToken.None));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CopyFiles_ContainsCurrentEntry_Fail()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                   root,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   ".",
+                   "content/net40/B.nuspec");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act & Assert
+                    Assert.Throws<UnsafePackageEntryException>(() => packageReader.CopyFiles(
+                        root.Path,
+                        new[] { ".", "content/net40/B.nuspec" },
+                        ExtractFile,
+                        NullLogger.Instance,
+                        CancellationToken.None));
+                }
+            }
+        }
+
+        [Fact]
         public async Task CopyFilesAsync_ReturnsCopiedFilePaths()
         {
             using (var testDirectory = TestDirectory.Create())
