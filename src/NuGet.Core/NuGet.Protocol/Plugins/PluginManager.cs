@@ -2,20 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol.Plugins;
 using NuGet.Shared;
@@ -141,9 +139,7 @@ namespace NuGet.Protocol.Core.Types
                 {
                     var serviceIndexJson = JObject.Parse(serviceIndex.Json);
 
-                    var results = await FindAvailablePluginsAsync(cancellationToken);
-
-                    foreach (var result in results)
+                    foreach (var result in await FindAvailablePluginsAsync(cancellationToken))
                     {
                         var pluginCreationResult = await CreatePluginAsync(
                             result,
@@ -174,26 +170,12 @@ namespace NuGet.Protocol.Core.Types
             {
                 throw new ArgumentNullException(nameof(pluginDiscoveryResult));
             }
-            // Provide requested Plugin Operation
-            // here check if a plugin contains non source agnostic 
+
             return CreatePluginAsync(pluginDiscoveryResult, OperationClaim.Authentication, new PluginRequestKey(pluginDiscoveryResult.PluginFile.Path, "Source-Agnostic"), null, null, cancellationToken);
         }
 
-        private Lazy<string> _pluginsCacheDirectory = new Lazy<string>(() => NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetPluginsCacheDirectory));
+        private Lazy<string> _pluginsCacheDirectory = new Lazy<string>(() => SettingsUtility.GetPluginsCacheFolder());
 
-        // TODO NK - Moved this into a shared utility
-        private static string ComputeHash(string value)
-        {
-            var trailing = value.Length > 32 ? value.Substring(value.Length - 32) : value;
-            byte[] hash;
-            using (var sha = SHA1.Create())
-            {
-                hash = sha.ComputeHash(Encoding.UTF8.GetBytes(value));
-            }
-
-            const string hex = "0123456789abcdef";
-            return hash.Aggregate("$" + trailing, (result, ch) => "" + hex[ch / 0x10] + hex[ch % 0x10] + result);
-        }
         private async Task<PluginCreationResult> CreatePluginAsync(
             PluginDiscoveryResult result,
             OperationClaim requestedOperationClaim,
@@ -211,11 +193,10 @@ namespace NuGet.Protocol.Core.Types
                 action: async lockedToken =>
                 {
 
-                    IList<OperationClaim> cachedOperationClaims;
                     Stream content = null;
                     try
                     {
-                        content = HttpCacheUtility.TryReadCacheFile(context.MaxAge, context.CacheFileName);
+                        content = CachingUtility.TryReadCacheFile(context.MaxAge, context.CacheFileName);
                         if (content != null)
                         {
                             cacheResult.ProcessContent(content);
@@ -230,7 +211,7 @@ namespace NuGet.Protocol.Core.Types
                         content?.Dispose();
                     }
 
-                    cachedOperationClaims = cacheResult.GetOperationClaims(requestKey);
+                    var cachedOperationClaims = cacheResult.GetOperationClaims(requestKey);
                     if (cachedOperationClaims == null || cachedOperationClaims.Contains(requestedOperationClaim))
                     {
                         if (result.PluginFile.State.Value == PluginFileState.Valid)
@@ -457,6 +438,7 @@ namespace NuGet.Protocol.Core.Types
                 return Task.CompletedTask;
             }
         }
+
         private sealed class PluginCacheContext
         {
             public TimeSpan MaxAge { get; set; } = TimeSpan.FromDays(30);
@@ -466,7 +448,7 @@ namespace NuGet.Protocol.Core.Types
             public PluginCacheContext(string rootCacheFolder, string pluginFilePath)
             {
                 RootFolder = rootCacheFolder;
-                CacheFileName = Path.Combine(rootCacheFolder, ComputeHash(pluginFilePath) + ".dat");
+                CacheFileName = Path.Combine(rootCacheFolder, CachingUtility.ComputeHash(pluginFilePath) + ".dat");
             }
         }
 

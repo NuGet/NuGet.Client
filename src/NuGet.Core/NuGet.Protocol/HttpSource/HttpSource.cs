@@ -376,7 +376,7 @@ namespace NuGet.Protocol
         protected virtual Stream TryReadCacheFile(string uri, TimeSpan maxAge, string cacheFile)
         {
             // Do not need the uri here
-            return HttpCacheUtility.TryReadCacheFile(maxAge, cacheFile);
+            return CachingUtility.TryReadCacheFile(maxAge, cacheFile);
         }
 
         public static HttpSource Create(SourceRepository source)

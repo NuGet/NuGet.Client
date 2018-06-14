@@ -5,8 +5,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -23,13 +21,13 @@ namespace NuGet.Protocol
             Uri sourceUri,
             string cacheKey,
             HttpSourceCacheContext context)
-        {     
+        {
             // When the MaxAge is TimeSpan.Zero, this means the caller is passing is using a temporary directory for
             // cache files, instead of the global HTTP cache used by default. Additionally, the cleaning up of this
             // directory is the responsibility of the caller.
             if (context.MaxAge > TimeSpan.Zero)
             {
-                var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(sourceUri.OriginalString));
+                var baseFolderName = RemoveInvalidFileNameChars(CachingUtility.ComputeHash(sourceUri.OriginalString));
                 var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
                 var cacheFolder = Path.Combine(httpCacheDirectory, baseFolderName);
                 var cacheFile = Path.Combine(cacheFolder, baseFileName);
@@ -52,19 +50,6 @@ namespace NuGet.Protocol
             }
         }
 
-        private static string ComputeHash(string value)
-        {
-            var trailing = value.Length > 32 ? value.Substring(value.Length - 32) : value;
-            byte[] hash;
-            using (var sha = SHA1.Create())
-            {
-                hash = sha.ComputeHash(Encoding.UTF8.GetBytes(value));
-            }
-
-            const string hex = "0123456789abcdef";
-            return hash.Aggregate("$" + trailing, (result, ch) => "" + hex[ch / 0x10] + hex[ch % 0x10] + result);
-        }
-
         private static string RemoveInvalidFileNameChars(string value)
         {
             var invalid = Path.GetInvalidFileNameChars();
@@ -73,30 +58,6 @@ namespace NuGet.Protocol
                 )
                 .Replace("__", "_")
                 .Replace("__", "_");
-        }
-
-        public static Stream TryReadCacheFile(TimeSpan maxAge, string cacheFile)
-        {
-            var fileInfo = new FileInfo(cacheFile);
-
-            if (fileInfo.Exists)
-            {
-                var age = DateTime.UtcNow.Subtract(fileInfo.LastWriteTimeUtc);
-                if (age < maxAge)
-                {
-                    var stream = new FileStream(
-                        cacheFile,
-                        FileMode.Open,
-                        FileAccess.Read,
-                        FileShare.Read | FileShare.Delete,
-                        BufferSize,
-                        useAsync: true);
-
-                    return stream;
-                }
-            }
-
-            return null;
         }
 
         public static async Task CreateCacheFileAsync(
