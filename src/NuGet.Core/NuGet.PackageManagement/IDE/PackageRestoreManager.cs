@@ -130,7 +130,7 @@ namespace NuGet.PackageManagement
         {
             var packages = new List<PackageRestoreData>();
 
-            if(packageReferencesDict == null || !packageReferencesDict.Any())
+            if (packageReferencesDict == null || !packageReferencesDict.Any())
             {
                 return packages;
             }
@@ -332,7 +332,7 @@ namespace NuGet.PackageManagement
                 hashSetOfMissingPackageReferences,
                 packageRestoreContext,
                 nuGetProjectContext);
-                        
+
             return new PackageRestoreResult(
                 attemptedPackages.All(p => p.Restored),
                 attemptedPackages.Select(p => p.Package.PackageIdentity).ToList());
@@ -450,7 +450,11 @@ namespace NuGet.PackageManagement
             // PackageReferences cannot be null here
             if (exception != null)
             {
-                nuGetProjectContext.Log(MessageLevel.Warning, exception.Message);
+                if (!string.IsNullOrEmpty(exception.Message))
+                {
+                    nuGetProjectContext.Log(MessageLevel.Warning, exception.Message);
+                }
+
                 if (packageRestoreContext.PackageRestoreFailedEvent != null)
                 {
                     var packageReferenceComparer = new PackageReferenceComparer();
@@ -462,9 +466,11 @@ namespace NuGet.PackageManagement
                     if (packageRestoreData != null)
                     {
                         Debug.Assert(packageRestoreData.ProjectNames != null);
-                        packageRestoreContext.PackageRestoreFailedEvent(null, new PackageRestoreFailedEventArgs(packageReference,
-                            exception,
-                            packageRestoreData.ProjectNames));
+                        packageRestoreContext.PackageRestoreFailedEvent(
+                            null,
+                            new PackageRestoreFailedEventArgs(packageReference,
+                                exception,
+                                packageRestoreData.ProjectNames));
                     }
                 }
             }

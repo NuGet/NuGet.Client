@@ -90,21 +90,5 @@ namespace NuGet.Commands
                 WarningLevel = logMessage.WarningLevel
             };
         }
-
-        /// <summary>
-        /// Converts an SignatureLog into a RestoreLogMessage.
-        /// This is needed when an SignatureLog needs to be logged and loggers do not have visibility to SignatureLog.
-        /// </summary>
-        /// <param name="logMessage">SignatureLog to be converted.</param>
-        /// <returns>RestoreLogMessage equivalent to the SignatureLog.</returns>
-        public static RestoreLogMessage AsRestoreLogMessage(this SignatureLog logMessage)
-        {
-            return new RestoreLogMessage(logMessage.Level, logMessage.Code, logMessage.Message)
-            {
-                ProjectPath = logMessage.ProjectPath,
-                WarningLevel = logMessage.WarningLevel,
-                LibraryId = logMessage.LibraryId
-            };
-        }
     }
 }

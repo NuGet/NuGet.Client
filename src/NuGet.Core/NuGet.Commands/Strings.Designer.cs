@@ -1134,6 +1134,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Warnings in {0}.
+        /// </summary>
+        internal static string Log_WarningSummary {
+            get {
+                return ResourceManager.GetString("Log_WarningSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Writing cache file to disk. Path: {0}.
         /// </summary>
         internal static string Log_WritingCacheFile {

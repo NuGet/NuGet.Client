@@ -222,6 +222,7 @@
   </data>
   <data name="Log_ErrorSummary" xml:space="preserve">
     <value>Errors in {0}</value>
+    <comment>0 - project name/type</comment>
   </data>
   <data name="Log_FeedsUsedSummary" xml:space="preserve">
     <value>Feeds used:</value>
@@ -697,5 +698,9 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="Warning_FileExcludedByDefault" xml:space="preserve">
     <value>File '{0}' was not added to the package. Files and folders starting with '.' or ending with '.nupkg' are excluded by default. To include this file, use -NoDefaultExcludes from the commandline</value>
+  </data>
+  <data name="Log_WarningSummary" xml:space="preserve">
+    <value>Warnings in {0}</value>
+    <comment>0 - project name/type</comment>
   </data>
 </root>
