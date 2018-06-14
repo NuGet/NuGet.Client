@@ -413,7 +413,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package contains an entry which is unsafe for extraction..
+        ///   Looks up a localized string similar to The package &apos;{0}&apos; contains an entry which is unsafe for extraction..
         /// </summary>
         internal static string ErrorUnsafePackageEntry {
             get {
