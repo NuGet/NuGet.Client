@@ -62,13 +62,6 @@ namespace NuGet.PackageManagement.UI
 
         internal InfiniteScrollList PackageList { get => _packageList; }
 
-        public int LeftSideMinWidth => 300;
-        public int GridSplitterWidth => 4;
-        public int RightSideMinWidth => 330;
-        public int LeftSideExcludedWidth => RightSideMinWidth + GridSplitterWidth;
-        public int ContentMinWidth => LeftSideMinWidth + GridSplitterWidth + RightSideMinWidth;
-
-
         internal PackageSourceMoniker SelectedSource
         {
             get
