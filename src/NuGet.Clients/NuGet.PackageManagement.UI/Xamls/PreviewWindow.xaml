@@ -10,8 +10,10 @@
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   WindowStartupLocation="CenterOwner"
   Title="{Binding Title}"
+  AutomationProperties.LabeledBy="{Binding ElementName=_changesText}"
   Height="500"
   Width="500"
+  MinWidth="{Binding WindowMinwidth}"
   FocusManager.FocusedElement="{Binding ElementName=_okButton}">
   <Window.Resources>
     <ResourceDictionary>
@@ -33,6 +35,8 @@
       Grid.Row="0"
       Margin="12,12,12,0"
       TextWrapping="Wrap"
+      x:Name="_changesText"
+      AutomationProperties.Name="{Binding Text}"
       Text="{x:Static nuget:Resources.Text_Changes}" />
 
     <Border
@@ -44,6 +48,7 @@
         HorizontalScrollBarVisibility="Auto"
         IsTabStop="True">
         <ItemsControl
+          x:Name="_changesItems"
           ItemsSource="{Binding Path=PreviewResults}"
           IsTabStop="False">
           <ItemsControl.ItemTemplate>
@@ -51,6 +56,8 @@
               <StackPanel
                 Margin="6, 6">
                 <TextBlock
+                  x:Name="_changeName"
+                  AutomationProperties.Name="{Binding Text}"
                   FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
                   Text="{Binding Path=Name}" />
 
@@ -59,6 +66,8 @@
                   Margin="0,8"
                   Visibility="{Binding Path=Deleted,Converter={StaticResource EnumerableToVisibilityConverter}}">
                   <TextBlock
+                    x:Name="_uninstalledPackages"
+                    AutomationProperties.Name="{Binding Text}"
                     FontWeight="Bold"
                     Text="{x:Static nuget:Resources.Label_UninstalledPackages}" />
                   <ItemsControl
@@ -73,12 +82,19 @@
                   Margin="0,8"
                   Visibility="{Binding Path=Updated,Converter={StaticResource EnumerableToVisibilityConverter}}">
                   <TextBlock
+                    x:Name="_updatedPackages"
+                    AutomationProperties.Name="{Binding Text}"
                     FontWeight="Bold"
                     Text="{x:Static nuget:Resources.Label_UpdatedPackages}" />
                   <ItemsControl
                     Margin="10,0,0,0"
                     ItemsSource="{Binding Path=Updated}"
                     IsTabStop="False">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding}" AutomationProperties.Name="{Binding AutomationName}" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </StackPanel>
 
@@ -87,6 +103,8 @@
                   Margin="0,8"
                   Visibility="{Binding Path=Added,Converter={StaticResource EnumerableToVisibilityConverter}}">
                   <TextBlock
+                    x:Name="_installedPackages"
+                    AutomationProperties.Name="{Binding Text}"
                     FontWeight="Bold"
                     Text="{x:Static nuget:Resources.Label_InstalledPackages}" />
                   <ItemsControl
@@ -105,35 +123,33 @@
     <Grid
       Grid.Row="2">
       <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
         <ColumnDefinition Width="auto" />
-        <ColumnDefinition />
-        <ColumnDefinition
-          Width="auto" />
-        <ColumnDefinition
-          Width="auto" />
+        <ColumnDefinition Width="auto" />
       </Grid.ColumnDefinitions>
       <CheckBox
         x:Name="_doNotShowCheckBox"
         Grid.Column="0"
         Margin="12"
-        MinWidth="180"
+        MinWidth="{Binding DoNotShowAgainMinWidth}"
         VerticalAlignment="Center"
         Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
         Content="{x:Static nuget:Resources.DoNotShowThisAgain}"
         Checked="DoNotShowCheckBox_Checked"
-        Unchecked="DoNotShowCheckBox_Unchecked" />
+        Unchecked="DoNotShowCheckBox_Unchecked"/>
       <Button
         Name="_okButton"
-        Grid.Column="2"
-        MinWidth="86"
+        Grid.Column="1"
+        MinWidth="{Binding ButtonMinWidth}"
         MinHeight="24"
         Margin="0,12"
         AutomationProperties.AutomationId="OK"
         Content="{x:Static nuget:Resources.Button_OK}"
-        Click="OkButtonClicked" />
+        Click="OkButtonClicked"
+        AutomationProperties.LabeledBy="{Binding Text, ElementName=_changesText}"/>
       <Button
-        Grid.Column="3"
-        MinWidth="86"
+        Grid.Column="2"
+        MinWidth="{Binding ButtonMinWidth}"
         MinHeight="24"
         Margin="6,12,12,12"
         AutomationProperties.AutomationId="Cancel"
