@@ -486,7 +486,7 @@ Packages installed into Website projects will not be restored during build. Cons
     <value>Learn about Uninstall Options</value>
   </data>
   <data name="Label_InstalledVersionsCount" xml:space="preserve">
-    <value>Version(s) - {0}</value>
+    <value>Versions - {0}</value>
   </data>
   <data name="GroupBoxHeader_InstallOptions" xml:space="preserve">
     <value>Install and Update Options</value>
@@ -798,5 +798,29 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="ShowError_SettingActivatedFailed" xml:space="preserve">
     <value>Failed to initialize NuGet Package Manager Settings. Please report a problem using Help &gt; Send Feedback &gt; Report a Problem.</value>
+  </data>
+  <data name="Accessibility_PackageIcon" xml:space="preserve">
+    <value>Package icon</value>
+  </data>
+  <data name="Accessibility_PackageManager" xml:space="preserve">
+    <value>Package manager</value>
+  </data>
+  <data name="Accessibility_PackageMetadata" xml:space="preserve">
+    <value>Package metadata</value>
+  </data>
+  <data name="Accessibility_PackagesDetails" xml:space="preserve">
+    <value>Package details</value>
+  </data>
+  <data name="Accessibility_PackagesList" xml:space="preserve">
+    <value>Packages list</value>
+  </data>
+  <data name="Accessibility_PrefixReserved" xml:space="preserve">
+    <value>Prefix reserved</value>
+  </data>
+  <data name="Accessibility_ThumbHelp" xml:space="preserve">
+    <value>Use arrow keys to change the size of the sections</value>
+  </data>
+  <data name="Accessibility_ThumbName" xml:space="preserve">
+    <value>Thumb</value>
   </data>
 </root>

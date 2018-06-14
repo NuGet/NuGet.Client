@@ -587,11 +587,10 @@
   -->
   <Style x:Key="SelectableTextBlockStyle" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
     <Setter Property="IsReadOnly" Value="True"/>
-    <Setter Property="IsTabStop" Value="True"/>
+    <Setter Property="IsTabStop" Value="False"/>
     <Setter Property="BorderThickness" Value="0"/>
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}"/>
-    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
     <Setter Property="Padding" Value="-2,0,-2,0"/>
     <Style.Triggers>
       <MultiTrigger>
@@ -611,9 +610,7 @@
                              FontWeight="{TemplateBinding FontWeight}"
                              TextWrapping="{TemplateBinding TextWrapping}"
                              TextTrimming="CharacterEllipsis"
-                             Padding="0,0,0,0"
-                             Focusable="{TemplateBinding Focusable}"
-                             AutomationProperties.Name="{TemplateBinding Text}" />
+                             Padding="0,0,0,0" />
             </ControlTemplate>
           </Setter.Value>
         </Setter>
