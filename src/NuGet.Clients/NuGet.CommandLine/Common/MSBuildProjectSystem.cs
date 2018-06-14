@@ -30,7 +30,7 @@ namespace NuGet.Common
             ProjectFileFullPath = projectFullPath;
             ProjectFullPath = Path.GetDirectoryName(projectFullPath);
             Project = GetProject(projectFullPath);
-            ProjectName = Path.GetFileName(projectFullPath);
+            ProjectName = Path.GetFileNameWithoutExtension(projectFullPath);
             ProjectUniqueName = projectFullPath;
             NuGetProjectContext = projectContext;
         }

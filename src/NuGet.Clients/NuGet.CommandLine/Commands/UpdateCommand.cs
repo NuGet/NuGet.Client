@@ -217,7 +217,7 @@ namespace NuGet.CommandLine
 
         private static string GetPackagesConfigPath(string path)
         {
-            if (path.EndsWith(Constants.PackageReferenceFile, StringComparison.OrdinalIgnoreCase))
+            if (CommandLineUtility.IsValidConfigFileName(Path.GetFileName(path)))
             {
                 return Path.GetFullPath(path);
             }

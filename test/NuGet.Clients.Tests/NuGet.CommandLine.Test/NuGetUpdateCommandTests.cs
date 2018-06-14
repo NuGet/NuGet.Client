@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -21,6 +22,8 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetUpdateCommandTests
     {
+        private const int _successCode = 0;
+
         [Fact]
         public async Task UpdateCommand_Success_Update_DeletedFile()
         {
@@ -1144,7 +1147,101 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData("packages.config")]
+        [InlineData("packages.proj1.config")]
+        public void UpdateCommand_FromProjectConfig(string configFileName)
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            {
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
 
+                var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
+
+                var a1Package = Util.CreateTestPackage(
+                    a1.Id,
+                    a1.Version.ToString(),
+                    packagesSourceDirectory,
+                    licenseUrl: null,
+                    contentFiles: "test1.txt");
+
+                var a2Package = Util.CreateTestPackage(
+                    a2.Id,
+                    a2.Version.ToString(),
+                    packagesSourceDirectory,
+                    licenseUrl: null,
+                    contentFiles: "test2.txt");
+
+                //Create solution file
+                Directory.CreateDirectory(projectDirectory);
+                Util.CreateFile(solutionDirectory, "a.sln",
+                    Util.CreateSolutionFileContent());
+
+                //Create project file
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj1.csproj",
+                    string.Format(CultureInfo.InvariantCulture,
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='{0}' />
+  </ItemGroup>
+</Project>", configFileName));
+
+                //Create packages config file
+                Util.CreateFile(
+                    projectDirectory,
+                    configFileName,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net45"" />
+</packages>");
+
+                var restoreArgs = new[]
+                {
+                    "restore",
+                    Path.Combine(projectDirectory, "proj1.csproj"),
+                    "-Source",
+                    packagesSourceDirectory,
+                    "-SolutionDirectory",
+                    solutionDirectory
+                };
+
+                var restoreResult = CommandRunner.Run(
+                    nugetexe,
+                    solutionDirectory,
+                    string.Join(" ", restoreArgs),
+                    waitForExit: true);
+
+                // Act
+                var args = new[]
+                {
+                    "update",
+                    Path.Combine(projectDirectory, configFileName),
+                    "-Source",
+                    packagesSourceDirectory
+                };
+
+                var r = CommandRunner.Run(
+                nugetexe,
+                solutionDirectory,
+                string.Join(" ", args),
+                waitForExit: true);
+
+                // Assert
+                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
+            }
+        }
 
         [Fact]
         public async Task UpdateCommand_Success_CustomPackagesFolder_AbsolutePath()
