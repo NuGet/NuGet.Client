@@ -34,12 +34,12 @@ namespace NuGet.Packaging.Signing
 
         public IEnumerable<ILogMessage> GetWarningIssues()
         {
-            return Issues.Where(p => p.Level==LogLevel.Warning).Select(p => p.ToLogMessage());
+            return Issues.Where(p => p.Level==LogLevel.Warning);
         }
 
         public IEnumerable<ILogMessage> GetErrorIssues()
         {
-            return Issues.Where(p => p.Level == LogLevel.Error).Select(p => p.ToLogMessage());
+            return Issues.Where(p => p.Level == LogLevel.Error);
         }
     }
 }

@@ -3,22 +3,35 @@
 
 using System;
 using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.Packaging.Signing
 {
-    public class SignatureLog : IEquatable<SignatureLog>
-    {
-        public LogLevel Level { get; }
+    /// <summary>
+    /// Log message for signature verification.
+    /// </summary>
+    public class SignatureLog : ILogMessage, IEquatable<SignatureLog>
+    { 
+        public LogLevel Level { get; set; }
 
-        public string Message { get; }
+        public string Message { get; set; }
 
-        public NuGetLogCode Code { get; }
+        public NuGetLogCode Code { get; set; }
+
+        public WarningLevel WarningLevel { get; set; }
+
+        public string ProjectPath { get; set; }
+
+        public DateTimeOffset Time { get; set; }
+
+        public string LibraryId { get; set; }
 
         private SignatureLog(LogLevel level, NuGetLogCode code, string message)
         {
             Level = level;
             Code = code;
             Message = message;
+            Time = DateTimeOffset.UtcNow;
         }
 
         public static SignatureLog InformationLog(string message)
@@ -35,6 +48,7 @@ namespace NuGet.Packaging.Signing
 
         public static SignatureLog DebugLog(string message)
         {
+            // create a log message and make the code undefined to not display the code in any logger
             return new SignatureLog(LogLevel.Debug, NuGetLogCode.Undefined, message);
         }
 
@@ -51,28 +65,22 @@ namespace NuGet.Packaging.Signing
             return new SignatureLog(LogLevel.Error, code, message);
         }
 
-        public ILogMessage ToLogMessage()
-        {
-            if (Level == LogLevel.Error)
-            {
-                return LogMessage.CreateError(Code, Message);
-            }
-            else if (Level == LogLevel.Warning)
-            {
-                return LogMessage.CreateWarning(Code, Message);
-            }
-            else
-            {
-                return new LogMessage(Level, Message);
-            }
-        }
-
         public bool Equals(SignatureLog other)
         {
-            return other != null &&
-                Equals(Level, other.Level) &&
+            if (other == null)
+            {
+                return false;
+            }
+            else if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Equals(Level, other.Level) &&
                 Equals(Code, other.Code) &&
-                string.Equals(Message, other.Message, StringComparison.Ordinal);
+                EqualityUtility.EqualsWithNullCheck(LibraryId, other.LibraryId) &&
+                EqualityUtility.EqualsWithNullCheck(ProjectPath, other.ProjectPath) &&
+                EqualityUtility.EqualsWithNullCheck(Message, other.Message);
         }
     }
 }

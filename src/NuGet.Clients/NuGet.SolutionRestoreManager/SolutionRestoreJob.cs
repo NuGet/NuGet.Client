@@ -399,7 +399,7 @@ namespace NuGet.SolutionRestoreManager
                     _logger.Log(ex.AsLogMessage());
                 }
 
-                ex.Results.SelectMany(p => p.Issues).ToList().ForEach(p => _logger.Log(p.ToLogMessage()));
+                ex.Results.SelectMany(p => p.Issues).ToList().ForEach(p => _logger.Log(p));
 
                 return;
             }

@@ -141,5 +141,10 @@ namespace NuGet.Test.Utility
 
             return packageFile;
         }
+
+        public new string ToString()
+        {
+            return $"{Id}.{Version}";
+        }
     }
 }

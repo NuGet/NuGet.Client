@@ -38,7 +38,7 @@ namespace NuGet.Common
             Message = message;
             Code = NuGetLogCode.Undefined;
             Level = logLevel;
-            Time = DateTimeOffset.Now;
+            Time = DateTimeOffset.UtcNow;
         }
 
         /// <summary>

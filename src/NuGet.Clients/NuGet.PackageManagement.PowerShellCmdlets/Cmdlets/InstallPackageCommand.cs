@@ -136,7 +136,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Log(LogUtility.LogLevelToMessageLevel(LogLevel.Error), ex.AsLogMessage().FormatWithCode());
                 }
 
-                var logMessages = ex.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()).ToList();
+                var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
 
                 logMessages.ForEach(p => Log(LogUtility.LogLevelToMessageLevel(p.Level), p.FormatWithCode()));
             }
@@ -194,7 +194,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Log(LogUtility.LogLevelToMessageLevel(LogLevel.Error), ex.AsLogMessage().FormatWithCode());
                 }
 
-                var logMessages = ex.Results.SelectMany(p => p.Issues).Select(p => p.ToLogMessage()).ToList();
+                var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
 
                 logMessages.ForEach(p => Log(LogUtility.LogLevelToMessageLevel(p.Level), p.FormatWithCode()));
             }

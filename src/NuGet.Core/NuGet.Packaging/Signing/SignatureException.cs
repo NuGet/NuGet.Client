@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
+using NuGet.Shared;
 
 namespace NuGet.Packaging.Signing
 {
@@ -43,6 +45,7 @@ namespace NuGet.Packaging.Signing
         {
             Results = results;
             PackageIdentity = package;
+            results.SelectMany(r => r.Issues).ForEach(l => l.LibraryId = package.ToString());
         }
 
         public SignatureException(NuGetLogCode code, string message, PackageIdentity package)
