@@ -26,8 +26,6 @@ namespace NuGet.Test.Utility
 
         public static byte[] GetResourceBytes(string name, Type type)
         {
-            var x = type.GetTypeInfo().Assembly.GetManifestResourceNames();
-
             using (var reader = new BinaryReader(type.GetTypeInfo().Assembly.GetManifestResourceStream(name)))
             {
                 return reader.ReadBytes((int)reader.BaseStream.Length);
