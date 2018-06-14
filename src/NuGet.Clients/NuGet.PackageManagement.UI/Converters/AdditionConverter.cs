@@ -8,6 +8,13 @@ using System.Windows.Data;
 
 namespace NuGet.PackageManagement.UI
 {
+    /// <summary>
+    /// The purpose of this converter is to  get the total MinWidth of the content grid
+    /// by adding the MinWidth of it's content
+    /// `values[0]` is MinWidth of the `_leftSideGridColumn`
+    /// `values[1]` is Width of the `_gridSplitter`
+    /// `values[2]` is MinWidth of the `_rightSideGridColumn`
+    /// </summary>
     public class AdditionConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
