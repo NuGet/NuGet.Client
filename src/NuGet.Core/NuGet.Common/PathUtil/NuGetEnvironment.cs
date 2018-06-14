@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -57,6 +57,12 @@ namespace NuGet.Common
                         GetFolderPath(SpecialFolder.LocalApplicationData),
                         "NuGet",
                         "v3-cache");
+
+                case NuGetFolderPath.NuGetPluginsCacheDirectory:
+                    return Path.Combine(
+                        GetFolderPath(SpecialFolder.LocalApplicationData),
+                        "NuGet",
+                        "plugins-cache");
 
                 case NuGetFolderPath.DefaultMsBuildPath:
                     var programFilesPath = GetFolderPath(SpecialFolder.ProgramFilesX86);

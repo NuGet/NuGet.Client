@@ -23,7 +23,7 @@ namespace NuGet.Protocol
             Uri sourceUri,
             string cacheKey,
             HttpSourceCacheContext context)
-        {
+        {     
             // When the MaxAge is TimeSpan.Zero, this means the caller is passing is using a temporary directory for
             // cache files, instead of the global HTTP cache used by default. Additionally, the cleaning up of this
             // directory is the responsibility of the caller.
@@ -75,7 +75,7 @@ namespace NuGet.Protocol
                 .Replace("__", "_");
         }
 
-        public static Stream TryReadCacheFile(string uri, TimeSpan maxAge, string cacheFile)
+        public static Stream TryReadCacheFile(TimeSpan maxAge, string cacheFile)
         {
             var fileInfo = new FileInfo(cacheFile);
 

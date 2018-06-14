@@ -235,6 +235,12 @@ namespace NuGet.Configuration
             return NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory);
         }
 
+        /// <summary>
+        ///  Get plugins cache folder
+        /// </summary>
+        
+
+
         public static IEnumerable<PackageSource> GetEnabledSources(ISettings settings)
         {
             var provider = new PackageSourceProvider(settings);
