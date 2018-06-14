@@ -168,5 +168,14 @@ namespace NuGet.Credentials {
                 return ResourceManager.GetString("SecurePluginNotice_UsingPluginAsProvider", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The plugin credential provider could not acquire credentials. Authentication may require manual action. Consider re-running the command with --interactive for `dotnet`, /p:NuGetInteractive=&quot;true&quot; for MSBuild or removing the -NonInteractive switch for `NuGet`.
+        /// </summary>
+        internal static string SecurePluginWarning_UseInteractiveOption {
+            get {
+                return ResourceManager.GetString("SecurePluginWarning_UseInteractiveOption", resourceCulture);
+            }
+        }
     }
 }

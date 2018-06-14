@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Credentials;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -61,12 +62,17 @@ namespace NuGet.Build.Tasks
         /// Force restore, skip no op
         /// </summary>
         public bool RestoreForce { get; set; }
-        
+
         /// <summary>
         /// Do not display Errors and Warnings to the user. 
         /// The Warnings and Errors are written into the assets file and will be read by an sdk target.
         /// </summary>
         public bool HideWarningsAndErrors { get; set; }
+
+        /// <summary>
+        /// Set this property if you want to get an interactive restore
+        /// </summary>
+        public bool Interactive { get; set; }
 
         public override bool Execute()
         {
@@ -161,6 +167,8 @@ namespace NuGet.Build.Tasks
                     HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
                 }
 
+                DefaultCredentialServiceUtility.SetupDefaultCredentialService(log, !Interactive);
+
                 _cts.Token.ThrowIfCancellationRequested();
 
                 var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, _cts.Token);
@@ -171,7 +179,6 @@ namespace NuGet.Build.Tasks
                 return restoreSummaries.All(x => x.Success);
             }
         }
-
         private static void ConfigureProtocol()
         {
             // Set connection limit

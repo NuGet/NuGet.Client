@@ -98,6 +98,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow the command to block and require manual action for operations like authentication..
+        /// </summary>
+        internal static string AddPkg_InteractiveDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_InteractiveDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Do not perform restore preview and compatibility check. The added package reference will be unconditional..
         /// </summary>
         internal static string AddPkg_NoRestoreDescription {

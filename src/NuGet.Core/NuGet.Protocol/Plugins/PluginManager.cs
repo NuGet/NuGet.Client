@@ -179,8 +179,6 @@ namespace NuGet.Protocol.Core.Types
 
                 var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
 
-                plugin.Connection.ProtocolVersion.Equals(Plugins.ProtocolConstants.CurrentVersion);
-
                 var lazyOperationClaims = _pluginOperationClaims.GetOrAdd(
                         requestKey,
                         key => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() =>

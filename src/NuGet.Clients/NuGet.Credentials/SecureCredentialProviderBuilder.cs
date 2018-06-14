@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Plugins;
 
 namespace NuGet.Credentials
@@ -49,6 +48,5 @@ namespace NuGet.Credentials
 
             return plugins;
         }
-
     }
 }

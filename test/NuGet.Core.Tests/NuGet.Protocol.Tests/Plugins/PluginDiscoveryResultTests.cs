@@ -26,6 +26,5 @@ namespace NuGet.Protocol.Plugins.Tests
 
             Assert.Same(pluginFile, result.PluginFile);
         }
-        // TODO NK - Add message tests
     }
 }

@@ -108,6 +108,15 @@ namespace NuGet.Credentials.Test
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new GetOperationClaimsResponse(expectations.OperationClaims.ToArray()));
 
+            if (_expectations.Success)
+            {
+                _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<SetLogLevelRequest, SetLogLevelResponse>(
+                        It.Is<MessageMethod>(m => m == MessageMethod.SetLogLevel),
+                        It.IsAny<SetLogLevelRequest>(),
+                        It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new SetLogLevelResponse(MessageResponseCode.Success));
+            }
+
             if (expectations.ProxyUsername != null && expectations.ProxyPassword != null)
             {
                 _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<SetCredentialsRequest, SetCredentialsResponse>(
@@ -145,6 +154,15 @@ namespace NuGet.Credentials.Test
                 It.Is<GetOperationClaimsRequest>(
                     g => g.PackageSourceRepository == null), // The source repository should be null in the context of credential plugins
                 It.IsAny<CancellationToken>()), Times.Once());
+
+            if (_expectations.Success)
+            {
+                _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<SetLogLevelRequest, SetLogLevelResponse>(
+                        It.Is<MessageMethod>(m => m == MessageMethod.SetLogLevel),
+                        It.IsAny<SetLogLevelRequest>(),
+                        It.IsAny<CancellationToken>()),
+                    Times.Once()); // The log level should be set once!
+            }
 
             if (_expectations.Success)
             {

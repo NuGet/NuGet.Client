@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -81,11 +82,20 @@ namespace NuGet.Credentials
 
             var plugin = await _pluginManager.CreateSourceAgnosticPluginAsync(_discoveredPlugin, cancellationToken);
 
+            if (!string.IsNullOrEmpty(plugin.Message))
+            {
+                // There is a potential here for double logging as the CredentialService itself catches the exceptions and tries to log it.
+                // In reality the logger in the Credential Service will be null because the first request always comes from a resource provider (ServiceIndex provider) 
+                _logger.LogError(plugin.Message);
+                throw new PluginException(plugin.Message); // Throwing here will block authentication and ensure that the complete operation fails 
+            }
+
             _isAnAuthenticationPlugin = plugin.Claims.Contains(OperationClaim.Authentication);
 
             if (_isAnAuthenticationPlugin)
             {
                 AddOrUpdateLogger(plugin.Plugin);
+                await SetPluginLogLevelAsync(plugin, _logger, cancellationToken);
 
                 if (proxy != null)
                 {
@@ -93,12 +103,21 @@ namespace NuGet.Credentials
                 }
 
                 var request = new GetAuthenticationCredentialsRequest(uri, isRetry, nonInteractive);
-
                 var credentialResponse = await plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
                     MessageMethod.GetAuthenticationCredentials,
                     request,
                     cancellationToken);
+                if (credentialResponse.ResponseCode == MessageResponseCode.NotFound && nonInteractive)
+                {
+                    _logger.LogWarning(
+                        string.Format(
+                                CultureInfo.CurrentCulture,
+                                Resources.SecurePluginWarning_UseInteractiveOption)
+                                );
+                }
+
                 taskResponse = GetAuthenticationCredentialsResponseToCredentialResponse(credentialResponse);
+
             }
             else
             {
@@ -106,6 +125,19 @@ namespace NuGet.Credentials
             }
 
             return taskResponse;
+        }
+
+        private async Task SetPluginLogLevelAsync(PluginCreationResult plugin, ILogger logger, CancellationToken cancellationToken)
+        {
+            var logLevel = LogRequestHandler.GetLogLevel(logger);
+
+            await plugin.PluginMulticlientUtilities.DoOncePerPluginLifetimeAsync(
+                MessageMethod.SetLogLevel.ToString(),
+                () => plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<SetLogLevelRequest, SetLogLevelResponse>(
+                    MessageMethod.SetLogLevel,
+                    new SetLogLevelRequest(logLevel),
+                    cancellationToken),
+                cancellationToken);
         }
 
         private void AddOrUpdateLogger(IPlugin plugin)
