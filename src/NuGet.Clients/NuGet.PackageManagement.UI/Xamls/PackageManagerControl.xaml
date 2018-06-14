@@ -44,8 +44,14 @@
     <DockPanel
       x:Name="_root"
       LastChildFill="True"
-      Width="{Binding ActualWidth, ElementName=_self}"
-      MinWidth="{Binding ContentMinWidth, ElementName=_self}">
+      Width="{Binding ActualWidth, ElementName=_self}">
+      <DockPanel.MinWidth>
+        <MultiBinding Converter="{StaticResource AdditionConverter}">
+          <Binding Path="MinWidth" ElementName="_leftSideGridColumn" />
+          <Binding Path="Width" ElementName="_gridSplitter" />
+          <Binding Path="MinWidth" ElementName="_rightSideGridColumn" />
+        </MultiBinding>
+      </DockPanel.MinWidth>
 
     <nuget:PackageManagerTopPanel
       DockPanel.Dock="Top"
@@ -62,23 +68,25 @@
       BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" 
       VerticalAlignment="Stretch">
         <Grid
-          Margin="0,-0.333,0,0"
           Width="{Binding ActualWidth, ElementName=_root}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition
-              Width="{Binding Converter={StaticResource DoubleToPercentageConverter}, ElementName=_self, Path=ActualWidth, ConverterParameter=0.65}"
-              MinWidth="{Binding LeftSideMinWidth, ElementName=_self}">
+              x:Name="_leftSideGridColumn"
+              Width="65*"
+              MinWidth="300">
               <ColumnDefinition.MaxWidth>
-                <MultiBinding Converter="{StaticResource ActualWidthToMaxWidthConverter}">
+                <MultiBinding Converter="{StaticResource SubstractionConverter}">
                   <Binding Path="ActualWidth" ElementName="_root" />
-                  <Binding Path="LeftSideExcludedWidth" ElementName="_self" />
+                  <Binding Path="Width" ElementName="_gridSplitter" />
+                  <Binding Path="MinWidth" ElementName="_rightSideGridColumn" />
                 </MultiBinding>
               </ColumnDefinition.MaxWidth>
             </ColumnDefinition>
             <ColumnDefinition Width="auto" />
             <ColumnDefinition
-              Width="*"
-              MinWidth="{Binding RightSideMinWidth, ElementName=_self}" />
+              x:Name="_rightSideGridColumn"
+              Width="35*"
+              MinWidth="330" />
           </Grid.ColumnDefinitions>
 
           <!-- left side -->
@@ -96,7 +104,7 @@
               x:Name="_packageList"
               SelectionChanged="PackageList_SelectionChanged"
               UpdateButtonClicked="PackageList_UpdateButtonClicked"
-              Width="{Binding ActualWidth, ElementName=_left_side}"/>
+              Width="{Binding ActualWidth, ElementName=_leftSide}"/>
 
             <Border
               Grid.Row="2"
@@ -130,8 +138,9 @@
           </Grid>
 
           <GridSplitter
+            x:Name="_gridSplitter"
             Grid.Column="1"
-            Width="{Binding GridSplitterWidth, ElementName=_self}"
+            Width="4"
             Grid.RowSpan="2"
             HorizontalAlignment="Center"
             VerticalAlignment="Stretch"
