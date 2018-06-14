@@ -222,9 +222,6 @@
                   </ScrollViewer>
                 </Border>
                 <ControlTemplate.Triggers>
-                  <Trigger Property="IsEnabled" Value="false">
-                    <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static local:Brushes.ListPaneBackground}}"/>
-                  </Trigger>
                   <MultiTrigger>
                     <MultiTrigger.Conditions>
                       <Condition Property="IsGrouping" Value="true"/>
