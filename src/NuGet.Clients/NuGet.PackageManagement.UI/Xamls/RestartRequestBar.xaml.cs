@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Xml.Linq;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -19,6 +19,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for RestartRequestBar.xaml
     /// </summary>
+    [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
     public partial class RestartRequestBar : UserControl, INuGetProjectContext
     {
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
@@ -101,12 +102,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteRestart(object sender, EventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _vsRestarter.Restart((uint)__VSRESTARTTYPE.RESTART_Normal);
-            });
+            _vsRestarter.Restart((uint)__VSRESTARTTYPE.RESTART_Normal);
         }
 
         public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)

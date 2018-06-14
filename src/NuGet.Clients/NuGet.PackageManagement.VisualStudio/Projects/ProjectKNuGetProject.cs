@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,6 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -61,6 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return base.PreProcessAsync(nuGetProjectContext, token);
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD002", Justification = "NuGet/Home#4833 Baseline")]
         public ProjectKNuGetProject(INuGetPackageManager project, string projectName, string uniqueName, string projectId)
         {
             _project = project;
@@ -68,13 +68,11 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                var frameworks = await _project.GetSupportedFrameworksAsync(CancellationToken.None);
-                var supportedFrameworks = frameworks.Select(f => NuGetFramework.Parse(f.FullName));
+            var supportedFrameworks = _project.GetSupportedFrameworksAsync(CancellationToken.None)
+                .Result
+                .Select(f => NuGetFramework.Parse(f.FullName));
 
-                InternalMetadata.Add(NuGetProjectMetadataKeys.SupportedFrameworks, supportedFrameworks);
-            });
+            InternalMetadata.Add(NuGetProjectMetadataKeys.SupportedFrameworks, supportedFrameworks);
         }
 
         public override async Task<bool> InstallPackageAsync(
@@ -182,7 +180,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
             var result = new List<PackageReference>();
-            foreach (var item in await _project.GetInstalledPackagesAsync(token))
+            foreach (object item in await _project.GetInstalledPackagesAsync(token))
             {
                 PackageIdentity identity = null;
 

@@ -42,10 +42,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Otherwise, it simply exits
         /// </summary>
         /// <param name="dte"></param>
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public ProjectRetargetingHandler(DTE dte, ISolutionManager solutionManager, IServiceProvider serviceProvider, IComponentModel componentModel)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             if (dte == null)
             {
                 throw new ArgumentNullException(nameof(dte));
@@ -308,32 +307,28 @@ namespace NuGet.PackageManagement.VisualStudio
         }
         #endregion
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void Dispose()
         {
             // Nothing is initialized if _vsTrackProjectRetargeting is null. Check if it is not null
             if (_vsTrackProjectRetargeting != null)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                _errorListProvider.Dispose();
+                if (_cookieProjectRetargeting != 0)
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    _vsTrackProjectRetargeting.UnadviseTrackProjectRetargetingEvents(_cookieProjectRetargeting);
+                }
 
-                    _errorListProvider.Dispose();
-                    if (_cookieProjectRetargeting != 0)
-                    {
-                        _vsTrackProjectRetargeting.UnadviseTrackProjectRetargetingEvents(_cookieProjectRetargeting);
-                    }
+                if (_cookieBatchRetargeting != 0)
+                {
+                    _vsTrackProjectRetargeting.UnadviseTrackBatchRetargetingEvents(_cookieBatchRetargeting);
+                }
 
-                    if (_cookieBatchRetargeting != 0)
-                    {
-                        _vsTrackProjectRetargeting.UnadviseTrackBatchRetargetingEvents(_cookieBatchRetargeting);
-                    }
-
-                    if (_cookieProjectRetargeting != 0 || _cookieBatchRetargeting != 0)
-                    {
-                        _dte.Events.BuildEvents.OnBuildBegin -= BuildEvents_OnBuildBegin;
-                        _dte.Events.SolutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
-                    }
-                });
+                if (_cookieProjectRetargeting != 0 || _cookieBatchRetargeting != 0)
+                {
+                    _dte.Events.BuildEvents.OnBuildBegin -= BuildEvents_OnBuildBegin;
+                    _dte.Events.SolutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
+                }
             }
         }
     }

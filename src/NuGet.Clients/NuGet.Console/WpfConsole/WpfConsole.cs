@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows.Media;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -589,10 +588,9 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void WriteProgress(string operation, int percentComplete)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             if (operation == null)
             {
                 throw new ArgumentNullException("operation");
@@ -623,10 +621,9 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void HideProgress()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             VsStatusBar.Progress(
                 ref _pdwCookieForStatusBar,
                 0 /* completed */,
@@ -635,10 +632,9 @@ namespace NuGetConsole.Implementation.Console
                 (uint)100);
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         public void SetExecutionMode(bool isExecuting)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             _consoleStatus.SetBusyState(isExecuting);
 
             if (!isExecuting)
@@ -690,31 +686,27 @@ namespace NuGetConsole.Implementation.Console
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",
             Justification = "We don't want to crash VS when it exits.")]
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
                 if (_bufferAdapter != null)
                 {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                    var docData = _bufferAdapter as IVsPersistDocData;
+                    if (docData != null)
                     {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                        var docData = _bufferAdapter as IVsPersistDocData;
-                        if (docData != null)
+                        try
                         {
-                            try
-                            {
-                                docData.Close();
-                            }
-                            catch (Exception exception)
-                            {
-                                ExceptionHelper.WriteErrorToActivityLog(exception);
-                            }
-
-                            _bufferAdapter = null;
+                            docData.Close();
                         }
-                    });
+                        catch (Exception exception)
+                        {
+                            ExceptionHelper.WriteErrorToActivityLog(exception);
+                        }
+
+                        _bufferAdapter = null;
+                    }
                 }
 
                 var disposable = _dispatcher as IDisposable;

@@ -514,7 +514,7 @@ namespace NuGet.SolutionRestoreManager
 
             var continuation = joinableTask
                 .Task
-                .ContinueWith(t => restoreOperation.ContinuationAction(t, _joinableFactory));
+                .ContinueWith(t => restoreOperation.ContinuationAction(t));
 
             return await joinableTask;
         }
@@ -604,10 +604,9 @@ namespace NuGet.SolutionRestoreManager
 
             public System.Runtime.CompilerServices.TaskAwaiter<bool> GetAwaiter() => Task.GetAwaiter();
 
-            public void ContinuationAction(Task<bool> targetTask, JoinableTaskFactory jtf)
+            [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD002", Justification = "NuGet/Home#4833 Baseline")]
+            public void ContinuationAction(Task<bool> targetTask)
             {
-                Assumes.True(targetTask.IsCompleted);
-
                 // propagate the restore target task status to the *unbound* active task.
                 if (targetTask.IsFaulted || targetTask.IsCanceled)
                 {
@@ -617,9 +616,7 @@ namespace NuGet.SolutionRestoreManager
                 else
                 {
                     // completed successfully
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                     JobTcs.TrySetResult(targetTask.Result);
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
                 }
             }
 

@@ -289,10 +289,9 @@ namespace NuGet.VisualStudio
             }
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void RunDesignTimeBuild(Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             var solution = ServiceProvider.GlobalProvider.GetService(typeof(SVsSolution)) as IVsSolution;
 
             if (solution != null)

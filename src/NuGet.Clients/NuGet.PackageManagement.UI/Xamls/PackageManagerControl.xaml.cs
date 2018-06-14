@@ -29,6 +29,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for PackageManagerControl.xaml
     /// </summary>
+    [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
     public partial class PackageManagerControl : UserControl, IVsWindowSearch
     {
         private readonly bool _initialized;
@@ -50,6 +51,8 @@ namespace NuGet.PackageManagement.UI
         private readonly IVsWindowSearchHostFactory _windowSearchHostFactory;
 
         internal readonly DetailControlModel _detailModel;
+
+        private readonly Dispatcher _uiDispatcher;
 
         private bool _missingPackageStatus;
         private readonly INuGetUILogger _uiLogger;
@@ -91,8 +94,7 @@ namespace NuGet.PackageManagement.UI
             IVsShell4 vsShell,
             INuGetUILogger uiLogger = null)
         {
-            VSThreadHelper.ThrowIfNotOnUIThread();
-
+            _uiDispatcher = Dispatcher.CurrentDispatcher;
             _uiLogger = uiLogger;
             Model = model;
             Settings = nugetSettings;
@@ -141,7 +143,7 @@ namespace NuGet.PackageManagement.UI
 
             Loaded += (_, __) =>
             {
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCacheForUpdates: false);
                 RefreshConsolidatablePackagesCount();
             };
 
@@ -370,7 +372,7 @@ namespace NuGet.PackageManagement.UI
                 if (prevSelectedItem != SelectedSource)
                 {
                     SaveSettings();
-                    SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                    SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCacheForUpdates: false);
                 }
             }
             finally
@@ -518,7 +520,8 @@ namespace NuGet.PackageManagement.UI
 
         // Refresh the UI after packages are restored.
         // Note that the PackagesMissingStatusChanged event can be fired from a non-UI thread in one case:
-        // the VsSolutionManager.Init() method, which is scheduled on the thread pool.
+        // the VsSolutionManager.Init() method, which is scheduled on the thread pool. So this
+        // method needs to use _uiDispatcher.
         private void UpdateAfterPackagesMissingStatusChanged()
         {
             VSThreadHelper.ThrowIfNotOnUIThread();
@@ -604,84 +607,78 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        private void SearchPackagesAndRefreshUpdateCount(bool useCacheForUpdates)
+        internal void SearchPackagesAndRefreshUpdateCount(string searchText, bool useCacheForUpdates)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                await SearchPackagesAndRefreshUpdateCountAsync(
-                    searchText: _windowSearchHost.SearchQuery.SearchString,
-                    useCacheForUpdates: useCacheForUpdates,
-                    pSearchCallback: null,
-                    searchTask: null);
-            });
+            SearchPackagesAndRefreshUpdateCount(searchText: searchText, useCacheForUpdates: useCacheForUpdates, pSearchCallback: null, searchTask: null);
         }
 
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCacheForUpdates, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
+        internal void SearchPackagesAndRefreshUpdateCount(string searchText, bool useCacheForUpdates, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-
-            if (useCacheForUpdates)
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                loadContext.CachedPackages = Model.CachedUpdates;
-            };
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
+                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
 
-            var loader = new PackageItemLoader(
-                loadContext, packageFeed, searchText, IncludePrerelease);
-            var loadingMessage = string.IsNullOrWhiteSpace(searchText)
-                ? Resx.Resources.Text_Loading
-                : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
-
-            // Set a new cancellation token source which will be used to cancel this task in case
-            // new loading task starts or manager ui is closed while loading packages.
-            _loadCts = new CancellationTokenSource();
-
-            // start SearchAsync task for initial loading of packages
-            var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
-            // this will wait for searchResultTask to complete instead of creating a new task
-            _packageList.LoadItems(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
-
-            if (pSearchCallback != null && searchTask != null)
-            {
-                var searchResult = await searchResultTask;
-                pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
-            }
-
-            // We only refresh update count, when we don't use cache so check it it's false
-            if (!useCacheForUpdates)
-            {
-                // clear existing caches
-                Model.CachedUpdates = null;
-
-                if (_topPanel.Filter.Equals(ItemFilter.UpdatesAvailable))
+                if (useCacheForUpdates)
                 {
-                    // it means selected tab is update itself, so just wait for searchAsyncTask to complete
-                    // without making another call to loader to get all packages.
-                    _topPanel._labelUpgradeAvailable.Count = 0;
+                    loadContext.CachedPackages = Model.CachedUpdates;
+                };
 
+                var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
+
+                var loader = new PackageItemLoader(
+                    loadContext, packageFeed, searchText, IncludePrerelease);
+                var loadingMessage = string.IsNullOrWhiteSpace(searchText)
+                    ? Resx.Resources.Text_Loading
+                    : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
+
+                // Set a new cancellation token source which will be used to cancel this task in case
+                // new loading task starts or manager ui is closed while loading packages.
+                _loadCts = new CancellationTokenSource();
+
+                // start SearchAsync task for initial loading of packages
+                var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
+                // this will wait for searchResultTask to complete instead of creating a new task
+                _packageList.LoadItems(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
+
+                if (pSearchCallback != null && searchTask != null)
+                {
                     var searchResult = await searchResultTask;
-                    Model.CachedUpdates = new PackageSearchMetadataCache
-                    {
-                        Packages = searchResult.Items,
-                        IncludePrerelease = IncludePrerelease
-                    };
+                    pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
+                }
 
-                    _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
-                        
-                }
-                else
+                // We only refresh update count, when we don't use cache so check it it's false
+                if (!useCacheForUpdates)
                 {
-                    RefreshAvailableUpdatesCount();
+                    // clear existing caches
+                    Model.CachedUpdates = null;
+
+                    if (_topPanel.Filter.Equals(ItemFilter.UpdatesAvailable))
+                    {
+                        // it means selected tab is update itself, so just wait for searchAsyncTask to complete
+                        // without making another call to loader to get all packages.
+                        _topPanel._labelUpgradeAvailable.Count = 0;
+
+                        var searchResult = await searchResultTask;
+                        Model.CachedUpdates = new PackageSearchMetadataCache
+                        {
+                            Packages = searchResult.Items,
+                            IncludePrerelease = IncludePrerelease
+                        };
+
+                        _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
+                        
+                    }
+                    else
+                    {
+                        RefreshAvailableUpdatesCount();
+                    }
                 }
-            }
+            });
         }
 
         private void RefreshAvailableUpdatesCount()
@@ -827,7 +824,7 @@ namespace NuGet.PackageManagement.UI
 
                 //Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(ActiveSource.PackageSource);
                 SaveSettings();
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCacheForUpdates: false);
             }
         }
 
@@ -836,7 +833,7 @@ namespace NuGet.PackageManagement.UI
             if (_initialized)
             {
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
+                SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCacheForUpdates: true);
 
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
             }
@@ -850,7 +847,7 @@ namespace NuGet.PackageManagement.UI
             if (_topPanel.Filter != ItemFilter.All)
             {
                 // refresh the whole package list
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCacheForUpdates: false);
             }
             else
             {
@@ -885,7 +882,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
+            SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCacheForUpdates: true);
         }
 
         private void CheckboxPrerelease_CheckChanged(object sender, EventArgs e)
@@ -898,7 +895,7 @@ namespace NuGet.PackageManagement.UI
             RegistrySettingUtility.SetBooleanSetting(
                 Constants.IncludePrereleaseRegistryName,
                 _topPanel.CheckboxPrerelease.IsChecked == true);
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+            SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCacheForUpdates: false);
         }
 
         internal class SearchQuery : IVsSearchQuery
@@ -923,7 +920,7 @@ namespace NuGet.PackageManagement.UI
 
         public void ClearSearch()
         {
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
+            SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCacheForUpdates: true);
         }
 
         public IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
@@ -976,12 +973,7 @@ namespace NuGet.PackageManagement.UI
 
         private void FocusOnSearchBox_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _windowSearchHost.Activate();
-            });
+            _windowSearchHost.Activate();
         }
 
         public void Search(string searchText)
@@ -991,24 +983,13 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _windowSearchHost.Activate();
-                _windowSearchHost.SearchAsync(new SearchQuery { SearchString = searchText });
-            });
+            _windowSearchHost.Activate();
+            _windowSearchHost.SearchAsync(new SearchQuery { SearchString = searchText });
         }
 
         public void CleanUp()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _windowSearchHost.TerminateSearch();
-            });
-
+            _windowSearchHost.TerminateSearch();
             RemoveRestoreBar();
             RemoveRestartBar();
 
@@ -1130,7 +1111,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+            SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCacheForUpdates: false);
             RefreshConsolidatablePackagesCount();
         }
 

@@ -22,6 +22,7 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
+    [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD001", Justification = "NuGet/Home#4833 Baseline")]
     public sealed class NuGetUI : INuGetUI
     {
         public const string LogEntrySource = "NuGet Package Manager";
@@ -53,7 +54,7 @@ namespace NuGet.PackageManagement.UI
         {
             var result = false;
 
-            InvokeOnUIThread(() => { result = WarnAboutDotnetDeprecationImpl(projects); });
+            UIDispatcher.Invoke(() => { result = WarnAboutDotnetDeprecationImpl(projects); });
 
             return result;
         }
@@ -62,7 +63,7 @@ namespace NuGet.PackageManagement.UI
         {
             var result = false;
 
-            InvokeOnUIThread(() =>
+            UIDispatcher.Invoke(() =>
             {
                 var upgradeInformationWindow = new NuGetProjectUpgradeWindow(nuGetProjectUpgradeWindowModel);
 
@@ -87,7 +88,7 @@ namespace NuGet.PackageManagement.UI
         {
             var result = false;
 
-            InvokeOnUIThread(() => { result = PromptForLicenseAcceptanceImpl(packages); });
+            UIDispatcher.Invoke(() => { result = PromptForLicenseAcceptanceImpl(packages); });
 
             return result;
         }
@@ -113,7 +114,7 @@ namespace NuGet.PackageManagement.UI
         {
             var result = false;
 
-            InvokeOnUIThread(() => { result = PromptForPackageManagementFormatImpl(selectedFormat); });
+            UIDispatcher.Invoke(() => { result = PromptForPackageManagementFormatImpl(selectedFormat); });
 
             return result;
         }
@@ -153,7 +154,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (UIContext?.OptionsPageActivator != null)
             {
-                InvokeOnUIThread(() => { UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
+                UIDispatcher.Invoke(() => { UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
             }
             else
             {
@@ -167,7 +168,7 @@ namespace NuGet.PackageManagement.UI
 
             if (actions.Any())
             {
-                InvokeOnUIThread(() =>
+                UIDispatcher.Invoke(() =>
                 {
                     var w = new PreviewWindow(UIContext);
                     w.DataContext = new PreviewWindowModel(actions);
@@ -259,7 +260,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (PackageManagerControl != null)
                 {
-                    InvokeOnUIThread(() => { sources = PackageManagerControl.ActiveSources; });
+                    UIDispatcher.Invoke(() => { sources = PackageManagerControl.ActiveSources; });
                 }
 
                 return sources;
@@ -274,7 +275,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (PackageManagerControl != null)
                 {
-                    InvokeOnUIThread(() => { settings = PackageManagerControl.Settings; });
+                    UIDispatcher.Invoke(() => { settings = PackageManagerControl.Settings; });
                 }
 
                 return settings;
@@ -293,13 +294,23 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void InvokeOnUIThread(Action action)
+        private Dispatcher UIDispatcher
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            get
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                action();
-            });
+                if (_detailControl != null)
+                {
+                    return _detailControl.Dispatcher;
+                }
+
+                if (Application.Current != null)
+                {
+                    return Application.Current.Dispatcher;
+                }
+
+                // null for unit tests
+                return null;
+            }
         }
 
         public void ShowError(Exception ex)

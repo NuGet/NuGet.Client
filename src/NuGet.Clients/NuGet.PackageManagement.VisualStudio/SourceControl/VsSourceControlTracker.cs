@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -95,6 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
             get { return _trackingCookie != null; }
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void StartTracking()
         {
             // don't track again if already tracking
@@ -110,18 +111,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                uint cookie;
-                if (ProjectTracker.AdviseTrackProjectDocumentsEvents(_projectDocumentListener, out cookie) == VSConstants.S_OK)
-                {
-                    _trackingCookie = cookie;
-                }
-            });
+            uint cookie;
+            ProjectTracker.AdviseTrackProjectDocumentsEvents(_projectDocumentListener, out cookie);
+            _trackingCookie = cookie;
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void StopTracking()
         {
             if (!IsTracking)
@@ -129,14 +124,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                var hr = ProjectTracker.UnadviseTrackProjectDocumentsEvents(_trackingCookie.Value);
-                ErrorHandler.ThrowOnFailure(hr);
-            });
-
+            ProjectTracker.UnadviseTrackProjectDocumentsEvents((uint)_trackingCookie);
             _trackingCookie = null;
         }
 
@@ -149,7 +137,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                var solutionRepositoryPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager, _vsSettings);
+                string solutionRepositoryPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager, _vsSettings);
                 if (Directory.Exists(solutionRepositoryPath)
                     && _sourceControlManagerProvider != null)
                 {
@@ -158,9 +146,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     // only proceed if the source-control is in use
                     if (sourceControlManager != null)
                     {
-                        var allFiles = Directory.EnumerateFiles(solutionRepositoryPath, "*.*",
+                        IEnumerable<string> allFiles = Directory.EnumerateFiles(solutionRepositoryPath, "*.*",
                             SearchOption.AllDirectories);
-                        var file = allFiles.FirstOrDefault();
+                        string file = allFiles.FirstOrDefault();
                         if (file != null)
                         {
                             // If there are any files under the packages directory and any given file (in this case the first one we come across) is not under

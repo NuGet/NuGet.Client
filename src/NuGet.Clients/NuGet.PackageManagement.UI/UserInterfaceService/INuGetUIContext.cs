@@ -32,6 +32,6 @@ namespace NuGet.PackageManagement.UI
 
         Task<bool> IsNuGetProjectUpgradeable(NuGetProject project);
 
-        Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService);
+        IModalProgressDialogSession StartModalProgressDialog(string caption, ProgressDialogData initialData, INuGetUI uiService);
     }
 }

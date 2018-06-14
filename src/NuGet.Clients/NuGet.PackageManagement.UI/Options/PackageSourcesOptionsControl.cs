@@ -594,10 +594,9 @@ namespace NuGet.Options
             }
         }
 
+        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD010", Justification = "NuGet/Home#4833 Baseline")]
         private void OnBrowseButtonClicked(object sender, EventArgs e)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             const int MaxDirectoryLength = 1000;
 
             //const int BIF_RETURNONLYFSDIRS = 0x00000001;   // For finding a folder to start document searching.
@@ -605,14 +604,14 @@ namespace NuGet.Options
 
             var uiShell = (IVsUIShell2)_serviceProvider.GetService(typeof(SVsUIShell));
 
-            var rgch = new char[MaxDirectoryLength + 1];
+            char[] rgch = new char[MaxDirectoryLength + 1];
 
             // allocate a buffer in unmanaged memory for file name (string)
-            var bufferPtr = Marshal.AllocCoTaskMem((rgch.Length + 1) * 2);
+            IntPtr bufferPtr = Marshal.AllocCoTaskMem((rgch.Length + 1) * 2);
             // copy initial path to bufferPtr
             Marshal.Copy(rgch, 0, bufferPtr, rgch.Length);
 
-            var pBrowse = new VSBROWSEINFOW[1];
+            VSBROWSEINFOW[] pBrowse = new VSBROWSEINFOW[1];
             pBrowse[0] = new VSBROWSEINFOW
             {
                 lStructSize = (uint)Marshal.SizeOf(pBrowse[0]),
@@ -626,7 +625,7 @@ namespace NuGet.Options
 
             var browseInfo = new VSNSEBROWSEINFOW[1] { new VSNSEBROWSEINFOW() };
 
-            var ret = uiShell.GetDirectoryViaBrowseDlgEx(pBrowse, "", Resources.BrowseFolderDialogSelectButton, "", browseInfo);
+            int ret = uiShell.GetDirectoryViaBrowseDlgEx(pBrowse, "", Resources.BrowseFolderDialogSelectButton, "", browseInfo);
             if (ret == VSConstants.S_OK)
             {
                 var pathPtr = pBrowse[0].pwzDirName;
@@ -644,7 +643,7 @@ namespace NuGet.Options
         private string DetermineInitialDirectory()
         {
             // determine the inital directory to show in the folder dialog
-            var initialDir = NewPackageSource.Text;
+            string initialDir = NewPackageSource.Text;
 
             if (IsPathRootedSafe(initialDir)
                 && Directory.Exists(initialDir))
