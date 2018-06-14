@@ -11,7 +11,8 @@
   WindowStartupLocation="CenterOwner"
   Title="{x:Static nuget:Resources.WindowTitle_DeprecatedFramework}"
   Height="500"
-  Width="500">
+  Width="500"
+  MinWidth="388">
   <Window.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -31,13 +32,20 @@
       Grid.Row="0"
       Margin="12,4,12,0"
       TextWrapping="Wrap">
-        <Run Text="{Binding TextBeforeLink, Mode=OneTime}" /><Hyperlink AutomationProperties.AutomationId="MigrationLink"
+        <Run
+          Text="{Binding TextBeforeLink, Mode=OneWay}"
+          AutomationProperties.Name="{Binding Text, Source={RelativeSource Self}}"
+          x:Name="_migrationLinkLabel"/>
+        <Hyperlink AutomationProperties.AutomationId="MigrationLink"
                    NavigateUri="{Binding MigrationUrl, Mode=OneTime}"
                    Style="{StaticResource HyperlinkStyle}"
-                   RequestNavigate="OnMigrationUrlNavigate"><Run Text="{Binding LinkText, Mode=OneTime}" />
+                   RequestNavigate="OnMigrationUrlNavigate"
+                   AutomationProperties.LabeledBy="{Binding ElementName=_migrationLinkLabel}">
+          <Run Text="{Binding LinkText, Mode=OneTime}" />
         </Hyperlink><Run Text="{Binding TextAfterLink, Mode=OneTime}" />
     </TextBlock>
     <TextBlock
+      x:Name="_projectListText"
       Grid.Row="1"
       Margin="12,4,12,0"
       TextWrapping="Wrap"
@@ -50,14 +58,15 @@
       BorderThickness="1">
       <ScrollViewer
         HorizontalScrollBarVisibility="Auto"
-        IsTabStop="True">
+        IsTabStop="True"
+        AutomationProperties.HelpText="{Binding ElementName=_projectListText}">
         <ItemsControl
           ItemsSource="{Binding Path=Projects}"
           IsTabStop="False">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
                 <StackPanel Margin="6, 6">
-                    <TextBlock Text="{Binding}" />
+                    <TextBlock Text="{Binding}" AutomationProperties.Name="{Binding Text}" />
                 </StackPanel>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
@@ -68,25 +77,21 @@
     <Grid
       Grid.Row="3">
       <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" MinWidth="180 "/>
         <ColumnDefinition Width="auto" />
-        <ColumnDefinition />
-        <ColumnDefinition
-          Width="auto" />
-        <ColumnDefinition
-          Width="auto" />
+        <ColumnDefinition Width="auto" />
       </Grid.ColumnDefinitions>
       <CheckBox
         x:Name="_doNotShowCheckBox"
         Grid.Column="0"
         Margin="12"
-        MinWidth="180"
         VerticalAlignment="Center"
         Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
         Content="{x:Static nuget:Resources.DoNotShowThisAgain}"
         Checked="DoNotShowCheckBox_Checked"
         Unchecked="DoNotShowCheckBox_Unchecked" />
       <Button
-        Grid.Column="2"
+        Grid.Column="1"
         MinWidth="86"
         MinHeight="24"
         Margin="0,12"
@@ -94,7 +99,7 @@
         Content="{x:Static nuget:Resources.Button_OK}"
         Click="OkButtonClicked" />
       <Button
-        Grid.Column="3"
+        Grid.Column="2"
         MinWidth="86"
         MinHeight="24"
         Margin="6,12,12,12"

@@ -38,7 +38,7 @@
 
     <TextBlock 
       Grid.Row="0" 
-      x:Name="textBlock" 
+      x:Name="_packageRefSuport" 
       Margin="12,12,12,0" 
       TextWrapping="Wrap"
       Text="{x:Static nuget:Resources.Text_PackageRefSupport}">
@@ -46,12 +46,14 @@
       <Hyperlink
         NavigateUri="{Binding Path=PackageRefUri, Mode=OneTime}"
         Style="{StaticResource HyperlinkStyle}"
-        Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+        Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+        AutomationProperties.LabeledBy="{Binding ElementName=_packageRefSuport}">
         <Run Text="{x:Static nuget:Resources.Text_PackageRefSupport_DocumentLink}" />
       </Hyperlink>
     </TextBlock>
 
     <TextBlock
+      x:Name="_packageFormatSelectorLabel"
       Grid.Row="1"
       Margin="12,12,12,0"
       TextWrapping="Wrap"
@@ -62,15 +64,20 @@
       <RadioButton
         IsChecked="{Binding Path=SelectedPackageManagementFormat, Converter={StaticResource RadioBoolToIntConverter}, ConverterParameter=0}"
         Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+        AutomationProperties.HelpText="{Binding Text, ElementName=_packageFormatSelectorLabel}"
+        AutomationProperties.Name="{x:Static nuget:Resources.RadioBtn_PackagesConfig}"
         Content="{x:Static nuget:Resources.RadioBtn_PackagesConfig}" />
       <RadioButton
         Margin="0,6"
         IsChecked="{Binding Path=SelectedPackageManagementFormat, Converter={StaticResource RadioBoolToIntConverter}, ConverterParameter=1}"
         Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+        AutomationProperties.HelpText="{Binding Text,ElementName=_packageFormatSelectorLabel}"
+        AutomationProperties.Name="{x:Static nuget:Resources.RadioBtn_PackageRef}"
         Content="{x:Static nuget:Resources.RadioBtn_PackageRef}"/>
     </StackPanel>
 
     <TextBlock
+      x:Name="_packageFormatApply"
       Grid.Row="3"
       Margin="12,8,12,0"
       TextWrapping="Wrap"
@@ -96,7 +103,8 @@
         <ItemsControl
           Margin="6,6,0,0"
           ItemsSource="{Binding Path=ProjectNames}"
-          IsTabStop="False" />
+          IsTabStop="False"
+          AutomationProperties.LabeledBy="{Binding ElementName=_packageFormatApply}"/>
       </ScrollViewer>
     </Border>
 

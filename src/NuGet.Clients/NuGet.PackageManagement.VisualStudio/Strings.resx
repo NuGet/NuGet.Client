@@ -267,7 +267,7 @@
     <comment>This test goes immediately after the document link.</comment>
   </data>
   <data name="Text_DeprecatedFramework_DocumentLink_Before" xml:space="preserve">
-    <value>The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the </value>
+    <value>The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the</value>
     <comment>This text goes immediately before the document link.
 {0} is the full name of the deprecated framework (e.g. ".NETFramework,Version=v4.5").
 {1} is the short folder representation of the framework (e.g. "net45").</comment>
