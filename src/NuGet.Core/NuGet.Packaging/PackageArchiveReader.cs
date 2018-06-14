@@ -165,6 +165,7 @@ namespace NuGet.Packaging
             CancellationToken token)
         {
             var filesCopied = new List<string>();
+            var pacakgeIdentity = GetIdentity();
 
             foreach (var packageFile in packageFiles)
             {
@@ -184,11 +185,10 @@ namespace NuGet.Packaging
                 // in windows, we get the windows-style path
                 var normalizedPath = Uri.UnescapeDataString(packageFileName.Replace('/', Path.DirectorySeparatorChar));
 
+                destination = NormalizeDirectoryPath(destination);
+                ValidatePackageEntry(destination, normalizedPath, pacakgeIdentity);
+
                 var targetFilePath = Path.Combine(destination, normalizedPath);
-                if (!targetFilePath.StartsWith(destination, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
 
                 using (var stream = entry.Open())
                 {
@@ -237,27 +237,14 @@ namespace NuGet.Packaging
             try
             {
                 var files = await GetFilesAsync(token);
+                var packageIdentity = await GetIdentityAsync(token);
+
                 // This dummy destination is used to check if the file in package get outside of the extractionPath
                 var dummyDestination = NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetHome);
 
-                if (!dummyDestination.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                    dummyDestination += Path.DirectorySeparatorChar;
+                dummyDestination = NormalizeDirectoryPath(dummyDestination);
 
-                dummyDestination = Path.GetFullPath(dummyDestination);
-
-                var result = files.All(p =>
-                {
-                    var normalizedPath = Uri.UnescapeDataString(p.Replace('/', Path.DirectorySeparatorChar));
-                    var fullPath = Path.GetFullPath(Path.Combine(dummyDestination, normalizedPath));
-                    return fullPath.StartsWith(dummyDestination, StringComparison.Ordinal) && fullPath.Length != dummyDestination.Length;
-                });
-
-                if (!result)
-                {
-                    throw new UnsafePackageEntryException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.ErrorUnsafePackageEntry));
-                }
+                ValidatePackageEntries(dummyDestination, files, packageIdentity);
             }
             catch (UnsafePackageEntryException)
             {

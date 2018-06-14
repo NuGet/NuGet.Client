@@ -698,6 +698,7 @@ Valid from:</comment>
     <value>An unexpected error occurred while checking package entries.</value>
   </data>
   <data name="ErrorUnsafePackageEntry" xml:space="preserve">
-    <value>The package contains an entry which is unsafe for extraction.</value>
+    <value>The package '{0}' contains an entry which is unsafe for extraction.</value>
+    <comment>{0} is the package identity.</comment>
   </data>
 </root>
