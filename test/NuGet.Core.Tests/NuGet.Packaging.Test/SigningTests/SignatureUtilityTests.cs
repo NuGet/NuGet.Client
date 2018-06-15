@@ -45,7 +45,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void GetCertificateChain_WithAuthorSignature_ReturnsCertificates()
         {
-            var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
+            var primarySignature = PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s"));
 
             using (var certificates = SignatureUtility.GetCertificateChain(primarySignature))
             {
@@ -85,7 +85,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void GetCertificateChain_WithUnrelatedRepositoryCountersignature_Throws()
         {
-            var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
+            var primarySignature = PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s"));
             var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
             primarySignature = RemoveRepositoryCountersignature(primarySignature);
@@ -100,7 +100,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void GetCertificateChain_WithRepositoryCountersignature_ReturnsCertificates()
         {
-            var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
+            var primarySignature = PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s"));
             var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
             using (var certificates = SignatureUtility.GetCertificateChain(primarySignature, repositoryCountersignature))
@@ -124,7 +124,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void GetTimestampCertificateChain_WithoutTimestamp_Throws()
         {
-            var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
+            var primarySignature = PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s"));
 
             primarySignature = RemoveTimestamp(primarySignature);
 
@@ -138,7 +138,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void GetTimestampCertificateChain_WithAuthorSignatureTimestamp_ReturnsCertificates()
         {
-            var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
+            var primarySignature = PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s"));
 
             using (var certificates = SignatureUtility.GetTimestampCertificateChain(primarySignature))
             {
@@ -152,7 +152,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void GetTimestampCertificateChain_WithUnrelatedRepositoryCountersignature_Throws()
         {
-            var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
+            var primarySignature = PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s"));
             var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
             primarySignature = RemoveRepositoryCountersignature(primarySignature);
@@ -167,7 +167,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void GetTimestampCertificateChain_WithRepositoryCountersignatureWithoutTimestamp_Throws()
         {
-            var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
+            var primarySignature = PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s"));
 
             primarySignature = RemoveRepositoryCountersignatureTimestamp(primarySignature);
 
@@ -183,7 +183,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void GetTimestampCertificateChain_WithRepositoryCountersignatureTimestamp_ReturnsCertificates()
         {
-            var primarySignature = PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s"));
+            var primarySignature = PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s"));
             var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
             using (var certificates = SignatureUtility.GetTimestampCertificateChain(primarySignature, repositoryCountersignature))

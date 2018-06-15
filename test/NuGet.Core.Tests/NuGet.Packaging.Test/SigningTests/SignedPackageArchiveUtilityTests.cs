@@ -52,7 +52,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void OpenPackageSignatureFileStream_WithIncorrectSignatureFileName_Throws()
         {
-            using (var test = new Test(GetResource("SignatureFileWithUppercaseFileName.zip")))
+            using (var test = new Test(SigningTestUtility.GetResourceBytes("SignatureFileWithUppercaseFileName.zip")))
             {
                 var exception = Assert.Throws<SignatureException>(
                     () => SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader));
@@ -65,7 +65,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void OpenPackageSignatureFileStream_WithCompressedSignatureFileEntry_Throws()
         {
-            using (var test = new Test(GetResource("SignatureFileWithDeflateCompressionMethodAndDefaultCompressionLevel.zip")))
+            using (var test = new Test(SigningTestUtility.GetResourceBytes("SignatureFileWithDeflateCompressionMethodAndDefaultCompressionLevel.zip")))
             {
                 var exception = Assert.Throws<SignatureException>(
                     () => SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader));
@@ -78,7 +78,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void OpenPackageSignatureFileStream_WithFakeContent_ReturnsContent()
         {
-            using (var test = new Test(GetResource("SignatureFileWithFakeContent.zip")))
+            using (var test = new Test(SigningTestUtility.GetResourceBytes("SignatureFileWithFakeContent.zip")))
             using (var stream = SignedPackageArchiveUtility.OpenPackageSignatureFileStream(test.Reader))
             {
                 Assert.False(stream.CanWrite);
@@ -116,7 +116,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void IsSigned_WithCorrectSignatureFileEntry_ReturnsTrue()
         {
-            using (var test = new Test(GetResource("SignatureFileEntry.zip")))
+            using (var test = new Test(SigningTestUtility.GetResourceBytes("SignatureFileEntry.zip")))
             {
                 var isSigned = SignedPackageArchiveUtility.IsSigned(test.Reader);
 
@@ -127,7 +127,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void IsSigned_WithLocalFileHeaderUsingUtf8_ReturnsFalse()
         {
-            var zipBytes = GetResource("SignatureFileEntry.zip");
+            var zipBytes = SigningTestUtility.GetResourceBytes("SignatureFileEntry.zip");
 
             zipBytes[7] = 0x08;
 
@@ -142,7 +142,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void IsSigned_WithCentralDirectoryHeaderUsingUtf8_ReturnsFalse()
         {
-            var zipBytes = GetResource("SignatureFileEntry.zip");
+            var zipBytes = SigningTestUtility.GetResourceBytes("SignatureFileEntry.zip");
 
             zipBytes[35] = 0x08;
 
@@ -157,7 +157,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void IsSigned_WithIncorrectSignatureFileNameInLocalFileHeader_ReturnsFalse()
         {
-            var zipBytes = GetResource("SignatureFileEntry.zip");
+            var zipBytes = SigningTestUtility.GetResourceBytes("SignatureFileEntry.zip");
             var fileName = Encoding.ASCII.GetBytes(SigningSpecifications.V1.SignaturePath.ToUpper());
 
             Array.Copy(fileName, sourceIndex: 0, destinationArray: zipBytes, destinationIndex: 0x1e, length: fileName.Length);
@@ -173,7 +173,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void IsSigned_WithIncorrectSignatureFileNameInCentralDirectoryHeader_ReturnsFalse()
         {
-            var zipBytes = GetResource("SignatureFileEntry.zip");
+            var zipBytes = SigningTestUtility.GetResourceBytes("SignatureFileEntry.zip");
             var fileName = Encoding.ASCII.GetBytes(SigningSpecifications.V1.SignaturePath.ToUpper());
 
             Array.Copy(fileName, sourceIndex: 0, destinationArray: zipBytes, destinationIndex: 0x5a, length: fileName.Length);
@@ -220,7 +220,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void IsZip64_WithEmptyZip64_ReturnsTrue()
         {
-            using (var test = new Test(GetResource("EmptyZip64.zip")))
+            using (var test = new Test(SigningTestUtility.GetResourceBytes("EmptyZip64.zip")))
             {
                 var isZip64 = SignedPackageArchiveUtility.IsZip64(test.Reader);
 
@@ -231,7 +231,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void IsZip64_WithLocalFileHeaderWithZip64ExtraField_ReturnsTrue()
         {
-            using (var test = new Test(GetResource("LocalFileHeaderWithZip64ExtraField.zip")))
+            using (var test = new Test(SigningTestUtility.GetResourceBytes("LocalFileHeaderWithZip64ExtraField.zip")))
             {
                 var isZip64 = SignedPackageArchiveUtility.IsZip64(test.Reader);
 
@@ -242,7 +242,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void IsZip64_WithCentralDirectoryHeaderWithZip64ExtraField_ReturnsTrue()
         {
-            using (var test = new Test(GetResource("CentralDirectoryHeaderWithZip64ExtraField.zip")))
+            using (var test = new Test(SigningTestUtility.GetResourceBytes("CentralDirectoryHeaderWithZip64ExtraField.zip")))
             {
                 var isZip64 = SignedPackageArchiveUtility.IsZip64(test.Reader);
 
@@ -453,13 +453,6 @@ namespace NuGet.Packaging.Test
 
                 return stream.ToArray();
             }
-        }
-
-        private static byte[] GetResource(string name)
-        {
-            return ResourceTestUtility.GetResourceBytes(
-                $"NuGet.Packaging.Test.compiler.resources.{name}",
-                typeof(SignedPackageArchiveUtilityTests));
         }
 
         private static DateTimeOffset GetLastModifiedDateTimeOfPackageSignatureFile(MemoryStream package)

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Packaging.Signing;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -14,7 +15,7 @@ namespace NuGet.Packaging.Test
     {
 #if IS_DESKTOP
         private static readonly Lazy<PrimarySignature> _signature = new Lazy<PrimarySignature>(
-            () => PrimarySignature.Load(SignTestUtility.GetResourceBytes(".signature.p7s")));
+            () => PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s")));
 #endif
         private readonly SignatureTrustAndValidityVerificationProvider _provider;
 

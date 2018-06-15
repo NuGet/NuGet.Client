@@ -14,6 +14,7 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -1429,7 +1430,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public async Task ValidateIntegrityAsync_WhenSignatureContentNull_Throws()
         {
-            using (var stream = new MemoryStream(SignTestUtility.GetResourceBytes("SignedPackage.1.0.0.nupkg")))
+            using (var stream = new MemoryStream(SigningTestUtility.GetResourceBytes("SignedPackage.1.0.0.nupkg")))
             using (var reader = new PackageArchiveReader(stream))
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
@@ -1442,7 +1443,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public async Task ValidateIntegrityAsync_WhenCancellationTokenCancelled_Throws()
         {
-            using (var stream = new MemoryStream(SignTestUtility.GetResourceBytes("SignedPackage.1.0.0.nupkg")))
+            using (var stream = new MemoryStream(SigningTestUtility.GetResourceBytes("SignedPackage.1.0.0.nupkg")))
             using (var reader = new PackageArchiveReader(stream))
             {
                 var content = new SignatureContent(SigningSpecifications.V1, HashAlgorithmName.SHA256, "hash");

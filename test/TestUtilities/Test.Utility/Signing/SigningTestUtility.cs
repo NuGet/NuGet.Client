@@ -8,9 +8,12 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Shared;
+using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
@@ -22,6 +25,7 @@ using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.X509;
 using Org.BouncyCastle.X509.Extension;
+using Xunit;
 
 namespace Test.Utility.Signing
 {
@@ -622,5 +626,94 @@ namespace Test.Utility.Signing
             return responders;
         }
 #endif
+
+        public static async Task<VerifySignaturesResult> VerifySignatureAsync(SignedPackageArchive signPackage, SignedPackageVerifierSettings settings)
+        {
+            var verificationProviders = new[] { new SignatureTrustAndValidityVerificationProvider() };
+            var verifier = new PackageSignatureVerifier(verificationProviders);
+            var result = await verifier.VerifySignaturesAsync(signPackage, settings, CancellationToken.None);
+            return result;
+        }
+
+        public static byte[] GetResourceBytes(string name)
+        {
+            return ResourceTestUtility.GetResourceBytes($"Test.Utility.compiler.resources.{name}", typeof(SigningTestUtility));
+        }
+
+        public static X509Certificate2 GetCertificate(string name)
+        {
+            var bytes = GetResourceBytes(name);
+
+            return new X509Certificate2(bytes);
+        }
+
+        public static byte[] GetHash(X509Certificate2 certificate, NuGet.Common.HashAlgorithmName hashAlgorithm)
+        {
+            return hashAlgorithm.ComputeHash(certificate.RawData);
+        }
+
+        public static void VerifySerialNumber(X509Certificate2 certificate, NuGet.Packaging.Signing.IssuerSerial issuerSerial)
+        {
+            var serialNumber = certificate.GetSerialNumber();
+
+            // Convert from little endian to big endian.
+            Array.Reverse(serialNumber);
+
+            VerifyByteArrays(serialNumber, issuerSerial.SerialNumber);
+        }
+
+        public static void VerifyByteArrays(byte[] expected, byte[] actual)
+        {
+            var expectedHex = BitConverter.ToString(expected).Replace("-", "");
+            var actualHex = BitConverter.ToString(actual).Replace("-", "");
+
+            Assert.Equal(expectedHex, actualHex);
+        }
+
+        public static void AssertOfflineRevocation(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            string offlineRevocation;
+
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                offlineRevocation = "The revocation function was unable to check revocation because the revocation server was offline.";
+            }
+            else
+            {
+                offlineRevocation = "unable to get certificate CRL";
+            }
+
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == offlineRevocation);
+        }
+
+        public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == "The revocation function was unable to check revocation for the certificate.");
+        }
+
+        public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            string untrustedRoot;
+
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
+            }
+            else
+            {
+                untrustedRoot = "certificate not trusted";
+            }
+
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message == untrustedRoot);
+        }
     }
 }

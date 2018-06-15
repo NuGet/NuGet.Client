@@ -6,6 +6,7 @@ using System.Text;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using Org.BouncyCastle.Asn1;
+using Test.Utility.Signing;
 using Xunit;
 using BcEssCertId = Org.BouncyCastle.Asn1.Ess.EssCertID;
 using BcPolicyInformation = Org.BouncyCastle.Asn1.X509.PolicyInformation;
@@ -58,17 +59,17 @@ namespace NuGet.Packaging.Test
             Assert.Equal(3, signingCertificate.Certificates.Count);
             Assert.Null(signingCertificate.Policies);
 
-            SignTestUtility.VerifyByteArrays(
+            SigningTestUtility.VerifyByteArrays(
                 bcEssCertId1.GetCertHash(),
                 signingCertificate.Certificates[0].CertificateHash);
             Assert.Null(signingCertificate.Certificates[0].IssuerSerial);
 
-            SignTestUtility.VerifyByteArrays(
+            SigningTestUtility.VerifyByteArrays(
                 bcEssCertId2.GetCertHash(),
                 signingCertificate.Certificates[1].CertificateHash);
             Assert.Null(signingCertificate.Certificates[1].IssuerSerial);
 
-            SignTestUtility.VerifyByteArrays(
+            SigningTestUtility.VerifyByteArrays(
                 bcEssCertId3.GetCertHash(),
                 signingCertificate.Certificates[2].CertificateHash);
             Assert.Null(signingCertificate.Certificates[2].IssuerSerial);

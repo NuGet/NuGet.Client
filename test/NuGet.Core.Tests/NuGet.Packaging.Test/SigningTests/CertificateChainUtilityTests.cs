@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -18,12 +18,7 @@ namespace NuGet.Packaging.Test
 
         public CertificateChainUtilityTests(CertificatesFixture fixture)
         {
-            if (fixture == null)
-            {
-                throw new ArgumentNullException(nameof(fixture));
-            }
-
-            _fixture = fixture;
+            _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
         [Fact]
@@ -82,9 +77,9 @@ namespace NuGet.Packaging.Test
         public void GetCertificateChain_WithUntrustedRoot_Throws()
         {
             using (var chainHolder = new X509ChainHolder())
-            using (var rootCertificate = SignTestUtility.GetCertificate("root.crt"))
-            using (var intermediateCertificate = SignTestUtility.GetCertificate("intermediate.crt"))
-            using (var leafCertificate = SignTestUtility.GetCertificate("leaf.crt"))
+            using (var rootCertificate = SigningTestUtility.GetCertificate("root.crt"))
+            using (var intermediateCertificate = SigningTestUtility.GetCertificate("intermediate.crt"))
+            using (var leafCertificate = SigningTestUtility.GetCertificate("leaf.crt"))
             {
                 var chain = chainHolder.Chain;
                 var extraStore = new X509Certificate2Collection() { rootCertificate, intermediateCertificate };
@@ -103,12 +98,12 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(1, logger.Errors);
                 Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 2 : 1, logger.Warnings);
 
-                AssertUntrustedRoot(logger.LogMessages, LogLevel.Error);
-                AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Error);
+                SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
 
                 if (RuntimeEnvironmentHelper.IsWindows)
                 {
-                    AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
+                    SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
                 }
             }
         }
@@ -134,11 +129,11 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Warnings);
 
-                AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
+                SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
 
                 if (!RuntimeEnvironmentHelper.IsWindows)
                 {
-                    AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                    SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
                 }
             }
         }
@@ -156,9 +151,9 @@ namespace NuGet.Packaging.Test
         public void GetCertificateChain_ReturnsCertificatesInOrder()
         {
             using (var chainHolder = new X509ChainHolder())
-            using (var rootCertificate = SignTestUtility.GetCertificate("root.crt"))
-            using (var intermediateCertificate = SignTestUtility.GetCertificate("intermediate.crt"))
-            using (var leafCertificate = SignTestUtility.GetCertificate("leaf.crt"))
+            using (var rootCertificate = SigningTestUtility.GetCertificate("root.crt"))
+            using (var intermediateCertificate = SigningTestUtility.GetCertificate("intermediate.crt"))
+            using (var leafCertificate = SigningTestUtility.GetCertificate("leaf.crt"))
             {
                 var chain = chainHolder.Chain;
 
@@ -175,52 +170,6 @@ namespace NuGet.Packaging.Test
                     Assert.Equal(rootCertificate.Thumbprint, certificateChain[2].Thumbprint);
                 }
             }
-        }
-
-        private static void AssertOfflineRevocation(IEnumerable<ILogMessage> issues, LogLevel logLevel)
-        {
-            string offlineRevocation;
-
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                offlineRevocation = "The revocation function was unable to check revocation because the revocation server was offline.";
-            }
-            else
-            {
-                offlineRevocation = "unable to get certificate CRL";
-            }
-
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message == offlineRevocation);
-        }
-
-        private static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message == "The revocation function was unable to check revocation for the certificate.");
-        }
-
-        private static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
-        {
-            string untrustedRoot;
-
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
-            }
-            else
-            {
-                untrustedRoot = "certificate not trusted";
-            }
-
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message == untrustedRoot);
         }
     }
 }

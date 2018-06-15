@@ -190,9 +190,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void CreateSignedAttributes_SignPackageRequest_WithValidInput_ReturnsAttributes()
         {
-            using (var rootCertificate = SignTestUtility.GetCertificate("root.crt"))
-            using (var intermediateCertificate = SignTestUtility.GetCertificate("intermediate.crt"))
-            using (var leafCertificate = SignTestUtility.GetCertificate("leaf.crt"))
+            using (var rootCertificate = SigningTestUtility.GetCertificate("root.crt"))
+            using (var intermediateCertificate = SigningTestUtility.GetCertificate("intermediate.crt"))
+            using (var leafCertificate = SigningTestUtility.GetCertificate("leaf.crt"))
             using (var request = CreateRequest(leafCertificate))
             {
                 var certList = new[] { leafCertificate, intermediateCertificate, rootCertificate };
@@ -392,10 +392,10 @@ namespace NuGet.Packaging.Test
 
                         var essCertIdV2 = signingCertificateV2.Certificates[0];
 
-                        Assert.Equal(SignTestUtility.GetHash(request.Certificate, request.SignatureHashAlgorithm), essCertIdV2.CertificateHash);
+                        Assert.Equal(SigningTestUtility.GetHash(request.Certificate, request.SignatureHashAlgorithm), essCertIdV2.CertificateHash);
                         Assert.Equal(request.SignatureHashAlgorithm.ConvertToOidString(), essCertIdV2.HashAlgorithm.Algorithm.Value);
                         Assert.Equal(request.Certificate.IssuerName.Name, essCertIdV2.IssuerSerial.GeneralNames[0].DirectoryName.Name);
-                        SignTestUtility.VerifySerialNumber(request.Certificate, essCertIdV2.IssuerSerial);
+                        SigningTestUtility.VerifySerialNumber(request.Certificate, essCertIdV2.IssuerSerial);
                         Assert.Null(signingCertificateV2.Policies);
 
                         signingCertificateV2AttributeFound = true;
@@ -496,7 +496,7 @@ namespace NuGet.Packaging.Test
             using (var test = SignTest.Create(
                 _fixture.GetDefaultCertificate(),
                 HashAlgorithmName.SHA256,
-                GetResource("CentralDirectoryHeaderWithZip64ExtraField.zip")))
+                SigningTestUtility.GetResourceBytes("CentralDirectoryHeaderWithZip64ExtraField.zip")))
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
                     () => SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None));
@@ -557,13 +557,6 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(1, test.Logger.Messages.Count());
                 Assert.True(test.Logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
             }
-        }
-
-        private static byte[] GetResource(string name)
-        {
-            return ResourceTestUtility.GetResourceBytes(
-                $"NuGet.Packaging.Test.compiler.resources.{name}",
-                typeof(SigningUtilityTests));
         }
 
         private sealed class SignTest : IDisposable
