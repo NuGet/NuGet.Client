@@ -14,8 +14,6 @@ namespace NuGet.Commands
 {
     public class RestoreSummary
     {
-        private delegate void LogString(string s);
-
         public bool Success { get; }
 
         public bool NoOpRestore { get; }
@@ -89,19 +87,11 @@ namespace NuGet.Commands
                 // Display the errors summary
                 foreach (var restoreSummary in restoreSummaries)
                 {
-                    // log warnings
-                    LogToConsole(
-                        restoreSummary,
-                        LogLevel.Warning,
-                        string.Format(CultureInfo.CurrentCulture, Strings.Log_WarningSummary, restoreSummary.InputPath),
-                        logger.LogWarning);
-
                     // log errors
-                    LogToConsole(
+                    LogErrorsToConsole(
                         restoreSummary,
-                        LogLevel.Error,
                         string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath),
-                        logger.LogError);
+                        logger);
                 }
             }
 
@@ -154,22 +144,25 @@ namespace NuGet.Commands
             }
         }
 
-        private static void LogToConsole(RestoreSummary restoreSummary, LogLevel logLevel, string logHeading, LogString log)
+        private static void LogErrorsToConsole(
+            RestoreSummary restoreSummary,
+            string logHeading,
+            ILogger logger)
         {
             var logs = restoreSummary
                         .Errors
-                        .Where(m => m.Level == logLevel)
+                        .Where(m => m.Level == LogLevel.Error)
                         .ToList();
 
             if (logs.Count > 0)
             {
-                log(string.Empty);
-                log(logHeading);
+                logger.LogInformation(string.Empty);
+                logger.LogError(logHeading);
                 foreach (var error in logs)
                 {
                     foreach (var line in IndentLines(error.FormatWithCode()))
                     {
-                        log(line);
+                        logger.LogError(line);
                     }
                 }
             }

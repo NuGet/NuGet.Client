@@ -19,6 +19,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.CommandLine
 {
@@ -106,6 +107,12 @@ namespace NuGet.CommandLine
             {
                 var v2RestoreResult = await PerformNuGetV2RestoreAsync(restoreInputs);
                 restoreSummaries.Add(v2RestoreResult);
+
+                // log warnings
+                v2RestoreResult
+                    .Errors
+                    .Where(l => l.Level == LogLevel.Warning)
+                    .ForEach(l => Console.LogWarning(l.FormatWithCode()));
             }
 
             // project.json and PackageReference

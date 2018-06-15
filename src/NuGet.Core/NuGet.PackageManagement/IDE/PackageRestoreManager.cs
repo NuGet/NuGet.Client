@@ -37,27 +37,12 @@ namespace NuGet.PackageManagement
 
         public PackageRestoreManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
-            Configuration.ISettings settings,
+            ISettings settings,
             ISolutionManager solutionManager)
         {
-            if (sourceRepositoryProvider == null)
-            {
-                throw new ArgumentNullException(nameof(sourceRepositoryProvider));
-            }
-
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            if (solutionManager == null)
-            {
-                throw new ArgumentNullException(nameof(solutionManager));
-            }
-
-            SourceRepositoryProvider = sourceRepositoryProvider;
-            Settings = settings;
-            SolutionManager = solutionManager;
+            SourceRepositoryProvider = sourceRepositoryProvider ?? throw new ArgumentNullException(nameof(sourceRepositoryProvider));
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            SolutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
         }
 
         [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
@@ -71,12 +56,10 @@ namespace NuGet.PackageManagement
                 }
 
                 var solutionDirectory = SolutionManager.SolutionDirectory;
-                if (string.IsNullOrEmpty(solutionDirectory))
-                {
-                    return false;
-                }
 
-                return FileSystemUtility.FileExists(solutionDirectory, NuGetExeFile) &&
+                return string.IsNullOrEmpty(solutionDirectory)
+                    ? false
+                    : FileSystemUtility.FileExists(solutionDirectory, NuGetExeFile) &&
                        FileSystemUtility.FileExists(solutionDirectory, NuGetTargetsFile);
             }
         }
@@ -99,10 +82,7 @@ namespace NuGet.PackageManagement
                 missing = packages.Any(p => p.IsMissing);
             }
 
-            if (PackagesMissingStatusChanged != null)
-            {
-                PackagesMissingStatusChanged(this, new PackagesMissingStatusEventArgs(missing));
-            }
+            PackagesMissingStatusChanged?.Invoke(this, new PackagesMissingStatusEventArgs(missing));
         }
 
         /// <summary>
@@ -130,25 +110,23 @@ namespace NuGet.PackageManagement
         {
             var packages = new List<PackageRestoreData>();
 
-            if (packageReferencesDict == null || !packageReferencesDict.Any())
+            if (packageReferencesDict?.Any() == true)
             {
-                return packages;
-            }
+                var nuGetPackageManager = GetNuGetPackageManager(solutionDirectory);
 
-            var nuGetPackageManager = GetNuGetPackageManager(solutionDirectory);
-
-            foreach (var packageReference in packageReferencesDict.Keys)
-            {
-                var isMissing = false;
-                if (!nuGetPackageManager.PackageExistsInPackagesFolder(packageReference.PackageIdentity))
+                foreach (var packageReference in packageReferencesDict.Keys)
                 {
-                    isMissing = true;
+                    var isMissing = false;
+                    if (!nuGetPackageManager.PackageExistsInPackagesFolder(packageReference.PackageIdentity))
+                    {
+                        isMissing = true;
+                    }
+
+                    var projectNames = packageReferencesDict[packageReference];
+
+                    Debug.Assert(projectNames != null);
+                    packages.Add(new PackageRestoreData(packageReference, projectNames, isMissing));
                 }
-
-                var projectNames = packageReferencesDict[packageReference];
-
-                Debug.Assert(projectNames != null);
-                packages.Add(new PackageRestoreData(packageReference, projectNames, isMissing));
             }
 
             return packages;
@@ -442,10 +420,7 @@ namespace NuGet.PackageManagement
                 exception = ex;
             }
 
-            if (packageRestoreContext.PackageRestoredEvent != null)
-            {
-                packageRestoreContext.PackageRestoredEvent(null, new PackageRestoredEventArgs(packageReference.PackageIdentity, restored));
-            }
+            packageRestoreContext.PackageRestoredEvent?.Invoke(null, new PackageRestoredEventArgs(packageReference.PackageIdentity, restored));
 
             // PackageReferences cannot be null here
             if (exception != null)
