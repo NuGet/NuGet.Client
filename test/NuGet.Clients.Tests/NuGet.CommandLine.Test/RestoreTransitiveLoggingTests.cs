@@ -862,7 +862,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeTrue();
-                GetSubstringCount(r.AllOutput, "NU1603", ignoreCase: false).Should().Be(1);
+                GetSubstringCount(r.AllOutput, "NU1603", ignoreCase: false).Should().Be(2);
             }
         }
 
@@ -1955,7 +1955,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeTrue();
-                GetSubstringCount(r.AllOutput, "NU1603", ignoreCase: false).Should().Be(3);
+                GetSubstringCount(r.AllOutput, "NU1603", ignoreCase: false).Should().Be(6);
             }
         }
 
@@ -2194,7 +2194,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeTrue();
-                GetSubstringCount(r.AllOutput, "NU1603", ignoreCase: false).Should().Be(1);
+                GetSubstringCount(r.AllOutput, "NU1603", ignoreCase: false).Should().Be(2);
             }
         }
 
@@ -2275,7 +2275,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeTrue();
-                GetSubstringCount(r.AllOutput, "NU1603", ignoreCase: false).Should().Be(2);
+                GetSubstringCount(r.AllOutput, "NU1603", ignoreCase: false).Should().Be(4);
             }
         }
 

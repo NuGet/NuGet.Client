@@ -91,6 +91,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Assert
                 result.ExitCode.Should().Be(1);
                 result.Errors.Should().Contain(_NU3008);
+                result.AllOutput.Should().Contain(_NU3027);
             }
         }
 
