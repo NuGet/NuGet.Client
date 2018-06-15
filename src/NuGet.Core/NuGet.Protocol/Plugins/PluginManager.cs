@@ -7,10 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Text;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -41,6 +40,7 @@ namespace NuGet.Protocol.Core.Types
         private string _rawPluginPaths;
 
         private static Lazy<int> _currentProcessId = new Lazy<int>(GetCurrentProcessId);
+        private Lazy<string> _pluginsCacheDirectory = new Lazy<string>(() => SettingsUtility.GetPluginsCacheFolder());
 
         /// <summary>
         /// Gets an environment variable reader.
@@ -159,7 +159,7 @@ namespace NuGet.Protocol.Core.Types
 
         /// <summary>
         /// Creates a plugin from the given pluginDiscoveryResult.
-        /// This plugin's operations will be source agnostic ones
+        /// This plugin's operations will be source agnostic ones (Authentication)
         /// </summary>
         /// <param name="pluginDiscoveryResult"></param>
         /// <param name="cancellationToken"></param>
@@ -171,11 +171,31 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(pluginDiscoveryResult));
             }
 
-            return CreatePluginAsync(pluginDiscoveryResult, OperationClaim.Authentication, new PluginRequestKey(pluginDiscoveryResult.PluginFile.Path, "Source-Agnostic"), null, null, cancellationToken);
+            return CreatePluginAsync(
+                pluginDiscoveryResult,
+                OperationClaim.Authentication,
+                new PluginRequestKey(pluginDiscoveryResult.PluginFile.Path, "Source-Agnostic"),
+                packageSourceRepository: null,
+                serviceIndex: null,
+                cancellationToken: cancellationToken);
         }
 
-        private Lazy<string> _pluginsCacheDirectory = new Lazy<string>(() => SettingsUtility.GetPluginsCacheFolder());
-
+        /// <summary>
+        /// Creates a plugin from the discovered plugin.
+        /// We firstly check the cache for the operation claims for the given request key.
+        /// If there is a valid cache entry, and it does contain the requested operation claim,
+        /// then we start the plugin, and if need be update the cache value itself.
+        /// If there is a valid cache entry, and it does NOT contain the requested operation claim, then we return a dummy plugin creation result.
+        /// The dummy result says that there are no supported operation claims. It's up to the caller to make sure they don't do an illegal call to the given plugin.
+        /// If there is no valid cache entry or an invalid one, we start the plugin as normally, return an active plugin even if the requested claim is not available, and write a cache entry.
+        /// </summary>
+        /// <param name="result">plugin discovery result</param>
+        /// <param name="requestedOperationClaim">The requested operation claim</param>
+        /// <param name="requestKey">plugin request key</param>
+        /// <param name="packageSourceRepository">package source repository</param>
+        /// <param name="serviceIndex">service index</param>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>A plugin creation result</returns>
         private async Task<PluginCreationResult> CreatePluginAsync(
             PluginDiscoveryResult result,
             OperationClaim requestedOperationClaim,
@@ -185,34 +205,14 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken cancellationToken)
         {
             PluginCreationResult pluginCreationResult = null;
-            var context = new PluginCacheContext(_pluginsCacheDirectory.Value, result.PluginFile.Path);
-            var cacheResult = new PluginCacheResult(context.RootFolder, context.CacheFileName);
+            var cacheEntry = new PluginCacheEntry(_pluginsCacheDirectory.Value, result.PluginFile.Path, requestKey.PackageSourceRepository);
 
             return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
-                context.CacheFileName,
+                cacheEntry.CacheFileName,
                 action: async lockedToken =>
                 {
-
-                    Stream content = null;
-                    try
-                    {
-                        content = CachingUtility.TryReadCacheFile(context.MaxAge, context.CacheFileName);
-                        if (content != null)
-                        {
-                            cacheResult.ProcessContent(content);
-                        }
-                    }
-                    catch
-                    {
-                        content?.Dispose();
-                    }
-                    finally
-                    {
-                        content?.Dispose();
-                    }
-
-                    var cachedOperationClaims = cacheResult.GetOperationClaims(requestKey);
-                    if (cachedOperationClaims == null || cachedOperationClaims.Contains(requestedOperationClaim))
+                    cacheEntry.LoadFromFile();
+                    if (cacheEntry.OperationClaims == null || cacheEntry.OperationClaims.Contains(requestedOperationClaim))
                     {
                         if (result.PluginFile.State.Value == PluginFileState.Valid)
                         {
@@ -226,22 +226,19 @@ namespace NuGet.Protocol.Core.Types
                             var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
 
                             // We still make the GetOperationClaims call even if we have the operation claims cached. This is a way to self-update the cache.
-                             var lazyOperationClaims = _pluginOperationClaims.GetOrAdd(
-                                    requestKey,
-                                    key => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() =>
-                                    GetPluginOperationClaimsAsync(
-                                        plugin,
-                                        packageSourceRepository,
-                                        serviceIndex,
-                                        cancellationToken)));
+                            var operationClaims = await _pluginOperationClaims.GetOrAdd(
+                                   requestKey,
+                                   key => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() =>
+                                   GetPluginOperationClaimsAsync(
+                                       plugin,
+                                       packageSourceRepository,
+                                       serviceIndex,
+                                       cancellationToken))).Value;
 
-                            // Why does this not work?
-                            var operationClaims = await lazyOperationClaims.Value;
-
-                            if (!EqualityUtility.SequenceEqualWithNullCheck(operationClaims, cachedOperationClaims))
+                            if (!EqualityUtility.SequenceEqualWithNullCheck(operationClaims, cacheEntry.OperationClaims))
                             {
-                                cacheResult.AddOrUpdateOperationClaims(requestKey, operationClaims.AsList());
-                                await cacheResult.UpdateCacheFileAsync();
+                                cacheEntry.AddOrUpdateOperationClaims(operationClaims);
+                                await cacheEntry.UpdateCacheFileAsync();
                             }
 
                             pluginCreationResult = new PluginCreationResult(
@@ -258,7 +255,7 @@ namespace NuGet.Protocol.Core.Types
                     // Return a dummy uninitialized result if the plugin was not started because the supported operation is not available.
                     return pluginCreationResult ?? new PluginCreationResult(
                                 NoOpPlugin.Instance,
-                                NoOpIPluginMulticlientUtilities.Instance,
+                                NoOpPluginMulticlientUtilities.Instance,
                                 Array.Empty<OperationClaim>());
                 },
                 token: cancellationToken
@@ -382,185 +379,6 @@ namespace NuGet.Protocol.Core.Types
             plugin.Connection.Options.SetRequestTimeout(requestTimeout);
         }
 
-        private sealed class NoOpPlugin : IPlugin
-        {
-            internal static readonly NoOpPlugin Instance = new NoOpPlugin();
-
-            private static string UniqueName = Guid.NewGuid().ToString();
-
-            public IConnection Connection => throw new NotImplementedException();
-
-            public string FilePath => UniqueName;
-
-            public string Id => UniqueName;
-
-            public string Name => UniqueName;
-
-            public event EventHandler BeforeClose
-            {
-                add
-                {
-                }
-                remove
-                {
-                }
-            }
-
-            public event EventHandler Closed
-            {
-                add
-                {
-                }
-                remove
-                {
-                }
-            }
-
-            public void Close()
-            {
-                // do nothing
-            }
-
-            public void Dispose()
-            {
-                // do nothing
-            }
-        }
-
-        private sealed class NoOpIPluginMulticlientUtilities : IPluginMulticlientUtilities
-        {
-
-            internal static readonly NoOpIPluginMulticlientUtilities Instance = new NoOpIPluginMulticlientUtilities();
-
-            public Task DoOncePerPluginLifetimeAsync(string key, Func<Task> taskFunc, CancellationToken cancellationToken)
-            {
-                // do nothing
-                return Task.CompletedTask;
-            }
-        }
-
-        private sealed class PluginCacheContext
-        {
-            public TimeSpan MaxAge { get; set; } = TimeSpan.FromDays(30);
-            public string RootFolder { get; }
-            public string CacheFileName { get; }
-
-            public PluginCacheContext(string rootCacheFolder, string pluginFilePath)
-            {
-                RootFolder = rootCacheFolder;
-                CacheFileName = Path.Combine(rootCacheFolder, CachingUtility.ComputeHash(pluginFilePath) + ".dat");
-            }
-        }
-
-        private sealed class PluginCacheResult
-        {
-            private const int BufferSize = 8192;
-
-            public PluginCacheResult(string rootFolder, string cacheFileName)
-            {
-                RootFolder = rootFolder;
-                CacheFileName = cacheFileName;
-                NewCacheFileName = cacheFileName + "-new";
-            }
-
-            internal string RootFolder { get; }
-            internal string CacheFileName { get; }
-            internal string NewCacheFileName { get; }
-
-            private Dictionary<string, IList<OperationClaim>> _operationClaims;
-
-            internal void ProcessContent(Stream content)
-            {
-                var serializer = new JsonSerializer();
-                using (var sr = new StreamReader(content))
-                using (var jsonTextReader = new JsonTextReader(sr))
-                {
-                    _operationClaims = serializer.Deserialize<Dictionary<string, IList<OperationClaim>>>(jsonTextReader);
-                }
-            }
-
-            internal IList<OperationClaim> GetOperationClaims(PluginRequestKey requestKey)
-            {
-                IList<OperationClaim> claims = null;
-                _operationClaims?.TryGetValue(requestKey.PackageSourceRepository, out claims);
-                return claims;
-            }
-
-            internal void AddOrUpdateOperationClaims(PluginRequestKey requestKey, IList<OperationClaim> operationClaims)
-            {
-                if (_operationClaims == null)
-                {
-                    _operationClaims = new Dictionary<string, IList<OperationClaim>>();
-                }
-                _operationClaims[requestKey.PackageSourceRepository] = operationClaims;
-            }
-
-            internal async Task UpdateCacheFileAsync()
-            {
-                // Make sure the cache file directory is created before writing a file to it.
-                DirectoryUtility.CreateSharedDirectory(RootFolder);
-
-                // The update of a cached file is divided into two steps:
-                // 1) Delete the old file.
-                // 2) Create a new file with the same name.
-                using (var fileStream = new FileStream(
-                    NewCacheFileName,
-                    FileMode.Create,
-                    FileAccess.ReadWrite,
-                    FileShare.None,
-                    BufferSize,
-                    useAsync: true))
-                {
-                    var json = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(_operationClaims, Formatting.Indented));
-                    await fileStream.WriteAsync(json, 0, json.Length);
-                    //fileStream.FlushAsync();
-                }
-
-                if (File.Exists(CacheFileName))
-                {
-                    // Process B can perform deletion on an opened file if the file is opened by process A
-                    // with FileShare.Delete flag. However, the file won't be actually deleted until A close it.
-                    // This special feature can cause race condition, so we never delete an opened file.
-                    if (!IsFileAlreadyOpen(CacheFileName))
-                    {
-                        File.Delete(CacheFileName);
-                    }
-                }
-
-                // If the destination file doesn't exist, we can safely perform moving operation.
-                // Otherwise, moving operation will fail.
-                if (!File.Exists(CacheFileName))
-                {
-                    File.Move(
-                        NewCacheFileName,
-                        CacheFileName);
-                }
-            }
-
-            private static bool IsFileAlreadyOpen(string filePath)
-            {
-                FileStream stream = null;
-
-                try
-                {
-                    stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-                }
-                catch
-                {
-                    return true;
-                }
-                finally
-                {
-                    if (stream != null)
-                    {
-                        stream.Dispose();
-                    }
-                }
-
-                return false;
-            }
-        }
-
         private sealed class PluginRequestKey : IEquatable<PluginRequestKey>
         {
             internal string PluginFilePath { get; }
@@ -599,6 +417,68 @@ namespace NuGet.Protocol.Core.Types
                         PackageSourceRepository,
                         other.PackageSourceRepository,
                         StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        private sealed class NoOpPlugin : IPlugin
+        {
+            internal static readonly NoOpPlugin Instance = new NoOpPlugin();
+
+            private static string UniqueName = Guid.NewGuid().ToString();
+
+            public IConnection Connection => throw new NotImplementedException();
+
+            public string FilePath => UniqueName;
+
+            public string Id => UniqueName;
+
+            public string Name => UniqueName;
+
+            public event EventHandler BeforeClose
+            {
+                add
+                {
+                }
+                remove
+                {
+                }
+            }
+
+            public event EventHandler Closed
+            {
+                add
+                {
+                }
+                remove
+                {
+                }
+            }
+
+            private NoOpPlugin()
+            {
+            }
+            public void Close()
+            {
+                // do nothing
+            }
+
+            public void Dispose()
+            {
+                // do nothing
+            }
+        }
+
+        private sealed class NoOpPluginMulticlientUtilities : IPluginMulticlientUtilities
+        {
+            internal static readonly NoOpPluginMulticlientUtilities Instance = new NoOpPluginMulticlientUtilities();
+
+            private NoOpPluginMulticlientUtilities()
+            {
+            }
+
+            public Task DoOncePerPluginLifetimeAsync(string key, Func<Task> taskFunc, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
             }
         }
     }

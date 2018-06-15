@@ -246,16 +246,12 @@ namespace NuGet.Configuration
             {
                 // Verify the path is absolute
                 VerifyPathIsRooted(PluginsCacheEnvironmentKey, path);
-            }
-
-            if (!string.IsNullOrEmpty(path))
-            {
-                path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+                path = PathUtility.GetPathWithDirectorySeparator(path);
                 path = Path.GetFullPath(path);
                 return path;
             }
 
-            return NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory);
+            return NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetPluginsCacheDirectory);
         }
 
         public static IEnumerable<PackageSource> GetEnabledSources(ISettings settings)

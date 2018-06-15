@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Plugins;
@@ -29,6 +31,7 @@ namespace NuGet.Credentials.Test
         public bool Success { get; }
         public string ProxyUsername { get; }
         public string ProxyPassword { get; }
+        public bool PluginLaunched { get; }
 
         internal TestExpectation(
             string serviceIndexJson,
@@ -41,7 +44,8 @@ namespace NuGet.Credentials.Test
             string authenticationPassword,
             bool success,
             string proxyUsername = null,
-            string proxyPassword = null
+            string proxyPassword = null,
+            bool pluginLaunched = true
             )
         {
             var serviceIndex = string.IsNullOrEmpty(serviceIndexJson)
@@ -57,6 +61,7 @@ namespace NuGet.Credentials.Test
             Success = success;
             ProxyPassword = proxyPassword;
             ProxyUsername = proxyUsername;
+            PluginLaunched = pluginLaunched;
         }
     }
 
@@ -71,11 +76,14 @@ namespace NuGet.Credentials.Test
 
         internal PluginManager PluginManager { get; }
 
+        private string _pluginFilePath;
+
         internal PluginManagerMock(
-                            string pluginFilePath,
-                            PluginFileState pluginFileState,
+                string pluginFilePath,
+                PluginFileState pluginFileState,
                 TestExpectation expectations)
         {
+            _pluginFilePath = pluginFilePath;
             _expectations = expectations;
 
             _reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
@@ -143,44 +151,41 @@ namespace NuGet.Credentials.Test
 
         public void Dispose()
         {
+            LocalResourceUtils.DeleteDirectoryTree(
+                Path.Combine(
+                    SettingsUtility.GetPluginsCacheFolder(),
+                    CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash(_pluginFilePath))),
+                new List<string>());
             PluginManager.Dispose();
             GC.SuppressFinalize(this);
 
             _reader.Verify();
             _pluginDiscoverer.Verify();
-
-            _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
-                It.Is<MessageMethod>(m => m == MessageMethod.GetOperationClaims),
-                It.Is<GetOperationClaimsRequest>(
-                    g => g.PackageSourceRepository == null), // The source repository should be null in the context of credential plugins
-                It.IsAny<CancellationToken>()), Times.Once());
-
-            if (_expectations.Success)
+            if (_expectations.PluginLaunched)
             {
-                _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<SetLogLevelRequest, SetLogLevelResponse>(
-                        It.Is<MessageMethod>(m => m == MessageMethod.SetLogLevel),
-                        It.IsAny<SetLogLevelRequest>(),
+                _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
+                    It.Is<MessageMethod>(m => m == MessageMethod.GetOperationClaims),
+                    It.Is<GetOperationClaimsRequest>(
+                        g => g.PackageSourceRepository == null), // The source repository should be null in the context of credential plugins
+                    It.IsAny<CancellationToken>()), Times.Once());
+
+                if (_expectations.Success)
+                {
+                    _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
+                            It.Is<MessageMethod>(m => m == MessageMethod.GetAuthenticationCredentials),
+                            It.IsAny<GetAuthenticationCredentialsRequest>(),
+                            It.IsAny<CancellationToken>()), Times.Once());
+                }
+
+                if (_expectations.ProxyUsername != null && _expectations.ProxyPassword != null)
+                {
+                    _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<SetCredentialsRequest, SetCredentialsResponse>(
+                        It.Is<MessageMethod>(m => m == MessageMethod.SetCredentials),
+                        It.Is<SetCredentialsRequest>(e => e.PackageSourceRepository.Equals(_expectations.Uri.AbsolutePath) && e.Password == null && e.Username == null && e.ProxyPassword.Equals(_expectations.ProxyPassword) && e.ProxyUsername.Equals(_expectations.ProxyUsername)),
                         It.IsAny<CancellationToken>()),
-                    Times.Once()); // The log level should be set once!
+                    Times.Once());
+                }
             }
-
-            if (_expectations.Success)
-            {
-                _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
-                        It.Is<MessageMethod>(m => m == MessageMethod.GetAuthenticationCredentials),
-                        It.IsAny<GetAuthenticationCredentialsRequest>(),
-                        It.IsAny<CancellationToken>()), Times.Once());
-            }
-
-            if (_expectations.ProxyUsername != null && _expectations.ProxyPassword != null)
-            {
-                _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<SetCredentialsRequest, SetCredentialsResponse>(
-                    It.Is<MessageMethod>(m => m == MessageMethod.SetCredentials),
-                    It.Is<SetCredentialsRequest>(e => e.PackageSourceRepository.Equals(_expectations.Uri.AbsolutePath) && e.Password == null && e.Username == null && e.ProxyPassword.Equals(_expectations.ProxyPassword) && e.ProxyUsername.Equals(_expectations.ProxyUsername)),
-                    It.IsAny<CancellationToken>()),
-                Times.Once());
-            }
-
             _connection.Verify();
 
             _plugin.Verify();

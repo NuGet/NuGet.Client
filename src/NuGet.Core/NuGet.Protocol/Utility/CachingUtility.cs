@@ -11,7 +11,7 @@ namespace NuGet.Protocol
 {
     public class CachingUtility
     {
-        private const int BufferSize = 8192;
+        public static readonly int BufferSize = 8192;
 
         public static string ComputeHash(string value)
         {
@@ -26,7 +26,7 @@ namespace NuGet.Protocol
             return hash.Aggregate("$" + trailing, (result, ch) => "" + hex[ch / 0x10] + hex[ch % 0x10] + result);
         }
 
-        public static Stream TryReadCacheFile(TimeSpan maxAge, string cacheFile)
+        public static Stream ReadCacheFile(TimeSpan maxAge, string cacheFile)
         {
             var fileInfo = new FileInfo(cacheFile);
 
@@ -48,6 +48,43 @@ namespace NuGet.Protocol
             }
 
             return null;
+        }
+
+        public static bool IsFileAlreadyOpen(string filePath)
+        {
+            FileStream stream = null;
+
+            try
+            {
+                stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch(FileNotFoundException)
+            {
+                return false;
+            }
+            catch
+            {
+                return true;
+            }
+            finally
+            {
+                if (stream != null)
+                {
+                    stream.Dispose();
+                }
+            }
+
+            return false;
+        }
+
+        public static string RemoveInvalidFileNameChars(string value)
+        {
+            var invalid = Path.GetInvalidFileNameChars();
+            return new string(
+                value.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray()
+                )
+                .Replace("__", "_")
+                .Replace("__", "_");
         }
     }
 }
