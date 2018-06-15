@@ -1016,6 +1016,13 @@ namespace NuGet.PackageManagement
                         preferredVersions.Remove(packageId);
                     }
                 }
+                else
+                {
+                    // This is the scenario where a specific package is being updated in a project with a -reinstall flag and the -projectname has not been specified.
+                    // In this case, NuGet should bail out if the package does not exist in this project instead of re-installing all packages of the project.
+                    // Bug: https://github.com/NuGet/Home/issues/737
+                    return Enumerable.Empty<NuGetProjectAction>();
+                }
             }
             // We are apply update logic to the complete project - attempting to resolver all updates together
             else
