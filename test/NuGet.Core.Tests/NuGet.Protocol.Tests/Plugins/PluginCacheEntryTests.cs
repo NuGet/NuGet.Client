@@ -40,7 +40,7 @@ namespace NuGet.Protocol.Tests.Plugins
             {
                 var entry = new PluginCacheEntry(testDirectory.Path, "a", "b");
                 entry.LoadFromFile();
-                entry.AddOrUpdateOperationClaims(list);
+                entry.OperationClaims = list;
                 await entry.UpdateCacheFileAsync();
 
                 var newEntry = new PluginCacheEntry(testDirectory.Path, "a", "b");
@@ -59,7 +59,7 @@ namespace NuGet.Protocol.Tests.Plugins
             {
                 var entry = new PluginCacheEntry(testDirectory.Path, "a", "b");
                 entry.LoadFromFile();
-                entry.AddOrUpdateOperationClaims(list);
+                entry.OperationClaims = list;
                 await entry.UpdateCacheFileAsync();
 
                 var CacheFileName = Path.Combine(Path.Combine(testDirectory.Path, CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash("a"))), CachingUtility.RemoveInvalidFileNameChars("b") + ".dat");
@@ -75,7 +75,7 @@ namespace NuGet.Protocol.Tests.Plugins
                    useAsync: true))
                 {
                     list.Add(OperationClaim.DownloadPackage);
-                    entry.AddOrUpdateOperationClaims(list);
+                    entry.OperationClaims = list;
                     await entry.UpdateCacheFileAsync(); // this should not update
                 }
 

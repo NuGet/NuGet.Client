@@ -237,7 +237,7 @@ namespace NuGet.Protocol.Core.Types
 
                             if (!EqualityUtility.SequenceEqualWithNullCheck(operationClaims, cacheEntry.OperationClaims))
                             {
-                                cacheEntry.AddOrUpdateOperationClaims(operationClaims);
+                                cacheEntry.OperationClaims = operationClaims;
                                 await cacheEntry.UpdateCacheFileAsync();
                             }
 

@@ -11,8 +11,18 @@ using NuGet.Common;
 
 namespace NuGet.Protocol.Plugins
 {
+    /// <summary>
+    /// This class represents a plugin operations cache entry.
+    /// It contains expiry logic, read/write/update logic.
+    /// </summary>
     public sealed class PluginCacheEntry
     {
+        /// <summary>
+        /// Create a plugin cache entry.
+        /// </summary>
+        /// <param name="rootCacheFolder">The root cache folder, normally /localappdata/nuget/plugins-cache</param>
+        /// <param name="pluginFilePath">The full plugin file path, which will be used to create a key for the folder created in the root folder itself </param>
+        /// <param name="requestKey">A unique request key for the operation claims. Ideally the packageSourceRepository value of the PluginRequestKey. Example https://protected.package.feed/index.json, or Source-Agnostic</param>
         public PluginCacheEntry(string rootCacheFolder, string pluginFilePath, string requestKey)
         {
             RootFolder = Path.Combine(rootCacheFolder, CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash(pluginFilePath)));
@@ -25,8 +35,12 @@ namespace NuGet.Protocol.Plugins
         private string RootFolder { get; }
         private string NewCacheFileName { get; }
 
-        public IReadOnlyList<OperationClaim> OperationClaims { get; private set; }
+        public IReadOnlyList<OperationClaim> OperationClaims { get; set; }
 
+        /// <summary>
+        /// Loads and processes the contet from the generated file if it exists.
+        /// Even after this method is invoked, the operation claims might be null. 
+        /// </summary>
         public void LoadFromFile()
         {
             Stream content = null;
@@ -54,11 +68,10 @@ namespace NuGet.Protocol.Plugins
             }
         }
 
-        public void AddOrUpdateOperationClaims(IReadOnlyList<OperationClaim> operationClaims)
-        {
-            OperationClaims = operationClaims;
-        }
-
+        /// <summary>
+        /// Updates the cache file with the current value in the operation claims if the operationn claims is not null.
+        /// </summary>
+        /// <returns>Task</returns>
         public async Task UpdateCacheFileAsync()
         {
             if (OperationClaims != null)
