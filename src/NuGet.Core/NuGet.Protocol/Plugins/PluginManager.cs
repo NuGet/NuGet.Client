@@ -141,15 +141,17 @@ namespace NuGet.Protocol.Core.Types
 
                     foreach (var result in await FindAvailablePluginsAsync(cancellationToken))
                     {
-                        var pluginCreationResult = await CreatePluginAsync(
+                        var pluginCreationResult = await TryCreatePluginAsync(
                             result,
                             OperationClaim.DownloadPackage,
                             new PluginRequestKey(result.PluginFile.Path, source.PackageSource.Source),
                             source.PackageSource.Source,
                             serviceIndexJson,
                             cancellationToken);
-
-                        pluginCreationResults.Add(pluginCreationResult);
+                        if (pluginCreationResult.Item1)
+                        {
+                            pluginCreationResults.Add(pluginCreationResult.Item2);
+                        }
 
                     }
                 }
@@ -161,19 +163,20 @@ namespace NuGet.Protocol.Core.Types
         /// Creates a plugin from the given pluginDiscoveryResult.
         /// This plugin's operations will be source agnostic ones (Authentication)
         /// </summary>
-        /// <param name="pluginDiscoveryResult"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>A PluginCreationResult</returns>
-        public Task<PluginCreationResult> CreateSourceAgnosticPluginAsync(PluginDiscoveryResult pluginDiscoveryResult, CancellationToken cancellationToken)
+        /// <param name="pluginDiscoveryResult">plugin discovery result</param>
+        /// <param name="requestedOperationClaim">The requested operation claim</param>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>A plugin creation result, null if the requested plugin cannot handle the given operation claim</returns>
+        public Task<Tuple<bool, PluginCreationResult>> TryGetSourceAgnosticPluginAsync(PluginDiscoveryResult pluginDiscoveryResult, OperationClaim requestedOperationClaim, CancellationToken cancellationToken)
         {
             if (pluginDiscoveryResult == null)
             {
                 throw new ArgumentNullException(nameof(pluginDiscoveryResult));
             }
 
-            return CreatePluginAsync(
+            return TryCreatePluginAsync(
                 pluginDiscoveryResult,
-                OperationClaim.Authentication,
+                requestedOperationClaim,
                 new PluginRequestKey(pluginDiscoveryResult.PluginFile.Path, "Source-Agnostic"),
                 packageSourceRepository: null,
                 serviceIndex: null,
@@ -183,10 +186,8 @@ namespace NuGet.Protocol.Core.Types
         /// <summary>
         /// Creates a plugin from the discovered plugin.
         /// We firstly check the cache for the operation claims for the given request key.
-        /// If there is a valid cache entry, and it does contain the requested operation claim,
-        /// then we start the plugin, and if need be update the cache value itself.
-        /// If there is a valid cache entry, and it does NOT contain the requested operation claim, then we return a dummy plugin creation result.
-        /// The dummy result says that there are no supported operation claims. It's up to the caller to make sure they don't do an illegal call to the given plugin.
+        /// If there is a valid cache entry, and it does contain the requested operation claim, then we start the plugin, and if need be update the cache value itself.
+        /// If there is a valid cache entry, and it does NOT contain the requested operation claim, then we return a null.
         /// If there is no valid cache entry or an invalid one, we start the plugin as normally, return an active plugin even if the requested claim is not available, and write a cache entry.
         /// </summary>
         /// <param name="result">plugin discovery result</param>
@@ -195,8 +196,8 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="packageSourceRepository">package source repository</param>
         /// <param name="serviceIndex">service index</param>
         /// <param name="cancellationToken">cancellation token</param>
-        /// <returns>A plugin creation result</returns>
-        private async Task<PluginCreationResult> CreatePluginAsync(
+        /// <returns>A plugin creation result, null if the requested plugin cannot handle the given operation claim</returns>
+        private async Task<Tuple<bool, PluginCreationResult>> TryCreatePluginAsync(
             PluginDiscoveryResult result,
             OperationClaim requestedOperationClaim,
             PluginRequestKey requestKey,
@@ -211,7 +212,6 @@ namespace NuGet.Protocol.Core.Types
                 cacheEntry.CacheFileName,
                 action: async lockedToken =>
                 {
-                    cacheEntry.LoadFromFile();
                     if (cacheEntry.OperationClaims == null || cacheEntry.OperationClaims.Contains(requestedOperationClaim))
                     {
                         if (result.PluginFile.State.Value == PluginFileState.Valid)
@@ -251,12 +251,7 @@ namespace NuGet.Protocol.Core.Types
                             pluginCreationResult = new PluginCreationResult(result.Message);
                         }
                     }
-
-                    // Return a dummy uninitialized result if the plugin was not started because the supported operation is not available.
-                    return pluginCreationResult ?? new PluginCreationResult(
-                                NoOpPlugin.Instance,
-                                NoOpPluginMulticlientUtilities.Instance,
-                                Array.Empty<OperationClaim>());
+                    return new Tuple<bool, PluginCreationResult>(pluginCreationResult != null, pluginCreationResult);
                 },
                 token: cancellationToken
                 );
@@ -417,68 +412,6 @@ namespace NuGet.Protocol.Core.Types
                         PackageSourceRepository,
                         other.PackageSourceRepository,
                         StringComparison.OrdinalIgnoreCase);
-            }
-        }
-
-        private sealed class NoOpPlugin : IPlugin
-        {
-            internal static readonly NoOpPlugin Instance = new NoOpPlugin();
-
-            private static string UniqueName = Guid.NewGuid().ToString();
-
-            public IConnection Connection => throw new NotImplementedException();
-
-            public string FilePath => UniqueName;
-
-            public string Id => UniqueName;
-
-            public string Name => UniqueName;
-
-            public event EventHandler BeforeClose
-            {
-                add
-                {
-                }
-                remove
-                {
-                }
-            }
-
-            public event EventHandler Closed
-            {
-                add
-                {
-                }
-                remove
-                {
-                }
-            }
-
-            private NoOpPlugin()
-            {
-            }
-            public void Close()
-            {
-                // do nothing
-            }
-
-            public void Dispose()
-            {
-                // do nothing
-            }
-        }
-
-        private sealed class NoOpPluginMulticlientUtilities : IPluginMulticlientUtilities
-        {
-            internal static readonly NoOpPluginMulticlientUtilities Instance = new NoOpPluginMulticlientUtilities();
-
-            private NoOpPluginMulticlientUtilities()
-            {
-            }
-
-            public Task DoOncePerPluginLifetimeAsync(string key, Func<Task> taskFunc, CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
             }
         }
     }

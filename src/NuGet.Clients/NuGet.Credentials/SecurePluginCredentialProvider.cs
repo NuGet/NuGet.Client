@@ -80,51 +80,56 @@ namespace NuGet.Credentials
                 return taskResponse;
             }
 
-            var plugin = await _pluginManager.CreateSourceAgnosticPluginAsync(_discoveredPlugin, cancellationToken);
+            var creationResult = await _pluginManager.TryGetSourceAgnosticPluginAsync(_discoveredPlugin, OperationClaim.Authentication, cancellationToken);
 
-            if (!string.IsNullOrEmpty(plugin.Message))
+            if (creationResult.Item1)
             {
-                // There is a potential here for double logging as the CredentialService itself catches the exceptions and tries to log it.
-                // In reality the logger in the Credential Service will be null because the first request always comes from a resource provider (ServiceIndex provider) 
-                _logger.LogError(plugin.Message);
-                throw new PluginException(plugin.Message); // Throwing here will block authentication and ensure that the complete operation fails 
-            }
-
-            _isAnAuthenticationPlugin = plugin.Claims.Contains(OperationClaim.Authentication);
-
-            if (_isAnAuthenticationPlugin)
-            {
-                AddOrUpdateLogger(plugin.Plugin);
-                await SetPluginLogLevelAsync(plugin, _logger, cancellationToken);
-
-                if (proxy != null)
+                var plugin = creationResult.Item2;
+                if (!string.IsNullOrEmpty(plugin.Message))
                 {
-                    await SetProxyCredentialsToPlugin(uri, proxy, plugin, cancellationToken);
+                    // There is a potential here for double logging as the CredentialService itself catches the exceptions and tries to log it.
+                    // In reality the logger in the Credential Service will be null because the first request always comes from a resource provider (ServiceIndex provider) 
+                    _logger.LogError(plugin.Message);
+                    _isAnAuthenticationPlugin = false;
+                    throw new PluginException(plugin.Message); // Throwing here will block authentication and ensure that the complete operation fails 
                 }
 
-                var request = new GetAuthenticationCredentialsRequest(uri, isRetry, nonInteractive);
-                var credentialResponse = await plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
-                    MessageMethod.GetAuthenticationCredentials,
-                    request,
-                    cancellationToken);
-                if (credentialResponse.ResponseCode == MessageResponseCode.NotFound && nonInteractive)
+                _isAnAuthenticationPlugin = plugin.Claims.Contains(OperationClaim.Authentication);
+
+                if (_isAnAuthenticationPlugin)
                 {
-                    _logger.LogWarning(
-                        string.Format(
-                                CultureInfo.CurrentCulture,
-                                Resources.SecurePluginWarning_UseInteractiveOption)
-                                );
+                    AddOrUpdateLogger(plugin.Plugin);
+                    await SetPluginLogLevelAsync(plugin, _logger, cancellationToken);
+
+                    if (proxy != null)
+                    {
+                        await SetProxyCredentialsToPlugin(uri, proxy, plugin, cancellationToken);
+                    }
+
+                    var request = new GetAuthenticationCredentialsRequest(uri, isRetry, nonInteractive);
+                    var credentialResponse = await plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
+                        MessageMethod.GetAuthenticationCredentials,
+                        request,
+                        cancellationToken);
+                    if (credentialResponse.ResponseCode == MessageResponseCode.NotFound && nonInteractive)
+                    {
+                        _logger.LogWarning(
+                            string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Resources.SecurePluginWarning_UseInteractiveOption)
+                                    );
+                    }
+
+                    taskResponse = GetAuthenticationCredentialsResponseToCredentialResponse(credentialResponse);
+
                 }
-
-                taskResponse = GetAuthenticationCredentialsResponseToCredentialResponse(credentialResponse);
-
             }
             else
             {
-                taskResponse = new CredentialResponse(CredentialStatus.ProviderNotApplicable);
+                _isAnAuthenticationPlugin = false;
             }
 
-            return taskResponse;
+            return taskResponse ?? new CredentialResponse(CredentialStatus.ProviderNotApplicable);
         }
 
         private async Task SetPluginLogLevelAsync(PluginCreationResult plugin, ILogger logger, CancellationToken cancellationToken)
