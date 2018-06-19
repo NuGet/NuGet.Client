@@ -224,10 +224,7 @@ namespace NuGet.Commands
             }
             catch(FatalProtocolException e) when(_ignoreFailedSources)
             {
-                if(!_ignoreWarning)
-                {
-                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, libraryRange.Name));
-                }
+                await LogWarning(libraryRange.Name, e);
             }
             return null;
         }
@@ -328,10 +325,7 @@ namespace NuGet.Commands
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources && !(e is InvalidCacheProtocolException))
             {
-                if (!_ignoreWarning)
-                {
-                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, match.Name));
-                }
+                await LogWarning(match.Name, e);
             }
             finally
             {
@@ -418,17 +412,9 @@ namespace NuGet.Commands
                 packageDownloader.SetThrottle(_throttle);
                 packageDownloader.SetExceptionHandler(async exception =>
                 {
-                    if (exception is FatalProtocolException && _ignoreFailedSources)
+                    if (exception is FatalProtocolException e && _ignoreFailedSources)
                     {
-                        if (!_ignoreWarning)
-                        {
-                            await _logger.LogAsync(
-                                RestoreLogMessage.CreateWarning(
-                                    NuGetLogCode.NU1801,
-                                    exception.Message,
-                                    packageIdentity.Id));
-                        }
-
+                        await LogWarning(packageIdentity.Id, e); 
                         return true;
                     }
 
@@ -439,10 +425,7 @@ namespace NuGet.Commands
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources)
             {
-                if (!_ignoreWarning)
-                {
-                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, packageIdentity.Id));
-                }
+                await LogWarning(packageIdentity.Id, e);
             }
             finally
             {
@@ -545,10 +528,7 @@ namespace NuGet.Commands
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources)
             {
-                if (!_ignoreWarning)
-                {
-                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, id));
-                }
+                await LogWarning(id, e);
                 return null;
             }
             finally
@@ -559,5 +539,12 @@ namespace NuGet.Commands
             return packageVersions;
         }
 
+        private async Task LogWarning(string id, FatalProtocolException e)
+        {
+            if(!_ignoreWarning)
+            {
+                await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, id));
+            }
+        }
     }
 }
