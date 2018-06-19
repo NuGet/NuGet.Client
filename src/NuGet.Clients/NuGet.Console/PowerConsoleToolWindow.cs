@@ -145,22 +145,26 @@ namespace NuGetConsole.Implementation
         {
             base.OnToolWindowCreated();
 
-            // start a task when VS us idle and dont await it immediately
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // Register key bindings to use in the editor
+                var windowFrame = (IVsWindowFrame)Frame;
+                if (windowFrame != null)
+                {
+                    // Set F1 help keyword
+                    WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmc);
+                }
+
+                var cmdUi = VSConstants.GUID_TextEditorFactory;
+                windowFrame.SetGuidProperty((int)__VSFPROPID.VSFPROPID_InheritKeyBindings, ref cmdUi);
+            });
+
+            // start a task when VS is idle and dont await it immediately
             _loadTask = NuGetUIThreadHelper.JoinableTaskFactory.StartOnIdle(
                 async () =>
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    // Register key bindings to use in the editor
-                    var windowFrame = (IVsWindowFrame)Frame;
-                    if (windowFrame != null)
-                    {
-                        // Set F1 help keyword
-                        WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmc);
-                    }
-                    var cmdUi = VSConstants.GUID_TextEditorFactory;
-                    windowFrame.SetGuidProperty((int)__VSFPROPID.VSFPROPID_InheritKeyBindings, ref cmdUi);
-
                     // Load
                     await Task.Run(LoadConsoleEditorAsync);
 
