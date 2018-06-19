@@ -179,15 +179,6 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken token)
         {
-            Console.WriteLine("Waiting for debugger to attach.");
-            Console.WriteLine($"Process ID: { System.Diagnostics.Process.GetCurrentProcess().Id}");
-
-            while (!System.Diagnostics.Debugger.IsAttached)
-            {
-                System.Threading.Thread.Sleep(100);
-            }
-            System.Diagnostics.Debugger.Break();
-
             var sources = new List<KeyValuePair<PackageSource, SortedSet<NuGetVersion>>>();
 
             // Get versions from all sources. These should be cached by the providers already.
