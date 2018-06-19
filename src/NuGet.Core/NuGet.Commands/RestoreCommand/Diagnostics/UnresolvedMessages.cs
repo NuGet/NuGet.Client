@@ -179,6 +179,15 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken token)
         {
+            Console.WriteLine("Waiting for debugger to attach.");
+            Console.WriteLine($"Process ID: { System.Diagnostics.Process.GetCurrentProcess().Id}");
+
+            while (!System.Diagnostics.Debugger.IsAttached)
+            {
+                System.Threading.Thread.Sleep(100);
+            }
+            System.Diagnostics.Debugger.Break();
+
             var sources = new List<KeyValuePair<PackageSource, SortedSet<NuGetVersion>>>();
 
             // Get versions from all sources. These should be cached by the providers already.
@@ -208,7 +217,7 @@ namespace NuGet.Commands
             CancellationToken token)
         {
             // Find all versions from a source.
-            var versions = await provider.GetAllVersionsAsync(id, cacheContext, logger, token);
+            var versions = await provider.GetAllVersionsAsync(id, cacheContext, logger, token) ?? Enumerable.Empty<NuGetVersion>();
 
             return new KeyValuePair<PackageSource, SortedSet<NuGetVersion>>(
                 provider.Source,
