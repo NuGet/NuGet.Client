@@ -337,7 +337,7 @@ namespace NuGet.PackageManagement.UI
                         {
                             if (message.Level == LogLevel.Error)
                             {
-                                UILogger.ReportError(message.Message);
+                                UILogger.ReportError(message);
                             }
                         }
                     }
