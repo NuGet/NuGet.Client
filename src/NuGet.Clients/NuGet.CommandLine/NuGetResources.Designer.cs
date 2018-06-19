@@ -12323,7 +12323,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package Source with Name: {0} added successfully..
+        ///   Looks up a localized string similar to Package source with Name: {0} added successfully..
         /// </summary>
         public static string SourcesCommandSourceAddedSuccessfully {
             get {
