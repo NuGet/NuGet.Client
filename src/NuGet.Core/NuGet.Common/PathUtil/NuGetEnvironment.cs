@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,7 @@ namespace NuGet.Common
         private const string DotNet = "dotnet";
         private const string DotNetExe = "dotnet.exe";
         private const string Home = "HOME";
+        private const string DotNetHome = "DOTNET_CLI_HOME";
         private const string UserProfile = "USERPROFILE";
         private static readonly Lazy<string> _getHome = new Lazy<string>(() => GetHome());
 
@@ -150,6 +151,10 @@ namespace NuGet.Common
             }
         }
 
+        private static string GetDotNetHome()
+        {
+            return Environment.GetEnvironmentVariable(DotNetHome);
+        }
 #else
 
         private static string GetFolderPath(SpecialFolder folder)
@@ -200,6 +205,16 @@ namespace NuGet.Common
 
         private static string GetHome()
         {
+#if IS_CORECLR
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                return GetDotNetHome() ?? GetValueOrThrowMissingEnvVar(() => GetHomeWindows(), UserProfile);
+            }
+            else
+            {
+                return GetDotNetHome() ?? GetValueOrThrowMissingEnvVar(() => Environment.GetEnvironmentVariable(Home), Home);
+            }
+#else
             if (RuntimeEnvironmentHelper.IsWindows)
             {
                 return GetValueOrThrowMissingEnvVar(() => GetHomeWindows(), UserProfile);
@@ -208,6 +223,7 @@ namespace NuGet.Common
             {
                 return GetValueOrThrowMissingEnvVar(() => Environment.GetEnvironmentVariable(Home), Home);
             }
+#endif
         }
 
         private static string GetHomeWindows()
