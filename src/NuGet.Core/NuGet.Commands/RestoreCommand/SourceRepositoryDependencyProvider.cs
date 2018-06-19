@@ -202,24 +202,33 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            await EnsureResource();
-
-            // Discover all versions from the feed
-            var packageVersions = await GetAllVersionsAsync(libraryRange.Name, cacheContext, logger, cancellationToken);
-
-            // Select the best match
-            var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
-
-            if (packageVersion != null)
+            try
             {
-                return new LibraryIdentity
-                {
-                    Name = libraryRange.Name,
-                    Version = packageVersion,
-                    Type = LibraryType.Package
-                };
-            }
+                await EnsureResource();
 
+                // Discover all versions from the feed
+                var packageVersions = await GetAllVersionsAsync(libraryRange.Name, cacheContext, logger, cancellationToken);
+
+                // Select the best match
+                var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
+
+                if(packageVersion != null)
+                {
+                    return new LibraryIdentity
+                    {
+                        Name = libraryRange.Name,
+                        Version = packageVersion,
+                        Type = LibraryType.Package
+                    };
+                }
+            }
+            catch(FatalProtocolException e) when(_ignoreFailedSources)
+            {
+                if(!_ignoreWarning)
+                {
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, libraryRange.Name));
+                }
+            }
             return null;
         }
 
@@ -299,12 +308,12 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            await EnsureResource();
-
             FindPackageByIdDependencyInfo packageInfo = null;
             try
             {
-                if (_throttle != null)
+                await EnsureResource();
+
+                if(_throttle != null)
                 {
                     await _throttle.WaitAsync();
                 }
@@ -389,11 +398,11 @@ namespace NuGet.Commands
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await EnsureResource();
-
             try
             {
-                if (_throttle != null)
+                await EnsureResource();
+
+                if(_throttle != null)
                 {
                     await _throttle.WaitAsync();
                 }
@@ -523,6 +532,10 @@ namespace NuGet.Commands
                 if (_throttle != null)
                 {
                     await _throttle.WaitAsync();
+                }
+                if(_findPackagesByIdResource == null)
+                {
+                    return null;
                 }
                 packageVersions = await _findPackagesByIdResource.GetAllVersionsAsync(
                     id,

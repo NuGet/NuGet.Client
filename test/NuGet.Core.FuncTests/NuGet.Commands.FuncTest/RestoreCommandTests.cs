@@ -2112,6 +2112,306 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
+        [Fact]
+        public async Task RestoreCommand_RestoreNonExistingWithIgnoreFailingLocalSourceAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("\\failingSource"),
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
+
+            using(var packagesDir = TestDirectory.Create())
+            using(var projectDir = TestDirectory.Create())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""dependencies"": {
+                        ""XXX"": ""7.0.91""
+                    },
+                     ""frameworks"": {
+                        ""net45"": { }
+                    }
+                }");
+
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+                var logger = new TestLogger();
+                using(var context = new SourceCacheContext())
+                {
+                    context.IgnoreFailedSources = true;
+                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
+                    var request = new RestoreRequest(spec, provider, context, logger)
+                    {
+                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
+                    };
+
+                    var lockFileFormat = new LockFileFormat();
+                    var command = new RestoreCommand(request);
+
+                    // Act
+                    var result = await command.ExecuteAsync();
+
+                    // Assert
+                    Assert.False(result.Success);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_RestoreNonExistingWithIgnoreFailingHttpSourceAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://failingSource"),
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
+
+            using(var packagesDir = TestDirectory.Create())
+            using(var projectDir = TestDirectory.Create())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""dependencies"": {
+                        ""XXX"": ""7.0.91""
+                    },
+                     ""frameworks"": {
+                        ""net45"": { }
+                    }
+                }");
+
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+                var logger = new TestLogger();
+                using(var context = new SourceCacheContext())
+                {
+                    context.IgnoreFailedSources = true;
+                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
+                    var request = new RestoreRequest(spec, provider, context, logger)
+                    {
+                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
+                    };
+
+                    var lockFileFormat = new LockFileFormat();
+                    var command = new RestoreCommand(request);
+
+                    // Act
+                    var result = await command.ExecuteAsync();
+
+                    // Assert
+                    Assert.False(result.Success);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_RestoreNonExistingWithIgnoreFailingV3HttpSourceAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://failingSource.json"),
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
+
+            using(var packagesDir = TestDirectory.Create())
+            using(var projectDir = TestDirectory.Create())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""dependencies"": {
+                        ""XXX"": ""7.0.91""
+                    },
+                     ""frameworks"": {
+                        ""net45"": { }
+                    }
+                }");
+
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+                var logger = new TestLogger();
+                using(var context = new SourceCacheContext())
+                {
+                    context.IgnoreFailedSources = true;
+                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
+                    var request = new RestoreRequest(spec, provider, context, logger)
+                    {
+                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
+                    };
+
+                    var lockFileFormat = new LockFileFormat();
+                    var command = new RestoreCommand(request);
+
+                    // Act
+                    var result = await command.ExecuteAsync();
+
+                    // Assert
+                    Assert.False(result.Success);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_RestoreInexactWithIgnoreFailingLocalSourceAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("\\failingSource"),
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
+
+            using(var packagesDir = TestDirectory.Create())
+            using(var projectDir = TestDirectory.Create())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""dependencies"": {
+                        ""Newtonsoft.Json"": ""7.0.91""
+                    },
+                     ""frameworks"": {
+                        ""net45"": { }
+                    }
+                }");
+
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+                var logger = new TestLogger();
+                using(var context = new SourceCacheContext())
+                {
+                    context.IgnoreFailedSources = true;
+                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
+                    var request = new RestoreRequest(spec, provider, context, logger)
+                    {
+                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
+                    };
+
+                    var lockFileFormat = new LockFileFormat();
+                    var command = new RestoreCommand(request);
+
+                    // Act
+                    var result = await command.ExecuteAsync();
+
+                    // Assert
+                    Assert.True(result.Success);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_RestoreInexactWithIgnoreFailingHttpSourceAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://failingSource"),
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
+
+            using(var packagesDir = TestDirectory.Create())
+            using(var projectDir = TestDirectory.Create())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""dependencies"": {
+                        ""Newtonsoft.Json"": ""7.0.91""
+                    },
+                     ""frameworks"": {
+                        ""net45"": { }
+                    }
+                }");
+
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+                var logger = new TestLogger();
+                using(var context = new SourceCacheContext())
+                {
+                    context.IgnoreFailedSources = true;
+                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
+                    var request = new RestoreRequest(spec, provider, context, logger)
+                    {
+                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
+                    };
+
+                    var lockFileFormat = new LockFileFormat();
+                    var command = new RestoreCommand(request);
+
+                    // Act
+                    var result = await command.ExecuteAsync();
+
+                    // Assert
+                    Assert.True(result.Success);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_RestoreInexactWithIgnoreFailingV3HttpSourceAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://failingSource.json"),
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
+
+            using(var packagesDir = TestDirectory.Create())
+            using(var projectDir = TestDirectory.Create())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""dependencies"": {
+                        ""NewtonSoft.Json"": ""7.0.91""
+                    },
+                     ""frameworks"": {
+                        ""net45"": { }
+                    }
+                }");
+
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+                var logger = new TestLogger();
+                using(var context = new SourceCacheContext())
+                {
+                    context.IgnoreFailedSources = true;
+                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
+                    var request = new RestoreRequest(spec, provider, context, logger)
+                    {
+                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
+                    };
+
+                    var lockFileFormat = new LockFileFormat();
+                    var command = new RestoreCommand(request);
+
+                    // Act
+                    var result = await command.ExecuteAsync();
+
+                    // Assert
+                    Assert.True(result.Success);
+                }
+            }
+        }
+
         private static List<LockFileItem> GetRuntimeAssemblies(IList<LockFileTarget> targets, string framework, string runtime)
         {
             return GetRuntimeAssemblies(targets, NuGetFramework.Parse(framework), runtime);
