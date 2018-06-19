@@ -285,7 +285,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 Exception ex = null;
 
                 // Act
@@ -330,8 +329,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
-
                 Exception ex = null;
 
                 // Act
@@ -374,8 +371,6 @@ namespace NuGet.Commands.FuncTest
                 {
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
-
-                var lockFileFormat = new LockFileFormat();
 
                 var packageContext = new SimpleTestPackageContext()
                 {
@@ -429,8 +424,6 @@ namespace NuGet.Commands.FuncTest
                 {
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
-
-                var lockFileFormat = new LockFileFormat();
 
                 var packageContext = new SimpleTestPackageContext()
                 {
@@ -519,7 +512,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
 
@@ -576,7 +568,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("netstandard1.2"), new List<NuGetFramework> { NuGetFramework.Parse("dotnet5.3"),
                                                                                                                          NuGetFramework.Parse("portable-net452+win81")});
@@ -635,7 +626,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var result = await command.ExecuteAsync();
@@ -755,7 +745,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var warning = "Package 'Newtonsoft.Json 7.0.1' was restored using '.NETPortable,Version=v0.0,Profile=net452+win81' instead of the project target framework '.NETPlatform,Version=v5.0'. This package may not be fully compatible with your project.";
@@ -808,7 +797,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
 
@@ -863,7 +851,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var result = await command.ExecuteAsync();
@@ -912,7 +899,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
 
                 // Act
@@ -968,7 +954,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
 
                 // Act
@@ -1005,7 +990,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
 
@@ -1128,8 +1112,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
-
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
@@ -1173,8 +1155,6 @@ namespace NuGet.Commands.FuncTest
                 {
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
-
-                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1297,8 +1277,6 @@ namespace NuGet.Commands.FuncTest
                 {
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
-
-                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1535,8 +1513,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
-
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
@@ -1579,8 +1555,6 @@ namespace NuGet.Commands.FuncTest
                 {
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
-
-                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1633,8 +1607,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
-
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
@@ -1684,8 +1656,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
-
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
@@ -1733,8 +1703,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
-
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
@@ -1779,8 +1747,6 @@ namespace NuGet.Commands.FuncTest
                 {
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
-
-                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1918,7 +1884,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
 
                 // Act
@@ -1962,7 +1927,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
 
                 // Act & Assert
@@ -2003,7 +1967,6 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
 
                 // Act & Assert
@@ -2050,7 +2013,6 @@ namespace NuGet.Commands.FuncTest
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
 
-                    var lockFileFormat = new LockFileFormat();
                     var command = new RestoreCommand(request);
 
                     // Act
@@ -2100,7 +2062,6 @@ namespace NuGet.Commands.FuncTest
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
 
-                    var lockFileFormat = new LockFileFormat();
                     var command = new RestoreCommand(request);
 
                     // Act
@@ -2150,7 +2111,6 @@ namespace NuGet.Commands.FuncTest
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
 
-                    var lockFileFormat = new LockFileFormat();
                     var command = new RestoreCommand(request);
 
                     // Act
@@ -2200,7 +2160,6 @@ namespace NuGet.Commands.FuncTest
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
 
-                    var lockFileFormat = new LockFileFormat();
                     var command = new RestoreCommand(request);
 
                     // Act
@@ -2250,7 +2209,6 @@ namespace NuGet.Commands.FuncTest
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
 
-                    var lockFileFormat = new LockFileFormat();
                     var command = new RestoreCommand(request);
 
                     // Act
@@ -2300,7 +2258,6 @@ namespace NuGet.Commands.FuncTest
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
 
-                    var lockFileFormat = new LockFileFormat();
                     var command = new RestoreCommand(request);
 
                     // Act
@@ -2350,7 +2307,6 @@ namespace NuGet.Commands.FuncTest
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
 
-                    var lockFileFormat = new LockFileFormat();
                     var command = new RestoreCommand(request);
 
                     // Act
@@ -2400,7 +2356,6 @@ namespace NuGet.Commands.FuncTest
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
 
-                    var lockFileFormat = new LockFileFormat();
                     var command = new RestoreCommand(request);
 
                     // Act
