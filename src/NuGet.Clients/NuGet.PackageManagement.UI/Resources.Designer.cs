@@ -115,6 +115,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Promote all to top level dependencies.
+        /// </summary>
+        public static string Accessibility_PromoteAllToTopLevel {
+            get {
+                return ResourceManager.GetString("Accessibility_PromoteAllToTopLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Promote to a top level dependency.
+        /// </summary>
+        public static string Accessibility_PromoteToTopLevel {
+            get {
+                return ResourceManager.GetString("Accessibility_PromoteToTopLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use arrow keys to change the size of the sections.
         /// </summary>
         public static string Accessibility_ThumbHelp {
@@ -660,6 +678,15 @@ namespace NuGet.PackageManagement.UI {
         public static string IgnoreUpgrade {
             get {
                 return ResourceManager.GetString("IgnoreUpgrade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help icon.
+        /// </summary>
+        public static string ImageCaption_HelpIcon {
+            get {
+                return ResourceManager.GetString("ImageCaption_HelpIcon", resourceCulture);
             }
         }
         

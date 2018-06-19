@@ -28,13 +28,15 @@
         x:Key="StandardItemsControlTemplate"
         TargetType="{x:Type ItemsControl}">
         <Border
-          BorderThickness="1"
-          BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
+          BorderThickness="0"
+          BorderBrush="{x:Null}">
           <ScrollViewer
             Padding="3"
             CanContentScroll="False"
             VerticalScrollBarVisibility="Auto"
-            HorizontalScrollBarVisibility="Disabled">
+            HorizontalScrollBarVisibility="Disabled"
+            IsTabStop="False"
+            AutomationProperties.LabeledBy="{Binding ElementName=_packageCompatibilityIssuesLabel}">
             <ItemsPresenter />
           </ScrollViewer>
         </Border>
@@ -97,7 +99,8 @@
             Margin="18,0,0,0"
             Grid.Row="1"
             Visibility="Collapsed"
-            DockPanel.Dock="Bottom" />
+            DockPanel.Dock="Bottom"
+            Focusable="False"/>
         </Grid>
         <ControlTemplate.Triggers>
           <Trigger Property="IsExpanded" Value="True">
@@ -107,7 +110,7 @@
       </ControlTemplate>
       <Style TargetType="DataGridCell" x:Key="UpgraderDataGridCellStyle">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
-        <Setter Property="Focusable" Value="True"/>
+        <Setter Property="Focusable" Value="False" />
         <Style.Triggers>
           <Trigger Property="IsSelected" Value="True">
             <Setter Property="Background" Value="{x:Null}" />
@@ -119,7 +122,6 @@
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"/>
         <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
         <Setter Property="BorderThickness" Value="1,0,0,1"/>
-        <Setter Property="Focusable" Value="True"/>
         <Setter Property="Padding" Value="3,2,2,4"/>
         <Style.Triggers>
           <Trigger Property="IsMouseOver" Value="True">
@@ -153,16 +155,41 @@
       </Grid.RowDefinitions>
       <TextBlock
         x:Name="_directDependenciesLabel"
-        Focusable="True"
         AutomationProperties.Name="{Binding Text}"
         Grid.Row="0"
         Margin="0,0,0,4"
         Text="{x:Static nuget:Resources.Text_DirectDependencies}" />
-      <DataGrid Grid.Row="1" ItemsSource="{Binding DirectDependencies}" AutoGenerateColumns="False" RowHeaderWidth="0" GridLinesVisibility="None" Background="Transparent" RowBackground="Transparent" BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
-                ColumnHeaderStyle="{StaticResource Migrator_DataGridColumnHeaderStyle}" Focusable="True" Margin="0,2,0,0">
+      <DataGrid
+        Grid.Row="1"
+        ItemsSource="{Binding DirectDependencies}"
+        AutoGenerateColumns="False"
+        RowHeaderWidth="0"
+        GridLinesVisibility="None"
+        Background="Transparent"
+        RowBackground="Transparent"
+        BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
+        ColumnHeaderStyle="{StaticResource Migrator_DataGridColumnHeaderStyle}"
+        Margin="0,2,0,0"
+        AutomationProperties.LabeledBy="{Binding ElementName=_directDependenciesLabel}"
+        KeyboardNavigation.TabNavigation="Local"
+        SelectionMode="Single"
+        SelectionUnit="FullRow">
         <DataGrid.Columns>
-          <DataGridTextColumn x:Name="directDependency_id" Binding="{Binding Id}" Header="{x:Static nuget:Resources.Migrator_PackageIdColumnHeader}" MinWidth="20" Width="4*" IsReadOnly="True" CellStyle="{StaticResource UpgraderDataGridCellStyle}"/>
-          <DataGridTextColumn x:Name="directDependency_version" Binding="{Binding Version}" Header="{x:Static nuget:Resources.Migrator_VersionColumnHeader}" Width="*" IsReadOnly="True" CellStyle="{StaticResource UpgraderDataGridCellStyle}"/>
+          <DataGridTextColumn
+            x:Name="directDependency_id"
+            Binding="{Binding Id}"
+            Header="{x:Static nuget:Resources.Migrator_PackageIdColumnHeader}"
+            MinWidth="20"
+            Width="4*"
+            IsReadOnly="True"
+            CellStyle="{StaticResource UpgraderDataGridCellStyle}"/>
+          <DataGridTextColumn
+            x:Name="directDependency_version"
+            Binding="{Binding Version}"
+            Header="{x:Static nuget:Resources.Migrator_VersionColumnHeader}"
+            Width="*"
+            IsReadOnly="True"
+            CellStyle="{StaticResource UpgraderDataGridCellStyle}"/>
         </DataGrid.Columns>
       </DataGrid>
     </Grid>
@@ -176,36 +203,83 @@
       <TextBlock
         x:Name="_transitiveDependenciesLabel"
         AutomationProperties.Name="{Binding Text}"
-        Focusable="True"
         Grid.Row="0"
         Margin="0,0,0,4"
         Text="{x:Static nuget:Resources.Text_TransitiveDependencies}" />
-      <DataGrid Grid.Row="1" ItemsSource="{Binding TransitiveDependencies}" AutoGenerateColumns="False" RowHeaderWidth="0" GridLinesVisibility="None" Background="Transparent" RowBackground="Transparent"
-                Margin="0,2,0,0"
-                Focusable="True"
-                BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
-                ColumnHeaderStyle="{StaticResource Migrator_DataGridColumnHeaderStyle}">
+      <DataGrid
+        Grid.Row="1"
+        ItemsSource="{Binding TransitiveDependencies}"
+        AutoGenerateColumns="False"
+        RowHeaderWidth="0"
+        GridLinesVisibility="None"
+        Background="Transparent"
+        RowBackground="Transparent"
+        Margin="0,2,0,0"
+        BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
+        ColumnHeaderStyle="{StaticResource Migrator_DataGridColumnHeaderStyle}"
+        AutomationProperties.LabeledBy="{Binding ElementName=_transitiveDependenciesLabel}"
+        KeyboardNavigation.TabNavigation="Local"
+        SelectionMode="Single"
+        SelectionUnit="FullRow">
         <DataGrid.Columns>
-          <DataGridTextColumn x:Name="transitiveDependency_id" Binding="{Binding Id}" Header="{x:Static nuget:Resources.Migrator_PackageIdColumnHeader}" MinWidth="20" Width="4*" IsReadOnly="True" CellStyle="{StaticResource UpgraderDataGridCellStyle}"/>
-          <DataGridTextColumn x:Name="transitiveDependency_version" Binding="{Binding Version}" Header="{x:Static nuget:Resources.Migrator_VersionColumnHeader}" Width="*" IsReadOnly="True" CellStyle="{StaticResource UpgraderDataGridCellStyle}"/>
-          <DataGridTemplateColumn CellStyle="{StaticResource UpgraderDataGridCellStyle}" Width="*" IsReadOnly="True">
+          <DataGridTextColumn
+            x:Name="transitiveDependency_id"
+            Binding="{Binding Id}"
+            Header="{x:Static nuget:Resources.Migrator_PackageIdColumnHeader}"
+            MinWidth="20"
+            Width="4*"
+            IsReadOnly="True"
+            CellStyle="{StaticResource UpgraderDataGridCellStyle}"/>
+          <DataGridTextColumn
+            x:Name="transitiveDependency_version"
+            Binding="{Binding Version}"
+            Header="{x:Static nuget:Resources.Migrator_VersionColumnHeader}"
+            Width="*"
+            IsReadOnly="True"
+            CellStyle="{StaticResource UpgraderDataGridCellStyle}"/>
+          <DataGridTemplateColumn
+            Width="*"
+            IsReadOnly="True">
             <DataGridTemplateColumn.Header>
               <StackPanel Orientation="Horizontal">
-                <CheckBox IsChecked="False" Checked="PromoteAllToTopLevel_Checked" Unchecked="PromoteAllToTopLevel_Checked"/>
-                <TextBlock Text="{x:Static nuget:Resources.Migrator_TopLevelColumnHeader}" Margin="4,0,0,0"/>
+                <CheckBox
+                  AutomationProperties.LabeledBy="{Binding ElementName=_topLevelColumnHeader}"
+                  IsChecked="False"
+                  Checked="PromoteAllToTopLevel_Checked"
+                  Unchecked="PromoteAllToTopLevel_Checked"
+                  IsTabStop="True" />
+                <TextBlock
+                  x:Name="_topLevelColumnHeader"
+                  Text="{x:Static nuget:Resources.Migrator_TopLevelColumnHeader}"
+                  Margin="4,0,0,0"
+                  AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PromoteAllToTopLevel}"
+                  AutomationProperties.IsColumnHeader="True"/>
               </StackPanel>
             </DataGridTemplateColumn.Header>
             <DataGridTemplateColumn.HeaderStyle>
               <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource Migrator_DataGridColumnHeaderStyle}">
                 <Setter Property="HorizontalContentAlignment" Value="Center" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="AutomationProperties.Name" Value="{x:Static nuget:Resources.Accessibility_PromoteAllToTopLevel}" />
+                <Setter Property="AutomationProperties.IsColumnHeader" Value="True" />
               </Style>
             </DataGridTemplateColumn.HeaderStyle>
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding Mode=TwoWay, Path=InstallAsTopLevel, UpdateSourceTrigger=PropertyChanged}"/>
+                <CheckBox
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  AutomationProperties.AutomationId="{Binding Mode=OneWay, StringFormat='TopLevelCheckBox_{0}'}"
+                  IsChecked="{Binding Mode=TwoWay, Path=InstallAsTopLevel, UpdateSourceTrigger=PropertyChanged}"
+                  AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PromoteToTopLevel}"
+                  IsTabStop="True" />
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
+            <DataGridTemplateColumn.CellStyle>
+              <Style TargetType="DataGridCell" BasedOn="{StaticResource UpgraderDataGridCellStyle}">
+                <Setter Property="AutomationProperties.Name" Value="{x:Static nuget:Resources.Accessibility_PromoteToTopLevel}" />
+              </Style>
+            </DataGridTemplateColumn.CellStyle>
           </DataGridTemplateColumn>
         </DataGrid.Columns>
       </DataGrid>
@@ -218,58 +292,63 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
 
-      <TextBlock x:Name="_packageCompatibilityIssuesLabel" Focusable="True" AutomationProperties.Name="{Binding Text}" Margin="0,0,4,8" Grid.Row="0" Text="{x:Static nuget:Resources.Text_NuGetUpgradeIssues}" />
+      <TextBlock
+        x:Name="_packageCompatibilityIssuesLabel"
+        AutomationProperties.Name="{Binding Text}"
+        Margin="0,0,4,8" Grid.Row="0"
+        Text="{x:Static nuget:Resources.Text_NuGetUpgradeIssues}" />
 
       <Border
         Grid.Row="1"
-        Visibility="{Binding HasIssues, Mode=OneTime, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
         BorderThickness="1"
         Padding="3"
         BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
-        <TextBlock
-          Focusable="True"
-          Text="{x:Static nuget:Resources.Text_NuGetUpgradeNoIssuesFound}" />
-      </Border>
-
-      <ItemsControl
-        Grid.Row="1"
-        IsTabStop="True"
-        ItemsSource="{Binding UpgradeDependencyItems}"
-        Visibility="{Binding HasIssues, Mode=OneTime, Converter={StaticResource BooleanToVisibilityConverter}}"
-        x:Name="_packageIssuesItemControl"
-        AutomationProperties.AutomationId="{Binding Name}"
-        Template="{StaticResource StandardItemsControlTemplate}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <Expander
-              x:Name="_packageIssuesExpander"
-              Margin="4,4,8,0"
-              Template="{StaticResource SimpleExpander}"
-              Header="{Binding Path=Id}"
-              Visibility="{Binding Path=Issues, Converter={StaticResource EnumerableToVisibilityConverter}}"
-              Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
-              AutomationProperties.AutomationId="_packageIssuesItemControlExpander"
-              IsExpanded="True">
-              <ItemsControl
-                Margin="8,4,16,4"
+        <Grid>
+          <TextBlock
+            Text="{x:Static nuget:Resources.Text_NuGetUpgradeNoIssuesFound}"
+            Visibility="{Binding HasIssues, Mode=OneTime, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
+            AutomationProperties.Name="{x:Static nuget:Resources.Text_NuGetUpgradeNoIssuesFound}"
+            AutomationProperties.LabeledBy="{Binding ElementName=_packageCompatibilityIssuesLabel}"/>
+          <ItemsControl
+            ItemsSource="{Binding UpgradeDependencyItems}"
+            Visibility="{Binding HasIssues, Mode=OneTime, Converter={StaticResource BooleanToVisibilityConverter}}"
+            x:Name="_packageIssuesItemControl"
+            AutomationProperties.AutomationId="{Binding Name}"
+            AutomationProperties.LabeledBy="{Binding ElementName=_packageCompatibilityIssuesLabel}"
+            Template="{StaticResource StandardItemsControlTemplate}"
+            IsTabStop="False">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Expander
+                x:Name="_packageIssuesExpander"
+                Margin="4,4,8,0"
+                Template="{StaticResource SimpleExpander}"
+                Header="{Binding Path=Id}"
+                Visibility="{Binding Path=Issues, Converter={StaticResource EnumerableToVisibilityConverter}}"
                 Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
-                ItemsSource="{Binding Path=Issues}"
-                x:Name="_packageIssuesExpanderItemControl"
-                AutomationProperties.AutomationId="{Binding Name}"
-                Focusable="True"
-                IsTabStop="True">
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate>
-                    <StackPanel x:Name="_packageIssuesStackPanel" Orientation="Vertical">
-                      <TextBlock x:Name="_packageIssueDescriptionText" Focusable="True" AutomationProperties.Name="{Binding Text}" AutomationProperties.AutomationId="{Binding Name}" Text="{Binding Path=Message}" Margin="0,2,0,2" TextWrapping="Wrap"/>
-                    </StackPanel>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
-            </Expander>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
+                AutomationProperties.AutomationId="_packageIssuesItemControlExpander"
+                IsExpanded="True">
+                  <ItemsControl
+                  Margin="8,4,16,4"
+                  Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+                  ItemsSource="{Binding Path=Issues}"
+                  x:Name="_packageIssuesExpanderItemControl"
+                  AutomationProperties.AutomationId="{Binding Name}"
+                  IsTabStop="False">      
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <StackPanel x:Name="_packageIssuesStackPanel" Orientation="Vertical">
+                          <TextBlock x:Name="_packageIssueDescriptionText" AutomationProperties.Name="{Binding Text}" AutomationProperties.AutomationId="{Binding Name}" Text="{Binding Path=Message}" Margin="0,2,0,2" TextWrapping="Wrap"/>
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Expander>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+      </Border>
     </Grid>
 
     <Grid x:Name="PackageUpgraderFooterGrid" Grid.Row="3">
@@ -284,7 +363,8 @@
           Margin="0,0,2,0"
           Width="16"
           Height="16"
-          Moniker="{x:Static nuget:PackageIconMonikers.MigratorHelpIcon}" />
+          Moniker="{x:Static nuget:PackageIconMonikers.MigratorHelpIcon}"
+          AutomationProperties.Name="{x:Static nuget:Resources.ImageCaption_HelpIcon}"/>
         <TextBlock Margin="4,0,0,0">
           <Hyperlink
             NavigateUri="https://aka.ms/nuget-pc2pr-migrator"
