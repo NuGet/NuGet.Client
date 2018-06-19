@@ -132,6 +132,9 @@
   <data name="MissingRequiredEnvVar" xml:space="preserve">
     <value>Required environment variable '{0}' is not set. Try setting '{0}' and running the operation again.</value>
   </data>
+  <data name="MissingRequiredEnvVarsDotnet" xml:space="preserve">
+    <value>Required environment variable '{0}' is not set. Try setting '{1}' or '{0}' and running the operation</value>
+  </data>
   <data name="NoPackageFoldersFound" xml:space="preserve">
     <value>At least one package folder path must be provided.</value>
   </data>

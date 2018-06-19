@@ -155,6 +155,7 @@ namespace NuGet.Common
         {
             return Environment.GetEnvironmentVariable(DotNetHome);
         }
+
 #else
 
         private static string GetFolderPath(SpecialFolder folder)
@@ -208,11 +209,11 @@ namespace NuGet.Common
 #if IS_CORECLR
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                return GetDotNetHome() ?? GetValueOrThrowMissingEnvVar(() => GetHomeWindows(), UserProfile);
+                return GetValueOrThrowMissingEnvVarsDotnet(() => GetDotNetHome() ?? GetHomeWindows(), UserProfile, DotNetHome);
             }
             else
             {
-                return GetDotNetHome() ?? GetValueOrThrowMissingEnvVar(() => Environment.GetEnvironmentVariable(Home), Home);
+                return GetValueOrThrowMissingEnvVarsDotnet(() => GetDotNetHome() ?? Environment.GetEnvironmentVariable(Home), Home, DotNetHome);
             }
 #else
             if (RuntimeEnvironmentHelper.IsWindows)
@@ -237,6 +238,21 @@ namespace NuGet.Common
             {
                 return Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");
             }
+        }
+
+        /// <summary>
+        /// Throw a helpful message if the required env vars are not set.
+        /// </summary>
+        private static string GetValueOrThrowMissingEnvVarsDotnet(Func<string> getValue, string home, string dotnetHome)
+        {
+            var value = getValue();
+
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.MissingRequiredEnvVarsDotnet, home, dotnetHome));
+            }
+
+            return value;
         }
 
         /// <summary>
