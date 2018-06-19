@@ -827,9 +827,9 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Help icon</value>
   </data>
   <data name="Accessibility_PromoteAllToTopLevel" xml:space="preserve">
-    <value>Promote all to top level dependency</value>
+    <value>Promote all to top level dependencies</value>
   </data>
   <data name="Accessibility_PromoteToTopLevel" xml:space="preserve">
-    <value>Promote to top level dependency</value>
+    <value>Promote to a top level dependency</value>
   </data>
 </root>

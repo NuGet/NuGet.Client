@@ -113,18 +113,18 @@ namespace NuGet.PackageManagement.UI {
                 return ResourceManager.GetString("Accessibility_PrefixReserved", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to Promote all to top level dependency.
+        ///   Looks up a localized string similar to Promote all to top level dependencies.
         /// </summary>
         public static string Accessibility_PromoteAllToTopLevel {
             get {
                 return ResourceManager.GetString("Accessibility_PromoteAllToTopLevel", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to Promote to top level dependency.
+        ///   Looks up a localized string similar to Promote to a top level dependency.
         /// </summary>
         public static string Accessibility_PromoteToTopLevel {
             get {
@@ -149,7 +149,7 @@ namespace NuGet.PackageManagement.UI {
                 return ResourceManager.GetString("Accessibility_ThumbName", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Consolidate.
         /// </summary>
