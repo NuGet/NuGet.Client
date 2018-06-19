@@ -417,6 +417,22 @@ namespace NuGet.Commands.Test
             UnresolvedMessages.HasPrereleaseVersionsOnly(range, versions).Should().BeFalse();
         }
 
+        [Fact]
+        public async Task GivenAnUnreachableSource_DoesNotThrow()
+        {
+            var source = new PackageSource("http://nuget.org/a/");
+            var context = new Mock<SourceCacheContext>();
+            var provider = new Mock<IRemoteDependencyProvider>();
+            provider.Setup(e => e.GetAllVersionsAsync(It.IsAny<string>(), It.IsAny<SourceCacheContext>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(() => null); // unreachable sources would return null
+            provider.SetupGet(e => e.Source).Returns(source);
+
+            var info = await UnresolvedMessages.GetSourceInfoForIdAsync(provider.Object, "a", context.Object, NullLogger.Instance, CancellationToken.None);
+
+            info.Value.Should().BeEmpty();
+            info.Key.Source.Should().Be(source.Source);
+        }
+
         private static Mock<IRemoteDependencyProvider> GetProvider(string source, IEnumerable<NuGetVersion> versions)
         {
             var provider = new Mock<IRemoteDependencyProvider>();
