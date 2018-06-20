@@ -37,14 +37,14 @@ namespace NuGetVSExtension
 
         public ErrorListProvider ErrorListProvider { get; private set; }
 
-        public ErrorListTableDataSource ErrorListTableDataSource { get; private set; }
+        public Lazy<ErrorListTableDataSource> ErrorListTableDataSource { get; private set; }
 
         [ImportingConstructor]
         public OutputConsoleLogger(
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider serviceProvider,
             IOutputConsoleProvider consoleProvider,
-            ErrorListTableDataSource errorListTableDataSource)
+            Lazy<ErrorListTableDataSource> errorListDataSource)
         {
             if (serviceProvider == null)
             {
@@ -56,7 +56,7 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException(nameof(consoleProvider));
             }
 
-            ErrorListTableDataSource = errorListTableDataSource;
+            ErrorListTableDataSource = errorListDataSource;
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
@@ -83,8 +83,7 @@ namespace NuGetVSExtension
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 ErrorListProvider.Dispose();
-
-                ErrorListTableDataSource.ClearNuGetEntries();
+                ErrorListTableDataSource.Value.Dispose();
             });
         }
 
@@ -104,7 +103,7 @@ namespace NuGetVSExtension
                 }
 
                 // Give the error list focus
-                ErrorListTableDataSource.BringToFront();
+                ErrorListTableDataSource.Value.BringToFront();
             });
         }
 
@@ -147,6 +146,8 @@ namespace NuGetVSExtension
 
                 OutputConsole.Activate();
                 OutputConsole.Clear();
+
+                ErrorListTableDataSource.Value.ClearNuGetEntries();
             });
         }
 
@@ -167,13 +168,7 @@ namespace NuGetVSExtension
         public void ReportError(ILogMessage message)
         {
             var errorListEntry = new ErrorListTableEntry(message);
-
-            // Run in JTF
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                ErrorListTableDataSource.AddNuGetEntries(new ErrorListTableEntry[] { errorListEntry });
-            });
+            RunTaskOnUI(() => ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry));
         }
 
         private static void RunTaskOnUI(Action action)
