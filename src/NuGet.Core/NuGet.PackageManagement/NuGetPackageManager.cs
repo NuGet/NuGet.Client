@@ -3180,23 +3180,6 @@ namespace NuGet.PackageManagement
 
         public static Task<ResolvedPackage> GetLatestVersionAsync(
             string packageId,
-            NuGetFramework framework,
-            ResolutionContext resolutionContext,
-            SourceRepository primarySourceRepository,
-            Common.ILogger log,
-            CancellationToken token)
-        {
-            return GetLatestVersionAsync(
-                packageId,
-                framework,
-                resolutionContext,
-                new List<SourceRepository> { primarySourceRepository },
-                log,
-                token);
-        }
-
-        public static Task<ResolvedPackage> GetLatestVersionAsync(
-            string packageId,
             NuGetProject project,
             ResolutionContext resolutionContext,
             SourceRepository primarySourceRepository,
@@ -3252,7 +3235,7 @@ namespace NuGet.PackageManagement
             foreach (var source in sources)
             {
                 tasks.Add(Task.Run(async ()
-                    => await GetLatestVersionCoreAsync(packageId, framework, resolutionContext, source, log, token)));
+                    => await GetLatestVersionCoreAsync(packageId, framework, resolutionContext, source, log, token, null)));
             }
 
             var resolvedPackages = await Task.WhenAll(tasks);
@@ -3270,11 +3253,10 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             var tasks = new List<Task<ResolvedPackage>>();
-
             foreach (var source in sources)
             {
                 tasks.Add(Task.Run(async ()
-                    => await GetLatestVersionCoreAsync(package.PackageIdentity.Id, framework, resolutionContext, source, log, token)));
+                    => await GetLatestVersionCoreAsync(package.PackageIdentity.Id, framework, resolutionContext, source, log, token, package.PackageIdentity.Version)));
             }
 
             var resolvedPackages = await Task.WhenAll(tasks);
@@ -3286,13 +3268,51 @@ namespace NuGet.PackageManagement
             return new ResolvedPackage(latestVersion, resolvedPackages.Any(p => p.Exists));
         }
 
+        //A function that given a list of packages, a version and resolution context returns a list
+        // of packages containing only the packages that follow the required version by the constraints
+        private static List<SourcePackageDependencyInfo> FilterPackagesByVersion(
+            List<SourcePackageDependencyInfo> packages,
+            NuGetVersion version,
+            ResolutionContext resolutionContext)
+        {
+            var result = new List<SourcePackageDependencyInfo>();
+            foreach (var package in packages)
+            {
+                if (resolutionContext.VersionConstraints == VersionConstraints.None) result.Add(package);
+                else if (resolutionContext.VersionConstraints == VersionConstraints.ExactMajor)
+                {
+                    if (package.Version.Major == version.Major) result.Add(package);
+                }
+                else if (resolutionContext.VersionConstraints == (VersionConstraints.ExactMajor | VersionConstraints.ExactMinor))
+                {
+                    if (package.Version.Major == version.Major &&
+                        package.Version.Minor == version.Minor) result.Add(package);
+                }
+                else if (resolutionContext.VersionConstraints == (VersionConstraints.ExactMajor | VersionConstraints.ExactMinor | VersionConstraints.ExactPatch))
+                {
+                    if (package.Version.Major == version.Major &&
+                        package.Version.Minor == version.Minor &&
+                        package.Version.Patch == version.Patch) result.Add(package);
+                }
+                else if (resolutionContext.VersionConstraints == (VersionConstraints.ExactMajor | VersionConstraints.ExactMinor | VersionConstraints.ExactPatch | VersionConstraints.ExactRelease))
+                {
+                    if (package.Version.Major == version.Major &&
+                        package.Version.Minor == version.Minor &&
+                        package.Version.Patch == version.Patch &&
+                        package.Version.Release == version.Release) result.Add(package);
+                }
+            }
+            return result;
+        }
+
         private static async Task<ResolvedPackage> GetLatestVersionCoreAsync(
             string packageId,
             NuGetFramework framework,
             ResolutionContext resolutionContext,
             SourceRepository source,
             Common.ILogger log,
-            CancellationToken token)
+            CancellationToken token,
+            NuGetVersion version)
         {
             var dependencyInfoResource = await source.GetResourceAsync<DependencyInfoResource>();
 
@@ -3310,6 +3330,7 @@ namespace NuGet.PackageManagement
                 framework,
                 packages);
 
+            if (version != null) packages = FilterPackagesByVersion(packages, version, resolutionContext);
             // Find the latest version
             var latestVersion = packages.Where(package => (package.Listed || resolutionContext.IncludeUnlisted)
                 && (resolutionContext.IncludePrerelease || !package.Version.IsPrerelease))
