@@ -279,6 +279,14 @@ phases:
         $(VsixPublishDir)\\EndToEnd.zip 
       TargetFolder: "$(BuildOutputTargetPath)\\artifacts"
 
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
+    inputs:
+      PathtoPublish: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+      ArtifactName: "VS15"
+      ArtifactType: "Container"
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+
   - task: CopyFiles@2
     displayName: "Copy LCG Files"
     inputs:
@@ -572,11 +580,17 @@ phases:
         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
         gci env:* | sort-object name      
 
+  - task: DownloadBuildArtifacts@0
+    displayName: "Download Build artifacts"
+    inputs:
+      artifactName: "VS15"
+      downloadPath: "$(Build.Repository.LocalPath)/artifacts"
+
   - task: PowerShell@1
     displayName: "Bootstrap.ps1"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/Bootstrap.ps1"
-      arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
+      arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
 
   - task: PowerShell@1
     displayName: "SetupFunctionalTests.ps1"
@@ -588,13 +602,13 @@ phases:
     displayName: "CopyToolsAndSetupMachine.ps1"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\CopyToolsAndSetupMachine.ps1"
-      arguments: " -NuGetCIToolsFolder $(NuGetCIToolsFolder) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts"
+      arguments: " -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts"
 
   - task: PowerShell@1
     displayName: "InstallNuGetVSIX.ps1"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
-      arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
+      arguments: "-NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
       failOnStandardError: "false"
 
   - task: PowerShell@1
@@ -603,11 +617,7 @@ phases:
       scriptType: "inlineScript"
       inlineScript: |
         Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\VSCollect.exe
-        if(-not (Test-Path $(EndToEndResultsDropPath)))
-          {
-            New-Item -Path $(EndToEndResultsDropPath) -ItemType Directory -Force
-          }
-        $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\e2e-collectlogs.zip
+        $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\e2e-collectlogs.zip
     condition: "failed()"
 
   - task: PowerShell@1
@@ -654,7 +664,7 @@ phases:
   - Initialize_Build
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-    FulLVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FulLVstsBuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "  	
   queue:
     name: DDNuGet-Windows
