@@ -11,8 +11,13 @@ namespace NuGet.Protocol
 {
     public class CachingUtility
     {
-        public static readonly int BufferSize = 8192;
+        public const int BufferSize = 8192;
 
+        /// <summary>
+        /// Given a string, it hashes said string and appends identifiable characters to make the root of the cache more human readable
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>hash</returns>
         public static string ComputeHash(string value)
         {
             var trailing = value.Length > 32 ? value.Substring(value.Length - 32) : value;

@@ -82,9 +82,9 @@ namespace NuGet.Credentials
 
             var creationResult = await _pluginManager.TryGetSourceAgnosticPluginAsync(_discoveredPlugin, OperationClaim.Authentication, cancellationToken);
 
-            if (creationResult.Item1)
+            if (creationResult.Item1) // status of the source creation
             {
-                var plugin = creationResult.Item2;
+                var plugin = creationResult.Item2; // plugin creation result
                 if (!string.IsNullOrEmpty(plugin.Message))
                 {
                     // There is a potential here for double logging as the CredentialService itself catches the exceptions and tries to log it.
