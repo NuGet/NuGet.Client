@@ -335,7 +335,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         foreach (var message in rollbackException.LogMessages)
                         {
-                            if (message.Level == LogLevel.Error)
+                            if (message.Level == LogLevel.Error || message.Level == LogLevel.Warning)
                             {
                                 UILogger.ReportError(message);
                             }

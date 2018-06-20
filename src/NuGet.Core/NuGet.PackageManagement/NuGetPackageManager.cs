@@ -2914,7 +2914,7 @@ namespace NuGet.PackageManagement
                 // Read additional errors from the lock file if one exists
                 var logMessages = restoreResult.LockFile?
                     .LogMessages
-                    .Where(e => e.Level == LogLevel.Error)
+                    .Where(e => e.Level == LogLevel.Error || e.Level == LogLevel.Warning)
                     .Select(e => e.AsRestoreLogMessage())
                   ?? Enumerable.Empty<ILogMessage>();
 

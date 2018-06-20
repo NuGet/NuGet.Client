@@ -10,7 +10,6 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.SolutionRestoreManager;
 using NuGet.VisualStudio;
-using NuGetConsole;
 
 namespace NuGetVSExtension
 {
