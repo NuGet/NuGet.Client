@@ -5004,7 +5004,7 @@ namespace NuGet.Test
                 "a",
                 NuGetFramework.AnyFramework,
                 resolutionContext,
-                new List<SourceRepository> { sourceRepositoryProvider.GetRepositories().First() },
+                sourceRepositoryProvider.GetRepositories().First(),
                 Common.NullLogger.Instance,
                 CancellationToken.None);
 

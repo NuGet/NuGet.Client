@@ -192,8 +192,9 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
                 testContext.Project.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                nugetConsole.UpdatePackageFromPMCWithConstraints(packageName, false, true);
+                var minorUpdate = false;
+                var patchUpdate = true;
+                nugetConsole.UpdatePackageFromPMCWithConstraints(packageName, minorUpdate, patchUpdate);
                 testContext.Project.Build();
 
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, packageVersion3, XunitLogger);
@@ -226,7 +227,9 @@ namespace NuGet.Tests.Apex
                 testContext.Project.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
-                nugetConsole.UpdatePackageFromPMCWithConstraints(packageName, true, false);
+                var minorUpdate = true;
+                var patchUpdate = false;
+                nugetConsole.UpdatePackageFromPMCWithConstraints(packageName, minorUpdate, patchUpdate);
                 testContext.Project.Build();
 
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, packageVersion4, XunitLogger);
