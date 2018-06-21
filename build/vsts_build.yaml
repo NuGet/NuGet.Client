@@ -107,16 +107,6 @@ phases:
   - task: MicroBuildSwixPlugin@1
     displayName: "Install Swix Plugin"
 
-  - task: CopyFiles@2
-    displayName: "Copy Public Key Files"
-    inputs:
-      SourceFolder: "$(NuGetSharePublicKeys)"
-      Contents: "*.snk"
-      TargetFolder: "$(Build.Repository.LocalPath)\\keys"
-      CleanTargetFolder: "true"
-      OverWrite: "true"
-      flattenFolders: "true"
-
   - task: MSBuild@1
     displayName: "Restore for VS2017"
     inputs:
@@ -388,16 +378,6 @@ phases:
       inlineScript: |
         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
         gci env:* | sort-object name
-
-  - task: CopyFiles@2
-    displayName: "Copy Public Key Files"
-    inputs:
-      SourceFolder: "$(NuGetSharePublicKeys)"
-      Contents: "*.snk"
-      TargetFolder: "$(Build.Repository.LocalPath)\\keys"
-      CleanTargetFolder: "true"
-      OverWrite: "true"
-      flattenFolders: "true"
 
   - task: PowerShell@1
     displayName: "Download Config Files"
@@ -678,6 +658,12 @@ phases:
       inlineScript: |
         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
         gci env:* | sort-object name
+
+  - task: DownloadBuildArtifacts@0
+    displayName: "Download Build artifacts"
+    inputs:
+      artifactName: "VS15"
+      downloadPath: "$(Build.Repository.LocalPath)/artifacts"
         
   - task: NuGetToolInstaller@0
     displayName: "Use NuGet 4.5.0"
@@ -692,21 +678,11 @@ phases:
       nugetConfigPath: "NuGet.Config"
       restoreDirectory: "$(System.DefaultWorkingDirectory)/packages"
 
-  - task: CopyFiles@2
-    displayName: "Copy Public Key Files"
-    inputs:
-      SourceFolder: "$(NuGetSharePublicKeys)"
-      Contents: "*.snk"
-      TargetFolder: "$(Build.Repository.LocalPath)\\keys"
-      CleanTargetFolder: "true"
-      OverWrite: "true"
-      flattenFolders: "true"
-
   - task: PowerShell@1
     displayName: "Bootstrap.ps1"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/Bootstrap.ps1"
-      arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
+      arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
 
   - task: PowerShell@1
     displayName: "SetupFunctionalTests.ps1"
@@ -715,30 +691,24 @@ phases:
       arguments: "-VSVersion 15.0"
 
   - task: PowerShell@1
-    displayName: "CopyToolsAndSetupMachine.ps1"
-    inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\CopyToolsAndSetupMachine.ps1"
-      arguments: " -NuGetCIToolsFolder $(NuGetCIToolsFolder) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts"
-
-  - task: PowerShell@1
     displayName: "InstallNuGetVSIX.ps1"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
-      arguments: "-NuGetDropPath $(BuildOutputTargetPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
+      arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
       failOnStandardError: "false"
 
-  - task: PowerShell@1
-    displayName: "Collect VS Logs"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\VSCollect.exe
-        if(-not (Test-Path $(EndToEndResultsDropPath)))
-          {
-            New-Item -Path $(EndToEndResultsDropPath) -ItemType Directory -Force
-          }
-        $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\apex-collectlogs.zip
-    condition: "failed()"
+  # - task: PowerShell@1
+  #   displayName: "Collect VS Logs"
+  #   inputs:
+  #     scriptType: "inlineScript"
+  #     inlineScript: |
+  #       Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\VSCollect.exe
+  #       if(-not (Test-Path $(EndToEndResultsDropPath)))
+  #         {
+  #           New-Item -Path $(EndToEndResultsDropPath) -ItemType Directory -Force
+  #         }
+  #       $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\apex-collectlogs.zip
+  #   condition: "failed()"
 
   - task: MSBuild@1
     displayName: "Restore for VS2017"
