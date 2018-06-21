@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -216,7 +216,7 @@ namespace NuGet.PackageManagement
             return packages.Where(p => !installed.ContainsKey(p.Id) || MeetsVersionConstraints(p.Version, installed[p.Id], versionConstraints));
         }
 
-        private static bool MeetsVersionConstraints(NuGetVersion newVersion, NuGetVersion existingVersion, VersionConstraints versionConstraints)
+        public static bool MeetsVersionConstraints(NuGetVersion newVersion, NuGetVersion existingVersion, VersionConstraints versionConstraints)
         {
             return
                 (!versionConstraints.HasFlag(VersionConstraints.ExactMajor) || newVersion.Major == existingVersion.Major)

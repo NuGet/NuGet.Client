@@ -49,17 +49,9 @@ namespace NuGet.Tests.Apex
             Execute(command);
         }
 
-        public void UpdatePackageFromPMCWithConstraints(string packageId, bool minor, bool patch)
+        public void UpdatePackageFromPMCWithConstraints(string packageId, string flags)
         {
-            var command = $"Update-Package {packageId} -ProjectName {_projectName}";
-            if (patch)
-            {
-                command += "-ToHighestPatch";
-            }
-            else if (minor)
-            {
-                command += "-ToHighestMinor";
-            }
+            var command = $"Update-Package {packageId} -ProjectName {_projectName} {flags}";
             Execute(command);
         }
 

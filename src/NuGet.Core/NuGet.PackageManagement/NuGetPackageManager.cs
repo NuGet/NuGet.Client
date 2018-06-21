@@ -3252,7 +3252,7 @@ namespace NuGet.PackageManagement
             foreach (var source in sources)
             {
                 tasks.Add(Task.Run(async ()
-                    => await GetLatestVersionCoreAsync(packageId, framework, resolutionContext, source, log, token, null)));
+                    => await GetLatestVersionCoreAsync(packageId, framework, resolutionContext, source, log, token, version: null)));
             }
 
             var resolvedPackages = await Task.WhenAll(tasks);
@@ -3295,45 +3295,12 @@ namespace NuGet.PackageManagement
             var result = new List<SourcePackageDependencyInfo>();
             foreach (var package in packages)
             {
-                if (resolutionContext.VersionConstraints == VersionConstraints.None)
+                if (PrunePackageTree.MeetsVersionConstraints(package.Version, version, resolutionContext.VersionConstraints))
                 {
                     result.Add(package);
                 }
-                else if (resolutionContext.VersionConstraints == VersionConstraints.ExactMajor)
-                {
-                    if (package.Version.Major == version.Major)
-                    {
-                        result.Add(package);
-                    }
-                }
-                else if (resolutionContext.VersionConstraints == (VersionConstraints.ExactMajor | VersionConstraints.ExactMinor))
-                {
-                    if (package.Version.Major == version.Major &&
-                        package.Version.Minor == version.Minor)
-                    {
-                        result.Add(package);
-                    }
-                }
-                else if (resolutionContext.VersionConstraints == (VersionConstraints.ExactMajor | VersionConstraints.ExactMinor | VersionConstraints.ExactPatch))
-                {
-                    if (package.Version.Major == version.Major &&
-                        package.Version.Minor == version.Minor &&
-                        package.Version.Patch == version.Patch)
-                    {
-                        result.Add(package);
-                    }
-                }
-                else if (resolutionContext.VersionConstraints == (VersionConstraints.ExactMajor | VersionConstraints.ExactMinor | VersionConstraints.ExactPatch | VersionConstraints.ExactRelease))
-                {
-                    if (package.Version.Major == version.Major &&
-                        package.Version.Minor == version.Minor &&
-                        package.Version.Patch == version.Patch &&
-                        package.Version.Release == version.Release)
-                    {
-                        result.Add(package);
-                    }
-                }
             }
+
             return result;
         }
 
@@ -3366,6 +3333,7 @@ namespace NuGet.PackageManagement
             {
                 packages = FilterPackagesByVersion(packages, version, resolutionContext);
             }
+
             // Find the latest version
             var latestVersion = packages.Where(package => (package.Listed || resolutionContext.IncludeUnlisted)
                 && (resolutionContext.IncludePrerelease || !package.Version.IsPrerelease))
