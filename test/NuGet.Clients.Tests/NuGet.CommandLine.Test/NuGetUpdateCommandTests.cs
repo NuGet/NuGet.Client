@@ -597,8 +597,13 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        public async Task UpdateCommand_Success_Prerelease_With_Id()
+        [Theory]
+        [InlineData("1.0.0", "2.0.0-BETA")]
+        [InlineData("1.0.0-BETA", "2.0.0-BETA")]
+        [InlineData("2.0.0-BETA", "2.0.0")]
+        [InlineData("2.0.0-BETA", "2.0.0-BETA2")]
+        [InlineData("2.0.0-BETA", "2.0.1")]
+        public async Task UpdateCommand_Success_Prerelease_With_Id(string oldVersion, string newVersion)
         {
             using (var packagesSourceDirectory = TestDirectory.Create())
             using (var solutionDirectory = TestDirectory.Create())
@@ -607,8 +612,8 @@ namespace NuGet.CommandLine.Test
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
 
-                var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-                var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0-BETA"));
+                var a1 = new PackageIdentity("A", new NuGetVersion(oldVersion));
+                var a2 = new PackageIdentity("A", new NuGetVersion(newVersion));
 
                 var a1Package = Util.CreateTestPackage(
                     a1.Id,
@@ -674,8 +679,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
-                Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0-BETA", "lib", "net45", "file.dll"))));
+                Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A."+oldVersion.ToString(), "lib", "net45", "file.dll"))));
+                Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A."+newVersion.ToString(), "lib", "net45", "file.dll"))));
             }
         }
 
