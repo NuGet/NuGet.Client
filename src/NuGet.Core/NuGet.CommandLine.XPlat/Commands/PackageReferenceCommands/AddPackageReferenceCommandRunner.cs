@@ -293,7 +293,7 @@ namespace NuGet.CommandLine.XPlat
                 var restoreRequests = await RestoreRunner.GetRequests(restoreContext);
 
                 //Setup the Credential Service
-                DefaultCredentialServiceUtility.SetupDefaultCredentialService(restoreContext.Log, packageReferenceArgs.Interactive);
+                DefaultCredentialServiceUtility.SetupDefaultCredentialService(restoreContext.Log, !packageReferenceArgs.Interactive);
 
                 // Run restore without commit. This will always return 1 Result pair since we are restoring for 1 request.
                 var restoreResult = await RestoreRunner.RunWithoutCommit(restoreRequests, restoreContext);
