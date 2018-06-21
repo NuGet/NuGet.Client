@@ -251,7 +251,7 @@ phases:
     displayName: "Create EndToEnd Test Package"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
-      arguments: "-c $(BuildConfiguration) -tv 15 -out $(Build.Repository.LocalPath)\\artifacts\\VS15"
+      arguments: "-c $(BuildConfiguration) -tv 15 -out $(Build.Repository.LocalPath)\\artifacts\\VS15 -NuGetToolsPath $(NuGetCIToolsFolder)"
       failOnStandardError: "false"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 

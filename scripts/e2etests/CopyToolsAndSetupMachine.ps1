@@ -2,22 +2,21 @@
     [Parameter(Mandatory=$true)]
     [string]$FuncTestRoot)
 
-# function CopyNuGetCITools
-# {
-#     param (
-#     [Parameter(Mandatory=$true)]
-#     [string]$NuGetCIToolsFolder,
-#     [Parameter(Mandatory=$true)]
-#     [string]$NuGetTestPath)
+function CopyNuGetCITools
+{
+    param (
+    [Parameter(Mandatory=$true)]
+    [string]$NuGetTestPath
+    )
 
-#     Write-Host 'Trying to copy necessary tools to ' $NuGetTestPath
+    Write-Host 'Trying to copy necessary tools to ' $NuGetTestPath
 
-#     Copy-Item $NuGetCIToolsFolder\*.exe $NuGetTestPath
-#     Copy-Item $NuGetCIToolsFolder\*.exe.config $NuGetTestPath
-#     Copy-Item $NuGetCIToolsFolder\*.dll $NuGetTestPath
+    Copy-Item $NuGetTestPath\tools\*.exe $NuGetTestPath
+    Copy-Item $NuGetTestPath\tools\*.exe.config $NuGetTestPath
+    Copy-Item $NuGetTestPath\tools\*.dll $NuGetTestPath
 
-#     Write-Host 'Copied the necessary tools to test path ' $NuGetTestPath
-# }
+    Write-Host 'Copied the necessary tools to test path ' $NuGetTestPath
+}
 
 . "$PSScriptRoot\Utils.ps1"
 . "$PSScriptRoot\NuGetFunctionalTestUtils.ps1"
@@ -35,7 +34,7 @@ if ($success -eq $false)
 
 
 $NuGetTestPath = Join-Path $FuncTestRoot "EndToEnd"
-#CopyNuGetCITools $NuGetCIToolsFolder $NuGetTestPath
+CopyNuGetCITools $NuGetTestPath
 
 # Already checked if the prompt is an admin prompt
 DisableCrashDialog
