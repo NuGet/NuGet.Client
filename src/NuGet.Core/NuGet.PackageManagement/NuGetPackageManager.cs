@@ -3248,11 +3248,11 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             var tasks = new List<Task<ResolvedPackage>>();
-
+            NuGetVersion version = null;
             foreach (var source in sources)
             {
                 tasks.Add(Task.Run(async ()
-                    => await GetLatestVersionCoreAsync(packageId, framework, resolutionContext, source, log, token, version: null)));
+                    => await GetLatestVersionCoreAsync(packageId, version, framework, resolutionContext, source, log, token)));
             }
 
             var resolvedPackages = await Task.WhenAll(tasks);
@@ -3273,7 +3273,7 @@ namespace NuGet.PackageManagement
             foreach (var source in sources)
             {
                 tasks.Add(Task.Run(async ()
-                    => await GetLatestVersionCoreAsync(package.PackageIdentity.Id, framework, resolutionContext, source, log, token, package.PackageIdentity.Version)));
+                    => await GetLatestVersionCoreAsync(package.PackageIdentity.Id, package.PackageIdentity.Version, framework, resolutionContext, source, log, token)));
             }
 
             var resolvedPackages = await Task.WhenAll(tasks);
@@ -3285,33 +3285,14 @@ namespace NuGet.PackageManagement
             return new ResolvedPackage(latestVersion, resolvedPackages.Any(p => p.Exists));
         }
 
-        ///A function that given a list of packages, a version and resolution context returns a list
-        /// of packages containing only the packages that follow the required version by the constraints
-        private static List<SourcePackageDependencyInfo> FilterPackagesByVersion(
-            List<SourcePackageDependencyInfo> packages,
-            NuGetVersion version,
-            ResolutionContext resolutionContext)
-        {
-            var result = new List<SourcePackageDependencyInfo>();
-            foreach (var package in packages)
-            {
-                if (PrunePackageTree.MeetsVersionConstraints(package.Version, version, resolutionContext.VersionConstraints))
-                {
-                    result.Add(package);
-                }
-            }
-
-            return result;
-        }
-
         private static async Task<ResolvedPackage> GetLatestVersionCoreAsync(
             string packageId,
+            NuGetVersion version,
             NuGetFramework framework,
             ResolutionContext resolutionContext,
             SourceRepository source,
             Common.ILogger log,
-            CancellationToken token,
-            NuGetVersion version)
+            CancellationToken token)
         {
             var dependencyInfoResource = await source.GetResourceAsync<DependencyInfoResource>();
 
@@ -3331,7 +3312,7 @@ namespace NuGet.PackageManagement
 
             if (version != null)
             {
-                packages = FilterPackagesByVersion(packages, version, resolutionContext);
+                packages = packages.Where(p => PrunePackageTree.MeetsVersionConstraints(p.Version, version, resolutionContext.VersionConstraints)).ToList();
             }
 
             // Find the latest version

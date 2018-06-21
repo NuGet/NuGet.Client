@@ -216,7 +216,7 @@ namespace NuGet.PackageManagement
             return packages.Where(p => !installed.ContainsKey(p.Id) || MeetsVersionConstraints(p.Version, installed[p.Id], versionConstraints));
         }
 
-        public static bool MeetsVersionConstraints(NuGetVersion newVersion, NuGetVersion existingVersion, VersionConstraints versionConstraints)
+        internal static bool MeetsVersionConstraints(NuGetVersion newVersion, NuGetVersion existingVersion, VersionConstraints versionConstraints)
         {
             return
                 (!versionConstraints.HasFlag(VersionConstraints.ExactMajor) || newVersion.Major == existingVersion.Major)
