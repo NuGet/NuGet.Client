@@ -411,6 +411,11 @@ namespace NuGet.Common
         NU3037 = 3037,
 
         /// <summary>
+        /// The package signature did not have a repository countersignature.
+        /// </summary>
+        NU3038 = 3038,
+
+        /// <summary>
         /// Undefined Package Error.
         /// </summary>
         NU5000 = 5000,

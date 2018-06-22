@@ -1520,6 +1520,49 @@ namespace NuGet.Packaging.FuncTest
                     }
                 }
             }
+
+            [CIOnlyFact]
+            public async Task GetTrustResultAsync_WithAlwaysVerifyCountersignatureBehavior_ReturnsDisallowed()
+            {
+                var settings = new SignedPackageVerifierSettings(
+                    allowUnsigned: false,
+                    allowIllegal: false,
+                    allowUntrusted: false,
+                    allowIgnoreTimestamp: false,
+                    allowMultipleTimestamps: false,
+                    allowNoTimestamp: false,
+                    allowUnknownRevocation: true,
+                    reportUnknownRevocation: true,
+                    allowNoRepositoryCertificateList: true,
+                    allowNoClientCertificateList: true,
+                    verificationTarget: VerificationTarget.Repository,
+                    signaturePlacement: SignaturePlacement.Any,
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Always);
+                var testServer = await _fixture.GetSigningTestServerAsync();
+                var certificateAuthority = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
+                var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
+
+                using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
+                    _fixture.TrustedRepositoryCertificate.Source.Cert,
+                    timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+
+                    var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
+
+                    var errors = status.GetErrorIssues();
+
+                    Assert.Equal(1, errors.Count());
+
+                    var error = errors.Single();
+
+                    Assert.Equal(NuGetLogCode.NU3038, error.Code);
+                    Assert.Equal("The package signature did not have a repository countersignature.", error.Message);
+                }
+            }
         }
 
         [Collection(SigningTestCollection.Name)]

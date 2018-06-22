@@ -123,6 +123,7 @@ namespace NuGet.Packaging.Signing
                 {
                     if (settings.RepositoryCountersignatureVerificationBehavior == SignatureVerificationBehavior.Always)
                     {
+                        issues = issues.Concat(new[] { SignatureLog.Error(NuGetLogCode.NU3038, Strings.NoRepositoryCountersignature) });
                         status = SignatureVerificationStatus.Disallowed;
                     }
                 }

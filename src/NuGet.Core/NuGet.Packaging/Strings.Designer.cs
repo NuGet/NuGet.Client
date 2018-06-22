@@ -710,6 +710,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package signature did not have a repository countersignature..
+        /// </summary>
+        internal static string NoRepositoryCountersignature {
+            get {
+                return ResourceManager.GetString("NoRepositoryCountersignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package does not have a repository signature (primary or countersignature)..
         /// </summary>
         internal static string NoRepositorySignature {

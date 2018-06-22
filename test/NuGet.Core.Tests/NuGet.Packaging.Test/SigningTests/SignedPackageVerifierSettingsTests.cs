@@ -267,6 +267,12 @@ namespace NuGet.Packaging.Test
         [InlineData(
             VerificationTarget.All,
             SignaturePlacement.PrimarySignature,
+            SignatureVerificationBehavior.Always,
+            "signaturePlacement",
+            "repositoryCountersignatureVerificationBehavior")]
+        [InlineData(
+            VerificationTarget.All,
+            SignaturePlacement.PrimarySignature,
             SignatureVerificationBehavior.IfExists,
             "signaturePlacement",
             "repositoryCountersignatureVerificationBehavior")]

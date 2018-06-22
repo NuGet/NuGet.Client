@@ -180,7 +180,9 @@ namespace NuGet.Packaging.Signing
             }
 
             if ((repositoryCountersignatureVerificationBehavior == SignatureVerificationBehavior.Never) ==
-                signaturePlacement.HasFlag(SignaturePlacement.Countersignature))
+                    signaturePlacement.HasFlag(SignaturePlacement.Countersignature) ||
+                ((repositoryCountersignatureVerificationBehavior == SignatureVerificationBehavior.Always) &&
+                    !signaturePlacement.HasFlag(SignaturePlacement.Countersignature)))
             {
                 throw new ArgumentException(
                     string.Format(
