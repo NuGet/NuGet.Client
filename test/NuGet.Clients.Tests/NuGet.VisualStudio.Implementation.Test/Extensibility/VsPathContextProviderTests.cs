@@ -171,7 +171,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     });
 
                 // Act
-                var actual = await target.CreatePathContextAsync(project.Object, projectUniqueName, CancellationToken.None);
+                var actual = await target.CreatePathContextAsync(vsProjectAdapter.Object, "project.aseets.json", projectUniqueName, CancellationToken.None);
 
                 // Assert
                 Assert.NotNull(actual);
@@ -259,7 +259,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     getLockFileOrNull: null);
 
                 // Act
-                var actual = await target.CreatePathContextAsync(project.Object, projectUniqueName, CancellationToken.None);
+                var actual = await target.CreatePathContextAsync(vsProjectAdapter.Object, string.Empty, projectUniqueName, CancellationToken.None);
 
                 // Assert
                 Assert.NotNull(actual);
@@ -300,7 +300,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             // Act
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => target.CreatePathContextAsync(project.Object, projectUniqueName, CancellationToken.None));
+                () => target.CreatePathContextAsync(vsProjectAdapter.Object, "project.aseets.json", projectUniqueName, CancellationToken.None));
 
             // Assert
             Assert.Contains(projectUniqueName, exception.Message);
@@ -368,7 +368,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
                 // Act
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                    () => target.CreatePathContextAsync(project.Object, projectUniqueName, CancellationToken.None));
+                    () => target.CreatePathContextAsync(vsProjectAdapter.Object, string.Empty, projectUniqueName, CancellationToken.None));
 
                 // Assert
                 Assert.Contains(projectUniqueName, exception.Message);
