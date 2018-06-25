@@ -167,7 +167,7 @@ function RealTimeLogResults
                 }
                 if($isError -eq $true)
                 {
-                    CopyActivityLogToCI
+                    #CopyActivityLogToCI
                 }
                 break
             }
@@ -183,12 +183,7 @@ function RealTimeLogResults
         $errorMessage = 'Run Failed - Results.html did not get created. ' `
         + 'This indicates that the tests did not finish running. It could be that the VS crashed or a test timed out. Please investigate.'
         CopyResultsToCI $NuGetDropPath $RunCounter $testResults
-        CopyActivityLogToCI
-        # if($env:CI)
-        # {
-        ## Running into some hangs, so comment it out for now.
-        #     Get-ScreenCapture -OfWindow -OutputPath $env:EndToEndResultsDropPath
-        # }
+        #CopyActivityLogToCI
         
         Write-Error $errorMessage
         return $null
@@ -215,36 +210,30 @@ function CopyResultsToCI
     $RealTimeResultsFilePath = Join-Path $ResultsFileParent.FullName 'Realtimeresults.txt'
 
     $TestResultsPath = Join-Path $DropPathParent.FullName 'testresults'
+    $FullLogFileDestinationPath = Join-Path $TestResultsPath $FullLogFileName
     mkdir $TestResultsPath -ErrorAction Ignore
 
     $DestinationFileName = 'Run-' + $RunCounter + '-' + (Split-Path $resultsFile -Leaf)
     $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
-    Write-Host "Copying results file from $resultsFile to $DestinationPath"
+    Write-Host "Copying html results file from $resultsFile to $DestinationPath"
     Copy-Item $resultsFile $DestinationPath
-    if($env:CI -and $env:EndToEndResultsDropPath)
+    if($env:CI)
     {
-        Write-Host "Copying full log file from $FullLogFilePath to $env:EndToEndResultsDropPath"
-        if(-not (Test-Path $env:EndToEndResultsDropPath))
-        {
-            New-Item -Path $env:EndToEndResultsDropPath -ItemType Directory -Force
-        }
-        Copy-Item $FullLogFilePath -Destination $env:EndToEndResultsDropPath -Force  -ErrorAction SilentlyContinue
-
-        Write-Host "Copying test results file from $resultsFile to $env:EndToEndResultsDropPath"
-        Copy-Item $resultsFile -Destination $env:EndToEndResultsDropPath -Force -ErrorAction SilentlyContinue
+        Write-Host "Copying full log file from $FullLogFilePath to $FullLogFileDestinationPath"
+        Copy-Item $FullLogFilePath -Destination $FullLogFileDestinationPath -Force  -ErrorAction SilentlyContinue
     }
 
     OutputResultsForCI -NuGetDropPath $NuGetDropPath -RunCounter $RunCounter -RealTimeResultsFilePath $RealTimeResultsFilePath
 }
 
-function CopyActivityLogToCI
-{    
-    if($env:ActivityLogFullPath) 
-    {
-        Write-Host "Copying activity log file from $env:ActivityLogFullPath to $env:EndToEndResultsDropPath"
-        Copy-Item $env:ActivityLogFullPath -Destination $env:EndToEndResultsDropPath -Force  -ErrorAction SilentlyContinue
-    }
-}
+# function CopyActivityLogToCI
+# {    
+#     if($env:ActivityLogFullPath) 
+#     {
+#         Write-Host "Copying activity log file from $env:ActivityLogFullPath to $env:EndToEndResultsDropPath"
+#         Copy-Item $env:ActivityLogFullPath -Destination $env:EndToEndResultsDropPath -Force  -ErrorAction SilentlyContinue
+#     }
+# }
 
 function OutputResultsForCI
 {
@@ -364,39 +353,5 @@ function Get-ResultFromResultRow
         }
 
         return $result
-    }
-}
-
-function Get-ScreenCapture
-{
-    param(    
-    [Switch]$OfWindow,
-    [Parameter(Mandatory=$true)]
-    [string]$OutputPath  
-    )
-
-    begin {
-        Add-Type -AssemblyName System.Drawing
-        Add-Type -AssemblyName System.Windows.Forms
-        $jpegCodec = [Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | 
-            Where-Object { $_.FormatDescription -eq "JPEG" }
-    }
-    process {
-        Start-Sleep -Milliseconds 250
-        if ($OfWindow) {            
-            [System.Windows.Forms.Sendkeys]::SendWait("%{PrtSc}")        
-        } else {
-            [System.Windows.Forms.Sendkeys]::SendWait("{PrtSc}")        
-        }
-        Start-Sleep -Milliseconds 250
-        $bitmap = [Windows.Forms.Clipboard]::GetImage()    
-        $ep = New-Object Drawing.Imaging.EncoderParameters  
-        $ep.Param[0] = New-Object Drawing.Imaging.EncoderParameter ([System.Drawing.Imaging.Encoder]::Quality, [long]100)  
-        $screenCapturePathBase = "$OutputPath\ScreenCapture"
-        $c = 0
-        while (Test-Path "${screenCapturePathBase}${c}.jpg") {
-            $c++
-        }
-        $bitmap.Save("${screenCapturePathBase}${c}.jpg", $jpegCodec, $ep)
     }
 }
