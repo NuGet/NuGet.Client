@@ -32,6 +32,7 @@ namespace NuGet.ProjectModel
         private const string ServicableProperty = "servicable";
         private const string Sha512Property = "sha512";
         private const string FilesProperty = "files";
+        private const string HasToolsProperty = "hasTools";
         private const string DependenciesProperty = "dependencies";
         private const string FrameworkAssembliesProperty = "frameworkAssemblies";
         private const string RuntimeProperty = "runtime";
@@ -240,6 +241,7 @@ namespace NuGet.ProjectModel
             library.IsServiceable = ReadBool(json, ServicableProperty, defaultValue: false);
             library.Files = ReadPathArray(json[FilesProperty] as JArray, ReadString);
 
+            library.HasTools = ReadBool(json, HasToolsProperty, defaultValue: false);
             return library;
         }
 
@@ -266,6 +268,11 @@ namespace NuGet.ProjectModel
             if (library.MSBuildProject != null)
             {
                 json[MSBuildProjectProperty] = WriteString(library.MSBuildProject);
+            }
+
+            if (library.HasTools)
+            {
+                WriteBool(json, HasToolsProperty, library.HasTools);
             }
 
             WritePathArray(json, FilesProperty, library.Files, WriteString);
