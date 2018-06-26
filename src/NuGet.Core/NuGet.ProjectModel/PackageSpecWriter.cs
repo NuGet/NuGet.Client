@@ -415,6 +415,8 @@ namespace NuGet.ProjectModel
                             .Where(s => !string.IsNullOrEmpty(s)));
                     }
 
+                    SetValueIfTrue(writer, "generatePathProperty", dependency.GeneratePathProperty);
+
                     writer.WriteObjectEnd();
                 }
                 else

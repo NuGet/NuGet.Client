@@ -426,6 +426,8 @@ namespace NuGet.Commands
             var ridlessTargets = assetsFile.Targets
                 .Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
 
+            var packagesWithTools = new HashSet<string>(assetsFile.Libraries.Where(i => i.HasTools).Select(i => i.Name));
+
             foreach (var ridlessTarget in ridlessTargets)
             {
                 // There could be multiple string matches from the MSBuild project.
@@ -492,6 +494,24 @@ namespace NuGet.Commands
                         .Select(GenerateImport));
 
                 props.AddRange(GenerateGroupsWithConditions(buildPropsGroup, isMultiTargeting, frameworkConditions));
+
+                // Create an empty PropertyGroup for package properties
+                var packagePathsPropertyGroup = MSBuildRestoreItemGroup.Create("PropertyGroup", Enumerable.Empty<XElement>(), 1000, isMultiTargeting ? frameworkConditions : Enumerable.Empty<string>());
+
+                var projectGraph = targetGraph.Graphs.FirstOrDefault();
+
+                // Autogenerate a property for any packages that have tools or have opted into having a property generated
+                var packagePathProperties = packagesWithTools.Union(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name)).Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Select(i => sortedPackages.Cast<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>?>().FirstOrDefault(x => x.Value.Key.Name.Equals(i, StringComparison.OrdinalIgnoreCase)))
+                    .Where(i => i != null && i.Value.Value.Exists())
+                    .Select(i => GeneratePackagePathProperty(i.Value.Key.Name, i.Value.Value.GetAbsolutePath(i.Value.Value.Value.Package.ExpandedPath)));
+
+                packagePathsPropertyGroup.Items.AddRange(packagePathProperties);
+
+                if (packagePathsPropertyGroup.Items.Any())
+                {
+                    props.Add(packagePathsPropertyGroup);
+                }
 
                 if (isMultiTargeting)
                 {
@@ -719,6 +739,11 @@ namespace NuGet.Commands
             }
 
             return result;
+        }
+
+        private static XElement GeneratePackagePathProperty(string packageName, string packagePath)
+        {
+            return GenerateProperty($"Pkg{packageName.Replace(".", "_")}", packagePath);
         }
     }
 }

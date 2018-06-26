@@ -516,6 +516,8 @@ namespace NuGet.SolutionRestoreManager
                 dependency.NoWarn.Add(code);
             }
 
+            dependency.GeneratePathProperty = GetPropertyBoolOrFalse(item, "GeneratePathProperty");
+
             MSBuildRestoreUtility.ApplyIncludeFlags(
                 dependency,
                 includeAssets: GetPropertyValueOrNull(item, IncludeAssets),

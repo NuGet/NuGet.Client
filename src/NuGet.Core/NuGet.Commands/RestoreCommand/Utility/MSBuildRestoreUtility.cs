@@ -590,6 +590,8 @@ namespace NuGet.Commands
                     dependency.NoWarn.Add(code);
                 }
 
+                dependency.GeneratePathProperty = IsPropertyTrue(item, "GeneratePathProperty");
+
                 ApplyIncludeFlags(dependency, item);
 
                 var frameworks = GetFrameworks(item);
