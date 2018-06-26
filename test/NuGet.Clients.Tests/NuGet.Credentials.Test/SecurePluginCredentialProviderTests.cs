@@ -231,6 +231,78 @@ namespace NuGet.Credentials.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void TryCreate_DoesNotCreateNonCredentialsPluginTwice_CachesCapabilities()
+        {
+            var uri = new Uri("https://api.nuget.org/v3/index.json");
+            var authUsername = "username";
+            var authPassword = "password";
+
+            var expectation = new TestExpectation(
+                serviceIndexJson: null,
+                sourceUri: null,
+                operationClaims: new[] { OperationClaim.DownloadPackage },
+                connectionOptions: ConnectionOptions.CreateDefault(),
+                pluginVersion: ProtocolConstants.CurrentVersion,
+                uri: uri,
+                authenticationUsername: authUsername,
+                authenticationPassword: authPassword,
+                success: false
+                );
+
+            using (var test = new PluginManagerMock(
+                pluginFilePath: "a",
+                pluginFileState: PluginFileState.Valid,
+                expectations: expectation))
+            {
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid)));
+                var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, NullLogger.Instance);
+
+                IWebProxy proxy = null;
+                var credType = CredentialRequestType.Unauthorized;
+                var message = "nothing";
+                var isRetry = false;
+                var isInteractive = false;
+                var token = CancellationToken.None;
+                var credentialResponse = provider.GetAsync(uri, proxy, credType, message, isRetry, isInteractive, token).Result;
+
+                Assert.True(credentialResponse.Status == CredentialStatus.ProviderNotApplicable);
+                Assert.Null(credentialResponse.Credentials);
+            }
+
+            var expectations2 = new TestExpectation(
+                serviceIndexJson: null,
+                sourceUri: null,
+                operationClaims: new[] { OperationClaim.DownloadPackage },
+                connectionOptions: ConnectionOptions.CreateDefault(),
+                pluginVersion: ProtocolConstants.CurrentVersion,
+                uri: uri,
+                authenticationUsername: authUsername,
+                authenticationPassword: authPassword,
+                success: false,
+                pluginLaunched: false
+                );
+
+            using (var test = new PluginManagerMock(
+                pluginFilePath: "a",
+                pluginFileState: PluginFileState.Valid,
+                expectations: expectations2))
+            {
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid)));
+                var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, NullLogger.Instance);
+
+                IWebProxy proxy = null;
+                var credType = CredentialRequestType.Unauthorized;
+                var message = "nothing";
+                var isRetry = false;
+                var isInteractive = false;
+                var token = CancellationToken.None;
+                var credentialResponse = provider.GetAsync(uri, proxy, credType, message, isRetry, isInteractive, token).Result;
+
+                Assert.True(credentialResponse.Status == CredentialStatus.ProviderNotApplicable);
+                Assert.Null(credentialResponse.Credentials);
+            }
+        }
 
         private static PluginDiscoveryResult CreatePluginDiscoveryResult(PluginFileState pluginState = PluginFileState.Valid)
         {

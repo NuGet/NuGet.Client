@@ -6,10 +6,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol.Plugins;
 using NuGet.Shared;
@@ -37,6 +40,7 @@ namespace NuGet.Protocol.Core.Types
         private string _rawPluginPaths;
 
         private static Lazy<int> _currentProcessId = new Lazy<int>(GetCurrentProcessId);
+        private Lazy<string> _pluginsCacheDirectory = new Lazy<string>(() => SettingsUtility.GetPluginsCacheFolder());
 
         /// <summary>
         /// Gets an environment variable reader.
@@ -135,13 +139,20 @@ namespace NuGet.Protocol.Core.Types
                 {
                     var serviceIndexJson = JObject.Parse(serviceIndex.Json);
 
-                    var results = await FindAvailablePluginsAsync(cancellationToken);
-
-                    foreach (var result in results)
+                    foreach (var result in await FindAvailablePluginsAsync(cancellationToken))
                     {
-                        var pluginCreationResult = await CreatePluginAsync(result, new PluginRequestKey(result.PluginFile.Path, source.PackageSource.Source), source.PackageSource.Source, serviceIndexJson, cancellationToken);
+                        var pluginCreationResult = await TryCreatePluginAsync(
+                            result,
+                            OperationClaim.DownloadPackage,
+                            new PluginRequestKey(result.PluginFile.Path, source.PackageSource.Source),
+                            source.PackageSource.Source,
+                            serviceIndexJson,
+                            cancellationToken);
+                        if (pluginCreationResult.Item1)
+                        {
+                            pluginCreationResults.Add(pluginCreationResult.Item2);
+                        }
 
-                        pluginCreationResults.Add(pluginCreationResult);
                     }
                 }
             }
@@ -150,59 +161,101 @@ namespace NuGet.Protocol.Core.Types
 
         /// <summary>
         /// Creates a plugin from the given pluginDiscoveryResult.
-        /// This plugin's operations will be source agnostic ones
+        /// This plugin's operations will be source agnostic ones (Authentication)
         /// </summary>
-        /// <param name="pluginDiscoveryResult"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>A PluginCreationResult</returns>
-        public Task<PluginCreationResult> CreateSourceAgnosticPluginAsync(PluginDiscoveryResult pluginDiscoveryResult, CancellationToken cancellationToken)
+        /// <param name="pluginDiscoveryResult">plugin discovery result</param>
+        /// <param name="requestedOperationClaim">The requested operation claim</param>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>A plugin creation result, null if the requested plugin cannot handle the given operation claim</returns>
+        public Task<Tuple<bool, PluginCreationResult>> TryGetSourceAgnosticPluginAsync(PluginDiscoveryResult pluginDiscoveryResult, OperationClaim requestedOperationClaim, CancellationToken cancellationToken)
         {
-            if(pluginDiscoveryResult == null)
+            if (pluginDiscoveryResult == null)
             {
                 throw new ArgumentNullException(nameof(pluginDiscoveryResult));
             }
-            return CreatePluginAsync(pluginDiscoveryResult, new PluginRequestKey(pluginDiscoveryResult.PluginFile.Path, "Source-Agnostic"), null, null, cancellationToken);
+
+            return TryCreatePluginAsync(
+                pluginDiscoveryResult,
+                requestedOperationClaim,
+                new PluginRequestKey(pluginDiscoveryResult.PluginFile.Path, "Source-Agnostic"),
+                packageSourceRepository: null,
+                serviceIndex: null,
+                cancellationToken: cancellationToken);
         }
 
-        private async Task<PluginCreationResult> CreatePluginAsync(PluginDiscoveryResult result, PluginRequestKey requestKey, string packageSourceRepository, JObject serviceIndex, CancellationToken cancellationToken)
+        /// <summary>
+        /// Creates a plugin from the discovered plugin.
+        /// We firstly check the cache for the operation claims for the given request key.
+        /// If there is a valid cache entry, and it does contain the requested operation claim, then we start the plugin, and if need be update the cache value itself.
+        /// If there is a valid cache entry, and it does NOT contain the requested operation claim, then we return a null.
+        /// If there is no valid cache entry or an invalid one, we start the plugin as normally, return an active plugin even if the requested claim is not available, and write a cache entry.
+        /// </summary>
+        /// <param name="result">plugin discovery result</param>
+        /// <param name="requestedOperationClaim">The requested operation claim</param>
+        /// <param name="requestKey">plugin request key</param>
+        /// <param name="packageSourceRepository">package source repository</param>
+        /// <param name="serviceIndex">service index</param>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>A plugin creation result, null if the requested plugin cannot handle the given operation claim</returns>
+        private async Task<Tuple<bool, PluginCreationResult>> TryCreatePluginAsync(
+            PluginDiscoveryResult result,
+            OperationClaim requestedOperationClaim,
+            PluginRequestKey requestKey,
+            string packageSourceRepository,
+            JObject serviceIndex,
+            CancellationToken cancellationToken)
         {
             PluginCreationResult pluginCreationResult = null;
+            var cacheEntry = new PluginCacheEntry(_pluginsCacheDirectory.Value, result.PluginFile.Path, requestKey.PackageSourceRepository);
 
-            if (result.PluginFile.State.Value == PluginFileState.Valid)
-            {
-                var plugin = await _pluginFactory.GetOrCreateAsync(
-                    result.PluginFile.Path,
-                    PluginConstants.PluginArguments,
-                    new RequestHandlers(),
-                    _connectionOptions,
-                    cancellationToken);
+            return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                cacheEntry.CacheFileName,
+                action: async lockedToken =>
+                {
+                    if (cacheEntry.OperationClaims == null || cacheEntry.OperationClaims.Contains(requestedOperationClaim))
+                    {
+                        if (result.PluginFile.State.Value == PluginFileState.Valid)
+                        {
+                            var plugin = await _pluginFactory.GetOrCreateAsync(
+                                result.PluginFile.Path,
+                                PluginConstants.PluginArguments,
+                                new RequestHandlers(),
+                                _connectionOptions,
+                                cancellationToken);
 
-                var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
+                            var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
 
-                var lazyOperationClaims = _pluginOperationClaims.GetOrAdd(
-                        requestKey,
-                        key => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() =>
-                        GetPluginOperationClaimsAsync(
-                            plugin,
-                            packageSourceRepository,
-                            serviceIndex,
-                            cancellationToken)));
+                            // We still make the GetOperationClaims call even if we have the operation claims cached. This is a way to self-update the cache.
+                            var operationClaims = await _pluginOperationClaims.GetOrAdd(
+                                   requestKey,
+                                   key => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() =>
+                                   GetPluginOperationClaimsAsync(
+                                       plugin,
+                                       packageSourceRepository,
+                                       serviceIndex,
+                                       cancellationToken))).Value;
 
-                await lazyOperationClaims.Value;
+                            if (!EqualityUtility.SequenceEqualWithNullCheck(operationClaims, cacheEntry.OperationClaims))
+                            {
+                                cacheEntry.OperationClaims = operationClaims;
+                                await cacheEntry.UpdateCacheFileAsync();
+                            }
 
-                pluginCreationResult = new PluginCreationResult(
-                    plugin,
-                    utilities.Value,
-                    lazyOperationClaims.Value.Result);
-            }
-            else
-            {
-                pluginCreationResult = new PluginCreationResult(result.Message);
-            }
-
-            return pluginCreationResult;
+                            pluginCreationResult = new PluginCreationResult(
+                                plugin,
+                                utilities.Value,
+                                operationClaims);
+                        }
+                        else
+                        {
+                            pluginCreationResult = new PluginCreationResult(result.Message);
+                        }
+                    }
+                    return new Tuple<bool, PluginCreationResult>(pluginCreationResult != null, pluginCreationResult);
+                },
+                token: cancellationToken
+                );
         }
-
 
         private async Task<Lazy<IPluginMulticlientUtilities>> PerformOneTimePluginInitializationAsync(IPlugin plugin, CancellationToken cancellationToken)
         {

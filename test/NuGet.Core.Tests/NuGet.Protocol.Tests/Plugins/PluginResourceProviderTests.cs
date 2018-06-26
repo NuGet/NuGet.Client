@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -344,6 +345,7 @@ namespace NuGet.Protocol.Plugins.Tests
             private readonly Mock<IPlugin> _plugin;
             private readonly Mock<IPluginDiscoverer> _pluginDiscoverer;
             private readonly Mock<IEnvironmentVariableReader> _reader;
+            private readonly string _pluginFilePath;
 
             internal PluginResourceProvider Provider { get; }
             internal PluginManager PluginManager { get; }
@@ -354,7 +356,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 IEnumerable<PositiveTestExpectation> expectations)
             {
                 _expectations = expectations;
-
+                _pluginFilePath = pluginFilePath;
                 _reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
 
                 _reader.Setup(x => x.GetEnvironmentVariable(
@@ -450,6 +452,11 @@ namespace NuGet.Protocol.Plugins.Tests
 
             public void Dispose()
             {
+                LocalResourceUtils.DeleteDirectoryTree(
+                    Path.Combine(
+                        SettingsUtility.GetPluginsCacheFolder(),
+                        CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash(_pluginFilePath))),
+                    new List<string>());
                 PluginManager.Dispose();
                 GC.SuppressFinalize(this);
 
