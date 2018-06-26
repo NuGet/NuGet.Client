@@ -6014,7 +6014,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;all | http-cache | global-packages | temp&gt; [-clear | -list].
+        ///   Looks up a localized string similar to &lt;all | http-cache | global-packages | temp | nuget-plugins&gt; [-clear | -list].
         /// </summary>
         internal static string LocalsCommandSummary {
             get {
@@ -12483,6 +12483,15 @@ namespace NuGet.CommandLine {
         internal static string SourcesCommandStorePasswordInClearTextDescription_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandStorePasswordInClearTextDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Make a source a trusted repository for repository signature verification..
+        /// </summary>
+        internal static string SourcesCommandTrustDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandTrustDescription", resourceCulture);
             }
         }
         
