@@ -120,8 +120,9 @@ namespace NuGet.XPlat.FuncTest
             p.NoRestore == !string.IsNullOrEmpty(noRestoreSwitch) &&
             (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(frameworks)) &&
             (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(MSBuildStringUtility.Split(sourceString))) &&
-            (string.IsNullOrEmpty(packageDirectoryOption) || !string.IsNullOrEmpty(packageDirectoryOption) && p.PackageDirectory == packageDirectory)),
+            (string.IsNullOrEmpty(packageDirectoryOption) || !string.IsNullOrEmpty(packageDirectoryOption) && p.PackageDirectory == packageDirectory) && p.Interactive == !string.IsNullOrEmpty(interactiveSwitch)) ,
             It.IsAny<MSBuildAPIUtility>()));
+
 
             Assert.Equal(0, result);
         }
