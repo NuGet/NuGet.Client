@@ -208,7 +208,7 @@ namespace NuGet.Commands
             CancellationToken token)
         {
             // Find all versions from a source.
-            var versions = await provider.GetAllVersionsAsync(id, cacheContext, logger, token);
+            var versions = await provider.GetAllVersionsAsync(id, cacheContext, logger, token) ?? Enumerable.Empty<NuGetVersion>();
 
             return new KeyValuePair<PackageSource, SortedSet<NuGetVersion>>(
                 provider.Source,
