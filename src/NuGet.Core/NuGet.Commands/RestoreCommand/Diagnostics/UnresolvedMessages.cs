@@ -212,7 +212,7 @@ namespace NuGet.Commands
 
             return new KeyValuePair<PackageSource, SortedSet<NuGetVersion>>(
                 provider.Source,
-                new SortedSet<NuGetVersion>(versions ?? Enumerable.Empty<NuGetVersion>()));
+                new SortedSet<NuGetVersion>(versions));
         }
 
         /// <summary>
