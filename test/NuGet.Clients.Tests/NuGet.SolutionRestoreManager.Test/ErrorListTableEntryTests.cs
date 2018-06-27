@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using FluentAssertions;
-using Microsoft.VisualStudio.Shell.TableControl;
+using Microsoft.VisualStudio.Shell.TableManager;
 using NuGet.Common;
 using Xunit;
 
@@ -12,6 +12,8 @@ namespace NuGet.SolutionRestoreManager.Test
     {
         private const string _testMessage = "test log message";
         private const NuGetLogCode _testCode = NuGetLogCode.NU1000;
+        private const string _testCodeString = "NU1000";
+        private const string _testHelpLink = "https://msdn.microsoft.com/query/dev15.query?appId=Dev15IDEF1&l=en-US&k=k(NU1000)&rd=true";        
         private const string _testProjectPath = @"unit\test\project.csproj";
         private const string _testProjectName = "project";
         private const int _testLineNumber = 100;
@@ -47,15 +49,18 @@ namespace NuGet.SolutionRestoreManager.Test
 
         [Theory]
         [InlineData("")]
-        [InlineData(StandardTableColumnDefinitions.Text)]
-        [InlineData(StandardTableColumnDefinitions.ErrorSeverity)]
-        [InlineData(StandardTableColumnDefinitions.DocumentName)]
-        [InlineData(StandardTableColumnDefinitions.ErrorCode)]
-        [InlineData(StandardTableColumnDefinitions.ProjectName)]
-        [InlineData(StandardTableColumnDefinitions.Line)]
-        [InlineData(StandardTableColumnDefinitions.Column)]
-        [InlineData(StandardTableColumnDefinitions.Priority)]
-        [InlineData(StandardTableColumnDefinitions.ErrorSource)]
+        [InlineData(StandardTableKeyNames.Text)]
+        [InlineData(StandardTableKeyNames.ErrorSeverity)]
+        [InlineData(StandardTableKeyNames.DocumentName)]
+        [InlineData(StandardTableKeyNames.ErrorCode)]
+        [InlineData(StandardTableKeyNames.ProjectName)]
+        [InlineData(StandardTableKeyNames.Line)]
+        [InlineData(StandardTableKeyNames.Column)]
+        [InlineData(StandardTableKeyNames.Priority)]
+        [InlineData(StandardTableKeyNames.ErrorSource)]
+        [InlineData(StandardTableKeyNames.ErrorCodeToolTip)]
+        [InlineData(StandardTableKeyNames.HelpKeyword)]
+        [InlineData(StandardTableKeyNames.HelpLink)]
         public void CanSetValue_AlwaysReturnsFalse(string key)
         {
             // Arrange & Act
@@ -67,11 +72,15 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Theory]
-        [InlineData(StandardTableColumnDefinitions.Text, _testMessage)]
-        [InlineData(StandardTableColumnDefinitions.DocumentName, _testProjectPath)]
-        [InlineData(StandardTableColumnDefinitions.ProjectName, _testProjectName)]
-        [InlineData(StandardTableColumnDefinitions.Priority, "high")]
-        [InlineData(StandardTableColumnDefinitions.ErrorSource, "NuGet")]
+        [InlineData(StandardTableKeyNames.Text, _testMessage)]
+        [InlineData(StandardTableKeyNames.DocumentName, _testProjectPath)]
+        [InlineData(StandardTableKeyNames.ProjectName, _testProjectName)]
+        [InlineData(StandardTableKeyNames.Priority, "high")]
+        [InlineData(StandardTableKeyNames.ErrorSource, "NuGet")]
+        [InlineData(StandardTableKeyNames.ErrorCodeToolTip, _testHelpLink)]
+        [InlineData(StandardTableKeyNames.HelpLink, _testHelpLink)]
+        [InlineData(StandardTableKeyNames.ErrorCode, _testCodeString)]
+        [InlineData(StandardTableKeyNames.HelpKeyword, _testCodeString)]
         public void TryGetValue_StringContent_ReturnsValues(string key, string content)
         {
             // Arrange
@@ -91,8 +100,8 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Theory]
-        [InlineData(StandardTableColumnDefinitions.DocumentName)]
-        [InlineData(StandardTableColumnDefinitions.ProjectName)]
+        [InlineData(StandardTableKeyNames.DocumentName)]
+        [InlineData(StandardTableKeyNames.ProjectName)]
         public void TryGetValue_StringContentNotAvailable_ReturnsNull(string key)
         {
             // Arrange
@@ -108,8 +117,8 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Theory]
-        [InlineData(StandardTableColumnDefinitions.DocumentName, _testProjectPath)]
-        [InlineData(StandardTableColumnDefinitions.ProjectName, _testProjectName)]
+        [InlineData(StandardTableKeyNames.DocumentName, _testProjectPath)]
+        [InlineData(StandardTableKeyNames.ProjectName, _testProjectName)]
         public void TryGetValue_ProjectPathNull_ReturnsFilePath(string key, string content)
         {
             // Arrange
@@ -129,8 +138,8 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Theory]
-        [InlineData(StandardTableColumnDefinitions.Line, _testLineNumber)]
-        [InlineData(StandardTableColumnDefinitions.Column, _testColumnNumber)]
+        [InlineData(StandardTableKeyNames.Line, _testLineNumber)]
+        [InlineData(StandardTableKeyNames.Column, _testColumnNumber)]
         public void TryGetValue_IntContent_ReturnsValues(string key, int content)
         {
             // Arrange
@@ -151,8 +160,8 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Theory]
-        [InlineData(StandardTableColumnDefinitions.Line)]
-        [InlineData(StandardTableColumnDefinitions.Column)]
+        [InlineData(StandardTableKeyNames.Line)]
+        [InlineData(StandardTableKeyNames.Column)]
         public void TryGetValue_IntContentNotAvailable_ReturnsZero(string key)
         {
             // Arrange

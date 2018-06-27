@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,8 +8,8 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.SolutionRestoreManager;
 using NuGet.VisualStudio;
-using NuGetConsole;
 
 namespace NuGetVSExtension
 {
@@ -36,11 +36,14 @@ namespace NuGetVSExtension
 
         public ErrorListProvider ErrorListProvider { get; private set; }
 
+        public Lazy<ErrorListTableDataSource> ErrorListTableDataSource { get; private set; }
+
         [ImportingConstructor]
         public OutputConsoleLogger(
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider serviceProvider,
-            IOutputConsoleProvider consoleProvider)
+            IOutputConsoleProvider consoleProvider,
+            Lazy<ErrorListTableDataSource> errorListDataSource)
         {
             if (serviceProvider == null)
             {
@@ -51,6 +54,8 @@ namespace NuGetVSExtension
             {
                 throw new ArgumentNullException(nameof(consoleProvider));
             }
+
+            ErrorListTableDataSource = errorListDataSource;
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
@@ -77,6 +82,7 @@ namespace NuGetVSExtension
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 ErrorListProvider.Dispose();
+                ErrorListTableDataSource.Value.Dispose();
             });
         }
 
@@ -94,6 +100,9 @@ namespace NuGetVSExtension
                     ErrorListProvider.BringToFront();
                     ErrorListProvider.ForceShowErrors();
                 }
+
+                // Give the error list focus
+                ErrorListTableDataSource.Value.BringToFront();
             });
         }
 
@@ -136,6 +145,8 @@ namespace NuGetVSExtension
 
                 OutputConsole.Activate();
                 OutputConsole.Clear();
+
+                ErrorListTableDataSource.Value.ClearNuGetEntries();
             });
         }
 
@@ -149,7 +160,14 @@ namespace NuGetVSExtension
                 Priority = TaskPriority.High,
                 HierarchyItem = null
             };
+
             RunTaskOnUI(() => ErrorListProvider.Tasks.Add(errorTask));
+        }
+
+        public void ReportError(ILogMessage message)
+        {
+            var errorListEntry = new ErrorListTableEntry(message);
+            RunTaskOnUI(() => ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry));
         }
 
         private static void RunTaskOnUI(Action action)

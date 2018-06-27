@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Signing
 
         public NuGetLogCode Code { get; set; }
 
-        public WarningLevel WarningLevel { get; set; }
+        public WarningLevel WarningLevel { get; set; } = WarningLevel.Severe; //setting default to Severe as 0 implies show no warnings
 
         public string ProjectPath { get; set; }
 

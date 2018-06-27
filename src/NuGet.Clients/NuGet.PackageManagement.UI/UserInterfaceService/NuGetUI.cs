@@ -335,9 +335,9 @@ namespace NuGet.PackageManagement.UI
                     {
                         foreach (var message in rollbackException.LogMessages)
                         {
-                            if (message.Level == LogLevel.Error)
+                            if (message.Level == LogLevel.Error || message.Level == LogLevel.Warning)
                             {
-                                UILogger.ReportError(message.Message);
+                                UILogger.ReportError(message);
                             }
                         }
                     }
@@ -355,7 +355,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (!string.IsNullOrEmpty(ex.Message))
             {
-                UILogger.ReportError(ex.AsLogMessage().FormatWithCode());
+                UILogger.ReportError(ex.AsLogMessage());
                 ProjectContext.Log(MessageLevel.Error, ex.AsLogMessage().FormatWithCode());
             }
 
@@ -364,7 +364,7 @@ namespace NuGet.PackageManagement.UI
                 var errorList = result.GetErrorIssues().ToList();
                 var warningList = result.GetWarningIssues().ToList();
 
-                errorList.ForEach(p => UILogger.ReportError(p.FormatWithCode()));
+                errorList.ForEach(p => UILogger.ReportError(p));
 
                 errorList.ForEach(p => ProjectContext.Log(MessageLevel.Error, p.FormatWithCode()));
                 warningList.ForEach(p => ProjectContext.Log(MessageLevel.Warning, p.FormatWithCode()));

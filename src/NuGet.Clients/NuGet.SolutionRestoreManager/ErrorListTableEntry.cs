@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Globalization;
 using System.IO;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.TableControl;
@@ -13,6 +14,7 @@ namespace NuGet.SolutionRestoreManager
     public class ErrorListTableEntry : ITableEntry
     {
         internal const string ErrorSouce = "NuGet";
+        internal const string HelpLink = "https://msdn.microsoft.com/query/dev15.query?appId=Dev15IDEF1&l={0}&k=k({1})&rd=true";
 
         public ILogMessage Message { get; }
 
@@ -39,19 +41,20 @@ namespace NuGet.SolutionRestoreManager
 
             switch (keyName)
             {
-                case StandardTableColumnDefinitions.Text:
+                case StandardTableKeyNames.Text:
                     content = Message.Message;
                     return true;
-                case StandardTableColumnDefinitions.ErrorSeverity:
+                case StandardTableKeyNames.ErrorSeverity:
                     content = GetErrorCategory(Message.Level);
                     return true;
-                case StandardTableColumnDefinitions.Priority:
+                case StandardTableKeyNames.Priority:
                     content = "high";
                     return true;
-                case StandardTableColumnDefinitions.ErrorSource:
+                case StandardTableKeyNames.ErrorSource:
                     content = ErrorSouce;
                     return true;
-                case StandardTableColumnDefinitions.ErrorCode:
+                case StandardTableKeyNames.HelpKeyword:
+                case StandardTableKeyNames.ErrorCode:
                     var result = false;
 
                     if (Message.Code > NuGetLogCode.Undefined)
@@ -61,7 +64,18 @@ namespace NuGet.SolutionRestoreManager
                     }
 
                     return result;
-                case StandardTableColumnDefinitions.Line:
+                case StandardTableKeyNames.HelpLink:
+                case StandardTableKeyNames.ErrorCodeToolTip:
+                    result = false;
+
+                    if (Message.Code > NuGetLogCode.Undefined)
+                    {
+                        result = Message.Code.TryGetName(out var codeString);
+                        content = string.Format(HelpLink, CultureInfo.CurrentCulture, codeString);
+                    }
+
+                    return result;
+                case StandardTableKeyNames.Line:
 
                     if (Message is RestoreLogMessage)
                     {
@@ -70,7 +84,7 @@ namespace NuGet.SolutionRestoreManager
                     }
 
                     return false;
-                case StandardTableColumnDefinitions.Column:
+                case StandardTableKeyNames.Column:
 
                     if (Message is RestoreLogMessage)
                     {
@@ -79,8 +93,7 @@ namespace NuGet.SolutionRestoreManager
                     }
 
                     return false;
-                case StandardTableColumnDefinitions.DocumentName:
-
+                case StandardTableKeyNames.DocumentName:
                     var documentName = GetProjectFile(Message);
 
                     if (!string.IsNullOrEmpty(documentName))
@@ -91,7 +104,6 @@ namespace NuGet.SolutionRestoreManager
 
                     return false;
                 case StandardTableColumnDefinitions.ProjectName:
-
                     var projectName = GetProjectFile(Message);
 
                     if (!string.IsNullOrEmpty(projectName))
