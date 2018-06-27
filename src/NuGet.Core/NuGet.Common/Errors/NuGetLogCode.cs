@@ -411,7 +411,7 @@ namespace NuGet.Common
         NU3037 = 3037,
 
         /// <summary>
-        /// The package signature did not have a repository countersignature.
+        /// Verification settings require a repository countersignature, but the package does not have a repository countersignature.
         /// </summary>
         NU3038 = 3038,
 

@@ -1560,7 +1560,7 @@ namespace NuGet.Packaging.FuncTest
                     var error = errors.Single();
 
                     Assert.Equal(NuGetLogCode.NU3038, error.Code);
-                    Assert.Equal("Verification settings required a repository countersignature, but the package did not have a repository countersignature.", error.Message);
+                    Assert.Equal("Verification settings require a repository countersignature, but the package does not have a repository countersignature.", error.Message);
                 }
             }
         }
