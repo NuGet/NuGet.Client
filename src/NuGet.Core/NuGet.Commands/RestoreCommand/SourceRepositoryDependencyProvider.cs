@@ -224,7 +224,7 @@ namespace NuGet.Commands
             }
             catch(FatalProtocolException e) when(_ignoreFailedSources)
             {
-                await LogWarning(libraryRange.Name, e);
+                await LogWarningAsync(libraryRange.Name, e);
             }
             return null;
         }
@@ -325,7 +325,7 @@ namespace NuGet.Commands
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources && !(e is InvalidCacheProtocolException))
             {
-                await LogWarning(match.Name, e);
+                await LogWarningAsync(match.Name, e);
             }
             finally
             {
@@ -414,7 +414,7 @@ namespace NuGet.Commands
                 {
                     if (exception is FatalProtocolException e && _ignoreFailedSources)
                     {
-                        await LogWarning(packageIdentity.Id, e); 
+                        await LogWarningAsync(packageIdentity.Id, e); 
                         return true;
                     }
 
@@ -425,7 +425,7 @@ namespace NuGet.Commands
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources)
             {
-                await LogWarning(packageIdentity.Id, e);
+                await LogWarningAsync(packageIdentity.Id, e);
             }
             finally
             {
@@ -528,7 +528,7 @@ namespace NuGet.Commands
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources)
             {
-                await LogWarning(id, e);
+                await LogWarningAsync(id, e);
                 return null;
             }
             finally
@@ -539,7 +539,7 @@ namespace NuGet.Commands
             return packageVersions;
         }
 
-        private async Task LogWarning(string id, FatalProtocolException e)
+        private async Task LogWarningAsync(string id, FatalProtocolException e)
         {
             if(!_ignoreWarning)
             {
