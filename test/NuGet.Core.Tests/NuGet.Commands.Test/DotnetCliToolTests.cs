@@ -224,7 +224,7 @@ namespace NuGet.Commands.Test
                 var result2 = results2.Single();
 
                 Assert.True(result2.Success, "Failed: " + string.Join(Environment.NewLine, logger2.Messages));
-                Assert.True(result2.NoOpRestore, "Should no-op: " + string.Join(Environment.NewLine, logger2.Messages));
+                Assert.False(result2.NoOpRestore, "Should no-op: " + string.Join(Environment.NewLine, logger2.Messages));
                 Assert.True(File.Exists(path));
             }
         }
