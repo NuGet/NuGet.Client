@@ -300,6 +300,22 @@ namespace NuGet.Commands
             return result;
         }
 
+        private bool SameProject(RestoreRequest _request)
+        {
+            if (_request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
+            {
+                return true;
+            }
+            else if (_request.ExistingLockFile != null && _request.ExistingLockFile.PackageSpec.FilePath.Equals(_request.Project.FilePath))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         private KeyValuePair<CacheFile, bool> EvaluateCacheFile()
         {
             CacheFile cacheFile;
@@ -317,8 +333,7 @@ namespace NuGet.Commands
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
-                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) &&
-                    _request.ExistingLockFile != null && _request.ExistingLockFile.PackageSpec.FilePath.Equals(_request.Project.FilePath))
+                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) && SameProject(_request))
                 {
                     _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
                     _success = true;
