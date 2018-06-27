@@ -12,6 +12,7 @@ namespace NuGet.Common
         private const string DotNet = "dotnet";
         private const string DotNetExe = "dotnet.exe";
         private const string Home = "HOME";
+        private const string DotNetHome = "DOTNET_CLI_HOME";
         private const string UserProfile = "USERPROFILE";
         private static readonly Lazy<string> _getHome = new Lazy<string>(() => GetHome());
 
@@ -156,6 +157,11 @@ namespace NuGet.Common
             }
         }
 
+        private static string GetDotNetHome()
+        {
+            return Environment.GetEnvironmentVariable(DotNetHome);
+        }
+
 #else
 
         private static string GetFolderPath(SpecialFolder folder)
@@ -206,6 +212,16 @@ namespace NuGet.Common
 
         private static string GetHome()
         {
+#if IS_CORECLR
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                return GetValueOrThrowMissingEnvVarsDotnet(() => GetDotNetHome() ?? GetHomeWindows(), UserProfile, DotNetHome);
+            }
+            else
+            {
+                return GetValueOrThrowMissingEnvVarsDotnet(() => GetDotNetHome() ?? Environment.GetEnvironmentVariable(Home), Home, DotNetHome);
+            }
+#else
             if (RuntimeEnvironmentHelper.IsWindows)
             {
                 return GetValueOrThrowMissingEnvVar(() => GetHomeWindows(), UserProfile);
@@ -214,6 +230,7 @@ namespace NuGet.Common
             {
                 return GetValueOrThrowMissingEnvVar(() => Environment.GetEnvironmentVariable(Home), Home);
             }
+#endif
         }
 
         private static string GetHomeWindows()
@@ -227,6 +244,21 @@ namespace NuGet.Common
             {
                 return Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");
             }
+        }
+
+        /// <summary>
+        /// Throw a helpful message if the required env vars are not set.
+        /// </summary>
+        private static string GetValueOrThrowMissingEnvVarsDotnet(Func<string> getValue, string home, string dotnetHome)
+        {
+            var value = getValue();
+
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.MissingRequiredEnvVarsDotnet, home, dotnetHome));
+            }
+
+            return value;
         }
 
         /// <summary>

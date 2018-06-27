@@ -107,6 +107,15 @@ namespace NuGet.Common {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Required environment variable &apos;{0}&apos; is not set. Try setting &apos;{1}&apos; or &apos;{0}&apos; and running the operation.
+        /// </summary>
+        internal static string MissingRequiredEnvVarsDotnet {
+            get {
+                return ResourceManager.GetString("MissingRequiredEnvVarsDotnet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to At least one package folder path must be provided..
         /// </summary>
         internal static string NoPackageFoldersFound {
