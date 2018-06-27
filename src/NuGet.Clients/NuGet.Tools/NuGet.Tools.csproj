@@ -106,10 +106,6 @@
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
       <Name>NuGet.PackageManagement.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj">
-      <Project>{06662133-1292-4918-90F3-36C930C0B16F}</Project>
-      <Name>NuGet.SolutionRestoreManager</Name>
-    </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
