@@ -82,5 +82,20 @@ namespace NuGet.Packaging.Signing
                 EqualityUtility.EqualsWithNullCheck(ProjectPath, other.ProjectPath) &&
                 EqualityUtility.EqualsWithNullCheck(Message, other.Message);
         }
+
+        /// <summary>
+        /// Converts an SignatureLog into a Restore
+        /// This is needed when an SignatureLog needs to be logged and loggers do not have visibility to SignatureLog.
+        /// </summary>
+        /// <returns>RestoreLogMessage equivalent to the SignatureLog.</returns>
+        public RestoreLogMessage AsRestoreLogMessage()
+        {
+            return new RestoreLogMessage(Level, Code, Message)
+            {
+                ProjectPath = ProjectPath,
+                WarningLevel = WarningLevel,
+                LibraryId = LibraryId
+            };
+        }
     }
 }

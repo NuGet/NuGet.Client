@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
 
@@ -88,25 +87,11 @@ namespace NuGet.Commands
                 // Display the errors summary
                 foreach (var restoreSummary in restoreSummaries)
                 {
-                    var errors = restoreSummary
-                        .Errors
-                        .Where(m => m.Level == LogLevel.Error)
-                        .ToList();
-
-                    if (errors.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    logger.LogError(string.Empty);
-                    logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
-                    foreach (var error in errors)
-                    {
-                        foreach (var line in IndentLines(error.FormatWithCode()))
-                        {
-                            logger.LogError(line);
-                        }
-                    }
+                    // log errors
+                    LogErrorsToConsole(
+                        restoreSummary,
+                        string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath),
+                        logger);
                 }
             }
 
@@ -155,6 +140,30 @@ namespace NuGet.Commands
                         Strings.Log_InstalledSummaryCount,
                         pair.Value,
                         pair.Key));
+                }
+            }
+        }
+
+        private static void LogErrorsToConsole(
+            RestoreSummary restoreSummary,
+            string logHeading,
+            ILogger logger)
+        {
+            var logs = restoreSummary
+                        .Errors
+                        .Where(m => m.Level == LogLevel.Error)
+                        .ToList();
+
+            if (logs.Count > 0)
+            {
+                logger.LogInformation(string.Empty);
+                logger.LogError(logHeading);
+                foreach (var error in logs)
+                {
+                    foreach (var line in IndentLines(error.FormatWithCode()))
+                    {
+                        logger.LogError(line);
+                    }
                 }
             }
         }

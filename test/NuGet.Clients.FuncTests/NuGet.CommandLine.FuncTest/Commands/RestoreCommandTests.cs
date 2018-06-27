@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Common;
@@ -38,6 +41,58 @@ namespace NuGet.CommandLine.FuncTest.Commands
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
             _nugetExePath = _testFixture.NuGetExePath;
+        }
+
+        [CIOnlyFact]
+        public async Task Restore_TamperedPackageInPackagesConfig_FailsWithErrorAsync()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+            var packagesConfigContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+                "<packages>" +
+                "  <package id=\"X\" version=\"9.0.0\" targetFramework=\"net461\" />" +
+                "</packages>";
+
+            using (var pathContext = new SimpleTestPathContext())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = new SimpleTestProjectContext(
+                    "a",
+                    ProjectStyle.PackagesConfig,
+                    pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext("X", "9.0.0");
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, packageX, pathContext.PackageSource);
+                SignedArchiveTestUtility.TamperWithPackage(signedPackagePath);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var packagesConfigPath = Path.Combine(Directory.GetParent(projectA.ProjectPath).FullName, "packages.config");
+
+                File.WriteAllBytes(packagesConfigPath, Encoding.ASCII.GetBytes(packagesConfigContent));
+
+                var args = new string[]
+                {
+                    projectA.ProjectPath,
+                    "-Source",
+                    pathContext.PackageSource,
+                    "-PackagesDirectory",
+                    "./packages"
+                };
+
+                // Act
+                var result = RunRestore(_nugetExePath, pathContext, expectedExitCode: 1, additionalArgs: args);
+
+                // Assert
+                result.ExitCode.Should().Be(1);
+                result.Errors.Should().Contain(_NU3008);
+                result.AllOutput.Should().Contain(_NU3027);
+            }
         }
 
         [CIOnlyFact]

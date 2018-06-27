@@ -222,6 +222,7 @@
   </data>
   <data name="Log_ErrorSummary" xml:space="preserve">
     <value>Errors in {0}</value>
+    <comment>0 - project name/type</comment>
   </data>
   <data name="Log_FeedsUsedSummary" xml:space="preserve">
     <value>Feeds used:</value>

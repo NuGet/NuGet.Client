@@ -19,6 +19,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.CommandLine
 {
@@ -106,6 +107,12 @@ namespace NuGet.CommandLine
             {
                 var v2RestoreResult = await PerformNuGetV2RestoreAsync(restoreInputs);
                 restoreSummaries.Add(v2RestoreResult);
+
+                // log warnings
+                v2RestoreResult
+                    .Errors
+                    .Where(l => l.Level == LogLevel.Warning)
+                    .ForEach(l => Console.LogWarning(l.FormatWithCode()));
             }
 
             // project.json and PackageReference
@@ -360,8 +367,39 @@ namespace NuGet.CommandLine
                     Settings.Priority.Select(x => Path.Combine(x.Root, x.FileName)),
                     packageSources.Select(x => x.Source),
                     installCount,
-                    collectorLogger.Errors.Concat(failedEvents.Select(e => new RestoreLogMessage(LogLevel.Error, NuGetLogCode.Undefined, e.Exception.Message))));
+                    collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)));
             }
+        }
+
+        /// <summary>
+        /// Processes List of PackageRestoreFailedEventArgs into a List of RestoreLogMessages.
+        /// </summary>
+        /// <param name="failedEvents">List of PackageRestoreFailedEventArgs.</param>
+        /// <returns>List of RestoreLogMessages.</returns>
+        private static IEnumerable<RestoreLogMessage> ProcessFailedEventsIntoRestoreLogs(ConcurrentQueue<PackageRestoreFailedEventArgs> failedEvents)
+        {
+            var result = new List<RestoreLogMessage>();
+
+            foreach(var failedEvent in failedEvents)
+            {
+                if (failedEvent.Exception is SignatureException)
+                {
+                    var signatureException = failedEvent.Exception as SignatureException;
+
+                    var errorsAndWarnings = signatureException
+                        .Results.SelectMany(r => r.Issues)
+                        .Where(i => i.Level == LogLevel.Error || i.Level == LogLevel.Warning)
+                        .Select(i => i.AsRestoreLogMessage());
+
+                    result.AddRange(errorsAndWarnings);
+                }
+                else
+                {
+                    result.Add(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.Undefined, failedEvent.Exception.Message));
+                }
+            }
+
+            return result;
         }
 
         private void CheckRequireConsent()
