@@ -26,8 +26,9 @@ namespace NuGet.VisualStudio
 {
     // Implementation of IVsPathContextProvider as a MEF-exported component.
     [Export(typeof(IVsPathContextProvider))]
+    [Export(typeof(IVsPathContextProvider2))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VsPathContextProvider : IVsPathContextProvider
+    public sealed class VsPathContextProvider : IVsPathContextProvider2
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private readonly Lazy<ISettings> _settings;
@@ -130,6 +131,14 @@ namespace NuGet.VisualStudio
 
             return outputPathContext != null;
         }
+
+        public bool TryCreateSolutionContext(out IVsPathContext outputPathContext)
+        {
+            outputPathContext = GetSolutionPathContext();
+
+            return outputPathContext != null;
+        }
+
 
         private static async Task<Dictionary<string, EnvDTE.Project>> GetPathToDTEProjectLookupAsync(EnvDTE.DTE dte)
         {
