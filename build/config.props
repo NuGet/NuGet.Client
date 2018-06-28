@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0">
   <!-- Version -->
   <PropertyGroup>
-    <IsEscrowMode>false</IsEscrowMode>
+    <IsEscrowMode>true</IsEscrowMode>
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">4</MajorNuGetVersion>
     <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">8</MinorNuGetVersion>
     <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
