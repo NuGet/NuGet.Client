@@ -677,9 +677,6 @@ Valid from:</comment>
     <comment>0 - signature algorithm name/oid
 1 - supported signature algorithm names</comment>
   </data>
-  <data name="NoRepositorySignature" xml:space="preserve">
-    <value>The package does not have a repository signature (primary or countersignature).</value>
-  </data>
   <data name="UnrecognizedEnumValue" xml:space="preserve">
     <value>The enum value '{0}' is unrecognized.</value>
     <comment>{0} is an undefined enum value</comment>
@@ -700,5 +697,8 @@ Valid from:</comment>
   <data name="ErrorUnsafePackageEntry" xml:space="preserve">
     <value>The package '{0}' contains an entry which is unsafe for extraction.</value>
     <comment>{0} is the package identity.</comment>
+  </data>
+  <data name="NoRepositoryCountersignature" xml:space="preserve">
+    <value>Verification settings require a repository countersignature, but the package does not have a repository countersignature.</value>
   </data>
 </root>
