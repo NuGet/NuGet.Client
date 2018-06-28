@@ -224,49 +224,6 @@ Function Install-DotnetCLI {
     & $cli.DotNetExe --info
 }
 
-Function Install-DotnetCLIToILMergePack {
-    [CmdletBinding()]
-    param(
-        [switch]$Force
-    )
-
-    $cli = @{
-            Root = $CLIRootForPack
-            DotNetExe = Join-Path $CLIRootForPack 'dotnet.exe'
-            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
-            Version = '1.0.1'
-        }
-
-    if ([Environment]::Is64BitOperatingSystem) {
-        $arch = "x64";
-    }
-    else {
-        $arch = "x86";
-    }
-
-    $env:DOTNET_HOME=$cli.Root
-    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
-
-    if ($Force -or -not (Test-Path $cli.DotNetExe)) {
-        Trace-Log 'Downloading .NET CLI'
-
-        New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
-
-        $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
-
-        Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
-
-        & $DotNetInstall -Channel preview -i $cli.Root -Version $cli.Version -Architecture $arch
-    }
-
-    if (-not (Test-Path $cli.DotNetExe)) {
-        Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
-    }
-
-    # Display build info
-    & $cli.DotNetExe --info
-}
-
 Function Get-MSBuildRoot {
     param(
         [ValidateSet(14,15)]
@@ -485,45 +442,6 @@ Function Publish-CoreProject {
 
     if (-not $?) {
         Error-Log "Publish project failed @""$XProjectLocation"". Code: $LASTEXITCODE"
-    }
-}
-
-Function Pack-NuGetBuildTasksPack {
-    [CmdletBinding()]
-    param(
-        [Alias('config')]
-        [string]$Configuration,
-        [Alias('label')]
-        [string]$ReleaseLabel,
-        [Alias('buildNum')]
-        [string]$BuildNumber,
-        [switch]$CI
-    )
-
-    $prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
-    if ($ReleaseLabel -Ne 'rtm') {
-        $releaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel"
-    } else {
-        $releaseNupkgVersion = "$PackageReleaseVersion"
-    }
-
-    $PackProjectLocation = Join-Path $NuGetClientRoot src\NuGet.Core\NuGet.Build.Tasks.Pack.Library
-    $PackBuildTaskNuspecLocation = Join-Path $PackProjectLocation NuGet.Build.Tasks.Pack.nuspec
-
-    New-NuGetPackage `
-        -NuspecPath $PackBuildTaskNuspecLocation `
-        -BasePath $PackProjectLocation `
-        -OutputDir $Nupkgs `
-        -Version $prereleaseNupkgVersion `
-        -Configuration $Configuration
-
-    if ($CI) {
-        New-NuGetPackage `
-            -NuspecPath $PackBuildTaskNuspecLocation `
-            -BasePath $PackProjectLocation `
-            -OutputDir $ReleaseNupkgs `
-            -Version $releaseNupkgVersion `
-            -Configuration $Configuration
     }
 }
 
