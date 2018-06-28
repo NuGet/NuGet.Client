@@ -83,14 +83,14 @@ namespace NuGet.Commands
                     break;
 
                 case LocalResourceName.PluginsCache:
-                    PrintLocalResourcePath(PluginsCacheResourceName, SettingsUtility.GetPluginsCache(), localsArgs);
+                    PrintLocalResourcePath(PluginsCacheResourceName, SettingsUtility.GetPluginsCacheFolder(), localsArgs);
                     break;
 
                 case LocalResourceName.All:
                     PrintLocalResourcePath(HttpCacheResourceName, SettingsUtility.GetHttpCacheFolder(), localsArgs);
                     PrintLocalResourcePath(GlobalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(localsArgs.Settings), localsArgs);
                     PrintLocalResourcePath(TempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), localsArgs);
-                    PrintLocalResourcePath(PluginsCacheResourceName, SettingsUtility.GetPluginsCache(), localsArgs);
+                    PrintLocalResourcePath(PluginsCacheResourceName, SettingsUtility.GetPluginsCacheFolder(), localsArgs);
                     break;
 
                 default:
@@ -174,7 +174,7 @@ namespace NuGet.Commands
         private bool ClearNuGetPluginsCache(LocalsArgs localsArgs)
         {
             var success = true;
-            var pluginsCacheFolder = SettingsUtility.GetPluginsCache();
+            var pluginsCacheFolder = SettingsUtility.GetPluginsCacheFolder();
 
             localsArgs.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearingNuGetPluginsCache, pluginsCacheFolder));
 
