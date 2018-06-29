@@ -5305,7 +5305,7 @@ nuget locals global-packages -list</value>
     <comment>Please don't localize this string</comment>
   </data>
   <data name="LocalsCommandSummary" xml:space="preserve">
-    <value>&lt;all | http-cache | global-packages | temp | nuget-plugins&gt; [-clear | -list]</value>
+    <value>&lt;all | http-cache | global-packages | temp | plugins-cache&gt; [-clear | -list]</value>
     <comment>Please don't localize this string</comment>
   </data>
   <data name="LocalsCommandClearDescription" xml:space="preserve">

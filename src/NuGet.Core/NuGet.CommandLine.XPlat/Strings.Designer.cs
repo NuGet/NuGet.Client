@@ -486,7 +486,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder..
+        ///   Looks up a localized string similar to Clears or lists local NuGet resources such as http requests cache, packages folder, plugin operations cache  or machine-wide global packages folder..
         /// </summary>
         internal static string LocalsCommand_Description {
             get {
@@ -495,7 +495,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to usage: NuGet locals &lt;all | http-cache | global-packages | temp | nuget-plugins&gt; [--clear | -c | --list | -l]
+        ///   Looks up a localized string similar to usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
         ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string LocalsCommand_Help {
@@ -515,7 +515,7 @@ namespace NuGet.CommandLine.XPlat {
         
         /// <summary>
         ///   Looks up a localized string similar to Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.
-        ///usage: NuGet locals &lt;all | http-cache | global-packages | temp | nuget-plugins&gt; [--clear | -c | --list | -l]
+        ///usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
         ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string LocalsCommand_MultipleOperations {
@@ -526,7 +526,7 @@ namespace NuGet.CommandLine.XPlat {
         
         /// <summary>
         ///   Looks up a localized string similar to No Cache Type was specified.
-        ///usage: NuGet locals &lt;all | http-cache | global-packages | temp | nuget-plugins&gt; [--clear | -c | --list | -l]
+        ///usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
         ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string LocalsCommand_NoArguments {
@@ -537,7 +537,7 @@ namespace NuGet.CommandLine.XPlat {
         
         /// <summary>
         ///   Looks up a localized string similar to Please specify an operation i.e. --list or --clear.
-        ///usage: NuGet locals &lt;all | http-cache | global-packages | temp | nuget-plugins&gt; [--clear | -c | --list | -l]
+        ///usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
         ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string LocalsCommand_NoOperation {

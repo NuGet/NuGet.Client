@@ -503,7 +503,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to usage: NuGet locals &lt;all | http-cache | global-packages | temp | nuget-plugins&gt; [--clear | -c | --list | -l]
+        ///   Looks up a localized string similar to usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
         ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string LocalsCommand_Help {
