@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
             await TryAddCredentialProvidersAsync(
                 credentialProviders,
                 Strings.CredentialProviderFailed_PluginCredentialProvider,
-                async () => await (new SecureCredentialProviderBuilder(PluginManager.Instance, NullLogger.Instance).BuildAll())
+                async () => await (new SecureCredentialProviderBuilder(PluginManager.Instance, true, NullLogger.Instance).BuildAll())
                 );
 
             if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)

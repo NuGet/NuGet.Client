@@ -28,11 +28,12 @@ namespace NuGet.Credentials
         }
 
         // Add only the secure plugin. This will be done when there's nothing set
+        // By default the plugins cannot prompt. Currently this is only used to setup from MSBuild/dotnet.exe code paths
         private static async Task<IEnumerable<ICredentialProvider>> GetCredentialProvidersAsync(ILogger logger)
         {
             var providers = new List<ICredentialProvider>();
 
-            var securePluginProviders = await (new SecureCredentialProviderBuilder(PluginManager.Instance, logger)).BuildAll();
+            var securePluginProviders = await new SecureCredentialProviderBuilder(pluginManager: PluginManager.Instance, canPrompt: false, logger: logger).BuildAll();
             providers.AddRange(securePluginProviders);
 
             if (providers.Any())

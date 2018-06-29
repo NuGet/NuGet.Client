@@ -15,19 +15,22 @@ namespace NuGet.Credentials
     /// </summary>
     public class SecureCredentialProviderBuilder
     {
-        private Common.ILogger _logger;
-        private IPluginManager _pluginManager;
+        private readonly Common.ILogger _logger;
+        private readonly IPluginManager _pluginManager;
+        private readonly bool _canPrompt;
 
         /// <summary>
         /// Create a credential provider builders
         /// </summary>
-        /// <param name="pluginManager"></param>
-        /// <param name="logger"></param>
+        /// <param name="pluginManager">pluginManager</param>
+        /// <param name="canPrompt">canPrompt - whether can pop up a dialog or it needs to use device flow</param>
+        /// <param name="logger">logger</param>
         /// <exception cref="ArgumentNullException">if <paramref name="logger"/> is null</exception>
         /// <exception cref="ArgumentNullException">if <paramref name="pluginManager"/> is null</exception>
-        public SecureCredentialProviderBuilder(IPluginManager pluginManager, Common.ILogger logger)
+        public SecureCredentialProviderBuilder(IPluginManager pluginManager, bool canPrompt, Common.ILogger logger)
         {
             _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
+            _canPrompt = canPrompt;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -43,7 +46,7 @@ namespace NuGet.Credentials
             foreach (var pluginDiscoveryResult in availablePlugins)
             {
                 _logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Resources.SecurePluginNotice_UsingPluginAsProvider, pluginDiscoveryResult.PluginFile.Path));
-                plugins.Add(new SecurePluginCredentialProvider(_pluginManager, pluginDiscoveryResult, _logger));
+                plugins.Add(new SecurePluginCredentialProvider(_pluginManager, pluginDiscoveryResult, _canPrompt, _logger));
             }
 
             return plugins;

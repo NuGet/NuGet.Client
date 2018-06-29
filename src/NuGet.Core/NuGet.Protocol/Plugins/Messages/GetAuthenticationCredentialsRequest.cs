@@ -30,6 +30,12 @@ namespace NuGet.Protocol.Plugins
         public bool IsNonInteractive { get; }
 
         /// <summary>
+        /// CanPrompt
+        /// </summary>
+        [JsonRequired]
+        public bool CanPrompt { get; }
+
+        /// <summary>
         /// Create a GetAuthenticationCredentialsRequest
         /// </summary>
         /// <param name="uri"></param>
@@ -37,11 +43,12 @@ namespace NuGet.Protocol.Plugins
         /// <param name="isNonInteractive"></param>
         /// <exception cref="ArgumentNullException"> if <paramref name="uri"/> is null</exception>
         [JsonConstructor]
-        public GetAuthenticationCredentialsRequest(Uri uri, bool isRetry, bool isNonInteractive)
+        public GetAuthenticationCredentialsRequest(Uri uri, bool isRetry, bool isNonInteractive, bool canPrompt)
         {
             Uri = uri ?? throw new ArgumentNullException(nameof(uri));
             IsRetry = isRetry;
             IsNonInteractive = isNonInteractive;
+            CanPrompt = canPrompt;
         }
     }
 }
