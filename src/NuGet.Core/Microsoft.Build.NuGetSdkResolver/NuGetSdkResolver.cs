@@ -4,6 +4,7 @@
 using Microsoft.Build.Framework;
 using NuGet.Commands;
 using NuGet.Configuration;
+using NuGet.Credentials;
 using NuGet.Packaging;
 using NuGet.Versioning;
 using System;
@@ -125,13 +126,16 @@ namespace Microsoft.Build.NuGetSdkResolver
                 {
                     try
                     {
+                        var nugetSDKLogger = new NuGetSdkLogger(context.Logger, warnings, errors);
+                        DefaultCredentialServiceUtility.SetupDefaultCredentialService(nugetSDKLogger, nonInteractive: true);
+
                         // Asynchronously run the restore without a commit which find the package on configured feeds, download, and unzip it without generating any other files
                         var results = RestoreRunnerEx.RunWithoutCommit(
                                 context.ProjectFilePath,
                                 sdk.Name,
                                 parsedSdkVersion.ToFullString(),
                                 settings,
-                                new NuGetSdkLogger(context.Logger, warnings, errors))
+                                nugetSDKLogger)
                             .ConfigureAwait(continueOnCapturedContext: false)
                             .GetAwaiter()
                             .GetResult();
