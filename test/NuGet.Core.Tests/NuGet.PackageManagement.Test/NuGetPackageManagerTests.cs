@@ -6149,7 +6149,6 @@ namespace NuGet.Test
                 // Assert
                 Assert.Equal(15, telemetryEvents.Count);
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
-                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation" && (string)p["ProjectId"] != null).Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateRestoreGraph").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateAssetsFile").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ValidateRestoreGraphs").Count());
@@ -6633,8 +6632,8 @@ namespace NuGet.Test
 
                 // Assert
                 Assert.Equal(16, telemetryEvents.Count);
+
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
-                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation" && (string)p["ProjectId"] != null).Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateRestoreGraph").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateAssetsFile").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ValidateRestoreGraphs").Count());

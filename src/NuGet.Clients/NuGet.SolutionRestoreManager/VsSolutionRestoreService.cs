@@ -178,7 +178,7 @@ namespace NuGet.SolutionRestoreManager
         }
 #endif
 
-        private DependencyGraphSpec ToDependencyGraphSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo)
+        private static DependencyGraphSpec ToDependencyGraphSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo)
         {
             var dgSpec = new DependencyGraphSpec();
 
@@ -221,7 +221,7 @@ namespace NuGet.SolutionRestoreManager
             return dgSpec;
         }
 
-        private PackageSpec ToPackageSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo)
+        private static PackageSpec ToPackageSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo)
         {
             var tfis = projectRestoreInfo
                 .TargetFrameworks
@@ -261,7 +261,6 @@ namespace NuGet.SolutionRestoreManager
                 Name = projectName,
                 Version = GetPackageVersion(projectRestoreInfo.TargetFrameworks),
                 FilePath = projectFullPath,
-                ProjectId = TryGetProjectIdFromCache(projectFullPath, _projectSystemCache, out var projectId) ? projectId : string.Empty,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
                     ProjectName = projectName,
@@ -294,21 +293,6 @@ namespace NuGet.SolutionRestoreManager
             };
 
             return packageSpec;
-        }
-
-        /// <summary>
-        /// Tries to get  the projectId for a project from the project system cache using the project unique name.
-        /// </summary>
-        /// <param name="projectUniqueName">Unique name for the project.</param>
-        /// <param name="cache">ProjectSystem cache</param>
-        /// <param name="result">Contains the projectId if the return result was true else it is set to null.</param>
-        /// <returns>Returns bool indicating if the operation was successful.</returns>
-        private static bool TryGetProjectIdFromCache(string projectUniqueName, IProjectSystemCache cache, out string result)
-        {
-            result = null;
-
-            return cache.TryGetNuGetProject(projectUniqueName, out var cacheEntry) &&
-                cacheEntry.TryGetMetadata(NuGetProjectMetadataKeys.ProjectId, out result);
         }
 
         private static string GetPackageId(ProjectNames projectNames, IVsTargetFrameworks tfms)

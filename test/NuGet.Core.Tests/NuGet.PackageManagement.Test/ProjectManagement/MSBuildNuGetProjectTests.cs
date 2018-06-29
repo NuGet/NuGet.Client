@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -121,76 +120,6 @@ namespace ProjectManagement.Test
                 Assert.Equal(0, msBuildNuGetProjectSystem.Imports.Count);
                 Assert.Equal(0, projectFiles.Count);
                 Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
-            }
-        }
-
-        [Fact]
-        public void GetProjectId_InternalMetadataContainsProjectId_ReturnsProjectId()
-        {
-            // Arrange
-            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
-            var expectedProjectId = Guid.NewGuid().ToString();
-
-            using (var randomTestPackageSourcePath = TestDirectory.Create())
-            using (var randomPackagesFolderPath = TestDirectory.Create())
-            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
-            {
-                var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
-                var token = CancellationToken.None;
-
-                var projectTargetFramework = NuGetFramework.Parse("net45");
-                var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext);
-
-                var msBuildNuGetProject = new TestMSBuildNuGetProject(
-                    msBuildNuGetProjectSystem,
-                    randomPackagesFolderPath,
-                    randomPackagesConfigFolderPath);
-
-                msBuildNuGetProject.Metadata["ProjectId"] = expectedProjectId;
-
-                // Act
-                var projectId = msBuildNuGetProject.GetProjectId();
-
-                // Assert
-                projectId.Should().NotBeNullOrEmpty();
-                projectId.Should().BeEquivalentTo(expectedProjectId);
-            }
-        }
-
-        [Fact]
-        public void GetProjectId_InternalMetadataDoesNotContainProjectId_ReturnsEmpty()
-        {
-            // Arrange
-            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
-
-            using (var randomTestPackageSourcePath = TestDirectory.Create())
-            using (var randomPackagesFolderPath = TestDirectory.Create())
-            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
-            {
-                var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
-                var token = CancellationToken.None;
-
-                var projectTargetFramework = NuGetFramework.Parse("net45");
-                var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext);
-
-                var msBuildNuGetProject = new TestMSBuildNuGetProject(
-                    msBuildNuGetProjectSystem,
-                    randomPackagesFolderPath,
-                    randomPackagesConfigFolderPath);
-
-                msBuildNuGetProject.Metadata.Remove("ProjectId");
-
-                // Act
-                var projectId = msBuildNuGetProject.GetProjectId();
-
-                // Assert
-                projectId.Should().BeEmpty();
             }
         }
 
@@ -2053,12 +1982,9 @@ namespace ProjectManagement.Test
 
             IProjectSystemService INuGetProjectServices.ProjectSystem => throw new NotImplementedException();
 
-            public new IDictionary<string, object> Metadata => InternalMetadata;
-
             public TestMSBuildNuGetProject(IMSBuildProjectSystem msbuildNuGetProjectSystem, string folderNuGetProjectPath, string packagesConfigFolderPath) : base(msbuildNuGetProjectSystem, folderNuGetProjectPath, packagesConfigFolderPath)
             {
                 ProjectServices = this;
-                InternalMetadata["ProjectId"] = Guid.NewGuid().ToString();
             }
 
             public T GetGlobalService<T>() where T : class
