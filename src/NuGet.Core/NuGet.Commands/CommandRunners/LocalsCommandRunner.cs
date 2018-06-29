@@ -169,7 +169,6 @@ namespace NuGet.Commands
         /// <summary>
         /// Clears the NuGet plugins cache.
         /// </summary>
-        /// <param name="localsArgs"></param>
         /// <returns><code>True</code> if the operation was successful; otherwise <code>false</code>.</returns>
         private bool ClearNuGetPluginsCache(LocalsArgs localsArgs)
         {
