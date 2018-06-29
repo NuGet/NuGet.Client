@@ -13,7 +13,7 @@ namespace NuGet.Credentials
     /// <summary>
     /// Builder for credential providers that are based on the secure plugin model (Version 2.0.0)
     /// </summary>
-    public class SecureCredentialProviderBuilder
+    public class SecurePluginCredentialProviderBuilder
     {
         private readonly Common.ILogger _logger;
         private readonly IPluginManager _pluginManager;
@@ -27,7 +27,7 @@ namespace NuGet.Credentials
         /// <param name="logger">logger</param>
         /// <exception cref="ArgumentNullException">if <paramref name="logger"/> is null</exception>
         /// <exception cref="ArgumentNullException">if <paramref name="pluginManager"/> is null</exception>
-        public SecureCredentialProviderBuilder(IPluginManager pluginManager, bool canPrompt, Common.ILogger logger)
+        public SecurePluginCredentialProviderBuilder(IPluginManager pluginManager, bool canPrompt, Common.ILogger logger)
         {
             _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
             _canPrompt = canPrompt;

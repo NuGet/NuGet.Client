@@ -211,7 +211,7 @@ namespace NuGet.CommandLine
             var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings, Console)
                 .BuildAll(Verbosity.ToString())
                 .ToList();
-            var securePluginProviders =  await (new SecureCredentialProviderBuilder(pluginManager: PluginManager.Instance, canPrompt: true, logger: Console)).BuildAll();
+            var securePluginProviders =  await (new SecurePluginCredentialProviderBuilder(pluginManager: PluginManager.Instance, canPrompt: true, logger: Console)).BuildAll();
 
             providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
             providers.AddRange(securePluginProviders);
