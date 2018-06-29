@@ -375,6 +375,70 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             }
         }
 
+        [Fact]
+        public void CreateSolutionContext_WithConfiguredUserPackageFolder()
+        {
+            // Arrange
+            var currentDirectory = Directory.GetCurrentDirectory();
+
+            var settings = Mock.Of<ISettings>();
+            Mock.Get(settings)
+                .Setup(x => x.GetValue("config", "globalPackagesFolder", true))
+                .Returns(() => "solution/packages");
+
+            var target = new VsPathContextProvider(
+                settings,
+                Mock.Of<IVsSolutionManager>(),
+                Mock.Of<ILogger>(),
+                Mock.Of<IVsProjectAdapterProvider>(),
+                getLockFileOrNull: null);
+
+            // Act
+            var result = target.TryCreateSolutionContext(out var actual);
+
+            // Assert
+            Assert.True(result);
+            Assert.NotNull(actual);
+            Assert.Equal(Path.Combine(currentDirectory, "solution", "packages"), actual.UserPackageFolder);
+        }
+
+        [Fact]
+        public void CreateSolutionContext_WithConfiguredFallbackPackageFolders()
+        {
+            // Arrange
+            var currentDirectory = Directory.GetCurrentDirectory();
+
+            var settings = new Mock<ISettings>();
+            settings
+                .Setup(x => x.GetSettingValues("fallbackPackageFolders", true))
+                .Returns(() => new List<SettingValue>
+                {
+                    new SettingValue("a", "solution/packagesA", isMachineWide: false),
+                    new SettingValue("b", "solution/packagesB", isMachineWide: false)
+                });
+
+            var target = new VsPathContextProvider(
+                settings.Object,
+                Mock.Of<IVsSolutionManager>(),
+                Mock.Of<ILogger>(),
+                Mock.Of<IVsProjectAdapterProvider>(),
+                getLockFileOrNull: null);
+
+            // Act
+            var result = target.TryCreateSolutionContext(out var actual);
+
+            // Assert
+            Assert.True(result);
+            Assert.NotNull(actual);
+            Assert.Equal(
+                new[]
+                {
+                    Path.Combine(currentDirectory, "solution", "packagesA"),
+                    Path.Combine(currentDirectory, "solution", "packagesB")
+                },
+                actual.FallbackPackageFolders.Cast<string>().ToArray());
+        }
+
         private class TestPackageReferenceProject : BuildIntegratedNuGetProject
         {
             private readonly string _projectName;
