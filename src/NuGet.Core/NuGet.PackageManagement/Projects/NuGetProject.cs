@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -103,17 +103,6 @@ namespace NuGet.ProjectManagement
         public Task SaveAsync(CancellationToken token)
         {
             return ProjectServices.ProjectSystem.SaveProjectAsync(token);
-        }
-
-        /// <summary>
-        /// Get projectId from the InternalMetadata of the project.
-        /// </summary>
-        /// <returns>string containing the projectId or an empty string if the InternalMetadata does not contain the projectId.</returns>
-        public string GetProjectId()
-        {
-            return InternalMetadata.TryGetValue(NuGetProjectMetadataKeys.ProjectId, out var projectId) ?
-                projectId as string :
-                string.Empty;
         }
 
         /// <summary>

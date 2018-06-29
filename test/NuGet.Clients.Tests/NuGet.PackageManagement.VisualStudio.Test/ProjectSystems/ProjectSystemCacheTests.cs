@@ -1,16 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using FluentAssertions;
 using Moq;
-using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -200,104 +193,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.True(getProjectNameSuccess);
             Assert.Same(projectRestoreInfo, actual);
             Assert.Equal(@"folder\project", names.CustomUniqueName);
-        }
-
-        [Fact]
-        public void AddProject_AfterAddProjectRestoreInfo_UpdatesCacheEntryProjectId()
-        {
-            // Arrange
-            var target = new ProjectSystemCache();
-            var projectNames = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
-            var projectSpec = new PackageSpec()
-            {
-                ProjectId = string.Empty,
-                Name = projectNames.UniqueName,
-                RestoreMetadata = new ProjectRestoreMetadata()
-                {
-                    ProjectUniqueName = projectNames.UniqueName
-                }
-            };
-            var projectRestoreInfo = new DependencyGraphSpec();
-            var nugetProject = new TestNuGetProject( projectNames.UniqueName, new List<PackageReference>());
-            projectRestoreInfo.AddProject(projectSpec);
-
-            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo);
-
-            // Act
-            target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: nugetProject);
-
-            // Assert
-            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out var actual);
-
-            // Assert
-            getPackageSpecSuccess.Should().BeTrue();
-            actual.Projects.Count.Should().Be(1);
-            actual.Projects.First().ProjectId.Should().Be(nugetProject.GetProjectId());
-        }
-
-        [Fact]
-        public void AddProject_AfterAddProjectRestoreInfoWithNullProject_DoesNotUpdatesCacheEntryProjectId()
-        {
-            // Arrange
-            var target = new ProjectSystemCache();
-            var projectNames = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
-            var projectSpec = new PackageSpec()
-            {
-                ProjectId = string.Empty,
-                Name = projectNames.UniqueName,
-                RestoreMetadata = new ProjectRestoreMetadata()
-                {
-                    ProjectUniqueName = projectNames.UniqueName
-                }
-            };
-            var projectRestoreInfo = new DependencyGraphSpec();
-            projectRestoreInfo.AddProject(projectSpec);
-
-            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo);
-
-            // Act
-            target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
-
-            // Assert
-            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out var actual);
-
-            // Assert
-            getPackageSpecSuccess.Should().BeTrue();
-            actual.Projects.Count.Should().Be(1);
-            actual.Projects.First().ProjectId.Should().Be(string.Empty);
-        }
-
-        [Fact]
-        public void AddProject_AfterAddProjectRestoreInfoWithProjectId_DoesNotUpdatesCacheEntryProjectId()
-        {
-            // Arrange
-            var target = new ProjectSystemCache();
-            var projectNames = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
-            var originalProjectSpec = new PackageSpec()
-            {
-                ProjectId = Guid.NewGuid().ToString(),
-                Name = projectNames.UniqueName,
-                RestoreMetadata = new ProjectRestoreMetadata()
-                {
-                    ProjectUniqueName = projectNames.UniqueName
-                }
-            };
-            var projectRestoreInfo = new DependencyGraphSpec();
-            var nugetProject = new TestNuGetProject(projectNames.UniqueName, new List<PackageReference>());
-            projectRestoreInfo.AddProject(originalProjectSpec);
-
-            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo);
-
-            // Act
-            target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: nugetProject);
-
-            // Assert
-            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out var actual);
-
-            // Assert
-            getPackageSpecSuccess.Should().BeTrue();
-            actual.Projects.Count.Should().Be(1);
-            actual.Projects.First().ProjectId.Should().Be(originalProjectSpec.ProjectId);
         }
 
         [Fact]

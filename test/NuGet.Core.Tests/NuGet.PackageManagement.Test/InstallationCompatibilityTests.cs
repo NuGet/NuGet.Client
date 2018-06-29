@@ -24,7 +24,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Test;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.Test

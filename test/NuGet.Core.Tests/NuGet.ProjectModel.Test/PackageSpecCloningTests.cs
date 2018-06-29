@@ -123,37 +123,6 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(1, cloneWithMappings.Mappings.Count);
         }
 
-        [Fact]
-        public void ProjectIdCloneTest_NoModification()
-        {
-            // Arrange
-            var packageSpec = CreatePackageSpec();
-            packageSpec.ProjectId.Should().NotBeNullOrEmpty();
-
-            // Act
-            var clonedPackageSpec = packageSpec.Clone();
-
-            // Assert
-            clonedPackageSpec.ProjectId.Should().NotBeNullOrEmpty();
-            packageSpec.ProjectId.Equals(clonedPackageSpec.ProjectId, StringComparison.Ordinal).Should().BeTrue();
-        }
-
-        [Fact]
-        public void ProjectIdCloneTest_WithModification()
-        {
-            // Arrange
-            var packageSpec = CreatePackageSpec();
-            packageSpec.ProjectId.Should().NotBeNullOrEmpty();
-
-            // Act
-            var clonedPackageSpec = packageSpec.Clone();
-            clonedPackageSpec.ProjectId = Guid.NewGuid().ToString();
-
-            // Assert
-            clonedPackageSpec.ProjectId.Should().NotBeNullOrEmpty();
-            packageSpec.ProjectId.Equals(clonedPackageSpec.ProjectId, StringComparison.Ordinal).Should().BeFalse();
-        }
-
         internal static LibraryDependency CreateLibraryDependency()
         {
             var dependency = new LibraryDependency(
@@ -187,31 +156,28 @@ namespace NuGet.ProjectModel.Test
         private PackageSpec CreatePackageSpec()
         {
             var originalTargetFrameworkInformation = CreateTargetFrameworkInformation();
-            var PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { originalTargetFrameworkInformation })
-            {
-                RestoreMetadata = CreateProjectRestoreMetadata(),
-                FilePath = "FilePath",
-                Name = "Name",
-                Title = "Title",
-                Version = new Versioning.NuGetVersion("1.0.0"),
-                HasVersionSnapshot = true,
-                Description = "Description",
-                Summary = "Summary",
-                ReleaseNotes = "ReleaseNotes",
-                Authors = new string[] { "Author1" },
-                Owners = new string[] { "Owner1" },
-                ProjectUrl = "ProjectUrl",
-                IconUrl = "IconUrl",
-                LicenseUrl = "LicenseUrl",
-                Copyright = "Copyright",
-                Language = "Language",
-                RequireLicenseAcceptance = true,
-                Tags = new string[] { "Tags" },
-                BuildOptions = CreateBuildOptions(),
-                ContentFiles = new List<string>() { "contentFile1", "contentFile2" },
-                Dependencies = new List<LibraryDependency>() { CreateLibraryDependency(), CreateLibraryDependency() },
-                ProjectId = Guid.NewGuid().ToString()
-            };
+            var PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { originalTargetFrameworkInformation });
+            PackageSpec.RestoreMetadata = CreateProjectRestoreMetadata();
+            PackageSpec.FilePath = "FilePath";
+            PackageSpec.Name = "Name";
+            PackageSpec.Title = "Title";
+            PackageSpec.Version = new Versioning.NuGetVersion("1.0.0");
+            PackageSpec.HasVersionSnapshot = true;
+            PackageSpec.Description = "Description";
+            PackageSpec.Summary = "Summary";
+            PackageSpec.ReleaseNotes = "ReleaseNotes";
+            PackageSpec.Authors = new string[] { "Author1" };
+            PackageSpec.Owners = new string[] { "Owner1" };
+            PackageSpec.ProjectUrl = "ProjectUrl";
+            PackageSpec.IconUrl = "IconUrl";
+            PackageSpec.LicenseUrl = "LicenseUrl";
+            PackageSpec.Copyright = "Copyright";
+            PackageSpec.Language = "Language";
+            PackageSpec.RequireLicenseAcceptance = true;
+            PackageSpec.Tags = new string[] { "Tags" };
+            PackageSpec.BuildOptions = CreateBuildOptions();
+            PackageSpec.ContentFiles = new List<string>() { "contentFile1", "contentFile2" };
+            PackageSpec.Dependencies = new List<LibraryDependency>() { CreateLibraryDependency(), CreateLibraryDependency() };
 
             PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
             PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
@@ -269,6 +235,7 @@ namespace NuGet.ProjectModel.Test
             methodInfo.Invoke(null, new object[] { PackageSpec });
 
             // Assert
+
             Assert.NotEqual(PackageSpec, clonedPackageSpec);
             if (validateJson)
             {
@@ -387,28 +354,26 @@ namespace NuGet.ProjectModel.Test
             var warningsAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1501 };
             var warningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn);
 
-            var originalProjectRestoreMetadata = new ProjectRestoreMetadata
-            {
-                ProjectStyle = ProjectStyle.PackageReference,
-                ProjectPath = "ProjectPath",
-                ProjectJsonPath = "ProjectJsonPath",
-                OutputPath = "OutputPath",
-                ProjectName = "ProjectName",
-                ProjectUniqueName = "ProjectUniqueName",
-                PackagesPath = "PackagesPath",
-                CacheFilePath = "CacheFilePath",
-                CrossTargeting = true,
-                LegacyPackagesDirectory = true,
-                ValidateRuntimeAssets = true,
-                SkipContentFileWrite = true,
-                TargetFrameworks = targetframeworks,
-                Sources = new List<PackageSource>() { new PackageSource("http://api.nuget.org/v3/index.json") },
-                FallbackFolders = new List<string>() { "fallback1" },
-                ConfigFilePaths = new List<string>() { "config1" },
-                OriginalTargetFrameworks = new List<string>() { "net45" },
-                Files = new List<ProjectRestoreMetadataFile>() { new ProjectRestoreMetadataFile("packagePath", "absolutePath") },
-                ProjectWideWarningProperties = warningProperties
-            };
+            var originalProjectRestoreMetadata = new ProjectRestoreMetadata();
+            originalProjectRestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+            originalProjectRestoreMetadata.ProjectPath = "ProjectPath";
+            originalProjectRestoreMetadata.ProjectJsonPath = "ProjectJsonPath";
+            originalProjectRestoreMetadata.OutputPath = "OutputPath";
+            originalProjectRestoreMetadata.ProjectName = "ProjectName";
+            originalProjectRestoreMetadata.ProjectUniqueName = "ProjectUniqueName";
+            originalProjectRestoreMetadata.PackagesPath = "PackagesPath";
+            originalProjectRestoreMetadata.CacheFilePath = "CacheFilePath";
+            originalProjectRestoreMetadata.CrossTargeting = true;
+            originalProjectRestoreMetadata.LegacyPackagesDirectory = true;
+            originalProjectRestoreMetadata.ValidateRuntimeAssets = true;
+            originalProjectRestoreMetadata.SkipContentFileWrite = true;
+            originalProjectRestoreMetadata.TargetFrameworks = targetframeworks;
+            originalProjectRestoreMetadata.Sources = new List<PackageSource>() { new PackageSource("http://api.nuget.org/v3/index.json") }; ;
+            originalProjectRestoreMetadata.FallbackFolders = new List<string>() { "fallback1" };
+            originalProjectRestoreMetadata.ConfigFilePaths = new List<string>() { "config1" };
+            originalProjectRestoreMetadata.OriginalTargetFrameworks = new List<string>() { "net45" };
+            originalProjectRestoreMetadata.Files = new List<ProjectRestoreMetadataFile>() { new ProjectRestoreMetadataFile("packagePath", "absolutePath") };
+            originalProjectRestoreMetadata.ProjectWideWarningProperties = warningProperties;
 
             return originalProjectRestoreMetadata;
         }

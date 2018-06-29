@@ -647,12 +647,9 @@ namespace NuGet.ProjectManagement
                     {
                         FrameworkName = ProjectSystem.TargetFramework
                     }
-                })
-                {
-                    Name = ProjectSystem.ProjectName,
-                    FilePath = ProjectSystem.ProjectFileFullPath,
-                    ProjectId = GetProjectId()
-                };
+                });
+                packageSpec.Name = ProjectSystem.ProjectName;
+                packageSpec.FilePath = ProjectSystem.ProjectFileFullPath;
 
                 // A packages.config project does not follow the typical restore flow so there is no need to add package
                 // dependencides to the package spec. Packages.config package restoration is done elsewhere.

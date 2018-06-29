@@ -257,13 +257,11 @@ namespace NuGet.PackageManagement.VisualStudio
                         e.NuGetProject = nuGetProject;
                         e.VsProjectAdapter = vsProjectAdapter;
                         e.ProjectNames = projectNames;
-                        UpdateProjectIdInPackageSpec(nuGetProject, projectNames.UniqueName, e.ProjectRestoreInfo);
                         return e;
                     });
             }
             finally
             {
-
                 _readerWriterLock.ExitWriteLock();
             }
 
@@ -311,23 +309,6 @@ namespace NuGet.PackageManagement.VisualStudio
             FireCacheUpdatedEvent(projectNames.FullName);
 
             return true;
-        }
-
-        /// <summary>
-        /// Updates the project Id in packageSpec.
-        /// </summary>
-        /// <param name="nuGetProject">NuGetProject containing the project Id.</param>
-        /// <param name="projectUniqueName">Project unique name used to get the package spec from the dgSpec.</param>
-        /// <param name="projectRestoreInfo">DgSpec of containing the packageSpec for the project.</param>
-        private void UpdateProjectIdInPackageSpec(NuGetProject nuGetProject, string projectUniqueName, DependencyGraphSpec projectRestoreInfo)
-        {
-            var packageSpec = projectRestoreInfo.GetProjectSpec(projectUniqueName);
-            if (packageSpec != null &&
-                nuGetProject != null &&
-                string.IsNullOrEmpty(packageSpec.ProjectId))
-            {
-                packageSpec.ProjectId = nuGetProject.GetProjectId();
-            }
         }
 
         private CacheEntry AddOrUpdateCacheEntry(
