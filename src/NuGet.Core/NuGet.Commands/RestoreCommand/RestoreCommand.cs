@@ -300,20 +300,17 @@ namespace NuGet.Commands
             return result;
         }
 
-        private bool SameProject(RestoreRequest _request)
+        /// <summary>
+        /// Accounts for using the restore commands on 2 projects living in the same path
+        /// </summary>
+        private bool VerifyCacheMatchesAssetsFile()
         {
             if (_request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
             {
                 return true;
             }
-            else if (_request.ExistingLockFile != null && _request.ExistingLockFile.PackageSpec.FilePath.Equals(_request.Project.FilePath))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            var pathComparer = PathUtility.GetStringComparerBasedOnOS();
+            return (_request.ExistingLockFile != null && pathComparer.Equals( _request.ExistingLockFile.PackageSpec.FilePath , _request.Project.FilePath));
         }
 
         private KeyValuePair<CacheFile, bool> EvaluateCacheFile()
@@ -333,7 +330,7 @@ namespace NuGet.Commands
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
-                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) && SameProject(_request))
+                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) && VerifyCacheMatchesAssetsFile())
                 {
                     _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
                     _success = true;
