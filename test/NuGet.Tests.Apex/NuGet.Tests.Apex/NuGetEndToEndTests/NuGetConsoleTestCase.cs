@@ -506,6 +506,15 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        public static IEnumerable<object[]> GetPackageReferenceTemplates()
+        {
+            for (var i = 0; i < CommonUtility.GetIterations(); i++)
+            {
+                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
+                yield return new object[] { ProjectTemplate.NetStandardClassLib };
+            }
+        }
+
         public static IEnumerable<object[]> GetPackagesConfigTemplates()
         {
             for (var i = 0; i < CommonUtility.GetIterations(); i++)
