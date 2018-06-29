@@ -3312,7 +3312,7 @@ namespace NuGet.PackageManagement
 
             if (version != null)
             {
-                packages = packages.Where(p => PrunePackageTree.MeetsVersionConstraints(p.Version, version, resolutionContext.VersionConstraints)).ToList();
+                packages = PrunePackageTree.PruneByUpdateConstraints(packages, version, resolutionContext.VersionConstraints).ToList();
             }
 
             // Find the latest version
