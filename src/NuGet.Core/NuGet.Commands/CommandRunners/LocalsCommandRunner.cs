@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,11 +21,13 @@ namespace NuGet.Commands
             HttpCache,
             GlobalPackagesFolder,
             Temp,
+            PluginsCache,
             All
         }
 
         private const string HttpCacheResourceName = "http-cache";
         private const string GlobalPackagesResourceName = "global-packages";
+        private const string PluginsCacheResourceName = "plugins-cache";
         private const string AllResourceName = "all";
         private const string TempResourceName = "temp";
 
@@ -80,10 +82,15 @@ namespace NuGet.Commands
                     PrintLocalResourcePath(TempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), localsArgs);
                     break;
 
+                case LocalResourceName.PluginsCache:
+                    PrintLocalResourcePath(PluginsCacheResourceName, SettingsUtility.GetPluginsCacheFolder(), localsArgs);
+                    break;
+
                 case LocalResourceName.All:
                     PrintLocalResourcePath(HttpCacheResourceName, SettingsUtility.GetHttpCacheFolder(), localsArgs);
                     PrintLocalResourcePath(GlobalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(localsArgs.Settings), localsArgs);
                     PrintLocalResourcePath(TempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), localsArgs);
+                    PrintLocalResourcePath(PluginsCacheResourceName, SettingsUtility.GetPluginsCacheFolder(), localsArgs);
                     break;
 
                 default:
@@ -133,10 +140,15 @@ namespace NuGet.Commands
                     success &= ClearNuGetTempFolder(localsArgs);
                     break;
 
+                case LocalResourceName.PluginsCache:
+                    success &= ClearNuGetPluginsCache(localsArgs);
+                    break;
+
                 case LocalResourceName.All:
                     success &= ClearNuGetHttpCache(localsArgs);
                     success &= ClearNuGetGlobalPackagesFolder(localsArgs);
                     success &= ClearNuGetTempFolder(localsArgs);
+                    success &= ClearNuGetPluginsCache(localsArgs);
                     break;
 
                 default:
@@ -155,6 +167,21 @@ namespace NuGet.Commands
         }
 
         /// <summary>
+        /// Clears the NuGet plugins cache.
+        /// </summary>
+        /// <returns><code>True</code> if the operation was successful; otherwise <code>false</code>.</returns>
+        private bool ClearNuGetPluginsCache(LocalsArgs localsArgs)
+        {
+            var success = true;
+            var pluginsCacheFolder = SettingsUtility.GetPluginsCacheFolder();
+
+            localsArgs.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearingNuGetPluginsCache, pluginsCacheFolder));
+
+            success &= ClearCacheDirectory(pluginsCacheFolder, localsArgs);
+            return success;
+        }
+
+        /// <summary>
         /// Clears the global NuGet packages cache.
         /// </summary>
         /// <returns><code>True</code> if the operation was successful; otherwise <code>false</code>.</returns>
@@ -163,7 +190,7 @@ namespace NuGet.Commands
             var success = true;
             var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(localsArgs.Settings);
 
-            localsArgs.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearingNuGetGlobalPackagesCache, globalPackagesFolderPath));
+            localsArgs.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearingNuGetGlobalPackagesFolder, globalPackagesFolderPath));
 
             success &= ClearCacheDirectory(globalPackagesFolderPath, localsArgs);
             return success;
@@ -229,6 +256,10 @@ namespace NuGet.Commands
             else if (string.Equals(localResourceName, TempResourceName, StringComparison.OrdinalIgnoreCase))
             {
                 return LocalResourceName.Temp;
+            }
+            else if (string.Equals(localResourceName, PluginsCacheResourceName, StringComparison.OrdinalIgnoreCase))
+            {
+                return LocalResourceName.PluginsCache;
             }
             else
             {

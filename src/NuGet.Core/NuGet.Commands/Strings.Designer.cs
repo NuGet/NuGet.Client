@@ -458,11 +458,11 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clearing NuGet global packages cache: {0}.
+        ///   Looks up a localized string similar to Clearing NuGet global packages folder: {0}.
         /// </summary>
-        internal static string LocalsCommand_ClearingNuGetGlobalPackagesCache {
+        internal static string LocalsCommand_ClearingNuGetGlobalPackagesFolder {
             get {
-                return ResourceManager.GetString("LocalsCommand_ClearingNuGetGlobalPackagesCache", resourceCulture);
+                return ResourceManager.GetString("LocalsCommand_ClearingNuGetGlobalPackagesFolder", resourceCulture);
             }
         }
         
@@ -472,6 +472,15 @@ namespace NuGet.Commands {
         internal static string LocalsCommand_ClearingNuGetHttpCache {
             get {
                 return ResourceManager.GetString("LocalsCommand_ClearingNuGetHttpCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing NuGet plugins cache: {0}.
+        /// </summary>
+        internal static string LocalsCommand_ClearingNuGetPluginsCache {
+            get {
+                return ResourceManager.GetString("LocalsCommand_ClearingNuGetPluginsCache", resourceCulture);
             }
         }
         
@@ -494,7 +503,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
+        ///   Looks up a localized string similar to usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
         ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string LocalsCommand_Help {

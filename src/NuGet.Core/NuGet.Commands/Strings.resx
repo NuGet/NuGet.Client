@@ -428,8 +428,8 @@
     <value>Clearing NuGet cache: {0}</value>
     <comment>{0} : Cache path</comment>
   </data>
-  <data name="LocalsCommand_ClearingNuGetGlobalPackagesCache" xml:space="preserve">
-    <value>Clearing NuGet global packages cache: {0}</value>
+  <data name="LocalsCommand_ClearingNuGetGlobalPackagesFolder" xml:space="preserve">
+    <value>Clearing NuGet global packages folder: {0}</value>
     <comment>{0} : Global packages cache path</comment>
   </data>
   <data name="LocalsCommand_ClearingNuGetHttpCache" xml:space="preserve">
@@ -453,7 +453,7 @@
     <value>Reading project file {0}.</value>
   </data>
   <data name="LocalsCommand_Help" xml:space="preserve">
-    <value>usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
+    <value>usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
 For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="InvalidRestoreInput" xml:space="preserve">
@@ -698,5 +698,9 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="Warning_FileExcludedByDefault" xml:space="preserve">
     <value>File '{0}' was not added to the package. Files and folders starting with '.' or ending with '.nupkg' are excluded by default. To include this file, use -NoDefaultExcludes from the commandline</value>
+  </data>
+  <data name="LocalsCommand_ClearingNuGetPluginsCache" xml:space="preserve">
+    <value>Clearing NuGet plugins cache: {0}</value>
+    <comment>{0}: Plugins cache path</comment>
   </data>
 </root>
