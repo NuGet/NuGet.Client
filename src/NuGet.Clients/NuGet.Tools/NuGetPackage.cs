@@ -806,11 +806,14 @@ namespace NuGetVSExtension
                 NuGetUIThreadHelper.JoinableTaskFactory.Run(InitializeMEFAsync);
             }
 
+            var isConsoleBusy = false;
             if (ConsoleStatus != null)
             {
-                var command = (OleMenuCommand)sender;
-                command.Enabled = !ConsoleStatus.Value.IsBusy && !_powerConsoleCommandExecuting;
+                isConsoleBusy = ConsoleStatus.Value.IsBusy;
             }
+
+            var command = (OleMenuCommand)sender;
+            command.Enabled = isConsoleBusy && !_powerConsoleCommandExecuting;
         }
 
         private void BeforeQueryStatusForUpgradeNuGetProject(object sender, EventArgs args)
@@ -826,9 +829,14 @@ namespace NuGetVSExtension
 
                 var command = (OleMenuCommand)sender;
                 
-
+                var isConsoleBusy = false;
+                if (ConsoleStatus != null)
+                {
+                    isConsoleBusy = ConsoleStatus.Value.IsBusy;
+                }
+                
                 command.Visible = IsSolutionOpen && await IsProjectUpgradeableAsync();
-                command.Enabled = !ConsoleStatus.Value.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
+                command.Enabled = isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
             });
         }
 
@@ -845,9 +853,15 @@ namespace NuGetVSExtension
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var command = (OleMenuCommand)sender;
-                
+
+                var isConsoleBusy = false;
+                if (ConsoleStatus != null)
+                {
+                    isConsoleBusy = ConsoleStatus.Value.IsBusy;
+                }
+
                 command.Visible = IsSolutionOpen && await IsProjectUpgradeableAsync() && IsPackagesConfigSelected();
-                command.Enabled = !ConsoleStatus.Value.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
+                command.Enabled = isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
             });
 
         }
@@ -884,13 +898,18 @@ namespace NuGetVSExtension
                 // So, make it invisible when no solution is open
                 command.Visible = IsSolutionOpen;
 
+                var isConsoleBusy = false;
+                if (ConsoleStatus != null)
+                {
+                    isConsoleBusy = ConsoleStatus.Value.IsBusy;
+                }
                 // Enable the 'Manage NuGet Packages' dialog menu
                 // - if the solution exists and not debugging and not building AND
                 // - if the console is NOT busy executing a command, AND
                 // - if the active project is loaded and supported
                 command.Enabled =
                     IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
-                    !ConsoleStatus.Value.IsBusy &&
+                    isConsoleBusy &&
                     HasActiveLoadedSupportedProject;
             });
         }
@@ -908,13 +927,18 @@ namespace NuGetVSExtension
 
                 var command = (OleMenuCommand)sender;
 
+                var isConsoleBusy = false;
+                if (ConsoleStatus != null)
+                {
+                    isConsoleBusy = ConsoleStatus.Value.IsBusy;
+                }
                 // Enable the 'Manage NuGet Packages For Solution' dialog menu
                 // - if the console is NOT busy executing a command, AND
                 // - if the solution exists and not debugging and not building AND
                 // - if there are NuGetProjects. This means there are loaded, supported projects.
                 command.Enabled =
                     IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
-                    !ConsoleStatus.Value.IsBusy &&
+                    isConsoleBusy &&
                     await SolutionManager.Value.DoesNuGetSupportsAnyProjectAsync();
             });
         }
