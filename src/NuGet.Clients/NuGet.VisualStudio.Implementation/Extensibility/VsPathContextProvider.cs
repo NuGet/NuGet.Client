@@ -132,13 +132,23 @@ namespace NuGet.VisualStudio
             return outputPathContext != null;
         }
 
-        public bool TryCreateSolutionContext(out IVsPathContext outputPathContext)
+        public bool TryCreateSolutionContext(out IVsPathContext2 outputPathContext)
         {
-            outputPathContext = GetSolutionPathContext();
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager.Value, _settings.Value);
+
+            // if solution package folder exists, then set it in VSPathContext
+            if (!string.IsNullOrEmpty(packagesFolderPath) && Directory.Exists(packagesFolderPath))
+            {
+                outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value), packagesFolderPath);
+            }
+
+            else
+            {
+                outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value));
+            }
 
             return outputPathContext != null;
         }
-
 
         private static async Task<Dictionary<string, EnvDTE.Project>> GetPathToDTEProjectLookupAsync(EnvDTE.DTE dte)
         {

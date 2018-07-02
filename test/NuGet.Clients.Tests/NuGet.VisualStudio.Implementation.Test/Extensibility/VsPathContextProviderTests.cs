@@ -439,6 +439,42 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 actual.FallbackPackageFolders.Cast<string>().ToArray());
         }
 
+        [Fact]
+        public void CreateSolutionContext_WithPackagesConfig()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var solutionPackageFolder = Path.Combine(testDirectory.Path, "packagesA");
+                Directory.CreateDirectory(solutionPackageFolder);
+
+                var solutionManager = new Mock<IVsSolutionManager>();
+                solutionManager
+                    .Setup(x => x.SolutionDirectory)
+                    .Returns(testDirectory.Path);
+
+                var settings = Mock.Of<ISettings>();
+                Mock.Get(settings)
+                    .Setup(x => x.GetValue("config", "repositoryPath", true))
+                    .Returns(() => solutionPackageFolder);
+
+                var target = new VsPathContextProvider(
+                settings,
+                Mock.Of<IVsSolutionManager>(),
+                Mock.Of<ILogger>(),
+                Mock.Of<IVsProjectAdapterProvider>(),
+                getLockFileOrNull: null);
+
+                // Act
+                var result = target.TryCreateSolutionContext(out var actual);
+
+                // Assert
+                Assert.True(result);
+                Assert.NotNull(actual);
+                Assert.Equal(solutionPackageFolder, actual.SolutionPackageFolder);
+            }
+        }
+
         private class TestPackageReferenceProject : BuildIntegratedNuGetProject
         {
             private readonly string _projectName;
