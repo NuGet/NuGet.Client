@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -8,10 +8,29 @@ namespace NuGet.Versioning.Test
 {
     public class FloatingRangeTests
     {
+
+        [Fact]
+        public void FloatRange_Float()
+        {
+            var range = new VersionRange(NuGetVersion.Parse("2.2.0"), true, null, true, new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest));
+            
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0-pre"),
+                };
+
+            Assert.Equal(NuGetVersion.Parse("3.0.0-pre"), range.FindBestMatch(versions));
+        }
+
         [Fact]
         public void FloatRange_OutsideOfRange()
         {
-            var range = VersionRange.Parse("[1.0.*, 2.0.0)");
+            var range = VersionRange.Parse("1.0.0-rc.*");
 
             var versions = new List<NuGetVersion>()
                 {
