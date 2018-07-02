@@ -43,9 +43,19 @@ namespace NuGet.Versioning
         /// </summary>
         AbsoluteLatest,
 
+        /// <summary>
+        /// Float revision and pre-release x.y.z.*-*
+        /// </summary>
         PrereleaseRevision,
+
+        /// <summary>
+        /// Float patch and pre-release x.y.*-*
+        /// </summary>
         PrereleasePatch,
+
+        /// <summary>
+        /// Float minor and pre-release x.*-*
+        /// </summary>
         PrereleaseMinor,
-        PrereleaseMajor
     }
 }
