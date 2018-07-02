@@ -722,5 +722,117 @@ namespace NuGet.Commands.Test
                 Assert.Equal(packageDirectory.FullName, expectedProperty?.Value, ignoreCase: true);
             }
         }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task BuildAssetsUtils_GeneratePathPropertyForTools(bool hasTools)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            using (var randomProjectDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0"));
+
+                var packageDirectory = Directory.CreateDirectory(Path.Combine(pathContext.UserPackagesFolder, identity.Id, identity.Version.ToNormalizedString()));
+
+                File.WriteAllText(Path.Combine(packageDirectory.FullName, $"{identity.Id}.{identity.Version.ToNormalizedString()}.nupkg.sha512"), string.Empty);
+
+                var packagePath = await SimpleTestPackageUtility.CreateFullPackageAsync(
+                    packageDirectory.FullName,
+                    identity.Id,
+                    identity.Version.ToString());
+
+                var logger = new TestLogger();
+
+                var spec = ToolRestoreUtility.GetSpec(
+                    Path.Combine(pathContext.SolutionRoot, "tool", "fake.csproj"),
+                    "a",
+                    VersionRange.Parse("1.0.0"),
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                    pathContext.UserPackagesFolder,
+                    new List<string>() { pathContext.FallbackFolder },
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    projectWideWarningProperties: null);
+
+                spec.Dependencies.Add(new LibraryDependency
+                {
+                    IncludeType = LibraryIncludeFlags.All,
+                    LibraryRange = new LibraryRange(identity.Id, new VersionRange(identity.Version), LibraryDependencyTarget.Package)
+                });
+
+                var targetGraphs = new List<RestoreTargetGraph>
+                {
+                    OriginalCaseGlobalPackageFolderTests.GetRestoreTargetGraph(pathContext.PackageSource, identity, packagePath, logger)
+                };
+
+                targetGraphs[0].Graphs.FirstOrDefault().Item.Data.Dependencies = spec.Dependencies;
+
+                var lockFile = new LockFile
+                {
+                    Libraries =
+                    {
+                        new LockFileLibrary
+                        {
+                            Name = identity.Id,
+                            Version = identity.Version,
+                            Path = $"{identity.Id.ToLowerInvariant()}/{identity.Version.ToNormalizedString()}",
+                            Type = LibraryType.Package,
+                            HasTools = hasTools,
+                        }
+                    },
+                    Targets =
+                    {
+                        new LockFileTarget
+                        {
+                            RuntimeIdentifier = targetGraphs[0].RuntimeIdentifier,
+                            TargetFramework = targetGraphs[0].Framework,
+                            Libraries =
+                            {
+                                new LockFileTargetLibrary
+                                {
+                                    Name = identity.Id,
+                                    Version = identity.Version
+                                }
+                            }
+                        }
+                    }
+                };
+
+                var repositories = new List<NuGetv3LocalRepository>
+                {
+                    new NuGetv3LocalRepository(pathContext.UserPackagesFolder)
+                };
+
+                var restoreRequest = new TestRestoreRequest(spec, new[] { new PackageSource(pathContext.PackageSource) }, pathContext.PackagesV2, logger);
+
+                var assetsFilePath = Path.Combine(randomProjectDirectory, "obj", "project.assets.json");
+
+                // Act
+                var outputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(spec, lockFile, targetGraphs, repositories, restoreRequest, assetsFilePath, true, logger);
+
+                if (hasTools)
+                {
+                    // Assert
+                    var expectedPropertyGroup = outputFiles.FirstOrDefault().Content.Root.Elements().LastOrDefault();
+
+                    Assert.NotNull(expectedPropertyGroup);
+
+                    Assert.Equal(" '$(ExcludeRestorePackageImports)' != 'true' ", expectedPropertyGroup.Attribute("Condition")?.Value);
+
+                    var expectedProperty = expectedPropertyGroup.Elements().FirstOrDefault();
+
+                    Assert.Equal($"Pkg{identity.Id.Replace(".", "_")}", expectedProperty.Name.LocalName);
+
+                    Assert.Equal($" '$({expectedProperty.Name.LocalName})' == '' ", expectedProperty.Attribute("Condition")?.Value);
+
+                    Assert.Equal(packageDirectory.FullName, expectedProperty?.Value, ignoreCase: true);
+                }
+                else
+                {
+                    Assert.Null(outputFiles.FirstOrDefault().Content);
+                }
+            }
+        }
     }
 }
