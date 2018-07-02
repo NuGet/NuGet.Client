@@ -64,7 +64,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             context.RemoteLibraryProviders.Add(remoteProvider2.Object);
 
             // Act
-            var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, edge, context, token);
+            var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, null, edge, context, token);
 
             // Assert
             // Verify only one download happened
@@ -106,7 +106,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             context.RemoteLibraryProviders.Add(remoteProvider.Object);
 
             // Act
-            var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, edge, context, token);
+            var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, null, edge, context, token);
 
             // Assert
             Assert.Equal(1, hitCount);
@@ -143,7 +143,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             context.RemoteLibraryProviders.Add(remoteProvider.Object);
 
             // Act
-            await Assert.ThrowsAsync<FatalProtocolException>(async () => await ResolverUtility.FindLibraryEntryAsync(range, framework, edge, context, token));
+            await Assert.ThrowsAsync<FatalProtocolException>(async () => await ResolverUtility.FindLibraryEntryAsync(range, framework, null, edge, context, token));
 
             // Assert
             Assert.Equal(2, hitCount);
@@ -174,7 +174,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             context.RemoteLibraryProviders.Add(remoteProvider.Object);
 
             // Act
-            var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, edge, context, token);
+            var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, null, edge, context, token);
 
             // Assert
             Assert.Equal(LibraryType.Package, result.Data.Match.Library.Type);
@@ -198,7 +198,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             context.RemoteLibraryProviders.Add(remoteProvider.Object);
 
             // Act
-            var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, edge, context, CancellationToken.None);
+            var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, null, edge, context, CancellationToken.None);
 
             // Assert
             Assert.Equal(LibraryType.Unresolved, result.Data.Match.Library.Type);

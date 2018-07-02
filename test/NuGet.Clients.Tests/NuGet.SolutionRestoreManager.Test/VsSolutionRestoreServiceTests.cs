@@ -764,6 +764,43 @@ namespace NuGet.SolutionRestoreManager.Test
                 "expected: " + string.Join(",", expectedFallback.ToArray()) + "\nactual: " + string.Join(",", specFallback.ToArray()));
         }
 
+        [Theory]
+        [InlineData("true", null, "false")]
+        [InlineData(null, "packages.A.lock.json", null)]
+        [InlineData("true", null, "true")]
+        [InlineData("false", null, "false")]
+        public async Task NominateProjectAsync_LockFileSettings(
+            string restorePackagesWithLockFile,
+            string lockFilePath,
+            string restoreLockedMode)
+        {
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] {
+                            new VsProjectProperty("RestorePackagesWithLockFile", restorePackagesWithLockFile),
+                            new VsProjectProperty("NuGetLockFilePath", lockFilePath),
+                            new VsProjectProperty("RestoreLockedMode", restoreLockedMode)}))
+                .Build();
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal(restorePackagesWithLockFile, actualProjectSpec.RestoreMetadata.RestoreLockProperties.RestorePackagesWithLockFile);
+            Assert.Equal(lockFilePath, actualProjectSpec.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath);
+            Assert.Equal(MSBuildStringUtility.IsTrue(restoreLockedMode), actualProjectSpec.RestoreMetadata.RestoreLockProperties.RestoreLockedMode);
+        }
+
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
             string projectFullPath, IVsProjectRestoreInfo pri)
         {

@@ -62,26 +62,28 @@ namespace NuGet.PackageManagement.Test
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    dgSpec1,
                     restoreContext,
                     providersCache,
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    dgSpec1,
+                    true,
                     testLogger,
                     CancellationToken.None);
 
                 var dgSpec2 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
                 var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    dgSpec2,
                     restoreContext,
                     providersCache,
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    dgSpec2,
+                    true,
                     testLogger,
                     CancellationToken.None);
 
@@ -97,13 +99,14 @@ namespace NuGet.PackageManagement.Test
 
                 var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     testLogger,
                     CancellationToken.None);
 
@@ -166,13 +169,14 @@ namespace NuGet.PackageManagement.Test
 
                 var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    dgSpec,
                     restoreContext,
                     providersCache,
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    dgSpec,
+                    true,
                     testLogger,
                     CancellationToken.None);
 
@@ -228,25 +232,27 @@ namespace NuGet.PackageManagement.Test
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     providersCache,
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     testLogger,
                     CancellationToken.None);
 
                 var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     providersCache,
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     testLogger,
                     CancellationToken.None);
 
@@ -262,13 +268,14 @@ namespace NuGet.PackageManagement.Test
 
                 var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     testLogger,
                     CancellationToken.None);
 
@@ -325,25 +332,27 @@ namespace NuGet.PackageManagement.Test
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     providersCache,
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     testLogger,
                     CancellationToken.None);
 
                 var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     providersCache,
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     testLogger,
                     CancellationToken.None);
 
@@ -401,25 +410,27 @@ namespace NuGet.PackageManagement.Test
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     providersCache,
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     testLogger,
                     CancellationToken.None);
 
                 var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     providersCache,
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     testLogger,
                     CancellationToken.None);
 
@@ -475,13 +486,14 @@ namespace NuGet.PackageManagement.Test
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     testLogger,
                     CancellationToken.None);
 

@@ -60,10 +60,21 @@ namespace NuGet.Commands
         ///  Cache File. The previous cache file for this project
         /// </summary>
         private CacheFile CacheFile { get; }
+
         /// <summary>
         /// Cache File path. The file path where the cache is written out
         /// </summary>
         protected string CacheFilePath { get;  }
+
+        /// <summary>
+        /// New Packages lock file path
+        /// </summary>
+        private string NewPackagesLockFilePath { get; }
+
+        /// <summary>
+        /// NuGet lock file which is either generated or updated to lock down NuGet packages version
+        /// </summary>
+        private PackagesLockFile NewPackagesLockFile { get; }
 
         public RestoreResult(
             bool success,
@@ -75,6 +86,8 @@ namespace NuGet.Commands
             string lockFilePath,
             CacheFile cacheFile,
             string cacheFilePath,
+            string packagesLockFilePath,
+            PackagesLockFile packagesLockFile,
             ProjectStyle projectStyle,
             TimeSpan elapsedTime)
         {
@@ -87,6 +100,8 @@ namespace NuGet.Commands
             PreviousLockFile = previousLockFile;
             CacheFile = cacheFile;
             CacheFilePath = cacheFilePath;
+            NewPackagesLockFilePath = packagesLockFilePath;
+            NewPackagesLockFile = packagesLockFile;
             ProjectStyle = projectStyle;
             ElapsedTime = elapsedTime;
         }
@@ -157,6 +172,12 @@ namespace NuGet.Commands
 
             BuildAssetsUtils.WriteFiles(buildFilesToWrite, log);
 
+            if (result.LockFile == null || result.LockFilePath ==  null)
+            {
+                // there is no assets file to be written so just return
+                return;
+            }
+
             // Avoid writing out the lock file if it is the same to avoid triggering an intellisense
             // update on a restore with no actual changes.
             if (result.PreviousLockFile == null
@@ -164,16 +185,13 @@ namespace NuGet.Commands
             {
                 if (toolCommit)
                 {
-                    if (result.LockFilePath != null && result.LockFile != null)
-                    {   
-                        log.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_ToolWritingLockFile,
-                        result.LockFilePath));
+                    log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Log_ToolWritingLockFile,
+                    result.LockFilePath));
 
-                        await FileUtility.ReplaceWithLock(
-                            (outputPath) => lockFileFormat.Write(outputPath, result.LockFile),
-                            result.LockFilePath);
-                    }
+                    await FileUtility.ReplaceWithLock(
+                        (outputPath) => lockFileFormat.Write(outputPath, result.LockFile),
+                        result.LockFilePath);
                 }
                 else
                 {
@@ -184,6 +202,17 @@ namespace NuGet.Commands
                     FileUtility.Replace(
                         (outputPath) => lockFileFormat.Write(outputPath, result.LockFile),
                         result.LockFilePath);
+
+                    if (NewPackagesLockFile != null && !string.IsNullOrEmpty(NewPackagesLockFilePath))
+                    {
+                        log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_WritingPackagesLockFile,
+                        NewPackagesLockFilePath));
+
+                        FileUtility.Replace(
+                            (outputPath) => PackagesLockFileFormat.Write(outputPath, NewPackagesLockFile),
+                            NewPackagesLockFilePath);
+                    }
                 }
             }
             else

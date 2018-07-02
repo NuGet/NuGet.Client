@@ -128,5 +128,23 @@ namespace NuGet.VisualStudio
         /// Project's target framework
         /// </summary>
         Task<NuGetFramework> GetTargetFrameworkAsync();
+
+        /// <summary>
+        /// RestorePackagesWithLockFile project property.
+        /// </summary>
+        /// <returns></returns>
+        Task<string> GetRestorePackagesWithLockFileAsync();
+
+        /// <summary>
+        /// NuGetLockFilePath project property.
+        /// </summary>
+        /// <returns></returns>
+        Task<string> GetNuGetLockFilePathAsync();
+
+        /// <summary>
+        /// RestoreLockedMode project property.
+        /// </summary>
+        /// <returns></returns>
+        Task<bool> IsRestoreLockedAsync();
     }
 }

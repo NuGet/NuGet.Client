@@ -111,6 +111,8 @@ namespace NuGet.ProjectModel
         /// </summary>
         public WarningProperties ProjectWideWarningProperties { get; set; } = new WarningProperties();
 
+        public RestoreLockProperties RestoreLockProperties { get; set; } = new RestoreLockProperties();
+
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
@@ -133,6 +135,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(ValidateRuntimeAssets);
             hashCode.AddObject(SkipContentFileWrite);
             hashCode.AddObject(ProjectWideWarningProperties);
+            hashCode.AddObject(RestoreLockProperties);
 
             return hashCode.CombinedHash;
         }
@@ -171,7 +174,8 @@ namespace NuGet.ProjectModel
                    ValidateRuntimeAssets == other.ValidateRuntimeAssets &&
                    SkipContentFileWrite == other.SkipContentFileWrite &&
                    EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files) &&
-                   EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties);
+                   EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties) &&
+                   EqualityUtility.EqualsWithNullCheck(RestoreLockProperties, other.RestoreLockProperties);
         }
 
         public ProjectRestoreMetadata Clone()
@@ -196,7 +200,8 @@ namespace NuGet.ProjectModel
                 Sources = Sources?.Select(c => c.Clone()).ToList(),
                 TargetFrameworks = TargetFrameworks?.Select(c => c.Clone()).ToList(),
                 Files = Files?.Select(c => c.Clone()).ToList(),
-                ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone()
+                ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone(),
+                RestoreLockProperties = RestoreLockProperties?.Clone()
             };
         }
     }

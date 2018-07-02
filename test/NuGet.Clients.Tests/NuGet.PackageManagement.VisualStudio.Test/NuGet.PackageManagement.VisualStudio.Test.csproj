@@ -11,6 +11,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -29,8 +30,10 @@
     <Compile Include="Feeds\UpdatePackageFeedTests.cs" />
     <Compile Include="Feeds\InstalledPackageFeedTests.cs" />
     <Compile Include="FrameworkAssemblyResolverTests.cs" />
+    <Compile Include="ProjectSystems\LegacyPackageReferenceRestoreUtilityTests.cs" />
     <Compile Include="ProjectSystems\ProjectKNuGetProjectTests.cs" />
     <Compile Include="ProjectSystems\ProjectSystemCacheTests.cs" />
+    <Compile Include="ProjectSystems\TestVSProjectAdapter.cs" />
     <Compile Include="Services\NuGetLockServiceTests.cs" />
     <Compile Include="Telemetry\ActionsTelemetryServiceTests.cs" />
     <Compile Include="Telemetry\NuGetTelemetryServiceTests.cs" />
@@ -91,6 +94,6 @@
     <PackageReference Include="EnvDTE" Version="8.0.1" />
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

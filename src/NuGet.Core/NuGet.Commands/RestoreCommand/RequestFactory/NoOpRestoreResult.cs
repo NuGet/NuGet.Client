@@ -18,7 +18,7 @@ namespace NuGet.Commands
         public NoOpRestoreResult(bool success, LockFile lockFile, LockFile previousLockFile, string lockFilePath, CacheFile cacheFile, string cacheFilePath, ProjectStyle projectStyle, TimeSpan elapsedTime) :
             base(success : success, restoreGraphs : null, compatibilityCheckResults : new List<CompatibilityCheckResult>() , 
                 msbuildFiles : null, lockFile : lockFile, previousLockFile : previousLockFile, lockFilePath: lockFilePath,
-                cacheFile: cacheFile, cacheFilePath: cacheFilePath, projectStyle: projectStyle, elapsedTime: elapsedTime)
+                cacheFile: cacheFile, cacheFilePath: cacheFilePath, packagesLockFilePath:null, packagesLockFile:null, projectStyle: projectStyle, elapsedTime: elapsedTime)
         {
         }
 

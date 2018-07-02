@@ -163,5 +163,9 @@ namespace NuGet.Commands
         public SignedPackageVerifierSettings SignedPackageVerifierSettings { get; set; } = SignedPackageVerifierSettings.GetDefault();
 
         public Guid ParentId { get; set;}
+
+        public bool IsRestoreOriginalAction { get; set; } = true;
+
+        public bool ReevaluateRestoreGraph { get; set; }
     }
 }

@@ -22,6 +22,7 @@ namespace NuGet.DependencyResolver
             ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphItem<RemoteResolveResult>>> cache,
             LibraryRange libraryRange,
             NuGetFramework framework,
+            string runtimeIdentifier,
             GraphEdge<RemoteResolveResult> outerEdge,
             RemoteWalkContext context,
             CancellationToken cancellationToken)
@@ -29,12 +30,13 @@ namespace NuGet.DependencyResolver
             var key = new LibraryRangeCacheKey(libraryRange, framework);
 
             return cache.GetOrAdd(key, (cacheKey) =>
-                FindLibraryEntryAsync(cacheKey.LibraryRange, framework, outerEdge, context, cancellationToken));
+                FindLibraryEntryAsync(cacheKey.LibraryRange, framework, runtimeIdentifier, outerEdge, context, cancellationToken));
         }
 
         public static async Task<GraphItem<RemoteResolveResult>> FindLibraryEntryAsync(
             LibraryRange libraryRange,
             NuGetFramework framework,
+            string runtimeIdentifier,
             GraphEdge<RemoteResolveResult> outerEdge,
             RemoteWalkContext context,
             CancellationToken cancellationToken)
@@ -51,10 +53,12 @@ namespace NuGet.DependencyResolver
                 var match = await FindLibraryMatchAsync(
                     libraryRange,
                     framework,
+                    runtimeIdentifier,
                     outerEdge,
                     context.RemoteLibraryProviders,
                     context.LocalLibraryProviders,
                     context.ProjectLibraryProviders,
+                    context.LockFileLibraries,
                     currentCacheContext,
                     context.Logger,
                     cancellationToken);
@@ -160,10 +164,12 @@ namespace NuGet.DependencyResolver
         public static async Task<RemoteMatch> FindLibraryMatchAsync(
             LibraryRange libraryRange,
             NuGetFramework framework,
+            string runtimeIdentifier,
             GraphEdge<RemoteResolveResult> outerEdge,
             IEnumerable<IRemoteDependencyProvider> remoteProviders,
             IEnumerable<IRemoteDependencyProvider> localProviders,
             IEnumerable<IDependencyProvider> projectProviders,
+            IDictionary<LockFileCacheKey, IList<LibraryIdentity>> lockFileLibraries,
             SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -183,6 +189,43 @@ namespace NuGet.DependencyResolver
             // The resolution below is only for package types
             if (!libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
             {
+                return null;
+            }
+
+            var targetFramework = framework;
+
+            if (framework is AssetTargetFallbackFramework)
+            {
+                targetFramework = (framework as AssetTargetFallbackFramework).RootFramework;
+            }
+
+            var key = new LockFileCacheKey(targetFramework, runtimeIdentifier);
+
+            // This is only applicable when packages has to be resolved from packages.lock.json file
+            if (lockFileLibraries.TryGetValue(key, out var libraries))
+            {
+                var library = libraries.FirstOrDefault(lib => StringComparer.OrdinalIgnoreCase.Equals(lib.Name, libraryRange.Name));
+
+                if (library != null)
+                {
+                    // check for the exact library through local repositories
+                    var localMatch = await FindLibraryByVersionAsync(library, framework, localProviders, cacheContext, logger, cancellationToken);
+
+                    if (localMatch != null)
+                    {
+                        return localMatch;
+                    }
+
+                    // if not found in local repositories, then check the remote repositories
+                    var remoteMatch = await FindLibraryByVersionAsync(library, framework, remoteProviders, cacheContext, logger, cancellationToken);
+
+                    // either found or not, we must return from here since we dont want to resolve to any other version
+                    // then defined in packages.lock.json file
+                    return remoteMatch;
+                }
+
+                // it should never come to this, but as a fail-safe if it ever fails to resolve a package from lock file when
+                // it has to... then fail restore.
                 return null;
             }
 
