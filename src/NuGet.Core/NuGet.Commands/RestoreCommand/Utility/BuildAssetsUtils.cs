@@ -500,14 +500,23 @@ namespace NuGet.Commands
 
                 var projectGraph = targetGraph.Graphs.FirstOrDefault();
 
-                // Autogenerate a property for any packages that have tools or have opted into having a property generated
-                var packagePathProperties = packagesWithTools.Union(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name)).Distinct(StringComparer.OrdinalIgnoreCase)
-                    .Select(i => sortedPackages.Cast<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>?>().FirstOrDefault(x => x.Value.Key.Name.Equals(i, StringComparison.OrdinalIgnoreCase)))
-                    .Where(i => i != null && i.Value.Value.Exists())
-                    .Select(i => GeneratePackagePathProperty(i.Value.Key.Name, i.Value.Value.GetAbsolutePath(i.Value.Value.Value.Package.ExpandedPath)));
+                // Distinct union of tool packages and packages with GeneratePathProperty=true
+                var packageIdsToCreatePropertiesFor = packagesWithTools.Union(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name)).Distinct(StringComparer.OrdinalIgnoreCase);
+
+                // Find the packages with matching IDs in the list of sorted packages, filtering out ones that there was no match for or that don't exist
+                var packagePathProperties = packageIdsToCreatePropertiesFor
+                    // Cast sortedPackages as nullable
+                    .Select(packageId => sortedPackages.Cast<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>?>().FirstOrDefault(pkg => pkg.Value.Key.Name.Equals(packageId, StringComparison.OrdinalIgnoreCase)))
+                    // Check if there was a match found and the package exists on disk
+                    .Where(pkg => pkg != null && pkg.Value.Value.Exists())
+                    // Select just the value of the nullable KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>
+                    .Select(pkg => pkg.Value)
+                    // Get the property
+                    .Select(i => GeneratePackagePathProperty(i.Key.Name, i.Value.Value.Package.ExpandedPath));
 
                 packagePathsPropertyGroup.Items.AddRange(packagePathProperties);
 
+                // Don't bother adding the PropertyGroup if there were no properties added
                 if (packagePathsPropertyGroup.Items.Any())
                 {
                     props.Add(packagePathsPropertyGroup);
