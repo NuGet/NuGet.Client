@@ -3248,11 +3248,11 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             var tasks = new List<Task<ResolvedPackage>>();
-
+            NuGetVersion version = null;
             foreach (var source in sources)
             {
                 tasks.Add(Task.Run(async ()
-                    => await GetLatestVersionCoreAsync(packageId, framework, resolutionContext, source, log, token)));
+                    => await GetLatestVersionCoreAsync(packageId, version, framework, resolutionContext, source, log, token)));
             }
 
             var resolvedPackages = await Task.WhenAll(tasks);
@@ -3270,11 +3270,10 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             var tasks = new List<Task<ResolvedPackage>>();
-
             foreach (var source in sources)
             {
                 tasks.Add(Task.Run(async ()
-                    => await GetLatestVersionCoreAsync(package.PackageIdentity.Id, framework, resolutionContext, source, log, token)));
+                    => await GetLatestVersionCoreAsync(package.PackageIdentity.Id, package.PackageIdentity.Version, framework, resolutionContext, source, log, token)));
             }
 
             var resolvedPackages = await Task.WhenAll(tasks);
@@ -3288,6 +3287,7 @@ namespace NuGet.PackageManagement
 
         private static async Task<ResolvedPackage> GetLatestVersionCoreAsync(
             string packageId,
+            NuGetVersion version,
             NuGetFramework framework,
             ResolutionContext resolutionContext,
             SourceRepository source,
@@ -3309,6 +3309,11 @@ namespace NuGet.PackageManagement
                 packageId,
                 framework,
                 packages);
+
+            if (version != null)
+            {
+                packages = PrunePackageTree.PruneByUpdateConstraints(packages, version, resolutionContext.VersionConstraints).ToList();
+            }
 
             // Find the latest version
             var latestVersion = packages.Where(package => (package.Listed || resolutionContext.IncludeUnlisted)

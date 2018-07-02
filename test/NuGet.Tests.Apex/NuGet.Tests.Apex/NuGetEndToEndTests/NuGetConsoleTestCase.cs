@@ -136,8 +136,10 @@ namespace NuGet.Tests.Apex
         }
 
         [NuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task UpdatePackageFromPMCForPRAsync(ProjectTemplate projectTemplate)
+        [MemberData(nameof(GetPackageReferenceTemplates), null, "2.0.0")]
+        [MemberData(nameof(GetPackageReferenceTemplates), "-ToHighestPatch", "1.0.1")]
+        [MemberData(nameof(GetPackageReferenceTemplates), "-ToHighestMinor", "1.1.0")]
+        public async Task UpdatePackageFromPMCForPRAsync(ProjectTemplate projectTemplate, string flag, string expectedVersion)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -147,8 +149,12 @@ namespace NuGet.Tests.Apex
                 var packageName = "TestPackage";
                 var packageVersion1 = "1.0.0";
                 var packageVersion2 = "2.0.0";
+                var packageVersion3 = "1.0.1";
+                var packageVersion4 = "1.1.0";
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
+                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion3);
+                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion4);
 
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -156,11 +162,17 @@ namespace NuGet.Tests.Apex
                 testContext.Project.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
-                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
+                if(flag == null) {
+                    nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
+                }
+                else
+                {
+                    nugetConsole.UpdatePackageFromPMCWithConstraints(packageName, flag);
+                }
                 testContext.Project.Build();
 
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, packageVersion2, XunitLogger);
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion2, XunitLogger);
+                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, expectedVersion, XunitLogger);
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, expectedVersion, XunitLogger);
             }
         }
 
@@ -482,6 +494,15 @@ namespace NuGet.Tests.Apex
             {
                 //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
                 yield return new object[] { ProjectTemplate.NetStandardClassLib };
+            }
+        }
+
+        public static IEnumerable<object[]> GetPackageReferenceTemplates(string flag, string expectedVersion)
+        {
+            for (var i = 0; i < CommonUtility.GetIterations(); i++)
+            {
+                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
+                yield return new object[] { ProjectTemplate.NetStandardClassLib , flag , expectedVersion};
             }
         }
 
