@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,15 +15,15 @@ namespace NuGet.Versioning
         /// </summary>
         public new static NuGetVersion Parse(string value)
         {
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, value), "value");
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, value), "value");
             }
 
             NuGetVersion ver = null;
             if (!TryParse(value, out ver))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Invalidvalue, value), "value");
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Invalidvalue, value), "value");
             }
 
             return ver;
@@ -61,7 +61,7 @@ namespace NuGet.Versioning
                         // labels
                         if (sections.Item2 != null)
                         {
-                            for (int i = 0; i < sections.Item2.Length; i++)
+                            for (var i = 0; i < sections.Item2.Length; i++)
                             {
                                 if (!IsValidPart(sections.Item2[i], allowLeadingZeros: false))
                                 {
@@ -124,10 +124,10 @@ namespace NuGet.Versioning
 
             if (releaseLabels != null)
             {
-                sb.AppendFormat(CultureInfo.InvariantCulture, "-{0}", String.Join(".", releaseLabels));
+                sb.AppendFormat(CultureInfo.InvariantCulture, "-{0}", string.Join(".", releaseLabels));
             }
 
-            if (!String.IsNullOrEmpty(metadata))
+            if (!string.IsNullOrEmpty(metadata))
             {
                 sb.AppendFormat(CultureInfo.InvariantCulture, "+{0}", metadata);
             }
@@ -137,7 +137,7 @@ namespace NuGet.Versioning
 
         private static IEnumerable<string> ParseReleaseLabels(string releaseLabels)
         {
-            if (!String.IsNullOrEmpty(releaseLabels))
+            if (!string.IsNullOrEmpty(releaseLabels))
             {
                 return releaseLabels.Split('.');
             }

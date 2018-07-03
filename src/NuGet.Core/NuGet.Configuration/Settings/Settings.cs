@@ -860,7 +860,7 @@ namespace NuGet.Configuration
             }
 
             element.SetAttributeValue(ConfigurationConstants.KeyAttribute, key);
-            element.SetAttributeValue(ConfigurationConstants.ValueAttribute, value);
+            element.SetAttributeValue(ConfigurationConstants.ValueAttribute, value);                       
 
             if (attributes != null)
             {
@@ -1166,7 +1166,7 @@ namespace NuGet.Configuration
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, ConfigurationConstants.KeyAttribute);
             }
             if (value == null)
-            {
+            {   
                 throw new ArgumentNullException(ConfigurationConstants.ValueAttribute);
             }
 
