@@ -813,7 +813,7 @@ namespace NuGetVSExtension
             }
 
             var command = (OleMenuCommand)sender;
-            command.Enabled = isConsoleBusy && !_powerConsoleCommandExecuting;
+            command.Enabled = !isConsoleBusy && !_powerConsoleCommandExecuting;
         }
 
         private void BeforeQueryStatusForUpgradeNuGetProject(object sender, EventArgs args)
@@ -836,7 +836,7 @@ namespace NuGetVSExtension
                 }
                 
                 command.Visible = IsSolutionOpen && await IsProjectUpgradeableAsync();
-                command.Enabled = isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
+                command.Enabled = !isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
             });
         }
 
@@ -861,7 +861,7 @@ namespace NuGetVSExtension
                 }
 
                 command.Visible = IsSolutionOpen && await IsProjectUpgradeableAsync() && IsPackagesConfigSelected();
-                command.Enabled = isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
+                command.Enabled = !isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
             });
 
         }
@@ -909,7 +909,7 @@ namespace NuGetVSExtension
                 // - if the active project is loaded and supported
                 command.Enabled =
                     IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
-                    isConsoleBusy &&
+                    !isConsoleBusy &&
                     HasActiveLoadedSupportedProject;
             });
         }
@@ -938,7 +938,7 @@ namespace NuGetVSExtension
                 // - if there are NuGetProjects. This means there are loaded, supported projects.
                 command.Enabled =
                     IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
-                    isConsoleBusy &&
+                    !isConsoleBusy &&
                     await SolutionManager.Value.DoesNuGetSupportsAnyProjectAsync();
             });
         }
