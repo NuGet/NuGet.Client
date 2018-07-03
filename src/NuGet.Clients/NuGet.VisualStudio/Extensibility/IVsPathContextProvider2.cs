@@ -22,5 +22,19 @@ namespace NuGet.VisualStudio
         /// </returns>
         /// <throws></throws>
         bool TryCreateSolutionContext(out IVsPathContext2 context);
+
+        /// <summary>
+        /// Attempts to create an instance of <see cref="IVsPathContext2"/> for the solution.
+        /// </summary>
+        /// <param name="solutionDirectory">
+        /// path to the solution directory. Must be an absolute path.
+        /// </param>
+        /// <param name="context">The path context associated with this solution.</param>
+        /// <returns>
+        /// <code>True</code> if operation has succeeded and context was created.
+        /// <code>False</code> otherwise.
+        /// </returns>
+        /// <throws></throws>
+        bool TryCreateSolutionContext(string solutionDirectory, out IVsPathContext2 context);
     }
 }

@@ -141,7 +141,28 @@ namespace NuGet.VisualStudio
             {
                 outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value), packagesFolderPath);
             }
+            else
+            {
+                outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value));
+            }
 
+            return outputPathContext != null;
+        }
+
+        public bool TryCreateSolutionContext(string solutionDirectory, out IVsPathContext2 outputPathContext)
+        {
+            if (solutionDirectory == null)
+            {
+                throw new ArgumentNullException(nameof(solutionDirectory));
+            }
+
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, _settings.Value);
+
+            // if solution package folder exists, then set it in VSPathContext
+            if (!string.IsNullOrEmpty(packagesFolderPath) && Directory.Exists(packagesFolderPath))
+            {
+                outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value), packagesFolderPath);
+            }
             else
             {
                 outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value));
