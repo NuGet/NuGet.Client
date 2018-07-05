@@ -264,7 +264,7 @@ namespace NuGet.Tests.Apex
             var inAssetsFile = IsPackageInstalledInAssetsFile(assetsFilePath, packageName, packageVersion);
             logger.LogInformation($"Exists: {inAssetsFile}");
 
-            inAssetsFile.Should().BeFalse(AppendErrors($"{packageName}/{packageVersion} should be installed in {project.Name}", visualStudio));
+            inAssetsFile.Should().BeFalse(AppendErrors($"{packageName}/{packageVersion} should not be installed in {project.Name}", visualStudio));
         }
 
         public static void AssertPackageNotInPackagesConfig(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, string packageVersion, ILogger logger)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -107,6 +108,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.UninstallPackageFromPMC(packageName);
                 testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, packageName, packageVersion, XunitLogger);
                 CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion, XunitLogger);
@@ -158,6 +160,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
                 testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, packageVersion2, XunitLogger);
                 CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion2, XunitLogger);
@@ -213,6 +216,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
                 testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName1, packageVersion1, XunitLogger);
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName2, packageVersion2, XunitLogger);
@@ -277,8 +281,12 @@ namespace NuGet.Tests.Apex
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 nugetConsole.UninstallPackageFromPMC(packageName1);
+                testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
+
                 nugetConsole.UninstallPackageFromPMC(packageName2);
                 testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, packageName1, packageVersion1, XunitLogger);
                 CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, packageName2, packageVersion2, XunitLogger);
@@ -350,6 +358,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion1);
                 testContext.Project.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, packageVersion1, XunitLogger);
                 CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion1, XunitLogger);
