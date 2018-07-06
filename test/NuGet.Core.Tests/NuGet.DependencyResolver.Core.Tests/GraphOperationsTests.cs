@@ -176,7 +176,42 @@ namespace NuGet.DependencyResolver.Core.Tests
             var parent = GetProjectNode("a");
             node.OuterNode = parent;
 
-            node.GetPathWithLastRange().Should().Be("a -> b");
+            node.GetPathWithLastRange().ToLowerInvariant().Should().Be("a -> b");
+        }
+
+        // For single node, return itself.
+        [Fact]
+        public void GetDirectDependencyNode_NodeIsRoot()
+        {
+            var node = GetProjectNode("project");
+
+            node.GetDirectDependencyNode().Key.Name.ToLowerInvariant().Should().Be("project");
+        }
+
+        // For direct dependency: project -> package
+        [Fact]
+        public void GetDirectDependencyNode_NodeIsDirectDependency()
+        {
+            var parent = GetProjectNode("project");
+            var package = GetPackageNode("package", "1.0.0", "1.0.0");
+            package.OuterNode = parent;
+
+            package.GetDirectDependencyNode().Key.Name.ToLowerInvariant().Should().Be("package");
+        }
+
+        // For transitive dependency package : projce -> a -> b -> c
+        [Fact]
+        public void GetDirectDependencyNode_NodeIsTransitiveDependency()
+        {
+            var parent = GetProjectNode("project");
+            var packageA = GetPackageNode("a", "1.0.0", "1.0.0");
+            var packageB = GetPackageNode("b", "1.0.0", "1.0.0");
+            var packageC = GetPackageNode("c", "1.0.0", "1.0.0");
+            packageA.OuterNode = parent;
+            packageB.OuterNode = packageA;
+            packageC.OuterNode = packageB;
+
+            packageC.GetDirectDependencyNode().Key.Name.ToLowerInvariant().Should().Be("a");
         }
 
         public GraphNode<RemoteResolveResult> GetNode(string id, string range, LibraryDependencyTarget target, string version, LibraryType type)

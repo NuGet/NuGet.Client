@@ -235,7 +235,7 @@ namespace NuGet.Commands
 
                     // Write the logs into the assets file
                     var logs = _logger.Errors
-                        .Select(l => AssetsLogMessage.Create(l))
+                        .Select(l => l.AsAssetLogMessage())
                         .ToList();
 
                     _success &= !logs.Any(l => l.Level == LogLevel.Error);
@@ -543,13 +543,20 @@ namespace NuGet.Commands
 
                             var message = string.Format(
                                     CultureInfo.CurrentCulture,
-                                    Strings.Log_DowngradeWarning,
+                                    Strings.Log_DowngradeWarningTitle,
                                     downgraded.Key.Name,
                                     fromVersion,
                                     toVersion)
+                                + "{0}"
                                 + $" {Environment.NewLine} {downgraded.GetPathWithLastRange()} {Environment.NewLine} {downgradedBy.GetPathWithLastRange()}";
 
-                            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, message, downgraded.Key.Name, graph.TargetGraphName));
+                            messages.Add(new PackageDowngradeWarningLogMessage(
+                                downgraded.Key.Name,
+                                downgraded.GetDirectDependencyNode().Key.Name,
+                                downgradedBy.GetDirectDependencyNode().Key.Name,
+                                string.Format(CultureInfo.CurrentCulture, message, Strings.Log_DowngradeWarningSolution),
+                                message,
+                                new List<string>() { graph.TargetGraphName }));
                         }
                     }
                 }

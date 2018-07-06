@@ -68,5 +68,7 @@ namespace NuGet.ProjectModel
         /// List of TargetGraphs
         /// </summary>
         IReadOnlyList<string> TargetGraphs { get; }
+
+        RestoreLogMessage AsRestoreLogMessage();
     }
 }

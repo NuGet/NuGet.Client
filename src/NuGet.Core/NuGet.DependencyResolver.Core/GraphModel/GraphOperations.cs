@@ -313,6 +313,21 @@ namespace NuGet.DependencyResolver
             return node.Key.TypeConstraintAllowsAnyOf(LibraryDependencyTarget.Package);
         }
 
+        /// <summary>
+        /// Return root direct dependency node which is the node or the ancestor of the node.
+        /// </summary>
+        public static GraphNode<TItem> GetDirectDependencyNode<TItem>(this GraphNode<TItem> node)
+        {
+            var current = node;
+
+            while (current.OuterNode != null && current.OuterNode.OuterNode != null)
+            {
+                current = current.OuterNode;
+            }
+
+            return current;
+        }
+
         private static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root, List<VersionConflictResult<TItem>> versionConflicts)
         {
             // now we walk the tree as often as it takes to determine 

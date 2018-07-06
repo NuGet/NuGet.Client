@@ -23,6 +23,7 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement
@@ -989,7 +990,7 @@ namespace NuGet.PackageManagement
                         if (packageIdentity.HasVersion)
                         {
                             preferredVersions[packageIdentity.Id] = packageIdentity;
-                            ((List<PackageIdentity>)primaryTargets).Add(packageIdentity);
+                            primaryTargets.Add(packageIdentity);
                         }
                         // Otherwise we just have the Id and so we wil explicitly not prefer the one currently installed
                         else
@@ -2725,26 +2726,26 @@ namespace NuGet.PackageManagement
 
             var restoreResult = projectAction.RestoreResult;
 
+            // Get all install actions
+            var ignoreActions = new HashSet<NuGetProjectAction>();
+            var installedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var action in projectAction.OriginalActions.Reverse())
+            {
+                if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                {
+                    installedIds.Add(action.PackageIdentity.Id);
+                }
+                else if (installedIds.Contains(action.PackageIdentity.Id))
+                {
+                    ignoreActions.Add(action);
+                }
+            }
+
             // Avoid committing the changes if the restore did not succeed
             // For uninstalls continue even if the restore failed to avoid blocking the user
             if (restoreResult.Success || uninstallOnly)
             {
-                // Get all install actions
-                var ignoreActions = new HashSet<NuGetProjectAction>();
-                var installedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (var action in projectAction.OriginalActions.Reverse())
-                {
-                    if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
-                    {
-                        installedIds.Add(action.PackageIdentity.Id);
-                    }
-                    else if (installedIds.Contains(action.PackageIdentity.Id))
-                    {
-                        ignoreActions.Add(action);
-                    }
-                }
-
                 var pathResolver = new FallbackPackagePathResolver(
                     projectAction.RestoreResult.LockFile.PackageSpec.RestoreMetadata.PackagesPath,
                     projectAction.RestoreResult.LockFile.PackageSpec.RestoreMetadata.FallbackFolders);
@@ -2915,7 +2916,7 @@ namespace NuGet.PackageManagement
                 var logMessages = restoreResult.LockFile?
                     .LogMessages
                     .Where(e => e.Level == LogLevel.Error || e.Level == LogLevel.Warning)
-                    .Select(e => e.AsRestoreLogMessage())
+                    .Select(e => e.AsRestoreLogMessage()).Select(e => UpdateLogMessageBasedOnInstallAction(e, installedIds))
                   ?? Enumerable.Empty<ILogMessage>();
 
                 // Throw an exception containing all errors, these will be displayed in the error list
@@ -2923,6 +2924,69 @@ namespace NuGet.PackageManagement
             }
 
             await OpenReadmeFile(buildIntegratedProject, nuGetProjectContext, token);
+        }
+
+        private ILogMessage UpdateLogMessageBasedOnInstallAction(ILogMessage logMessage, HashSet<string> installedPackage)
+        {
+            var downgradeMessage = logMessage as PackageDowngradeWarningLogMessage;
+
+            if (downgradeMessage != null)
+            {
+                var installDowngradeFrom = installedPackage.Contains(downgradeMessage.DowngradeFromDirectPackageRef, StringComparer.OrdinalIgnoreCase);
+                var installDowngradeTo = installedPackage.Contains(downgradeMessage.DowngradeToDirectPackageRef, StringComparer.OrdinalIgnoreCase);
+
+                if (downgradeMessage.DowngradeToDirectPackageRef.Equals(downgradeMessage.DowngradeFromDirectPackageRef, StringComparison.OrdinalIgnoreCase))
+                {
+                    // User try to install a bad package which contains downgrade conflict.
+                    // Or one installed package which contains downgrade conflict.
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.DowngradeWarning_InvalidPackage,
+                        downgradeMessage.DowngradeToDirectPackageRef);
+
+                    downgradeMessage.Message = string.Format(downgradeMessage.MessageWithSolution, message);
+
+                }
+                else if (installDowngradeFrom && installDowngradeTo)
+                {
+                    // User try to install two packages which conflict each other, eg: update.
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.DowngradeWarning_InstallTwoConflictPackage,
+                        downgradeMessage.DowngradeToDirectPackageRef,
+                        downgradeMessage.DowngradeFromDirectPackageRef,
+                        downgradeMessage.LibraryId);
+
+                    downgradeMessage.Message = string.Format(downgradeMessage.MessageWithSolution, message);
+                }
+                else if (installedPackage.Contains(downgradeMessage.DowngradeToDirectPackageRef, StringComparer.OrdinalIgnoreCase))
+                {
+                    // User try to install lower version package which conflict with other
+                    var message = string.Format(
+                       CultureInfo.CurrentCulture,
+                       Strings.DowngradeWarning_InstallLowerVersion,
+                       downgradeMessage.DowngradeToDirectPackageRef,
+                       downgradeMessage.DowngradeFromDirectPackageRef);
+
+                    downgradeMessage.Message = string.Format(downgradeMessage.MessageWithSolution, message);
+                }
+                else if (installedPackage.Contains(downgradeMessage.DowngradeFromDirectPackageRef, StringComparer.OrdinalIgnoreCase))
+                {
+                    // User try to install a package require high version of installed package.
+                    var message = string.Format(
+                       CultureInfo.CurrentCulture,
+                       Strings.DowngradeWarning_InstallHigherVersion,
+                       downgradeMessage.DowngradeFromDirectPackageRef,
+                       downgradeMessage.LibraryId,
+                       downgradeMessage.DowngradeToDirectPackageRef);
+
+                    logMessage.Message = string.Format(downgradeMessage.MessageWithSolution, message);
+                }
+
+                return downgradeMessage;
+            }
+
+            return logMessage;
         }
 
         private async Task RollbackAsync(

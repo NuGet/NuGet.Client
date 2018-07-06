@@ -53,29 +53,15 @@ namespace NuGet.Commands
                 await logger.LogAsync(message);
             }
         }
-
-        /// <summary>
-        /// Converts an IAssetsLogMessage into a RestoreLogMessage.
-        /// This is needed when an IAssetsLogMessage needs to be logged and loggers do not have visibility to IAssetsLogMessage.
-        /// </summary>
-        /// <param name="logMessage">IAssetsLogMessage to be converted.</param>
-        /// <returns>RestoreLogMessage equivalent to the IAssetsLogMessage.</returns>
-        public static RestoreLogMessage AsRestoreLogMessage(this IAssetsLogMessage logMessage)
+        public static IAssetsLogMessage AsAssetLogMessage(this IRestoreLogMessage logMessage)
         {
-            return new RestoreLogMessage(logMessage.Level, logMessage.Code, logMessage.Message)
+            if (logMessage is PackageDowngradeWarningLogMessage)
             {
-                ProjectPath = logMessage.ProjectPath,
-                WarningLevel = logMessage.WarningLevel,
-                FilePath = logMessage.FilePath,
-                LibraryId = logMessage.LibraryId,
-                TargetGraphs = logMessage.TargetGraphs,
-                StartLineNumber = logMessage.StartLineNumber,
-                StartColumnNumber = logMessage.StartColumnNumber,
-                EndLineNumber = logMessage.EndLineNumber,
-                EndColumnNumber = logMessage.EndColumnNumber
-            };
-        }
+                return new PackageDowngradeAssetsLogMessage(logMessage as PackageDowngradeWarningLogMessage);
+            }
 
+            return AssetsLogMessage.Create(logMessage);
+        }
         /// <summary>
         /// Converts an LogMessage into a RestoreLogMessage.
         /// This is needed when an LogMessage needs to be logged and loggers do not have visibility to LogMessage.

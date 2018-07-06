@@ -349,6 +349,42 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package {0} requires higher version of {1}, please uninstall package {2} or upgrade package {2} to higher version..
+        /// </summary>
+        internal static string DowngradeWarning_InstallHigherVersion {
+            get {
+                return ResourceManager.GetString("DowngradeWarning_InstallHigherVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The higher version of package {0} is already installed through transitive dependency of package {1}, no need to install package {0}..
+        /// </summary>
+        internal static string DowngradeWarning_InstallLowerVersion {
+            get {
+                return ResourceManager.GetString("DowngradeWarning_InstallLowerVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package {0} cause Package {1} downgrade, Reference the higher version of package {2} directly from the project to fix it..
+        /// </summary>
+        internal static string DowngradeWarning_InstallTwoConflictPackage {
+            get {
+                return ResourceManager.GetString("DowngradeWarning_InstallTwoConflictPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package {0} contains package version conflict which cause downgrade, please contact package author to fix it..
+        /// </summary>
+        internal static string DowngradeWarning_InvalidPackage {
+            get {
+                return ResourceManager.GetString("DowngradeWarning_InvalidPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot download packages from &apos;{0}&apos;..
         /// </summary>
         internal static string DownloadResourceNotFound {

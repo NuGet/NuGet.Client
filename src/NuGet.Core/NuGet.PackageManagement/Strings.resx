@@ -491,4 +491,16 @@
     <value>Signed package validation failed with multiple errors:{0}</value>
     <comment>0 - new line separated list of errors</comment>
   </data>
+  <data name="DowngradeWarning_InstallHigherVersion" xml:space="preserve">
+    <value>The package {0} requires higher version of {1}, please uninstall package {2} or upgrade package {2} to higher version.</value>
+  </data>
+  <data name="DowngradeWarning_InstallLowerVersion" xml:space="preserve">
+    <value>The higher version of package {0} is already installed through transitive dependency of package {1}, no need to install package {0}.</value>
+  </data>
+  <data name="DowngradeWarning_InstallTwoConflictPackage" xml:space="preserve">
+    <value>Package {0} cause Package {1} downgrade, Reference the higher version of package {2} directly from the project to fix it.</value>
+  </data>
+  <data name="DowngradeWarning_InvalidPackage" xml:space="preserve">
+    <value>Package {0} contains package version conflict which cause downgrade, please contact package author to fix it.</value>
+  </data>
 </root>

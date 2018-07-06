@@ -107,5 +107,21 @@ namespace NuGet.ProjectModel
 
             return combiner.CombinedHash;
         }
+
+        public virtual RestoreLogMessage AsRestoreLogMessage()
+        {
+            return new RestoreLogMessage(Level, Code, Message)
+            {
+                ProjectPath = ProjectPath,
+                WarningLevel = WarningLevel,
+                FilePath = FilePath,
+                LibraryId = LibraryId,
+                TargetGraphs = TargetGraphs,
+                StartLineNumber = StartLineNumber,
+                StartColumnNumber = StartColumnNumber,
+                EndLineNumber = EndLineNumber,
+                EndColumnNumber = EndColumnNumber
+            };
+        }
     }
 }
