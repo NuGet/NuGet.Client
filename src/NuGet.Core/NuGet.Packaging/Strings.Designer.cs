@@ -449,6 +449,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package integrity check failed for package &apos;{0}&apos; from source &apos;{1}&apos;.
+        /// </summary>
+        internal static string ExtractionError_SignaturePackageIntegrityFailure {
+            get {
+                return ResourceManager.GetString("ExtractionError_SignaturePackageIntegrityFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to update file time for {0}: {1}.
         /// </summary>
         internal static string FailedFileTime {

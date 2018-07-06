@@ -701,4 +701,9 @@ Valid from:</comment>
   <data name="NoRepositoryCountersignature" xml:space="preserve">
     <value>Verification settings require a repository countersignature, but the package does not have a repository countersignature.</value>
   </data>
+  <data name="ExtractionError_SignaturePackageIntegrityFailure" xml:space="preserve">
+    <value>Package integrity check failed for package '{0}' from source '{1}'</value>
+    <comment>0 - package identity
+1 - package source url</comment>
+  </data>
 </root>

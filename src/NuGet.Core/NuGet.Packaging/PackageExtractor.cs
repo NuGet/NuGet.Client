@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
+using NuGet.Shared;
 
 namespace NuGet.Packaging
 {
@@ -1020,9 +1021,20 @@ namespace NuGet.Packaging
                     }
                     else
                     {
+                        verifyResult.Results.SelectMany(r => r.GetErrorIssues()).ForEach(e => AddPackageIdentityToLogMessages(source, package, e));
                         throw new SignatureException(verifyResult.Results, package);
                     }
                 }
+            }
+        }
+
+        private static void AddPackageIdentityToLogMessages(string source, PackageIdentity package, ILogMessage error)
+        {
+            switch (error.Code)
+            {
+                case NuGetLogCode.NU3008:
+                    error.Message = string.Format(CultureInfo.CurrentCulture, Strings.ExtractionError_SignaturePackageIntegrityFailure, package, source);
+                    break;
             }
         }
 
