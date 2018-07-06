@@ -20,7 +20,9 @@ namespace NuGet.VisualStudio
         /// <code>True</code> if operation has succeeded and context was created.
         /// <code>False</code> otherwise.
         /// </returns>
-        /// <throws></throws>
+        /// <throws>
+        /// <code>InvalidOperationException</code> when it fails to create a context and return appropriate error message.
+        /// </throws>
         bool TryCreateSolutionContext(out IVsPathContext2 context);
 
         /// <summary>
@@ -28,13 +30,17 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="solutionDirectory">
         /// path to the solution directory. Must be an absolute path.
+        /// It will be performant to pass the solution directory if it's available.
         /// </param>
         /// <param name="context">The path context associated with this solution.</param>
         /// <returns>
         /// <code>True</code> if operation has succeeded and context was created.
         /// <code>False</code> otherwise.
         /// </returns>
-        /// <throws></throws>
+        /// <throws>
+        /// <code>ArgumentNullException</code> if solutionDirectory is passed as null.
+        /// <code>InvalidOperationException</code> when it fails to create a context and return appropriate error message.
+        /// </throws>
         bool TryCreateSolutionContext(string solutionDirectory, out IVsPathContext2 context);
     }
 }

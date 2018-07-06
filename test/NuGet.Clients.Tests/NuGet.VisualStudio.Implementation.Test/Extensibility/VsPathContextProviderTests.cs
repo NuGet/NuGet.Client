@@ -475,6 +475,32 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             }
         }
 
+        [Fact]
+        public void CreateSolutionContext_WithSolutionDirectory()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var solutionPackageFolder = Path.Combine(testDirectory.Path, "packages");
+                Directory.CreateDirectory(solutionPackageFolder);
+
+                var target = new VsPathContextProvider(
+                Mock.Of<ISettings>(),
+                Mock.Of<IVsSolutionManager>(),
+                Mock.Of<ILogger>(),
+                Mock.Of<IVsProjectAdapterProvider>(),
+                getLockFileOrNull: null);
+
+                // Act
+                var result = target.TryCreateSolutionContext(testDirectory.Path, out var actual);
+
+                // Assert
+                Assert.True(result);
+                Assert.NotNull(actual);
+                Assert.Equal(solutionPackageFolder, actual.SolutionPackageFolder);
+            }
+        }
+
         private class TestPackageReferenceProject : BuildIntegratedNuGetProject
         {
             private readonly string _projectName;
