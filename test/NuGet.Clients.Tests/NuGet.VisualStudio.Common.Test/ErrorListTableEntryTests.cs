@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.Shell.TableManager;
 using NuGet.Common;
 using Xunit;
 
-namespace NuGet.SolutionRestoreManager.Test
+namespace NuGet.VisualStudio.Common.Test
 {
     public class ErrorListTableEntryTests
     {
