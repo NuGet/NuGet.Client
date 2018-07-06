@@ -17,20 +17,20 @@ namespace NuGet.Credentials
     {
         private readonly Common.ILogger _logger;
         private readonly IPluginManager _pluginManager;
-        private readonly bool _canPrompt;
+        private readonly bool _canShowDialog;
 
         /// <summary>
         /// Create a credential provider builders
         /// </summary>
         /// <param name="pluginManager">pluginManager</param>
-        /// <param name="canPrompt">canPrompt - whether can pop up a dialog or it needs to use device flow</param>
+        /// <param name="canShowDialog">canShowDialog - whether can pop up a dialog or it needs to use device flow</param>
         /// <param name="logger">logger</param>
         /// <exception cref="ArgumentNullException">if <paramref name="logger"/> is null</exception>
         /// <exception cref="ArgumentNullException">if <paramref name="pluginManager"/> is null</exception>
-        public SecurePluginCredentialProviderBuilder(IPluginManager pluginManager, bool canPrompt, Common.ILogger logger)
+        public SecurePluginCredentialProviderBuilder(IPluginManager pluginManager, bool canShowDialog, Common.ILogger logger)
         {
             _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
-            _canPrompt = canPrompt;
+            _canShowDialog = canShowDialog;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -46,7 +46,7 @@ namespace NuGet.Credentials
             foreach (var pluginDiscoveryResult in availablePlugins)
             {
                 _logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Resources.SecurePluginNotice_UsingPluginAsProvider, pluginDiscoveryResult.PluginFile.Path));
-                plugins.Add(new SecurePluginCredentialProvider(_pluginManager, pluginDiscoveryResult, _canPrompt, _logger));
+                plugins.Add(new SecurePluginCredentialProvider(_pluginManager, pluginDiscoveryResult, _canShowDialog, _logger));
             }
 
             return plugins;

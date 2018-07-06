@@ -82,18 +82,18 @@ namespace NuGet.Credentials.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task BuildAll_PassesCorrectCanPromptValue(bool canPrompt)
+        public async Task BuildAll_PassesCorrectCanShowDialogValue(bool canShowDialog)
         {
             var plugins = new List<KeyValuePair<string, PluginFileState>>();
             plugins.Add(new KeyValuePair<string, PluginFileState>("a", PluginFileState.Valid));
 
             var pluginManager = new PluginManagerBuilderMock(plugins);
-            var builder = new SecurePluginCredentialProviderBuilder(pluginManager.PluginManager, canPrompt, NullLogger.Instance);
+            var builder = new SecurePluginCredentialProviderBuilder(pluginManager.PluginManager, canShowDialog, NullLogger.Instance);
 
             var credentialProviders = (await builder.BuildAll()).ToArray();
             Assert.Equal(1, credentialProviders.Count());
-            var bla = typeof(SecurePluginCredentialProvider).GetTypeInfo().GetField("_canPrompt", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance);
-            Assert.Equal(canPrompt, bla.GetValue(credentialProviders.Single()));
+            var bla = typeof(SecurePluginCredentialProvider).GetTypeInfo().GetField("_canShowDialog", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance);
+            Assert.Equal(canShowDialog, bla.GetValue(credentialProviders.Single()));
         }
 
         private sealed class PluginManagerBuilderMock

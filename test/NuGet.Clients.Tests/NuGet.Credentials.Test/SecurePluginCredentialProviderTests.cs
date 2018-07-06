@@ -305,12 +305,12 @@ namespace NuGet.Credentials.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void GetCredentialsAsync_SendsCorrectCanPromptValue()
+        public void GetCredentialsAsync_SendsCorrectCanShowDialogValue()
         {
             var uri = new Uri("https://api.nuget.org/v3/index.json");
             var authUsername = "username";
             var authPassword = "password";
-            var canPrompt = false;
+            var canShowDialog = false;
             var expectation = new TestExpectation(
                 serviceIndexJson: null,
                 sourceUri: null,
@@ -324,7 +324,7 @@ namespace NuGet.Credentials.Test
                 proxyUsername: null,
                 proxyPassword: null,
                 pluginLaunched: true,
-                canPrompt: canPrompt
+                canShowDialog: canShowDialog
                 );
 
             using (var test = new PluginManagerMock(
@@ -333,7 +333,7 @@ namespace NuGet.Credentials.Test
                 expectations: expectation))
             {
                 var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid)));
-                var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, canPrompt, NullLogger.Instance);
+                var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, canShowDialog, NullLogger.Instance);
 
                 IWebProxy proxy = null;
                 var credType = CredentialRequestType.Unauthorized;

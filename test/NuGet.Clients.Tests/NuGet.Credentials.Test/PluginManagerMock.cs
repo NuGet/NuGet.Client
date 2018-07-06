@@ -32,7 +32,7 @@ namespace NuGet.Credentials.Test
         public string ProxyUsername { get; }
         public string ProxyPassword { get; }
         public bool PluginLaunched { get; }
-        public bool CanPrompt { get; }
+        public bool CanShowDialog { get; }
 
         internal TestExpectation(
             string serviceIndexJson,
@@ -47,7 +47,7 @@ namespace NuGet.Credentials.Test
             string proxyUsername = null,
             string proxyPassword = null,
             bool pluginLaunched = true,
-            bool canPrompt = true
+            bool canShowDialog = true
             )
         {
             var serviceIndex = string.IsNullOrEmpty(serviceIndexJson)
@@ -64,7 +64,7 @@ namespace NuGet.Credentials.Test
             ProxyPassword = proxyPassword;
             ProxyUsername = proxyUsername;
             PluginLaunched = pluginLaunched;
-            CanPrompt = canPrompt;
+            CanShowDialog = canShowDialog;
         }
     }
 
@@ -141,7 +141,7 @@ namespace NuGet.Credentials.Test
             {
                 _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
                     It.Is<MessageMethod>(m => m == MessageMethod.GetAuthenticationCredentials),
-                    It.Is<GetAuthenticationCredentialsRequest>(e => e.Uri.Equals(expectations.Uri) && e.CanPrompt.Equals(expectations.CanPrompt)),
+                    It.Is<GetAuthenticationCredentialsRequest>(e => e.Uri.Equals(expectations.Uri) && e.CanShowDialog.Equals(expectations.CanShowDialog)),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new GetAuthenticationCredentialsResponse(expectations.AuthenticationUsername, expectations.AuthenticationPassword, null, null, MessageResponseCode.Success));
             }

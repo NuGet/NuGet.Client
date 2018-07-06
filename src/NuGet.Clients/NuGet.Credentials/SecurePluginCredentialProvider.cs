@@ -33,9 +33,9 @@ namespace NuGet.Credentials
         private readonly IPluginManager _pluginManager;
 
         /// <summary>
-        /// canPrompt, whether the plugin can prompt or it should use device flow. This is a host decision not a user one. 
+        /// canShowDialog, whether the plugin can prompt or it should use device flow. This is a host decision not a user one. 
         /// </summary>
-        private readonly bool _canPrompt;
+        private readonly bool _canShowDialog;
 
         // We use this to avoid needlessly instantiating plugins if they don't support authentication.
         private bool _isAnAuthenticationPlugin = true;
@@ -46,17 +46,17 @@ namespace NuGet.Credentials
         /// </summary>
         /// <param name="pluginManager"></param>
         /// <param name="pluginDiscoveryResult"></param>
-        /// <param name="canPrompt"></param>
+        /// <param name="canShowDialog"></param>
         /// <param name="logger"></param>
         /// <exception cref="ArgumentNullException">if <paramref name="pluginDiscoveryResult"/> is null</exception>
         /// <exception cref="ArgumentNullException">if <paramref name="logger"/> is null</exception>
         /// <exception cref="ArgumentNullException">if <paramref name="pluginManager"/> is null</exception>
         /// <exception cref="ArgumentException">if plugin file is not valid</exception>
-        public SecurePluginCredentialProvider(IPluginManager pluginManager, PluginDiscoveryResult pluginDiscoveryResult, bool canPrompt, ILogger logger)
+        public SecurePluginCredentialProvider(IPluginManager pluginManager, PluginDiscoveryResult pluginDiscoveryResult, bool canShowDialog, ILogger logger)
         {
             _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
             _discoveredPlugin = pluginDiscoveryResult ?? throw new ArgumentNullException(nameof(pluginDiscoveryResult));
-            _canPrompt = canPrompt;
+            _canShowDialog = canShowDialog;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             Id = $"{nameof(SecurePluginCredentialProvider)}_{pluginDiscoveryResult.PluginFile.Path}";
         }
@@ -114,7 +114,7 @@ namespace NuGet.Credentials
                         await SetProxyCredentialsToPlugin(uri, proxy, plugin, cancellationToken);
                     }
 
-                    var request = new GetAuthenticationCredentialsRequest(uri, isRetry, nonInteractive, _canPrompt);
+                    var request = new GetAuthenticationCredentialsRequest(uri, isRetry, nonInteractive, _canShowDialog);
                     var credentialResponse = await plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
                         MessageMethod.GetAuthenticationCredentials,
                         request,
