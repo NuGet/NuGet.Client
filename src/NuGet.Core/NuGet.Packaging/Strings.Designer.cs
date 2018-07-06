@@ -451,9 +451,18 @@ namespace NuGet.Packaging {
         /// <summary>
         ///   Looks up a localized string similar to Package integrity check failed for package &apos;{0}&apos; from source &apos;{1}&apos;.
         /// </summary>
-        internal static string ExtractionError_SignaturePackageIntegrityFailure {
+        internal static string ExtractionError_PackageSignatureIntegrityFailure {
             get {
-                return ResourceManager.GetString("ExtractionError_SignaturePackageIntegrityFailure", resourceCulture);
+                return ResourceManager.GetString("ExtractionError_PackageSignatureIntegrityFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} [Package &apos;{1}&apos; from source &apos;{2}&apos;].
+        /// </summary>
+        internal static string ExtractionLog_InformationSuffix {
+            get {
+                return ResourceManager.GetString("ExtractionLog_InformationSuffix", resourceCulture);
             }
         }
         

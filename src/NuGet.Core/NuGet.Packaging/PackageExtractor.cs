@@ -1021,19 +1021,31 @@ namespace NuGet.Packaging
                     }
                     else
                     {
-                        verifyResult.Results.SelectMany(r => r.GetErrorIssues()).ForEach(e => AddPackageIdentityToLogMessages(source, package, e));
+                        var errorsAndWarningLogs = verifyResult.Results
+                            .SelectMany(r => r.Issues.Where(i => i.Level == LogLevel.Error || i.Level == LogLevel.Warning));
+
+                        errorsAndWarningLogs.ForEach(e => AddPackageIdentityToLogMessages(source, package, e));
                         throw new SignatureException(verifyResult.Results, package);
                     }
                 }
             }
         }
 
-        private static void AddPackageIdentityToLogMessages(string source, PackageIdentity package, ILogMessage error)
+        /// <summary>
+        /// Adds a package ID and package source as a suffix to log messages.
+        /// </summary>
+        /// <param name="source">package source.</param>
+        /// <param name="package">package identity.</param>
+        /// <param name="message">ILogMessage to be modified with the siffix.</param>
+        private static void AddPackageIdentityToLogMessages(string source, PackageIdentity package, ILogMessage message)
         {
-            switch (error.Code)
+            switch (message.Code)
             {
                 case NuGetLogCode.NU3008:
-                    error.Message = string.Format(CultureInfo.CurrentCulture, Strings.ExtractionError_SignaturePackageIntegrityFailure, package, source);
+                    message.Message = string.Format(CultureInfo.CurrentCulture, Strings.ExtractionError_PackageSignatureIntegrityFailure, package, source);
+                    break;
+                default:
+                    message.Message = string.Format(CultureInfo.CurrentCulture, Strings.ExtractionLog_InformationSuffix, message.Message, package, source);
                     break;
             }
         }
