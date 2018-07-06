@@ -24,13 +24,13 @@ namespace NuGet.Protocol.Plugins
         public bool IsRetry { get; }
 
         /// <summary>
-        /// IsNonInteractive
+        /// IsNonInteractive - tells the plugin whether it can block the operation to ask for user input. Be it a device flow request or a pop-up. 
         /// </summary>
         [JsonRequired]
         public bool IsNonInteractive { get; }
 
         /// <summary>
-        /// CanShowDialog
+        /// CanShowDialog - tells the plugin whether it can show a dialog if the plugin is run in interactive mode. This being false normally means that the auth method should be device flow.
         /// </summary>
         [JsonRequired]
         public bool CanShowDialog { get; }

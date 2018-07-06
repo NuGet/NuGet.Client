@@ -38,7 +38,7 @@ namespace NuGet.Credentials
         /// Creates credential providers for each valid plugin (regardless if it supports authentication or not)
         /// </summary>
         /// <returns>credential providers</returns>
-        public async Task<IEnumerable<ICredentialProvider>> BuildAll()
+        public async Task<IEnumerable<ICredentialProvider>> BuildAllAsync()
         {
             var availablePlugins = await _pluginManager.FindAvailablePluginsAsync(CancellationToken.None);
 

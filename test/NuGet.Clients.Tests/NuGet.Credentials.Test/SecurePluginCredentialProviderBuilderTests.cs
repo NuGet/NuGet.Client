@@ -40,7 +40,7 @@ namespace NuGet.Credentials.Test
             var pluginManager = new PluginManagerBuilderMock(plugins);
             var builder = new SecurePluginCredentialProviderBuilder(pluginManager.PluginManager, true, NullLogger.Instance);
 
-            var credentialProviders = await builder.BuildAll();
+            var credentialProviders = await builder.BuildAllAsync();
             Assert.Equal(0, credentialProviders.Count());
         }
 
@@ -55,7 +55,7 @@ namespace NuGet.Credentials.Test
             var pluginManager = new PluginManagerBuilderMock(plugins);
             var builder = new SecurePluginCredentialProviderBuilder(pluginManager.PluginManager, true, NullLogger.Instance);
 
-            var credentialProviders = (await builder.BuildAll()).ToArray();
+            var credentialProviders = (await builder.BuildAllAsync()).ToArray();
             Assert.Equal(3, credentialProviders.Count());
             Assert.StartsWith(nameof(SecurePluginCredentialProvider) + "_a", credentialProviders[0].Id);
             Assert.StartsWith(nameof(SecurePluginCredentialProvider) + "_b", credentialProviders[1].Id);
@@ -75,7 +75,7 @@ namespace NuGet.Credentials.Test
             var pluginManager = new PluginManagerBuilderMock(plugins);
             var builder = new SecurePluginCredentialProviderBuilder(pluginManager.PluginManager, true, NullLogger.Instance);
 
-            var credentialProviders = (await builder.BuildAll()).ToArray();
+            var credentialProviders = (await builder.BuildAllAsync()).ToArray();
             Assert.Equal(4, credentialProviders.Count());
         }
 
@@ -90,7 +90,7 @@ namespace NuGet.Credentials.Test
             var pluginManager = new PluginManagerBuilderMock(plugins);
             var builder = new SecurePluginCredentialProviderBuilder(pluginManager.PluginManager, canShowDialog, NullLogger.Instance);
 
-            var credentialProviders = (await builder.BuildAll()).ToArray();
+            var credentialProviders = (await builder.BuildAllAsync()).ToArray();
             Assert.Equal(1, credentialProviders.Count());
             var bla = typeof(SecurePluginCredentialProvider).GetTypeInfo().GetField("_canShowDialog", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance);
             Assert.Equal(canShowDialog, bla.GetValue(credentialProviders.Single()));
