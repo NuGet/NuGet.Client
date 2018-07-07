@@ -702,12 +702,12 @@ Valid from:</comment>
     <value>Verification settings require a repository countersignature, but the package does not have a repository countersignature.</value>
   </data>
   <data name="ExtractionError_PackageSignatureIntegrityFailure" xml:space="preserve">
-    <value>Package integrity check failed for package '{0}' from source '{1}'</value>
+    <value>Package integrity check failed for package '{0}' version '{1}' from source '{2}'</value>
     <comment>0 - package identity
 1 - package source url</comment>
   </data>
   <data name="ExtractionLog_InformationSuffix" xml:space="preserve">
-    <value>{0} [Package '{1}' from source '{2}']</value>
+    <value>{0} [Package '{1}' version '{2}' from source '{3}']</value>
     <comment>0 - Log Message
 1 - Package ID and version
 2 - Package source URL</comment>

@@ -23,7 +23,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     [Collection(SignCommandTestCollection.Name)]
     public class InstallCommandTests
     {
-        private const string _NU3008 = "NU3008: The package integrity check failed.";
+        private const string _NU3008 = "NU3008: Package integrity check failed for package '{0}' version '{1}' from source '{2}'";
         private const string _NU3012 = "NU3012: The author primary signature found a chain building issue: The certificate is revoked.";
         private const string _NU3018 = "NU3018: The author primary signature found a chain building issue: A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
         private const string _NU3027 = "NU3027: The signature should be timestamped to enable long-term signature validity after the certificate has expired.";
@@ -68,7 +68,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(0);
-                result.AllOutput.Should().Contain($"WARNING: {_NU3027}");
+                result.AllOutput.Should().Contain($"WARNING: {_NU3027} {SigningTestUtility.GetSignatureLogSuffix(nupkg.Identity, context.WorkingDirectory)}");
             }
         }
 
@@ -102,7 +102,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(0);
-                result.AllOutput.Should().Contain($"WARNING: {_NU3027}");
+                result.AllOutput.Should().Contain($"WARNING: {_NU3027} {SigningTestUtility.GetSignatureLogSuffix(nupkg.Identity, context.WorkingDirectory)}");
             }
         }
 
@@ -135,8 +135,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(0);
-                result.AllOutput.Should().Contain($"WARNING: {_NU3018}");
-                result.AllOutput.Should().Contain($"WARNING: {_NU3027}");
+                result.AllOutput.Should().Contain($"WARNING: {_NU3018} {SigningTestUtility.GetSignatureLogSuffix(nupkg.Identity, context.WorkingDirectory)}");
+                result.AllOutput.Should().Contain($"WARNING: {_NU3027} {SigningTestUtility.GetSignatureLogSuffix(nupkg.Identity, context.WorkingDirectory)}");
             }
         }
 
@@ -170,8 +170,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(_NU3008);
-                result.AllOutput.Should().Contain($"WARNING: {_NU3027}");
+                result.Errors.Should().Contain(string.Format(_NU3008, nupkg.Identity.Id, nupkg.Identity.Version, context.WorkingDirectory));
+                result.AllOutput.Should().Contain($"WARNING: {_NU3027} {SigningTestUtility.GetSignatureLogSuffix(nupkg.Identity, context.WorkingDirectory)}");
             }
         }
 
@@ -215,9 +215,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(_NU3008);
-                result.Errors.Should().Contain(_NU3012);
-                result.AllOutput.Should().Contain($"WARNING: {_NU3027}");
+                result.Errors.Should().Contain(string.Format(_NU3008, nupkg.Identity.Id, nupkg.Identity.Version, context.WorkingDirectory));
+                result.Errors.Should().Contain($"{_NU3012} {SigningTestUtility.GetSignatureLogSuffix(nupkg.Identity, context.WorkingDirectory)}");
+                result.AllOutput.Should().Contain($"WARNING: {_NU3027} {SigningTestUtility.GetSignatureLogSuffix(nupkg.Identity, context.WorkingDirectory)}");
             }
         }
 

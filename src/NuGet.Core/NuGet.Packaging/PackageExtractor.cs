@@ -1009,6 +1009,11 @@ namespace NuGet.Packaging
                 {
                     await LogPackageSignatureVerificationAsync(source, package, packageExtractionContext.Logger, verifyResult);
 
+                    var errorsAndWarningLogs = verifyResult.Results
+                            .SelectMany(r => r.Issues.Where(i => i.Level == LogLevel.Error || i.Level == LogLevel.Warning));
+
+                    errorsAndWarningLogs.ForEach(e => AddPackageIdentityToLogMessages(source, package, e));
+
                     if (verifyResult.Valid)
                     {
                         // log any warnings
@@ -1020,11 +1025,7 @@ namespace NuGet.Packaging
                         }
                     }
                     else
-                    {
-                        var errorsAndWarningLogs = verifyResult.Results
-                            .SelectMany(r => r.Issues.Where(i => i.Level == LogLevel.Error || i.Level == LogLevel.Warning));
-
-                        errorsAndWarningLogs.ForEach(e => AddPackageIdentityToLogMessages(source, package, e));
+                    {                       
                         throw new SignatureException(verifyResult.Results, package);
                     }
                 }
@@ -1036,16 +1037,16 @@ namespace NuGet.Packaging
         /// </summary>
         /// <param name="source">package source.</param>
         /// <param name="package">package identity.</param>
-        /// <param name="message">ILogMessage to be modified with the siffix.</param>
+        /// <param name="message">ILogMessage to be modified with the suffix.</param>
         private static void AddPackageIdentityToLogMessages(string source, PackageIdentity package, ILogMessage message)
         {
             switch (message.Code)
             {
                 case NuGetLogCode.NU3008:
-                    message.Message = string.Format(CultureInfo.CurrentCulture, Strings.ExtractionError_PackageSignatureIntegrityFailure, package, source);
+                    message.Message = string.Format(CultureInfo.CurrentCulture, Strings.ExtractionError_PackageSignatureIntegrityFailure, package.Id, package.Version, source);
                     break;
                 default:
-                    message.Message = string.Format(CultureInfo.CurrentCulture, Strings.ExtractionLog_InformationSuffix, message.Message, package, source);
+                    message.Message = string.Format(CultureInfo.CurrentCulture, Strings.ExtractionLog_InformationSuffix, message.Message, package.Id, package.Version, source);
                     break;
             }
         }
