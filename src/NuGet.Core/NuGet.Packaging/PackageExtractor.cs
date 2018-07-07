@@ -1009,10 +1009,10 @@ namespace NuGet.Packaging
                 {
                     await LogPackageSignatureVerificationAsync(source, package, packageExtractionContext.Logger, verifyResult);
 
-                    var errorsAndWarningLogs = verifyResult.Results
-                            .SelectMany(r => r.Issues.Where(i => i.Level == LogLevel.Error || i.Level == LogLevel.Warning));
-
-                    errorsAndWarningLogs.ForEach(e => AddPackageIdentityToLogMessages(source, package, e));
+                    // Update errors and warnings with package id and source
+                    verifyResult.Results
+                            .SelectMany(r => r.Issues.Where(i => i.Level == LogLevel.Error || i.Level == LogLevel.Warning))
+                            .ForEach(e => AddPackageIdentityToLogMessages(source, package, e));
 
                     if (verifyResult.Valid)
                     {
@@ -1025,7 +1025,7 @@ namespace NuGet.Packaging
                         }
                     }
                     else
-                    {                       
+                    {
                         throw new SignatureException(verifyResult.Results, package);
                     }
                 }
