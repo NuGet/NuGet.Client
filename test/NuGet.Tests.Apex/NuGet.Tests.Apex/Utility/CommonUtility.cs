@@ -204,7 +204,8 @@ namespace NuGet.Tests.Apex
                         LibraryIncludeFlags.All,
                         LibraryIncludeFlags.None,
                         new List<NuGetLogCode>(),
-                        autoReferenced: false))
+                        autoReferenced: false,
+                        generatePathProperty: false))
                 .ToList();
         }
 
