@@ -23,7 +23,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     [Collection(SignCommandTestCollection.Name)]
     public class InstallCommandTests
     {
-        private const string _NU3008 = "NU3008: Package integrity check failed for package '{0}' version '{1}' from source '{2}'";
+        private const string _NU3008 = "NU3008: Package integrity check failed for package '{0} {1}' from source '{2}'";
         private const string _NU3012 = "NU3012: The author primary signature found a chain building issue: The certificate is revoked.";
         private const string _NU3018 = "NU3018: The author primary signature found a chain building issue: A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
         private const string _NU3027 = "NU3027: The signature should be timestamped to enable long-term signature validity after the certificate has expired.";

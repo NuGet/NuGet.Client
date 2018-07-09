@@ -32,7 +32,7 @@ namespace Test.Utility.Signing
 {
     public static class SigningTestUtility
     {
-        private static readonly string _signatureLogSuffix = "[Package '{0}' version '{1}' from source '{2}']";
+        private static readonly string _signatureLogSuffix = "[Package '{0} {1}' from source '{2}']";
 
         /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().

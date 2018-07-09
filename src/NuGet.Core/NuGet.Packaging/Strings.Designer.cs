@@ -449,7 +449,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package integrity check failed for package &apos;{0}&apos; version &apos;{1}&apos; from source &apos;{2}&apos;.
+        ///   Looks up a localized string similar to Package integrity check failed for package &apos;{0} {1}&apos; from source &apos;{2}&apos;.
         /// </summary>
         internal static string ExtractionError_PackageSignatureIntegrityFailure {
             get {
@@ -458,7 +458,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} [Package &apos;{1}&apos; version &apos;{2}&apos; from source &apos;{3}&apos;].
+        ///   Looks up a localized string similar to {0} [Package &apos;{1} {2}&apos; from source &apos;{3}&apos;].
         /// </summary>
         internal static string ExtractionLog_InformationSuffix {
             get {

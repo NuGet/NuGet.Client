@@ -27,7 +27,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     [Collection(SignCommandTestCollection.Name)]
     public class RestoreCommandTests
     {
-        private static readonly string _NU3008Message = "Package integrity check failed for package '{0}' version '{1}' from source '{2}'";
+        private static readonly string _NU3008Message = "Package integrity check failed for package '{0} {1}' from source '{2}'";
         private static readonly string _NU3008 = $"NU3008: {_NU3008Message}";
         private static readonly string _NU3027Message = "The signature should be timestamped to enable long-term signature validity after the certificate has expired.";
         private static readonly string _NU3027 = $"NU3027: {_NU3027Message}";
