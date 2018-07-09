@@ -124,13 +124,13 @@ namespace NuGet.Protocol.Plugins
                 {
                     if (File.Exists(filePath))
                     {
-                        var state = new Lazy<PluginFileState> (() => _verifier.IsValid(filePath) ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature);
+                        var state = new Lazy<PluginFileState>(() => _verifier.IsValid(filePath) ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature);
 
                         files.Add(new PluginFile(filePath, state));
                     }
                     else
                     {
-                        files.Add(new PluginFile(filePath, new Lazy<PluginFileState> ( () => PluginFileState.NotFound)));
+                        files.Add(new PluginFile(filePath, new Lazy<PluginFileState>(() => PluginFileState.NotFound)));
                     }
                 }
                 else
@@ -146,7 +146,11 @@ namespace NuGet.Protocol.Plugins
         {
             if (string.IsNullOrEmpty(_rawPluginPaths))
             {
-                var directories = new List<string> { PluginDiscoveryUtility.GetNuGetHomePluginsPath(), PluginDiscoveryUtility.GetInternalPlugins() };
+                var directories = new List<string> { PluginDiscoveryUtility.GetNuGetHomePluginsPath() };
+#if IS_DESKTOP
+                // Internal plugins are only supported for .NET Framework scenarios, namely msbuild.exe
+                directories.Add(PluginDiscoveryUtility.GetInternalPlugins());
+#endif
                 return PluginDiscoveryUtility.GetConventionBasedPlugins(directories);
             }
 

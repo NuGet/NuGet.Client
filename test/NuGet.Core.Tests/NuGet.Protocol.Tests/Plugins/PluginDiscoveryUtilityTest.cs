@@ -55,19 +55,9 @@ namespace NuGet.Protocol.Plugins.Tests
                 ), result);
         }
 
-        [PlatformTheory(Platform.Linux, Platform.Darwin)]
-        [InlineData(@"/opt/coolpath/dotnet/sdk/2.0.0/NuGet.Protocol.dll",
-            @"/opt/coolpath/dotnet/sdk/2.0.0/NuGetPlugins")]
-        [InlineData(null, null)]
-        public void PluginDiscoveryUtility_GetsNuGetPluginPathGivenNuGetAssembliesInXPLATSDK(string given, string expected)
-        {
-            var result = PluginDiscoveryUtility.GetNuGetPluginsDirectoryRelativeToNuGetAssembly(given);
-            Assert.Equal(expected, result);
-        }
-
         [PlatformTheory(Platform.Windows)]
         [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.Protocol.dll",
-    @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGetPlugins")]
+    @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins")]
         [InlineData(null, null)]
         public void PluginDiscoveryUtility_GetsNuGetPluginPathGivenNuGetAssemblies(string given, string expected)
         {
@@ -78,7 +68,7 @@ namespace NuGet.Protocol.Plugins.Tests
 #if IS_DESKTOP
         [Theory]
         [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe",
-            @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGetPlugins")]
+            @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins")]
         [InlineData(null, null)]
         public void PluginDiscoveryUtility_GetsNuGetPluginPathGivenMSBuildExeLocation(string given, string expected)
         {
