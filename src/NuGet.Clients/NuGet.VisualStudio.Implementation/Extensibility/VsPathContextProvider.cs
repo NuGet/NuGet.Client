@@ -132,13 +132,45 @@ namespace NuGet.VisualStudio
             return outputPathContext != null;
         }
 
-        public bool TryCreateSolutionContext(out IVsPathContext outputPathContext)
+        public bool TryCreateSolutionContext(out IVsPathContext2 outputPathContext)
         {
-            outputPathContext = GetSolutionPathContext();
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager.Value, _settings.Value);
+
+            outputPathContext = GetSolutionPathContext(packagesFolderPath);
 
             return outputPathContext != null;
         }
 
+        public bool TryCreateSolutionContext(string solutionDirectory, out IVsPathContext2 outputPathContext)
+        {
+            if (solutionDirectory == null)
+            {
+                throw new ArgumentNullException(nameof(solutionDirectory));
+            }
+
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, _settings.Value);
+
+            outputPathContext = GetSolutionPathContext(packagesFolderPath);
+
+            return outputPathContext != null;
+        }
+
+        private IVsPathContext2 GetSolutionPathContext(string packagesFolderPath)
+        {
+            VsPathContext pathContext = null;
+
+            // if solution package folder exists, then set it in VSPathContext
+            if (!string.IsNullOrEmpty(packagesFolderPath) && Directory.Exists(packagesFolderPath))
+            {
+                pathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value), packagesFolderPath);
+            }
+            else
+            {
+                pathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value));
+            }
+
+            return pathContext;
+        }
 
         private static async Task<Dictionary<string, EnvDTE.Project>> GetPathToDTEProjectLookupAsync(EnvDTE.DTE dte)
         {
