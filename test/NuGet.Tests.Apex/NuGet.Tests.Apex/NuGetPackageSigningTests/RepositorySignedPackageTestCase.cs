@@ -251,7 +251,7 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
-                nugetConsole.IsMessageFoundInPMC("package integrity check failed").Should().BeTrue("Integrity failed message shown.");
+                nugetConsole.IsMessageFoundInPMC("Package integrity check failed").Should().BeTrue();
                 testContext.Project.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
@@ -276,7 +276,7 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
-                nugetConsole.IsMessageFoundInPMC("package integrity check failed").Should().BeTrue("Integrity failed message shown.");
+                nugetConsole.IsMessageFoundInPMC("Package integrity check failed").Should().BeTrue();
 
                 CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }

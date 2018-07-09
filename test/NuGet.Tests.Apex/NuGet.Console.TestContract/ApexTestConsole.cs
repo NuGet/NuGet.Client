@@ -67,8 +67,8 @@ namespace NuGet.Console.TestContract
             {
                 var snapshotLine = snapshot.GetLineFromLineNumber(i);
                 var lineText = snapshotLine.GetText();
-
-                var foundMessage = lineText.Contains(message);
+                var foundMessage = lineText.IndexOf(message, StringComparison.OrdinalIgnoreCase) >= 0;
+                
                 if (foundMessage)
                 {
                     return true;
