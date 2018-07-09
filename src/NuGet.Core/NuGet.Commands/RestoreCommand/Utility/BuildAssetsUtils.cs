@@ -506,7 +506,7 @@ namespace NuGet.Commands
                 // Find the packages with matching IDs in the list of sorted packages, filtering out ones that there was no match for or that don't exist
                 var packagePathProperties = packageIdsToCreatePropertiesFor
                     // Cast sortedPackages as nullable
-                    .Select(packageId => sortedPackages.Cast<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>?>().FirstOrDefault(pkg => pkg.Value.Key.Name.Equals(packageId, StringComparison.OrdinalIgnoreCase)))
+                    .Select(packageId => sortedPackages.Cast<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>?>().FirstOrDefault(pkg => pkg != null && pkg.Value.Key.Name.Equals(packageId, StringComparison.OrdinalIgnoreCase)))
                     // Check if there was a match found and the package exists on disk
                     .Where(pkg => pkg != null && pkg.Value.Value.Exists())
                     // Select just the value of the nullable KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>
