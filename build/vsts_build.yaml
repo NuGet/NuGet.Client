@@ -362,6 +362,10 @@ phases:
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    UseSharedCompilation: "false"
+    DOTNET_MULTILEVEL_LOOKUP: "0"
+    MSBUILDDISABLENODEREUSE: "true"
+
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "  	
   queue:
     name: VSEng-MicroBuildSxS
