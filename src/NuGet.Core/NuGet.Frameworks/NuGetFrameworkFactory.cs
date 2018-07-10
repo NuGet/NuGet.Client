@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -104,9 +104,9 @@ namespace NuGet.Frameworks
                 var versionPart = SingleOrDefaultSafe(parts.Where(s => s.IndexOf("Version=", StringComparison.OrdinalIgnoreCase) == 0));
                 var profilePart = SingleOrDefaultSafe(parts.Where(s => s.IndexOf("Profile=", StringComparison.OrdinalIgnoreCase) == 0));
 
-                if (!String.IsNullOrEmpty(versionPart))
+                if (!string.IsNullOrEmpty(versionPart))
                 {
-                    var versionString = versionPart.Split('=')[1].TrimStart('v');
+                    var versionString = versionPart.Split('=')[1].TrimStart('v', 'V');
 
                     if (versionString.IndexOf('.') < 0)
                     {
@@ -122,7 +122,7 @@ namespace NuGet.Frameworks
                     }
                 }
 
-                if (!String.IsNullOrEmpty(profilePart))
+                if (!string.IsNullOrEmpty(profilePart))
                 {
                     profile = profilePart.Split('=')[1];
                 }
