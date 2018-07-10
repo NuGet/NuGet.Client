@@ -73,8 +73,8 @@ namespace Dotnet.Integration.Test
             Assert.True(string.IsNullOrWhiteSpace(result.Item3), $"Creating project failed with following message in error stream :\n {result.AllOutput}");
             var processes = Process.GetProcessesByName("dotnet").Select(t => t.MainModule.FileName);
             var processesByName = string.Join(Environment.NewLine, processes);
-            Logger.LogInformation("In Create New project");
-            Logger.LogInformation(processesByName);
+            Logger?.LogInformation("In Create New project");
+            Logger?.LogInformation(processesByName);
         }
 
         internal void CreateDotnetToolProject(string solutionRoot, string projectName, string targetFramework, string rid, string source, IList<PackageIdentity> packages, int timeOut = 60000)
@@ -174,10 +174,10 @@ namespace Dotnet.Integration.Test
             {
                 Assert.True(result.ExitCode == 0, $"dotnet.exe {args} command failed with following log information :\n {result.AllOutput}");
             }
-            var processes = Process.GetProcessesByName("dotnet").Select(t => t.MainModule.FileName);
-            var processesByName = string.Join(Environment.NewLine, processes);
-            Logger.LogInformation($"In {args} ");
-            Logger.LogInformation(processesByName);
+            //var processes = Process.GetProcessesByName("dotnet").Select(t => t.MainModule.FileName);
+            //var processesByName = string.Join(Environment.NewLine, processes);
+            //Logger.LogInformation($"In {args} ");
+            //Logger.LogInformation(processesByName);
 
             return result;
         }
@@ -358,11 +358,23 @@ namespace Dotnet.Integration.Test
 
         public void Dispose()
         {
+            LogDotnetProcessesToConsole("before build-server shutdown");
             RunDotnet(Path.GetDirectoryName(TestDotnetCli), "build-server shutdown");
+            LogDotnetProcessesToConsole("before killing dotnet.exe");
             KillDotnetExe(TestDotnetCli);
+            LogDotnetProcessesToConsole("after killing dotnet.exe");
             DeleteDirectory(Path.GetDirectoryName(TestDotnetCli));
+            LogDotnetProcessesToConsole("after deleting directory");
         }
 
+
+        private static void LogDotnetProcessesToConsole(string args)
+        {
+            var processes = Process.GetProcessesByName("dotnet").Select(t => t.MainModule.FileName);
+            var processesByName = string.Join(Environment.NewLine, processes);
+            Console.WriteLine($"In dispose {args}");
+            Console.WriteLine(processesByName);
+        }
         private static void KillDotnetExe(string pathToDotnetExe)
         {
 
