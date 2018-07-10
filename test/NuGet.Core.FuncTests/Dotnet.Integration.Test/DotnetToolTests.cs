@@ -12,7 +12,9 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -20,10 +22,13 @@ namespace Dotnet.Integration.Test
     public class DotnetToolTests
     {
         private MsbuildIntegrationTestFixture _msbuildFixture;
+        private XunitLogger _logger;
 
-        public DotnetToolTests(MsbuildIntegrationTestFixture fixture)
+        public DotnetToolTests(MsbuildIntegrationTestFixture fixture, ITestOutputHelper logger)
         {
             _msbuildFixture = fixture;
+            _logger = new XunitLogger(logger);
+            _msbuildFixture.Logger = _logger;
         }
 
         [PlatformTheory(Platform.Windows)]

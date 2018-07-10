@@ -12,7 +12,8 @@ using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
-
+using Test.Utility;
+using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -20,10 +21,14 @@ namespace Dotnet.Integration.Test
     public class PackCommandTests
     {
         private MsbuildIntegrationTestFixture msbuildFixture;
+        private XunitLogger _logger;
 
-        public PackCommandTests(MsbuildIntegrationTestFixture fixture)
+
+        public PackCommandTests(MsbuildIntegrationTestFixture fixture, ITestOutputHelper logger)
         {
             this.msbuildFixture = fixture;
+            _logger = new XunitLogger(logger);
+            msbuildFixture.Logger = _logger;
         }
 
         [PlatformFact(Platform.Windows)]

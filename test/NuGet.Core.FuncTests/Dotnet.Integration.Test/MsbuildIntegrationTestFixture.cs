@@ -14,6 +14,7 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol;
 using Xunit;
+using Test.Utility;
 
 namespace Dotnet.Integration.Test
 {
@@ -23,6 +24,7 @@ namespace Dotnet.Integration.Test
         internal readonly string TestDotnetCli;
         internal readonly string MsBuildSdksPath;
         private readonly Dictionary<string, string> _processEnvVars = new Dictionary<string, string>();
+        public XunitLogger Logger { get; set; }
 
         public MsbuildIntegrationTestFixture()
         {
@@ -69,6 +71,10 @@ namespace Dotnet.Integration.Test
 
             Assert.True(result.Item1 == 0, $"Creating project failed with following log information :\n {result.AllOutput}");
             Assert.True(string.IsNullOrWhiteSpace(result.Item3), $"Creating project failed with following message in error stream :\n {result.AllOutput}");
+            var processes = Process.GetProcessesByName("dotnet").Select(t => t.MainModule.FileName);
+            var processesByName = string.Join(Environment.NewLine, processes);
+            Logger.LogInformation("In Create New project");
+            Logger.LogInformation(processesByName);
         }
 
         internal void CreateDotnetToolProject(string solutionRoot, string projectName, string targetFramework, string rid, string source, IList<PackageIdentity> packages, int timeOut = 60000)
@@ -127,6 +133,10 @@ namespace Dotnet.Integration.Test
                 $"restore {projectName}.csproj {args}",
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
+            var processes = Process.GetProcessesByName("dotnet").Select(t => t.MainModule.FileName);
+            var processesByName = string.Join(Environment.NewLine, processes);
+            Logger.LogInformation("In Restore Tool project");
+            Logger.LogInformation(processesByName);
             return result;
         }
 
@@ -142,6 +152,10 @@ namespace Dotnet.Integration.Test
                 environmentVariables: _processEnvVars);
             Assert.True(result.Item1 == 0, $"Restore failed with following log information :\n {result.AllOutput}");
             Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.AllOutput}");
+            var processes = Process.GetProcessesByName("dotnet").Select(t => t.MainModule.FileName);
+            var processesByName = string.Join(Environment.NewLine, processes);
+            Logger.LogInformation("In Restore");
+            Logger.LogInformation(processesByName);
         }
 
         /// <summary>
@@ -160,6 +174,10 @@ namespace Dotnet.Integration.Test
             {
                 Assert.True(result.ExitCode == 0, $"dotnet.exe {args} command failed with following log information :\n {result.AllOutput}");
             }
+            var processes = Process.GetProcessesByName("dotnet").Select(t => t.MainModule.FileName);
+            var processesByName = string.Join(Environment.NewLine, processes);
+            Logger.LogInformation($"In {args} ");
+            Logger.LogInformation(processesByName);
 
             return result;
         }
@@ -173,6 +191,11 @@ namespace Dotnet.Integration.Test
                 environmentVariables: _processEnvVars);
             Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.AllOutput}");
             Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.AllOutput}");
+            var processes = Process.GetProcessesByName("dotnet").Select(t => t.MainModule.FileName);
+            var processesByName = string.Join(Environment.NewLine, processes);
+            Logger.LogInformation("In Pack");
+            Logger.LogInformation(processesByName);
+                
             return result;
         }
 
@@ -185,6 +208,10 @@ namespace Dotnet.Integration.Test
                 environmentVariables: _processEnvVars);
             Assert.True(result.Item1 == 0, $"Build failed with following log information :\n {result.AllOutput}");
             Assert.True(result.Item3 == "", $"Build failed with following message in error stream :\n {result.AllOutput}");
+            var processes = Process.GetProcessesByName("dotnet").Select(t => t.MainModule.FileName);
+            var processesByName = string.Join(Environment.NewLine, processes);
+            Logger.LogInformation("In Build");
+            Logger.LogInformation(processesByName);
         }
 
         private string CopyLatestCliForPack()

@@ -7,7 +7,9 @@ using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -15,10 +17,13 @@ namespace Dotnet.Integration.Test
     public class DotnetRestoreTests
     {
         private MsbuildIntegrationTestFixture _msbuildFixture;
+        private XunitLogger _logger;
 
-        public DotnetRestoreTests(MsbuildIntegrationTestFixture fixture)
+        public DotnetRestoreTests(MsbuildIntegrationTestFixture fixture, ITestOutputHelper logger)
         {
             _msbuildFixture = fixture;
+            _logger = new XunitLogger(logger);
+            _msbuildFixture.Logger = _logger;
         }
 
         [PlatformFact(Platform.Windows)]
