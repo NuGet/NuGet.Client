@@ -28,6 +28,7 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.Test
 {
@@ -76,6 +77,13 @@ namespace NuGet.Test
                 new PackageIdentity("Microsoft.AspNet.Mvc.Razor", new NuGetVersion("6.0.0-beta3")),
                 new PackageIdentity("Microsoft.AspNet.Mvc.Core", new NuGetVersion("6.0.0-beta3"))
             };
+
+        private XunitLogger _logger { get; }
+
+        public NuGetPackageManagerTests(ITestOutputHelper output)
+        {
+            _logger = new XunitLogger(output);
+        }
 
         // Install and uninstall a package while calling get installed on another thread
         [Fact]
@@ -5733,7 +5741,9 @@ namespace NuGet.Test
             {
                 var Settings = new Settings(settingsdir);
                 foreach (var source in sourceRepositoryProvider.GetRepositories())
+                {
                     Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+                }
 
                 var token = CancellationToken.None;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -5936,7 +5946,9 @@ namespace NuGet.Test
             {
                 var Settings = new Settings(settingsdir);
                 foreach (var source in sourceRepositoryProvider.GetRepositories())
+                {
                     Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+                }
 
                 var token = CancellationToken.None;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -6359,6 +6371,16 @@ namespace NuGet.Test
                     sourceRepositoryProvider.GetRepositories(),
                     CancellationToken.None);
 
+                // telemetry count has been flaky, these xunit logs should help track the extra source of events on CI
+                // for issue https://github.com/NuGet/Home/issues/7105
+                foreach (var telemetryEvent in telemetryEvents)
+                {
+                    _logger.LogInformation("--------------------------");
+                    _logger.LogInformation($"Name: {telemetryEvent.Name}");
+                    _logger.LogInformation($"Json: {telemetryEvent.ToJson()}");
+                    _logger.LogInformation("--------------------------");
+                }
+
                 // Assert
                 Assert.Equal(15, telemetryEvents.Count);
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
@@ -6598,7 +6620,9 @@ namespace NuGet.Test
             {
                 var Settings = new Settings(settingsdir);
                 foreach (var source in sourceRepositoryProvider.GetRepositories())
+                {
                     Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+                }
 
                 var token = CancellationToken.None;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
