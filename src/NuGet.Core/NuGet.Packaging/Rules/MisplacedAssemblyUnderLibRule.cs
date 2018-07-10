@@ -39,15 +39,8 @@ namespace NuGet.Packaging.Rules
         private PackagingLogMessage CreatePackageIssueForAssembliesUnderLib(string target)
         {
             return PackagingLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, MessageFormat, target),
+                string.Format(CultureInfo.CurrentCulture, MessageFormat, target),
                 NuGetLogCode.NU5101);
-        }
-
-        private static PackagingLogMessage CreatePackageIssueForAssembliesOutsideLib(string target)
-        {
-            return PackagingLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyOutsideLibWarning, target),
-                NuGetLogCode.NU5100);
         }
 
         /// <summary>

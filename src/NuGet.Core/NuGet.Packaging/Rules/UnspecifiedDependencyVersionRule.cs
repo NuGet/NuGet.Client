@@ -31,20 +31,13 @@ namespace NuGet.Packaging.Rules
 
             if (dependency != null && dependency.VersionRange == VersionRange.All)
             {
-                var issue = PackagingLogMessage.CreateWarning(String.Format(
+                var issue = PackagingLogMessage.CreateWarning(string.Format(
                     CultureInfo.CurrentCulture,
                     AnalysisResources.UnspecifiedDependencyVersionWarning,
                     dependency.Id),
                     NuGetLogCode.NU5112);
                 yield return issue;
             }
-        }
-
-        private PackagingLogMessage CreateIssueFor(string field, string value)
-        {
-            return PackagingLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, MessageFormat, value, field),
-                NuGetLogCode.NU5102);
         }
     }
 }
