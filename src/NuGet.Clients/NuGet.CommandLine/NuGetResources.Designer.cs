@@ -11315,6 +11315,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot set the set of valid authentication types for the source if the source does not have credentials associated with it..
+        /// </summary>
+        public static string SourcesCommandAuthTypesInvalidWithoutCredentials {
+            get {
+                return ResourceManager.GetString("SourcesCommandAuthTypesInvalidWithoutCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Both UserName and Password must be specified..
         /// </summary>
         public static string SourcesCommandCredentialsRequired {

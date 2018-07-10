@@ -6,10 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-
-#if !IS_CORECLR
 using NuGet.Common;
-#endif
 
 namespace NuGet.Configuration
 {
@@ -249,16 +246,28 @@ namespace NuGet.Configuration
 
                 if (!string.IsNullOrEmpty(userName))
                 {
+                    var authenticationTypesText = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.ValidAuthenticationTypesToken, StringComparison.OrdinalIgnoreCase)).Value;
+
                     var encryptedPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase)).Value;
                     if (!string.IsNullOrEmpty(encryptedPassword))
                     {
-                        return new PackageSourceCredential(sourceName, userName, encryptedPassword, isPasswordClearText: false);
+                        return new PackageSourceCredential(
+                            sourceName,
+                            userName,
+                            encryptedPassword,
+                            isPasswordClearText: false,
+                            validAuthenticationTypesText: authenticationTypesText);
                     }
 
                     var clearTextPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.ClearTextPasswordToken, StringComparison.Ordinal)).Value;
                     if (!string.IsNullOrEmpty(clearTextPassword))
                     {
-                        return new PackageSourceCredential(sourceName, userName, clearTextPassword, isPasswordClearText: true);
+                        return new PackageSourceCredential(
+                            sourceName,
+                            userName,
+                            clearTextPassword,
+                            isPasswordClearText: true,
+                            validAuthenticationTypesText: authenticationTypesText);
                     }
                 }
             }
@@ -274,7 +283,7 @@ namespace NuGet.Configuration
                 return null;
             }
 
-            var match = Regex.Match(rawCredentials.Trim(), @"^Username=(?<user>.*?);\s*Password=(?<pass>.*?)$", RegexOptions.IgnoreCase);
+            var match = Regex.Match(rawCredentials.Trim(), @"^Username=(?<user>.*?);\s*Password=(?<pass>.*?)(?:;ValidAuthenticationTypes=(?<authTypes>.*?))?$", RegexOptions.IgnoreCase);
             if (!match.Success)
             {
                 return null;
@@ -284,7 +293,8 @@ namespace NuGet.Configuration
                 sourceName,
                 match.Groups["user"].Value,
                 match.Groups["pass"].Value,
-                isPasswordClearText: true);
+                isPasswordClearText: true,
+                validAuthenticationTypesText: match.Groups["authTypes"].Value);
         }
 
         private void MigrateSources(List<PackageSource> loadedPackageSources)
@@ -469,17 +479,27 @@ namespace NuGet.Configuration
             PackageSourcesChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private static KeyValuePair<string, string>[] GetCredentialValues(PackageSourceCredential credentials)
+        private static IList<KeyValuePair<string, string>> GetCredentialValues(PackageSourceCredential credentials)
         {
             var passwordToken = credentials.IsPasswordClearText
                 ? ConfigurationConstants.ClearTextPasswordToken
                 : ConfigurationConstants.PasswordToken;
 
-            return new[]
+            var entries = new List<KeyValuePair<string,string>>
             {
                 new KeyValuePair<string, string>(ConfigurationConstants.UsernameToken, credentials.Username),
                 new KeyValuePair<string, string>(passwordToken, credentials.PasswordText)
             };
+
+            if (!string.IsNullOrEmpty(credentials.ValidAuthenticationTypesText))
+            {
+                entries.Add(
+                    new KeyValuePair<string, string>(
+                        ConfigurationConstants.ValidAuthenticationTypesToken,
+                        credentials.ValidAuthenticationTypesText));
+            }
+
+            return entries;
         }
 
         public string DefaultPushSource

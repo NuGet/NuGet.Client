@@ -12748,6 +12748,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Comma-separated list of valid authentication types for this source, or * to allow all authentication types, which is the default. Example: basic,negotiate.
+        /// </summary>
+        internal static string SourcesCommandValidAuthenticationTypesDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandValidAuthenticationTypesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Assembly to use for metadata..
         /// </summary>
         internal static string SpecCommandAssemblyPathDescription {

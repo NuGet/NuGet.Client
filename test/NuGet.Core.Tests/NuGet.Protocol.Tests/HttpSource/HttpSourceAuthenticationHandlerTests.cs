@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -20,7 +21,7 @@ namespace NuGet.Protocol.Tests
         {
             var packageSource = new PackageSource("http://package.source.net", "source")
             {
-                Credentials = new PackageSourceCredential("source", "user", "password", isPasswordClearText: true)
+                Credentials = new PackageSourceCredential("source", "user", "password", isPasswordClearText: true, validAuthenticationTypesText: null)
             };
             var clientHandler = new HttpClientHandler();
             var credentialService = Mock.Of<ICredentialService>();

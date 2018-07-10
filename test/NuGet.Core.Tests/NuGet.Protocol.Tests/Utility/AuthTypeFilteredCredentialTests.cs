@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
-using Moq;
 using NuGet.Common;
-using NuGet.Protocol.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Tests
@@ -16,19 +15,14 @@ namespace NuGet.Protocol.Tests
         [InlineData("negotiate")]
         [InlineData("basic")]
         [InlineData("somethirdthing")]
-        void ApplyFilterFromEnvironmentVariable_AllowsAnyWhenEnvVarNotSet(string authType)
+        void GetCredential_AllowsAnyWhenFilterEmpty(string authType)
         {
             // Arrange
             var expected = new NetworkCredential("username", "password");
-            var innerCredential = Mock.Of<ICredentials>(
-                x => x.GetCredential(It.IsAny<Uri>(), It.IsAny<string>()) == expected);
-            var environment = Mock.Of<IEnvironmentVariableReader>(
-                x => x.GetEnvironmentVariable("NUGET_AUTHENTICATION_TYPES") == null);
+            var credential = new AuthTypeFilteredCredentials(expected, Enumerable.Empty<string>());
 
             // Act
-            var actual = AuthTypeFilteredCredentials
-                .ApplyFilterFromEnvironmentVariable(innerCredential, environment)
-                .GetCredential(new Uri("https://example.com/"), authType);
+            var actual = credential.GetCredential(new Uri("https://example.com/"), authType);
 
             // Assert
             Assert.Same(expected, actual);
@@ -37,19 +31,28 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData("basic")]
         [InlineData("somethirdthing")]
-        void ApplyFilterFromEnvironmentVariable_GetCredentialPassesThroughWhenAuthTypeInFilter(string authType)
+        void GetCredential_PassesThroughWhenAuthTypeInFilter(string authType)
         {
             // Arrange
             var expected = new NetworkCredential("username", "password");
-            var innerCredential = Mock.Of<ICredentials>(
-                x => x.GetCredential(It.IsAny<Uri>(), It.IsAny<string>()) == expected);
-            var environment = Mock.Of<IEnvironmentVariableReader>(
-                x => x.GetEnvironmentVariable("NUGET_AUTHENTICATION_TYPES") == "basic,somethirdthing");
+            var credential = new AuthTypeFilteredCredentials(expected, new[] {"basic", "somethirdthing"});
 
             // Act
-            var actual = AuthTypeFilteredCredentials
-                .ApplyFilterFromEnvironmentVariable(innerCredential, environment)
-                .GetCredential(new Uri("https://example.com/"), authType);
+            var actual = credential.GetCredential(new Uri("https://example.com/"), authType);
+
+            // Assert
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        void GetCredential_PassesThroughWhenAuthTypeIsNull()
+        {
+            // Arrange
+            var expected = new NetworkCredential("username", "password");
+            var credential = new AuthTypeFilteredCredentials(expected, new[] { "basic", "somethirdthing" });
+
+            // Act
+            var actual = credential.GetCredential(new Uri("https://example.com/"), null);
 
             // Assert
             Assert.Same(expected, actual);
@@ -58,19 +61,14 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData("negotiate")]
         [InlineData("anotherunknownvalue")]
-        void ApplyFilterFromEnvironmentVariable_GetCredentialReturnsNullWhenAuthTypeNotInFilter(string authType)
+        void GetCredential_ReturnsNullWhenAuthTypeNotInFilter(string authType)
         {
             // Arrange
             var unexpected = new NetworkCredential("username", "password");
-            var innerCredential = Mock.Of<ICredentials>(
-                x => x.GetCredential(It.IsAny<Uri>(), It.IsAny<string>()) == unexpected);
-            var environment = Mock.Of<IEnvironmentVariableReader>(
-                x => x.GetEnvironmentVariable("NUGET_AUTHENTICATION_TYPES") == "basic,somethirdthing");
+            var credential = new AuthTypeFilteredCredentials(unexpected, new[] {"basic", "somethirdthing"});
 
             // Act
-            var actual = AuthTypeFilteredCredentials
-                .ApplyFilterFromEnvironmentVariable(innerCredential, environment)
-                .GetCredential(new Uri("https://example.com/"), authType);
+            var actual = credential.GetCredential(new Uri("https://example.com/"), authType);
 
             // Assert
             Assert.Null(actual);

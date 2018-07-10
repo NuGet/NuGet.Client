@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Protocol.Utility;
 
 namespace NuGet.Protocol
 {
@@ -56,8 +55,7 @@ namespace NuGet.Protocol
             if (packageSource.Credentials != null &&
                 packageSource.Credentials.IsValid())
             {
-                var credentials = new NetworkCredential(packageSource.Credentials.Username, packageSource.Credentials.Password);
-                _credentials.Credentials = AuthTypeFilteredCredentials.ApplyFilterFromEnvironmentVariable(credentials);
+                _credentials.Credentials = packageSource.Credentials.ToICredentials();
             }
 
             _clientHandler.Credentials = _credentials;

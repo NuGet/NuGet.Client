@@ -1646,7 +1646,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var encryptedPassword = Guid.NewGuid().ToString();
-            var credentials = new PackageSourceCredential("twoname", "User", encryptedPassword, isPasswordClearText: false);
+            var credentials = new PackageSourceCredential("twoname", "User", encryptedPassword, isPasswordClearText: false, validAuthenticationTypesText: null);
             var sources = new[]
                 {
                     new PackageSource("one"),
@@ -1828,7 +1828,7 @@ namespace NuGet.Configuration.Test
         public void SavePackageSources_SavesClearTextCredentials()
         {
             // Arrange
-            var credentials = new PackageSourceCredential("twoname", "User", "password", isPasswordClearText: true);
+            var credentials = new PackageSourceCredential("twoname", "User", "password", isPasswordClearText: true, validAuthenticationTypesText: null);
             var sources = new[]
                 {
                     new PackageSource("one"),

@@ -6167,4 +6167,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Warning_LongPath_UnsupportedOS" xml:space="preserve">
     <value>Long file path is currently only supported on Windows 10. Fore more details, please refer to https://aka.ms/nuget-long-path.</value>
   </data>
+  <data name="SourcesCommandAuthTypesInvalidWithoutCredentials" xml:space="preserve">
+    <value>Cannot set the set of valid authentication types for the source if the source does not have credentials associated with it.</value>
+  </data>
 </root>

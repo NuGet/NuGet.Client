@@ -3,13 +3,14 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Protocol.Utility;
 
 namespace NuGet.Credentials
 {
@@ -124,11 +125,9 @@ namespace NuGet.Credentials
 
                 if (response.IsValid)
                 {
-                    ICredentials result = new NetworkCredential(response.Username, response.Password);
-                    if (response.AuthTypes != null)
-                    {
-                        result = new AuthTypeFilteredCredentials(result, response.AuthTypes);
-                    }
+                    var result = new AuthTypeFilteredCredentials(
+                        new NetworkCredential(response.Username, response.Password),
+                        response.AuthTypes ?? Enumerable.Empty<string>());
 
                     taskResponse = new CredentialResponse(result);
                 }

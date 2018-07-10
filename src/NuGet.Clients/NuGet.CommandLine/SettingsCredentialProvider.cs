@@ -4,7 +4,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
-using NuGet.Protocol.Utility;
+using NuGet.Common;
 
 namespace NuGet.CommandLine
 {
@@ -31,21 +31,20 @@ namespace NuGet.CommandLine
 
         public ICredentials GetCredentials(Uri uri, IWebProxy proxy, CoreV2.NuGet.CredentialType credentialType, bool retrying)
         {
-            NetworkCredential credentials;
             // If we are retrying, the stored credentials must be invalid.
-            if (!retrying && (credentialType == CoreV2.NuGet.CredentialType.RequestCredentials) && TryGetCredentials(uri, out credentials))
+            if (!retrying && (credentialType == CoreV2.NuGet.CredentialType.RequestCredentials) && TryGetCredentials(uri, out var credentials, out var username))
             {
                 _logger.LogMinimal(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString(nameof(NuGetResources.SettingsCredentials_UsingSavedCredentials)),
-                        credentials.UserName));
-                return AuthTypeFilteredCredentials.ApplyFilterFromEnvironmentVariable(credentials);
+                        username));
+                return credentials;
             }
             return null;
         }
 
-        private bool TryGetCredentials(Uri uri, out NetworkCredential configurationCredentials)
+        private bool TryGetCredentials(Uri uri, out ICredentials configurationCredentials, out string username)
         {
             var source = _packageSourceProvider.LoadPackageSources().FirstOrDefault(p =>
             {
@@ -59,9 +58,12 @@ namespace NuGet.CommandLine
             {
                 // The source is not in the config file
                 configurationCredentials = null;
+                username = null;
                 return false;
             }
-            configurationCredentials = new NetworkCredential(source.Credentials.Username, source.Credentials.Password);
+
+            configurationCredentials = source.Credentials.ToICredentials();
+            username = source.Credentials.Username;
             return true;
         }
 

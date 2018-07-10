@@ -229,7 +229,8 @@ namespace NuGet.Protocol.Plugins.Tests
                 _packageSource.Source,
                 username: "a",
                 passwordText: "b",
-                isPasswordClearText: true);
+                isPasswordClearText: true,
+                validAuthenticationTypesText: null);
 
             using (var provider = CreateDefaultRequestHandler())
             {
