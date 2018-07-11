@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0">
   <!-- Version -->
   <PropertyGroup>
-    <IsEscrowMode>false</IsEscrowMode>
+    <IsEscrowMode>true</IsEscrowMode>
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">4</MajorNuGetVersion>
     <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">8</MinorNuGetVersion>
     <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
@@ -13,8 +13,8 @@
     <CliTargetBranch>release/2.1.4xx</CliTargetBranch>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">5</NetCoreAssemblyBuildNumber>
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">0</NetCoreAssemblyBuildNumber>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">rtm</ReleaseLabel>
   </PropertyGroup>
 
   <!-- Dependency versions -->
