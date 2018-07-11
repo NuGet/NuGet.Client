@@ -377,8 +377,10 @@ namespace NuGet.DependencyResolver
                     var acceptedType = LibraryDependencyTargetUtils.Parse(acceptedNode.Item.Key.Type);
                     var childType = childNode.Key.TypeConstraint;
 
+                    // Skip the check if a project reference override a package dependency
                     // Check the type constraints, if there is any overlap check for conflict
-                    if ((childType & acceptedType) != LibraryDependencyTarget.None)
+                    if ((acceptedType & (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)) == LibraryDependencyTarget.None
+                        && (childType & acceptedType) != LibraryDependencyTarget.None)
                     {
                         var versionRange = childNode.Key.VersionRange;
                         var checkVersion = acceptedNode.Item.Key.Version;
