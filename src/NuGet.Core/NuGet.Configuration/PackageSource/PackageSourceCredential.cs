@@ -37,6 +37,10 @@ namespace NuGet.Configuration
         public IEnumerable<string> ValidAuthenticationTypes =>
             ParseAuthTypeFilterString(ValidAuthenticationTypesText);
 
+        /// <summary>
+        /// Comma-delimited list of authentication types the credential is valid for as stored in the config file.
+        /// If null, empty, or '*', all authentication types are valid. Example: 'basic,negotiate'
+        /// </summary>
         public string ValidAuthenticationTypesText { get; }
 
         /// <summary>
@@ -55,7 +59,7 @@ namespace NuGet.Configuration
                     catch (NotSupportedException e)
                     {
                         throw new NuGetConfigurationException(
-                            String.Format(CultureInfo.CurrentCulture, Resources.UnsupportedDecryptPassword, Source), e);
+                            string.Format(CultureInfo.CurrentCulture, Resources.UnsupportedDecryptPassword, Source), e);
                     }
                 }
                 else
@@ -74,7 +78,7 @@ namespace NuGet.Configuration
         /// Verifies if object contains valid data, e.g. not empty user name and password.
         /// </summary>
         /// <returns>True if credentials object is valid</returns>
-        public bool IsValid() => !String.IsNullOrEmpty(Username) && !String.IsNullOrEmpty(PasswordText);
+        public bool IsValid() => !string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(PasswordText);
 
         /// <summary>
         /// Instantiates the credential instance out of raw values read from a config file.
@@ -84,8 +88,8 @@ namespace NuGet.Configuration
         /// <param name="passwordText">Password as stored in config file</param>
         /// <param name="isPasswordClearText">Hints if password provided in clear text</param>
         /// <param name="validAuthenticationTypesText">
-        /// List of authentication types the credential is valid for as stored in config file, e.g. 'basic'. If null or empty, all authentication types
-        /// are allowed.
+        /// Comma-delimited list of authentication types the credential is valid for as stored in the config file.
+        /// If null, empty, or '*', all authentication types are valid. Example: 'basic,negotiate'
         /// </param>
         public PackageSourceCredential(string source, string username, string passwordText, bool isPasswordClearText, string validAuthenticationTypesText)
         {
@@ -105,7 +109,10 @@ namespace NuGet.Configuration
         /// <param name="username">User name</param>
         /// <param name="password">Password text in clear</param>
         /// <param name="storePasswordInClearText">Hints if the password should be stored in clear text on disk.</param>
-        /// <param name="validAuthenticationTypesText"></param>
+        /// <param name="validAuthenticationTypesText">
+        /// Comma-delimited list of authentication types the credential is valid for as stored in the config file.
+        /// If null, empty, or '*', all authentication types are valid. Example: 'basic,negotiate'
+        /// </param>
         /// <returns>New instance of <see cref="PackageSourceCredential"/></returns>
         public static PackageSourceCredential FromUserInput(
             string source,
@@ -144,15 +151,26 @@ namespace NuGet.Configuration
             catch (NotSupportedException e)
             {
                 throw new NuGetConfigurationException(
-                    String.Format(CultureInfo.CurrentCulture, Resources.UnsupportedEncryptPassword, source), e);
+                    string.Format(CultureInfo.CurrentCulture, Resources.UnsupportedEncryptPassword, source), e);
             }
         }
 
+        /// <summary>
+        /// Returns a copy of this PackageSourceCredential, with the valid authentication types replaced by
+        /// <paramref name="newAuthenticationTypes"/>
+        /// </summary>
+        /// <param name="newAuthenticationTypes">
+        /// Comma-delimited list of authentication types the credential is valid for as stored in the config file.
+        /// If null, empty, or '*', all authentication types are valid. Example: 'basic,negotiate'
+        /// </param>
         public PackageSourceCredential WithAuthenticationTypes(string newAuthenticationTypes)
         {
             return new PackageSourceCredential(Source, Username, PasswordText, IsPasswordClearText, newAuthenticationTypes);
         }
 
+        /// <summary>
+        /// Converts this object to an ICredentials, capturing the username, password and valid authentication types
+        /// </summary>
         public ICredentials ToICredentials()
         {
             return new AuthTypeFilteredCredentials(new NetworkCredential(Username, Password), ValidAuthenticationTypes);
@@ -163,6 +181,17 @@ namespace NuGet.Configuration
             return new PackageSourceCredential(Source, Username, PasswordText, IsPasswordClearText, ValidAuthenticationTypesText);
         }
 
+        /// <summary>
+        /// Converts an authentication type filter string from the config file syntax to a list of valid authentication
+        /// types
+        /// </summary>
+        /// <param name="str">
+        /// Comma-delimited list of authentication types the credential is valid for as stored in the config file.
+        /// If null, empty, or '*', all authentication types are valid. Example: 'basic,negotiate'
+        /// </param>
+        /// <returns>
+        /// Enumeration of valid authentication types. If empty, all authentication types are valid.
+        /// </returns>
         private static IEnumerable<string> ParseAuthTypeFilterString(string str)
         {
             var trimmed = str?.Trim();
