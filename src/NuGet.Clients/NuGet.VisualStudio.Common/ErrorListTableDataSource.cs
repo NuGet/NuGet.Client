@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.TableControl;
 using Microsoft.VisualStudio.Shell.TableManager;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Common
 {
     /// <summary>
     /// Add/Remove warnings/errors from the error list.

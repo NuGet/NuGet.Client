@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.Shell.TableControl;
 using Microsoft.VisualStudio.Shell.TableManager;
 using NuGet.Common;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Common
 {
     public class ErrorListTableEntry : ITableEntry
     {

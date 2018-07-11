@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
