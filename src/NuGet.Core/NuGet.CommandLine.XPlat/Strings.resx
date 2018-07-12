@@ -474,4 +474,19 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="AddPkg_InteractiveDescription" xml:space="preserve">
     <value>Allow the command to block and require manual action for operations like authentication.</value>
   </data>
+  <data name="ListPkg_DeprecatedDescription" xml:space="preserve">
+    <value>Displays only the packages that are marked deprecated by the authors</value>
+  </data>
+  <data name="ListPkg_Description" xml:space="preserve">
+    <value>Lists all the packages that are used by the current project(s)</value>
+  </data>
+  <data name="ListPkg_FrameworkDescription" xml:space="preserve">
+    <value>Specifies the target framework to which the packages will be listed</value>
+  </data>
+  <data name="ListPkg_OutdatedDescription" xml:space="preserve">
+    <value>Displays only the packages that need updates with the latest version from the sources</value>
+  </data>
+  <data name="ListPkg_TransitiveDescription" xml:space="preserve">
+    <value>Includes transitive packages too in the result</value>
+  </data>
 </root>

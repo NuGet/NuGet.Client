@@ -467,6 +467,51 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Displays only the packages that are marked deprecated by the authors.
+        /// </summary>
+        internal static string ListPkg_DeprecatedDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_DeprecatedDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lists all the packages that are used by the current project(s).
+        /// </summary>
+        internal static string ListPkg_Description {
+            get {
+                return ResourceManager.GetString("ListPkg_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the target framework to which the packages will be listed.
+        /// </summary>
+        internal static string ListPkg_FrameworkDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_FrameworkDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Displays only the packages that need updates with the latest version from the sources.
+        /// </summary>
+        internal static string ListPkg_OutdatedDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_OutdatedDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Includes transitive packages too in the result.
+        /// </summary>
+        internal static string ListPkg_TransitiveDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_TransitiveDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the cache location(s) to list or clear.
         ///&lt;all | http-cache | global-packages | temp&gt;.
         /// </summary>
