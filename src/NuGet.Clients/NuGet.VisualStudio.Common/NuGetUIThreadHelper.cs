@@ -48,16 +48,9 @@ namespace NuGet.VisualStudio
             {
                 _joinableTaskFactory = new Lazy<JoinableTaskFactory>(() =>
                 {
-#if VS14
-                    // Use IThreadHandling.AsyncPump for Visual Studio 2015
-                    ProjectService projectService = projectServiceAccessor.GetProjectService();
-                    IThreadHandling threadHandling = projectService.Services.ThreadingPolicy;
-                    return threadHandling.AsyncPump;
-#else
                     // Use IProjectService for Visual Studio 2017
                     var projectService = projectServiceAccessor.GetProjectService();
                     return projectService.Services.ThreadingPolicy.JoinableTaskFactory;
-#endif
                 },
                 // This option helps avoiding deadlocks caused by CPS trying to create ProjectServiceHost
                 // PublicationOnly mode lets parallel threads execute value factory method without

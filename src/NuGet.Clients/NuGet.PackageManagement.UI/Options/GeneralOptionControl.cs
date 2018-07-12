@@ -53,12 +53,11 @@ namespace NuGet.Options
 
                     var bindingRedirects = new BindingRedirectBehavior(_settings);
                     skipBindingRedirects.Checked = bindingRedirects.IsSkipped;
-#if !VS14
+
                     // package management format selection
                     var packageManagement = new PackageManagementFormat(_settings);
                     defaultPackageManagementFormatItems.SelectedIndex = packageManagement.SelectedPackageManagementFormat;
                     showPackageManagementChooser.Checked = packageManagement.Enabled;
-#endif
                 }
                 // Thrown during creating or saving NuGet.Config.
                 catch (NuGetConfigurationException ex)
@@ -95,13 +94,12 @@ namespace NuGet.Options
 
                 var bindingRedirects = new BindingRedirectBehavior(_settings);
                 bindingRedirects.IsSkipped = skipBindingRedirects.Checked;
-#if !VS14
+
                 // package management format selection
                 var packageManagement = new PackageManagementFormat(_settings);
                 packageManagement.SelectedPackageManagementFormat = defaultPackageManagementFormatItems.SelectedIndex;
                 packageManagement.Enabled = showPackageManagementChooser.Checked;
                 packageManagement.ApplyChanges();
-#endif
             }
             // Thrown during creating or saving NuGet.Config.
             catch (NuGetConfigurationException ex)

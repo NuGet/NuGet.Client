@@ -5,9 +5,7 @@ using System;
 using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem;
-#if VS14
-using Microsoft.VisualStudio.ProjectSystem.Designers;
-#elif VS15
+#if VS15
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 #endif
 using Microsoft.VisualStudio.Shell;

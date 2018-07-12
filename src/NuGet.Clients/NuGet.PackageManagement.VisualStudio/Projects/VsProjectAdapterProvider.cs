@@ -28,20 +28,15 @@ namespace NuGet.PackageManagement.VisualStudio
         public VsProjectAdapterProvider(
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider serviceProvider,
-#if !VS14
             Lazy<IDeferredProjectWorkspaceService> workspaceService,
-#endif
             IVsProjectThreadingService threadingService)
         {
             Assumes.Present(serviceProvider);
             Assumes.Present(threadingService);
-#if !VS14
             Assumes.Present(workspaceService);
 
             _workspaceService = workspaceService;
-#endif
             _threadingService = threadingService;
-
             _vsSolution = new Lazy<IVsSolution>(() => serviceProvider.GetService<SVsSolution, IVsSolution>());
         }
 

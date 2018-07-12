@@ -201,7 +201,6 @@ namespace NuGet.SolutionRestoreManager
                     restoreSource,
                     token);
 
-#if !VS14
                 // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
                 // project in the solution. Extending this behavior to all solutions is tracked here:
                 // NuGet/Home#4478
@@ -210,7 +209,6 @@ namespace NuGet.SolutionRestoreManager
                     _restoreEventsPublisher.OnSolutionRestoreCompleted(
                         new SolutionRestoredEventArgs(_status, solutionDirectory));
                 }
-#endif
             }
             finally
             {

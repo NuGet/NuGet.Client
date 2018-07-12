@@ -80,9 +80,6 @@ namespace NuGetVSExtension
 
         public NuGetPackage()
         {
-#if VS14
-            NuGet.Common.RuntimeEnvironmentHelper.IsDev14 = true;
-#endif
             ServiceLocator.InitializePackageServiceProvider(this);
         }
 

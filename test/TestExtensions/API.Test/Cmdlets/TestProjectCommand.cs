@@ -43,10 +43,7 @@ namespace API.Test.Cmdlets
         private static async Task<bool> TestProjectIsDeferredAsync(IVsHierarchy project)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-#if VS14
-            await Task.Yield();
-            return false;
-#else
+
             object isDeferred;
             if (ErrorHandler.Failed(project.GetProperty(
                 (uint)VSConstants.VSITEMID.Root,
@@ -57,7 +54,6 @@ namespace API.Test.Cmdlets
             }
 
             return object.Equals(true, isDeferred);
-#endif
         }
     }
 }

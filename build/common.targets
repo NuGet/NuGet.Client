@@ -54,15 +54,6 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
-  <!-- These are needed because currently a VSIX project cannot reference a net core project that multi targets.
-  This is a hack for building VS14 VSIX. It's because all these targets are available in the inner build, while the VSIX project 
-  is non netcore, and isn't aware of inner/outer builds. -->
-  <Target Name="BuiltProjectOutputGroupDependencies" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0' " />
-  <Target Name="BuiltProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
-  <Target Name="GetCopyToOutputDirectoryItems" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
-  <Target Name="SatelliteDllsProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
-  <Target Name="DebugSymbolsProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
-
   <!--
     ============================================================
     TestProject

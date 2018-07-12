@@ -281,10 +281,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<bool> IsAllProjectsNominatedAsync()
         {
-#if VS14
-            // for VS14, always return true since nominations don't apply there.
-            return await Task.FromResult(true);
-#else
             var netCoreProjects = (await GetNuGetProjectsAsync()).OfType<NetCorePackageReferenceProject>().ToList();
 
             foreach (var project in netCoreProjects)
@@ -301,7 +297,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // return true if all the net core projects have been nominated.
             return true;
-#endif
         }
 
         /// <summary>
@@ -985,15 +980,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<NuGetProject> UpgradeProjectToPackageReferenceAsync(NuGetProject oldProject)
         {
-#if VS14
-            // do nothing for VS 2015 and simply return the existing NuGetProject
-            if (NuGetProjectUpdated != null)
-            {
-                NuGetProjectUpdated(this, new NuGetProjectEventArgs(oldProject));
-            }
-
-            return await Task.FromResult(oldProject);
-#else
             Assumes.Present(oldProject);
 
             var projectName = await GetNuGetProjectSafeNameAsync(oldProject);
@@ -1020,7 +1006,6 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetProjectUpdated?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
 
             return nuGetProject;
-#endif
         }
 
         #endregion

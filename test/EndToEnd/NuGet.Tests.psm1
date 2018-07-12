@@ -93,7 +93,7 @@ Register-TabExpansion 'Run-Test' @{
 function Rearrange-Tests {
     param($tests)
 
-    if ($VSVersion -eq "12.0" -or $VSVersion -eq "14.0" -or $VSVersion -eq "15.0")
+    if ($VSVersion -eq "15.0")
     {
         # Tracked by issue: https://github.com/NuGet/Home/issues/2387
         # And, the commit is linked to the issue

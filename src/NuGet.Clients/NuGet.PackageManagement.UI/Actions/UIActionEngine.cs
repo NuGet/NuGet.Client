@@ -452,10 +452,6 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<bool> CheckPackageManagementFormat(INuGetUI uiService, CancellationToken token)
         {
-#if VS14
-            // don't show this dialog for VS 2015
-            return await Task.FromResult(true);
-#else
             var potentialProjects = new List<NuGetProject>();
 
             // check if project suppports <PackageReference> items.
@@ -509,7 +505,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             return true;
-#endif
         }
 
         // Returns false if user doesn't accept license agreements.

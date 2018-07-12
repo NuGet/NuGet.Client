@@ -57,14 +57,6 @@
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
   </ItemGroup>
   <Choose>
-    <When Condition="$(VisualStudioVersion)=='14.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-          <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-      </ItemGroup>
-    </When>
     <When Condition="$(VisualStudioVersion)=='15.0'">
       <ItemGroup>
         <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">

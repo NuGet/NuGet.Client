@@ -220,13 +220,6 @@
              Targets="Clean"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=15.0;" />
-
-    <!-- Clean 14 -->
-    <MSBuild BuildInParallel="true"
-             Projects="@(SolutionProjects)"
-             Targets="Clean"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=14.0;" />
   </Target>
 
   <!--

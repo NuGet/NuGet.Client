@@ -137,14 +137,6 @@ if (-not $ProgramFiles -or -not (Test-Path $ProgramFiles)) {
 $MSBuildDefaultRoot = Join-Path $ProgramFiles MSBuild
 $MSBuildRelativePath = 'bin\msbuild.exe'
 
-Invoke-BuildStep 'Validating VS14 toolset installation' {
-    $vs14 = New-BuildToolset 14
-    if ($vs14) {
-        $ConfigureObject.Toolsets.Add('vs14', $vs14)
-        $script:MSBuildExe = Join-Path $MSBuildDefaultRoot "14.0\${MSBuildRelativePath}"
-    }
-} -ev +BuildErrors
-
 Invoke-BuildStep 'Validating VS15 toolset installation' {
     $vs15 = New-BuildToolset 15
     if ($vs15) {

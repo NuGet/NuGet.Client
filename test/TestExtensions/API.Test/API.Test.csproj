@@ -34,12 +34,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="15.0.240" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <PackageReference Include="Microsoft.VisualStudio.Shell.14.0" Version="14.2.25123" />
-    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost.NuGet" Version="14.0.0.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="14.1.131" />
-  </ItemGroup>
-
   <Import Project="$(BuildCommonDirectory)common.targets" />
 
   <Target Name="DeployToArtifacts" AfterTargets="Build;Rebuild">
