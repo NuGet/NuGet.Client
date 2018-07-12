@@ -5,7 +5,7 @@ $VSInstallerProcessName = "VSIXInstaller"
 function GetVSFolderPath {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
+        [ValidateSet("15.0")]
         [string]$VSVersion
     )
 
@@ -37,7 +37,7 @@ function LaunchVSAndWaitForDTE {
     param (
         [string]$ActivityLogFullPath,
         [Parameter(Mandatory = $true)]
-        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
+        [ValidateSet("15.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         $DTEReadyPollFrequencyInSecs,
@@ -77,7 +77,7 @@ function LaunchVSAndWaitForDTE {
 function GetVSIDEFolderPath {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
+        [ValidateSet("15.0")]
         [string]$VSVersion
     )
 
@@ -105,7 +105,7 @@ function KillRunningInstancesOfVS {
 function LaunchVS {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
+        [ValidateSet("15.0")]
         [string]$VSVersion,
         [string]$ActivityLogFullPath
     )
@@ -124,7 +124,7 @@ function LaunchVS {
 function GetDTE2 {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
+        [ValidateSet("15.0")]
         [string]$VSVersion
     )
 
@@ -186,7 +186,7 @@ function ExecuteCommand {
 function GetVSIXInstallerPath {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
+        [ValidateSet("15.0")]
         [string]$VSVersion
     )
 
@@ -209,7 +209,7 @@ function UninstallVSIX {
         [Parameter(Mandatory = $true)]
         [string]$vsixID,
         [Parameter(Mandatory = $true)]
-        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
+        [ValidateSet("15.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds
@@ -278,7 +278,7 @@ function InstallVSIX {
         [Parameter(Mandatory = $true)]
         [string]$vsixpath,
         [Parameter(Mandatory = $true)]
-        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
+        [ValidateSet("15.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds

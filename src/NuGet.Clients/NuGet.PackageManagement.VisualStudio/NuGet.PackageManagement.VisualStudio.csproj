@@ -19,15 +19,6 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-  </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -73,12 +64,6 @@
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <Reference Include="Microsoft.Build">
-      <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <Reference Include="Microsoft.Build">

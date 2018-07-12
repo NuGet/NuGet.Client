@@ -38,10 +38,6 @@
       <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.16.0.201-pre-g7d366164d0\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <Compile Remove="Extensibility\VsProjectJsonToPackageReferenceMigrateResult.cs" />
-    <Compile Remove="Extensibility\VsProjectJsonToPackageReferenceMigrator.cs" />
-  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="CommonResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

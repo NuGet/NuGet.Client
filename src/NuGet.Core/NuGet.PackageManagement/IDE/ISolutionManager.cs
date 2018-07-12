@@ -88,7 +88,6 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// It ensure to completely load the solution before continue if it was loaded with DPL.
         /// That is, not all the projects were loaded when solution was open.
-        /// This will only be applicable for VS15 and will do nothing for VS14.
         /// </summary>
         void EnsureSolutionIsLoaded();
 

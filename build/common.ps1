@@ -14,7 +14,6 @@ $Artifacts = Join-Path $NuGetClientRoot artifacts
 $Nupkgs = Join-Path $Artifacts nupkgs
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
 $ConfigureJson = Join-Path $Artifacts configure.json
-$ILMergeOutputDir = Join-Path $Artifacts "VS14"
 
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
@@ -271,7 +270,7 @@ Function Install-DotnetCLIToILMergePack {
 
 Function Get-MSBuildRoot {
     param(
-        [ValidateSet(14,15)]
+        [ValidateSet(15)]
         [int]$MSBuildVersion,
         [switch]$Default
     )
@@ -336,7 +335,6 @@ Function Test-BuildEnvironment {
     Set-Alias msbuild $script:MSBuildExe -Scope Script -Force
     Set-Variable BuildToolsets -Value $ConfigureObject.Toolsets -Scope Script -Force
 
-    $script:VS14Installed = ($BuildToolsets | where vs14 -ne $null)
     $script:VS15Installed = ($BuildToolsets | where vs15 -ne $null)
 
     $ConfigureObject |
@@ -593,7 +591,7 @@ Function Publish-ClientsPackages {
         [string]$Configuration = $DefaultConfiguration,
         [string]$ReleaseLabel = $DefaultReleaseLabel,
         [int]$BuildNumber = (Get-BuildNumber),
-        [ValidateSet(14,15)]
+        [ValidateSet(15)]
         [int]$ToolsetVersion = $DefaultMSBuildVersion,
         [string]$KeyFile,
         [switch]$CI

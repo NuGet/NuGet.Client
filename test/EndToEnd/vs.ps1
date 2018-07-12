@@ -54,7 +54,7 @@ function New-BuildIntegratedProj
         [string]$SolutionFolder
     )
 
-    if ((Get-VSVersion) -ge '14.0')
+    if ((Get-VSVersion) -ge '15.0')
     {
         New-Project BuildIntegratedProj $ProjectName $SolutionFolder
     }
@@ -212,7 +212,7 @@ function New-CpsApp
         [string]$SolutionFolder
     )
 
-    if ($version -ge '14.0')
+    if ($version -ge '15.0')
     {
         New-Project CpsApp $ProjectName $SolutionFolder
     }
@@ -389,18 +389,7 @@ function New-JavaScriptApplication
 
     try
     {
-        if ((Get-VSVersion) -eq '12.0')
-        {
-            New-Project WinJSBlue $ProjectName $SolutionFolder
-        }
-        elseif ((Get-VSVersion) -eq '14.0')
-        {
-            New-Project WinJS_Dev14 $ProjectName $SolutionFolder
-        }
-        else
-        {
-            New-Project WinJS $ProjectName $SolutionFolder
-        }
+        New-Project WinJS $ProjectName $SolutionFolder
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
@@ -454,18 +443,7 @@ function New-NativeWinStoreApplication
 
     try
     {
-        if ((Get-VSVersion) -eq '12.0' )
-        {
-            New-Project CppWinStoreApplicationBlue $ProjectName $SolutionFolder
-        }
-        elseif ((Get-VSVersion) -eq '14.0')
-        {
-            New-Project CppWinStoreApplication_Dev14 $ProjectName $SolutionFolder
-        }
-        else
-        {
-            New-Project CppWinStoreApplication $ProjectName $SolutionFolder
-        }
+        New-Project CppWinStoreApplication $ProjectName $SolutionFolder
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
@@ -596,12 +574,7 @@ function New-WindowsPhoneClassLibrary {
     )
 
     try {
-        if ((Get-VSVersion) -eq '14.0') {
-            New-Project WindowsPhoneClassLibrary81 $ProjectName $SolutionFolder
-        }
-        else {
-            New-Project WindowsPhoneClassLibrary $ProjectName $SolutionFolder
-        }
+        New-Project WindowsPhoneClassLibrary $ProjectName $SolutionFolder
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed

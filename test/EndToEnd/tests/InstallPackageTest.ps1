@@ -640,27 +640,6 @@ function Test-InstallPackageWithGacReferencesIntoMultipleProjectTypes {
     $projects | %{ Assert-Reference $_ System.Web }
 }
 
-function Test-InstallPackageWithGacReferenceIntoWindowsPhoneProject {
-    param(
-        $context
-    )
-
-    # Windows 8.x/Phone tests irrelevant post-VS14
-    if ((Get-VSVersion) -ge "15.0") {
-        Write-Host "Skipping InstallPackageWithGacReferenceIntoWindowsPhoneProject"
-        return
-    }
-
-    # Arrange
-    $p = New-WindowsPhoneClassLibrary
-
-    # Act
-    $p | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
-
-    # Assert
-    Assert-Reference $p System.ComponentModel.DataAnnotations
-}
-
 <#
 function Test-PackageWithClientProfileAndFullFrameworkPicksClient {
     param(
@@ -679,31 +658,6 @@ function Test-PackageWithClientProfileAndFullFrameworkPicksClient {
     Assert-True ($reference.Path.Contains("net40-client") -or ($reference.Path.Contains("net4-client")))
 }
 #>
-
-
-function Test-InstallPackageThatTargetsWindowsPhone {
-    param(
-        $context
-    )
-
-    # Windows 8.x/Phone tests irrelevant post-VS14
-    if ((Get-VSVersion) -ge "15.0") {
-        Write-Host "Skipping InstallPackageThatTargetsWindowsPhone"
-        return
-    }
-
-    # Arrange
-    $p = New-WindowsPhoneClassLibrary
-
-    # Arrange
-    $p | Install-Package WpPackage -Source $context.RepositoryPath
-
-    # Assert
-    Assert-Package $p WpPackage
-    Assert-SolutionPackage WpPackage
-    $reference = Get-AssemblyReference $p luan
-    Assert-NotNull $reference
-}
 
 function Test-InstallPackageWithNonExistentFrameworkReferences {
     param(
@@ -1295,45 +1249,6 @@ function Test-InstallPackageAfterRenaming {
     # Assert
     Assert-NotNull (Get-ProjectItem $p1 scripts\jquery-1.5.js)
     Assert-NotNull (Get-ProjectItem $p2 scripts\jquery-1.5.js)
-}
-
-function Test-InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRollbackIfInUse {
-    # Windows 8.x/Phone tests irrelevant post-VS14
-    if ((Get-VSVersion) -ge "15.0") {
-        Write-Host "Skipping InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRollbackIfInUse"
-        return
-    }
-
-    # Arrange
-    $p1 = New-WebApplication
-    $p2 = New-WindowsPhoneClassLibrary
-
-    # Act
-    $p1 | Install-Package NuGet.Core
-
-    if ((Get-VSVersion) -eq "10.0")
-    {
-        $profile = "Silverlight,Version=v4.0,Profile=WindowsPhone"
-    }
-    elseif ((Get-VSVersion) -eq "11.0")
-    {
-        $profile = "Silverlight,Version=v4.0,Profile=WindowsPhone71"
-    }
-    elseif ((Get-VSVersion) -eq "12.0")
-    {
-        $profile = "WindowsPhone,Version=v8.0"
-    }
-    elseif ((Get-VSVersion) -eq "14.0")
-    {
-        $profile = "WindowsPhoneApp,Version=v8.1"
-    }
-
-    Assert-Throws { $p2 | Install-Package NuGet.Core -Version 1.4.20615.9012 } "Could not install package 'NuGet.Core 1.4.20615.9012'. You are trying to install this package into a project that targets '$Profile', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
-
-    # Assert
-    Assert-Package $p1 NuGet.Core
-    Assert-SolutionPackage NuGet.Core
-    Assert-Null (Get-ProjectPackage $p2 NuGet.Core)
 }
 
 function Test-InstallingPackageWithDependencyThatFailsShouldRollbackSuccessfully {
@@ -2077,25 +1992,6 @@ function Test-InstallPackageInstallContentFilesAccordingToTargetFramework2 {
     Assert-Null (Get-ProjectItem $project "two.txt")
 }
 
-function Test-InstallPackageThrowsIfThereIsNoCompatibleContentFiles
-{
-    param($context)
-
-    # Windows 8.x/Phone tests irrelevant post-VS14
-    if ((Get-VSVersion) -ge "15.0") {
-        Write-Host "Skipping InstallPackageThrowsIfThereIsNoCompatibleContentFiles"
-        return
-    }
-
-    # Arrange
-    $project = New-JavaScriptApplication
-
-    # Act & Assert
-
-    Assert-Throws { Install-Package TestTargetFxContentFiles -Project $project.Name -Source $context.RepositoryPath } "Could not install package 'TestTargetFxContentFiles 1.0.0'. You are trying to install this package into a project that targets 'Windows,Version=v8.1', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
-    Assert-NoPackage $project TestTargetFxContentFiles
-}
-
 function Test-InstallPackageExecuteCorrectInstallScriptsAccordingToTargetFramework {
     param($context)
 
@@ -2610,38 +2506,6 @@ function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
     Assert-BindingRedirect $p app.config System.Web.Razor '0.0.0.0-3.0.0.0' '3.0.0.0'
 }
 
-# Temporarily comment out the test that's hang VS (during Javascript project creation)
-# NuGet is not involved in that step. We may need to update the template.
-function InstallPackageIntoJavaScriptApplication {
-    # Windows 8.x/Phone tests irrelevant post-VS14
-    [SkipTestForVS15()]
-    param()
-
-    # Arrange
-    $p = New-JavaScriptApplication
-
-    # Act
-    Install-Package jQuery -ProjectName $p.Name
-
-    # Assert
-    Assert-Package $p "jQuery"
-}
-
-function Test-InstallPackageIntoJavaScriptWindowsPhoneApp {
-    # Windows 8.x/Phone tests irrelevant post-VS14
-    [SkipTestForVS15()]
-    param()
-
-    # Arrange
-    $p = New-JavaScriptWindowsPhoneApp81
-
-    # Act
-    Install-Package jQuery -ProjectName $p.Name
-
-    # Assert
-    Assert-Package $p "jQuery"
-}
-
 function Test-InstallPackageIntoNativeWinStoreApplication {
     [SkipTestForVS15()]
     param()
@@ -2659,43 +2523,6 @@ function Test-InstallPackageIntoNativeWinStoreApplication {
 
     # Assert
     Assert-Package $p "zlib"
-}
-
-function Test-InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder {
-    # Windows 8.x/Phone tests irrelevant post-VS14
-    [SkipTestForVS15()]
-    param($context)
-
-    # Arrange
-    $p = New-JavaScriptApplication81
-
-    # Act
-    Install-Package Java -ProjectName $p.Name -source $context.RepositoryPath
-
-    # Assert
-    Assert-Package $p Java
-
-    Assert-NotNull (Get-ProjectItem $p 'windows81.txt')
-    Assert-Null (Get-ProjectItem $p 'windows8.txt')
-}
-
-function Test-InstallPackageIntoJSWindowsPhoneAppOnWin81UseTheCorrectFxFolder {
-    # Windows 8.x/Phone tests irrelevant post-VS14
-    [SkipTestForVS15()]
-    param($context)
-
-    # Arrange
-    $p = New-JavaScriptWindowsPhoneApp81
-
-    # Act
-    Install-Package Java -ProjectName $p.Name -source $context.RepositoryPath
-
-    # Assert
-    Assert-Package $p Java
-
-    Assert-NotNull (Get-ProjectItem $p 'phone.txt')
-    Assert-NotNull (Get-ProjectItem $p 'phone2.txt')
-    Assert-Null (Get-ProjectItem $p 'store.txt')
 }
 
 function Test-SpecifyDifferentVersionThenServerVersion
@@ -2738,49 +2565,6 @@ function Test-InstallLatestVersionWorksCorrectlyWithPrerelease
     # Assert
     Assert-Package $p A 0.6-beta
 }
-
-function Test-InstallPackageIntoJSAppOnWin81AcceptWinmdFile
-{
-    param($context)
-
-    # Windows 8.x/Phone tests irrelevant post-VS14
-    if ((Get-VSVersion) -ge "15.0") {
-        Write-Host "Skipping InstallPackageIntoJSAppOnWin81AcceptWinmdFile"
-        return
-    }
-
-    # Arrange
-    $p = New-JavaScriptApplication81
-
-    # Act
-    Install-Package MarkedUp -ProjectName $p.Name
-
-    # Assert
-    Assert-Package $p MarkedUp
-}
-
-function Test-PackageWithConfigTransformInstallToWinJsProject
-{
-    param($context)
-
-    # Windows 8.x/Phone tests irrelevant post-VS14
-    if ((Get-VSVersion) -ge "15.0") {
-        Write-Host "Skipping PackageWithConfigTransformInstallToWinJsProject"
-        return
-    }
-
-    # Arrange
-    $p = New-JavaScriptApplication
-
-    # Act
-    Install-Package PackageWithTransform -version 1.0 -ProjectName $p.Name -Source $context.RepositoryPath
-
-    # Assert
-    Assert-Package $p PackageWithTransform
-    Assert-NotNull (Get-ProjectItem $p 'root\a.config')
-    Assert-NotNull (Get-ProjectItem $p 'b.config')
-}
-
 
 function Test-InstallPackageAddPackagesConfigFileToProject
 {

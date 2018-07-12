@@ -29,15 +29,7 @@ namespace NuGet.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            // On Dev14, dte.Edition just returns SKU, such as "Enterprise"
-            // Add "VS" to the string so that in user agent header, it will be "VS Enterprise/14.0".
-            var edition = dte.Edition;
-            if (!edition.StartsWith("VS", StringComparison.OrdinalIgnoreCase))
-            {
-                edition = "VS " + edition;
-            }
-
-            return edition + "/" + dte.Version;
+            return dte.Edition + "/" + dte.Version;
         }
     }
 }
