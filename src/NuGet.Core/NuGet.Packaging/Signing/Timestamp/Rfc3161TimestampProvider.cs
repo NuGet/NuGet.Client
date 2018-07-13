@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography.Pkcs;
 #endif
 
@@ -30,7 +30,7 @@ namespace NuGet.Packaging.Signing
 
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
         {
-#if IS_DESKTOP
+#if HAS_SIGNING
             // Uri.UriSchemeHttp and Uri.UriSchemeHttps are not available in netstandard 1.3
             if (!string.Equals(timeStampServerUrl.Scheme, Uri.UriSchemeHttp, StringComparison.Ordinal) &&
                 !string.Equals(timeStampServerUrl.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal))
@@ -46,7 +46,7 @@ namespace NuGet.Packaging.Signing
             _timestamperUrl = timeStampServerUrl ?? throw new ArgumentNullException(nameof(timeStampServerUrl));
         }
 
-#if IS_DESKTOP
+#if HAS_SIGNING
 
         /// <summary>
         /// Timestamps data present in the TimestampRequest.

@@ -3,7 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 #endif
@@ -28,7 +28,7 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-#if IS_DESKTOP
+#if HAS_SIGNING && IS_DESKTOP
         internal static SignedCms NativeSign(CmsSigner cmsSigner, byte[] data, CngKey privateKey)
         {
             using (var hb = new HeapBlockRetainer())

@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using System.Linq;
 
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography.Pkcs;
 #endif
 
@@ -16,7 +16,7 @@ namespace NuGet.Packaging.Signing
 {
     public sealed class Timestamp
     {
-#if IS_DESKTOP
+#if HAS_SIGNING
 
         /// <summary>
         /// Upper limit of Timestamp.

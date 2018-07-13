@@ -31,7 +31,7 @@ namespace NuGet.Packaging.Signing
             return Task.FromResult(VerifyAllowList(package, signature, settings));
         }
 
-#if IS_DESKTOP
+#if HAS_SIGNING
         private PackageVerificationResult VerifyAllowList(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             var treatIssuesAsErrors = !settings.AllowUntrusted;

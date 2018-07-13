@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography.Pkcs;
 #endif
 
@@ -74,7 +74,7 @@ namespace NuGet.Packaging.Signing
             return allowPeriod;
         }
 
-#if IS_DESKTOP
+#if HAS_SIGNING
         public static byte[] GetSignature(this SignerInfo signerInfo)
         {
             var field = typeof(SignerInfo).GetField("m_pbCmsgSignerInfo", BindingFlags.Instance | BindingFlags.NonPublic);

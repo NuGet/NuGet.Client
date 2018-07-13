@@ -271,7 +271,7 @@ namespace NuGet.Packaging
                 using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
                 using (var stream = SignedPackageArchiveUtility.OpenPackageSignatureFileStream(reader))
                 {
-#if IS_DESKTOP
+#if HAS_SIGNING
                     signature = PrimarySignature.Load(stream);
 #endif
                 }
@@ -288,7 +288,7 @@ namespace NuGet.Packaging
 
             var isSigned = false;
 
-#if IS_DESKTOP
+#if HAS_SIGNING
             if (RuntimeEnvironmentHelper.IsWindows)
             {
                 using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
@@ -322,7 +322,7 @@ namespace NuGet.Packaging
                 throw new SignatureException(Strings.SignedPackageNotSignedOnVerify);
             }
 
-#if IS_DESKTOP
+#if HAS_SIGNING
             using (var bufferedStream = new ReadOnlyBufferedStream(ZipReadStream, leaveOpen: true))
             using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
             using (var hashAlgorithm = signatureContent.HashAlgorithm.GetHashProvider())

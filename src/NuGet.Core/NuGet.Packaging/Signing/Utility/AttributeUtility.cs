@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Signing
 {
     public static class AttributeUtility
     {
-#if IS_DESKTOP
+#if HAS_SIGNING
         /// <summary>
         /// Create a CommitmentTypeIndication attribute.
         /// https://tools.ietf.org/html/rfc5126.html#section-5.11.1

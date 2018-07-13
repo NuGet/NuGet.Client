@@ -19,7 +19,7 @@ namespace NuGet.Packaging.Signing
     internal sealed class Rfc3161TimestampRequest : AsnEncodedData
     {
 
-#if IS_DESKTOP
+#if HAS_SIGNING
         private class DataType
         {
             internal int _version;

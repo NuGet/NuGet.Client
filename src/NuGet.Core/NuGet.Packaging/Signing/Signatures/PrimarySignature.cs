@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography.Pkcs;
 #endif
 using NuGet.Common;
@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Signing
 {
     public abstract class PrimarySignature : Signature
     {
-#if IS_DESKTOP
+#if HAS_SIGNING
         /// <summary>
         /// A SignedCms object holding the signature and SignerInfo.
         /// </summary>

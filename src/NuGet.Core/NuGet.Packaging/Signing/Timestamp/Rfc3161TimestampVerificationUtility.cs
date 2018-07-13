@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography.Pkcs;
 #endif
 
@@ -19,7 +19,7 @@ namespace NuGet.Packaging.Signing
     {
         private const double _millisecondsPerMicrosecond = 0.001;
 
-#if IS_DESKTOP
+#if HAS_SIGNING
 
         internal static bool ValidateSignerCertificateAgainstTimestamp(
             X509Certificate2 signerCertificate,

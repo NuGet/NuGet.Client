@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 #endif
@@ -260,7 +260,7 @@ namespace NuGet.Packaging.Signing
                 }
             }
         }
-#if IS_DESKTOP
+#if HAS_SIGNING && IS_DESKTOP
         internal unsafe void AddCountersignature(CmsSigner cmsSigner, CngKey privateKey)
         {
             using (var hb = new HeapBlockRetainer())
@@ -278,7 +278,7 @@ namespace NuGet.Packaging.Signing
         }
 #endif
 
-#if IS_DESKTOP
+#if HAS_SIGNING
         internal unsafe void AddTimestampToRepositoryCountersignature(SignedCms timestamp)
         {
             using (var hb = new HeapBlockRetainer())

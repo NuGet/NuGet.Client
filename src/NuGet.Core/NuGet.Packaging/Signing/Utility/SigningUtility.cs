@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
@@ -56,7 +56,7 @@ namespace NuGet.Packaging.Signing
             request.BuildSigningCertificateChainOnce(logger);
         }
 
-#if IS_DESKTOP
+#if HAS_SIGNING
         public static CryptographicAttributeObjectCollection CreateSignedAttributes(
             SignPackageRequest request,
             IReadOnlyList<X509Certificate2> chainList)

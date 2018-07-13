@@ -5,7 +5,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
@@ -23,7 +23,7 @@ namespace NuGet.Packaging.Signing
             EitherOrBoth
         }
 
-#if IS_DESKTOP
+#if HAS_SIGNING
         /// <summary>
         /// Gets certificates in the certificate chain for the primary signature.
         /// </summary>

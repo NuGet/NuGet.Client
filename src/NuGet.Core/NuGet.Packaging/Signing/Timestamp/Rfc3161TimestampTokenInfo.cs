@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
@@ -19,7 +19,7 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public sealed class Rfc3161TimestampTokenInfo : AsnEncodedData
     {
-#if IS_DESKTOP
+#if HAS_SIGNING
         public const string TimestampTokenInfoId = "1.2.840.113549.1.9.16.1.4";
 
         private TstInfo _decoded;

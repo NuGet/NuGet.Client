@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 #endif
@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Signing
 {
     public sealed class RepositoryCountersignature : Signature, IRepositorySignature
     {
-#if IS_DESKTOP
+#if HAS_SIGNING
         private readonly PrimarySignature _primarySignature;
 
         public Uri V3ServiceIndexUrl { get; }

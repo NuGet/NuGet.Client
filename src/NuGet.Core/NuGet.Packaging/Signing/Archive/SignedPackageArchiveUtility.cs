@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Text;
@@ -226,7 +226,7 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-#if IS_DESKTOP
+#if HAS_SIGNING
         /// <summary>
         /// Removes repository primary signature (if it exists) or any repository countersignature (if it exists).
         /// </summary>

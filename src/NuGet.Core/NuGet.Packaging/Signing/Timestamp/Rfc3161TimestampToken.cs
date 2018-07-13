@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
-#if IS_DESKTOP
+#if HAS_SIGNING
 using System.Security.Cryptography.Pkcs;
 #endif
 
@@ -22,7 +22,7 @@ namespace NuGet.Packaging.Signing
     internal sealed class Rfc3161TimestampToken
     {
 
-#if IS_DESKTOP
+#if HAS_SIGNING
 
         private readonly byte[] _encoded;
 
