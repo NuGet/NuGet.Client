@@ -505,7 +505,7 @@
 {2} - package id </comment>
   </data>
   <data name="DowngradeWarning_InstallTwoConflictPackage" xml:space="preserve">
-    <value>Package '{0}' causes Package '{1}' downgrade, Install/Reference the  version '{2}' of package '{3}' to the project '{4}' to fix it.</value>
+    <value>Package '{0}' causes dependency package of the package '{1}' downgrade, Install/Reference the  version '{2}' of package '{3}' to the project '{4}' to fix it.</value>
     <comment>{0} - package id 
 {1} - package id 
 {2} - package version 

@@ -367,7 +367,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; causes Package &apos;{1}&apos; downgrade, Install/Reference the  version &apos;{2}&apos; of package &apos;{3}&apos; to the project &apos;{4}&apos; to fix it..
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; causes dependency package of the package &apos;{1}&apos; downgrade, Install/Reference the  version &apos;{2}&apos; of package &apos;{3}&apos; to the project &apos;{4}&apos; to fix it..
         /// </summary>
         internal static string DowngradeWarning_InstallTwoConflictPackage {
             get {
