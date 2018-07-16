@@ -6371,14 +6371,18 @@ namespace NuGet.Test
                     sourceRepositoryProvider.GetRepositories(),
                     CancellationToken.None);
 
-                // telemetry count has been flaky, these xunit logs should help track the extra source of events on CI
-                // for issue https://github.com/NuGet/Home/issues/7105
-                foreach (var telemetryEvent in telemetryEvents)
+                // Adding lock since a leftover task in PreviewInstallPackageAsync can cause enumeration failures if it modifies telemetryEvents
+                lock (telemetryEvents)
                 {
-                    _logger.LogInformation("--------------------------");
-                    _logger.LogInformation($"Name: {telemetryEvent.Name}");
-                    _logger.LogInformation($"Json: {telemetryEvent.ToJson()}");
-                    _logger.LogInformation("--------------------------");
+                    // telemetry count has been flaky, these xunit logs should help track the extra source of events on CI
+                    // for issue https://github.com/NuGet/Home/issues/7105
+                    foreach (var telemetryEvent in telemetryEvents)
+                    {
+                        _logger.LogInformation("--------------------------");
+                        _logger.LogInformation($"Name: {telemetryEvent.Name}");
+                        _logger.LogInformation($"Json: {telemetryEvent.ToJson()}");
+                        _logger.LogInformation("--------------------------");
+                    }
                 }
 
                 // Assert
