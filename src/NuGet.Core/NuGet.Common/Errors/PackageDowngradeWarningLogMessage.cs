@@ -11,10 +11,13 @@ namespace NuGet.Common
 
         public string DowngradeFromDirectPackageRef { get; }
 
+        public string LibaryIdHigherVersion { get; }
+
         public string MessageWithSolution { get; }
 
         public PackageDowngradeWarningLogMessage(
             string libraryId,
+            string libraryIdHigherVersion,
             string downgradeFrom,
             string downgradeTo,
             string message,
@@ -23,6 +26,7 @@ namespace NuGet.Common
             base(LogLevel.Warning, NuGetLogCode.NU1605, message)
         {
             LibraryId = libraryId;
+            LibaryIdHigherVersion = libraryIdHigherVersion;
             TargetGraphs = targetGraphs;
             DowngradeToDirectPackageRef = downgradeTo;
             DowngradeFromDirectPackageRef = downgradeFrom;

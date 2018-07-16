@@ -446,7 +446,7 @@ namespace NuGet.Commands
         /// are not logged. This is to avoid flooding the log with long 
         /// dependency chains for every package.
         /// </summary>
-        private static async Task<bool> ValidateRestoreGraphsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        private async Task<bool> ValidateRestoreGraphsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
         {
             // Check for cycles
             var success = await ValidateCyclesAsync(graphs, logger);
@@ -487,7 +487,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Logs an error and returns false if any conflicts exist.
         /// </summary>
-        private static async Task<bool> ValidateConflictsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        private async Task<bool> ValidateConflictsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
         {
             foreach (var graph in graphs)
             {
@@ -496,7 +496,9 @@ namespace NuGet.Commands
                     var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Log_VersionConflict,
-                            versionConflict.Selected.Key.Name)
+                            versionConflict.Selected.Key.Name,
+                            versionConflict.Selected.GetIdAndVersionOrRange(),
+                            _request.Project.Name)
                         + $" {Environment.NewLine} {versionConflict.Selected.GetPathWithLastRange()} {Environment.NewLine} {versionConflict.Conflicting.GetPathWithLastRange()}.";
 
                     await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1107, message, versionConflict.Selected.Key.Name, graph.TargetGraphName));
@@ -552,6 +554,7 @@ namespace NuGet.Commands
 
                             messages.Add(new PackageDowngradeWarningLogMessage(
                                 downgraded.Key.Name,
+                                fromVersion.ToString(),
                                 downgraded.GetDirectDependencyNode().Key.Name,
                                 downgradedBy.GetDirectDependencyNode().Key.Name,
                                 string.Format(CultureInfo.CurrentCulture, message, Strings.Log_DowngradeWarningSolution),

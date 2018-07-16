@@ -349,7 +349,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package {0} requires higher version of {1}, please uninstall package {2} or upgrade package {2} to higher version..
+        ///   Looks up a localized string similar to The package &apos;{0}&apos; requires version &apos;{1}&apos; of &apos;{2}&apos;, please uninstall package &apos;{3}&apos; or upgrade package &apos;{3}&apos; to version &apos;{1}&apos;..
         /// </summary>
         internal static string DowngradeWarning_InstallHigherVersion {
             get {
@@ -358,7 +358,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The higher version of package {0} is already installed through transitive dependency of package {1}, no need to install package {0}..
+        ///   Looks up a localized string similar to The version &apos;{0}&apos; of package &apos;{1}&apos; is already installed through transitive dependency of package &apos;{2}&apos;, no need to install package &apos;{1}&apos;..
         /// </summary>
         internal static string DowngradeWarning_InstallLowerVersion {
             get {
@@ -367,7 +367,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package {0} cause Package {1} downgrade, Reference the higher version of package {2} directly from the project to fix it..
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; causes Package &apos;{1}&apos; downgrade, Install/Reference the  version &apos;{2}&apos; of package &apos;{3}&apos; to the project &apos;{4}&apos; to fix it..
         /// </summary>
         internal static string DowngradeWarning_InstallTwoConflictPackage {
             get {
@@ -376,7 +376,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package {0} contains package version conflict which cause downgrade, please contact package author to fix it..
+        ///   Looks up a localized string similar to Dependency graph of Package &apos;{0}&apos; contains package &apos;{1}&apos; version conflict which causes downgrade, please contact package author to fix it..
         /// </summary>
         internal static string DowngradeWarning_InvalidPackage {
             get {

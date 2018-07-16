@@ -1143,7 +1143,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version conflict detected for {0}. Reference the package directly from the project to resolve this issue..
+        ///   Looks up a localized string similar to Version conflict detected for {0}. Install/reference {1} directly to project {2} to resolve this issue..
         /// </summary>
         internal static string Log_VersionConflict {
             get {

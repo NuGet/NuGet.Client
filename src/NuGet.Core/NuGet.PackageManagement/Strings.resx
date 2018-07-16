@@ -492,15 +492,29 @@
     <comment>0 - new line separated list of errors</comment>
   </data>
   <data name="DowngradeWarning_InstallHigherVersion" xml:space="preserve">
-    <value>The package {0} requires higher version of {1}, please uninstall package {2} or upgrade package {2} to higher version.</value>
+    <value>The package '{0}' requires version '{1}' of '{2}', please uninstall package '{3}' or upgrade package '{3}' to version '{1}'.</value>
+    <comment>{0} - package id 
+{1} - package version 
+{2} - package id 
+{3} - package id</comment>
   </data>
   <data name="DowngradeWarning_InstallLowerVersion" xml:space="preserve">
-    <value>The higher version of package {0} is already installed through transitive dependency of package {1}, no need to install package {0}.</value>
+    <value>The version '{0}' of package '{1}' is already installed through transitive dependency of package '{2}', no need to install package '{1}'.</value>
+    <comment>{0} - package version
+{1} - package id 
+{2} - package id </comment>
   </data>
   <data name="DowngradeWarning_InstallTwoConflictPackage" xml:space="preserve">
-    <value>Package {0} cause Package {1} downgrade, Reference the higher version of package {2} directly from the project to fix it.</value>
+    <value>Package '{0}' causes Package '{1}' downgrade, Install/Reference the  version '{2}' of package '{3}' to the project '{4}' to fix it.</value>
+    <comment>{0} - package id 
+{1} - package id 
+{2} - package version 
+{3} - package id
+{4} - project name</comment>
   </data>
   <data name="DowngradeWarning_InvalidPackage" xml:space="preserve">
-    <value>Package {0} contains package version conflict which cause downgrade, please contact package author to fix it.</value>
+    <value>Dependency graph of Package '{0}' contains package '{1}' version conflict which causes downgrade, please contact package author to fix it.</value>
+    <comment>{0} - package id
+{1} - package id</comment>
   </data>
 </root>

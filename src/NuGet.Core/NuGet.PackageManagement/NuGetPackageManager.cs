@@ -2916,7 +2916,7 @@ namespace NuGet.PackageManagement
                 var logMessages = restoreResult.LockFile?
                     .LogMessages
                     .Where(e => e.Level == LogLevel.Error || e.Level == LogLevel.Warning)
-                    .Select(e => e.AsRestoreLogMessage()).Select(e => UpdateLogMessageBasedOnInstallAction(e, installedIds))
+                    .Select(e => e.AsRestoreLogMessage()).Select(e => UpdateLogMessageBasedOnInstallAction(e, installedIds, buildIntegratedProject.ProjectName))
                   ?? Enumerable.Empty<ILogMessage>();
 
                 // Throw an exception containing all errors, these will be displayed in the error list
@@ -2926,7 +2926,7 @@ namespace NuGet.PackageManagement
             await OpenReadmeFile(buildIntegratedProject, nuGetProjectContext, token);
         }
 
-        private ILogMessage UpdateLogMessageBasedOnInstallAction(ILogMessage logMessage, HashSet<string> installedPackage)
+        private ILogMessage UpdateLogMessageBasedOnInstallAction(ILogMessage logMessage, HashSet<string> installedPackage, string projectName)
         {
             var downgradeMessage = logMessage as PackageDowngradeWarningLogMessage;
 
@@ -2942,7 +2942,8 @@ namespace NuGet.PackageManagement
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.DowngradeWarning_InvalidPackage,
-                        downgradeMessage.DowngradeToDirectPackageRef);
+                        downgradeMessage.DowngradeToDirectPackageRef,
+                        downgradeMessage.LibraryId);
 
                     downgradeMessage.Message = string.Format(downgradeMessage.MessageWithSolution, message);
 
@@ -2955,16 +2956,18 @@ namespace NuGet.PackageManagement
                         Strings.DowngradeWarning_InstallTwoConflictPackage,
                         downgradeMessage.DowngradeToDirectPackageRef,
                         downgradeMessage.DowngradeFromDirectPackageRef,
-                        downgradeMessage.LibraryId);
+                        downgradeMessage.LibraryId,
+                        projectName);
 
                     downgradeMessage.Message = string.Format(downgradeMessage.MessageWithSolution, message);
                 }
                 else if (installedPackage.Contains(downgradeMessage.DowngradeToDirectPackageRef, StringComparer.OrdinalIgnoreCase))
                 {
-                    // User try to install lower version package which conflict with other
+                    // User try to install lower version package which conflict with other.
                     var message = string.Format(
                        CultureInfo.CurrentCulture,
                        Strings.DowngradeWarning_InstallLowerVersion,
+                       downgradeMessage.LibaryIdHigherVersion,
                        downgradeMessage.DowngradeToDirectPackageRef,
                        downgradeMessage.DowngradeFromDirectPackageRef);
 
@@ -2977,6 +2980,7 @@ namespace NuGet.PackageManagement
                        CultureInfo.CurrentCulture,
                        Strings.DowngradeWarning_InstallHigherVersion,
                        downgradeMessage.DowngradeFromDirectPackageRef,
+                       downgradeMessage.LibaryIdHigherVersion,
                        downgradeMessage.LibraryId,
                        downgradeMessage.DowngradeToDirectPackageRef);
 

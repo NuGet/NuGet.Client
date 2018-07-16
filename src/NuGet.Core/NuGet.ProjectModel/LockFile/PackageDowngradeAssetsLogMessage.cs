@@ -13,6 +13,8 @@ namespace NuGet.ProjectModel
 
         public string MessageWithSolution { get; }
 
+        public string LibaryIdHigherVersion { get; }
+
         public PackageDowngradeAssetsLogMessage(PackageDowngradeWarningLogMessage logMessage)
             : base(logMessage.Level, logMessage.Code, logMessage.Message)
         {
@@ -28,11 +30,12 @@ namespace NuGet.ProjectModel
             DowngradeFromDirectPackageRef = logMessage.DowngradeFromDirectPackageRef;
             DowngradeToDirectPackageRef = logMessage.DowngradeToDirectPackageRef;
             MessageWithSolution = logMessage.MessageWithSolution;
+            LibaryIdHigherVersion = logMessage.LibaryIdHigherVersion;
         }
 
         public override RestoreLogMessage AsRestoreLogMessage()
         {
-            return new PackageDowngradeWarningLogMessage(LibraryId, DowngradeFromDirectPackageRef, DowngradeToDirectPackageRef, Message, MessageWithSolution, TargetGraphs)
+            return new PackageDowngradeWarningLogMessage(LibraryId, LibaryIdHigherVersion, DowngradeFromDirectPackageRef, DowngradeToDirectPackageRef, Message, MessageWithSolution, TargetGraphs)
             {
                 ProjectPath = ProjectPath,
                 WarningLevel = WarningLevel,
