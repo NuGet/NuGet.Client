@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
+using NuGet.Shared;
 
 namespace NuGet.Packaging
 {
@@ -1008,6 +1009,11 @@ namespace NuGet.Packaging
                 {
                     await LogPackageSignatureVerificationAsync(source, package, packageExtractionContext.Logger, verifyResult);
 
+                    // Update errors and warnings with package id and source
+                    verifyResult.Results
+                            .SelectMany(r => r.Issues.Where(i => i.Level == LogLevel.Error || i.Level == LogLevel.Warning))
+                            .ForEach(e => AddPackageIdentityToLogMessages(source, package, e));
+
                     if (verifyResult.Valid)
                     {
                         // log any warnings
@@ -1023,6 +1029,25 @@ namespace NuGet.Packaging
                         throw new SignatureException(verifyResult.Results, package);
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Adds a package ID and package source as a suffix to log messages.
+        /// </summary>
+        /// <param name="source">package source.</param>
+        /// <param name="package">package identity.</param>
+        /// <param name="message">ILogMessage to be modified with the suffix.</param>
+        private static void AddPackageIdentityToLogMessages(string source, PackageIdentity package, ILogMessage message)
+        {
+            switch (message.Code)
+            {
+                case NuGetLogCode.NU3008:
+                    message.Message = string.Format(CultureInfo.CurrentCulture, Strings.ExtractionError_PackageSignatureIntegrityFailure, package.Id, package.Version, source);
+                    break;
+                default:
+                    message.Message = string.Format(CultureInfo.CurrentCulture, Strings.ExtractionLog_InformationSuffix, message.Message, package.Id, package.Version, source);
+                    break;
             }
         }
 
