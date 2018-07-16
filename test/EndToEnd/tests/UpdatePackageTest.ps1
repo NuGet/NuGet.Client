@@ -1496,7 +1496,7 @@ function Test-UpdatePackageThrowsIfMinClientVersionIsNotSatisfied
     $currentVersion = Get-HostSemanticVersion
 
     # Act & Assert
-    Assert-Throws { $p | Update-Package Kitty -Source $context.RepositoryPath } "The 'kitty 2.0.0' package requires NuGet client version '5.0.0.1' or above, but the current NuGet version is '$currentVersion'. To upgrade NuGet, please go to http://docs.nuget.org/consume/installing-nuget"
+    Assert-Throws { $p | Update-Package Kitty -Source $context.RepositoryPath } "The 'kitty 2.0.0' package requires NuGet client version '100.0.0.1' or above, but the current NuGet version is '$currentVersion'. To upgrade NuGet, please go to http://docs.nuget.org/consume/installing-nuget"
 
     Assert-NoPackage $p "Kitty" -Version 2.0.0
     Assert-Package $p "Kitty" -Version 1.0.0
