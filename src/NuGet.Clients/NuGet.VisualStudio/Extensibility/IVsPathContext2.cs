@@ -16,7 +16,7 @@ namespace NuGet.VisualStudio
     public interface IVsPathContext2 : IVsPathContext
     {
         /// <summary>
-        /// Solution packages folder directory for packages.config based projects.
+        /// Solution packages folder directory. This will always be set irrespective if folder actually exists or not.
         /// The path returned is an absolute path.
         /// </summary>
         string SolutionPackageFolder { get; }
