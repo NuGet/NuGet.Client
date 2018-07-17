@@ -29,11 +29,9 @@ Param(
     }
     Log "Resolved the NuGet Client path to $nugetClientFilePath"
 
-    ### Setup OrchardCore
-
     Log "Discovering the test cases."
-
     $testFiles = $(Get-ChildItem $PSScriptRoot\testCases "Test-*.ps1" ) | ForEach-Object { $_.FullName }
+
     $testFiles | ForEach-Object { . $_ $nugetClientFilePath $resultsDirectoryPath $logsPath }
 
     if(-not $SkipCleanup){
