@@ -29,14 +29,13 @@ Param(
     }
     Log "Resolved the NuGet Client path to $nugetClientFilePath"
 
-    ### Setup NuGet.Client
-    RunTest $nugetClientFilePath "https://github.com/NuGet/NuGet.Client.git" "dev" $resultsDirectoryPath $logsPath
-
-    ### Setup Roslyn
-    RunTest $nugetClientFilePath "https://github.com/dotnet/roslyn.git" "master" $resultsDirectoryPath $logsPath
-
     ### Setup OrchardCore
-    RunTest $nugetClientFilePath "https://github.com/OrchardCMS/OrchardCore.git" "dev" $resultsDirectoryPath $logsPath
+
+    Log "Discovering the test cases."
+
+    $testFiles = $(Get-ChildItem $PSScriptRoot "Test-*.ps1" ) | ForEach-Object { $_.FullName }
+    
+    $testFiles | ForEach-Object { . $_ $nugetClientFilePath $resultsDirectoryPath $logsPath }
 
     if(-not $SkipCleanup){
         Remove-Item -r -force $testDirectoryPath -ErrorAction Ignore > $null
