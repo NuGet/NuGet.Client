@@ -8,8 +8,8 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using NuGet.SolutionRestoreManager;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 
 namespace NuGetVSExtension
 {
@@ -21,9 +21,9 @@ namespace NuGetVSExtension
         private const string DTEProjectPage = "ProjectsAndSolution";
         private const string DTEEnvironmentCategory = "Environment";
         private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
-        private const int DefaultVerbosityLevel = 2;        
-        private int _verbosityLevel;
 
+        private const int DefaultVerbosityLevel = 2;
+        private int _verbosityLevel;
         private EnvDTE.DTE _dte;
 
         public IOutputConsole OutputConsole { get; private set; }

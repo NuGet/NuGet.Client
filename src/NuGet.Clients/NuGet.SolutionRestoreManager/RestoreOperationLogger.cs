@@ -15,6 +15,7 @@ using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using MSBuildVerbosityLevel = NuGet.SolutionRestoreManager.VerbosityLevel;
 using Task = System.Threading.Tasks.Task;
 

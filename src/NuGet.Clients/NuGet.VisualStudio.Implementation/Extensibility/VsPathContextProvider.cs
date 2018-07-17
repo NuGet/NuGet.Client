@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement;
@@ -37,7 +38,7 @@ namespace NuGet.VisualStudio
         private readonly Lazy<IVsProjectAdapterProvider> _vsProjectAdapterProvider;
         private readonly Func<string, LockFile> _getLockFileOrNull;
 
-        private readonly AsyncLazy<EnvDTE.DTE> _dte;
+        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<EnvDTE.DTE> _dte;
         private readonly Lazy<INuGetProjectContext> _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext());
 
         [ImportingConstructor]
@@ -61,7 +62,7 @@ namespace NuGet.VisualStudio
             _vsProjectAdapterProvider = vsProjectAdapterProvider ?? throw new ArgumentNullException(nameof(vsProjectAdapterProvider));
             _getLockFileOrNull = BuildIntegratedProjectUtility.GetLockFileOrNull;
 
-            _dte = new AsyncLazy<EnvDTE.DTE>(
+            _dte = new Microsoft.VisualStudio.Threading.AsyncLazy<EnvDTE.DTE>(
                 async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -243,18 +244,18 @@ namespace NuGet.VisualStudio
                 if (string.IsNullOrEmpty(projectNameFromMSBuildPath))
                 {
                     projectJsonPath = Path.Combine(msbuildProjectFile.DirectoryName,
-                        Common.ProjectJsonPathUtilities.ProjectConfigFileName);
+                        ProjectJsonPathUtilities.ProjectConfigFileName);
                 }
                 else
                 {
-                    projectJsonPath = Common.ProjectJsonPathUtilities.GetProjectConfigPath(
+                    projectJsonPath = ProjectJsonPathUtilities.GetProjectConfigPath(
                         msbuildProjectFile.DirectoryName,
                         projectNameFromMSBuildPath);
                 }
 
                 if (File.Exists(projectJsonPath))
                 {
-                    var lockFilePath = Common.ProjectJsonPathUtilities.GetLockFilePath(projectJsonPath);
+                    var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(projectJsonPath);
                     return await GetPathContextFromProjectLockFileAsync(lockFilePath, CancellationToken.None);
                 }
             }

@@ -39,8 +39,6 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ErrorListTableEntry.cs" />
-    <Compile Include="ErrorListTableDataSource.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="ISolutionRestoreJob.cs" />
     <Compile Include="PkgCmdID.cs" />
