@@ -72,7 +72,6 @@
         }
         return $null
     }
-
     function GetNuGetFoldersPath()
     {
         $nugetFolder = [System.IO.Path]::Combine($env:UserProfile, "np")

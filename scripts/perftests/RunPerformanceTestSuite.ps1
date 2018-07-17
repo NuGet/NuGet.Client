@@ -32,8 +32,17 @@ Param(
         return $solutionFile
     }
 
-    function RunPerformanceTest([string]$nugetClientFilePath, [string]$solutionFile, [string]$resultsFilePath, [string]$logsPath){
+    function RunTest([string]$nugetClientFilePath, [string]$repositoryUrl, [string]$branchName, [string]$logsPath){
+        $repoName = GenerateNameFromGitUrl $repositoryUrl
+        $sourceDirectoryPath = [System.IO.Path]::Combine($testDirectoryPath, $repoName)
+        $solutionFile = RepositorySetup $nugetClientFilePath $repositoryUrl $branchName $sourceDirectoryPath
+        $resultsFilePath = [System.IO.Path]::Combine($resultsDirectoryPath, "$repoName.csv")
         . "$PSScriptRoot\RunPerformanceTests.ps1" $nugetClientFilePath $solutionFile $resultsFilePath $logsPath
+    }
+
+    # The format of the URL is assumed to be https://github.com/NuGet/NuGet.Client.git. The result would be NuGet-Client-git
+    function GenerateNameFromGitUrl([string]$gitUrl){
+        return $gitUrl.Substring($($gitUrl.LastIndexOf('/') + 1)).Replace('.','-')
     }
 
     If($(GetAbsolutePath $resultsDirectoryPath).StartsWith($(GetAbsolutePath $testDirectoryPath))){
@@ -57,22 +66,13 @@ Param(
     Log "Resolved the NuGet Client path to $nugetClientFilePath"
 
     ### Setup NuGet.Client
-    $sourceDirectoryPath = [System.IO.Path]::Combine($testDirectoryPath, "NuGetClient")
-    $solutionFile = RepositorySetup $nugetClientFilePath "https://github.com/NuGet/NuGet.Client.git" "dev" $sourceDirectoryPath
-    $resultsFilePath = [System.IO.Path]::Combine($resultsDirectoryPath, "NuGet-Client.csv")
-    RunPerformanceTest $nugetClientFilePath $solutionFile $resultsFilePath $logsPath
+    RunTest $nugetClientFilePath "https://github.com/NuGet/NuGet.Client.git" "dev" $logsPath
 
     ### Setup Roslyn
-    $sourceDirectoryPath = [System.IO.Path]::Combine($testDirectoryPath, "roslyn")
-    $solutionFile = RepositorySetup $nugetClientFilePath "https://github.com/dotnet/roslyn.git" "master" $sourceDirectoryPath
-    $resultsFilePath = [System.IO.Path]::Combine($resultsDirectoryPath, "roslyn.csv")
-    RunPerformanceTest $nugetClientFilePath $solutionFile $resultsFilePath $logsPath
+    RunTest $nugetClientFilePath "https://github.com/dotnet/roslyn.git" "master" $logsPath
 
     ### Setup OrchardCore
-    $sourceDirectoryPath = [System.IO.Path]::Combine($testDirectoryPath, "orchardcore")
-    $solutionFile = RepositorySetup $nugetClientFilePath "https://github.com/OrchardCMS/OrchardCore.git" "dev" $sourceDirectoryPath
-    $resultsFilePath = [System.IO.Path]::Combine($resultsDirectoryPath, "orchard.csv")
-    RunPerformanceTest $nugetClientFilePath $solutionFile $resultsFilePath $logsPath
+    RunTest $nugetClientFilePath "https://github.com/OrchardCMS/OrchardCore.git" "dev" $logsPath
 
     if(-not $SkipCleanup){
         Remove-Item -r -force $testDirectoryPath -ErrorAction Ignore > $null
