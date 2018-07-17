@@ -6,7 +6,7 @@
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <description>NuGet pack for dotnet CLI</description>
-    <copyright>&#169; .NET Foundation. All rights reserved.</copyright>
+    <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
   </metadata>
   <files>
     <file src="net46\ilmerge\NuGet.Build.Tasks.Pack.dll" target="Desktop\" />
