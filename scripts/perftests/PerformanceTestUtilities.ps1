@@ -10,7 +10,7 @@
         if (!(Test-Path($ExePath)))
         {
             Log "Downloading $url to $ExePath" "Green"
-            New-Item -ItemType Directory -Force -Path  $Path
+            New-Item -ItemType Directory -Force -Path $Path > $null
             Invoke-WebRequest -Uri $url -OutFile $ExePath
         }
         return GetAbsolutePath $ExePath

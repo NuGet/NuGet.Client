@@ -12,9 +12,9 @@ Param(
     function Cleanup([string]$nugetExe)
     {
         $nugetExe = GetAbsolutePath $nugetExe
-        . $nugetExe locals -clear all
+        . $nugetExe locals -clear all -Verbosity quiet
         $nugetFolders = GetNuGetFoldersPath
-        Remove-Item -r $nugetFolders -force
+        & Remove-Item -r $nugetFolders -force > $null
         [Environment]::SetEnvironmentVariable("NUGET_PACKAGES",$null)
         [Environment]::SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH",$null)
         [Environment]::SetEnvironmentVariable("NUGET_PLUGINS_CACHE_PATH",$null)
@@ -141,13 +141,15 @@ Param(
         Log "Running 1x warmup restore"
         RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
         Log "Running $($iterationCount)x clean restores"
-        # 1..$iterationCount | % { RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
-        # Log "Running $($iterationCount)x without a global packages folder"
-        # 1..$iterationCount | % { RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
-        # Log "Running $($iterationCount)x force restores"
-        # 1..$iterationCount | % { RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -force }
-        # Log "Running $($iterationCount)x no-op restores"
-        # 1..$iterationCount | % { RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -force }
+        1..$iterationCount | % { RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
+        Log "Running $($iterationCount)x without a global packages folder"
+        1..$iterationCount | % { RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
+        Log "Running $($iterationCount)x force restores"
+        1..$iterationCount | % { RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -force }
+        Log "Running $($iterationCount)x no-op restores"
+        1..$iterationCount | % { RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -force }
+
+        Log "Completed the performance measurements for $solutionFile, results are in $resultsFile" "green"
     }
 
     MeasureRestore $nugetClientPath $solutionPath $logsPath $resultsFilePath -iterationCount 3 -cleanLogs
