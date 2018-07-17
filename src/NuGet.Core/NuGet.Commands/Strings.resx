@@ -205,11 +205,12 @@
   <data name="Log_CycleDetected" xml:space="preserve">
     <value>Cycle detected.</value>
   </data>
-  <data name="Log_DowngradeWarning" xml:space="preserve">
-    <value>Detected package downgrade: {0} from {1} to {2}. Reference the package directly from the project to select a different version.</value>
+  <data name="Log_DowngradeWarningSuggestReference" xml:space="preserve">
+    <value>Detected package downgrade: {0} from {1} to {2}. Install/Reference the package {0} {1} directly from the project {3} to avoid this.</value>
     <comment>{0}: package id
 {1}: requested version
-{2}: resolved version</comment>
+{2}: resolved version
+{3}: project name</comment>
   </data>
   <data name="Log_VersionConflict" xml:space="preserve">
     <value>Version conflict detected for {0}. Reference the package directly from the project to resolve this issue.</value>
@@ -702,5 +703,13 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="LocalsCommand_ClearingNuGetPluginsCache" xml:space="preserve">
     <value>Clearing NuGet plugins cache: {0}</value>
     <comment>{0}: Plugins cache path</comment>
+  </data>
+  <data name="Log_DowngradeWarningSuggestRemove" xml:space="preserve">
+    <value>Detected package downgrade: {0} from {1} to {2}. Do not need to install/reference {0} {2} directly from the project {3}, since {4} already contains {0} {1} as dependency package. If you have to reference package {0} from the project directly, please install/reference package {0} {1} from the project.</value>
+    <comment>{0}: package id
+{1}: requested version
+{2}: resolved version
+{3}: project name
+{4}: package id</comment>
   </data>
 </root>

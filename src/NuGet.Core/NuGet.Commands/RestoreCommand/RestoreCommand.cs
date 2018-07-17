@@ -446,7 +446,7 @@ namespace NuGet.Commands
         /// are not logged. This is to avoid flooding the log with long 
         /// dependency chains for every package.
         /// </summary>
-        private static async Task<bool> ValidateRestoreGraphsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        private async Task<bool> ValidateRestoreGraphsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
         {
             // Check for cycles
             var success = await ValidateCyclesAsync(graphs, logger);
@@ -510,7 +510,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Log downgrade warnings from the graphs.
         /// </summary>
-        private static Task LogDowngradeWarningsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        private Task LogDowngradeWarningsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
         {
             var messages = new List<RestoreLogMessage>();
 
@@ -541,13 +541,22 @@ namespace NuGet.Commands
                                             ?? downgradedBy.GetVersionRange().MinVersion
                                             ?? new NuGetVersion(0, 0, 0);
 
-                            var message = string.Format(
+                            var message = downgradedBy.GetDirectDependencyNode() == downgradedBy ? string.Format(
                                     CultureInfo.CurrentCulture,
-                                    Strings.Log_DowngradeWarning,
+                                    Strings.Log_DowngradeWarningSuggestRemove,
                                     downgraded.Key.Name,
                                     fromVersion,
-                                    toVersion)
-                                + $" {Environment.NewLine} {downgraded.GetPathWithLastRange()} {Environment.NewLine} {downgradedBy.GetPathWithLastRange()}";
+                                    toVersion,
+                                    _request.Project.Name,
+                                    downgraded.GetDirectDependencyNode().GetIdAndVersionOrRange()) : string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.Log_DowngradeWarningSuggestReference,
+                                        downgraded.Key.Name,
+                                        fromVersion,
+                                        toVersion,
+                                        _request.Project.Name);
+
+                            message += $" {Environment.NewLine} {downgraded.GetPathWithLastRange()} {Environment.NewLine} {downgradedBy.GetPathWithLastRange()}";
 
                             messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, message, downgraded.Key.Name, graph.TargetGraphName));
                         }

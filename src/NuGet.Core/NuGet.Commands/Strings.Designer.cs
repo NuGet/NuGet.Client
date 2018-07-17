@@ -612,11 +612,20 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Detected package downgrade: {0} from {1} to {2}. Reference the package directly from the project to select a different version..
+        ///   Looks up a localized string similar to Detected package downgrade: {0} from {1} to {2}. Install/Reference the package {0} {1} directly from the project {3} to avoid this..
         /// </summary>
-        internal static string Log_DowngradeWarning {
+        internal static string Log_DowngradeWarningSuggestReference {
             get {
-                return ResourceManager.GetString("Log_DowngradeWarning", resourceCulture);
+                return ResourceManager.GetString("Log_DowngradeWarningSuggestReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Detected package downgrade: {0} from {1} to {2}. Do not need to install/reference {0} {2} directly from the project {3}, since {4} already contains {0} {1} as dependency package. If you have to reference package {0} from the project directly, please install/reference package {0} {1} from the project..
+        /// </summary>
+        internal static string Log_DowngradeWarningSuggestRemove {
+            get {
+                return ResourceManager.GetString("Log_DowngradeWarningSuggestRemove", resourceCulture);
             }
         }
         
