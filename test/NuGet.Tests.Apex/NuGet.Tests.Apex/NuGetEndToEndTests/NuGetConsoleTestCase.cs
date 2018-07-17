@@ -296,37 +296,22 @@ namespace NuGet.Tests.Apex
         // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
-            for (var i = 0; i < CommonUtility.GetIterations(); i++)
-            {
-                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
-                yield return new object[] { ProjectTemplate.NetStandardClassLib };
-            }
+            yield return new object[] { ProjectTemplate.NetStandardClassLib };
         }
 
         public static IEnumerable<object[]> GetPackageReferenceTemplates(string flag, string expectedVersion)
         {
-            for (var i = 0; i < CommonUtility.GetIterations(); i++)
-            {
-                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
-                yield return new object[] { ProjectTemplate.NetStandardClassLib , flag , expectedVersion};
-            }
+            yield return new object[] { ProjectTemplate.NetStandardClassLib , flag , expectedVersion};
         }
 
         public static IEnumerable<object[]> GetPackageReferenceTemplates()
         {
-            for (var i = 0; i < CommonUtility.GetIterations(); i++)
-            {
-                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
-                yield return new object[] { ProjectTemplate.NetStandardClassLib };
-            }
+            yield return new object[] { ProjectTemplate.NetStandardClassLib };
         }
 
         public static IEnumerable<object[]> GetPackagesConfigTemplates()
         {
-            for (var i = 0; i < CommonUtility.GetIterations(); i++)
-            {
-                yield return new object[] { ProjectTemplate.ClassLibrary };
-            }
+            yield return new object[] { ProjectTemplate.ClassLibrary };
         }
     }
 }

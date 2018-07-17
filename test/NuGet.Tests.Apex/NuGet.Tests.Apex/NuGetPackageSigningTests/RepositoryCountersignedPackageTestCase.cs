@@ -468,18 +468,12 @@ namespace NuGet.Tests.Apex
 
         public static IEnumerable<object[]> GetPackagesConfigTemplates()
         {
-            for (var i = 0; i < CommonUtility.GetIterations(); i++)
-            {
-                yield return new object[] { ProjectTemplate.ClassLibrary };
-            }
+            yield return new object[] { ProjectTemplate.ClassLibrary };
         }
 
         public static IEnumerable<object[]> GetPackageReferenceTemplates()
         {
-            for (var i = 0; i < CommonUtility.GetIterations(); i++)
-            {
-                yield return new object[] { ProjectTemplate.NetStandardClassLib };
-            }
+            yield return new object[] { ProjectTemplate.NetStandardClassLib };
         }
     }
 }
