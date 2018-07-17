@@ -32,12 +32,12 @@ Param(
         return $solutionFile
     }
 
-    function RunTest([string]$nugetClientFilePath, [string]$repositoryUrl, [string]$branchName, [string]$logsPath){
-        $repoName = GenerateNameFromGitUrl $repositoryUrl
+    function RunTest([string]$_nugetClientFilePath, [string]$_repositoryUrl, [string]$_branchName, [string]$_resultsDirectoryPath, [string]$_logsPath){
+        $repoName = GenerateNameFromGitUrl $_repositoryUrl
         $sourceDirectoryPath = [System.IO.Path]::Combine($testDirectoryPath, $repoName)
-        $solutionFile = RepositorySetup $nugetClientFilePath $repositoryUrl $branchName $sourceDirectoryPath
-        $resultsFilePath = [System.IO.Path]::Combine($resultsDirectoryPath, "$repoName.csv")
-        . "$PSScriptRoot\RunPerformanceTests.ps1" $nugetClientFilePath $solutionFile $resultsFilePath $logsPath
+        $solutionFile = RepositorySetup $_nugetClientFilePath $_repositoryUrl $_branchName $sourceDirectoryPath
+        $resultsFilePath = [System.IO.Path]::Combine($_resultsDirectoryPath, "$repoName.csv")
+        . "$PSScriptRoot\RunPerformanceTests.ps1" $_nugetClientFilePath $solutionFile $resultsFilePath $_logsPath
     }
 
     # The format of the URL is assumed to be https://github.com/NuGet/NuGet.Client.git. The result would be NuGet-Client-git
@@ -66,13 +66,13 @@ Param(
     Log "Resolved the NuGet Client path to $nugetClientFilePath"
 
     ### Setup NuGet.Client
-    RunTest $nugetClientFilePath "https://github.com/NuGet/NuGet.Client.git" "dev" $logsPath
+    RunTest $nugetClientFilePath "https://github.com/NuGet/NuGet.Client.git" "dev" $resultsDirectoryPath $logsPath
 
     ### Setup Roslyn
-    RunTest $nugetClientFilePath "https://github.com/dotnet/roslyn.git" "master" $logsPath
+    RunTest $nugetClientFilePath "https://github.com/dotnet/roslyn.git" "master" $resultsDirectoryPath $logsPath
 
     ### Setup OrchardCore
-    RunTest $nugetClientFilePath "https://github.com/OrchardCMS/OrchardCore.git" "dev" $logsPath
+    RunTest $nugetClientFilePath "https://github.com/OrchardCMS/OrchardCore.git" "dev" $resultsDirectoryPath $logsPath
 
     if(-not $SkipCleanup){
         Remove-Item -r -force $testDirectoryPath -ErrorAction Ignore > $null
