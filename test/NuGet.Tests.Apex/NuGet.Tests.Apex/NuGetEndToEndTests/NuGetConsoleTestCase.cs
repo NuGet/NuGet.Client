@@ -154,19 +154,19 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 nugetConsole.UninstallPackageFromPMC(packageName1);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 nugetConsole.UninstallPackageFromPMC(packageName2);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion1, XunitLogger);
@@ -228,7 +228,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 project2.Build();
                 project3.Build();
                 projectX.Build();
@@ -257,7 +257,7 @@ namespace NuGet.Tests.Apex
             {
                 // Arrange
                 var solutionService = VisualStudio.Get<SolutionService>();
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
 
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
@@ -267,7 +267,7 @@ namespace NuGet.Tests.Apex
 
                 // Act
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1, source);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
 
                 // Assert
                 var expectedMessage = $"The 'Source' parameter is not respected for the transitive package management based project(s) {Path.GetFileNameWithoutExtension(testContext.Project.UniqueName)}. The enabled sources in your NuGet configuration will be used";
@@ -280,7 +280,7 @@ namespace NuGet.Tests.Apex
 
                 // Act
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2, source);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
 
                 // Assert
                 Assert.True(warns == nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
