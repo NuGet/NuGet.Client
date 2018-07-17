@@ -5,9 +5,7 @@ using System;
 using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem;
-#if VS15
 using Microsoft.VisualStudio.ProjectSystem.Properties;
-#endif
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using MsBuildProject = Microsoft.Build.Evaluation.Project;
