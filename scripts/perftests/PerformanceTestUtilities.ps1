@@ -9,7 +9,7 @@
 
         if (!(Test-Path($ExePath)))
         {
-            Log "Downloading $url to $ExePath" "Green"
+            Log "Downloading $url to $ExePath" -color "Green"
             New-Item -ItemType Directory -Force -Path $Path > $null
             Invoke-WebRequest -Uri $url -OutFile $ExePath
         }
@@ -86,7 +86,7 @@
         }
         else 
         {
-                Log "Skipping the cloning of $repository as $sourceDirectoryPath is not empty" "Yellow"
+                Log "Skipping the cloning of $repository as $sourceDirectoryPath is not empty" -color "Yellow"
         }
         $nugetFolders = GetNuGetFoldersPath
         $Env:NUGET_PACKAGES = [System.IO.Path]::Combine($nugetFolders, "gpf")
@@ -97,7 +97,7 @@
 
         $solutionFile = (Get-ChildItem $sourceDirectoryPath *.sln)[0] | Select-Object -f 1 | Select-Object -ExpandProperty FullName
 
-        Log "Completed the repository setup. The solution file is $solutionFile" "Green"
+        Log "Completed the repository setup. The solution file is $solutionFile" -color "Green"
         return $solutionFile
     }
 
