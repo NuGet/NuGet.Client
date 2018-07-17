@@ -91,7 +91,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.UninstallPackageFromPMC(signedPackage.Id);
                 testContext.Project.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
-
+                testContext.SolutionService.Build();
                 CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }
         }
@@ -136,11 +136,11 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, packageVersion09);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 nugetConsole.UpdatePackageFromPMC(signedPackage.Id, signedPackage.Version);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
