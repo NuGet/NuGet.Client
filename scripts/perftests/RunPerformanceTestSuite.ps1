@@ -34,7 +34,6 @@ Param(
     Log "Discovering the test cases."
 
     $testFiles = $(Get-ChildItem $PSScriptRoot "Test-*.ps1" ) | ForEach-Object { $_.FullName }
-    
     $testFiles | ForEach-Object { . $_ $nugetClientFilePath $resultsDirectoryPath $logsPath }
 
     if(-not $SkipCleanup){
