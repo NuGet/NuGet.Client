@@ -43,7 +43,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
 
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
@@ -87,11 +87,11 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 nugetConsole.UninstallPackageFromPMC(signedPackage.Id);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
@@ -138,11 +138,11 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, packageVersion09);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 nugetConsole.UpdatePackageFromPMC(signedPackage.Id, signedPackage.Version);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
@@ -210,7 +210,7 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(expiredTestPackage.Id, expiredTestPackage.Version);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 // TODO: Fix bug where no warnings are shown when package is untrusted but still installed
@@ -247,7 +247,7 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(expiredTestPackage.Id, expiredTestPackage.Version);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 // TODO: Fix bug where no warnings are shown when package is untrusted but still installed
@@ -289,7 +289,7 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(expiredTestPackage.Id, expiredTestPackage.Version);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
                 
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, XunitLogger);
@@ -369,7 +369,7 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(expiredTestPackage.Id, expiredTestPackage.Version);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 // TODO: Fix bug where no warnings are shown when package is untrusted but still installed
@@ -411,7 +411,7 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(expiredTestPackage.Id, expiredTestPackage.Version);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, XunitLogger);
@@ -436,7 +436,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
                 nugetConsole.IsMessageFoundInPMC("package integrity check failed").Should().BeTrue("Integrity failed message shown.");
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);

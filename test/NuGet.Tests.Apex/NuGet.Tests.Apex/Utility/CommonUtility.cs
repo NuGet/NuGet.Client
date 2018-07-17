@@ -309,7 +309,7 @@ namespace NuGet.Tests.Apex
 
         private static LockFile GetAssetsFileWithRetry(string path)
         {
-            var timeout = TimeSpan.FromSeconds(10);
+            var timeout = TimeSpan.FromSeconds(20);
             var timer = Stopwatch.StartNew();
             string content = null;
 
