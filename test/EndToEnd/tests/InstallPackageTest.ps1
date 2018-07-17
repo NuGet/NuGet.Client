@@ -2506,25 +2506,6 @@ function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
     Assert-BindingRedirect $p app.config System.Web.Razor '0.0.0.0-3.0.0.0' '3.0.0.0'
 }
 
-function Test-InstallPackageIntoNativeWinStoreApplication {
-    [SkipTestForVS15()]
-    param()
-
-    if ((Get-VSVersion) -eq "10.0")
-    {
-        return
-    }
-
-    # Arrange
-    $p = New-NativeWinStoreApplication
-
-    # Act
-    Install-Package zlib -IgnoreDependencies -ProjectName $p.Name
-
-    # Assert
-    Assert-Package $p "zlib"
-}
-
 function Test-SpecifyDifferentVersionThenServerVersion
 {
     # In this test, we explicitly set the version as "2.0",
