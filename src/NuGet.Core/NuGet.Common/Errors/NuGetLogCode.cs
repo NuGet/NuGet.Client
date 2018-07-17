@@ -446,11 +446,6 @@ namespace NuGet.Common
         NU5005 = 5005,
 
         /// <summary>
-        /// Error_PackFailed
-        /// </summary>
-        NU5006 = 5006,
-
-        /// <summary>
         /// Error_UnableToLocateBuildOutput
         /// </summary>
         NU5007 = 5007,
