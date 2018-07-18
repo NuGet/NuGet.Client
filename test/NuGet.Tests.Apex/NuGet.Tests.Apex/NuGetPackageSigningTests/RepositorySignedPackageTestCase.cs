@@ -45,7 +45,7 @@ namespace NuGet.Tests.Apex
                 testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }
         }
 
@@ -93,7 +93,7 @@ namespace NuGet.Tests.Apex
                 testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
-                CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
+                CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }
         }
 
@@ -144,7 +144,7 @@ namespace NuGet.Tests.Apex
                 testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }
         }
 
@@ -200,7 +200,7 @@ namespace NuGet.Tests.Apex
 
                 // TODO: Fix bug where no warnings are shown when package is untrusted but still installed
                 //nugetConsole.IsMessageFoundInPMC("expired certificate").Should().BeTrue("expired certificate warning");
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, XunitLogger);
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, XunitLogger);
             }
         }
 
@@ -255,7 +255,7 @@ namespace NuGet.Tests.Apex
                 testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
-                CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
+                CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }
         }
 
