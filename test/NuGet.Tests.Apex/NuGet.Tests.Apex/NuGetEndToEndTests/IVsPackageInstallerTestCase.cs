@@ -32,7 +32,7 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, "newtonsoft.json");
 
             // Assert
-            CommonUtility.AssetPackageInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", XunitLogger);
         }
 
         [StaFact]

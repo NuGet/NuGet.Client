@@ -239,7 +239,7 @@ namespace NuGet.Tests.Apex
             exists.Should().BeTrue(AppendErrors($"{packageName}/{packageVersion} should be installed in {project.Name}", visualStudio));
         }
 
-        public static void AssertPackageNotInPackagesConfig(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, ILogger logger)
+        public static void AssertPackageInPackagesConfig(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, ILogger logger)
         {
             logger.LogInformation($"Checking project {packageName}");
             var testService = visualStudio.Get<NuGetApexTestService>();
@@ -300,12 +300,12 @@ namespace NuGet.Tests.Apex
         private static bool PackageExistsInLockFile(string pathToAssetsFile, string packageName, string packageVersion, bool expected)
         {
             var numAttempts = 0;
-
+            LockFileLibrary lockFileLibrary = null;
             while(numAttempts++ < 3)
             {
                 var version = NuGetVersion.Parse(packageVersion);
                 var lockFile = GetAssetsFileWithRetry(pathToAssetsFile);
-                var lockFileLibrary = lockFile.Libraries
+                lockFileLibrary = lockFile.Libraries
                     .SingleOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, packageName)
                                         && p.Version.Equals(version));
                 if (expected && lockFileLibrary != null)
