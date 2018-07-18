@@ -61,7 +61,7 @@ namespace NuGet.VisualStudio
 
             _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext());
 
-            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
+            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         private void RunJTFWithCorrectContext(Project project, Func<Task> asyncTask)
@@ -79,7 +79,7 @@ namespace NuGet.VisualStudio
                         // Lazy load the CPS enabled JoinableTaskFactory for the UI.
                         NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
 
-                        PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
+                        PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
                         _isCPSJTFLoaded = true;
                     }
                 });
