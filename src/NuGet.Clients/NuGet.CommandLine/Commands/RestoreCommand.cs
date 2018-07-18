@@ -59,9 +59,9 @@ namespace NuGet.CommandLine
         }
 
         // The directory that contains msbuild
-        private Lazy<string> _msbuildDirectory;
+        private Lazy<MsBuildToolset> _msbuildDirectory;
 
-        private Lazy<string> MsBuildDirectory
+        private Lazy<MsBuildToolset> MsBuildDirectory
         {
             get
             {
@@ -839,7 +839,7 @@ namespace NuGet.CommandLine
                 restoreInputs.PackagesConfigFiles.Add(solutionLevelPackagesConfig);
             }
 
-            var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, MsBuildDirectory.Value);
+            var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, MsBuildDirectory.Value.Path);
 
             foreach (var projectFile in projectFiles)
             {

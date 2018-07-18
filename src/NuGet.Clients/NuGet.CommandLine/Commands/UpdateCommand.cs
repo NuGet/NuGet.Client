@@ -56,7 +56,7 @@ namespace NuGet.CommandLine
         public string MSBuildPath { get; set; }
 
         // The directory that contains msbuild
-        private Lazy<string> _msbuildDirectory;
+        private string _msbuildDirectory;
 
         public override async Task ExecuteCommandAsync()
         {
@@ -75,7 +75,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(NuGetResources.InvalidFile);
             }
 
-            _msbuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console);
+            _msbuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console).Value.Path;
             var context = new UpdateConsoleProjectContext(Console, FileConflictAction);
 
             string inputFileName = Path.GetFileName(inputFile);
@@ -95,7 +95,7 @@ namespace NuGet.CommandLine
                 }
 
                 var projectSystem = new MSBuildProjectSystem(
-                    _msbuildDirectory.Value,
+                    _msbuildDirectory,
                     inputFile,
                     context);
                 await UpdatePackagesAsync(projectSystem, GetRepositoryPath(projectSystem.ProjectFullPath));
@@ -417,7 +417,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(LocalizedResourceManager.GetString("MultipleProjectFilesFound"), packageReferenceFilePath);
             }
 
-            return new MSBuildProjectSystem(_msbuildDirectory.Value, projectFiles[0], projectContext);
+            return new MSBuildProjectSystem(_msbuildDirectory, projectFiles[0], projectContext);
         }
 
 

@@ -85,7 +85,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
 
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
@@ -178,7 +178,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -281,7 +281,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile1, testNuGetProjectContext);
                 var projectSystem2 = new MSBuildProjectSystem(msbuildDirectory, projectFile2, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory1);
@@ -385,7 +385,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile1, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
 
@@ -482,7 +482,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -561,7 +561,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -646,7 +646,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -736,7 +736,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -827,7 +827,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a2Package))
@@ -911,7 +911,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -991,7 +991,7 @@ namespace NuGet.CommandLine.Test
                 var packagesConfigFile = Path.Combine(projectDirectory, "packages.config");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -1072,7 +1072,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -1189,7 +1189,7 @@ namespace NuGet.CommandLine.Test
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
 
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
 
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
@@ -1374,7 +1374,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -1491,7 +1491,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null).Path;
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile1, testNuGetProjectContext);
                 var projectSystem2 = new MSBuildProjectSystem(msbuildDirectory, projectFile2, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory1);

@@ -407,7 +407,7 @@ namespace NuGet.CommandLine
                 Authors = new[] { "Outercurve Foundation" },
             };
             var projectMock = new Mock<MockProject>();
-            var msbuildDirectory = NuGet.CommandLine.MsBuildUtility.GetMsBuildDirectory(null, null);
+            var msbuildDirectory = NuGet.CommandLine.MsBuildUtility.GetMsBuildDirectory(null, null).Path;
             var factory = new ProjectFactory(msbuildDirectory, projectMock.Object);
 
             // act
