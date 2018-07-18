@@ -266,7 +266,8 @@ namespace NuGet.CommandLine
 
             // If the MSBuild version used supports SkipNonextentTargets and BuildInParallel
             // use the performance optimization
-            if (toolset.ParsedVersion.CompareTo(new Version(15,5)) >= 0)
+            // When BuildInParallel is used with ContinueOnError it does not continue in some scenarios
+            if (toolset.ParsedVersion.CompareTo(new Version(15, 5)) >= 0)
             {
                 AddProperty(args, "RestoreBuildInParallel", bool.FalseString);
                 AddProperty(args, "RestoreUseSkipNonexistentTargets", bool.FalseString);
