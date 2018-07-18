@@ -18,7 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
   </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+  <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26201" />
   </ItemGroup>

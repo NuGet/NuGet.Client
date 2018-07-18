@@ -365,7 +365,7 @@ phases:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "  	
   queue:
-    name: VSEng-MicroBuildSxS
+    name: VSEng-MicroBuildVS2017
     timeoutInMinutes: 120
     demands: 
         - DotNetFramework
