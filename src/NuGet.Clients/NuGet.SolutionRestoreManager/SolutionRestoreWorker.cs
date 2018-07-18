@@ -344,19 +344,30 @@ namespace NuGet.SolutionRestoreManager
 
         public async Task<bool> RestoreAsync(SolutionRestoreRequest request, CancellationToken token)
         {
-            using (_joinableCollection.Join())
+            // Signal that restore is running
+            _isCompleteEvent.Reset();
+
+            try
             {
-                // Initialize if not already done.
-                await InitializeAsync();
-
-                using (var restoreOperation = new BackgroundRestoreOperation())
+                using (_joinableCollection.Join())
                 {
-                    await PromoteTaskToActiveAsync(restoreOperation, token);
+                    // Initialize if not already done.
+                    await InitializeAsync();
 
-                    var result = await ProcessRestoreRequestAsync(restoreOperation, request, token);
+                    using (var restoreOperation = new BackgroundRestoreOperation())
+                    {
+                        await PromoteTaskToActiveAsync(restoreOperation, token);
 
-                    return result;
+                        var result = await ProcessRestoreRequestAsync(restoreOperation, request, token);
+
+                        return result;
+                    }
                 }
+            }
+            finally
+            {
+                // Signal that restore has been completed.
+                _isCompleteEvent.Set();
             }
         }
 
