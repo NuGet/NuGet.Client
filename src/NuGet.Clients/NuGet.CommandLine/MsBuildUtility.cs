@@ -264,13 +264,9 @@ namespace NuGet.CommandLine
             AddPropertyIfHasValue(args, "SolutionDir", solutionDirectory);
             AddPropertyIfHasValue(args, "SolutionName", solutionName);
 
-            // Disable parallel and use ContinueOnError since this may run on an older
-            // version of MSBuild that do not support SkipNonexistentTargets.
-            // When BuildInParallel is used with ContinueOnError it does not continue in
-            // some scenarios.
-            // Allow opt in to msbuild 15.5 behavior with NUGET_RESTORE_MSBUILD_USESKIPNONEXISTENT
-            var nonExistFlag = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_USESKIPNONEXISTENT");
-            if (nonExistFlag == null ? toolset.ParsedVersion.Major >= 15 && toolset.ParsedVersion.Minor >= 5: !StringComparer.OrdinalIgnoreCase.Equals(nonExistFlag, bool.TrueString))
+            // If the MSBuild version used supports SkipNonextentTargets and BuildInParallel
+            // use the performance optimization
+            if (toolset.ParsedVersion.CompareTo(new Version(15,5)) >= 0)
             {
                 AddProperty(args, "RestoreBuildInParallel", bool.FalseString);
                 AddProperty(args, "RestoreUseSkipNonexistentTargets", bool.FalseString);
