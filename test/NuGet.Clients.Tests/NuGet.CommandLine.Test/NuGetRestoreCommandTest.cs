@@ -449,34 +449,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData("packages.config")]
-        [InlineData("packages.proj2.config")]
-        public void RestoreCommand_FromSolutionFileWithMsbuild14(string configFileName)
-        {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
-            {
-                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", configFileName);
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    "restore -Source " + repositoryPath + @" -MSBuildVersion 14.0",
-                    waitForExit: true);
-
-                // Assert
-                Assert.True(_successCode == r.Item1, r.Item2);
-                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
-                Assert.True(File.Exists(packageFileA));
-                Assert.True(File.Exists(packageFileB));
-            }
-        }
-
         [Fact]
         public void RestoreCommand_FromSolutionFileWithMsbuildPath()
         {
@@ -1926,7 +1898,7 @@ EndProject";
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
 
                 Util.CreateFile(Path.Combine(basePath, "A", "A.Util"), "A.Util.csproj",
-@"<Project ToolsVersion='14.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+@"<Project ToolsVersion='15.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -1950,7 +1922,7 @@ EndProject";
             }
 }");
                 Util.CreateFile(Path.Combine(basePath, "B"), "B.csproj",
-@"<Project ToolsVersion='14.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+@"<Project ToolsVersion='15.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
   <PropertyGroup>
     <OutputType>Library</OutputType>
