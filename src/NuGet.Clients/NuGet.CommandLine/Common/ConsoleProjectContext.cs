@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 
@@ -53,9 +54,19 @@ namespace NuGet.CommandLine
             }
         }
 
+        public void Log(ILogMessage message)
+        {
+            _logger.Log(message);
+        }
+
         public void ReportError(string message)
         {
             _logger.LogError(message);
+        }
+
+        public void ReportError(ILogMessage message)
+        {
+            _logger.Log(message);
         }
 
         public virtual ProjectManagement.FileConflictAction ResolveFileConflict(string message)

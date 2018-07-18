@@ -24,6 +24,12 @@ namespace Test.Utility
             // Console.WriteLine(message, args);
         }
 
+        public void Log(ILogMessage message)
+        {
+            // Uncomment when you want to debug tests.
+            // Console.WriteLine(message.FormatWithCode());
+        }
+
         public FileConflictAction ResolveFileConflict(string message)
         {
             return FileConflictAction.IgnoreAll;
@@ -50,6 +56,10 @@ namespace Test.Utility
         public XDocument OriginalPackagesConfig { get; set; }
 
         public void ReportError(string message)
+        {
+        }
+
+        public void ReportError(ILogMessage message)
         {
         }
 
