@@ -356,7 +356,7 @@ namespace NuGet.PackageManagement.UI
             if (!string.IsNullOrEmpty(ex.Message))
             {
                 UILogger.ReportError(ex.AsLogMessage());
-                ProjectContext.Log(MessageLevel.Error, ex.AsLogMessage().FormatWithCode());
+                ProjectContext.Log(ex.AsLogMessage());
             }
 
             foreach (var result in ex.Results)
@@ -365,9 +365,10 @@ namespace NuGet.PackageManagement.UI
                 var warningList = result.GetWarningIssues().ToList();
 
                 errorList.ForEach(p => UILogger.ReportError(p));
+                warningList.ForEach(p => UILogger.ReportError(p));
 
-                errorList.ForEach(p => ProjectContext.Log(MessageLevel.Error, p.FormatWithCode()));
-                warningList.ForEach(p => ProjectContext.Log(MessageLevel.Warning, p.FormatWithCode()));
+                errorList.ForEach(p => ProjectContext.Log(p));
+                warningList.ForEach(p => ProjectContext.Log(p));
             }            
         }
     }

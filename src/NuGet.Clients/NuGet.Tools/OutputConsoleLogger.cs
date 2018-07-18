@@ -98,6 +98,23 @@ namespace NuGetVSExtension
             }
         }
 
+        public void Log(ILogMessage message)
+        {
+            if (message.Level == LogLevel.Information
+                || message.Level == LogLevel.Error
+                || message.Level == LogLevel.Warning
+                || _verbosityLevel > DefaultVerbosityLevel)
+            {
+                RunTaskOnUI(() => OutputConsole.WriteLine(message.FormatWithCode()));
+
+                if (message.Level == LogLevel.Error ||
+                    message.Level == LogLevel.Warning)
+                {
+                    RunTaskOnUI(() => ReportError(message));
+                }                    
+            }
+        }
+
         private int GetMSBuildVerbosityLevel()
         {
             var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);

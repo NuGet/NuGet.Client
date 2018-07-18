@@ -2355,7 +2355,7 @@ namespace NuGet.PackageManagement
 
                     foreach (var warning in warnings)
                     {
-                        nuGetProjectContext.Log(MessageLevel.Warning, warning.FormatWithCode());
+                        nuGetProjectContext.Log(warning);
                     }
 
                     exceptionInfo = ExceptionDispatchInfo.Capture(unwrappedException);

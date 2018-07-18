@@ -211,12 +211,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 if (!string.IsNullOrEmpty(ex.Message))
                 {
-                    Log(LogUtility.LogLevelToMessageLevel(LogLevel.Error), ex.AsLogMessage().FormatWithCode());
+                    Log(ex.AsLogMessage());
                 }
 
                 var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
 
-                logMessages.ForEach(p => Log(LogUtility.LogLevelToMessageLevel(p.Level), p.FormatWithCode()));
+                logMessages.ForEach(p => Log(ex.AsLogMessage()));
             }
             catch (Exception ex)
             {
@@ -258,12 +258,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 if (!string.IsNullOrEmpty(ex.Message))
                 {
-                    Log(LogUtility.LogLevelToMessageLevel(LogLevel.Error), ex.AsLogMessage().FormatWithCode());
+                    Log(ex.AsLogMessage());
                 }
 
                 var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
 
-                logMessages.ForEach(p => Log(LogUtility.LogLevelToMessageLevel(p.Level), p.FormatWithCode()));
+                logMessages.ForEach(p => Log(p));
             }
             catch (Exception ex)
             {
