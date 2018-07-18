@@ -264,10 +264,10 @@ namespace NuGet.CommandLine
             AddPropertyIfHasValue(args, "SolutionDir", solutionDirectory);
             AddPropertyIfHasValue(args, "SolutionName", solutionName);
 
-            // If the MSBuild version used supports SkipNonextentTargets and BuildInParallel
+            // If the MSBuild version used does not support SkipNonextentTargets and BuildInParallel
             // use the performance optimization
             // When BuildInParallel is used with ContinueOnError it does not continue in some scenarios
-            if (toolset.ParsedVersion.CompareTo(new Version(15, 5)) >= 0)
+            if (toolset.ParsedVersion.CompareTo(new Version(15, 5)) < 0)
             {
                 AddProperty(args, "RestoreBuildInParallel", bool.FalseString);
                 AddProperty(args, "RestoreUseSkipNonexistentTargets", bool.FalseString);
