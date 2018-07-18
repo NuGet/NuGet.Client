@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Xml.Linq;
 using NuGet.Common;
@@ -43,6 +42,11 @@ namespace NuGet.VisualStudio
             // No logging needed when using the API
         }
 
+        public void Log(ILogMessage message)
+        {
+            // No logging needed when using the API
+        }
+
         public FileConflictAction ResolveFileConflict(string message)
         {
             return FileConflictAction.IgnoreAll;
@@ -52,10 +56,7 @@ namespace NuGet.VisualStudio
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; }
 
-        public ExecutionContext ExecutionContext
-        {
-            get { return null; }
-        }
+        public ExecutionContext ExecutionContext => null;
 
         public bool SkipAssemblyReferences { get; }
 
@@ -69,6 +70,12 @@ namespace NuGet.VisualStudio
         {
             // no-op
             Debug.Fail(message);
+        }
+
+        public void ReportError(ILogMessage message)
+        {
+            // no-op
+            Debug.Fail(message.FormatWithCode());
         }
 
         public NuGetActionType ActionType { get; set; }

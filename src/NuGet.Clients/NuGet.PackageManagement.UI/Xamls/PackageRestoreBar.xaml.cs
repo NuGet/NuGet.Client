@@ -184,9 +184,19 @@ namespace NuGet.PackageManagement.UI
             ShowMessage(message);
         }
 
+        public void Log(ILogMessage message)
+        {
+            ShowMessage(message.FormatWithCode());
+        }
+
         public void ReportError(string message)
         {
             ShowMessage(message);
+        }
+
+        public void ReportError(ILogMessage message)
+        {
+            ShowMessage(message.FormatWithCode());
         }
 
         public FileConflictAction ResolveFileConflict(string message)

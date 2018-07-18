@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -54,9 +55,19 @@ namespace NuGet.PackageManagement.UI
             ShowMessage(message);
         }
 
+        public void Log(ILogMessage message)
+        {
+            ShowMessage(message.FormatWithCode());
+        }
+
         public void ReportError(string message)
         {
             ShowMessage(message);
+        }
+
+        public void ReportError(ILogMessage message)
+        {
+            ShowMessage(message.FormatWithCode());
         }
 
         private void ShowMessage(string message)

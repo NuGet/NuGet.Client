@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
+using NuGet.Shared;
 
 namespace NuGet.Packaging
 {
@@ -1007,6 +1008,9 @@ namespace NuGet.Packaging
                 if (verifyResult.Signed)
                 {
                     await LogPackageSignatureVerificationAsync(source, package, packageExtractionContext.Logger, verifyResult);
+
+                    // Add the package id to all results
+                    verifyResult.Results.SelectMany(r => r.Issues).ForEach(l => l.LibraryId = package.Id);
 
                     if (verifyResult.Valid)
                     {

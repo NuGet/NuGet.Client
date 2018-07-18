@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Packaging;
 
 namespace NuGet.ProjectManagement
@@ -22,20 +23,25 @@ namespace NuGet.ProjectManagement
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
 
-        public ISourceControlManagerProvider SourceControlManagerProvider
-        {
-            get { return null; }
-        }
+        public ISourceControlManagerProvider SourceControlManagerProvider => null;
 
-        public ExecutionContext ExecutionContext
-        {
-            get { return null; }
-        }
+        public ExecutionContext ExecutionContext => null;
 
         public XDocument OriginalPackagesConfig { get; set; }
 
         public void ReportError(string message)
         {
+            // No-op
+        }
+
+        public void Log(ILogMessage message)
+        {
+            // No-op
+        }
+
+        public void ReportError(ILogMessage message)
+        {
+            // No-op
         }
 
         public NuGetActionType ActionType { get; set; }
