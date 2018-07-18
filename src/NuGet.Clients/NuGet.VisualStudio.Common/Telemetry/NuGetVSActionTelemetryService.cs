@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio
         {
         }
 
-        public void EmitTelemetryEvent(TelemetryEvent telemetryData)
+        public virtual void EmitTelemetryEvent(TelemetryEvent telemetryData)
         {
             if (telemetryData == null)
             {

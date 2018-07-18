@@ -6335,7 +6335,7 @@ namespace NuGet.Test
                 .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
 
             var nugetProjectContext = new TestNuGetProjectContext();
-            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            var telemetryService = new TestNuGetVSTelemetryService(telemetrySession.Object, _logger);
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
@@ -6361,6 +6361,13 @@ namespace NuGet.Test
                 // Act
                 var target = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.6.9"));
 
+                lock (_logger)
+                {
+                    // telemetry count has been flaky, these xunit logs should help track the extra source of events on CI
+                    // for issue https://github.com/NuGet/Home/issues/7105
+                    _logger.LogInformation("Begin PreviewInstallPackageAsync");
+                }
+
                 await nuGetPackageManager.PreviewInstallPackageAsync(
                     buildIntegratedProject,
                     target,
@@ -6370,14 +6377,9 @@ namespace NuGet.Test
                     sourceRepositoryProvider.GetRepositories(),
                     CancellationToken.None);
 
-                // telemetry count has been flaky, these xunit logs should help track the extra source of events on CI
-                // for issue https://github.com/NuGet/Home/issues/7105
-                foreach (var telemetryEvent in telemetryEvents)
+                lock (_logger)
                 {
-                    _logger.LogInformation("--------------------------");
-                    _logger.LogInformation($"Name: {telemetryEvent.Name}");
-                    _logger.LogInformation($"Json: {telemetryEvent.ToJson()}");
-                    _logger.LogInformation("--------------------------");
+                    _logger.LogInformation("End PreviewInstallPackageAsync");
                 }
 
                 // Assert
@@ -6910,6 +6912,37 @@ namespace NuGet.Test
             public int GetHashCode(Tuple<TestNuGetProject, PackageIdentity> obj)
             {
                 return obj.GetHashCode();
+            }
+        }
+
+        private class TestNuGetVSTelemetryService : NuGetVSTelemetryService
+        {
+            private ITelemetrySession _telemetrySession;
+            private XunitLogger _logger;
+
+            public TestNuGetVSTelemetryService(ITelemetrySession telemetrySession, XunitLogger logger)
+            {
+                _telemetrySession = telemetrySession ?? throw new ArgumentNullException(nameof(telemetrySession));
+                _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            }
+
+            public override void EmitTelemetryEvent(TelemetryEvent telemetryData)
+            {
+                if (telemetryData == null)
+                {
+                    throw new ArgumentNullException(nameof(telemetryData));
+                }
+
+                lock (_logger)
+                {
+                    _logger.LogInformation("--------------------------");
+                    _logger.LogInformation($"Name: {telemetryData.Name}");
+                    _logger.LogInformation($"Json: {telemetryData.ToJson()}");
+                    _logger.LogInformation($"Stack: {Environment.StackTrace}");
+                    _logger.LogInformation("--------------------------");
+                }
+
+                _telemetrySession.PostEvent(telemetryData);
             }
         }
     }
