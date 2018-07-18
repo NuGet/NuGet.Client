@@ -297,22 +297,6 @@ namespace NuGet.Tests.Apex
             return PackageExistsInLockFile(assetsFilePath, packageName, packageVersion);
         }
 
-        /// <summary>
-        /// Iterations to use for theory tests
-        /// </summary>
-        /// <remarks>This makes it easier when stressing bad tests</remarks>
-        internal static int GetIterations()
-        {
-            var iterations = 1;
-
-            if (int.TryParse(Environment.GetEnvironmentVariable("NUGET_APEX_TEST_ITERATIONS"), out var x) && x > 0)
-            {
-                iterations = x;
-            }
-
-            return iterations;
-        }
-
         private static bool PackageExistsInLockFile(string pathToAssetsFile, string packageName, string packageVersion)
         {
             var version = NuGetVersion.Parse(packageVersion);
@@ -326,7 +310,7 @@ namespace NuGet.Tests.Apex
 
         private static LockFile GetAssetsFileWithRetry(string path)
         {
-            var timeout = TimeSpan.FromSeconds(10);
+            var timeout = TimeSpan.FromSeconds(20);
             var timer = Stopwatch.StartNew();
             string content = null;
 
