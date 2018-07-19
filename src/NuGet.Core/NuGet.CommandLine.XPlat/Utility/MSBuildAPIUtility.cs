@@ -299,50 +299,6 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        public static Dictionary<string, IEnumerable<Tuple<string, string>>> ListPackageReference(string projectPath,
-            LibraryDependency libraryDependency,
-            IList<string> userInputFrameworks)
-        {
-            var project = GetProject(projectPath);
-            var packageReferencesPerFramework = new Dictionary<string, IEnumerable<Tuple<string, string>>>();
-            var projectFrameworkStrings = GetProjectFrameworks(project);
-            var projectFrameworks = new HashSet<NuGetFramework>(GetProjectFrameworks(project).Select(f => NuGetFramework.Parse(f)));
-
-            if (!userInputFrameworks.Any())
-            {
-                var unconditionalpackageReferences = GetPackageReferences(project, libraryDependency);
-
-                foreach (var framework in projectFrameworkStrings)
-                {
-                    var conditionalpackageReferences = GetPackageReferencesPerFramework(project, libraryDependency, framework);
-
-                    packageReferencesPerFramework.Add(framework,
-                        conditionalpackageReferences.Select(i => Tuple.Create(i.EvaluatedInclude, i.GetMetadataValue(VERSION_TAG))));
-                }
-            }
-            else
-            {
-                foreach (var userInputFramework in userInputFrameworks)
-                {
-                    var framework = NuGetFramework.Parse(userInputFramework);
-                    if (projectFrameworks.Contains(framework))
-                    {
-                        var conditionalpackageReferences = GetPackageReferencesPerFramework(project, libraryDependency, userInputFramework);
-
-                        packageReferencesPerFramework.Add(userInputFramework,
-                            conditionalpackageReferences.Select(i => Tuple.Create(i.EvaluatedInclude, i.GetMetadataValue(VERSION_TAG))));
-                    }
-                    else
-                    {
-                        packageReferencesPerFramework.Add(userInputFramework, null);
-                    }
-                }
-            }
-
-            ProjectCollection.GlobalProjectCollection.UnloadProject(project);
-            return packageReferencesPerFramework;
-        }
-
         public Dictionary<string, IEnumerable<PRPackage>> GetPackageReferencesFromAssets(string projectPath, IList<string> userInputFrameworks, bool transitive)
         {
             
@@ -521,12 +477,6 @@ namespace NuGet.CommandLine.XPlat
                 mergedPackageReferences.AddRange(GetPackageReferencesPerFramework(project, libraryDependency, framework));
             }
             return mergedPackageReferences;
-        }
-
-        private static IEnumerable<ProjectItem> GetPackageReferencesForAllFrameworks(string project)
-        {
-            return GetPackageReferencesForAllFrameworks(GetProject(project), null);
-            
         }
 
         private static IEnumerable<string> GetProjectFrameworks(Project project)
