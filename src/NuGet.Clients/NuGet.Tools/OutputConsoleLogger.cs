@@ -26,6 +26,11 @@ namespace NuGetVSExtension
         private int _verbosityLevel;
         private EnvDTE.DTE _dte;
 
+        // keeps a reference to BuildEvents so that our event handler
+        // won't get disconnected because of GC.
+        private EnvDTE.BuildEvents _buildEvents;
+        private EnvDTE.SolutionEvents _solutionEvents;
+
         public IOutputConsole OutputConsole { get; private set; }
 
         public Lazy<ErrorListTableDataSource> ErrorListTableDataSource { get; private set; }
@@ -54,6 +59,10 @@ namespace NuGetVSExtension
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _dte = serviceProvider.GetDTE();
+                _buildEvents = _dte.Events.BuildEvents;
+                _buildEvents.OnBuildBegin += (_, __) => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
+                _solutionEvents = _dte.Events.SolutionEvents;
+                _solutionEvents.AfterClosing += () => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
 
                 OutputConsole = consoleProvider.CreatePackageManagerConsole();
             });
@@ -95,6 +104,23 @@ namespace NuGetVSExtension
                 }
 
                 RunTaskOnUI(() => OutputConsole.WriteLine(message));
+            }
+        }
+
+        public void Log(ILogMessage message)
+        {
+            if (message.Level == LogLevel.Information
+                || message.Level == LogLevel.Error
+                || message.Level == LogLevel.Warning
+                || _verbosityLevel > DefaultVerbosityLevel)
+            {
+                RunTaskOnUI(() => OutputConsole.WriteLine(message.FormatWithCode()));
+
+                if (message.Level == LogLevel.Error ||
+                    message.Level == LogLevel.Warning)
+                {
+                    RunTaskOnUI(() => ReportError(message));
+                }                    
             }
         }
 

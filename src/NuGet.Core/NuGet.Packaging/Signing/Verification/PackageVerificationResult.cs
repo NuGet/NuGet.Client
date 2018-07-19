@@ -34,7 +34,7 @@ namespace NuGet.Packaging.Signing
 
         public IEnumerable<ILogMessage> GetWarningIssues()
         {
-            return Issues.Where(p => p.Level==LogLevel.Warning);
+            return Issues.Where(p => p.Level == LogLevel.Warning);
         }
 
         public IEnumerable<ILogMessage> GetErrorIssues()

@@ -142,12 +142,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 errors.Count().Should().Be(1);
                 errors.First().Code.Should().Be(NuGetLogCode.NU3008);
                 errors.First().Message.Should().Be(_NU3008Message);
-                errors.First().LibraryId.Should().Be(packageX.ToString());
+                errors.First().LibraryId.Should().Be(packageX.Id);
 
                 warnings.Count().Should().Be(1);
                 warnings.First().Code.Should().Be(NuGetLogCode.NU3027);
                 warnings.First().Message.Should().Be(_NU3027Message);
-                warnings.First().LibraryId.Should().Be("X.9.0.0");
+                warnings.First().LibraryId.Should().Be(packageX.Id);
             }
         }
 

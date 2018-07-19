@@ -21,9 +21,7 @@ namespace NuGet.PackageManagement
         {
             if (DisplayMessage(message.Level))
             {
-                var messageLevel = LogUtility.LogLevelToMessageLevel(message.Level);
-
-                _projectContext.Log(messageLevel, message.FormatWithCode());
+                _projectContext.Log(message);
             }
         }
 
@@ -31,9 +29,7 @@ namespace NuGet.PackageManagement
         {
             if (DisplayMessage(message.Level))
             {
-                var messageLevel = LogUtility.LogLevelToMessageLevel(message.Level);
-
-                _projectContext.Log(messageLevel, message.FormatWithCode());
+                _projectContext.Log(message);
             }
 
             return Task.FromResult(0);

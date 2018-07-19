@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
@@ -119,9 +120,19 @@ namespace NuGet.PackageManagement.UI
             ShowMessage(message);
         }
 
+        public void Log(ILogMessage message)
+        {
+            ShowMessage(message.FormatWithCode());
+        }
+
         public void ReportError(string message)
         {
             ShowMessage(message);
+        }
+
+        public void ReportError(ILogMessage message)
+        {
+            ShowMessage(message.FormatWithCode());
         }
 
         public void CleanUp()

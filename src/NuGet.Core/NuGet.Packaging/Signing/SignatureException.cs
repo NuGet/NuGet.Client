@@ -45,7 +45,6 @@ namespace NuGet.Packaging.Signing
         {
             Results = results;
             PackageIdentity = package;
-            results.SelectMany(r => r.Issues).ForEach(l => l.LibraryId = package.ToString());
         }
 
         public SignatureException(NuGetLogCode code, string message, PackageIdentity package)

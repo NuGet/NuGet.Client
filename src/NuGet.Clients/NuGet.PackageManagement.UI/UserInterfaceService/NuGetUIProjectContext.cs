@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Windows.Threading;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -96,6 +94,16 @@ namespace NuGet.PackageManagement.UI
         public XDocument OriginalPackagesConfig { get; set; }
 
         public void ReportError(string message)
+        {
+            _logger.ReportError(message);
+        }
+
+        public void Log(ILogMessage message)
+        {
+            _logger.Log(message);
+        }
+
+        public void ReportError(ILogMessage message)
         {
             _logger.ReportError(message);
         }
