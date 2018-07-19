@@ -739,7 +739,7 @@ namespace NuGet.Commands
 
             if (mainPackageBuilder == null)
             {
-                throw new PackagingException(NuGetLogCode.NU5006, string.Format(CultureInfo.CurrentCulture, Strings.Error_PackFailed, path));
+                throw new PackagingException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackFailed, path));
             }
 
             InitCommonPackageBuilderProperties(mainPackageBuilder);
