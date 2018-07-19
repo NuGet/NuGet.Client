@@ -212,7 +212,7 @@
 {2}: resolved version</comment>
   </data>
   <data name="Log_VersionConflict" xml:space="preserve">
-    <value>Version conflict detected for {0}. Reference the package directly from the project to resolve this issue.</value>
+    <value>Version conflict detected for {0}. Install/reference {1} directly to project {2} to resolve this issue.</value>
   </data>
   <data name="Error_UnknownBuildAction" xml:space="preserve">
     <value>Package '{0}' specifies an invalid build action '{1}' for file '{2}'.</value>
