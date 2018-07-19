@@ -27,30 +27,6 @@ namespace NuGet.Tests.Apex
         }
 
         [CIOnlyNuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task InstallFromPMCForPR_SucceedAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            var signedPackage = _fixture.RepositoryCountersignedTestPackage;
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
-
-                testContext.SolutionService.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
-            }
-        }
-
-        [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
         public async Task InstallFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
@@ -68,33 +44,6 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
 
                 CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
-            }
-        }
-
-        [CIOnlyNuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task UninstallFromPMCForPR_SucceedAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            var signedPackage = _fixture.RepositoryCountersignedTestPackage;
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
-                testContext.SolutionService.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                nugetConsole.UninstallPackageFromPMC(signedPackage.Id);
-                testContext.SolutionService.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }
         }
 
@@ -121,35 +70,6 @@ namespace NuGet.Tests.Apex
         }
 
         [CIOnlyNuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task UpdateUnsignedToSignedVersionFromPMCForPR_SucceedAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            var packageVersion09 = "0.9.0";
-            var signedPackage = _fixture.RepositoryCountersignedTestPackage;
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, signedPackage.Id, packageVersion09);
-                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, packageVersion09);
-                testContext.SolutionService.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                nugetConsole.UpdatePackageFromPMC(signedPackage.Id, signedPackage.Version);
-                testContext.SolutionService.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
-            }
-        }
-
-        [CIOnlyNuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
         public async Task UpdateUnsignedToSignedVersionFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
@@ -170,129 +90,6 @@ namespace NuGet.Tests.Apex
                 nugetConsole.UpdatePackageFromPMC(signedPackage.Id, signedPackage.Version);
 
                 CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
-            }
-        }
-
-        [CIOnlyNuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task WithExpiredAuthorCertificateAtCountersigning_InstallFromPMCForPR_WarnAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            using (var trustedCert = _fixture.TrustedRepositoryTestCertificate)
-            using (var trustedExpiringTestCert = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn10Seconds())
-            {
-                XunitLogger.LogInformation("Creating package");
-                var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
-
-                XunitLogger.LogInformation("Signing package");
-                var expiredTestPackage = CommonUtility.AuthorSignPackage(package, trustedExpiringTestCert.Source.Cert);
-                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, expiredTestPackage);
-                var packageFullName = Path.Combine(testContext.PackageSource, expiredTestPackage.PackageName);
-
-                XunitLogger.LogInformation("Waiting for package to expire");
-                SigningUtility.WaitForCertificateToExpire(trustedExpiringTestCert.Source.Cert);
-
-                XunitLogger.LogInformation("Countersigning package");
-                var countersignedPackage = await SignedArchiveTestUtility.RepositorySignPackageAsync(
-                    new X509Certificate2(trustedCert.Source.Cert),
-                    packageFullName,
-                    testContext.PackageSource,
-                    new Uri("https://v3serviceIndexUrl.test/api/index.json"),
-                    timestampService.Url);
-                File.Copy(countersignedPackage, packageFullName, overwrite: true);
-                File.Delete(countersignedPackage);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(expiredTestPackage.Id, expiredTestPackage.Version);
-                testContext.SolutionService.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                // TODO: Fix bug where no warnings are shown when package is untrusted but still installed
-                //nugetConsole.IsMessageFoundInPMC("expired certificate").Should().BeTrue("expired certificate warning");
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, XunitLogger);
-            }
-        }
-
-        [CIOnlyNuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task WithExpiredAuthorCertificate_ExpiredRepoCertificate_InstallFromPMCForPR_WarnAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            using (var trustedExpiringTestCert = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn10Seconds())
-            {
-                XunitLogger.LogInformation("Creating package");
-                var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
-
-                XunitLogger.LogInformation("Signing and countersigning package");
-                var expiredTestPackage = CommonUtility.AuthorSignPackage(package, trustedExpiringTestCert.Source.Cert);
-                var countersignedPackage = CommonUtility.RepositoryCountersignPackage(
-                    expiredTestPackage,
-                    trustedExpiringTestCert.Source.Cert,
-                    new Uri("https://v3serviceIndexUrl.test/api/index.json"));
-
-                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, expiredTestPackage);
-
-                XunitLogger.LogInformation("Waiting for package to expire");
-                SigningUtility.WaitForCertificateToExpire(trustedExpiringTestCert.Source.Cert);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(expiredTestPackage.Id, expiredTestPackage.Version);
-                testContext.SolutionService.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                // TODO: Fix bug where no warnings are shown when package is untrusted but still installed
-                //nugetConsole.IsMessageFoundInPMC("expired certificate").Should().BeTrue("expired certificate warning");
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, XunitLogger);
-            }
-        }
-
-        [CIOnlyNuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task WithExpiredAuthorCertificateAfterCountersigned_InstallFromPMCForPR_SucceedAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            using (var trustedCert = _fixture.TrustedRepositoryTestCertificate)
-            using (var trustedExpiringTestCert = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn10Seconds())
-            {
-                XunitLogger.LogInformation("Creating package");
-                var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
-
-                XunitLogger.LogInformation("Signing and countersigning package");
-                var expiredTestPackage = CommonUtility.AuthorSignPackage(package, trustedExpiringTestCert.Source.Cert);
-                var countersignedPackage = CommonUtility.RepositoryCountersignPackage(
-                    expiredTestPackage,
-                    trustedCert.Source.Cert,
-                    new Uri("https://v3serviceIndexUrl.test/api/index.json"),
-                    packageOwners: null,
-                    timestampProviderUrl: timestampService.Url);
-
-                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, expiredTestPackage);
-
-                XunitLogger.LogInformation("Waiting for package to expire");
-                SigningUtility.WaitForCertificateToExpire(trustedExpiringTestCert.Source.Cert);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(expiredTestPackage.Id, expiredTestPackage.Version);
-                testContext.SolutionService.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-                
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, XunitLogger);
             }
         }
 
@@ -415,31 +212,6 @@ namespace NuGet.Tests.Apex
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, XunitLogger);
-            }
-        }
-
-        [CIOnlyNuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task Tampered_InstallFromPMCForPR_FailAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            var signedPackage = _fixture.RepositoryCountersignedTestPackage;
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
-                SignedArchiveTestUtility.TamperWithPackage(Path.Combine(testContext.PackageSource, signedPackage.PackageName));
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
-                nugetConsole.IsMessageFoundInPMC("package integrity check failed").Should().BeTrue("Integrity failed message shown.");
-                testContext.SolutionService.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, XunitLogger);
             }
         }
 
