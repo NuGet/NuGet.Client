@@ -6350,10 +6350,7 @@ namespace NuGet.Test
 
                 var json = new JObject
                 {
-                    ["dependencies"] = new JObject()
-                    {
-                        new JProperty("NuGet.Frameworks", "99.0.0")
-                    },
+                    ["dependencies"] = new JObject(),
                     ["frameworks"] = new JObject
                     {
                         ["net46"] = new JObject()
@@ -6363,7 +6360,7 @@ namespace NuGet.Test
                 var buildIntegratedProject = solutionManager.AddBuildIntegratedProject(json: json);
 
                 // Act
-                var target = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.7.0"));
+                var target = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.6.9"));
 
                 lock (_logger)
                 {
