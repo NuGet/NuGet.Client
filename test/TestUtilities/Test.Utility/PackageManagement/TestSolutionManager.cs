@@ -42,7 +42,7 @@ namespace Test.Utility
             SolutionDirectory = solutionDirectory;
         }
 
-        public MSBuildNuGetProject AddNewMSBuildProject(string projectName = null, NuGetFramework projectTargetFramework = null, string packagesConfigName = null)
+        public MSBuildNuGetProject AddNewMSBuildProject(string projectName = null, NuGetFramework projectTargetFramework = null)
         {
             var existingProject = Task.Run(async () => await GetNuGetProjectAsync(projectName));
             existingProject.Wait();

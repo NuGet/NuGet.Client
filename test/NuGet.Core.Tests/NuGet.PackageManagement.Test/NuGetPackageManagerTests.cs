@@ -6348,19 +6348,10 @@ namespace NuGet.Test
                     solutionManager,
                     new TestDeleteOnRestartManager());
 
-                var json = new JObject
-                {
-                    ["dependencies"] = new JObject(),
-                    ["frameworks"] = new JObject
-                    {
-                        ["net46"] = new JObject()
-                    }
-                };
-
-                var buildIntegratedProject = solutionManager.AddBuildIntegratedProject(json: json);
+                var project = solutionManager.AddNewMSBuildProject();
 
                 // Act
-                var target = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.6.9"));
+                var target = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.7.0"));
 
                 lock (_logger)
                 {
@@ -6370,7 +6361,7 @@ namespace NuGet.Test
                 }
 
                 await nuGetPackageManager.PreviewInstallPackageAsync(
-                    buildIntegratedProject,
+                    project,
                     target,
                     new ResolutionContext(),
                     nugetProjectContext,
