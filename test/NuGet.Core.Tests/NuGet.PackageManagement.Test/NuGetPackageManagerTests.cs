@@ -6348,7 +6348,19 @@ namespace NuGet.Test
                     solutionManager,
                     new TestDeleteOnRestartManager());
 
-                var project = solutionManager.AddNewMSBuildProject();
+                var json = new JObject
+                {
+                    ["dependencies"] = new JObject()
+                    {
+                        new JProperty("NuGet.Frameworks", "99.0.0")
+                    },
+                    ["frameworks"] = new JObject
+                    {
+                        ["net46"] = new JObject()
+                    }
+                };
+
+                var buildIntegratedProject = solutionManager.AddBuildIntegratedProject(json: json);
 
                 // Act
                 var target = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.7.0"));
@@ -6361,7 +6373,7 @@ namespace NuGet.Test
                 }
 
                 await nuGetPackageManager.PreviewInstallPackageAsync(
-                    project,
+                    buildIntegratedProject,
                     target,
                     new ResolutionContext(),
                     nugetProjectContext,
@@ -6927,8 +6939,13 @@ namespace NuGet.Test
 
                 lock (_logger)
                 {
+                    var operationId = telemetryData["OperationId"];
+                    var parentId = telemetryData["ParentId"];
+
                     _logger.LogInformation("--------------------------");
                     _logger.LogInformation($"Name: {telemetryData.Name}");
+                    _logger.LogInformation($"OperationId: {operationId}");
+                    _logger.LogInformation($"ParentId: {parentId}");
                     _logger.LogInformation($"Json: {telemetryData.ToJson()}");
                     _logger.LogInformation($"Stack: {Environment.StackTrace}");
                     _logger.LogInformation("--------------------------");
