@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Packaging.Core;
@@ -26,6 +28,11 @@ namespace NuGet.CommandLine.XPlat
                     CommandConstants.ForceEnglishOutputOption,
                     Strings.ForceEnglishOutput_Description,
                     CommandOptionType.NoValue);
+
+                var path = listpkg.Argument(
+                    "<PROJECT | SOLUTION>",
+                    Strings.ListPkg_PathDescription,
+                    multipleValues: false);
 
                 var framework = listpkg.Option(
                     "-f|--framework",
@@ -49,23 +56,34 @@ namespace NuGet.CommandLine.XPlat
 
                 listpkg.OnExecute(() =>
                 {
-                    Debugger.Launch();
-                    if (framework.HasValue())
-                    {
-                        if (framework.Values.Count != 1)
-                        {
-                            //throw an err
-                            return null;
-                        }
-                    }
                     var logger = getLogger();
-                    var packageRefArgs = new ListPackageArgs(logger, framework.Values[0], outdated.HasValue(), deprecated.HasValue(), transitive.HasValue());
+                    var frameworks = ParseFrameworks(framework.Value());
+
+                    var packageRefArgs = new ListPackageArgs(
+                        logger,
+                        path.Value,
+                        framework.HasValue(),
+                        frameworks,
+                        outdated.HasValue(),
+                        deprecated.HasValue(),
+                        transitive.HasValue()
+                    );
 
                     var msBuild = new MSBuildAPIUtility(logger);
                     var listPackageCommandRunner = getCommandRunner();
                     return listPackageCommandRunner.ExecuteCommand(packageRefArgs, msBuild);
                 });
             });
+        }
+
+        private static List<string> ParseFrameworks(string frameworks)
+        {
+            if (frameworks == null)
+            {
+                return new List<string>();
+            }
+            var frameworksList = frameworks.Split(',').ToList();
+            return frameworksList;
         }
 
     }

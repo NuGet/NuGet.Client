@@ -296,6 +296,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No assets file was found for `{0}`. Please run restore before running this command..
+        /// </summary>
+        internal static string Error_AssetsFileNotFound {
+            get {
+                return ResourceManager.GetString("Error_AssetsFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
         internal static string Error_MissingSourceParameter {
@@ -328,6 +337,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_NoMatchingSpecs {
             get {
                 return ResourceManager.GetString("Error_NoMatchingSpecs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project `{0}` does not use project references..
+        /// </summary>
+        internal static string Error_NotPRProject {
+            get {
+                return ResourceManager.GetString("Error_NotPRProject", resourceCulture);
             }
         }
         
@@ -499,6 +517,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string ListPkg_OutdatedDescription {
             get {
                 return ResourceManager.GetString("ListPkg_OutdatedDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A path to a project or solution file or directory.
+        /// </summary>
+        internal static string ListPkg_PathDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_PathDescription", resourceCulture);
             }
         }
         

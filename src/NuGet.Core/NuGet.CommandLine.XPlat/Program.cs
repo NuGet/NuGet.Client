@@ -21,7 +21,6 @@ namespace NuGet.CommandLine.XPlat
         {
             // Start with a default logger, this will be updated according to the passed in verbosity
             var log = new CommandOutputLogger(LogLevel.Information);
-
             return MainInternal(args, log);
         }
 
@@ -138,7 +137,6 @@ namespace NuGet.CommandLine.XPlat
 
         private static void RegisterCommands(CommandLineApplication app, CommandOutputLogger log)
         {
-            Debugger.Launch();
             // Register commands
             if (app.Name == DotnetPackageAppName)
             {
