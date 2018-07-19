@@ -152,10 +152,15 @@ Param(
         Log "Completed the performance measurements for $solutionFile, results are in $resultsFile" "green"
     }
 
-    If($(GetAbsolutePath $resultsFilePath).StartsWith($(GetAbsolutePath $logsPath))){
+    If(![string]::IsNullOrEmpty($logsPath) -And $(GetAbsolutePath $resultsFilePath).StartsWith($(GetAbsolutePath $logsPath)))
+    {
         Log "$resultsFilePath cannot be under $logsPath" "red"
         exit(1)
     }
 
+    if(![string]::IsNullOrEmpty($logsPath))
+    {
+        # create a default path otherwise it will fail.
+    }
     MeasureRestore $nugetClientPath $solutionPath $logsPath $resultsFilePath -iterationCount 3 -cleanLogs
     Cleanup $nugetClientPath
