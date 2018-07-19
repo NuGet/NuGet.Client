@@ -120,19 +120,6 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        void ValidAuthenticationTypes_ParsesStar()
-        {
-            var credentials = new PackageSourceCredential(
-                "source",
-                "user",
-                "password",
-                isPasswordClearText: false,
-                validAuthenticationTypesText: "*");
-
-            Assert.Empty(credentials.ValidAuthenticationTypes);
-        }
-
-        [Fact]
         void ValidAuthenticationTypes_ReturnsEmptyIfTextEmpty()
         {
             var credentials = new PackageSourceCredential(

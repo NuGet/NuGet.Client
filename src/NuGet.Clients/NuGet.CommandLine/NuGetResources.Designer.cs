@@ -11315,11 +11315,11 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot set the set of valid authentication types for the source if the source does not have credentials associated with it..
+        ///   Looks up a localized string similar to Clearing existing authentication types settings for package source &apos;{0}&apos;..
         /// </summary>
-        public static string SourcesCommandAuthTypesInvalidWithoutCredentials {
+        public static string SourcesCommandClearingExistingAuthTypes {
             get {
-                return ResourceManager.GetString("SourcesCommandAuthTypesInvalidWithoutCredentials", resourceCulture);
+                return ResourceManager.GetString("SourcesCommandClearingExistingAuthTypes", resourceCulture);
             }
         }
         
@@ -11446,6 +11446,15 @@ namespace NuGet.CommandLine {
         public static string SourcesCommandCredentialsRequired_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Both UserName and Password must be specified if ValidAuthenticationTypes is specified.
+        /// </summary>
+        public static string SourcesCommandCredentialsRequiredWithAuthTypes {
+            get {
+                return ResourceManager.GetString("SourcesCommandCredentialsRequiredWithAuthTypes", resourceCulture);
             }
         }
         

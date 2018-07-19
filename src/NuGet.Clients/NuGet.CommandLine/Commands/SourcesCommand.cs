@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 
 namespace NuGet.CommandLine
 {
@@ -212,31 +213,23 @@ namespace NuGet.CommandLine
 
             sourceList.RemoveAt(existingSourceIndex);
 
-            var credentials = existingSource.Credentials;
             if (!string.IsNullOrEmpty(UserName))
             {
-                // preserve any existing authentication types
-                var authenticationTypesText =
-                    existingSource.Credentials?.ValidAuthenticationTypesText;
-                credentials = Configuration.PackageSourceCredential.FromUserInput(
+                var hasExistingAuthTypes = existingSource.Credentials?.ValidAuthenticationTypes.Any() ?? false;
+                if (hasExistingAuthTypes && string.IsNullOrEmpty(ValidAuthenticationTypes))
+                {
+                    Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandClearingExistingAuthTypes"), Name);
+                }
+
+                var credentials = Configuration.PackageSourceCredential.FromUserInput(
                     Name,
                     UserName,
                     Password,
                     StorePasswordInClearText,
-                    authenticationTypesText);
+                    ValidAuthenticationTypes);
+                existingSource.Credentials = credentials;
             }
 
-            if (!string.IsNullOrEmpty(ValidAuthenticationTypes))
-            {
-                if (credentials == null)
-                {
-                    throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandAuthTypesInvalidWithoutCredentials"));
-                }
-
-                credentials = credentials.WithAuthenticationTypes(ValidAuthenticationTypes);
-            }
-
-            existingSource.Credentials = credentials;
 
             sourceList.Insert(existingSourceIndex, existingSource);
             SourceProvider.SavePackageSources(sourceList);
@@ -247,12 +240,21 @@ namespace NuGet.CommandLine
         {
             bool userNameEmpty = String.IsNullOrEmpty(UserName);
             bool passwordEmpty = String.IsNullOrEmpty(Password);
+            bool authTypesEmpty = String.IsNullOrEmpty(ValidAuthenticationTypes);
 
             if (userNameEmpty ^ passwordEmpty)
             {
                 // If only one of them is set, throw.
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandCredentialsRequired"));
             }
+
+            if (passwordEmpty && !authTypesEmpty)
+            {
+                // can't specify auth types without credentials
+                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandCredentialsRequiredWithAuthTypes"));
+            }
+
+
         }
 
         private void PrintRegisteredSourcesShort()
