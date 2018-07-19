@@ -152,5 +152,10 @@ Param(
         Log "Completed the performance measurements for $solutionFile, results are in $resultsFile" "green"
     }
 
+    If($(GetAbsolutePath $resultsFilePath).StartsWith($(GetAbsolutePath $logsPath))){
+        Log "$resultsFilePath cannot be under $logsPath" "red"
+        exit(1)
+    }
+
     MeasureRestore $nugetClientPath $solutionPath $logsPath $resultsFilePath -iterationCount 3 -cleanLogs
     Cleanup $nugetClientPath
