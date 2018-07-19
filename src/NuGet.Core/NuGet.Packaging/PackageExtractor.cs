@@ -1032,7 +1032,6 @@ namespace NuGet.Packaging
             }
         }
 
-
         /// <summary>
         /// Adds a package ID and package source as a prefix to log messages and adds package ID to the message.LibraryId.
         /// </summary>
