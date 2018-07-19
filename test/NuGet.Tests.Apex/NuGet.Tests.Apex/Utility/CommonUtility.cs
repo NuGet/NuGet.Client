@@ -216,8 +216,7 @@ namespace NuGet.Tests.Apex
             testService.WaitForAutoRestore();
 
             var assetsFilePath = GetAssetsFilePath(project.FullPath);
-            File.Exists(assetsFilePath).Should().BeTrue(AppendErrors($"File does not exist: {assetsFilePath}", visualStudio));
-
+            
             // Project has an assets file, let's look there to assert
             var inAssetsFile = IsPackageInstalledInAssetsFile(assetsFilePath, packageName, packageVersion, true);
 
@@ -258,8 +257,7 @@ namespace NuGet.Tests.Apex
             testService.WaitForAutoRestore();
 
             var assetsFilePath = GetAssetsFilePath(project.FullPath);
-            File.Exists(assetsFilePath).Should().BeTrue(AppendErrors($"File does not exist: {assetsFilePath}", visualStudio));
-
+            
             // Project has an assets file, let's look there to assert
             var inAssetsFile = IsPackageInstalledInAssetsFile(assetsFilePath, packageName, packageVersion, false);
             logger.LogInformation($"Exists: {inAssetsFile}");
