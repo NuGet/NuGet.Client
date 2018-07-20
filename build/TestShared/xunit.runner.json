@@ -1,5 +1,5 @@
 {
-  "parallelizeTestCollections": true,
-  "parallelizeAssembly": true,
+  "parallelizeTestCollections": false,
+  "parallelizeAssembly": false,
   "longRunningTestSeconds": 1200
 }
