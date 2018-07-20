@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.Shared;
 using NuGet.Test.Utility;
@@ -31,6 +32,8 @@ namespace Test.Utility.Signing
 {
     public static class SigningTestUtility
     {
+        private static readonly string _signatureLogPrefix = "Package '{0} {1}' from source '{2}':";
+
         /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().
         /// The generator will change the certificate EKU to ClientAuth.
@@ -668,6 +671,11 @@ namespace Test.Utility.Signing
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
                 issue.Message == untrustedRoot);
+        }
+
+        public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)
+        {
+            return $"{string.Format(_signatureLogPrefix, package.Id, package.Version, source)} {log}";
         }
     }
 }

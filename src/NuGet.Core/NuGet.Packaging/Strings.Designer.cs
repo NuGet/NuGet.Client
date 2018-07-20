@@ -485,6 +485,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0} {1}&apos; from source &apos;{2}&apos;: {3}.
+        /// </summary>
+        internal static string ExtractionLog_InformationPrefix {
+            get {
+                return ResourceManager.GetString("ExtractionLog_InformationPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to update file time for {0}: {1}.
         /// </summary>
         internal static string FailedFileTime {

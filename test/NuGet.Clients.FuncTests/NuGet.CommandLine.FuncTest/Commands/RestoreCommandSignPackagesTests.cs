@@ -27,9 +27,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
     public class RestoreCommandSignPackagesTests
     {
         private static readonly string _NU3008Message = "The package integrity check failed.";
-        private static readonly string _NU3008 = $"NU3008: {_NU3008Message}";
+        private static readonly string _NU3008 = "NU3008: {0}";
         private static readonly string _NU3027Message = "The signature should be timestamped to enable long-term signature validity after the certificate has expired.";
-        private static readonly string _NU3027 = $"NU3027: {_NU3027Message}";
+        private static readonly string _NU3027 = "NU3027: {0}";
 
         private SignCommandTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
@@ -89,8 +89,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(_NU3008);
-                result.AllOutput.Should().Contain(_NU3027);
+                result.Errors.Should().Contain(string.Format(_NU3008, SigningTestUtility.AddSignatureLogPrefix(_NU3008Message, packageX.Identity, pathContext.PackageSource)));
+                result.AllOutput.Should().Contain(string.Format(_NU3027, SigningTestUtility.AddSignatureLogPrefix(_NU3027Message, packageX.Identity, pathContext.PackageSource)));
             }
         }
 
@@ -135,17 +135,17 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(_NU3008);
-                result.AllOutput.Should().Contain($"WARNING: {_NU3027}");
+                result.Errors.Should().Contain(string.Format(_NU3008, SigningTestUtility.AddSignatureLogPrefix(_NU3008Message, packageX.Identity, pathContext.PackageSource)));
+                result.AllOutput.Should().Contain($"WARNING: {string.Format(_NU3027, SigningTestUtility.AddSignatureLogPrefix(_NU3027Message, packageX.Identity, pathContext.PackageSource))}");
 
                 errors.Count().Should().Be(1);
                 errors.First().Code.Should().Be(NuGetLogCode.NU3008);
-                errors.First().Message.Should().Be(_NU3008Message);
+                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3008Message, packageX.Identity, pathContext.PackageSource));
                 errors.First().LibraryId.Should().Be(packageX.ToString());
 
                 warnings.Count().Should().Be(1);
                 warnings.First().Code.Should().Be(NuGetLogCode.NU3027);
-                warnings.First().Message.Should().Be(_NU3027Message);
+                warnings.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3027Message, packageX.Identity, pathContext.PackageSource));
                 warnings.First().LibraryId.Should().Be("X.9.0.0");
             }
         }
