@@ -1131,13 +1131,14 @@ namespace NuGet.Packaging.FuncTest
                     {
                         exception.Results.First().Issues.Count().Should().Be(1);
                         exception.Results.First().Issues.First().Code.Should().Be(NuGetLogCode.NU3034);
-                        exception.Results.First().Issues.First().Message.Should().Be(_noMatchInRepoAllowList);
+                        exception.Results.First().Issues.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_noMatchInRepoAllowList, packageReader.GetIdentity(), dir));
                     }
                     else
                     {
                         exception.Results.First().Issues.Count().Should().Be(2);
                         exception.Results.First().Issues.All(e => e.Code == NuGetLogCode.NU3034).Should().BeTrue();
-                        exception.Results.First().Issues.All(e => e.Message.Equals(_noMatchInRepoAllowList) || e.Message.Equals(_noClientAllowList));
+                        exception.Results.First().Issues.All(e => e.Message.Equals(SigningTestUtility.AddSignatureLogPrefix(_noMatchInRepoAllowList, packageReader.GetIdentity(), dir)) ||
+                                                                  e.Message.Equals(SigningTestUtility.AddSignatureLogPrefix(_noClientAllowList, packageReader.GetIdentity(), dir)));
                     }
                 }
             }
