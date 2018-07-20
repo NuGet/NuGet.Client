@@ -42,17 +42,17 @@ namespace NuGet.CommandLine.XPlat
                 var outdated = listpkg.Option(
                     "-o|--outdated",
                     Strings.ListPkg_OutdatedDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.NoValue);
 
                 var deprecated = listpkg.Option(
                     "-d|--deprecated",
                     Strings.ListPkg_DeprecatedDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.NoValue);
 
                 var transitive = listpkg.Option(
-                    "-t|--transitive",
+                    "-t|--include-transitive",
                     Strings.ListPkg_TransitiveDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.NoValue);
 
                 listpkg.OnExecute(() =>
                 {
@@ -71,7 +71,8 @@ namespace NuGet.CommandLine.XPlat
 
                     var msBuild = new MSBuildAPIUtility(logger);
                     var listPackageCommandRunner = getCommandRunner();
-                    return listPackageCommandRunner.ExecuteCommand(packageRefArgs, msBuild);
+                    listPackageCommandRunner.ExecuteCommand(packageRefArgs, msBuild);
+                    return 0;
                 });
             });
         }

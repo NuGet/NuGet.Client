@@ -296,7 +296,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No assets file was found for `{0}`. Please run restore before running this command..
+        ///   Looks up a localized string similar to No assets file was found for `{0}`. Please make sure the project uses package references and run restore before running this command..
         /// </summary>
         internal static string Error_AssetsFileNotFound {
             get {
@@ -485,6 +485,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A: Auto-referenced package.
+        /// </summary>
+        internal static string ListPkg_AutoReferenceDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_AutoReferenceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Displays only the packages that are marked deprecated by the authors.
         /// </summary>
         internal static string ListPkg_DeprecatedDescription {
@@ -535,6 +544,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string ListPkg_TransitiveDescription {
             get {
                 return ResourceManager.GetString("ListPkg_TransitiveDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; has the following package references.
+        /// </summary>
+        internal static string ListPkgProjectHeaderLog {
+            get {
+                return ResourceManager.GetString("ListPkgProjectHeaderLog", resourceCulture);
             }
         }
         

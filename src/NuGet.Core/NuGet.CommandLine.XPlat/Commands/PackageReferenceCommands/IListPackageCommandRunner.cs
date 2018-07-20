@@ -7,6 +7,6 @@ namespace NuGet.CommandLine.XPlat
 {
     public interface IListPackageCommandRunner
     {
-        Task<int> ExecuteCommand(ListPackageArgs packageRefArgs, MSBuildAPIUtility msBuild);
+        void ExecuteCommand(ListPackageArgs packageRefArgs, MSBuildAPIUtility msBuild);
     }
 }

@@ -26,6 +26,7 @@ namespace NuGet.CommandLine.XPlat
         private const string FRAMEWORKS_TAG = "TargetFrameworks";
         private const string ASSETS_DIRECTORY_TAG = "MSBuildProjectExtensionsPath";
         private const string RESTORE_STYLE_TAG = "RestoreProjectStyle";
+        private const string ASSETS_FILE_PATH_TAG = "ProjectAssetsFile";
         private const string UPDATE_OPERATION = "Update";
         private const string REMOVE_OPERATION = "Remove";
         private const string IncludeAssets = "IncludeAssets";
@@ -43,7 +44,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
         /// <returns>MSBuild.Evaluation.Project</returns>
-        private static Project GetProject(string projectCSProjPath)
+        public static Project GetProject(string projectCSProjPath)
         {
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
@@ -299,25 +300,15 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        public Dictionary<string, IEnumerable<PRPackage>> GetPackageReferencesFromAssets(string projectPath, IList<string> userInputFrameworks, bool transitive)
+        public Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> GetPackageReferencesFromAssets(
+            Project project, string projectPath, IList<string> userInputFrameworks, bool transitive)
         {
             
-            var project = GetProject(projectPath);
-            var assetsDirectory = project.GetPropertyValue(ASSETS_DIRECTORY_TAG);
+            var assetsPath = project.GetPropertyValue(ASSETS_FILE_PATH_TAG);
 
-
-
-            var assetsPath = Path.Combine(assetsDirectory + LockFileFormat.AssetsFileName);
+            //var assetsPath = Path.Combine(assetsDirectory + LockFileFormat.AssetsFileName);
             
-            if (!project.GetPropertyValue(RESTORE_STYLE_TAG).Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase))
-            {
-                Logger.LogError(string.Format(CultureInfo.CurrentCulture,
-                    Strings.Error_NotPRProject,
-                    projectPath));
-                return null;
-            }
-
-            if (!File.Exists(assetsPath))
+            if (assetsPath == "")
             {
                 Logger.LogError(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AssetsFileNotFound,
@@ -325,18 +316,31 @@ namespace NuGet.CommandLine.XPlat
                 return null;
             }
 
+            //if (!File.Exists(assetsPath))
+            //{
+            //    Logger.LogError(string.Format(CultureInfo.CurrentCulture,
+            //        Strings.Error_AssetsFileNotFound,
+            //        projectPath));
+            //    return null;
+            //}
+
             var lockFileFormat = new LockFileFormat();
             var assetsFile = lockFileFormat.Read(assetsPath);
 
-            var requestedVersions = GetRequestedPackages(userInputFrameworks, assetsFile);
+            var requestedVersions = GetRequestedPackages(project, userInputFrameworks, assetsFile);
 
             var packagesPerFramework = GetResolvedVersions(userInputFrameworks, assetsFile, requestedVersions, transitive);
 
-            ProjectCollection.GlobalProjectCollection.UnloadProject(project);
             return packagesPerFramework;
         }
 
-        private Dictionary<string, IEnumerable<PRPackage>> GetRequestedPackages(IList<string> userInputFrameworks, LockFile assetsFile)
+        private string GetRequestedVersionFromProjFile(Dictionary<string, IEnumerable<PRPackage>> requestedVersions)
+        {
+
+            throw new NotImplementedException();
+        }
+
+        private Dictionary<string, IEnumerable<PRPackage>> GetRequestedPackages(Project project, IList<string> userInputFrameworks, LockFile assetsFile)
         {
             var result = new Dictionary<string, IEnumerable<PRPackage>>();
 
@@ -344,10 +348,14 @@ namespace NuGet.CommandLine.XPlat
             {
                 if (userInputFrameworks.Count == 0 || userInputFrameworks.Contains(tfm.ToString()))
                 {
+                    var resultDeps = new List<PRPackage>();
+                    foreach (var d in tfm.Dependencies)
+                    {
+                        var version = !d.AutoReferenced ? GetPackageReferencesPerFramework(project, d.Name, tfm.ToString()).Single().GetMetadataValue(VERSION_TAG) : d.LibraryRange.VersionRange.ToString();
+                        resultDeps.Add(new PRPackage { package = d.Name, requestedVer = version, autoRef = d.AutoReferenced });
+                    }
                     result.Add(
-                    tfm.ToString(), tfm.Dependencies.Select(d =>
-                    new PRPackage { package = d.Name, requestedVer = d.LibraryRange.VersionRange.ToString(), autoRef = d.AutoReferenced }
-                    ));
+                    tfm.ToString(), resultDeps);
                 }
 
             }
@@ -355,10 +363,11 @@ namespace NuGet.CommandLine.XPlat
             return result;
         }
 
-        private Dictionary<string, IEnumerable<PRPackage>> GetResolvedVersions(IList<string> userInputFrameworks,
-            LockFile assetsFile, Dictionary<string, IEnumerable<PRPackage>> requestedVersions, bool transitive)
+        private Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> GetResolvedVersions(
+            IList<string> userInputFrameworks,LockFile assetsFile,
+            Dictionary<string, IEnumerable<PRPackage>> requestedVersions, bool transitive)
         {
-            var resultPackages = new Dictionary<string, IEnumerable<PRPackage>>();
+            var resultPackages = new Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>>();
 
             var inputLockFileTargets = new List<LockFileTarget>();
             foreach (var framework in assetsFile.PackageSpec.TargetFrameworks)
@@ -377,12 +386,14 @@ namespace NuGet.CommandLine.XPlat
                     continue;
                 }
 
-                var topLevelPackages = requestedVersions.Where(f => f.Key.Equals(target.TargetFramework.GetShortFolderName(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value;
-                var packages = new List<PRPackage>();
+                var requestedFrameworkPackages = requestedVersions.Where(f => f.Key.Equals(target.TargetFramework.GetShortFolderName(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value;
+
+                var topLevelPackages = new List<PRPackage>();
+                var transitivePackages = new List<PRPackage>();
 
                 foreach (var library in target.Libraries)
                 {
-                    var matchingPackages = topLevelPackages.Where(p => p.package.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
+                    var matchingPackages = requestedFrameworkPackages.Where(p => p.package.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
                     
                     if (matchingPackages.Count() != 0 || transitive)
                     {
@@ -394,20 +405,50 @@ namespace NuGet.CommandLine.XPlat
                         {
                             var topLevelPackage = matchingPackages.Single();
                             packageInfo = new PRPackage { package = packageInfo.package, resolvedVer = packageInfo.resolvedVer, requestedVer = topLevelPackage.requestedVer, autoRef = topLevelPackage.autoRef };
+                            topLevelPackages.Add(packageInfo);
+                        }
+                        else
+                        {
+                            transitivePackages.Add(packageInfo);
                         }
 
-                        packages.Add(packageInfo);
+                        
                     }
 
                 }
 
-                resultPackages.Add(target.TargetFramework.GetShortFolderName(), packages);
+                resultPackages.Add(target.TargetFramework.GetShortFolderName(), Tuple.Create(topLevelPackages.AsEnumerable(), transitivePackages.AsEnumerable()));
             }
 
             return resultPackages;
         }
 
-        
+
+        /// <summary>
+        /// Returns all package references after evaluating the condition on the item groups.
+        /// This method is used when we need package references for a specific target framework.
+        /// </summary>
+        /// <param name="project">Project for which the package references have to be obtained.</param>
+        /// <param name="packageId">Name of the package</param>
+        /// <returns>List of Items containing the package reference for the package.
+        /// If the libraryDependency is null then it returns all package references</returns>
+        private static IEnumerable<ProjectItem> GetPackageReferences(Project project, string packageId) {
+
+            var packageReferences = project.AllEvaluatedItems
+                .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase));
+
+            if (packageId == "")
+            {
+                return packageReferences.ToList();
+            }
+            else
+            {
+                return packageReferences
+                    .Where(item => item.EvaluatedInclude.Equals(packageId, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            }
+
+        }
 
         /// <summary>
         /// Returns all package references after evaluating the condition on the item groups.
@@ -419,20 +460,24 @@ namespace NuGet.CommandLine.XPlat
         /// If the libraryDependency is null then it returns all package references</returns>
         private static IEnumerable<ProjectItem> GetPackageReferences(Project project, LibraryDependency libraryDependency)
         {
-            var packageReferences = project.AllEvaluatedItems
-                .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase));
-
             if (libraryDependency == null)
             {
-                return packageReferences.ToList();
+                return GetPackageReferences(project, "");
             }
-            else
-            {
-                return packageReferences
-                    .Where(item => item.EvaluatedInclude.Equals(libraryDependency.Name, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-            }
-                              
+            return GetPackageReferences(project, libraryDependency.Name);                     
+        }
+
+        private static IEnumerable<ProjectItem> GetPackageReferencesPerFramework(Project project,
+           string libraryName, string framework)
+        {
+            var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                { { "TargetFramework", framework } };
+            var projectPerFramework = GetProject(project.FullPath, globalProperties);
+
+            var packages = GetPackageReferences(projectPerFramework, libraryName);
+            ProjectCollection.GlobalProjectCollection.UnloadProject(projectPerFramework);
+
+            return packages;
         }
 
         /// <summary>
