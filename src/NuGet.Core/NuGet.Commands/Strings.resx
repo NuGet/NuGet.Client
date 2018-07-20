@@ -570,7 +570,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Unable to find project '{0}'. Check that the project reference is valid and that the project file exists.</value>
   </data>
   <data name="Error_UnableToFindProjectInfo" xml:space="preserve">
-    <value>Unable to find project information for '{0}'. The project file may be invalid or missing targets required for restore.</value>
+    <value>Unable to find project information for '{0}'. Inside Visual Studio, this may be because the project is unloaded or not part of current solution. Otherwise the project file may be invalid or missing targets required for restore.</value>
   </data>
   <data name="FoundVersionsInSource" xml:space="preserve">
     <value>Found {0} version(s) in {1} [ Nearest version: {2} ]</value>
