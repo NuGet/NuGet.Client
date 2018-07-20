@@ -10,12 +10,20 @@ using Moq;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
 {
     public class InfiniteScrollListTests
     {
+        public InfiniteScrollListTests()
+        {
+            var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
+
+            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(joinableTaskContext.Factory);
+        }
+
         [WpfFact]
         public void Constructor_JoinableTaskFactoryIsNull_Throws()
         {
@@ -74,17 +82,20 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [WpfFact]
-        public void LoadItems_LoaderIsNull_Throws()
+        public async Task LoadItems_LoaderIsNull_Throws()
         {
             var list = new InfiniteScrollList();
 
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => list.LoadItems(
-                    loader: null,
-                    loadingMessage: "a",
-                    logger: null,
-                    searchResultTask: Task.FromResult<SearchResult<IPackageSearchMetadata>>(null),
-                    token: CancellationToken.None));
+            var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                async () =>
+                {
+                    await list.LoadItemsAsync(
+                        loader: null,
+                        loadingMessage: "a",
+                        logger: null,
+                        searchResultTask: Task.FromResult<SearchResult<IPackageSearchMetadata>>(null),
+                        token: CancellationToken.None);
+                });
 
             Assert.Equal("loader", exception.ParamName);
         }
@@ -92,49 +103,58 @@ namespace NuGet.PackageManagement.UI.Test
         [WpfTheory]
         [InlineData(null)]
         [InlineData("")]
-        public void LoadItems_LoadingMessageIsNullOrEmpty_Throws(string loadingMessage)
+        public async Task LoadItems_LoadingMessageIsNullOrEmpty_Throws(string loadingMessage)
         {
             var list = new InfiniteScrollList();
 
-            var exception = Assert.Throws<ArgumentException>(
-                () => list.LoadItems(
-                    Mock.Of<IPackageItemLoader>(),
-                    loadingMessage,
-                    logger: null,
-                    searchResultTask: Task.FromResult<SearchResult<IPackageSearchMetadata>>(null),
-                    token: CancellationToken.None));
+            var exception = await Assert.ThrowsAsync<ArgumentException>(
+                async () =>
+                {
+                    await list.LoadItemsAsync(
+                        Mock.Of<IPackageItemLoader>(),
+                        loadingMessage,
+                        logger: null,
+                        searchResultTask: Task.FromResult<SearchResult<IPackageSearchMetadata>>(null),
+                        token: CancellationToken.None);
+                });
 
             Assert.Equal("loadingMessage", exception.ParamName);
         }
 
         [WpfFact]
-        public void LoadItems_SearchResultTaskIsNull_Throws()
+        public async Task LoadItems_SearchResultTaskIsNull_Throws()
         {
             var list = new InfiniteScrollList();
 
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => list.LoadItems(
-                    Mock.Of<IPackageItemLoader>(),
-                    loadingMessage: "a",
-                    logger: null,
-                    searchResultTask: null,
-                    token: CancellationToken.None));
+            var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                async () =>
+                {
+                    await list.LoadItemsAsync(
+                        Mock.Of<IPackageItemLoader>(),
+                        loadingMessage: "a",
+                        logger: null,
+                        searchResultTask: null,
+                        token: CancellationToken.None);
+                });
 
             Assert.Equal("searchResultTask", exception.ParamName);
         }
 
         [WpfFact]
-        public void LoadItems_IfCancelled_Throws()
+        public async Task LoadItems_IfCancelled_Throws()
         {
             var list = new InfiniteScrollList();
 
-            Assert.Throws<OperationCanceledException>(
-                () => list.LoadItems(
-                    Mock.Of<IPackageItemLoader>(),
-                    loadingMessage: "a",
-                    logger: null,
-                    searchResultTask: Task.FromResult<SearchResult<IPackageSearchMetadata>>(null),
-                    token: new CancellationToken(canceled: true)));
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                async () =>
+                {
+                    await list.LoadItemsAsync(
+                        Mock.Of<IPackageItemLoader>(),
+                        loadingMessage: "a",
+                        logger: null,
+                        searchResultTask: Task.FromResult<SearchResult<IPackageSearchMetadata>>(null),
+                        token: new CancellationToken(canceled: true));
+                });
         }
 
         [WpfFact]
@@ -225,7 +245,7 @@ namespace NuGet.PackageManagement.UI.Test
                         return Enumerable.Empty<PackageItemListViewModel>();
                     });
 
-                list.LoadItems(
+                await list.LoadItemsAsync(
                     loader.Object,
                     loadingMessage: "a",
                     logger: logger.Object,
