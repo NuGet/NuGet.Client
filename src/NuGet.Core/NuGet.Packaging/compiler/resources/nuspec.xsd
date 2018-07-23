@@ -64,6 +64,7 @@
                             <xs:element name="language" maxOccurs="1" minOccurs="0" type="xs:string" default="en-US" />
                             <xs:element name="tags" maxOccurs="1" minOccurs="0" type="xs:string" />
                             <xs:element name="serviceable" maxOccurs="1" minOccurs="0" type="xs:boolean" />
+                            <xs:element name="symbolsPackage" maxOccurs="1" minOccurs="0" type="xs:boolean" />
                             <xs:element name="repository" maxOccurs="1" minOccurs="0">
                               <xs:complexType>
                                 <xs:attribute name="type" type="xs:string" use="optional" />

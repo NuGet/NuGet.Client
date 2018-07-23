@@ -148,6 +148,12 @@ namespace NuGet.Packaging
             set;
         }
 
+        public bool SymbolsPackage
+        {
+            get;
+            set;
+        }
+
         public bool DevelopmentDependency
         {
             get;
@@ -271,7 +277,7 @@ namespace NuGet.Packaging
         {
             get
             {
-                return String.Join(" ", Tags);
+                return string.Join(" ", Tags);
             }
         }
 
@@ -343,7 +349,7 @@ namespace NuGet.Packaging
                 WriteManifest(package, DetermineMinimumSchemaVersion(Files, DependencyGroups), psmdcpPath);
 
                 // Write the files to the package
-                HashSet<string> filesWithoutExtensions = new HashSet<string>();
+                var filesWithoutExtensions = new HashSet<string>();
                 var extensions = WriteFiles(package, filesWithoutExtensions);
 
                 extensions.Add("nuspec");
@@ -369,7 +375,7 @@ namespace NuGet.Packaging
                 creatorInfo.Add(attribute.FrameworkDisplayName);
             }
 
-            return String.Join(";", creatorInfo);
+            return string.Join(";", creatorInfo);
         }
 
         private static int DetermineMinimumSchemaVersion(
@@ -461,7 +467,7 @@ namespace NuGet.Packaging
         public static void ValidateReferenceAssemblies(IEnumerable<IPackageFile> files, IEnumerable<PackageReferenceSet> packageAssemblyReferences)
         {
             var libFiles = new HashSet<string>(from file in files
-                                               where !String.IsNullOrEmpty(file.Path) && file.Path.StartsWith("lib", StringComparison.OrdinalIgnoreCase)
+                                               where !string.IsNullOrEmpty(file.Path) && file.Path.StartsWith("lib", StringComparison.OrdinalIgnoreCase)
                                                select Path.GetFileName(file.Path), StringComparer.OrdinalIgnoreCase);
 
             foreach (var reference in packageAssemblyReferences.SelectMany(p => p.References))
@@ -471,7 +477,7 @@ namespace NuGet.Packaging
                     !libFiles.Contains(reference + ".exe") &&
                     !libFiles.Contains(reference + ".winmd"))
                 {
-                    throw new PackagingException(NuGetLogCode.NU5018, String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReference, reference));
+                    throw new PackagingException(NuGetLogCode.NU5018, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReference, reference));
                 }
             }
         }
@@ -511,6 +517,7 @@ namespace NuGet.Packaging
             RequireLicenseAcceptance = metadata.RequireLicenseAcceptance;
             DevelopmentDependency = metadata.DevelopmentDependency;
             Serviceable = metadata.Serviceable;
+            SymbolsPackage = metadata.SymbolsPackage;
             Description = metadata.Description;
             Summary = metadata.Summary;
             ReleaseNotes = metadata.ReleaseNotes;
@@ -616,7 +623,7 @@ namespace NuGet.Packaging
             if (!PathResolver.IsWildcardSearch(source) && !PathResolver.IsDirectoryPath(source) && !searchFiles.Any() && string.IsNullOrEmpty(exclude))
             {
                 throw new PackagingException(NuGetLogCode.NU5019,
-                    String.Format(CultureInfo.CurrentCulture, NuGetResources.PackageAuthoring_FileNotFound, source));
+                    string.Format(CultureInfo.CurrentCulture, NuGetResources.PackageAuthoring_FileNotFound, source));
             }
 
             Files.AddRange(searchFiles);
@@ -670,7 +677,7 @@ namespace NuGet.Packaging
             {
                 packagePath = Path.GetFileName(fullPath);
             }
-            return Path.Combine(targetPath ?? String.Empty, packagePath);
+            return Path.Combine(targetPath ?? string.Empty, packagePath);
         }
 
         /// <summary>
@@ -701,7 +708,7 @@ namespace NuGet.Packaging
 
         private static void ExcludeFiles(List<PhysicalPackageFile> searchFiles, string basePath, string exclude)
         {
-            if (String.IsNullOrEmpty(exclude))
+            if (string.IsNullOrEmpty(exclude))
             {
                 return;
             }
@@ -737,7 +744,7 @@ namespace NuGet.Packaging
             var segments = path.Split(new[] { '/', '\\', Path.DirectorySeparatorChar }, StringSplitOptions.None)
                 .Select(Uri.EscapeDataString);
 
-            var escapedPath = String.Join("/", segments);
+            var escapedPath = string.Join("/", segments);
 
             // retrieve only relative path with resolved . or ..
             return GetStringForPartUri(escapedPath);
@@ -850,7 +857,7 @@ namespace NuGet.Packaging
                     new XAttribute(XNamespace.Xmlns + "dc", dcText),
                     new XAttribute(XNamespace.Xmlns + "dcterms", dctermsText),
                     new XAttribute(XNamespace.Xmlns + "xsi", xsiText),
-                    new XElement(dc + "creator", String.Join(", ", Authors)),
+                    new XElement(dc + "creator", string.Join(", ", Authors)),
                     new XElement(dc + "description", Description),
                     new XElement(dc + "identifier", Id),
                     new XElement(core + "version", Version.ToString()),

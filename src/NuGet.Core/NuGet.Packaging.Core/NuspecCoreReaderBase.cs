@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,6 +26,7 @@ namespace NuGet.Packaging.Core
         protected const string Version = "version";
         protected const string MinClientVersion = "minClientVersion";
         protected const string DevelopmentDependency = "developmentDependency";
+        protected const string SymbolsPackage = "symbolsPackage";
 
         /// <summary>
         /// Read a nuspec from a path.
@@ -115,6 +116,23 @@ namespace NuGet.Packaging.Core
         public virtual bool IsServiceable()
         {
             return NuspecUtility.IsServiceable(MetadataNode);
+        }
+
+        /// <summary>
+        /// Returns if the package is a symbols package(snupkg)
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsSymbolsPackage()
+        {
+            var metadataNamespace = MetadataNode.GetDefaultNamespace().NamespaceName;
+            var element = MetadataNode.Elements(XName.Get(SymbolsPackage, metadataNamespace)).FirstOrDefault();
+            if (element == null)
+            {
+                return false;
+            }
+
+            var value = element.Value ?? element.Value.Trim();
+            return XmlConvert.ToBoolean(value);
         }
 
         /// <summary>

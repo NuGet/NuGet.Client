@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -56,6 +56,7 @@ namespace NuGet.Packaging
             ContentFiles = copy.ContentFiles;
             DevelopmentDependency = copy.DevelopmentDependency;
             Repository = copy.Repository;
+            SymbolsPackage = copy.SymbolsPackage;
         }
 
         [ManifestVersion(5)]
@@ -65,7 +66,7 @@ namespace NuGet.Packaging
             set
             {
                 Version version = null;
-                if (!String.IsNullOrEmpty(value) && !System.Version.TryParse(value, out version))
+                if (!string.IsNullOrEmpty(value) && !System.Version.TryParse(value, out version))
                 {
                     throw new InvalidDataException(NuGetResources.Manifest_InvalidMinClientVersion);
                 }
@@ -173,6 +174,8 @@ namespace NuGet.Packaging
 
         public RepositoryMetadata Repository { get; set; }
 
+        public bool SymbolsPackage { get; set; }
+
         private IEnumerable<PackageDependencyGroup> _dependencyGroups = new List<PackageDependencyGroup>();
         public IEnumerable<PackageDependencyGroup> DependencyGroups
         {
@@ -215,7 +218,7 @@ namespace NuGet.Packaging
             var groupedReferenceSets = referenceSetGroups.Select(group => new PackageReferenceSet(group.Key, group.SelectMany(g => g.References)))
                                                             .ToList();
 
-            int nullTargetFrameworkIndex = groupedReferenceSets.FindIndex(set => set.TargetFramework == null);
+            var nullTargetFrameworkIndex = groupedReferenceSets.FindIndex(set => set.TargetFramework == null);
             if (nullTargetFrameworkIndex > -1)
             {
                 var nullFxReferenceSet = groupedReferenceSets[nullTargetFrameworkIndex];
@@ -244,7 +247,7 @@ namespace NuGet.Packaging
             var groupedDependencySets = dependencySetGroups.Select(group => new PackageDependencyGroup(group.Key, new HashSet<PackageDependency>(group.SelectMany(g => g.Packages))))
                                                             .ToList();
             // move the group with the any target framework (if any) to the front just for nicer display in UI
-            int anyTargetFrameworkIndex = groupedDependencySets.FindIndex(set => set.TargetFramework.IsAny);
+            var anyTargetFrameworkIndex = groupedDependencySets.FindIndex(set => set.TargetFramework.IsAny);
             if (anyTargetFrameworkIndex > -1)
             {
                 var anyFxDependencySet = groupedDependencySets[anyTargetFrameworkIndex];
@@ -279,53 +282,53 @@ namespace NuGet.Packaging
 
         public IEnumerable<string> Validate()
         {
-            if (String.IsNullOrEmpty(Id))
+            if (string.IsNullOrEmpty(Id))
             {
-                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Id");
+                yield return string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Id");
             }
             else
             {
                 if (Id.Length > PackageIdValidator.MaxPackageIdLength)
                 {
-                    yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_IdMaxLengthExceeded);
+                    yield return string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_IdMaxLengthExceeded);
                 }
                 else if (!PackageIdValidator.IsValidPackageId(Id))
                 {
-                    yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidPackageId, Id);
+                    yield return string.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidPackageId, Id);
                 }
             }
 
             if (Version == null)
             {
-                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Version");
+                yield return string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Version");
             }
 
-            if (Authors == null || !Authors.Any(author => !String.IsNullOrEmpty(author)))
+            if (Authors == null || !Authors.Any(author => !string.IsNullOrEmpty(author)))
             {
-                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Authors");
+                yield return string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Authors");
             }
 
-            if (String.IsNullOrEmpty(Description))
+            if (string.IsNullOrEmpty(Description))
             {
-                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Description");
+                yield return string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Description");
             }
 
-            if (_licenseUrl == String.Empty)
+            if (_licenseUrl == string.Empty)
             {
-                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "LicenseUrl");
+                yield return string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "LicenseUrl");
             }
 
-            if (_iconUrl == String.Empty)
+            if (_iconUrl == string.Empty)
             {
-                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "IconUrl");
+                yield return string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "IconUrl");
             }
 
-            if (_projectUrl == String.Empty)
+            if (_projectUrl == string.Empty)
             {
-                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "ProjectUrl");
+                yield return string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "ProjectUrl");
             }
 
-            if (RequireLicenseAcceptance && String.IsNullOrWhiteSpace(_licenseUrl))
+            if (RequireLicenseAcceptance && string.IsNullOrWhiteSpace(_licenseUrl))
             {
                 yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl;
             }

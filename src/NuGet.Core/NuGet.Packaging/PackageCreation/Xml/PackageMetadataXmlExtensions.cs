@@ -55,6 +55,10 @@ namespace NuGet.Packaging.Xml
             {
                 elem.Add(new XElement(ns + "serviceable", metadata.Serviceable));
             }
+            if (metadata.SymbolsPackage)
+            {
+                elem.Add(new XElement(ns + "symbolsPackage", metadata.SymbolsPackage));
+            }
 
             if (metadata.PackageTypes != null && metadata.PackageTypes.Any())
             {
@@ -63,7 +67,7 @@ namespace NuGet.Packaging.Xml
 
             if (metadata.Repository != null)
             {
-                XElement repoElement = GetXElementFromManifestRepository(ns, metadata.Repository);
+                var repoElement = GetXElementFromManifestRepository(ns, metadata.Repository);
                 if (repoElement != null)
                 {
                     elem.Add(repoElement);

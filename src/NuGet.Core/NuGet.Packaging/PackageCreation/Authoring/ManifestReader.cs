@@ -25,7 +25,7 @@ namespace NuGet.Packaging
             if (metadataElement == null)
             {
                 throw new InvalidDataException(
-                    String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredElementMissing, "metadata"));
+                    string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredElementMissing, "metadata"));
             }
 
             return new Manifest(
@@ -54,7 +54,7 @@ namespace NuGet.Packaging
                 if (!allElements.Contains(requiredElement))
                 {
                     throw new InvalidDataException(
-                        String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredElementMissing, requiredElement));
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredElementMissing, requiredElement));
                 }
             }
 
@@ -139,6 +139,9 @@ namespace NuGet.Packaging
                 case "repository":
                     manifestMetadata.Repository = ReadRepository(element);
                     break;
+                case "symbolsPackage":
+                    manifestMetadata.SymbolsPackage = XmlConvert.ToBoolean(value);
+                    break;
             }
         }
 
@@ -221,7 +224,7 @@ namespace NuGet.Packaging
 
             return (from element in frameworkElement.ElementsNoNamespace("frameworkAssembly")
                     let assemblyNameAttribute = element.Attribute("assemblyName")
-                    where assemblyNameAttribute != null && !String.IsNullOrEmpty(assemblyNameAttribute.Value)
+                    where assemblyNameAttribute != null && !string.IsNullOrEmpty(assemblyNameAttribute.Value)
                     select new FrameworkAssemblyReference(assemblyNameAttribute.Value?.Trim(),
                         string.IsNullOrEmpty(element.GetOptionalAttributeValue("targetFramework")) ?
                         new[] { NuGetFramework.AnyFramework } :
@@ -266,7 +269,7 @@ namespace NuGet.Packaging
 
                         if (targetFramework.IsUnsupported)
                         {
-                            throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, targetFrameworkName));
+                            throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, targetFrameworkName));
                         }
                     }
 
@@ -286,7 +289,7 @@ namespace NuGet.Packaging
 
             var dependency = (from element in containerElement.ElementsNoNamespace("dependency")
                     let idElement = element.Attribute("id")
-                    where idElement != null && !String.IsNullOrEmpty(idElement.Value)
+                    where idElement != null && !string.IsNullOrEmpty(idElement.Value)
                     let elementVersion = element.GetOptionalAttributeValue("version")
                     select new PackageDependency(
                         idElement.Value?.Trim(),
@@ -305,18 +308,18 @@ namespace NuGet.Packaging
                 return null;
             }
 
-            List<ManifestFile> files = new List<ManifestFile>();
+            var files = new List<ManifestFile>();
             foreach (var file in xElement.ElementsNoNamespace("file"))
             {
                 var srcElement = file.Attribute("src");
-                if (srcElement == null || String.IsNullOrEmpty(srcElement.Value))
+                if (srcElement == null || string.IsNullOrEmpty(srcElement.Value))
                 {
                     continue;
                 }
 
                 var slashes = new[] { '\\', '/' };
-                string target = file.GetOptionalAttributeValue("target").SafeTrim()?.TrimStart(slashes);
-                string exclude = file.GetOptionalAttributeValue("exclude").SafeTrim();
+                var target = file.GetOptionalAttributeValue("target").SafeTrim()?.TrimStart(slashes);
+                var exclude = file.GetOptionalAttributeValue("exclude").SafeTrim();
 
                 // Multiple sources can be specified by using semi-colon separated values. 
                 files.AddRange(srcElement.Value.Trim(';').Split(';').Select(s => 

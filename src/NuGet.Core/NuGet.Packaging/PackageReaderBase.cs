@@ -388,6 +388,11 @@ namespace NuGet.Packaging
             return NuspecReader.IsServiceable();
         }
 
+        public virtual bool IsSymbolsPackage()
+        {
+            return NuspecReader.IsSymbolsPackage();
+        }
+
         public virtual Task<bool> IsServiceableAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(IsServiceable());
