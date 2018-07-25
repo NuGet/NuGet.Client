@@ -159,15 +159,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var extraStore = new X509Certificate2Collection() { rootCertificate, intermediateCertificate };
                 var logger = new TestLogger();
 
-                var exception = Assert.ThrowsAsync<SignatureException>(
-                    async () => CertificateChainUtility.GetCertificateChain(
+                var exception = Assert.Throws<SignatureException>(
+                    () => CertificateChainUtility.GetCertificateChain(
                         leafCertificate,
                         extraStore,
                         logger,
                         CertificateType.Signature));
 
-                Assert.Equal(NuGetLogCode.NU3018, exception.Result.Code);
-                Assert.Equal("Certificate chain validation failed.", exception.Result.Message);
+                Assert.Equal(NuGetLogCode.NU3018, exception.Code);
+                Assert.Equal("Certificate chain validation failed.", exception.Message);
 
                 Assert.Equal(1, logger.Errors);
                 Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 2 : 1, logger.Warnings);
