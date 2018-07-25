@@ -22,6 +22,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet
         file source=$(ReferenceOutputPath)NuGet.Protocol.dll  
         file source=$(ReferenceOutputPath)NuGet.Resolver.dll  
         file source=$(ReferenceOutputPath)NuGet.Versioning.dll  
+        file source=$(ReferenceOutputPath)NuGet.Credentials.dll  
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\cs 
         file source=$(XmlTransformPath)cs\Microsoft.Web.XmlTransform.resources.dll
@@ -40,6 +41,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\cs
         file source=$(ReferenceOutputPath)cs\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)cs\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)cs\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)cs\NuGet.Credentials.resources.dll
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\de 
         file source=$(XmlTransformPath)de\Microsoft.Web.XmlTransform.resources.dll
@@ -58,6 +60,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\de
         file source=$(ReferenceOutputPath)de\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)de\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)de\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)de\NuGet.Credentials.resources.dll
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\es 
         file source=$(XmlTransformPath)es\Microsoft.Web.XmlTransform.resources.dll
@@ -76,6 +79,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\es
         file source=$(ReferenceOutputPath)es\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)es\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)es\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)es\NuGet.Credentials.resources.dll
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\fr 
         file source=$(XmlTransformPath)fr\Microsoft.Web.XmlTransform.resources.dll
@@ -94,6 +98,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\fr
         file source=$(ReferenceOutputPath)fr\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)fr\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)fr\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)fr\NuGet.Credentials.resources.dll
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\it 
         file source=$(XmlTransformPath)it\Microsoft.Web.XmlTransform.resources.dll
@@ -112,6 +117,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\it
         file source=$(ReferenceOutputPath)it\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)it\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)it\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)it\NuGet.Credentials.resources.dll
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\ja 
         file source=$(XmlTransformPath)ja\Microsoft.Web.XmlTransform.resources.dll
@@ -130,6 +136,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\ja
         file source=$(ReferenceOutputPath)ja\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)ja\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)ja\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)ja\NuGet.Credentials.resources.dll
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\ko 
         file source=$(XmlTransformPath)ko\Microsoft.Web.XmlTransform.resources.dll
@@ -148,6 +155,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\ko
         file source=$(ReferenceOutputPath)ko\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)ko\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)ko\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)ko\NuGet.Credentials.resources.dll
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\pl 
         file source=$(XmlTransformPath)pl\Microsoft.Web.XmlTransform.resources.dll
@@ -166,6 +174,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\pl
         file source=$(ReferenceOutputPath)pl\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)pl\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)pl\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)pl\NuGet.Credentials.resources.dll
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\pt-BR 
         file source=$(XmlTransformPath)pt-BR\Microsoft.Web.XmlTransform.resources.dll
@@ -184,6 +193,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\pt-BR
         file source=$(ReferenceOutputPath)pt-BR\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)pt-BR\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)pt-BR\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)pt-BR\NuGet.Credentials.resources.dll
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\ru 
         file source=$(XmlTransformPath)ru\Microsoft.Web.XmlTransform.resources.dll
@@ -202,6 +212,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\ru
         file source=$(ReferenceOutputPath)ru\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)ru\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)ru\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)ru\NuGet.Credentials.resources.dll
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\tr 
         file source=$(XmlTransformPath)tr\Microsoft.Web.XmlTransform.resources.dll
@@ -220,6 +231,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\tr
         file source=$(ReferenceOutputPath)tr\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)tr\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)tr\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)tr\NuGet.Credentials.resources.dll
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\zh-Hans 
         file source=$(XmlTransformPath)zh-Hans\Microsoft.Web.XmlTransform.resources.dll
@@ -238,6 +250,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\zh-Hans
         file source=$(ReferenceOutputPath)zh-Hans\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)zh-Hans\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)zh-Hans\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)zh-Hans\NuGet.Credentials.resources.dll
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\zh-Hant 
         file source=$(XmlTransformPath)zh-Hant\Microsoft.Web.XmlTransform.resources.dll
@@ -256,3 +269,4 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\zh-Hant
         file source=$(ReferenceOutputPath)zh-Hant\NuGet.Protocol.resources.dll
         file source=$(ReferenceOutputPath)zh-Hant\NuGet.Resolver.resources.dll
         file source=$(ReferenceOutputPath)zh-Hant\NuGet.Versioning.resources.dll
+        file source=$(ReferenceOutputPath)zh-Hant\NuGet.Credentials.resources.dll
