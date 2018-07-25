@@ -6935,8 +6935,13 @@ namespace NuGet.Test
 
                 lock (_logger)
                 {
+                    var operationId = telemetryData["OperationId"];
+                    var parentId = telemetryData["ParentId"];
+
                     _logger.LogInformation("--------------------------");
                     _logger.LogInformation($"Name: {telemetryData.Name}");
+                    _logger.LogInformation($"OperationId: {operationId}");
+                    _logger.LogInformation($"ParentId: {parentId}");
                     _logger.LogInformation($"Json: {telemetryData.ToJson()}");
                     _logger.LogInformation($"Stack: {Environment.StackTrace}");
                     _logger.LogInformation("--------------------------");
