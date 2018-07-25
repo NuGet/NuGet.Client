@@ -67,7 +67,6 @@ namespace NuGet.Build.Tasks
             }
 
             var fallbackNuGetFrameworks = new List<NuGetFramework>();
-
             NuGetFramework projectNuGetFramework;
 
             // validate current project framework
@@ -98,7 +97,7 @@ namespace NuGet.Build.Tasks
             AssignedProjects = new ITaskItem[AnnotatedProjectReferences.Length];
             for (var index = 0; index < AnnotatedProjectReferences.Length; index++)
             {
-                AssignedProjects[index] = AssignNearestFrameworkForSingleReference(AnnotatedProjectReferences[index], projectNuGetFramework, fallbackNuGetFrameworks);
+                AssignedProjects[index] = AssignNearestFrameworkForSingleReference(AnnotatedProjectReferences[index], projectNuGetFramework, fallbackNuGetFrameworks, logger);
             }
 
             BuildTasksUtility.LogOutputParam(logger, nameof(AssignedProjects), string.Join(";", AssignedProjects.Select(p => p.ItemSpec)));
@@ -106,7 +105,11 @@ namespace NuGet.Build.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private ITaskItem AssignNearestFrameworkForSingleReference(ITaskItem project, NuGetFramework projectNuGetFramework, IList<NuGetFramework> fallbackNuGetFrameworks)
+        private ITaskItem AssignNearestFrameworkForSingleReference(
+            ITaskItem project,
+            NuGetFramework projectNuGetFramework,
+            IList<NuGetFramework> fallbackNuGetFrameworks,
+            MSBuildLogger logger)
         {
             var itemWithProperties = new TaskItem(project);
             var referencedProjectFrameworkString = project.GetMetadata(TARGET_FRAMEWORKS);
@@ -141,7 +144,12 @@ namespace NuGet.Build.Tasks
                         currentProjectTargetFramework.DotNetFrameworkName,
                         projectNuGetFramework.DotNetFrameworkName);
 
-                    Log.LogWarning(message);
+                    var warning = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1702, message);
+                    warning.LibraryId = referencedProjectFile;
+                    warning.ProjectPath = CurrentProjectName;
+
+                    // log NU1702 for ATF on project reference
+                    logger.Log(warning);
 
                     itemWithProperties.SetMetadata(NEAREST_TARGET_FRAMEWORK, nearestNuGetFramework);
                     return itemWithProperties;
@@ -149,11 +157,9 @@ namespace NuGet.Build.Tasks
             }
 
             // no match found
-            Log.LogError(string.Format(Strings.NoCompatibleTargetFramework, project.ItemSpec, CurrentProjectTargetFramework, referencedProjectFrameworkString));
+            logger.LogError(string.Format(Strings.NoCompatibleTargetFramework, project.ItemSpec, CurrentProjectTargetFramework, referencedProjectFrameworkString));
             return itemWithProperties;
         }
-
-
 
         private static bool TryParseFramework(string framework, string errorMessage, MSBuildLogger logger, out NuGetFramework nugetFramework)
         {
