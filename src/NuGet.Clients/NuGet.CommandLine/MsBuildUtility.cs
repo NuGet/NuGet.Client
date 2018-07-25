@@ -466,7 +466,7 @@ namespace NuGet.CommandLine
         /// <param name="userVersion">version string as passed by user (so may be empty)</param>
         /// <param name="console">The console used to output messages.</param>
         /// <returns>The msbuild directory.</returns>
-        public static MsBuildToolset GetMsBuildDirectory(string userVersion, IConsole console)
+        public static MsBuildToolset GetMsBuildToolset(string userVersion, IConsole console)
         {
             var currentDirectoryCache = Directory.GetCurrentDirectory();
             var msBuildDirectory = string.Empty;
@@ -523,7 +523,7 @@ namespace NuGet.CommandLine
         }
 
         /// <summary>
-        /// This method is called by GetMsBuildDirectory(). This method is not intended to be called directly.
+        /// This method is called by GetMsBuildToolset(). This method is not intended to be called directly.
         /// It's marked public so that it can be called by unit tests.
         /// </summary>
         /// <param name="userVersion">version string as passed by user (so may be empty)</param>
@@ -810,7 +810,7 @@ namespace NuGet.CommandLine
             }
             else
             {
-                return new Lazy<MsBuildToolset>(() => GetMsBuildDirectory(msbuildVersion, console));
+                return new Lazy<MsBuildToolset>(() => GetMsBuildToolset(msbuildVersion, console));
             }
         }
 

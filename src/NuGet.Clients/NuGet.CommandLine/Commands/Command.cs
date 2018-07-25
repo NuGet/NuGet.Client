@@ -78,19 +78,19 @@ namespace NuGet.CommandLine
 
         protected internal CoreV2.NuGet.IPackageRepositoryFactory RepositoryFactory { get; set; }
 
-        private Lazy<MsBuildToolset> MsBuildDirectory {
+        private Lazy<MsBuildToolset> MsBuildToolset {
             get
             {
-                if (_defaultMsBuildDirectory == null)
+                if (_defaultMsBuildToolset == null)
                 {
-                    _defaultMsBuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(null, null, Console);
+                    _defaultMsBuildToolset = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(null, null, Console);
 
                 }
-                return _defaultMsBuildDirectory;
+                return _defaultMsBuildToolset;
             }
         }
 
-        private Lazy<MsBuildToolset> _defaultMsBuildDirectory;
+        private Lazy<MsBuildToolset> _defaultMsBuildToolset;
 
         public CommandAttribute CommandAttribute
         {
@@ -181,7 +181,7 @@ namespace NuGet.CommandLine
 
         protected virtual void SetDefaultCredentialProvider()
         {
-            SetDefaultCredentialProvider(MsBuildDirectory);
+            SetDefaultCredentialProvider(MsBuildToolset);
         }
 
         /// <summary>
