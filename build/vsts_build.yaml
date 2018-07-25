@@ -266,6 +266,8 @@ phases:
         $(VsixPublishDir)\\NuGet.Mssign.pdb
         $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.Core.json 
         $(VsixPublishDir)\\NuGet.Tools.vsix
+        $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.BuildTools.vsix
+        $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.BuildTools.json
         $(VsixPublishDir)\\EndToEnd.zip 
       TargetFolder: "$(BuildOutputTargetPath)\\artifacts"
 
