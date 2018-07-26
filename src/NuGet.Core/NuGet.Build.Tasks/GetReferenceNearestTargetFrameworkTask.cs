@@ -67,11 +67,10 @@ namespace NuGet.Build.Tasks
             }
 
             var fallbackNuGetFrameworks = new List<NuGetFramework>();
-            NuGetFramework projectNuGetFramework;
 
             // validate current project framework
             var errorMessage = string.Format(Strings.UnsupportedTargetFramework, CurrentProjectTargetFramework);
-            if (!TryParseFramework(CurrentProjectTargetFramework, errorMessage, logger, out projectNuGetFramework))
+            if (!TryParseFramework(CurrentProjectTargetFramework, errorMessage, logger, out var projectNuGetFramework))
             {
                 return false;
             }

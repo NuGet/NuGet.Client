@@ -13,7 +13,6 @@ namespace NuGet.Build.Tasks.Test
     {
         private const int DEBUG_MESSAGE_COUNT_INPUT = 3;
         private const int DEBUG_MESSAGE_COUNT_INPUT_OUTPUT = DEBUG_MESSAGE_COUNT_INPUT + 1;
-        //"Project '' was restored using '.NETFramework,Version=v4.6' instead of the project target framework '.NETCoreApp,Version=v2.0'. This project may not be fully compatible with your project."
 
         [Fact]
         public void GetReferenceNearestTargetFrameworkTask_NoReferences()
