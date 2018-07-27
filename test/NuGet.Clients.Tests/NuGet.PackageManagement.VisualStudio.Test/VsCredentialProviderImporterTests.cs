@@ -80,20 +80,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void WhenVstsImportNotFound_WhenDev14_ThenInsertBuiltInProvider()
-        {
-            // Arrange
-            _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
-            var importer = GetTestableImporter();
-
-            // Act
-            var results = importer.GetProviders();
-
-            // Assert
-            Assert.Contains(_visualStudioAccountProvider, results);
-        }
-
-        [Fact]
         public void WhenVstsImportNotFound_WhenNotDev14_ThenDoNotInsertBuiltInProvider()
         {
             // Arrange
@@ -202,30 +188,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Act & Assert
             var actual = Assert.Throws<ArgumentException>(() => importer.GetProviders());
             Assert.Same(exception, actual);
-        }
-
-        [Fact]
-        public void WhenImportedProviderFailsOnDev14_ThenOtherProvidersAreStillImportedIncludingBuiltInProvider()
-        {
-            // Arrange
-            _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
-            var importer = GetTestableImporter();
-            var nonFailingProviderFactory = new Lazy<IVsCredentialProvider>(() => new NonFailingCredentialProvider());
-            var failingProviderFactory = new Lazy<IVsCredentialProvider>(() => new FailingCredentialProvider());
-            importer.ImportedProviders = new List<Lazy<IVsCredentialProvider>>
-            {
-                nonFailingProviderFactory,
-                failingProviderFactory
-            };
-
-            // Act
-            var results = importer.GetProviders();
-
-            // Assert
-            // We expect 2 providers:
-            // The non-failing provider, and the built-in provider on dev14
-            Assert.Equal(2, results.Count);
-            Assert.Contains(_visualStudioAccountProvider, results);
         }
 
         [Fact]
