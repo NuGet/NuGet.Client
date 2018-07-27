@@ -56,7 +56,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private readonly StringBuilder _testErrorOutput = new StringBuilder();
         private static readonly VisualStudioAccountProvider _visualStudioAccountProvider = new VisualStudioAccountProvider(null, null);
         private readonly Mock<DTE> _mockDte = new Mock<DTE>();
-        private readonly Func<Credentials.ICredentialProvider> _fallbackProviderFactory = () => _visualStudioAccountProvider;
         private readonly List<string> _errorMessages = new List<string>();
         private readonly Action<Exception, string> _errorDelegate;
 
@@ -74,11 +73,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             var importer = new VsCredentialProviderImporter(
                 _mockDte.Object,
-                _fallbackProviderFactory,
                 _errorDelegate,
                 initializer: () => { });
-
-            importer.Version = _mockDte.Object.Version;
 
             return importer;
         }
@@ -200,10 +196,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
             var importer = new VsCredentialProviderImporter(
                 _mockDte.Object,
-                _fallbackProviderFactory,
                 _errorDelegate,
                 () => { throw exception; });
-            importer.Version = _mockDte.Object.Version;
 
             // Act & Assert
             var actual = Assert.Throws<ArgumentException>(() => importer.GetProviders());

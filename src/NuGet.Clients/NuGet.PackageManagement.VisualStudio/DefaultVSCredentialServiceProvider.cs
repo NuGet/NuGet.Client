@@ -52,7 +52,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     var importer = new VsCredentialProviderImporter(
                         dte,
-                        VisualStudioAccountProvider.FactoryMethod,
                         (exception, failureMessage) => LogCredentialProviderError(exception, failureMessage));
 
                     return importer.GetProviders();
