@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
         
         [Fact]
-        public void WhenMultipleProvidersMatchingVstsContractFound_ThenInsertAllAndDoNotInsertBuiltInProvider()
+        public void WhenMultipleProvidersMatchingVstsContractFound_ThenInsertAll()
         {
             // Arrange
             // This simulates the fact that a third-party credential provider could export using the same 
@@ -97,7 +97,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert
             // We expect 2 providers:
-            // The non-failing provider, and the built-in provider on dev14
             Assert.Equal(2, results.Count);
             Assert.DoesNotContain(_visualStudioAccountProvider, results);
         }
