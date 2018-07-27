@@ -55,7 +55,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     {
         private readonly StringBuilder _testErrorOutput = new StringBuilder();
         private static readonly VisualStudioAccountProvider _visualStudioAccountProvider = new VisualStudioAccountProvider(null, null);
-        private readonly Mock<DTE> _mockDte = new Mock<DTE>();
         private readonly List<string> _errorMessages = new List<string>();
         private readonly Action<Exception, string> _errorDelegate;
 
@@ -72,44 +71,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private VsCredentialProviderImporter GetTestableImporter()
         {
             var importer = new VsCredentialProviderImporter(
-                _mockDte.Object,
                 _errorDelegate,
                 initializer: () => { });
 
             return importer;
-        }
-
-        [Fact]
-        public void WhenVstsImportNotFound_WhenNotDev14_ThenDoNotInsertBuiltInProvider()
-        {
-            // Arrange
-            _mockDte.Setup(x => x.Version).Returns("15.0.123456.00");
-            var importer = GetTestableImporter();
-
-            // Act
-            var results = importer.GetProviders();
-
-            // Assert
-            Assert.DoesNotContain(_visualStudioAccountProvider, results);
-        }
-
-        [Fact]
-        public void WhenVstsImportFound_ThenDoNotInsertBuiltInProvider()
-        {
-            // Arrange
-            _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
-            var importer = GetTestableImporter();
-            var testableProvider = new TeamSystem.NuGetCredentialProvider.VisualStudioAccountProvider();
-            importer.VisualStudioAccountProviders = new List<Lazy<IVsCredentialProvider>>
-            {
-                new Lazy<IVsCredentialProvider>(() => testableProvider)
-            };
-
-            // Act
-            var results = importer.GetProviders();
-
-            // Assert
-            Assert.DoesNotContain(_visualStudioAccountProvider, results);
         }
         
         [Fact]
@@ -119,7 +84,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // This simulates the fact that a third-party credential provider could export using the same 
             // contract name as the VisualStudioAccountProvider from TeamExplorer.
             // When this happens, both should just happily load.
-            _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
             var importer = GetTestableImporter();
             var testableProvider = new TeamSystem.NuGetCredentialProvider.VisualStudioAccountProvider();
             importer.VisualStudioAccountProviders = new List<Lazy<IVsCredentialProvider>>
@@ -145,7 +109,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // This test verifies the scenario where multiple credential providers are found, both third-party,
             // as well as matching the contract name of the "VisualStudioAccountProvider".
             // All of them should just happily import.
-            _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
             var importer = GetTestableImporter();
             var testableProvider = new TeamSystem.NuGetCredentialProvider.VisualStudioAccountProvider();
             importer.VisualStudioAccountProviders = new List<Lazy<IVsCredentialProvider>>
@@ -179,9 +142,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var exception = new ArgumentException();
-            _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
             var importer = new VsCredentialProviderImporter(
-                _mockDte.Object,
                 _errorDelegate,
                 () => { throw exception; });
 
@@ -194,7 +155,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void WhenImportedProviderFailsOnDev15_ThenOtherProvidersAreStillImportedExcludingBuiltInProvider()
         {
             // Arrange
-            _mockDte.Setup(x => x.Version).Returns("15.0.123456.00");
             var importer = GetTestableImporter();
             var nonFailingProviderFactory = new Lazy<IVsCredentialProvider>(() => new NonFailingCredentialProvider());
             var failingProviderFactory = new Lazy<IVsCredentialProvider>(() => new FailingCredentialProvider());

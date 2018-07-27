@@ -18,7 +18,6 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class VsCredentialProviderImporter
     {
-        private readonly DTE _dte;
         private readonly Action<Exception, string> _errorDelegate;
         private readonly Action _initializer;
 
@@ -28,9 +27,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="dte">DTE instance, used to determine the Visual Studio version.</param>
         /// <param name="errorDelegate">Used to write error messages to the user.</param>
         public VsCredentialProviderImporter(
-            DTE dte,
             Action<Exception, string> errorDelegate)
-            : this(dte, errorDelegate, initializer: null)
+            : this(errorDelegate, initializer: null)
         {
         }
 
@@ -42,22 +40,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="initializer">Init method used to supply MEF imports. Should only
         /// be supplied by tests.</param>
         public VsCredentialProviderImporter(
-            DTE dte,
             Action<Exception, string> errorDelegate,
             Action initializer)
         {
-            if (dte == null)
-            {
-                throw new ArgumentNullException(nameof(dte));
-            }
-
-            if (errorDelegate == null)
-            {
-                throw new ArgumentNullException(nameof(errorDelegate));
-            }
-
-            _dte = dte;
-            _errorDelegate = errorDelegate;
+            _errorDelegate = errorDelegate ?? throw new ArgumentNullException(nameof(errorDelegate));
             _initializer = initializer ?? Initialize;
         }
 
