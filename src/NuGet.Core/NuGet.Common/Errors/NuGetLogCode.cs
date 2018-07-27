@@ -205,9 +205,14 @@ namespace NuGet.Common
         NU1608 = 1608,
 
         /// <summary>
-        /// Fallback framework used.
+        /// Fallback framework used for a package reference.
         /// </summary>
         NU1701 = 1701,
+
+        /// <summary>
+        /// Fallback framework used for a project reference.
+        /// </summary>
+        NU1702 = 1702,
 
         /// <summary>
         /// Feed error converted to a warning when ignoreFailedSources is true.
