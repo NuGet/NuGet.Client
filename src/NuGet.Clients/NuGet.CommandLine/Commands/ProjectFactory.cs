@@ -750,8 +750,9 @@ namespace NuGet.CommandLine
                 {
                     AssemblyMetadataExtractor.ExtractMetadata(builder, TargetPath);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Logger.Log(PackagingLogMessage.CreateMessage(ex.Message, LogLevel.Verbose));
                     ExtractMetadataFromProject(builder);
                 }
             }
