@@ -348,14 +348,13 @@ namespace NuGet.CommandLine.XPlat
             {
                 if (userInputFrameworks.Count == 0 || userInputFrameworks.Contains(tfm.ToString()))
                 {
-                    var resultDeps = new List<PRPackage>();
-                    foreach (var d in tfm.Dependencies)
-                    {
-                        var version = !d.AutoReferenced ? GetPackageReferencesPerFramework(project, d.Name, tfm.ToString()).Single().GetMetadataValue(VERSION_TAG) : d.LibraryRange.VersionRange.ToString();
-                        resultDeps.Add(new PRPackage { package = d.Name, requestedVer = version, autoRef = d.AutoReferenced });
-                    }
-                    result.Add(
-                    tfm.ToString(), resultDeps);
+                    var projPackages = GetPackageReferencesPerFramework(project, "", tfm.ToString());
+
+                    result.Add(tfm.ToString(), tfm.Dependencies.Select(d => {
+                        var version = !d.AutoReferenced ? projPackages.Where(p => p.EvaluatedInclude.Equals(d.Name)).First().GetMetadataValue(VERSION_TAG) : d.LibraryRange.VersionRange.ToString();
+                        return new PRPackage { package = d.Name, requestedVer = version, autoRef = d.AutoReferenced };
+                    }));
+
                 }
 
             }

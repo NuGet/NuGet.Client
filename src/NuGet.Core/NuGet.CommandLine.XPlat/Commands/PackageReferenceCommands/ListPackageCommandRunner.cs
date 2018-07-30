@@ -4,24 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using NuGet.CommandLine.XPlat.Utility;
-using NuGet.Commands;
-using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Credentials;
-using NuGet.Frameworks;
-using NuGet.LibraryModel;
-using NuGet.Packaging;
-using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 
 public struct PRPackage
 {
@@ -41,8 +28,6 @@ namespace NuGet.CommandLine.XPlat
 
         public void ExecuteCommand(ListPackageArgs listPackageArgs, MSBuildAPIUtility msBuild)
         {
-            Debugger.Launch();
-
             
             var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln")
                            ?
