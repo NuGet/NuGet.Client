@@ -5995,5 +5995,61 @@ namespace NuGet.CommandLine.Test
                 r.Success.Should().BeTrue();
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_NoOp_MultipleProjectsInSameDirectoryDoNotNoOp()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    $"proj",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+                var secondaryProjectName = Path.Combine(Path.GetDirectoryName(project.ProjectPath), "proj-copy.csproj");
+
+                File.Copy(project.ProjectPath, secondaryProjectName);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Prerequisites
+                var r1 = Util.Restore(pathContext,project.ProjectPath);
+                Assert.Equal(0, r1.Item1);
+                Assert.Contains("Writing cache file", r1.Item2);
+                Assert.Contains("Writing lock file to disk", r1.Item2);
+
+                var r2 = Util.Restore(pathContext, secondaryProjectName);
+                Assert.Contains("Writing cache file", r2.Item2);
+                Assert.Equal(0, r2.Item1);
+                Assert.Contains("Writing lock file to disk", r2.Item2);
+
+                // Act
+                var result = Util.Restore(pathContext, project.ProjectPath);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.Contains("Writing cache file", result.Item2);
+                Assert.Contains("Writing lock file to disk", result.Item2);
+            }
+        }
     }
 }
