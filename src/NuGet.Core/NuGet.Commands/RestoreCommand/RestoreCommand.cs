@@ -303,7 +303,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Accounts for using the restore commands on 2 projects living in the same path
         /// </summary>
-        private bool VerifyCacheMatchesAssetsFile()
+        private bool VerifyAssetsFileMatchesProject()
         {
             if (_request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
             {
@@ -330,7 +330,7 @@ namespace NuGet.Commands
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
-                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) && VerifyCacheMatchesAssetsFile())
+                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) && VerifyAssetsFileMatchesProject())
                 {
                     _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
                     _success = true;
