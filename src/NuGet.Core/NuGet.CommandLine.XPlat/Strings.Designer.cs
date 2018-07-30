@@ -521,6 +521,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to M: Multiple references found for the same package.
+        /// </summary>
+        internal static string ListPkg_MultipleReferencesDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_MultipleReferencesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Displays only the packages that need updates with the latest version from the sources.
         /// </summary>
         internal static string ListPkg_OutdatedDescription {

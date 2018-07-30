@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -350,9 +351,19 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var projPackages = GetPackageReferencesPerFramework(project, "", tfm.ToString());
 
-                    result.Add(tfm.ToString(), tfm.Dependencies.Select(d => {
-                        var version = !d.AutoReferenced ? projPackages.Where(p => p.EvaluatedInclude.Equals(d.Name)).First().GetMetadataValue(VERSION_TAG) : d.LibraryRange.VersionRange.ToString();
-                        return new PRPackage { package = d.Name, requestedVer = version, autoRef = d.AutoReferenced };
+                    Debugger.Launch();
+
+                    result.Add(tfm.ToString(), tfm.Dependencies.SelectMany(d => {
+                        var versions = !d.AutoReferenced ?
+                        projPackages.Where(p => p.EvaluatedInclude.Equals(d.Name)).Select(v => v.GetMetadataValue(VERSION_TAG)) :
+                        new List<string> { d.LibraryRange.VersionRange.ToString() } ;
+
+                        var multipleRefs = false;
+                        if (versions.Count() > 1)
+                        {
+                            multipleRefs = true;
+                        }
+                        return versions.Select(v => new PRPackage { package = d.Name, requestedVer = v, autoRef = d.AutoReferenced, multipleRef = multipleRefs });
                     }));
 
                 }
@@ -402,9 +413,8 @@ namespace NuGet.CommandLine.XPlat
 
                         if (matchingPackages.Count() != 0)
                         {
-                            var topLevelPackage = matchingPackages.Single();
-                            packageInfo = new PRPackage { package = packageInfo.package, resolvedVer = packageInfo.resolvedVer, requestedVer = topLevelPackage.requestedVer, autoRef = topLevelPackage.autoRef };
-                            topLevelPackages.Add(packageInfo);
+               
+                            topLevelPackages.AddRange(matchingPackages.Select(p => new PRPackage { package = packageInfo.package, resolvedVer = packageInfo.resolvedVer, requestedVer = p.requestedVer, autoRef = p.autoRef, multipleRef = p.multipleRef }));
                         }
                         else
                         {

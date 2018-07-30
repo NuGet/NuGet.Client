@@ -18,6 +18,7 @@ public struct PRPackage
     public string suggestedVer;
     public bool deprecated;
     public bool autoRef;
+    public bool multipleRef;
 }
 
 namespace NuGet.CommandLine.XPlat
@@ -25,6 +26,7 @@ namespace NuGet.CommandLine.XPlat
     public class ListPackageCommandRunner : IListPackageCommandRunner
     {
         private bool _autoReferenceFound = false;
+        private bool _multipleReferencesFound = false;
 
         public void ExecuteCommand(ListPackageArgs listPackageArgs, MSBuildAPIUtility msBuild)
         {
@@ -53,6 +55,11 @@ namespace NuGet.CommandLine.XPlat
             if (_autoReferenceFound)
             {
                 Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
+            }
+
+            if (_multipleReferencesFound)
+            {
+                Console.WriteLine(Strings.ListPkg_MultipleReferencesDescription);
             }
 
         }
@@ -90,7 +97,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 sb.Append(packages.ToStringTable(
                 new[] { padLeft, "Transitive Packages", "", "Resolved" },
-                p => "", p => p.package, p => "   ", p => p.resolvedVer
+                p => "", p => p.package, p => "    ", p => p.resolvedVer
             ));
             }
             else
@@ -98,12 +105,23 @@ namespace NuGet.CommandLine.XPlat
                 sb.Append(packages.ToStringTable(
                 new[] { padLeft, "Top-level Package", "", "Requested", "Resolved" },
                 p => "", p => p.package, p => {
+                    var result = "";
                     if (p.autoRef)
                     {
                         _autoReferenceFound = true;
-                        return "(A)";
+                        result += "(A) ";
                     }
-                    return "   ";
+
+                    if (p.multipleRef)
+                    {
+                        _multipleReferencesFound = true;
+                        result += "(M)";
+                    }
+                    if (!p.autoRef && !p.multipleRef)
+                    {
+                        result += "    ";
+                    }
+                    return result;
                 }, p => p.requestedVer, p => p.resolvedVer
             ));
             }

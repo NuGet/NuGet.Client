@@ -504,4 +504,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="ListPkg_AutoReferenceDescription" xml:space="preserve">
     <value>A: Auto-referenced package</value>
   </data>
+  <data name="ListPkg_MultipleReferencesDescription" xml:space="preserve">
+    <value>M: Multiple references found for the same package</value>
+  </data>
 </root>
