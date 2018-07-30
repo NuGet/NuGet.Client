@@ -7,6 +7,8 @@ using System.IO;
 using NuGet.Test.Utility;
 using NuGet.Common;
 using Xunit;
+using System.Linq;
+using NuGet.Configuration;
 
 namespace NuGet.CommandLine.Test
 {
@@ -18,7 +20,7 @@ namespace NuGet.CommandLine.Test
             using (var preserver = new DefaultConfigurationFilePreserver())
             {
                 // Arrange
-                string[] args = new string[] {
+                var args = new string[] {
                     "config",
                     "-Set",
                     "Name1=Value1",
@@ -27,19 +29,21 @@ namespace NuGet.CommandLine.Test
                     "-Set",
                     @"HTTP_PROXY.USER=domain\user"
                 };
-                string root = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows ? Environment.GetEnvironmentVariable("HOME") : @"c:\";
+                var root = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows ? Environment.GetEnvironmentVariable("HOME") : @"c:\";
 
                 // Act
                 // Set the working directory to C:\, otherwise,
                 // the test will change the nuget.config at the code repo's root directory
-                int result = Program.MainCore(root, args);
+                var result = Program.MainCore(root, args);
 
                 // Assert
                 Assert.Equal(0, result);
 
                 var settings = Configuration.Settings.LoadDefaultSettings(
                     root, null, null);
-                var values = settings.GetSettingValues("config", isPath: false);
+
+                var configSection = settings.GetSection("config");
+                var values = configSection?.Children.Select(c => c as AddItem).Where(c => c != null).ToList();
                 AssertEqualCollections(values, new[]
                     {
                         "Name1",
@@ -63,7 +67,7 @@ namespace NuGet.CommandLine.Test
                     Path.GetFileName(configFile),
                     "<configuration/>");
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "config",
                     "-Set",
                     "Name1=Value1",
@@ -76,7 +80,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                int result = Program.Main(args);
+                var result = Program.Main(args);
 
                 // Assert
                 Assert.Equal(0, result);
@@ -85,7 +89,8 @@ namespace NuGet.CommandLine.Test
                     Path.GetDirectoryName(configFile),
                     Path.GetFileName(configFile),
                     null);
-                var values = settings.GetSettingValues("config", isPath: false);
+                var configSection = settings.GetSection("config");
+                var values = configSection?.Children.Select(c => c as AddItem).Where(c => c != null).ToList();
                 AssertEqualCollections(values, new[]
                     {
                         "Name1",
@@ -110,7 +115,7 @@ namespace NuGet.CommandLine.Test
                 Util.CreateFile(Path.GetDirectoryName(configFile),
                                 Path.GetFileName(configFile), "<configuration/>");
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "config",
                     "-Set",
                     $"CredentialProvider.Plugin.BadPlugin={missingPluginProvider}",
@@ -119,9 +124,9 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // This call sets a bad credential provider
-                int result = Program.Main(args);
+                var result = Program.Main(args);
                 // This call should still succeed, since bad credential provider is not used in config commands
-                int result2 = Program.Main(args);
+                var result2 = Program.Main(args);
 
                 // Assert
                 Assert.Equal(0, result);
@@ -142,7 +147,7 @@ namespace NuGet.CommandLine.Test
                                 Path.GetFileName(configFile),
                                 "<configuration/>");
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "config",
                     "-Set",
                     "Name1=Value1",
@@ -227,7 +232,7 @@ namespace NuGet.CommandLine.Test
 </configuration>
 ");
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "config",
                     "repositoryPath"
                 };
@@ -250,10 +255,10 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        private void AssertEqualCollections(IList<Configuration.SettingValue> actual, string[] expected)
+        private void AssertEqualCollections(IList<Configuration.AddItem> actual, string[] expected)
         {
             Assert.Equal(actual.Count, expected.Length / 2);
-            for (int i = 0; i < actual.Count; ++i)
+            for (var i = 0; i < actual.Count; ++i)
             {
                 Assert.Equal(expected[2 * i], actual[i].Key);
                 Assert.Equal(expected[2 * i + 1], actual[i].Value);

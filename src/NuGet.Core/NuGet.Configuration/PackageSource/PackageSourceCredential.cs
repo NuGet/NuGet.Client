@@ -7,13 +7,14 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
     /// <summary>
     /// Represents credentials required to authenticate user within package source web requests.
     /// </summary>
-    public class PackageSourceCredential
+    public class PackageSourceCredential : IEquatable<PackageSourceCredential>
     {
         /// <summary>
         /// User name
@@ -184,6 +185,47 @@ namespace NuGet.Configuration
             return string.IsNullOrWhiteSpace(str)
                 ? Enumerable.Empty<string>()
                 : str.Split(',').Select(x => x.Trim()).Where(x => x != string.Empty);
+        }
+
+
+        public CredentialsItem AsCredentialsItem()
+        {
+            return new CredentialsItem(Source, Username, PasswordText, IsPasswordClearText, ValidAuthenticationTypesText);
+        }
+
+        public bool Equals(PackageSourceCredential other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return string.Equals(Source, other.Source, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(Username, other.Username, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(PasswordText, other.PasswordText, StringComparison.OrdinalIgnoreCase) &&
+                IsPasswordClearText == other.IsPasswordClearText;
+        }
+
+        public override bool Equals(object other)
+        {
+            return Equals(other as PackageSourceCredential);
+        }
+
+        public override int GetHashCode()
+        {
+            var combiner = new HashCodeCombiner();
+
+            combiner.AddObject(Source);
+            combiner.AddObject(Username);
+            combiner.AddObject(PasswordText);
+            combiner.AddObject(IsPasswordClearText);
+
+            return combiner.GetHashCode();
         }
     }
 }

@@ -120,6 +120,9 @@
   <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
     <value>Value cannot be null or empty string.</value>
   </data>
+  <data name="Error_CouldNotDisableSources" xml:space="preserve">
+    <value>Could not add disabled package source</value>
+  </data>
   <data name="Error_EncryptionUnsupported" xml:space="preserve">
     <value>Encryption is not supported on non-Windows platforms.</value>
   </data>
@@ -143,6 +146,12 @@
   </data>
   <data name="Settings_FileName_Cannot_Be_A_Path" xml:space="preserve">
     <value>Parameter 'fileName' to Settings must be just a fileName and not a path</value>
+  </data>
+  <data name="ShowError_AddChildAlreadyHasOrigin" xml:space="preserve">
+    <value>Cannot add an element that is already part of another config. Path: '{0}'.</value>
+  </data>
+  <data name="ShowError_CannotHaveChildren" xml:space="preserve">
+    <value>Error parsing NuGet.Config. Element '{0}' cannot have descendant elements. Path: '{1}'.</value>
   </data>
   <data name="ShowError_ConfigInvalidOperation" xml:space="preserve">
     <value>NuGet.Config is malformed. Path: '{0}'.</value>

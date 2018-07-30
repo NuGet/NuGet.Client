@@ -251,7 +251,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private IList<string> GetConfigFilePaths(ISettings settings)
         {
-            return SettingsUtility.GetConfigFilePaths(settings).ToList();
+            return settings.GetConfigFilePaths().ToList();
         }
 
         private static PackageReference[] GetPackageReferences(PackageSpec packageSpec)

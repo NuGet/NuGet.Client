@@ -1101,11 +1101,14 @@ namespace NuGet.Test
 
         private ISettings PopulateSettingsWithSources(SourceRepositoryProvider sourceRepositoryProvider, TestDirectory settingsDirectory)
         {
-            var Settings = new Settings(settingsDirectory);
-            foreach (var source in sourceRepositoryProvider.GetRepositories())
-                Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+            var settings = new Settings(settingsDirectory);
 
-            return Settings;
+            foreach (var source in sourceRepositoryProvider.GetRepositories())
+            {
+                settings.SetItemInSection(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
+            }
+
+            return settings;
         }
 
         [Fact]

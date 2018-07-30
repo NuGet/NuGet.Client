@@ -238,7 +238,7 @@ namespace NuGet.ProjectManagement.Projects
                 packageSpec.RestoreMetadata.PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
                 packageSpec.RestoreMetadata.Sources = SettingsUtility.GetEnabledSources(settings).AsList();
                 packageSpec.RestoreMetadata.FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).AsList();
-                packageSpec.RestoreMetadata.ConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).AsList();
+                packageSpec.RestoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths().AsList();
 
                 context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }

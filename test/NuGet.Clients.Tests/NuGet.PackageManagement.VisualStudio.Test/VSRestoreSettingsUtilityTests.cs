@@ -21,10 +21,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 //Set Up
-                var spec = new PackageSpec();
-                spec.RestoreMetadata = new ProjectRestoreMetadata();
-                spec.RestoreMetadata.ProjectPath = @"C:\project\projectPath.csproj";
-                spec.RestoreMetadata.Sources = restoreSources.Select(e => new PackageSource(e)).ToList();
+                var spec = new PackageSpec
+                {
+                    RestoreMetadata = new ProjectRestoreMetadata
+                    {
+                        ProjectPath = @"C:\project\projectPath.csproj",
+                        Sources = restoreSources.Select(e => new PackageSource(e)).ToList()
+                    }
+                };
                 var settings = new Settings(mockBaseDirectory);
 
                 //Act
@@ -75,12 +79,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 //Set Up
-                var spec = new PackageSpec();
-                spec.RestoreMetadata = new ProjectRestoreMetadata();
-                spec.RestoreMetadata.ProjectPath = @"C:\project\projectPath.csproj";
-                spec.RestoreMetadata.FallbackFolders = fallbackFolders.ToList();
+                var spec = new PackageSpec
+                {
+                    RestoreMetadata = new ProjectRestoreMetadata
+                    {
+                        ProjectPath = @"C:\project\projectPath.csproj",
+                        FallbackFolders = fallbackFolders.ToList()
+                    }
+                };
                 var settings = new Settings(mockBaseDirectory);
-                settings.SetValue(ConfigurationConstants.FallbackPackageFolders, "defaultFallback", @"C:\defaultFallback");
+                settings.SetItemInSection(ConfigurationConstants.FallbackPackageFolders, new AddItem("defaultFallback", @"C:\defaultFallback"));
 
                 //Act
                 var actualFallbackFolders = VSRestoreSettingsUtilities.GetFallbackFolders(settings, spec);
@@ -132,12 +140,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 // Set Up
-                var spec = new PackageSpec();
-                spec.RestoreMetadata = new ProjectRestoreMetadata();
-                spec.RestoreMetadata.ProjectPath = @"C:\project\projectPath.csproj";
-                spec.RestoreMetadata.PackagesPath = packagesPath;
+                var spec = new PackageSpec
+                {
+                    RestoreMetadata = new ProjectRestoreMetadata
+                    {
+                        ProjectPath = @"C:\project\projectPath.csproj",
+                        PackagesPath = packagesPath
+                    }
+                };
                 var settings = new Settings(mockBaseDirectory);
-                settings.SetValue(SettingsUtility.ConfigSection, "globalPackagesFolder", @"C:\defaultPackagesPath");
+                settings.SetItemInSection(ConfigurationConstants.Config, new AddItem("globalPackagesFolder", @"C:\defaultPackagesPath"));
 
                 // Act
                 var actualPackagesPath = VSRestoreSettingsUtilities.GetPackagesPath(settings,spec);

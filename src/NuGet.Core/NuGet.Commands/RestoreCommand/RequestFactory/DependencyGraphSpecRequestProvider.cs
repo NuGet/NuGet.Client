@@ -172,7 +172,7 @@ namespace NuGet.Commands
             var summaryRequest = new RestoreSummaryRequest(
                 request,
                 project.MSBuildProjectPath,
-                SettingsUtility.GetConfigFilePaths(settings),
+                settings.GetConfigFilePaths(),
                 sources);
 
             return summaryRequest;

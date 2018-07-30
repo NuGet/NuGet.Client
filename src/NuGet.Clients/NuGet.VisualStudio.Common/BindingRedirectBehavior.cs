@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,10 +9,6 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public class BindingRedirectBehavior
     {
-        private const string BindingRedirectsSection = "bindingRedirects";
-        private const string SkipBindingRedirectsKey = "skip";
-        private const string FailOnBindingRedirects = "successRequired";
-
         private readonly Configuration.ISettings _settings;
 
         public BindingRedirectBehavior(Configuration.ISettings settings)
@@ -29,30 +25,36 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                string settingsValue = _settings.GetValue(BindingRedirectsSection, SkipBindingRedirectsKey) ?? string.Empty;
+                var bindingRedirectSection = _settings.GetSection(ConfigurationConstants.BindingRedirectsSection);
+                var skipItem = bindingRedirectSection?.GetFirstItemWithAttribute<AddItem>(
+                    ConfigurationConstants.KeyAttribute,
+                    ConfigurationConstants.SkipBindingRedirectsKey);
+
+                var settingsValue = skipItem?.Value ?? string.Empty;
 
                 return IsSet(settingsValue, false); // Don't skip by default
             }
 
-            set
-            {
-                _settings.SetValue(BindingRedirectsSection, SkipBindingRedirectsKey, value.ToString(CultureInfo.InvariantCulture));
-            }
+            set => _settings.SetItemInSection(ConfigurationConstants.BindingRedirectsSection,
+                    new AddItem(ConfigurationConstants.SkipBindingRedirectsKey, value.ToString(CultureInfo.InvariantCulture)));
         }
 
         public bool FailOperations
         {
             get
             {
-                string settingsValue = _settings.GetValue(BindingRedirectsSection, FailOnBindingRedirects) ?? string.Empty;
+                var bindingRedirectSection = _settings.GetSection(ConfigurationConstants.BindingRedirectsSection);
+                var failItem = bindingRedirectSection?.GetFirstItemWithAttribute<AddItem>(
+                    ConfigurationConstants.KeyAttribute,
+                    ConfigurationConstants.FailOnBindingRedirects);
+
+                var settingsValue = failItem?.Value ?? string.Empty;
 
                 return IsSet(settingsValue, false); // Ignore failures by default and just warn.
             }
 
-            set
-            {
-                _settings.SetValue(BindingRedirectsSection, FailOnBindingRedirects, value.ToString(CultureInfo.InvariantCulture));
-            }
+            set => _settings.SetItemInSection(ConfigurationConstants.BindingRedirectsSection,
+                    new AddItem(ConfigurationConstants.FailOnBindingRedirects, value.ToString(CultureInfo.InvariantCulture)));
         }
 
         private static bool IsSet(string value, bool defaultValue)
@@ -67,8 +69,8 @@ namespace NuGet.PackageManagement.VisualStudio
             bool boolResult;
             int intResult;
 
-            var result = ((Boolean.TryParse(value, out boolResult) && boolResult) ||
-                          (Int32.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out intResult) && (intResult == 1)));
+            var result = ((bool.TryParse(value, out boolResult) && boolResult) ||
+                          (int.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out intResult) && (intResult == 1)));
 
             return result;
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,31 +33,16 @@ namespace NuGet.PackageManagement
 
         public PackageRestoreConsent(Configuration.ISettings settings, Common.IEnvironmentVariableReader environmentReader, ConfigurationDefaults configurationDefaults)
         {
-            if (settings == null)
-            {
-                throw new ArgumentNullException("settings");
-            }
-
-            if (environmentReader == null)
-            {
-                throw new ArgumentNullException("environmentReader");
-            }
-
-            if (configurationDefaults == null)
-            {
-                throw new ArgumentNullException("configurationDefaults");
-            }
-
-            _settings = settings;
-            _environmentReader = environmentReader;
-            _configurationDefaults = configurationDefaults;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _environmentReader = environmentReader ?? throw new ArgumentNullException(nameof(environmentReader));
+            _configurationDefaults = configurationDefaults ?? throw new ArgumentNullException(nameof(configurationDefaults));
         }
 
         public bool IsGranted
         {
             get
             {
-                string envValue = _environmentReader.GetEnvironmentVariable(EnvironmentVariableName);
+                var envValue = _environmentReader.GetEnvironmentVariable(EnvironmentVariableName);
 
                 return IsGrantedInSettings || IsSet(envValue, false);
             }
@@ -67,26 +52,25 @@ namespace NuGet.PackageManagement
         {
             get
             {
-                string settingsValue = _settings.GetValue(PackageRestoreSection, PackageRestoreConsentKey);
-                if (String.IsNullOrWhiteSpace(settingsValue))
+                var settingsValue = SettingsUtility.GetValueForAddItem(_settings, PackageRestoreSection, PackageRestoreConsentKey);
+                if (string.IsNullOrWhiteSpace(settingsValue))
                 {
                     settingsValue = _configurationDefaults.DefaultPackageRestoreConsent ?? string.Empty;
                 }
 
                 return IsSet(settingsValue, true);
             }
-            set { _settings.SetValue(PackageRestoreSection, PackageRestoreConsentKey, value.ToString(CultureInfo.InvariantCulture)); }
+            set => SettingsUtility.SetValueForAddItem(_settings, PackageRestoreSection, PackageRestoreConsentKey, value.ToString(CultureInfo.InvariantCulture));
         }
 
         public bool IsAutomatic
         {
             get
             {
-                string settingsValue = _settings.GetValue(PackageRestoreSection, PackageRestoreAutomaticKey);
-
+                var settingsValue = SettingsUtility.GetValueForAddItem(_settings, PackageRestoreSection, PackageRestoreAutomaticKey);
                 return IsSet(settingsValue, IsGrantedInSettings);
             }
-            set { _settings.SetValue(PackageRestoreSection, PackageRestoreAutomaticKey, value.ToString(CultureInfo.InvariantCulture)); }
+            set => SettingsUtility.SetValueForAddItem(_settings, PackageRestoreSection, PackageRestoreAutomaticKey, value.ToString(CultureInfo.InvariantCulture));
         }
 
         private static bool IsSet(string value, bool defaultValue)
@@ -101,8 +85,8 @@ namespace NuGet.PackageManagement
             bool boolResult;
             int intResult;
 
-            var result = ((Boolean.TryParse(value, out boolResult) && boolResult) ||
-                          (Int32.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out intResult) && (intResult == 1)));
+            var result = ((bool.TryParse(value, out boolResult) && boolResult) ||
+                          (int.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out intResult) && (intResult == 1)));
 
             return result;
         }

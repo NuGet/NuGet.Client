@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
@@ -26,14 +26,13 @@ namespace NuGet.Configuration.Test
             Assert.Null(proxy);
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void GetUserConfiguredProxy_IgnoresNullOrEmptyHostValuesInSetting(string host)
+        [Fact]
+        public void GetUserConfiguredProxy_IgnoresNullOrEmptyHostValuesInSetting()
         {
             // Arrange
             var settings = new Mock<ISettings>(MockBehavior.Strict);
-            settings.Setup(s => s.GetValue("config", "http_proxy", false)).Returns(host);
+            settings.Setup(s => s.GetSection("config"))
+                .Returns(() => null);
             var environment = Mock.Of<IEnvironmentVariableReader>();
             var proxyCache = new ProxyCache(settings.Object, environment);
 
@@ -52,10 +51,12 @@ namespace NuGet.Configuration.Test
             var user = "username";
             var encryptedPassword = EncryptionUtility.EncryptString("password");
             var settings = new Mock<ISettings>(MockBehavior.Strict);
-            settings.Setup(s => s.GetValue("config", "http_proxy", false)).Returns(host);
-            settings.Setup(s => s.GetValue("config", "http_proxy.user", false)).Returns(user);
-            settings.Setup(s => s.GetValue("config", "http_proxy.password", false)).Returns(encryptedPassword);
-            settings.Setup(s => s.GetValue("config", "no_proxy", false)).Returns("");
+            settings.Setup(s => s.GetSection("config"))
+                .Returns(new SettingsSection("config",
+                    new AddItem("http_proxy", host),
+                    new AddItem("http_proxy.user", user),
+                    new AddItem("http_proxy.password", encryptedPassword)));
+
             var environment = Mock.Of<IEnvironmentVariableReader>();
             var proxyCache = new ProxyCache(settings.Object, environment);
 
@@ -72,10 +73,10 @@ namespace NuGet.Configuration.Test
             // Arrange
             var host = "http://127.0.0.1";
             var settings = new Mock<ISettings>(MockBehavior.Strict);
-            settings.Setup(s => s.GetValue("config", "http_proxy", false)).Returns(host);
-            settings.Setup(s => s.GetValue("config", "http_proxy.user", false)).Returns<string>(null);
-            settings.Setup(s => s.GetValue("config", "http_proxy.password", false)).Returns<string>(null);
-            settings.Setup(s => s.GetValue("config", "no_proxy", false)).Returns("");
+            settings.Setup(s => s.GetSection("config"))
+                .Returns(new SettingsSection("config",
+                    new AddItem("http_proxy", host)));
+
             var environment = Mock.Of<IEnvironmentVariableReader>();
             var proxyCache = new ProxyCache(settings.Object, environment);
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,45 +19,36 @@ namespace NuGet.Commands.Test
             PackageSources = packageSources;
         }
 
-        public void DisablePackageSource(PackageSource source)
-        {
-            source.IsEnabled = false;
-        }
-
-        public bool IsPackageSourceEnabled(PackageSource source)
-        {
-            return true;
-        }
-
-        public IEnumerable<PackageSource> LoadPackageSources()
-        {
-            return PackageSources;
-        }
+        public IEnumerable<PackageSource> LoadPackageSources() => PackageSources;
 
         public event EventHandler PackageSourcesChanged;
 
         public void SavePackageSources(IEnumerable<PackageSource> sources)
         {
             PackageSources = sources;
-            if (PackageSourcesChanged != null)
-            {
-                PackageSourcesChanged(this, null);
-            }
+            PackageSourcesChanged?.Invoke(this, null);
         }
 
-        public string ActivePackageSourceName
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public string ActivePackageSourceName => throw new NotImplementedException();
 
-        public string DefaultPushSource
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public string DefaultPushSource => throw new NotImplementedException();
 
-        public void SaveActivePackageSource(PackageSource source)
-        {
-            throw new NotImplementedException();
-        }
+        public void SaveActivePackageSource(PackageSource source) => throw new NotImplementedException();
+
+        public PackageSource GetPackageSource(string name) => throw new NotImplementedException();
+
+        public void RemovePackageSource(string name) => throw new NotImplementedException();
+
+        public PackageSource GetPackageSourceWithName(string name) => throw new NotImplementedException();
+
+        public PackageSource GetPackageSourceWithSource(string source) => throw new NotImplementedException();
+
+        public void EnablePackageSource(string name) => throw new NotImplementedException();
+
+        public void DisablePackageSource(string name) => throw new NotImplementedException();
+
+        public void UpdatePackageSource(PackageSource source, bool updateCredentials, bool updateEnabled) => throw new NotImplementedException();
+
+        public void AddPackageSource(PackageSource source) => throw new NotImplementedException();
     }
 }

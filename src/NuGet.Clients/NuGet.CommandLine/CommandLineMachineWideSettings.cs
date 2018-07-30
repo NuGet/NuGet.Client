@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using NuGet.Common;
@@ -8,21 +8,15 @@ namespace NuGet.CommandLine
     [Export(typeof(Configuration.IMachineWideSettings))]
     public class CommandLineMachineWideSettings : Configuration.IMachineWideSettings
     {
-        Lazy<IEnumerable<Configuration.Settings>> _settings;
+        Lazy<Configuration.Settings> _settings;
 
         public CommandLineMachineWideSettings()
         {
             var baseDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideConfigDirectory);
-            _settings = new Lazy<IEnumerable<Configuration.Settings>>(
+            _settings = new Lazy<Configuration.Settings>(
                 () => Configuration.Settings.LoadMachineWideSettings(baseDirectory));
         }
 
-        public IEnumerable<Configuration.Settings> Settings
-        {
-            get
-            {
-                return _settings.Value;
-            }
-        }
+        public Configuration.Settings Settings => _settings.Value;
     }
 }

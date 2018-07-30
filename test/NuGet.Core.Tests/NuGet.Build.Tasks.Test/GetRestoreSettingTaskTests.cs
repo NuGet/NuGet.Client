@@ -19,11 +19,11 @@ namespace NuGet.Build.Tasks.Test
     {
         class TestMachineWideSettings : IMachineWideSettings
         {
-            public IEnumerable<Settings> Settings { get; }
+            public Settings Settings { get; }
 
             public TestMachineWideSettings(Settings settings)
             {
-                Settings = new List<Settings>() { settings };
+                Settings = settings;
             }
         }
 
@@ -86,13 +86,13 @@ namespace NuGet.Build.Tasks.Test
 
                 ConfigurationFileTestUtility.CreateConfigurationFile(baseConfigPath, solutionDirectoryConfig, baseConfig);
                 ConfigurationFileTestUtility.CreateConfigurationFile(baseConfigPath, subFolder, subFolderConfig);
-                ConfigurationFileTestUtility.CreateConfigurationFile(baseConfigPath, machineWide, machineWideSettingsConfig);
-                var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide, baseConfigPath, true)));
+                ConfigurationFileTestUtility.CreateConfigurationFile(baseConfigPath, machineWide, MachineWideSettingsConfig);
+                var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide, baseConfigPath, isMachineWide: true)));
 
                 // Test
 
                 var settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory,null, machineWideSettings);
-                var filePaths = SettingsUtility.GetConfigFilePaths(settings);
+                var filePaths = settings.GetConfigFilePaths();
 
                 Assert.Equal(3, filePaths.Count()); // Solution, app data + machine wide
                 Assert.True(filePaths.Contains(Path.Combine(solutionDirectoryConfig, baseConfigPath)));
@@ -100,7 +100,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Test 
                  settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory, Path.Combine(subFolder, baseConfigPath), machineWideSettings);
-                 filePaths = SettingsUtility.GetConfigFilePaths(settings);
+                 filePaths = settings.GetConfigFilePaths();
 
                 Assert.Equal(1, filePaths.Count());
                 Assert.True(filePaths.Contains(Path.Combine(subFolder, baseConfigPath)));
@@ -115,8 +115,8 @@ namespace NuGet.Build.Tasks.Test
             using (var workingDir = TestDirectory.CreateInTemp())
             {
                 // Arrange
-                ConfigurationFileTestUtility.CreateConfigurationFile(Settings.DefaultSettingsFileName, machineWide, machineWideSettingsConfig);
-                var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide, Settings.DefaultSettingsFileName, true)));
+                ConfigurationFileTestUtility.CreateConfigurationFile(Settings.DefaultSettingsFileName, machineWide, MachineWideSettingsConfig);
+                var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide, Settings.DefaultSettingsFileName, isMachineWide: true)));
 
                 var innerConfigFile = Path.Combine(workingDir, "sub", Settings.DefaultSettingsFileName);
                 var outerConfigFile = Path.Combine(workingDir, Settings.DefaultSettingsFileName);
@@ -129,14 +129,14 @@ namespace NuGet.Build.Tasks.Test
 
                 var settings = RestoreSettingsUtils.ReadSettings(null, projectDirectory, null, machineWideSettings);
 
-                var innerValue = settings.GetValue("SectionName", "inner-key");
-                var outerValue = settings.GetValue("SectionName", "outer-key");
+                var innerValue = SettingsUtility.GetValueForAddItem(settings, "SectionName", "inner-key");
+                var outerValue = SettingsUtility.GetValueForAddItem(settings, "SectionName", "outer-key");
 
                 // Assert
                 Assert.Equal("inner-value", innerValue);
                 Assert.Equal("outer-value", outerValue);
-                Assert.True(SettingsUtility.GetConfigFilePaths(settings).Contains(innerConfigFile));
-                Assert.True(SettingsUtility.GetConfigFilePaths(settings).Contains(outerConfigFile));
+                Assert.True(settings.GetConfigFilePaths().Contains(innerConfigFile));
+                Assert.True(settings.GetConfigFilePaths().Contains(outerConfigFile));
             }
         }
 
@@ -433,14 +433,14 @@ namespace NuGet.Build.Tasks.Test
                 ConfigurationFileTestUtility.CreateConfigurationFile(configName, basePath, baseConfig);
                 ConfigurationFileTestUtility.CreateConfigurationFile(configName, unreachablePath, unreachableConfig);
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(configName, machineWide, machineWideSettingsConfig);
+                ConfigurationFileTestUtility.CreateConfigurationFile(configName, machineWide, MachineWideSettingsConfig);
 
-                var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide, configName, true)));
+                var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide, configName, isMachineWide: true)));
 
                 // Test
 
                 var settings = RestoreSettingsUtils.ReadSettings(null, probePath, null, machineWideSettings);
-                var filePaths = SettingsUtility.GetConfigFilePaths(settings);
+                var filePaths = settings.GetConfigFilePaths();
 
                 Assert.Equal(4, filePaths.Count()); // base, parent, app data + machine wide
                 Assert.Contains(Path.Combine(basePath, configName), filePaths);
@@ -450,11 +450,11 @@ namespace NuGet.Build.Tasks.Test
         }
 
 
-        private static string machineWideSettingsConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+        private static readonly string MachineWideSettingsConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <configuration>
                 </configuration>";
 
-        private static string InnerConfig =
+        private static readonly string InnerConfig =
             @"<?xml version=""1.0"" encoding=""utf-8""?>
               <configuration>
                 <SectionName>
@@ -462,7 +462,7 @@ namespace NuGet.Build.Tasks.Test
                 </SectionName>
               </configuration>";
 
-        private static string OuterConfig =
+        private static readonly string OuterConfig =
             @"<?xml version=""1.0"" encoding=""utf-8""?>
               <configuration>
                 <SectionName>
@@ -470,7 +470,7 @@ namespace NuGet.Build.Tasks.Test
                 </SectionName>
               </configuration>";
 
-        private static string DisableSourceConfig =
+        private static readonly string DisableSourceConfig =
             @"<?xml version=""1.0"" encoding=""utf-8""?>
              <configuration>
               <packageSources>

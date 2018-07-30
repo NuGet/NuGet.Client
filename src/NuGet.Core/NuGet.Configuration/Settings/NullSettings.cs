@@ -9,93 +9,45 @@ namespace NuGet.Configuration
 {
     public class NullSettings : ISettings
     {
-        private static readonly NullSettings _settings = new NullSettings();
-
         public event EventHandler SettingsChanged = delegate { };
 
-        public static NullSettings Instance
+        public static NullSettings Instance { get; } = new NullSettings();
+
+        public SettingsSection GetSection(string sectionName)
         {
-            get { return _settings; }
+            return null;
         }
 
-        public string Root
+        public bool CreateSection(SettingsSection section)
         {
-            get { return String.Empty; }
+            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(CreateSection)));
         }
 
-        public string FileName
+        public bool SetItemInSection(string sectionName, SettingsItem item)
         {
-            get { return String.Empty; }
+            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetItemInSection)));
         }
 
-        public IEnumerable<ISettings> Priority
+        public void Save() { }
+
+        public IEnumerable<string> GetConfigFilePaths()
         {
-            get { return new[] { this }; }
+            return new List<string>();
         }
 
-        public string GetValue(string section, string key, bool isPath = false)
+        public IEnumerable<string> GetConfigRoots()
         {
-            return String.Empty;
+            return new List<string>();
         }
 
-        public IList<SettingValue> GetSettingValues(string section, bool isPath)
+        public bool CreateSection(SettingsSection section, bool isBatchOperation = false)
         {
-            return new List<SettingValue>().AsReadOnly();
+            throw new NotImplementedException();
         }
 
-        public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
+        public bool SetItemInSection(string sectionName, SettingsItem item, bool isBatchOperation = false)
         {
-            return new List<KeyValuePair<string, string>>().AsReadOnly();
-        }
-
-        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
-        {
-            return new List<SettingValue>().AsReadOnly();
-        }
-
-        public IReadOnlyList<string> GetAllSubsections(string section)
-        {
-            return new List<string>().AsReadOnly();
-        }
-
-        public void SetValue(string section, string key, string value)
-        {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetValue)));
-        }
-
-        public void SetValues(string section, IReadOnlyList<SettingValue> values)
-        {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetValues)));
-        }
-
-        public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
-        {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(UpdateSections)));
-        }
-
-        public void SetNestedValues(string section, string key, IList<KeyValuePair<string, string>> values)
-        {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetNestedValues)));
-        }
-
-        public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
-        {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetNestedSettingValues)));
-        }
-
-        public bool DeleteValue(string section, string key)
-        {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(DeleteValue)));
-        }
-
-        public bool DeleteSection(string section)
-        {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(DeleteSection)));
-        }
-
-        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
-        {
-            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(UpdateSubsections)));
+            throw new NotImplementedException();
         }
     }
 }

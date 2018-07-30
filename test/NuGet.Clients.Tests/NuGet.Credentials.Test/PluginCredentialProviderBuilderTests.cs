@@ -1,9 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Configuration;
 using Moq;
+using NuGet.Configuration;
 using Xunit;
 
 namespace NuGet.Credentials.Test
@@ -42,8 +44,8 @@ namespace NuGet.Credentials.Test
                 // happy path defaults
                 _mockExtensionLocator.Setup(x => x.FindCredentialProviders())
                     .Returns(new List<string>());
-                _mockSettings.Setup(x => x.GetSettingValues("config", false))
-                    .Returns(new List<Configuration.SettingValue>());
+                _mockSettings.Setup(x => x.GetSection("config"))
+                    .Returns(() => null);
             }
         }
 
@@ -160,8 +162,9 @@ namespace NuGet.Credentials.Test
             builder._mockEnvarReader
                 .Setup(x => x.GetEnvironmentVariable("NUGET_CREDENTIAL_PROVIDER_TIMEOUT_SECONDS"))
                 .Returns("10");
-            builder._mockSettings.Setup(x => x.GetValue("config", "CredentialProvider.Timeout", false))
-                .Returns("20");
+            builder._mockSettings.Setup(x => x.GetSection("config"))
+                .Returns(new Configuration.SettingsSection("config",
+                    new AddItem("CredentialProvider.Timeout", "20")));
 
             var result = builder.BuildAll(NormalVerbosity).ToList();
 

@@ -20,7 +20,7 @@ namespace NuGet.Configuration {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -67,6 +67,15 @@ namespace NuGet.Configuration {
         internal static string Argument_Cannot_Be_Null_Or_Empty {
             get {
                 return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not add disabled package source.
+        /// </summary>
+        internal static string Error_CouldNotDisableSources {
+            get {
+                return ResourceManager.GetString("Error_CouldNotDisableSources", resourceCulture);
             }
         }
         
@@ -139,6 +148,24 @@ namespace NuGet.Configuration {
         internal static string Settings_FileName_Cannot_Be_A_Path {
             get {
                 return ResourceManager.GetString("Settings_FileName_Cannot_Be_A_Path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot add an element that is already part of another config. Path: &apos;{0}&apos;..
+        /// </summary>
+        internal static string ShowError_AddChildAlreadyHasOrigin {
+            get {
+                return ResourceManager.GetString("ShowError_AddChildAlreadyHasOrigin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error parsing NuGet.Config. Element &apos;{0}&apos; cannot have descendant elements. Path: &apos;{1}&apos;..
+        /// </summary>
+        internal static string ShowError_CannotHaveChildren {
+            get {
+                return ResourceManager.GetString("ShowError_CannotHaveChildren", resourceCulture);
             }
         }
         

@@ -60,8 +60,9 @@ namespace NuGet.SolutionRestoreManager.Test
             var buildAction = (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD;
 
             Mock.Get(settings)
-                .Setup(x => x.GetValue("packageRestore", "automatic", false))
-                .Returns(bool.FalseString);
+                .Setup(x => x.GetSection("packageRestore"))
+                .Returns(() => new SettingsSection("packageRestore",
+                    new AddItem("automatic", bool.FalseString)));
 
             using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager))
             {
@@ -86,8 +87,9 @@ namespace NuGet.SolutionRestoreManager.Test
             var buildAction = (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD + (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK;
 
             Mock.Get(settings)
-                .Setup(x => x.GetValue("packageRestore", "automatic", false))
-                .Returns(bool.TrueString);
+                .Setup(x => x.GetSection("packageRestore"))
+                .Returns(() => new SettingsSection("packageRestore",
+                    new AddItem("automatic", bool.TrueString)));
 
             using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager))
             {
@@ -112,8 +114,9 @@ namespace NuGet.SolutionRestoreManager.Test
             var buildAction = (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD;
 
             Mock.Get(settings)
-                .Setup(x => x.GetValue("packageRestore", "automatic", false))
-                .Returns(bool.TrueString);
+                .Setup(x => x.GetSection("packageRestore"))
+                .Returns(() => new SettingsSection("packageRestore",
+                    new AddItem("automatic", bool.TrueString)));
             Mock.Get(restoreWorker)
                 .SetupGet(x => x.JoinableTaskFactory)
                 .Returns(_jtf);

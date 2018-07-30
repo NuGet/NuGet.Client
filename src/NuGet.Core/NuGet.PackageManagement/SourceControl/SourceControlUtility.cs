@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Configuration;
@@ -12,14 +12,13 @@ namespace NuGet.ProjectManagement
 
         public static bool IsSourceControlDisabled(ISettings settings)
         {
-            var value = settings.GetValue(SolutionSection, DisableSourceControlIntegerationKey);
-            bool disableSourceControlIntegration;
-            return !string.IsNullOrEmpty(value) && bool.TryParse(value, out disableSourceControlIntegration) && disableSourceControlIntegration;
+            var value = SettingsUtility.GetValueForAddItem(settings, SolutionSection, DisableSourceControlIntegerationKey);
+            return !string.IsNullOrEmpty(value) && bool.TryParse(value, out var disableSourceControlIntegration) && disableSourceControlIntegration;
         }
 
         public static void DisableSourceControlMode(ISettings settings)
         {
-            settings.SetValue(SolutionSection, DisableSourceControlIntegerationKey, "true");
+            SettingsUtility.SetValueForAddItem(settings, SolutionSection, DisableSourceControlIntegerationKey, "true");
         }
 
         public static SourceControlManager GetSourceControlManager(INuGetProjectContext nuGetProjectContext)

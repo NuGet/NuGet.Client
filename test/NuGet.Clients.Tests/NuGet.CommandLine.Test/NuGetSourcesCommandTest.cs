@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,7 @@ using Test.Utility;
 using Xunit;
 using Xunit.Extensions;
 using NuGet.Common;
+using NuGet.Configuration;
 
 namespace NuGet.CommandLine.Test
 {
@@ -24,7 +25,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Add",
                     "-Name",
@@ -32,7 +33,7 @@ namespace NuGet.CommandLine.Test
                     "-Source",
                     "http://test_source"
                 };
-                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
@@ -43,8 +44,9 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
                 var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
-                var source = settings.GetValue("packageSources", "test_source");
-                Assert.Equal("http://test_source", source);
+                var packageSourcesSection = settings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("http://test_source", sourceItem.Value);
             }
         }
 
@@ -55,7 +57,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Add",
                     "-Name",
@@ -67,7 +69,7 @@ namespace NuGet.CommandLine.Test
                     "-Password",
                     "test_password"
                 };
-                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
@@ -79,18 +81,18 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
 
                 var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
-                var source = settings.GetValue("packageSources", "test_source");
-                Assert.Equal("http://test_source", source);
 
-                var credentials = settings.GetNestedValues(
-                    "packageSourceCredentials", "test_source");
-                Assert.Equal(2, credentials.Count);
+                var packageSourcesSection = settings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("http://test_source", sourceItem.Value);
 
-                Assert.Equal("Username", credentials[0].Key);
-                Assert.Equal("test_user_name", credentials[0].Value);
+                var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
+                var credentialItem = sourceCredentialsSection?.Children.First(c => string.Equals(c.Name, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
+                Assert.NotNull(credentialItem);
 
-                Assert.Equal("Password", credentials[1].Key);
-                var password = Configuration.EncryptionUtility.DecryptString(credentials[1].Value);
+                Assert.Equal("test_user_name", credentialItem.Username.Value);
+
+                var password = Configuration.EncryptionUtility.DecryptString(credentialItem.Password.Value);
                 Assert.Equal("test_password", password);
             }
         }
@@ -102,7 +104,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Add",
                     "-Name",
@@ -115,7 +117,7 @@ namespace NuGet.CommandLine.Test
                     "test_password",
                     "-StorePasswordInClearText"
                 };
-                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
@@ -127,18 +129,17 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
 
                 var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
-                var source = settings.GetValue("packageSources", "test_source");
-                Assert.Equal("http://test_source", source);
 
-                var credentials = settings.GetNestedValues(
-                    "packageSourceCredentials", "test_source");
-                Assert.Equal(2, credentials.Count);
+                var packageSourcesSection = settings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("http://test_source", sourceItem.Value);
 
-                Assert.Equal("Username", credentials[0].Key);
-                Assert.Equal("test_user_name", credentials[0].Value);
+                var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
+                var credentialItem = sourceCredentialsSection?.Children.First(c => string.Equals(c.Name, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
+                Assert.NotNull(credentialItem);
 
-                Assert.Equal("ClearTextPassword", credentials[1].Key);
-                Assert.Equal("test_password", credentials[1].Value);
+                Assert.Equal("test_user_name", credentialItem.Username.Value);
+                Assert.Equal("test_password", credentialItem.Password.Value);
             }
         }
 
@@ -158,7 +159,7 @@ namespace NuGet.CommandLine.Test
 <configuration>
 </configuration>");
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Add",
                     "-Name",
@@ -187,18 +188,18 @@ namespace NuGet.CommandLine.Test
                     configFileDirectory,
                     configFileName,
                     null);
-                var source = settings.GetValue("packageSources", "test_source");
-                Assert.Equal("http://test_source", source);
 
-                var credentials = settings.GetNestedValues(
-                    "packageSourceCredentials", "test_source");
-                Assert.Equal(2, credentials.Count);
+                var packageSourcesSection = settings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("http://test_source", sourceItem.Value);
 
-                Assert.Equal("Username", credentials[0].Key);
-                Assert.Equal("test_user_name", credentials[0].Value);
+                var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
+                var credentialItem = sourceCredentialsSection?.Children.First(c => string.Equals(c.Name, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
+                Assert.NotNull(credentialItem);
 
-                Assert.Equal("Password", credentials[1].Key);
-                var password = Configuration.EncryptionUtility.DecryptString(credentials[1].Value);
+                Assert.Equal("test_user_name", credentialItem.Username.Value);
+
+                var password = Configuration.EncryptionUtility.DecryptString(credentialItem.Password.Value);
                 Assert.Equal("test_password", password);
             }
         }
@@ -226,7 +227,7 @@ namespace NuGet.CommandLine.Test
   </disabledPackageSources>
 </configuration>");
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Enable",
                     "-Name",
@@ -264,7 +265,8 @@ namespace NuGet.CommandLine.Test
                     configFileName,
                     null);
 
-                var disabledSources = settings.GetSettingValues("disabledPackageSources").ToList();
+                var disabledSourcesSection = settings.GetSection("disabledPackageSources");
+                var disabledSources = disabledSourcesSection?.Children.Select(c => c as AddItem).Where(c => c != null).ToList();
                 Assert.Single(disabledSources);
                 var disabledSource = disabledSources.Single();
                 Assert.Equal("Microsoft and .NET", disabledSource.Key);
@@ -301,7 +303,7 @@ namespace NuGet.CommandLine.Test
   </packageSources>
 </configuration>");
 
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Disable",
                     "-Name",
@@ -360,7 +362,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
-                string[] args = new string[] {
+                var args = new string[] {
                     "sources",
                     "Add",
                     "-Name",
@@ -370,7 +372,7 @@ namespace NuGet.CommandLine.Test
                     "-Verbosity",
                     "Quiet"
                 };
-                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
@@ -383,8 +385,10 @@ namespace NuGet.CommandLine.Test
                 // Ensure that no messages are shown with Verbosity as Quiet
                 Assert.Equal(string.Empty, result.Item2);
                 var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
-                var source = settings.GetValue("packageSources", "test_source");
-                Assert.Equal("http://test_source", source);
+                var packageSourcesSection = settings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+
+                Assert.Equal("http://test_source", sourceItem.Value);
             }
         }
     }

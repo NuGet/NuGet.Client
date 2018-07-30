@@ -91,92 +91,36 @@ namespace NuGet.PackageManagement.VisualStudio
             SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public bool DeleteSection(string section)
+        public SettingsSection GetSection(string sectionName)
         {
-            return CanChangeSettings && SolutionSettings.DeleteSection(section);
+            return SolutionSettings.GetSection(sectionName);
         }
 
-        public bool DeleteValue(string section, string key)
+        public IEnumerable<string> GetConfigFilePaths()
         {
-            return CanChangeSettings && SolutionSettings.DeleteValue(section, key);
+            return SolutionSettings.GetConfigFilePaths();
         }
 
-        public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
+        public IEnumerable<string> GetConfigRoots()
         {
-            return SolutionSettings.GetNestedValues(section, subSection);
+            return SolutionSettings.GetConfigRoots();
         }
 
-        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
+        public bool CreateSection(SettingsSection section, bool isBatchOperation = false)
         {
-            return SolutionSettings.GetNestedSettingValues(section, subSection);
+            return CanChangeSettings && CreateSection(section, isBatchOperation);
         }
 
-        public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
+        public bool SetItemInSection(string sectionName, SettingsItem item, bool isBatchOperation = false)
         {
-            return SolutionSettings.GetSettingValues(section, isPath);
+            return CanChangeSettings && SolutionSettings.SetItemInSection(sectionName, item, isBatchOperation);
         }
 
-        public string GetValue(string section, string key, bool isPath = false)
-        {
-            return SolutionSettings.GetValue(section, key, isPath);
-        }
-
-        public IReadOnlyList<string> GetAllSubsections(string section)
-        {
-            return SolutionSettings.GetAllSubsections(section);
-        }
-
-        public string Root => SolutionSettings.Root;
-
-        public string FileName => SolutionSettings.FileName;
-
-        public IEnumerable<ISettings> Priority => SolutionSettings.Priority;
-
-        public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values)
+        public void Save()
         {
             if (CanChangeSettings)
             {
-                SolutionSettings.SetNestedValues(section, subsection, values);
-            }
-        }
-
-        public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
-        {
-            if (CanChangeSettings)
-            {
-                SolutionSettings.SetNestedSettingValues(section, subsection, values);
-            }
-        }
-
-        public void SetValue(string section, string key, string value)
-        {
-            if (CanChangeSettings)
-            {
-                SolutionSettings.SetValue(section, key, value);
-            }
-        }
-
-        public void SetValues(string section, IReadOnlyList<SettingValue> values)
-        {
-            if (CanChangeSettings)
-            {
-                SolutionSettings.SetValues(section, values);
-            }
-        }
-
-        public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
-        {
-            if (CanChangeSettings)
-            {
-                SolutionSettings.UpdateSections(section, values);
-            }
-        }
-
-        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
-        {
-            if (CanChangeSettings)
-            {
-                SolutionSettings.UpdateSubsections(section, subsection, values);
+                SolutionSettings.Save();
             }
         }
 

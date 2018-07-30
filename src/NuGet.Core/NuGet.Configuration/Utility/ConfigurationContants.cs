@@ -1,17 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.ObjectModel;
+
 namespace NuGet.Configuration
 {
     public static class ConfigurationConstants
     {
+        public static readonly string Add = "add";
+
+        public static readonly string Clear = "clear";
+
         public static readonly string ApiKeys = "apikeys";
 
         public static readonly string DisabledPackageSources = "disabledPackageSources";
 
         public static readonly string PackageSources = "packageSources";
-
-        public static readonly string TrustedSources = "trustedSources";
 
         public static readonly string DefaultPushSource = "DefaultPushSource";
 
@@ -58,5 +62,27 @@ namespace NuGet.Configuration
         public static readonly string FingerprintAlgorithm = "fingerprintAlgorithm";
 
         public static readonly string ServiceIndex = "serviceIndex";
+
+        public static readonly string Configuration = "configuration";
+
+        public static readonly string RepositoryPath = "repositoryPath";
+
+        public static readonly string GlobalPackagesFolder = "globalPackagesFolder";
+
+        public static readonly string BindingRedirectsSection = "bindingRedirects";
+
+        public static readonly string SkipBindingRedirectsKey = "skip";
+
+        public static readonly string FailOnBindingRedirects = "successRequired";
+
+        public static readonly string PackageManagementSection = "packageManagement";
+
+        public static readonly string DoNotShowPackageManagementSelectionKey = "disabled";
+
+        public static readonly string DefaultPackageManagementFormatKey = "format";
+
+        public static readonly string RepositoryPathKey = "repositoryPath";
+
+        public static readonly string MaxHttpRequestsPerSource = "maxHttpRequestsPerSource";
     }
 }

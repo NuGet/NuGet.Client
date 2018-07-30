@@ -70,7 +70,7 @@ namespace NuGet.Commands
                         ProjectUniqueName = projectPath,
                         OutputPath = Path.GetTempPath(),
                         OriginalTargetFrameworks = TargetFrameworks.Select(i => i.ToString()).ToList(),
-                        ConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToList(),
+                        ConfigFilePaths = settings.GetConfigFilePaths().ToList(),
                         PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings),
                         Sources = SettingsUtility.GetEnabledSources(settings).ToList(),
                         FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList()

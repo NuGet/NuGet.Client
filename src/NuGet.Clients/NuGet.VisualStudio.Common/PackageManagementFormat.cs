@@ -1,27 +1,25 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using NuGet.Configuration;
 
 namespace NuGet.VisualStudio
 {
     public class PackageManagementFormat
     {
-        private const string PackageManagementSection = "packageManagement";
-        private const string DoNotShowPackageManagementSelectionKey = "disabled";
-        private const string DefaultPackageManagementFormatKey = "format";
         private const string PackageReferenceDoc = "https://aka.ms/packagereferencesupport";
 
         private readonly Configuration.ISettings _settings;
 
         // keep track of current value for selected package format
-        private int SelectedPackageFormat = -1;
+        private int _selectedPackageFormat = -1;
 
         // keep track of current value for shwo dialog checkbox
-        private bool? ShowDialogValue;
+        private bool? _showDialogValue;
 
         public PackageManagementFormat(Configuration.ISettings settings)
         {
@@ -54,58 +52,60 @@ namespace NuGet.VisualStudio
             }
         }
 
-        public bool IsSolution
-        {
-            get
-            {
-                return ProjectNames.Count > 1;
-            }
-        }
+        public bool IsSolution => ProjectNames.Count > 1;
 
         public bool Enabled
         {
             get
             {
-                if (ShowDialogValue.HasValue)
+                if (_showDialogValue.HasValue)
                 {
-                    return ShowDialogValue.Value;
+                    return _showDialogValue.Value;
                 }
 
-                string settingsValue = _settings.GetValue(PackageManagementSection, DoNotShowPackageManagementSelectionKey) ?? string.Empty;
-                ShowDialogValue = IsSet(settingsValue, false);
-                return ShowDialogValue.Value;
+                var packageManagmentSection = _settings.GetSection(ConfigurationConstants.PackageManagementSection);
+                var doNotShowItem = packageManagmentSection?.GetFirstItemWithAttribute<AddItem>(
+                    ConfigurationConstants.KeyAttribute,
+                    ConfigurationConstants.DoNotShowPackageManagementSelectionKey);
+
+                var settingsValue = doNotShowItem?.Value ?? string.Empty;
+
+                _showDialogValue = IsSet(settingsValue, false);
+                return _showDialogValue.Value;
             }
 
-            set
-            {
-                ShowDialogValue = value;
-            }
+            set => _showDialogValue = value;
         }
 
         public int SelectedPackageManagementFormat
         {
             get
             {
-                if (SelectedPackageFormat != -1)
+                if (_selectedPackageFormat != -1)
                 {
-                    return SelectedPackageFormat;
+                    return _selectedPackageFormat;
                 }
 
-                string settingsValue = _settings.GetValue(PackageManagementSection, DefaultPackageManagementFormatKey) ?? string.Empty;
-                SelectedPackageFormat = IsSet(settingsValue, 0);
-                return SelectedPackageFormat;
+                var packageManagmentSection = _settings.GetSection(ConfigurationConstants.PackageManagementSection);
+                var defautFormatItem = packageManagmentSection?.GetFirstItemWithAttribute<AddItem>(
+                    ConfigurationConstants.KeyAttribute,
+                    ConfigurationConstants.DefaultPackageManagementFormatKey);
+
+                var settingsValue = defautFormatItem?.Value ?? string.Empty;
+
+                _selectedPackageFormat = IsSet(settingsValue, 0);
+                return _selectedPackageFormat;
             }
 
-            set
-            {
-                SelectedPackageFormat = value;
-            }
+            set => _selectedPackageFormat = value;
         }
 
         public void ApplyChanges()
         {
-            _settings.SetValue(PackageManagementSection, DefaultPackageManagementFormatKey, SelectedPackageFormat.ToString(CultureInfo.InvariantCulture));
-            _settings.SetValue(PackageManagementSection, DoNotShowPackageManagementSelectionKey, ShowDialogValue.Value.ToString(CultureInfo.InvariantCulture));
+            _settings.SetItemInSection(ConfigurationConstants.PackageManagementSection,
+                new AddItem(ConfigurationConstants.DefaultPackageManagementFormatKey, _selectedPackageFormat.ToString(CultureInfo.InvariantCulture)));
+            _settings.SetItemInSection(ConfigurationConstants.PackageManagementSection,
+                new AddItem(ConfigurationConstants.DoNotShowPackageManagementSelectionKey, _showDialogValue.Value.ToString(CultureInfo.InvariantCulture)));
         }
 
         private static bool IsSet(string value, bool defaultValue)
@@ -120,8 +120,8 @@ namespace NuGet.VisualStudio
             bool boolResult;
             int intResult;
 
-            var result = ((Boolean.TryParse(value, out boolResult) && boolResult) ||
-                          (Int32.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out intResult) && (intResult == 1)));
+            var result = ((bool.TryParse(value, out boolResult) && boolResult) ||
+                          (int.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out intResult) && (intResult == 1)));
 
             return result;
         }
@@ -135,7 +135,7 @@ namespace NuGet.VisualStudio
 
             value = value.Trim();
 
-            var result = Int32.Parse(value, NumberStyles.Number, CultureInfo.InvariantCulture);
+            var result = int.Parse(value, NumberStyles.Number, CultureInfo.InvariantCulture);
 
             return result;
         }

@@ -12,21 +12,62 @@ namespace NuGet.Configuration
 {
     public static class SettingsUtility
     {
-        public static readonly string ConfigSection = "config";
         private const string GlobalPackagesFolderKey = "globalPackagesFolder";
         private const string GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES";
         private const string FallbackPackagesFolderEnvironmentKey = "NUGET_FALLBACK_PACKAGES";
         private const string HttpCacheEnvironmentKey = "NUGET_HTTP_CACHE_PATH";
         private const string PluginsCacheEnvironmentKey = "NUGET_PLUGINS_CACHE_PATH";
-        private const string RepositoryPathKey = "repositoryPath";
-        private const string MaxHttpRequestsPerSource = "maxHttpRequestsPerSource";
         public static readonly string DefaultGlobalPackagesFolderPath = "packages" + Path.DirectorySeparatorChar;
         private const string RevocationModeEnvironmentKey = "NUGET_CERT_REVOCATION_MODE";
 
+        public static string GetValueForAddItem(ISettings settings, string section, string key, bool isPath = false)
+        {
+            var sectionElement = settings.GetSection(section);
+            var item = sectionElement?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
+
+            if (item == null)
+            {
+                return null;
+            }
+
+            if (isPath)
+            {
+                return item.GetValueAsPath();
+            }
+
+            return item.Value;
+        }
+
+        public static void SetValueForAddItem(ISettings settings, string section, string key, string value)
+        {
+            var sectionElement = settings.GetSection(section);
+            var item = sectionElement?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
+
+            if (item == null)
+            {
+                var newItem = new AddItem(key, value);
+                sectionElement.AddChild(newItem);
+            }
+            else
+            {
+                item.UpdateAttributeValue(ConfigurationConstants.ValueAttribute, value);
+            }
+        }
+
+        public static bool DeleteValue(ISettings settings, string section, string attributeKey, string attributeValue)
+        {
+            var sectionElement = settings.GetSection(section);
+            var element = sectionElement?.GetFirstItemWithAttribute<SettingsItem>(attributeKey, attributeValue);
+
+            return element.RemoveFromCollection();
+        }
+
+
         public static string GetRepositoryPath(ISettings settings)
         {
-            var path = settings.GetValue(ConfigSection, RepositoryPathKey, isPath: true);
-            if (!String.IsNullOrEmpty(path))
+            var path = GetValueForAddItem(settings, ConfigurationConstants.Config, ConfigurationConstants.RepositoryPath, isPath: true);
+
+            if (!string.IsNullOrEmpty(path))
             {
                 path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             }
@@ -36,7 +77,7 @@ namespace NuGet.Configuration
 
         public static int GetMaxHttpRequest(ISettings settings)
         {
-            var max = settings.GetValue(ConfigSection, MaxHttpRequestsPerSource, isPath: false);
+            var max = GetConfigValue(settings, ConfigurationConstants.MaxHttpRequestsPerSource);
             if (!string.IsNullOrEmpty(max) && int.TryParse(max, out var result))
             {
                 return result;
@@ -45,57 +86,57 @@ namespace NuGet.Configuration
             return 0;
         }
 
-        public static string GetDecryptedValue(ISettings settings, string section, string key, bool isPath = false)
+        public static string GetDecryptedValueForAddItem(ISettings settings, string section, string key, bool isPath = false)
         {
-            if (String.IsNullOrEmpty(section))
+            if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
-            if (String.IsNullOrEmpty(key))
+            if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
 
-            var encryptedString = settings.GetValue(section, key, isPath);
+            var sectionElement = settings.GetSection(section);
+
+            var encryptedItem = sectionElement?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
+            var encryptedString = encryptedItem?.Value;
             if (encryptedString == null)
             {
                 return null;
             }
 
-            if (String.IsNullOrEmpty(encryptedString))
+            var decryptedString = EncryptionUtility.DecryptString(encryptedString);
+
+            if (isPath)
             {
-                return String.Empty;
+                return Settings.ResolvePath(encryptedItem.Origin, decryptedString);
             }
-            return EncryptionUtility.DecryptString(encryptedString);
+
+            return decryptedString;
         }
 
-        public static void SetEncryptedValue(ISettings settings, string section, string key, string value)
+        public static void SetEncryptedValueForAddItem(ISettings settings, string section, string key, string value)
         {
-            if (String.IsNullOrEmpty(section))
+            if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "section");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
-            if (String.IsNullOrEmpty(key))
+            if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, "key");
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
 
-            if (value == null)
+
+            var elementValue = string.Empty;
+            if (!string.IsNullOrEmpty(value))
             {
-                throw new ArgumentNullException("value");
+                elementValue = EncryptionUtility.EncryptString(value);
             }
 
-            if (String.IsNullOrEmpty(value))
-            {
-                settings.SetValue(section, key, String.Empty);
-            }
-            else
-            {
-                var encryptedString = EncryptionUtility.EncryptString(value);
-                settings.SetValue(section, key, encryptedString);
-            }
+            settings.SetItemInSection(section, new AddItem(key, elementValue));
         }
 
         /// <summary>
@@ -108,9 +149,12 @@ namespace NuGet.Configuration
         /// <returns>Null if the key was not found, value from config otherwise.</returns>
         public static string GetConfigValue(ISettings settings, string key, bool decrypt = false, bool isPath = false)
         {
-            return decrypt ?
-                GetDecryptedValue(settings, ConfigSection, key, isPath) :
-                settings.GetValue(ConfigSection, key, isPath);
+            if (decrypt)
+            {
+                return GetDecryptedValueForAddItem(settings, ConfigurationConstants.Config, key, isPath);
+            }
+
+            return GetValueForAddItem(settings, ConfigurationConstants.Config, key, isPath);
         }
 
         /// <summary>
@@ -124,11 +168,11 @@ namespace NuGet.Configuration
         {
             if (encrypt == true)
             {
-                SetEncryptedValue(settings, ConfigSection, key, value);
+                SetEncryptedValueForAddItem(settings, ConfigurationConstants.Config, key, value);
             }
             else
             {
-                settings.SetValue(ConfigSection, key, value);
+                SetValueForAddItem(settings, ConfigurationConstants.Config, key, value);
             }
         }
 
@@ -140,7 +184,7 @@ namespace NuGet.Configuration
         /// <returns>True if the value was deleted, false otherwise.</returns>
         public static bool DeleteConfigValue(ISettings settings, string key)
         {
-            return settings.DeleteValue(ConfigSection, key);
+            return DeleteValue(settings, ConfigurationConstants.Config, ConfigurationConstants.KeyAttribute, key);
         }
 
         public static string GetGlobalPackagesFolder(ISettings settings)
@@ -154,7 +198,7 @@ namespace NuGet.Configuration
             if (string.IsNullOrEmpty(path))
             {
                 // Environment variable for globalPackagesFolder is not set.
-                path = settings.GetValue(ConfigSection, GlobalPackagesFolderKey, isPath: true);
+                path = GetValueForAddItem(settings, ConfigurationConstants.Config, ConfigurationConstants.GlobalPackagesFolder, isPath: true);
             }
             else
             {
@@ -204,7 +248,7 @@ namespace NuGet.Configuration
                 }
             }
 
-            for (int i=0; i < paths.Count; i++)
+            for (var i=0; i < paths.Count; i++)
             {
                 paths[i] = paths[i].Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
                 paths[i] = Path.GetFullPath(paths[i]);
@@ -218,12 +262,13 @@ namespace NuGet.Configuration
         /// </summary>
         private static IReadOnlyList<string> GetFallbackPackageFoldersFromConfig(ISettings settings)
         {
-            var fallbackValues = settings.GetSettingValues(ConfigurationConstants.FallbackPackageFolders, isPath: true) ??
-                                      Enumerable.Empty<SettingValue>();
+            var fallbackFoldersSection = settings.GetSection(ConfigurationConstants.FallbackPackageFolders);
+            var fallbackValues = fallbackFoldersSection?.Children ?? Enumerable.Empty<SettingsItem>();
 
             return fallbackValues
-                .OrderByDescending(setting => setting.Priority)
-                .Select(setting => setting.Value)
+                .Select(f => f as AddItem)
+                .Where(f => f != null)
+                .Select(f => f.GetValueAsPath())
                 .ToList();
         }
 
@@ -287,19 +332,22 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            string source = settings.GetValue(ConfigurationConstants.Config, ConfigurationConstants.DefaultPushSource, isPath: false);
+            var configSection = settings.GetSection(ConfigurationConstants.Config);
+            var configSetting = configSection?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, ConfigurationConstants.DefaultPushSource);
 
-            Uri sourceUri = UriUtility.TryCreateSourceUri(source, UriKind.RelativeOrAbsolute);
+            var source = configSetting?.Value;
+
+            var sourceUri = UriUtility.TryCreateSourceUri(source, UriKind.RelativeOrAbsolute);
             if (sourceUri != null && !sourceUri.IsAbsoluteUri)
             {
                 // For non-absolute sources, it could be the name of a config source, or a relative file path.
                 IPackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-                IEnumerable<PackageSource> allSources = sourceProvider.LoadPackageSources();
+                var allSources = sourceProvider.LoadPackageSources();
 
                 if (!allSources.Any(s => s.IsEnabled && s.Name.Equals(source, StringComparison.OrdinalIgnoreCase)))
                 {
-                    // It wasn't the name of a source, so treat it like a relative file path
-                    source = settings.GetValue(ConfigurationConstants.Config, ConfigurationConstants.DefaultPushSource, isPath: true);
+                    // It wasn't the name of a source, so treat it like a relative file 
+                    source = Settings.ResolvePath(configSetting.Origin, source);
                 }
             }
 
@@ -337,7 +385,7 @@ namespace NuGet.Configuration
             {
                 if (!Path.IsPathRooted(path))
                 {
-                    var message = String.Format(CultureInfo.CurrentCulture, Resources.RelativeEnvVarPath, envVarName, path);
+                    var message = string.Format(CultureInfo.CurrentCulture, Resources.RelativeEnvVarPath, envVarName, path);
                     throw new NuGetConfigurationException(message);
                 }
             }
