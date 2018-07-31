@@ -75,6 +75,11 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <Target Name="CopyNugetCommandLineProps" AfterTargets="Build">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)NuGet.CommandLine.props"
+          DestinationFolder="$(NuspecBasePath)" />
+  </Target>
+
   <Target Name="ILMergeNuGetExe" AfterTargets="Build" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
