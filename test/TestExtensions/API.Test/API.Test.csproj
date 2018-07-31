@@ -30,7 +30,7 @@
     </Reference>
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26201" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.0.240" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.8.132" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="15.0.240" />
   </ItemGroup>
 
