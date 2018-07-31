@@ -113,6 +113,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private void Initialize()
         {
             var componentModel = ServiceLocator.GetGlobalService<SComponentModel, IComponentModel>();
+            
             // ensure we satisfy our imports
             componentModel?.DefaultCompositionService.SatisfyImportsOnce(this);
         }
