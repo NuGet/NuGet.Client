@@ -83,7 +83,6 @@
       <Button guid="guidDialogCmdSet" id="cmdidUpgradeNuGetProject" priority="0x0400" type="Button">
         <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
         <Icon guid="guidToolbarImages" id="bmpUpgradeNuGetProject" />
-        <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <CommandName>cmdidUpgradeNuGetProject</CommandName>
@@ -94,7 +93,6 @@
       <Button guid="guidDialogCmdSet" id="cmdidUpgradePackagesConfig" priority="0x0410" type="Button">
         <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
         <Icon guid="guidToolbarImages" id="bmpUpgradeNuGetProject" />
-        <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <CommandName>cmdidUpgradePackagesConfig</CommandName>
@@ -165,6 +163,8 @@
     <VisibilityItem guid="guidDialogCmdSet" id="cmdidAddPackages" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
     <VisibilityItem guid="guidDialogCmdSet" id="cmdidAddPackagesForSolution" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
     <VisibilityItem guid="guidDialogCmdSet" id="cmdidRestorePackages" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
+    <VisibilityItem guid="guidDialogCmdSet" id="cmdidUpgradePackagesConfig" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
+    <VisibilityItem guid="guidDialogCmdSet" id="cmdidUpgradeNuGetProject" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
   </VisibilityConstraints>
 
   <CommandPlacements>
