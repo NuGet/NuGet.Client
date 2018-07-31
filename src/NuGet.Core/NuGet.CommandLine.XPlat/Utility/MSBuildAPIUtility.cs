@@ -443,7 +443,7 @@ namespace NuGet.CommandLine.XPlat
         /// This method is used when we need package references for a specific target framework.
         /// </summary>
         /// <param name="project">Project for which the package references have to be obtained.</param>
-        /// <param name="packageId">Name of the package</param>
+        /// <param name="packageId">Name of the package. If empty, returns all package references</param>
         /// <returns>List of Items containing the package reference for the package.
         /// If the libraryDependency is null then it returns all package references</returns>
         private static IEnumerable<ProjectItem> GetPackageReferences(Project project, string packageId) {
@@ -469,18 +469,23 @@ namespace NuGet.CommandLine.XPlat
         /// This method is used when we need package references for a specific target framework.
         /// </summary>
         /// <param name="project">Project for which the package references have to be obtained.</param>
-        /// <param name="libraryDependency">Dependency of the package.</param>
+        /// <param name="libraryDependency">Library dependency to get the name of the package</param>
         /// <returns>List of Items containing the package reference for the package.
         /// If the libraryDependency is null then it returns all package references</returns>
         private static IEnumerable<ProjectItem> GetPackageReferences(Project project, LibraryDependency libraryDependency)
         {
-            if (libraryDependency == null)
-            {
-                return GetPackageReferences(project, "");
-            }
             return GetPackageReferences(project, libraryDependency.Name);                     
         }
 
+        /// <summary>
+        /// Returns all package references after evaluating the condition on the item groups.
+        /// This method is used when we need package references for a specific target framework.
+        /// </summary>
+        /// <param name="project">Project for which the package references have to be obtained.</param>
+        /// <param name="libraryName">Dependency of the package. If null, all references are returned</param>
+        /// <param name="framework">Framework to get reference(s) for</param>
+        /// <returns>List of Items containing the package reference for the package.
+        /// If the libraryDependency is null then it returns all package references</returns>
         private static IEnumerable<ProjectItem> GetPackageReferencesPerFramework(Project project,
            string libraryName, string framework)
         {
@@ -537,6 +542,7 @@ namespace NuGet.CommandLine.XPlat
             }
             return mergedPackageReferences;
         }
+
 
         private static IEnumerable<string> GetProjectFrameworks(Project project)
         {
