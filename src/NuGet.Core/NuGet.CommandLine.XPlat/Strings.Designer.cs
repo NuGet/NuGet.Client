@@ -521,11 +521,29 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to M: Multiple references found for the same package.
+        ///   Looks up a localized string similar to No packages were found for this framework.
         /// </summary>
-        internal static string ListPkg_MultipleReferencesDescription {
+        internal static string ListPkg_NoPackagesForFramework {
             get {
-                return ResourceManager.GetString("ListPkg_MultipleReferencesDescription", resourceCulture);
+                return ResourceManager.GetString("ListPkg_NoPackagesForFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No packages were found for the project `{0}`.
+        /// </summary>
+        internal static string ListPkg_NoPackagesFound {
+            get {
+                return ResourceManager.GetString("ListPkg_NoPackagesFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No packages were found for the project `{0}` given the specified frameworks.
+        /// </summary>
+        internal static string ListPkg_NoPackagesFoundForFrameworks {
+            get {
+                return ResourceManager.GetString("ListPkg_NoPackagesFoundForFrameworks", resourceCulture);
             }
         }
         
