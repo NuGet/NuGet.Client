@@ -199,14 +199,14 @@ namespace NuGet.Commands
         {
             if (!String.IsNullOrEmpty(_packArgs.Version))
             {
-                builder.Version = new NuGetVersion(_packArgs.Version);
+                builder.Version = new NuGetVersion(_packArgs.Version, _packArgs.VerbatimVersion);
                 builder.HasSnapshotVersion = false;
             }
 
             if (!string.IsNullOrEmpty(_packArgs.Suffix) && !builder.HasSnapshotVersion)
             {
                 string version = VersionFormatter.Instance.Format("V", builder.Version, VersionFormatter.Instance);
-                builder.Version = new NuGetVersion($"{version}-{_packArgs.Suffix}");
+                builder.Version = new NuGetVersion($"{version}-{_packArgs.Suffix}", _packArgs.VerbatimVersion);
             }
 
             if (_packArgs.Serviceable)
@@ -317,25 +317,25 @@ namespace NuGet.Commands
                 _packArgs.Properties["version"] = _packArgs.Version;
             }
 
-            PackageBuilder builder = new PackageBuilder();
+            PackageBuilder builder = new PackageBuilder(includeEmptyDirectories: false, verbatimVersion: _packArgs.VerbatimVersion);
 
             NuGetVersion version = null;
             if (_packArgs.Version != null)
             {
-                version = new NuGetVersion(_packArgs.Version);
+                version = new NuGetVersion(_packArgs.Version, _packArgs.VerbatimVersion);
             }
 
             var basePath = string.IsNullOrEmpty(_packArgs.BasePath) ? _packArgs.CurrentDirectory : _packArgs.BasePath;
 
             using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
             {
-                LoadProjectJsonFile(builder, path, basePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, version, _packArgs.Suffix, propertyProvider);
+                LoadProjectJsonFile(builder, path, basePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, version, _packArgs.Suffix, propertyProvider, _packArgs.VerbatimVersion || (bool)(version?.Verbatim ?? false));
             }
 
             return builder;
         }
 
-        public static bool ProcessProjectJsonFile(PackageBuilder builder, string basePath, string id, NuGetVersion version, string suffix, Func<string, string> propertyProvider)
+        public static bool ProcessProjectJsonFile(PackageBuilder builder, string basePath, string id, NuGetVersion version, string suffix, Func<string, string> propertyProvider, bool verbatimVersion)
         {
             if (basePath == null)
             {
@@ -347,7 +347,7 @@ namespace NuGet.Commands
             {
                 using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
                 {
-                    LoadProjectJsonFile(builder, path, basePath, id, stream, version, suffix, propertyProvider);
+                    LoadProjectJsonFile(builder, path, basePath, id, stream, version, suffix, propertyProvider, verbatimVersion || (bool)(version?.Verbatim ?? false));
                 }
                 return true;
             }
@@ -355,7 +355,7 @@ namespace NuGet.Commands
             return false;
         }
 
-        private static void LoadProjectJsonFile(PackageBuilder builder, string path, string basePath, string id, Stream stream, NuGetVersion version, string suffix, Func<string, string> propertyProvider)
+        private static void LoadProjectJsonFile(PackageBuilder builder, string path, string basePath, string id, Stream stream, NuGetVersion version, string suffix, Func<string, string> propertyProvider, bool verbatimVersion)
         {
             var spec = JsonPackageSpecReader.GetPackageSpec(stream, id, path, suffix);
 
@@ -374,12 +374,12 @@ namespace NuGet.Commands
             }
             else if (!spec.IsDefaultVersion)
             {
-                builder.Version = spec.Version;
+                builder.Version = new NuGetVersion(spec.Version, verbatimVersion);
                 builder.HasSnapshotVersion = spec.HasVersionSnapshot;
 
                 if (suffix != null && !spec.HasVersionSnapshot)
                 {
-                    builder.Version = new NuGetVersion(builder.Version.Major, builder.Version.Minor, builder.Version.Patch, builder.Version.Revision, suffix, null);
+                    builder.Version = new NuGetVersion(builder.Version.Major, builder.Version.Minor, builder.Version.Patch, builder.Version.Revision, suffix, null, builder.Version.Verbatim);
                 }
             }
             if (spec.Title != null)
@@ -694,9 +694,9 @@ namespace NuGet.Commands
 
             if (String.IsNullOrEmpty(_packArgs.BasePath))
             {
-                return new PackageBuilder(path, _packArgs.GetPropertyValue, !_packArgs.ExcludeEmptyDirectories);
+                return new PackageBuilder(path, _packArgs.GetPropertyValue, !_packArgs.ExcludeEmptyDirectories, _packArgs.VerbatimVersion);
             }
-            return new PackageBuilder(path, _packArgs.BasePath, _packArgs.GetPropertyValue, !_packArgs.ExcludeEmptyDirectories);
+            return new PackageBuilder(path, _packArgs.BasePath, _packArgs.GetPropertyValue, !_packArgs.ExcludeEmptyDirectories, _packArgs.VerbatimVersion);
         }
 
         private PackageArchiveReader BuildFromProjectFile(string path)
@@ -731,7 +731,7 @@ namespace NuGet.Commands
             NuGetVersion version = null;
             if (_packArgs.Version != null)
             {
-                version = new NuGetVersion(_packArgs.Version);
+                version = new NuGetVersion(_packArgs.Version, _packArgs.VerbatimVersion);
             }
 
             // Create a builder for the main package as well as the sources/symbols package
@@ -781,7 +781,7 @@ namespace NuGet.Commands
                 NuGetVersion argsVersion = null;
                 if (_packArgs.Version != null)
                 {
-                    argsVersion = new NuGetVersion(_packArgs.Version);
+                    argsVersion = new NuGetVersion(_packArgs.Version, _packArgs.VerbatimVersion);
                 }
 
                 factory.SetIncludeSymbols(true);
@@ -1018,7 +1018,7 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    versionToUse = NuGetVersion.Parse(packArgs.Version);
+                    versionToUse = NuGetVersion.Parse(packArgs.Version, packArgs.VerbatimVersion);
                 }
             }
 

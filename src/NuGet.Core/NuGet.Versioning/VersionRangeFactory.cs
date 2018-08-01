@@ -57,7 +57,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Direct parse
         /// </summary>
-        public static VersionRange Parse(string value, bool allowFloating)
+        public static VersionRange Parse(string value, bool allowFloating, bool verbatimVersion = false)
         {
             if (value == null)
             {
@@ -65,7 +65,7 @@ namespace NuGet.Versioning
             }
 
             VersionRange versionInfo;
-            if (!TryParse(value, allowFloating, out versionInfo))
+            if (!TryParse(value, allowFloating, out versionInfo, verbatimVersion))
             {
                 throw new ArgumentException(
                     String.Format(CultureInfo.CurrentCulture,
@@ -78,15 +78,15 @@ namespace NuGet.Versioning
         /// <summary>
         /// Parses a VersionRange from its string representation.
         /// </summary>
-        public static bool TryParse(string value, out VersionRange versionRange)
+        public static bool TryParse(string value, out VersionRange versionRange, bool verbatimVersion = false)
         {
-            return TryParse(value, true, out versionRange);
+            return TryParse(value, true, out versionRange, verbatimVersion);
         }
 
         /// <summary>
         /// Parses a VersionRange from its string representation.
         /// </summary>
-        public static bool TryParse(string value, bool allowFloating, out VersionRange versionRange)
+        public static bool TryParse(string value, bool allowFloating, out VersionRange versionRange, bool verbatimVersion = false)
         {
             versionRange = null;
 
@@ -199,7 +199,7 @@ namespace NuGet.Versioning
                 if (allowFloating && minVersionString.Contains("*"))
                 {
                     // single floating version
-                    if (FloatRange.TryParse(minVersionString, out floatRange)
+                    if (FloatRange.TryParse(minVersionString, out floatRange, verbatimVersion)
                         && floatRange.HasMinVersion)
                     {
                         minVersion = floatRange.MinVersion;
@@ -213,7 +213,7 @@ namespace NuGet.Versioning
                 else
                 {
                     // single non-floating version
-                    if (!NuGetVersion.TryParse(minVersionString, out minVersion))
+                    if (!NuGetVersion.TryParse(minVersionString, out minVersion, verbatimVersion))
                     {
                         // invalid version
                         return false;
@@ -224,7 +224,7 @@ namespace NuGet.Versioning
             // parse the max version string, the max cannot float
             if (!String.IsNullOrWhiteSpace(maxVersionString))
             {
-                if (!NuGetVersion.TryParse(maxVersionString, out maxVersion))
+                if (!NuGetVersion.TryParse(maxVersionString, out maxVersion, verbatimVersion))
                 {
                     // invalid version
                     return false;

@@ -89,7 +89,7 @@ namespace NuGet.ProjectModel
                 {
                     var versionString = version.Value<string>();
                     packageSpec.HasVersionSnapshot = PackageSpecUtility.IsSnapshotVersion(versionString);
-                    packageSpec.Version = PackageSpecUtility.SpecifySnapshot(versionString, snapshotValue);
+                    packageSpec.Version = PackageSpecUtility.SpecifySnapshot(versionString, snapshotValue, false);
                 }
                 catch (Exception ex)
                 {

@@ -352,7 +352,8 @@ namespace NuGet.Versioning
                     version.Patch,
                     version.Revision,
                     fixedLabels,
-                    version.Metadata);
+                    version.Metadata,
+                    version.Verbatim);
             }
 
             return nonSnapshotVersion;

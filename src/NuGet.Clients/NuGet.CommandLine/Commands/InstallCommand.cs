@@ -38,6 +38,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "InstallCommandVersionDescription")]
         public string Version { get; set; }
 
+        [Option(typeof(NuGetCommand), "InstallCommandVerbatimVersionDescription")]
+        public bool VerbatimVersion { get; set; }
+
         [Option(typeof(NuGetCommand), "InstallCommandDependencyVersion")]
         public string DependencyVersion { get; set; }
 
@@ -101,7 +104,7 @@ namespace NuGet.CommandLine
             else
             {
                 var packageId = Arguments[0];
-                var version = Version != null ? new NuGetVersion(Version) : null;
+                var version = Version != null ? new NuGetVersion(Version, VerbatimVersion) : null;
                 return InstallPackageAsync(packageId, version, installPath);
             }
         }

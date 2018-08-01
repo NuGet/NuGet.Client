@@ -4927,6 +4927,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Forces the version number to be used verbatim..
+        /// </summary>
+        internal static string InstallCommandVerbatimVersionDescription {
+            get {
+                return ResourceManager.GetString("InstallCommandVerbatimVersionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to List all versions of a package. By default, only the latest package version is displayed..
         /// </summary>
         internal static string ListCommandAllVersionsDescription {
@@ -8584,6 +8593,15 @@ namespace NuGet.CommandLine {
         internal static string PackageCommandVersionDescription_trk {
             get {
                 return ResourceManager.GetString("PackageCommandVersionDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Forces the version number from the nuspec file to be used verbatim..
+        /// </summary>
+        internal static string PackageCommandVerbatimVersionDescription {
+            get {
+                return ResourceManager.GetString("PackageCommandVerbatimVersionDescription", resourceCulture);
             }
         }
         
@@ -14764,6 +14782,15 @@ namespace NuGet.CommandLine {
         internal static string UpdateCommandVersionDescription {
             get {
                 return ResourceManager.GetString("UpdateCommandVersionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Forces the version number to be used verbatim..
+        /// </summary>
+        internal static string UpdateCommandVerbatimVersionDescription {
+            get {
+                return ResourceManager.GetString("UpdateCommandVerbatimVersionDescription", resourceCulture);
             }
         }
         

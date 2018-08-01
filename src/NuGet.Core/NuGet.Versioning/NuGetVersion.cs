@@ -14,21 +14,23 @@ namespace NuGet.Versioning
     public partial class NuGetVersion : SemanticVersion
     {
         private readonly string _originalString;
+        private readonly bool _verbatim;
 
         /// <summary>
         /// Creates a NuGetVersion using NuGetVersion.Parse(string)
         /// </summary>
         /// <param name="version">Version string</param>
-        public NuGetVersion(string version)
-            : this(Parse(version))
+        /// <param name="verbatim">Preserve all System.Version components</param>
+        public NuGetVersion(string version, bool verbatim = false)
+            : this(Parse(version, verbatim))
         {
         }
 
         /// <summary>
         /// Creates a NuGetVersion from an existing NuGetVersion
         /// </summary>
-        public NuGetVersion(NuGetVersion version)
-            : this(version.Version, version.ReleaseLabels, version.Metadata, version.OriginalVersion)
+        public NuGetVersion(NuGetVersion version, bool verbatim = false)
+            : this(version.Version, version.ReleaseLabels, version.Metadata, version.OriginalVersion, verbatim || version.Verbatim)
         {
         }
 
@@ -38,7 +40,8 @@ namespace NuGet.Versioning
         /// <param name="version">Version numbers</param>
         /// <param name="releaseLabel">Prerelease label</param>
         /// <param name="metadata">Build metadata</param>
-        public NuGetVersion(Version version, string releaseLabel = null, string metadata = null)
+        /// <param name="verbatim">Preserve all System.Version components</param>
+        public NuGetVersion(Version version, string releaseLabel = null, string metadata = null, bool verbatim = false)
             : this(version, ParseReleaseLabels(releaseLabel), metadata, GetLegacyString(version, ParseReleaseLabels(releaseLabel), metadata))
         {
         }
@@ -113,8 +116,9 @@ namespace NuGet.Versioning
         /// <param name="revision">w.x.y.Z</param>
         /// <param name="releaseLabel">Prerelease label</param>
         /// <param name="metadata">Build metadata</param>
-        public NuGetVersion(int major, int minor, int patch, int revision, string releaseLabel, string metadata)
-            : this(major, minor, patch, revision, ParseReleaseLabels(releaseLabel), metadata)
+        /// <param name="verbatim">Preserve all System.Version components</param>
+        public NuGetVersion(int major, int minor, int patch, int revision, string releaseLabel, string metadata, bool verbatim = false)
+            : this(major, minor, patch, revision, ParseReleaseLabels(releaseLabel), metadata, verbatim)
         {
         }
 
@@ -127,8 +131,9 @@ namespace NuGet.Versioning
         /// <param name="revision">w.x.y.Z</param>
         /// <param name="releaseLabels">Prerelease labels</param>
         /// <param name="metadata">Build metadata</param>
-        public NuGetVersion(int major, int minor, int patch, int revision, IEnumerable<string> releaseLabels, string metadata)
-            : this(new Version(major, minor, patch, revision), releaseLabels, metadata, null)
+        /// <param name="verbatim">Preserve all System.Version components</param>
+        public NuGetVersion(int major, int minor, int patch, int revision, IEnumerable<string> releaseLabels, string metadata, bool verbatim = false)
+            : this(new Version(major, minor, patch, revision), releaseLabels, metadata, null, verbatim)
         {
         }
 
@@ -140,10 +145,12 @@ namespace NuGet.Versioning
         /// <param name="releaseLabels">prerelease labels</param>
         /// <param name="metadata">Build metadata</param>
         /// <param name="originalVersion">Non-normalized original version string</param>
-        public NuGetVersion(Version version, IEnumerable<string> releaseLabels, string metadata, string originalVersion)
+        /// <param name="verbatim">Preserve all System.Version components</param>
+        public NuGetVersion(Version version, IEnumerable<string> releaseLabels, string metadata, string originalVersion, bool verbatim = false)
             : base(version, releaseLabels, metadata)
         {
             _originalString = originalVersion;
+            _verbatim = verbatim;
         }
 
         /// <summary>
@@ -170,6 +177,14 @@ namespace NuGet.Versioning
         public Version Version
         {
             get { return _version; }
+        }
+
+        /// <summary>
+        /// True if the NuGetVersion must be preserved verbatim (i.e. without normalizing away the revision).
+        /// </summary>
+        public bool Verbatim
+        {
+            get { return _verbatim; }
         }
 
         /// <summary>

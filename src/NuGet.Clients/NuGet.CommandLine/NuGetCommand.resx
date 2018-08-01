@@ -302,6 +302,9 @@ nuget list -verbose -allversions</value>
   <data name="PackageCommandVersionDescription" xml:space="preserve">
     <value>Overrides the version number from the nuspec file.</value>
   </data>
+  <data name="PackageCommandVerbatimVersionDescription" xml:space="preserve">
+    <value>Forces the version number from the nuspec file to be used verbatim.</value>
+  </data>
   <data name="PackCommandUsageExamples" xml:space="preserve">
     <value>nuget pack
 
@@ -429,6 +432,9 @@ nuget spec -a MyAssembly.dll</value>
   </data>
   <data name="UpdateCommandVersionDescription" xml:space="preserve">
     <value>Updates the package in -Id to the version indicated.  Requires -Id to contain exactly one package id.</value>
+  </data>
+  <data name="UpdateCommandVerbatimVersionDescription" xml:space="preserve">
+    <value>Forces the version number to be used verbatim.</value>
   </data>
   <data name="UpdateCommandUsageExamples" xml:space="preserve">
     <value>nuget update
@@ -1721,6 +1727,9 @@ nuget install ninject -o c:\foo</value>
   </data>
   <data name="InstallCommandVersionDescription_cht" xml:space="preserve">
     <value>要安裝的封裝版本。</value>
+  </data>
+  <data name="InstallCommandVerbatimVersionDescription" xml:space="preserve">
+    <value>Forces the version number to be used verbatim.</value>
   </data>
   <data name="ListCommandAllVersionsDescription_csy" xml:space="preserve">
     <value>Zobrazí seznam všech verzí balíčku. Ve výchozím nastavení se zobrazí pouze nejnovější verze balíčku.</value>

@@ -12,8 +12,9 @@ namespace NuGet.Versioning
     {
         /// <summary>
         /// Creates a NuGetVersion from a string representing the semantic version.
+        /// Optionally, the revision can be preserved (i.e. even if it is zero).
         /// </summary>
-        public new static NuGetVersion Parse(string value)
+        public new static NuGetVersion Parse(string value, bool verbatim = false)
         {
             if (String.IsNullOrEmpty(value))
             {
@@ -21,7 +22,7 @@ namespace NuGet.Versioning
             }
 
             NuGetVersion ver = null;
-            if (!TryParse(value, out ver))
+            if (!TryParse(value, out ver, verbatim))
             {
                 throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Invalidvalue, value), "value");
             }
@@ -31,9 +32,9 @@ namespace NuGet.Versioning
 
         /// <summary>
         /// Parses a version string using loose semantic versioning rules that allows 2-4 version components followed
-        /// by an optional special version.
+        /// by an optional special version.  Optionally, the revision can be preserved (i.e. even if it is zero).
         /// </summary>
-        public static bool TryParse(string value, out NuGetVersion version)
+        public static bool TryParse(string value, out NuGetVersion version, bool verbatim = false)
         {
             version = null;
 
@@ -86,10 +87,20 @@ namespace NuGet.Versioning
                             originalVersion = value.Replace(" ", string.Empty);
                         }
 
-                        version = new NuGetVersion(version: ver,
-                            releaseLabels: sections.Item2,
-                            metadata: sections.Item3 ?? string.Empty,
-                            originalVersion: originalVersion);
+                        if (verbatim)
+                        {
+                            version = new NuGetVersion(version: systemVersion,
+                                releaseLabels: sections.Item2,
+                                metadata: sections.Item3 ?? string.Empty,
+                                originalVersion: originalVersion, verbatim: true);
+                        }
+                        else
+                        {
+                            version = new NuGetVersion(version: ver,
+                                releaseLabels: sections.Item2,
+                                metadata: sections.Item3 ?? string.Empty,
+                                originalVersion: originalVersion);
+                        }
 
                         return true;
                     }

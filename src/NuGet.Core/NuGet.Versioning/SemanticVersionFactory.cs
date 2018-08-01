@@ -12,12 +12,12 @@ namespace NuGet.Versioning
         internal static readonly string[] EmptyReleaseLabels = Array.Empty<string>();
 
         /// <summary>
-        /// Parses a SemVer string using strict SemVer rules.
+        /// Parses a SemVer string using strict SemVer rules, optionally preserving the exact value provided by the caller.
         /// </summary>
-        public static SemanticVersion Parse(string value)
+        public static SemanticVersion Parse(string value, bool verbatim = false)
         {
             SemanticVersion ver = null;
-            if (!TryParse(value, out ver))
+            if (!TryParse(value, out ver, verbatim))
             {
                 throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Invalidvalue, value), nameof(value));
             }
@@ -26,10 +26,10 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// Parse a version string
+        /// Parse a version string, optionally preserving the exact value provided by the caller.
         /// </summary>
         /// <returns>false if the version is not a strict semver</returns>
-        public static bool TryParse(string value, out SemanticVersion version)
+        public static bool TryParse(string value, out SemanticVersion version, bool verbatim = false)
         {
             version = null;
 
@@ -80,11 +80,21 @@ namespace NuGet.Versioning
                         return false;
                     }
 
-                    var ver = NormalizeVersionValue(systemVersion);
+                    if (verbatim)
+                    {
+                        version = new NuGetVersion(version: systemVersion,
+                            releaseLabels: sections.Item2,
+                            metadata: sections.Item3 ?? string.Empty,
+                            originalVersion: null, verbatim: true);
+                    }
+                    else
+                    {
+                        var ver = NormalizeVersionValue(systemVersion);
 
-                    version = new SemanticVersion(version: ver,
-                        releaseLabels: sections.Item2,
-                        metadata: sections.Item3 ?? string.Empty);
+                        version = new SemanticVersion(version: ver,
+                            releaseLabels: sections.Item2,
+                            metadata: sections.Item3 ?? string.Empty);
+                    }
 
                     return true;
                 }

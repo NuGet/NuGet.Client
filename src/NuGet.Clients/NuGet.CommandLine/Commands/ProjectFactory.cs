@@ -270,7 +270,7 @@ namespace NuGet.CommandLine
             Packaging.Manifest manifest = null;
 
             // If there is a project.json file, load that and skip any nuspec that may exist
-            if (!PackCommandRunner.ProcessProjectJsonFile(builder, _project.DirectoryPath as string, builder.Id, version, suffix, GetPropertyValue))
+            if (!PackCommandRunner.ProcessProjectJsonFile(builder, _project.DirectoryPath as string, builder.Id, version, suffix, GetPropertyValue, false))
             {
                 // If the package contains a nuspec file then use it for metadata
                 manifest = ProcessNuspec(builder, basePath);
@@ -681,7 +681,7 @@ namespace NuGet.CommandLine
 
         private bool ProcessJsonFile(Packaging.PackageBuilder builder, string basePath, string id)
         {
-            return PackCommandRunner.ProcessProjectJsonFile(builder, basePath, id, null, null, GetPropertyValue);
+            return PackCommandRunner.ProcessProjectJsonFile(builder, basePath, id, null, null, GetPropertyValue, false);
         }
 
         // Creates a package dependency from the given project, which has a corresponding

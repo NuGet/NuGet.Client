@@ -132,11 +132,11 @@ namespace NuGet.Versioning
         /// <summary>
         /// Parse a floating version into a FloatRange
         /// </summary>
-        public static FloatRange Parse(string versionString)
+        public static FloatRange Parse(string versionString, bool verbatimVersion = false)
         {
             FloatRange range = null;
 
-            TryParse(versionString, out range);
+            TryParse(versionString, out range, verbatimVersion);
 
             return range;
         }
@@ -144,7 +144,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Parse a floating version into a FloatRange
         /// </summary>
-        public static bool TryParse(string versionString, out FloatRange range)
+        public static bool TryParse(string versionString, out FloatRange range, bool verbatimVersion = false)
         {
             range = null;
 
@@ -158,7 +158,7 @@ namespace NuGet.Versioning
                 if (versionString.Length == 1
                     && starPos == 0)
                 {
-                    range = new FloatRange(NuGetVersionFloatBehavior.Major, new NuGetVersion(new Version(0, 0)));
+                    range = new FloatRange(NuGetVersionFloatBehavior.Major, new NuGetVersion(new Version(0, 0), releaseLabel: null, metadata: null, verbatim: verbatimVersion));
                 }
                 // * must appear as the last char in the string. 
                 // * cannot appear in the metadata section after the +
@@ -212,7 +212,7 @@ namespace NuGet.Versioning
                     }
 
                     NuGetVersion version = null;
-                    if (NuGetVersion.TryParse(actualVersion, out version))
+                    if (NuGetVersion.TryParse(actualVersion, out version, verbatimVersion))
                     {
                         // there is no float range for this version
                         range = new FloatRange(behavior, version, releasePrefix);
@@ -222,7 +222,7 @@ namespace NuGet.Versioning
                 {
                     // normal version parse
                     NuGetVersion version = null;
-                    if (NuGetVersion.TryParse(versionString, out version))
+                    if (NuGetVersion.TryParse(versionString, out version, verbatimVersion))
                     {
                         // there is no float range for this version
                         range = new FloatRange(NuGetVersionFloatBehavior.None, version);

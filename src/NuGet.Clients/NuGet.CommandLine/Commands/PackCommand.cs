@@ -32,6 +32,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandVersionDescription")]
         public string Version { get; set; }
 
+        [Option(typeof(NuGetCommand), "PackageCommandVerbatimVersionDescription")]
+        public bool VerbatimVersion { get; set; }
+
         [Option(typeof(NuGetCommand), "PackageCommandSuffixDescription")]
         public string Suffix { get; set; }
 
@@ -148,11 +151,12 @@ namespace NuGet.CommandLine
             packArgs.Tool = Tool;
             packArgs.InstallPackageToOutputPath = InstallPackageToOutputPath;
             packArgs.OutputFileNamesWithoutVersion = OutputFileNamesWithoutVersion;
+            packArgs.VerbatimVersion = VerbatimVersion;
 
             if (!string.IsNullOrEmpty(Version))
             {
                 NuGetVersion version;
-                if (!NuGetVersion.TryParse(Version, out version))
+                if (!NuGetVersion.TryParse(Version, out version, VerbatimVersion))
                 {
                     throw new PackagingException(NuGetLogCode.NU5010, String.Format(CultureInfo.CurrentCulture, NuGetResources.InstallCommandPackageReferenceInvalidVersion, Version));
                 }

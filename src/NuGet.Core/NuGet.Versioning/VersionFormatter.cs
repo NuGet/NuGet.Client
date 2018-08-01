@@ -117,6 +117,14 @@ namespace NuGet.Versioning
             return fullString;
         }
 
+        /// <summary>
+        /// Returns non-zero if string formatting of the specified version should always include the revision number.
+        /// </summary>
+        private static bool ShouldIncludeRevision(NuGetVersion nuGetVersion)
+        {
+            return nuGetVersion != null && (nuGetVersion.Verbatim || nuGetVersion.IsLegacyVersion);
+        }
+
         private static string Format(char c, SemanticVersion version)
         {
             string s = null;
@@ -149,7 +157,7 @@ namespace NuGet.Versioning
                     break;
                 case 'r':
                     var nuGetVersion = version as NuGetVersion;
-                    s = string.Format(CultureInfo.InvariantCulture, "{0}", nuGetVersion != null && nuGetVersion.IsLegacyVersion ? nuGetVersion.Version.Revision : 0);
+                    s = string.Format(CultureInfo.InvariantCulture, "{0}", ShouldIncludeRevision(nuGetVersion) ? nuGetVersion.Version.Revision : 0);
                     break;
             }
 
@@ -159,10 +167,9 @@ namespace NuGet.Versioning
         private static string FormatVersion(SemanticVersion version)
         {
             var nuGetVersion = version as NuGetVersion;
-            var legacy = nuGetVersion != null && nuGetVersion.IsLegacyVersion;
 
             return string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}{3}", version.Major, version.Minor, version.Patch,
-                legacy ? string.Format(CultureInfo.InvariantCulture, ".{0}", nuGetVersion.Version.Revision) : null);
+                ShouldIncludeRevision(nuGetVersion) ? string.Format(CultureInfo.InvariantCulture, ".{0}", nuGetVersion.Version.Revision) : null);
         }
     }
 }

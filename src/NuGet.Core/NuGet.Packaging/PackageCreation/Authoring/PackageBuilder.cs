@@ -25,14 +25,15 @@ namespace NuGet.Packaging
         private static readonly Uri DefaultUri = new Uri("http://defaultcontainer/");
         internal const string ManifestRelationType = "manifest";
         private readonly bool _includeEmptyDirectories;
+        private readonly bool _verbatimVersion;
 
-        public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories)
-            : this(path, Path.GetDirectoryName(path), propertyProvider, includeEmptyDirectories)
+        public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool verbatimVersion = false)
+            : this(path, Path.GetDirectoryName(path), propertyProvider, includeEmptyDirectories, verbatimVersion)
         {
         }
 
-        public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories)
-            : this(includeEmptyDirectories)
+        public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool verbatimVersion = false)
+            : this(includeEmptyDirectories, verbatimVersion)
         {
             if (!File.Exists(path))
             {
@@ -52,8 +53,8 @@ namespace NuGet.Packaging
         {
         }
 
-        public PackageBuilder(Stream stream, string basePath, Func<string, string> propertyProvider)
-            : this()
+        public PackageBuilder(Stream stream, string basePath, Func<string, string> propertyProvider, bool verbatimVersion = false)
+            : this(includeEmptyDirectories: false, verbatimVersion: verbatimVersion)
         {
             ReadManifest(stream, basePath, propertyProvider);
         }
@@ -63,9 +64,10 @@ namespace NuGet.Packaging
         {
         }
 
-        private PackageBuilder(bool includeEmptyDirectories)
+        public PackageBuilder(bool includeEmptyDirectories, bool verbatimVersion = false)
         {
             _includeEmptyDirectories = includeEmptyDirectories;
+            _verbatimVersion = verbatimVersion;
             Files = new Collection<IPackageFile>();
             DependencyGroups = new Collection<PackageDependencyGroup>();
             FrameworkReferences = new Collection<FrameworkAssemblyReference>();
@@ -479,7 +481,7 @@ namespace NuGet.Packaging
         private void ReadManifest(Stream stream, string basePath, Func<string, string> propertyProvider)
         {
             // Deserialize the document and extract the metadata
-            Manifest manifest = Manifest.ReadFrom(stream, propertyProvider, validateSchema: true);
+            Manifest manifest = Manifest.ReadFrom(stream, propertyProvider, validateSchema: true, verbatimVersion: _verbatimVersion || (bool)(Version?.Verbatim ?? false));
 
             Populate(manifest.Metadata);
 

@@ -30,6 +30,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "UpdateCommandVersionDescription")]
         public string Version { get; set; }
 
+        [Option(typeof(NuGetCommand), "UpdateCommandVerbatimVersionDescription")]
+        public bool VerbatimVersion { get; set; }
+
         [Option(typeof(NuGetCommand), "UpdateCommandRepositoryPathDescription")]
         public string RepositoryPath { get; set; }
 
@@ -286,7 +289,7 @@ namespace NuGet.CommandLine
                     var installed = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
                     // If -Id has been specified and has exactly one package, use the explicit version requested
-                    var targetVersion = Version != null && Id != null && Id.Count == 1 ? new NuGetVersion(Version) : null;
+                    var targetVersion = Version != null && Id != null && Id.Count == 1 ? new NuGetVersion(Version, VerbatimVersion) : null;
 
                     var targetIdentities = installed
                         .Select(pr => pr.PackageIdentity.Id)

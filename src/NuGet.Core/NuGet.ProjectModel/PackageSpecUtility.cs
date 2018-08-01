@@ -11,7 +11,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Apply a snapshot value.
         /// </summary>
-        public static NuGetVersion SpecifySnapshot(string version, string snapshotValue)
+        public static NuGetVersion SpecifySnapshot(string version, string snapshotValue, bool verbatimVersion)
         {
             // Snapshots should be in the form 1.0.0-*, 1.0.0-beta-*, or 1.0.0-rc.*
             // Snapshots may not contain metadata such as 1.0.0+5.* or be stable versions such as 1.0.*
@@ -27,7 +27,7 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            return NuGetVersion.Parse(version);
+            return NuGetVersion.Parse(version, verbatimVersion);
         }
 
         /// <summary>

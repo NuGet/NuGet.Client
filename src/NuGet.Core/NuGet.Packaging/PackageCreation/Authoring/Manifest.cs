@@ -96,12 +96,12 @@ namespace NuGet.Packaging
                                 file.Exclude != null ? new XAttribute("exclude", file.Exclude) : null))) : null)).Save(stream);
         }
 
-        public static Manifest ReadFrom(Stream stream, bool validateSchema)
+        public static Manifest ReadFrom(Stream stream, bool validateSchema, bool verbatimVersion = false)
         {
-            return ReadFrom(stream, null, validateSchema);
+            return ReadFrom(stream, null, validateSchema, verbatimVersion);
         }
 
-        public static Manifest ReadFrom(Stream stream, Func<string, string> propertyProvider, bool validateSchema)
+        public static Manifest ReadFrom(Stream stream, Func<string, string> propertyProvider, bool validateSchema, bool verbatimVersion = false)
         {
             XDocument document;
             if (propertyProvider == null)
@@ -131,7 +131,7 @@ namespace NuGet.Packaging
             }
 
             // Deserialize it
-            var manifest = ManifestReader.ReadManifest(document);
+            var manifest = ManifestReader.ReadManifest(document, verbatimVersion);
 
             // Validate before returning
             Validate(manifest);

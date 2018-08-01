@@ -19,7 +19,7 @@ namespace NuGet.Packaging
     {
         private static readonly string[] RequiredElements = new string[] { "id", "version", "authors", "description" };
 
-        public static Manifest ReadManifest(XDocument document)
+        public static Manifest ReadManifest(XDocument document, bool verbatimVersion = false)
         {
             var metadataElement = document.Root.ElementsNoNamespace("metadata").FirstOrDefault();
             if (metadataElement == null)
@@ -29,11 +29,11 @@ namespace NuGet.Packaging
             }
 
             return new Manifest(
-                ReadMetadata(metadataElement),
+                ReadMetadata(metadataElement, verbatimVersion),
                 ReadFilesList(document.Root.ElementsNoNamespace("files").FirstOrDefault()));
         }
 
-        private static ManifestMetadata ReadMetadata(XElement xElement)
+        private static ManifestMetadata ReadMetadata(XElement xElement, bool verbatimVersion)
         {
             var manifestMetadata = new ManifestMetadata();
             manifestMetadata.MinClientVersionString = (string)xElement.Attribute("minClientVersion");
@@ -43,7 +43,7 @@ namespace NuGet.Packaging
 
             foreach (var element in xElement.Elements())
             {
-                ReadMetadataValue(manifestMetadata, element, allElements);
+                ReadMetadataValue(manifestMetadata, element, allElements, verbatimVersion);
             }
 
             manifestMetadata.PackageTypes = NuspecUtility.GetPackageTypes(xElement, useMetadataNamespace: false);
@@ -61,7 +61,7 @@ namespace NuGet.Packaging
             return manifestMetadata;
         }
 
-        private static void ReadMetadataValue(ManifestMetadata manifestMetadata, XElement element, HashSet<string> allElements)
+        private static void ReadMetadataValue(ManifestMetadata manifestMetadata, XElement element, HashSet<string> allElements, bool verbatimVersion)
         {
             if (element.Value == null)
             {
@@ -77,7 +77,7 @@ namespace NuGet.Packaging
                     manifestMetadata.Id = value;
                     break;
                 case "version":
-                    manifestMetadata.Version = NuGetVersion.Parse(value);
+                    manifestMetadata.Version = NuGetVersion.Parse(value, verbatimVersion);
                     break;
                 case "authors":
                     manifestMetadata.Authors = value?.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -125,7 +125,7 @@ namespace NuGet.Packaging
                     manifestMetadata.Serviceable = XmlConvert.ToBoolean(value);
                     break;
                 case "dependencies":
-                    manifestMetadata.DependencyGroups = ReadDependencyGroups(element);
+                    manifestMetadata.DependencyGroups = ReadDependencyGroups(element, verbatimVersion);
                     break;
                 case "frameworkAssemblies":
                     manifestMetadata.FrameworkReferences = ReadFrameworkAssemblies(element);
@@ -229,7 +229,7 @@ namespace NuGet.Packaging
                     ).ToList();
         }
 
-        private static List<PackageDependencyGroup> ReadDependencyGroups(XElement dependenciesElement)
+        private static List<PackageDependencyGroup> ReadDependencyGroups(XElement dependenciesElement, bool verbatimVersion)
         {
             if (!dependenciesElement.HasElements)
             {
@@ -244,7 +244,7 @@ namespace NuGet.Packaging
                 throw new InvalidDataException(NuGetResources.Manifest_DependenciesHasMixedElements);
             }
 
-            var dependencies = ReadDependencies(dependenciesElement);
+            var dependencies = ReadDependencies(dependenciesElement, verbatimVersion);
             if (dependencies.Any())
             {
                 // old format, <dependency> is direct child of <dependencies>
@@ -275,12 +275,12 @@ namespace NuGet.Packaging
 
                     return new PackageDependencyGroup(
                             targetFramework,
-                            ReadDependencies(element));
+                            ReadDependencies(element, verbatimVersion));
                 }).ToList();
             }
         }
 
-        private static ISet<PackageDependency> ReadDependencies(XElement containerElement)
+        private static ISet<PackageDependency> ReadDependencies(XElement containerElement, bool verbatimVersion)
         {
             // element is <dependency>
 
@@ -291,7 +291,7 @@ namespace NuGet.Packaging
                     select new PackageDependency(
                         idElement.Value?.Trim(),
                         // REVIEW: There isn't a PackageDependency constructor that allows me to pass in an invalid version
-                        elementVersion == null ? null : VersionRange.Parse(elementVersion.Trim()),
+                        elementVersion == null ? null : VersionRange.Parse(elementVersion.Trim(), allowFloating: true, verbatimVersion: verbatimVersion),
                         element.GetOptionalAttributeValue("include")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray(),
                         element.GetOptionalAttributeValue("exclude")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray()
                     )).ToList();
