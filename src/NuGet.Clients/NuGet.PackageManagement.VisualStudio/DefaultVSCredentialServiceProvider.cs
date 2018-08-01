@@ -42,7 +42,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // Initialize the credential providers.
             var credentialProviders = new List<ICredentialProvider>();
-            var dte = await _asyncServiceProvider.GetDTEAsync();
             var webProxy = await _asyncServiceProvider.GetServiceAsync<SVsWebProxy, IVsWebProxy>();
 
             TryAddCredentialProviders(
@@ -51,8 +50,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 () =>
                 {
                     var importer = new VsCredentialProviderImporter(
-                        dte,
-                        VisualStudioAccountProvider.FactoryMethod,
                         (exception, failureMessage) => LogCredentialProviderError(exception, failureMessage));
 
                     return importer.GetProviders();

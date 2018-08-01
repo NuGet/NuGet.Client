@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,23 +18,17 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class VsCredentialProviderImporter
     {
-        private readonly DTE _dte;
         private readonly Action<Exception, string> _errorDelegate;
-        private readonly Func<ICredentialProvider> _fallbackProviderFactory;
         private readonly Action _initializer;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="dte">DTE instance, used to determine the Visual Studio version.</param>
-        /// <param name="fallbackProviderFactory">Factory method used to create a fallback provider for
-        /// Dev14 in case a VSTS credential provider can not be imported.</param>
         /// <param name="errorDelegate">Used to write error messages to the user.</param>
         public VsCredentialProviderImporter(
-            DTE dte,
-            Func<ICredentialProvider> fallbackProviderFactory,
             Action<Exception, string> errorDelegate)
-            : this(dte, fallbackProviderFactory, errorDelegate, initializer: null)
+            : this(errorDelegate, initializer: null)
         {
         }
 
@@ -42,35 +36,14 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Constructor, allows changing initializer Action for testing purposes
         /// </summary>
         /// <param name="dte">DTE instance, used to determine the Visual Studio version.</param>
-        /// <param name="fallbackProviderFactory">Factory method used to create a fallback provider for
-        /// Dev14 in case a VSTS credential provider can not be imported.</param>
         /// <param name="errorDelegate">Used to write error messages to the user.</param>
         /// <param name="initializer">Init method used to supply MEF imports. Should only
         /// be supplied by tests.</param>
         public VsCredentialProviderImporter(
-            DTE dte,
-            Func<ICredentialProvider> fallbackProviderFactory,
             Action<Exception, string> errorDelegate,
             Action initializer)
         {
-            if (dte == null)
-            {
-                throw new ArgumentNullException(nameof(dte));
-            }
-
-            if (fallbackProviderFactory == null)
-            {
-                throw new ArgumentNullException(nameof(fallbackProviderFactory));
-            }
-
-            if (errorDelegate == null)
-            {
-                throw new ArgumentNullException(nameof(errorDelegate));
-            }
-
-            _dte = dte;
-            _errorDelegate = errorDelegate;
-            _fallbackProviderFactory = fallbackProviderFactory;
+            _errorDelegate = errorDelegate ?? throw new ArgumentNullException(nameof(errorDelegate));
             _initializer = initializer ?? Initialize;
         }
 
@@ -97,25 +70,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             TryImportCredentialProviders(results, VisualStudioAccountProviders);
             TryImportCredentialProviders(results, ImportedProviders);
-
-            // Dev15 + will provide a credential provider for VSTS.
-            // If we are in Dev14, and no imported VSTS provider is found,
-            // then fallback on the built-in VisualStudioAccountProvider
-            if (IsDev14 && !HasImportedVstsProvider(results))
-            {
-                try
-                {
-                    var fallbackProvider = _fallbackProviderFactory();
-                    if (fallbackProvider != null)
-                    {
-                        results.Add(fallbackProvider);
-                    }
-                }
-                catch (Exception exception)
-                {
-                    _errorDelegate(exception, Strings.CredentialProviderFailed_VisualStudioAccountProvider);
-                }
-            }
 
             // Ensure imported providers ordering is deterministic
             results.Sort((a, b) => a.GetType().FullName.CompareTo(b.GetType().FullName));
@@ -159,20 +113,9 @@ namespace NuGet.PackageManagement.VisualStudio
         private void Initialize()
         {
             var componentModel = ServiceLocator.GetGlobalService<SComponentModel, IComponentModel>();
-
-            // ensure we satisfy our imports and access DTE on the UI thread
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                async delegate
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    componentModel?.DefaultCompositionService.SatisfyImportsOnce(this);
-                    Version = _dte.Version;
-                });
+            
+            // ensure we satisfy our imports
+            componentModel?.DefaultCompositionService.SatisfyImportsOnce(this);
         }
-
-        public string Version { get; set; } = string.Empty;
-
-        private bool IsDev14 => Version.StartsWith("14.");
     }
 }
