@@ -50,7 +50,7 @@
         return $nugetFolder
     }
 
-    function RepositorySetup([string]$nugetClientFilePath, [string]$repository, [string]$branch, [string]$sourceDirectoryPath)
+    function RepositorySetup([string]$repository, [string]$branch, [string]$sourceDirectoryPath)
     {
         if(!(Test-Path $sourceDirectoryPath))
         {
@@ -60,12 +60,6 @@
         {
                 Log "Skipping the cloning of $repository as $sourceDirectoryPath is not empty" -color "Yellow"
         }
-        $nugetFolders = GetNuGetFoldersPath
-        $Env:NUGET_PACKAGES = [System.IO.Path]::Combine($nugetFolders, "gpf")
-        $Env:NUGET_HTTP_CACHE_PATH = [System.IO.Path]::Combine($nugetFolders, "hcp")
-        $Env:NUGET_PLUGINS_CACHE_PATH = [System.IO.Path]::Combine($nugetFolders, "pcp")
-
-        . $nugetClientFilePath locals -clear all -Verbosity quiet
 
         $solutionFile = (Get-ChildItem $sourceDirectoryPath *.sln)[0] | Select-Object -f 1 | Select-Object -ExpandProperty FullName
 
@@ -73,11 +67,22 @@
         return $solutionFile
     }
 
+    function SetupNuGetFolders([string]$_nugetClientFilePath)
+    {
+        $nugetFolders = GetNuGetFoldersPath
+        $Env:NUGET_PACKAGES = [System.IO.Path]::Combine($nugetFolders, "gpf")
+        $Env:NUGET_HTTP_CACHE_PATH = [System.IO.Path]::Combine($nugetFolders, "hcp")
+        $Env:NUGET_PLUGINS_CACHE_PATH = [System.IO.Path]::Combine($nugetFolders, "pcp")
+
+        . $_nugetClientFilePath locals -clear all -Verbosity quiet
+    }
+
     function RunTest([string]$_nugetClientFilePath, [string]$_repositoryUrl, [string]$_branchName, [string]$_resultsDirectoryPath, [string]$_logsPath)
     {
         $repoName = GenerateNameFromGitUrl $_repositoryUrl
         $sourceDirectoryPath = [System.IO.Path]::Combine($testDirectoryPath, $repoName)
-        $solutionFile = RepositorySetup $_nugetClientFilePath $_repositoryUrl $_branchName $sourceDirectoryPath
+        $solutionFile = RepositorySetup $_repositoryUrl $_branchName $sourceDirectoryPath
+        SetupNuGetFolders $_nugetClientFilePath
         $resultsFilePath = [System.IO.Path]::Combine($_resultsDirectoryPath, "$repoName.csv")
         . "$PSScriptRoot\RunPerformanceTests.ps1" $_nugetClientFilePath $solutionFile $resultsFilePath $_logsPath
     }

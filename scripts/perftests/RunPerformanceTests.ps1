@@ -10,7 +10,8 @@ Param(
     . "$PSScriptRoot\PerformanceTestUtilities.ps1"
 
     # Plugins cache is only available in 4.8+. We need to be careful when using that switch for older clients because it may blow up.
-    function RunRestore([string]$solutionFilePath, [string]$nugetClient, [string]$logsLocation, [string]$resultsFile, [switch]$cleanGlobalPackagesFolder, [switch]$cleanHttpCache, [switch]$cleanPluginsCache, [switch]$killMsBuildAndDotnetExeProcesses, [switch]$force)
+    function RunRestore([string]$solutionFilePath, [string]$nugetClient, [string]$logsLocation, [string]$resultsFile, 
+            [switch]$cleanGlobalPackagesFolder, [switch]$cleanHttpCache, [switch]$cleanPluginsCache, [switch]$killMsBuildAndDotnetExeProcesses, [switch]$force)
     {
         if(!(Test-Path $solutionFilePath))
         {
