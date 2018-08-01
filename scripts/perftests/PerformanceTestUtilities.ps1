@@ -1,21 +1,3 @@
-    function DownloadNuGetExe([string]$version, [string]$downloadDirectory)
-    {        
-        $NuGetExeUriRoot = "https://dist.nuget.org/win-x86-commandline/v"
-        $NuGetExeSuffix = "/nuget.exe"
-
-        $url = $NuGetExeUriRoot + $version + $NuGetExeSuffix
-        $Path =  $downloadDirectory + "\" + $version
-        $ExePath = $Path + "\nuget.exe"
-
-        if (!(Test-Path($ExePath)))
-        {
-            Log "Downloading $url to $ExePath" -color "Green"
-            New-Item -ItemType Directory -Force -Path $Path > $null
-            Invoke-WebRequest -Uri $url -OutFile $ExePath
-        }
-        return GetAbsolutePath $ExePath
-    }
-
     function Log([string]$logStatement, [string]$color)
     {
         if(-not ([string]::IsNullOrEmpty($color)))
@@ -33,17 +15,6 @@
     $Path = [System.IO.Path]::Combine(((pwd).Path), ($Path));
     $Path = [System.IO.Path]::GetFullPath($Path);
     return $Path;
-    }
-
-    function IIf($If, $Right, $Wrong) {
-        if ($If)
-        {
-            $Right
-        } 
-        else 
-        {
-            $Wrong
-        }
     }
 
     function OutFileWithCreateFolders([string]$path, [string]$content){
@@ -72,6 +43,7 @@
         }
         return $null
     }
+
     function GetNuGetFoldersPath()
     {
         $nugetFolder = [System.IO.Path]::Combine($env:UserProfile, "np")
@@ -101,7 +73,8 @@
         return $solutionFile
     }
 
-    function RunTest([string]$_nugetClientFilePath, [string]$_repositoryUrl, [string]$_branchName, [string]$_resultsDirectoryPath, [string]$_logsPath){
+    function RunTest([string]$_nugetClientFilePath, [string]$_repositoryUrl, [string]$_branchName, [string]$_resultsDirectoryPath, [string]$_logsPath)
+    {
         $repoName = GenerateNameFromGitUrl $_repositoryUrl
         $sourceDirectoryPath = [System.IO.Path]::Combine($testDirectoryPath, $repoName)
         $solutionFile = RepositorySetup $_nugetClientFilePath $_repositoryUrl $_branchName $sourceDirectoryPath
@@ -112,4 +85,33 @@
     # The format of the URL is assumed to be https://github.com/NuGet/NuGet.Client.git. The result would be NuGet-Client-git
     function GenerateNameFromGitUrl([string]$gitUrl){
         return $gitUrl.Substring($($gitUrl.LastIndexOf('/') + 1)).Replace('.','-')
+    }
+
+    function DownloadNuGetExe([string]$version, [string]$downloadDirectory)
+    {        
+        $NuGetExeUriRoot = "https://dist.nuget.org/win-x86-commandline/v"
+        $NuGetExeSuffix = "/nuget.exe"
+
+        $url = $NuGetExeUriRoot + $version + $NuGetExeSuffix
+        $Path =  $downloadDirectory + "\" + $version
+        $ExePath = $Path + "\nuget.exe"
+
+        if (!(Test-Path($ExePath)))
+        {
+            Log "Downloading $url to $ExePath" -color "Green"
+            New-Item -ItemType Directory -Force -Path $Path > $null
+            Invoke-WebRequest -Uri $url -OutFile $ExePath
+        }
+        return GetAbsolutePath $ExePath
+    }
+
+    function Cleanup([string]$nugetClient)
+    {
+        $nugetClient = GetAbsolutePath $nugetClient
+        . $nugetClient locals -clear all -Verbosity quiet
+        $nugetFolders = GetNuGetFoldersPath
+        & Remove-Item -r $nugetFolders -force > $null
+        [Environment]::SetEnvironmentVariable("NUGET_PACKAGES",$null)
+        [Environment]::SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH",$null)
+        [Environment]::SetEnvironmentVariable("NUGET_PLUGINS_CACHE_PATH",$null)
     }

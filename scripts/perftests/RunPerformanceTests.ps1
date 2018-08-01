@@ -9,26 +9,17 @@ Param(
 )
     . "$PSScriptRoot\PerformanceTestUtilities.ps1"
 
-    function Cleanup([string]$nugetExe)
-    {
-        $nugetExe = GetAbsolutePath $nugetExe
-        . $nugetExe locals -clear all -Verbosity quiet
-        $nugetFolders = GetNuGetFoldersPath
-        & Remove-Item -r $nugetFolders -force > $null
-        [Environment]::SetEnvironmentVariable("NUGET_PACKAGES",$null)
-        [Environment]::SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH",$null)
-        [Environment]::SetEnvironmentVariable("NUGET_PLUGINS_CACHE_PATH",$null)
-    }
-
     # Plugins cache is only available in 4.8+. We need to be careful when using that switch for older clients because it may blow up.
     function RunRestore([string]$solutionFilePath, [string]$nugetClient, [string]$logsLocation, [string]$resultsFile, [switch]$cleanGlobalPackagesFolder, [switch]$cleanHttpCache, [switch]$cleanPluginsCache, [switch]$killMsBuildAndDotnetExeProcesses, [switch]$force)
     {
-        if(!(Test-Path $solutionFilePath)){
+        if(!(Test-Path $solutionFilePath))
+        {
             Log "$solutionFilePath does not exist!" "Red"
             exit 1;
         }
 
-        if(!(Test-Path $nugetClient)){
+        if(!(Test-Path $nugetClient))
+        {
             Log "$nugetClient does not exist!" "Red"
             exit 1;
         }
@@ -162,5 +153,6 @@ Param(
     {
         # create a default path otherwise it will fail.
     }
+
     MeasureRestore $nugetClientPath $solutionPath $logsPath $resultsFilePath -iterationCount 3 -cleanLogs
     Cleanup $nugetClientPath
