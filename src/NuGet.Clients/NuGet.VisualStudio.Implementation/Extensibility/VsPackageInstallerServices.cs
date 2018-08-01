@@ -179,6 +179,13 @@ namespace NuGet.VisualStudio
 
                             foreach (var package in installedPackages)
                             {
+                                if (!package.PackageIdentity.HasVersion)
+                                {
+                                    // Currently we are not supporting floating versions 
+                                    // because of that we will skip this package so that it doesn't throw ArgumentNullException
+                                    continue;
+                                }
+
                                 string installPath;
                                 if (buildIntegratedProject != null)
                                 {
