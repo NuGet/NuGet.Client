@@ -78,19 +78,19 @@ namespace NuGet.CommandLine
 
         protected internal CoreV2.NuGet.IPackageRepositoryFactory RepositoryFactory { get; set; }
 
-        private Lazy<string> MsBuildDirectory {
+        private Lazy<MsBuildToolset> MsBuildToolset {
             get
             {
-                if (_defaultMsBuildDirectory == null)
+                if (_defaultMsBuildToolset == null)
                 {
-                    _defaultMsBuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(null, null, Console);
+                    _defaultMsBuildToolset = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(null, null, Console);
 
                 }
-                return _defaultMsBuildDirectory;
+                return _defaultMsBuildToolset;
             }
         }
 
-        private Lazy<string> _defaultMsBuildDirectory;
+        private Lazy<MsBuildToolset> _defaultMsBuildToolset;
 
         public CommandAttribute CommandAttribute
         {
@@ -181,16 +181,16 @@ namespace NuGet.CommandLine
 
         protected virtual void SetDefaultCredentialProvider()
         {
-            SetDefaultCredentialProvider(MsBuildDirectory);
+            SetDefaultCredentialProvider(MsBuildToolset);
         }
 
         /// <summary>
         /// Set default credential provider for the HttpClient, which is used by V2 sources.
         /// Also set up authenticated proxy handling for V3 sources.
         /// </summary>
-        protected void SetDefaultCredentialProvider(Lazy<string> msbuildDirectory)
+        protected void SetDefaultCredentialProvider(Lazy<MsBuildToolset> msbuildDirectory)
         {
-            Protocol.Plugins.PluginDiscoveryUtility.InternalPluginDiscoveryRoot = new Lazy<string>(() => Protocol.Plugins.PluginDiscoveryUtility.GetInternalPluginRelativeToMSBuildExe(msbuildDirectory.Value));
+            Protocol.Plugins.PluginDiscoveryUtility.InternalPluginDiscoveryRoot = new Lazy<string>(() => Protocol.Plugins.PluginDiscoveryUtility.GetInternalPluginRelativeToMSBuildExe(msbuildDirectory.Value.Path));
             CredentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => GetCredentialProvidersAsync()), NonInteractive, handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
 
             CoreV2.NuGet.HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);

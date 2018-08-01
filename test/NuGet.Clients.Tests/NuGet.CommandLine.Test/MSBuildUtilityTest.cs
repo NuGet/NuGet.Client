@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: null,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => null);
+                getMsBuildPathInPathVar: () => null).Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -38,7 +38,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: null,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => expectedPath);
+                getMsBuildPathInPathVar: () => expectedPath).Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -55,7 +55,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: null,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => expectedPath);
+                getMsBuildPathInPathVar: () => expectedPath).Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -72,7 +72,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: null,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => @"c:\foo");
+                getMsBuildPathInPathVar: () => @"c:\foo").Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -93,7 +93,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: userVersion,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => null);
+                getMsBuildPathInPathVar: () => null).Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
