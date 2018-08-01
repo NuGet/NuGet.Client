@@ -68,7 +68,7 @@ namespace NuGet.CommandLine
         /// Returns the closure of project references for projects specified in <paramref name="projectPaths"/>.
         /// </summary>
         public static async Task<DependencyGraphSpec> GetProjectReferencesAsync(
-            string msbuildDirectory,
+            MsBuildToolset msbuildToolset,
             string[] projectPaths,
             int timeOut,
             IConsole console,
@@ -79,7 +79,7 @@ namespace NuGet.CommandLine
             string[] sources,
             string packagesDirectory)
         {
-            var msbuildPath = GetMsbuild(msbuildDirectory);
+            var msbuildPath = GetMsbuild(msbuildToolset.Path);
 
             if (!File.Exists(msbuildPath))
             {
@@ -121,7 +121,7 @@ namespace NuGet.CommandLine
                 inputTargetXML.Save(inputTargetPath);
 
                 // Create msbuild parameters and include global properties that cannot be set in the input targets path
-                var arguments = GetMSBuildArguments(entryPointTargetPath, inputTargetPath, nugetExePath, solutionDirectory, solutionName, restoreConfigFile, sources, packagesDirectory);
+                var arguments = GetMSBuildArguments(entryPointTargetPath, inputTargetPath, nugetExePath, solutionDirectory, solutionName, restoreConfigFile, sources, packagesDirectory, msbuildToolset);
 
                 var processStartInfo = new ProcessStartInfo
                 {
@@ -225,7 +225,8 @@ namespace NuGet.CommandLine
             string solutionName,
             string restoreConfigFile,
             string[] sources,
-            string packagesDirectory)
+            string packagesDirectory,
+            MsBuildToolset toolset)
         {
             // args for MSBuild.exe
             var args = new List<string>()
@@ -263,13 +264,10 @@ namespace NuGet.CommandLine
             AddPropertyIfHasValue(args, "SolutionDir", solutionDirectory);
             AddPropertyIfHasValue(args, "SolutionName", solutionName);
 
-            // Disable parallel and use ContinueOnError since this may run on an older
-            // version of MSBuild that do not support SkipNonexistentTargets.
-            // When BuildInParallel is used with ContinueOnError it does not continue in
-            // some scenarios.
-            // Allow opt in to msbuild 15.5 behavior with NUGET_RESTORE_MSBUILD_USESKIPNONEXISTENT
-            var nonExistFlag = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_USESKIPNONEXISTENT");
-            if (!StringComparer.OrdinalIgnoreCase.Equals(nonExistFlag, bool.TrueString))
+            // If the MSBuild version used does not support SkipNonextentTargets and BuildInParallel
+            // use the performance optimization
+            // When BuildInParallel is used with ContinueOnError it does not continue in some scenarios
+            if (toolset.ParsedVersion.CompareTo(new Version(15, 5)) < 0)
             {
                 AddProperty(args, "RestoreBuildInParallel", bool.FalseString);
                 AddProperty(args, "RestoreUseSkipNonexistentTargets", bool.FalseString);
@@ -468,7 +466,7 @@ namespace NuGet.CommandLine
         /// <param name="userVersion">version string as passed by user (so may be empty)</param>
         /// <param name="console">The console used to output messages.</param>
         /// <returns>The msbuild directory.</returns>
-        public static string GetMsBuildDirectory(string userVersion, IConsole console)
+        public static MsBuildToolset GetMsBuildToolset(string userVersion, IConsole console)
         {
             var currentDirectoryCache = Directory.GetCurrentDirectory();
             var msBuildDirectory = string.Empty;
@@ -479,7 +477,7 @@ namespace NuGet.CommandLine
             if (toolset != null)
             {
                 LogToolsetToConsole(console, toolset);
-                return toolset.Path;
+                return toolset;
             }
 
             using (var projectCollection = LoadProjectCollection())
@@ -517,14 +515,15 @@ namespace NuGet.CommandLine
                         nameof(NuGetResources.Error_CannotFindMsbuild)));
             }
 
-            msBuildDirectory = GetMsBuildDirectoryInternal(
+            toolset = GetMsBuildDirectoryInternal(
                 userVersion, console, installedToolsets.OrderByDescending(t => t), () => GetMsBuildPathInPathVar());
+
             Directory.SetCurrentDirectory(currentDirectoryCache);
-            return msBuildDirectory;
+            return toolset;
         }
 
         /// <summary>
-        /// This method is called by GetMsBuildDirectory(). This method is not intended to be called directly.
+        /// This method is called by GetMsBuildToolset(). This method is not intended to be called directly.
         /// It's marked public so that it can be called by unit tests.
         /// </summary>
         /// <param name="userVersion">version string as passed by user (so may be empty)</param>
@@ -533,7 +532,7 @@ namespace NuGet.CommandLine
         /// <param name="getMsBuildPathInPathVar">delegate to provide msbuild exe discovered in path environemtnb var/s
         /// (using a delegate allows for testability)</param>
         /// <returns>directory to use for msbuild exe</returns>
-        public static string GetMsBuildDirectoryInternal(
+        public static MsBuildToolset GetMsBuildDirectoryInternal(
             string userVersion,
             IConsole console,
             IEnumerable<MsBuildToolset> installedToolsets,
@@ -559,7 +558,7 @@ namespace NuGet.CommandLine
             }
 
             LogToolsetToConsole(console, toolset);
-            return toolset.Path;
+            return toolset;
         }
 
         private static IEnumerable<MsBuildToolset> GetToolsetsContainingValidMSBuildInstallation(IEnumerable<MsBuildToolset> installedToolsets)
@@ -781,7 +780,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        public static Lazy<string> GetMsBuildDirectoryFromMsBuildPath(string msbuildPath, string msbuildVersion, IConsole console)
+        public static Lazy<MsBuildToolset> GetMsBuildDirectoryFromMsBuildPath(string msbuildPath, string msbuildVersion, IConsole console)
         {
             if (msbuildPath != null)
             {
@@ -806,11 +805,12 @@ namespace NuGet.CommandLine
 
                     throw new CommandLineException(message);
                 }
-                return new Lazy<string>(() => msbuildPath);
+                
+                return new Lazy<MsBuildToolset>(() => new MsBuildToolset(msbuildVersion, msbuildPath));
             }
             else
             {
-                return new Lazy<string>(() => GetMsBuildDirectory(msbuildVersion, console));
+                return new Lazy<MsBuildToolset>(() => GetMsBuildToolset(msbuildVersion, console));
             }
         }
 
