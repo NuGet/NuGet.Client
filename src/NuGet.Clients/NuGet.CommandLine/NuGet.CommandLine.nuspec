@@ -15,5 +15,6 @@
   <files>
       <file src="NuGet.exe" target="tools" />
       <file src="NuGet.pdb" target="tools" />
+      <file src="NuGet.CommandLine.props" target="build" />
   </files>
 </package>
