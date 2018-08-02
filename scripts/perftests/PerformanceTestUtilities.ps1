@@ -73,7 +73,18 @@
         {
                 Log "Skipping the cloning of $repository as $sourceDirectoryPath is not empty" -color "Yellow"
         }
-        $solutionFile = (Get-ChildItem $sourceDirectoryPath *.sln)[0] | Select-Object -f 1 | Select-Object -ExpandProperty FullName
+
+        $gitRepoName = $repository.Substring($($repository.LastIndexOf('/') + 1))
+        $potentialSolutionFile = [System.IO.Path]::Combine($sourceDirectoryPath, "$($gitRepoName.Substring(0, $gitRepoName.Length - 4)).sln")
+
+        if(Test-Path $potentialSolutionFile)
+        {
+            $solutionFile = $potentialSolutionFile
+        } 
+        else 
+        {
+            $solutionFile = (Get-ChildItem $sourceDirectoryPath *.sln)[0] | Select-Object -f 1 | Select-Object -ExpandProperty FullName
+        }
         Log "Completed the repository setup. The solution file is $solutionFile" -color "Green"
         return $solutionFile
     }
