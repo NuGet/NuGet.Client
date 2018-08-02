@@ -52,23 +52,6 @@
         return $nugetFolder
     }
 
-    function RepositorySetup([string]$repository, [string]$branch, [string]$sourceDirectoryPath)
-    {
-        if(!(Test-Path $sourceDirectoryPath))
-        {
-                git clone -b $branch --single-branch $repository $sourceDirectoryPath
-        }
-        else 
-        {
-                Log "Skipping the cloning of $repository as $sourceDirectoryPath is not empty" -color "Yellow"
-        }
-
-        $solutionFile = (Get-ChildItem $sourceDirectoryPath *.sln)[0] | Select-Object -f 1 | Select-Object -ExpandProperty FullName
-
-        Log "Completed the repository setup. The solution file is $solutionFile" -color "Green"
-        return $solutionFile
-    }
-
     function SetupNuGetFolders([string]$_nugetClientFilePath)
     {
         $nugetFolders = GetNuGetFoldersPath
@@ -79,16 +62,31 @@
         . $_nugetClientFilePath locals -clear all -Verbosity quiet
     }
 
-    function RunTest([string]$_nugetClientFilePath, [string]$_repositoryUrl, [string]$_branchName, [string]$_resultsDirectoryPath, [string]$_logsPath)
+    function SetupGitRepository([string]$repository, [string]$commitHash, [string]$sourceDirectoryPath)
     {
-        $repoName = GenerateNameFromGitUrl $_repositoryUrl
-        #TODO NK - The path here is not specified. Pass it through the runner if required.
-        $sourceDirectoryPath = [System.IO.Path]::Combine($testDirectoryPath, $repoName)
-        $solutionFile = RepositorySetup $_repositoryUrl $_branchName $sourceDirectoryPath
-        SetupNuGetFolders $_nugetClientFilePath
-        $resultsFilePath = [System.IO.Path]::Combine($_resultsDirectoryPath, "$repoName.csv")
-        . "$PSScriptRoot\RunPerformanceTests.ps1" $_nugetClientFilePath $solutionFile $resultsFilePath $_logsPath
+        if(!(Test-Path $sourceDirectoryPath))
+        {
+                git clone $repository $sourceDirectoryPath
+                git -c $sourceDirectoryPath checkout $commitHash
+        }
+        else 
+        {
+                Log "Skipping the cloning of $repository as $sourceDirectoryPath is not empty" -color "Yellow"
+        }
+        $solutionFile = (Get-ChildItem $sourceDirectoryPath *.sln)[0] | Select-Object -f 1 | Select-Object -ExpandProperty FullName
+        Log "Completed the repository setup. The solution file is $solutionFile" -color "Green"
+        return $solutionFile
     }
+
+    function RunPerformanceTestsOnGitRepository([string]$nugetClient, [string]$sourceRootDirectory, [string]$repoUrl,  [string]$commitHash, [string]$resultsDirPath, [string]$logsPath)
+    {
+        $repoName = GenerateNameFromGitUrl $repository
+        $resultsFilePath = [System.IO.Path]::Combine($resultsDirPath, "$repoName.csv")
+        $solutionFilePath = SetupGitRepository $repoUrl $commitHash $([System.IO.Path]::Combine($sourceRootDirectory, $repoName))
+        SetupNuGetFolders $nugetClient
+        . "$PSScriptRoot\RunPerformanceTests.ps1" $nugetClient $solutionFilePath $resultsFilePath $logsPath
+    }
+    
 
     # The format of the URL is assumed to be https://github.com/NuGet/NuGet.Client.git. The result would be NuGet-Client-git
     function GenerateNameFromGitUrl([string]$gitUrl){

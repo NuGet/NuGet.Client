@@ -30,17 +30,15 @@ Param(
 
     if([string]::IsNullOrEmpty($testDirectoryPath))
     {
-        # TODO NK - Figure out how to pass down the path where to extract the repository to. 
         $testDirectoryPath = $([System.IO.Path]::Combine($env:TEMP,"np"))
     }
 
     $testDirectoryPath = GetAbsolutePath $testDirectoryPath
-    $logsPath = [System.IO.Path]::Combine($testDirectoryPath,"logs")
 
     Log "Discovering the test cases."
     $testFiles = $(Get-ChildItem $PSScriptRoot\testCases "Test-*.ps1" ) | ForEach-Object { $_.FullName }
 
-    $testFiles | ForEach-Object { . $_ $nugetClientFilePath $resultsDirectoryPath $logsPath }
+    $testFiles | ForEach-Object { . $_ $nugetClientFilePath $([System.IO.Path]::Combine($testDirectoryPath,"source")) $resultsDirectoryPath $([System.IO.Path]::Combine($testDirectoryPath,"logs")) }
 
     if(-not $SkipCleanup)
     {

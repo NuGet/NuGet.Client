@@ -37,7 +37,7 @@ Param(
             } 
             else 
             {
-                Log "Too risky to invoke a locals clear with the specified parameters."
+                Log "Too risky to invoke a locals clear with the specified parameters." "yellow"
             }
         }
 
@@ -102,7 +102,7 @@ Param(
         Log "Finished measuring."
     }
 
-    ##### The script starts here:
+    ##### Script logic #####
 
     if(!(Test-Path $solutionPath))
     {
