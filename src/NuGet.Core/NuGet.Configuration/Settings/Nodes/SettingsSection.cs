@@ -81,7 +81,7 @@ namespace NuGet.Configuration
         {
             return Children.FirstOrDefault(c =>
                 c.TryGetAttributeValue(attributeName, out var attributeValue) &&
-                string.Equals(attributeValue, expectedAttributeValue) &&
+                string.Equals(attributeValue, expectedAttributeValue, StringComparison.OrdinalIgnoreCase) &&
                 c is T) as T;
         }
 

@@ -38,22 +38,6 @@ namespace NuGet.Configuration
             return item.Value;
         }
 
-        public static void SetValueForAddItem(ISettings settings, string section, string key, string value)
-        {
-            var sectionElement = settings.GetSection(section);
-            var item = sectionElement?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
-
-            if (item == null)
-            {
-                var newItem = new AddItem(key, value);
-                sectionElement.AddChild(newItem);
-            }
-            else
-            {
-                item.UpdateAttributeValue(ConfigurationConstants.ValueAttribute, value);
-            }
-        }
-
         public static bool DeleteValue(ISettings settings, string section, string attributeKey, string attributeValue)
         {
             var sectionElement = settings.GetSection(section);
@@ -172,7 +156,7 @@ namespace NuGet.Configuration
             }
             else
             {
-                SetValueForAddItem(settings, ConfigurationConstants.Config, key, value);
+                settings.SetItemInSection(ConfigurationConstants.Config, new AddItem(key, value));
             }
         }
 

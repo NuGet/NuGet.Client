@@ -60,7 +60,7 @@ namespace NuGet.PackageManagement
 
                 return IsSet(settingsValue, true);
             }
-            set => SettingsUtility.SetValueForAddItem(_settings, PackageRestoreSection, PackageRestoreConsentKey, value.ToString(CultureInfo.InvariantCulture));
+            set => _settings.SetItemInSection(PackageRestoreSection, new AddItem(PackageRestoreConsentKey, value.ToString(CultureInfo.InvariantCulture)));
         }
 
         public bool IsAutomatic
@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement
                 var settingsValue = SettingsUtility.GetValueForAddItem(_settings, PackageRestoreSection, PackageRestoreAutomaticKey);
                 return IsSet(settingsValue, IsGrantedInSettings);
             }
-            set => SettingsUtility.SetValueForAddItem(_settings, PackageRestoreSection, PackageRestoreAutomaticKey, value.ToString(CultureInfo.InvariantCulture));
+            set => _settings.SetItemInSection(PackageRestoreSection, new AddItem(PackageRestoreAutomaticKey, value.ToString(CultureInfo.InvariantCulture)));
         }
 
         private static bool IsSet(string value, bool defaultValue)
