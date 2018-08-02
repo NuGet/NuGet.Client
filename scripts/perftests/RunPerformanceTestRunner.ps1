@@ -9,7 +9,7 @@ Param(
 
     . "$PSScriptRoot\PerformanceTestUtilities.ps1"
 
-    If($(GetAbsolutePath $resultsDirectoryPath).StartsWith($(GetAbsolutePath $testDirectoryPath)))
+    If(![string]::IsNullOrEmpty($testDirectoryPath) -And $(GetAbsolutePath $resultsDirectoryPath).StartsWith($(GetAbsolutePath $testDirectoryPath)))
     {
         Log "$resultsDirectoryPath cannot be a subdirectory of $testDirectoryPath" "red"
         exit(1)
@@ -17,15 +17,16 @@ Param(
     
     if([string]::IsNullOrEmpty($nugetClientFilePath) -Or !$(Test-Path $nugetClientFilePath))
     {
-        Log "The NuGet client at '$nugetClientFilePath'cannot be resolved. Attempting to use the fallback option." "yellow"
+        Log "The NuGet client at '$nugetClientFilePath' cannot be resolved. Attempting to use the fallback option." "yellow"
 
-        $relativePath = $([System.IO.Path]::Combine("..", "..", "..", "artifacts", "VS15", "NuGet.exe"))
-        $nugetClientFilePath = GetAbsolutePath $([System.IO.Path]::Combine($(pwd), $relativePath))
+        $relativePath = $([System.IO.Path]::Combine("..", "..", "artifacts", "VS15", "NuGet.exe"))
+        $nugetClientFilePath = GetAbsolutePath $([System.IO.Path]::Combine($PSScriptRoot, $relativePath))
         if(!$(Test-Path $nugetClientFilePath))
         {
             Log "The project has not been built and there is not NuGet.exe available at $nugetClientFilePath. Either build the exe or pass a path to a NuGet client."
             exit(1)
         }
+        Log "Using the fallback client from $nugetClientFilePath"
     }
 
     if([string]::IsNullOrEmpty($testDirectoryPath))

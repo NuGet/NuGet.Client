@@ -11,4 +11,4 @@ Param(
 
     . "$PSScriptRoot\..\PerformanceTestUtilities.ps1"
 
-    RunTest $nugetClientFilePath $sourceRootDirectory "https://github.com/NuGet/NuGet.Client.git" "dev" $resultsDirectoryPath $logsPath
+    RunPerformanceTestsOnGitRepository $nugetClientFilePath $sourceRootDirectory "https://github.com/NuGet/NuGet.Client.git" "dev" $resultsDirectoryPath $logsPath

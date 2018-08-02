@@ -12,9 +12,9 @@
 
     function GetAbsolutePath([string]$Path)
     {
-    $Path = [System.IO.Path]::Combine(((pwd).Path), ($Path));
-    $Path = [System.IO.Path]::GetFullPath($Path);
-    return $Path;
+        $Path = [System.IO.Path]::Combine(((pwd).Path), ($Path));
+        $Path = [System.IO.Path]::GetFullPath($Path);
+        return $Path;
     }
 
     function OutFileWithCreateFolders([string]$path, [string]$content){
@@ -80,7 +80,7 @@
 
     function RunPerformanceTestsOnGitRepository([string]$nugetClient, [string]$sourceRootDirectory, [string]$repoUrl,  [string]$commitHash, [string]$resultsDirPath, [string]$logsPath)
     {
-        $repoName = GenerateNameFromGitUrl $repository
+        $repoName = GenerateNameFromGitUrl $repoUrl
         $resultsFilePath = [System.IO.Path]::Combine($resultsDirPath, "$repoName.csv")
         $solutionFilePath = SetupGitRepository $repoUrl $commitHash $([System.IO.Path]::Combine($sourceRootDirectory, $repoName))
         SetupNuGetFolders $nugetClient
