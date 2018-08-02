@@ -82,6 +82,7 @@
     function RunTest([string]$_nugetClientFilePath, [string]$_repositoryUrl, [string]$_branchName, [string]$_resultsDirectoryPath, [string]$_logsPath)
     {
         $repoName = GenerateNameFromGitUrl $_repositoryUrl
+        #TODO NK - The path here is not specified. Pass it through the runner if required.
         $sourceDirectoryPath = [System.IO.Path]::Combine($testDirectoryPath, $repoName)
         $solutionFile = RepositorySetup $_repositoryUrl $_branchName $sourceDirectoryPath
         SetupNuGetFolders $_nugetClientFilePath
@@ -112,7 +113,7 @@
         return GetAbsolutePath $ExePath
     }
 
-    function Cleanup([string]$nugetClient)
+    function CleanNuGetFolders([string]$nugetClient)
     {
         $nugetClient = GetAbsolutePath $nugetClient
         . $nugetClient locals -clear all -Verbosity quiet

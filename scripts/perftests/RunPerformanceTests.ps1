@@ -14,18 +14,6 @@ Param(
     function RunRestore([string]$solutionFilePath, [string]$nugetClient, [string]$resultsFile, [string]$logsPath,  
             [switch]$cleanGlobalPackagesFolder, [switch]$cleanHttpCache, [switch]$cleanPluginsCache, [switch]$killMsBuildAndDotnetExeProcesses, [switch]$force)
     {
-        if(!(Test-Path $solutionFilePath))
-        {
-            Log "$solutionFilePath does not exist!" "Red"
-            exit 1;
-        }
-
-        if(!(Test-Path $nugetClient))
-        {
-            Log "$nugetClient does not exist!" "Red"
-            exit 1;
-        }
-
         Log "Running $nugetClient restore $nugetClient with cleanGlobalPackagesFolder:$cleanGlobalPackagesFolder cleanHttpCache:$cleanHttpCache cleanPluginsCache:$cleanPluginsCache killMsBuildAndDotnetExeProcesses:$killMsBuildAndDotnetExeProcesses force:$force"
 
         # Do the required cleanup if necesarry
@@ -114,42 +102,56 @@ Param(
         Log "Finished measuring."
     }
 
-    If(![string]::IsNullOrEmpty($logsPath) -And $(GetAbsolutePath $resultsFilePath).StartsWith($(GetAbsolutePath $logsPath)))
+    ##### The script starts here:
+
+    if(!(Test-Path $solutionPath))
     {
-        Log "$resultsFilePath cannot be under $logsPath" "red"
-        exit(1)
+        Log "$solutionPath does not exist!" "Red"
+        exit 1;
     }
 
-    $nugetClient = GetAbsolutePath $nugetClient
-    $solutionFile = GetAbsolutePath $solutionFile
-    $resultsFile = GetAbsolutePath $resultsFile
+    if(!(Test-Path $nugetClientPath))
+    {
+        Log "$nugetClientPath does not exist!" "Red"
+        exit 1;
+    }
+
+    $nugetClientPath = GetAbsolutePath $nugetClientPath
+    $solutionPath = GetAbsolutePath $solutionPath
+    $resultsFilePath = GetAbsolutePath $resultsFilePath
 
     if(![string]::IsNullOrEmpty($logsPath))
     {
         $logsPath = GetAbsolutePath $logsPath
+
+        If($resultsFilePath.StartsWith($logsPath))
+        {
+            Log "$resultsFilePath cannot be under $logsPath" "red"
+            exit(1)
+        }
     }
-    
+
     $iterationCount = 3
 
-    Log "Measuring restore for $solutionFile by $nugetClient" "Green"
+    Log "Measuring restore for $solutionPath by $nugetClient" "Green"
 
-    if(Test-Path $resultsFile)
+    if(Test-Path $resultsFilePath)
     {
-        Log "The results file $resultsFile already exists, deleting it" "yellow"
-        & Remove-Item -r $resultsFile -Force
+        Log "The results file $resultsFilePath already exists, deleting it" "yellow"
+        & Remove-Item -r $resultsFilePath -Force
     }
 
     Log "Running 1x warmup restore"
-    RunRestore $solutionFile $nugetClient $resultsFile $logsPath -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
+    RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
     Log "Running $($iterationCount)x clean restores"
-    1..$iterationCount | % { RunRestore $solutionFile $nugetClient $resultsFile $logsPath -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
+    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
     Log "Running $($iterationCount)x without a global packages folder"
-    1..$iterationCount | % { RunRestore $solutionFile $nugetClient $resultsFile $logsPath -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
+    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
     Log "Running $($iterationCount)x force restores"
-    1..$iterationCount | % { RunRestore $solutionFile $nugetClient $resultsFile $logsPath -force }
+    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath -force }
     Log "Running $($iterationCount)x no-op restores"
-    1..$iterationCount | % { RunRestore $solutionFile $nugetClient $resultsFile $logsPath -force }
+    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath -force }
 
-    Log "Completed the performance measurements for $solutionFile, results are in $resultsFile" "green"
+    Log "Completed the performance measurements for $solutionPath, results are in $resultsFilePath" "green"
 
     CleanNuGetFolders $nugetClientPath
