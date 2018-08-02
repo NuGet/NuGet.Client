@@ -7,8 +7,11 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -59,22 +62,48 @@ namespace NuGet.CommandLine.XPlat
                     var logger = getLogger();
                     var frameworks = ParseFrameworks(framework.Value());
 
+                    var settings = XPlatUtility.CreateDefaultSettings();
+
+                    var packageSources = GetPackageSources(settings, new List<string>());
+                    var sourceProvider = new PackageSourceProvider(settings);
+
+
                     var packageRefArgs = new ListPackageArgs(
                         logger,
                         path.Value,
+                        sourceProvider,
                         framework.HasValue(),
                         frameworks,
                         outdated.HasValue(),
                         deprecated.HasValue(),
-                        transitive.HasValue()
+                        transitive.HasValue(),
+                        CancellationToken.None
                     );
 
                     var msBuild = new MSBuildAPIUtility(logger);
                     var listPackageCommandRunner = getCommandRunner();
-                    listPackageCommandRunner.ExecuteCommand(packageRefArgs, msBuild);
+                    listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs, msBuild);
                     return 0;
                 });
             });
+        }
+
+        private static List<PackageSource> GetPackageSources(ISettings settings, List<string> sources)
+        {
+            var sourceProvider = new PackageSourceProvider(settings);
+            var availableSources = sourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
+            var packageSources = new List<Configuration.PackageSource>();
+            foreach (var source in sources)
+            {
+                packageSources.Add(PackageSourceProviderExtensions.ResolveSource(availableSources, source));
+            }
+
+            if (packageSources.Count == 0)
+            {
+                packageSources.AddRange(availableSources);
+            }
+
+            return packageSources;
         }
 
         private static List<string> ParseFrameworks(string frameworks)

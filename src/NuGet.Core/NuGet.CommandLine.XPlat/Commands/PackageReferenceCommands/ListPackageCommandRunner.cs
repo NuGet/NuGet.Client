@@ -7,9 +7,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using NuGet.CommandLine.XPlat.Utility;
-
+using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 /// <summary>
 /// A struct to simplify holding all of the information
@@ -31,7 +36,7 @@ namespace NuGet.CommandLine.XPlat
     {
         private bool _autoReferenceFound = false;
 
-        public void ExecuteCommand(ListPackageArgs listPackageArgs, MSBuildAPIUtility msBuild)
+        public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs, MSBuildAPIUtility msBuild)
         {
 
             //If the given file is a solution, get the list of projects
@@ -52,6 +57,12 @@ namespace NuGet.CommandLine.XPlat
 
                 //Get all the packages that are referenced in a project
                 var packages = msBuild.GetPackageReferencesForList(project, projectPath, listPackageArgs.Frameworks, listPackageArgs.Transitive);
+
+                Debugger.Launch();
+                if (listPackageArgs.Outdated)
+                {
+                    packages = await AddLatestVersions(packages, listPackageArgs);
+                }
 
                 //A null return means that reading the assets file failed
                 //or that no package references at all were found 
@@ -80,6 +91,54 @@ namespace NuGet.CommandLine.XPlat
             }
 
         }
+
+        private async Task<Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>>> AddLatestVersions(Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> packages, ListPackageArgs listPackageArgs)
+        {
+            var resultPackages = new Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>>();
+
+            foreach (var frameworkPackages in packages)
+            {
+                var updatedTopLevel = frameworkPackages.Value.Item1.Select(async p =>
+                                        new PRPackage { autoRef = p.autoRef, package = p.package, requestedVer = p.requestedVer, resolvedVer = p.resolvedVer, suggestedVer = await GetLatestVersion(p.package, NuGetFramework.Parse(frameworkPackages.Key), listPackageArgs) });
+
+                var resolvedTopLevelPackages = await Task.WhenAll(updatedTopLevel);
+
+                var updatedTransitive = frameworkPackages.Value.Item2.Select(async p =>
+                                        new PRPackage { autoRef = p.autoRef, package = p.package, requestedVer = p.requestedVer, resolvedVer = p.resolvedVer, suggestedVer = await GetLatestVersion(p.package, NuGetFramework.Parse(frameworkPackages.Key), listPackageArgs) });
+
+                var resolvedTransitivePackages = await Task.WhenAll(updatedTransitive);
+
+                resultPackages.Add(frameworkPackages.Key, Tuple.Create(resolvedTopLevelPackages.AsEnumerable(), resolvedTransitivePackages.AsEnumerable()));
+
+            }
+
+            return resultPackages;
+        }
+
+        private async Task<string> GetLatestVersion(string packageId, NuGetFramework framework, ListPackageArgs listPackageArgs)
+        {
+            var sources = listPackageArgs.SourceProvider.LoadPackageSources();
+            NuGetVersion latestVersion = null;
+
+            var requestsLogger = new NullLogger();
+            foreach (var packageSource in sources)
+            {
+                var sourceRepository = Repository.Factory.GetCoreV3(packageSource.Source);
+                var dependencyInfoResource = await sourceRepository.GetResourceAsync<DependencyInfoResource>(listPackageArgs.CancellationToken);
+                var packages = (await dependencyInfoResource.ResolvePackages(packageId, framework, new SourceCacheContext(), requestsLogger, listPackageArgs.CancellationToken)).ToList();
+
+                var latestVersionAtSource = packages.Where(package => package.Listed
+                && (!package.Version.IsPrerelease))
+                .OrderByDescending(package => package.Version, VersionComparer.Default)
+                .Select(package => package.Version)
+                .FirstOrDefault();
+
+                latestVersion = latestVersion == null || latestVersionAtSource > latestVersion ? latestVersionAtSource : latestVersion;
+            }
+
+            return latestVersion.ToString();
+        }
+
 
         /// <summary>
         /// A function that prints all the information about the packages
