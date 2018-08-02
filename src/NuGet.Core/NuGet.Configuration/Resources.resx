@@ -126,6 +126,9 @@
   <data name="Error_EncryptionUnsupported" xml:space="preserve">
     <value>Encryption is not supported on non-Windows platforms.</value>
   </data>
+  <data name="Error_MergeTwoDifferentSections" xml:space="preserve">
+    <value>Cannot merge two different sections.</value>
+  </data>
   <data name="Error_NoWritableConfig" xml:space="preserve">
     <value>There are no writable config files.</value>
   </data>

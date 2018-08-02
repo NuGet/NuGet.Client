@@ -20,13 +20,11 @@ namespace NuGet.Configuration.Test
                 new SettingsSection("Section",
                     new AddItem("key0", "value0")));
 
-            var add = new XElement("add",
+            var expectedXNode = new XElement("configuration",
+                new XElement("Section",
+                    new XElement("add",
                         new XAttribute("key", "key0"),
-                        new XAttribute("value", "value0"));
-            var section = new XElement("Section");
-            XElementUtility.AddIndented(section, add);
-            var expectedXNode = new XElement("configuration");
-            XElementUtility.AddIndented(expectedXNode, section);
+                        new XAttribute("value", "value0"))));
 
             var xNode = configuration.AsXNode();
 

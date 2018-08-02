@@ -352,19 +352,19 @@ namespace NuGet.Configuration.Test
 
                     var item = section.GetFirstItemWithAttribute<AddItem>("key", "key1");
                     item.Should().NotBeNull();
-                    item.GetValueAsPath().Should().Be(Path.Combine(mockBaseDirectory, @"..\value1"));
+                    item.GetValueAsPath().Should().Be(Path.Combine(mockBaseDirectory, @"../value1"));
                     item = section.GetFirstItemWithAttribute<AddItem>("key", "key2");
                     item.Should().NotBeNull();
-                    item.GetValueAsPath().Should().Be(Path.Combine(mockBaseDirectory, @"a\b\c"));
+                    item.GetValueAsPath().Should().Be(Path.Combine(mockBaseDirectory, @"a/b/c"));
                     item = section.GetFirstItemWithAttribute<AddItem>("key", "key3");
                     item.Should().NotBeNull();
-                    item.GetValueAsPath().Should().Be(Path.Combine(mockBaseDirectory, @".\a\b\c"));
+                    item.GetValueAsPath().Should().Be(Path.Combine(mockBaseDirectory, @"./a/b/c"));
                     item = section.GetFirstItemWithAttribute<AddItem>("key", "key5");
                     item.Should().NotBeNull();
                     item.GetValueAsPath().Should().Be(@"http://value3");
                     item = section.GetFirstItemWithAttribute<AddItem>("key", "key7");
                     item.Should().NotBeNull();
-                    item.GetValueAsPath().Should().Be(@"\a\b\c");
+                    item.GetValueAsPath().Should().Be(@"/a/b/c");
                 }
             }
         }

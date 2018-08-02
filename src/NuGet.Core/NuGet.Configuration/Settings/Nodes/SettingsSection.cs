@@ -43,7 +43,7 @@ namespace NuGet.Configuration
         {
             if (!Equals(other))
             {
-                throw new ArgumentException("Cannot merge two different sections", nameof(other));
+                throw new ArgumentException(Resources.Error_MergeTwoDifferentSections);
             }
 
             foreach (var child in other.Children)

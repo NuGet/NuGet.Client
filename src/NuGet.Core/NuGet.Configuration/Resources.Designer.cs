@@ -89,6 +89,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot merge two different sections..
+        /// </summary>
+        internal static string Error_MergeTwoDifferentSections {
+            get {
+                return ResourceManager.GetString("Error_MergeTwoDifferentSections", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There are no writable config files..
         /// </summary>
         internal static string Error_NoWritableConfig {

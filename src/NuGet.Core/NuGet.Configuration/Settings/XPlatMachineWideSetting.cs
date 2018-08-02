@@ -11,15 +11,15 @@ namespace NuGet.Configuration
     /// </summary>
     public class XPlatMachineWideSetting : IMachineWideSettings
     {
-        Lazy<Settings> _settings;
+        Lazy<ISettings> _settings;
 
         public XPlatMachineWideSetting()
         {
             var baseDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideConfigDirectory);
-            _settings = new Lazy<Settings>(
+            _settings = new Lazy<ISettings>(
                 () => Configuration.Settings.LoadMachineWideSettings(baseDirectory));
         }
 
-        public Settings Settings => _settings.Value;
+        public ISettings Settings => _settings.Value;
     }
 }

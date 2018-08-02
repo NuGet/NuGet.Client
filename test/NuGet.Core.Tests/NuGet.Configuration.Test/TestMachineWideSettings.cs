@@ -7,7 +7,7 @@ namespace NuGet.Configuration.Test
 {
     public class TestMachineWideSettings : IMachineWideSettings
     {
-        public Settings Settings { get; }
+        public ISettings Settings { get; }
 
         public TestMachineWideSettings(Settings settings)
         {

@@ -5,6 +5,6 @@ namespace NuGet.Configuration
 {
     public interface IMachineWideSettings
     {
-        Settings Settings { get; }
+        ISettings Settings { get; }
     }
 }

@@ -354,13 +354,13 @@ namespace NuGet.Configuration
                 }
             }
 
-            if (machineWideSettings != null && string.IsNullOrEmpty(configFileName))
+            if (machineWideSettings != null && machineWideSettings.Settings is Settings mwSettings && string.IsNullOrEmpty(configFileName))
             {
                 // Priority gives you the settings file in the order you want to start reading them,
                 // we want them in the reverse order to add them correctly to the settings and connect
                 // them to the other configs
                 validSettingFiles.AddRange(
-                    machineWideSettings.Settings.Priority.Reverse().Select(
+                    mwSettings.Priority.Reverse().Select(
                         s => new SettingsFile(s.Root, s.FileName, s.IsMachineWide)));
             }
 
@@ -467,7 +467,7 @@ namespace NuGet.Configuration
         /// <param name="root">The file system in which the settings files are read.</param>
         /// <param name="paths">The additional paths under which to look for settings files.</param>
         /// <returns>The list of settings read.</returns>
-        public static Settings LoadMachineWideSettings(
+        public static ISettings LoadMachineWideSettings(
             string root,
             params string[] paths)
         {
@@ -504,9 +504,14 @@ namespace NuGet.Configuration
                 combinedPath = combinedPath.Substring(0, index);
             }
 
-            SettingsFile.ConnectSettingsFilesLinkedList(settingFiles);
+            if (settingFiles.Any())
+            {
+                SettingsFile.ConnectSettingsFilesLinkedList(settingFiles);
 
-            return new Settings(settingFiles.Last());
+                return new Settings(settingFiles.Last());
+            }
+
+            return NullSettings.Instance;
         }
 
         public static string ApplyEnvironmentTransform(string value)

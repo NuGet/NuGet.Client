@@ -19,7 +19,7 @@ namespace NuGet.Build.Tasks.Test
     {
         class TestMachineWideSettings : IMachineWideSettings
         {
-            public Settings Settings { get; }
+            public ISettings Settings { get; }
 
             public TestMachineWideSettings(Settings settings)
             {

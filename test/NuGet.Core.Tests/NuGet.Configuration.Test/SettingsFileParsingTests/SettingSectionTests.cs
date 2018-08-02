@@ -382,7 +382,7 @@ namespace NuGet.Configuration.Test
             var ex = Record.Exception(() => firstSection.Merge(secondSection));
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentException>();
-            ex.Message.Should().Be("Cannot merge two different sections\r\nParameter name: other");
+            ex.Message.Should().Be("Cannot merge two different sections.");
         }
 
         [Fact]
