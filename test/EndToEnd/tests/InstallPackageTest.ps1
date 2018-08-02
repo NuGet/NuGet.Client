@@ -1800,7 +1800,7 @@ function Test-InstallPackageInstallsHighestPackageIfItIsReleaseWhenPreReleaseFla
 function Test-InstallingPackagesWorksInTurkishLocaleWhenPackageIdContainsLetterI
 {
     # Arrange
-    $p = New-ClassLibrary
+    $p = New-ClassLibraryNet46
 
     $currentCulture = [System.Threading.Thread]::CurrentThread.CurrentCulture
 
