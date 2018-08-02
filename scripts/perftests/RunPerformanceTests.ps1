@@ -10,7 +10,8 @@ Param(
     . "$PSScriptRoot\PerformanceTestUtilities.ps1"
 
     # Plugins cache is only available in 4.8+. We need to be careful when using that switch for older clients because it may blow up.
-    function RunRestore([string]$solutionFilePath, [string]$nugetClient, [string]$logsLocation, [string]$resultsFile, 
+    # The logs location is optional
+    function RunRestore([string]$solutionFilePath, [string]$nugetClient, [string]$resultsFile, [string]$logsPath,  
             [switch]$cleanGlobalPackagesFolder, [switch]$cleanHttpCache, [switch]$cleanPluginsCache, [switch]$killMsBuildAndDotnetExeProcesses, [switch]$force)
     {
         if(!(Test-Path $solutionFilePath))
@@ -57,13 +58,17 @@ Param(
             Stop-Process -name msbuild*,dotnet* -Force
         }
 
-        $logFile = [System.IO.Path]::Combine($logsLocation, "restoreLog-$([System.IO.Path]::GetFileNameWithoutExtension($solutionFilePath))-$(get-date -f yyyyMMddTHHmmssffff).txt")
 
         $start=Get-Date
         $logs = . $nugetClient restore $solutionFilePath -noninteractive $forceArg
         $end=Get-Date
         $totalTime=$end-$start
-        OutFileWithCreateFolders $logFile $logs
+
+        if(!$logsPath)
+        {
+            $logFile = [System.IO.Path]::Combine($logsPath, "restoreLog-$([System.IO.Path]::GetFileNameWithoutExtension($solutionFilePath))-$(get-date -f yyyyMMddTHHmmssffff).txt")
+            OutFileWithCreateFolders $logFile $logs
+        }
 
         $globalPackagesFolder = $Env:NUGET_PACKAGES
         if(Test-Path $globalPackagesFolder)
@@ -109,51 +114,42 @@ Param(
         Log "Finished measuring."
     }
 
-    function MeasureRestore([string]$nugetClient, [string]$solutionFile, [string]$logsLocation, [string]$resultsFile, [int]$iterationCount, [switch]$cleanLogs)
-    {
-        $nugetClient = GetAbsolutePath $nugetClient
-        $solutionFile = GetAbsolutePath $solutionFile
-        $logsLocation = GetAbsolutePath $logsLocation
-        $resultsFile = GetAbsolutePath $resultsFile
-        
-        Log "Measuring restore for $solutionFile by $nugetClient" "Green"
-
-        if($cleanLogs -And (Test-Path $logsLocation))
-        {
-            Log "Cleaning logs $logsLocation"
-            & Remove-Item -r $logsLocation -Force
-        }
-
-        if(Test-Path $resultsFile)
-        {
-            Log "The results file $resultsFile already exists, deleting it" "yellow"
-            & Remove-Item -r $resultsFile -Force
-        }
-
-        Log "Running 1x warmup restore"
-        RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
-        Log "Running $($iterationCount)x clean restores"
-        1..$iterationCount | % { RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
-        Log "Running $($iterationCount)x without a global packages folder"
-        1..$iterationCount | % { RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
-        Log "Running $($iterationCount)x force restores"
-        1..$iterationCount | % { RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -force }
-        Log "Running $($iterationCount)x no-op restores"
-        1..$iterationCount | % { RunRestore $solutionFile $nugetClient $logsLocation $resultsFile -force }
-
-        Log "Completed the performance measurements for $solutionFile, results are in $resultsFile" "green"
-    }
-
     If(![string]::IsNullOrEmpty($logsPath) -And $(GetAbsolutePath $resultsFilePath).StartsWith($(GetAbsolutePath $logsPath)))
     {
         Log "$resultsFilePath cannot be under $logsPath" "red"
         exit(1)
     }
 
+    $nugetClient = GetAbsolutePath $nugetClient
+    $solutionFile = GetAbsolutePath $solutionFile
+    $resultsFile = GetAbsolutePath $resultsFile
+
     if(![string]::IsNullOrEmpty($logsPath))
     {
-        # create a default path otherwise it will fail.
+        $logsPath = GetAbsolutePath $logsPath
+    }
+    
+    $iterationCount = 3
+
+    Log "Measuring restore for $solutionFile by $nugetClient" "Green"
+
+    if(Test-Path $resultsFile)
+    {
+        Log "The results file $resultsFile already exists, deleting it" "yellow"
+        & Remove-Item -r $resultsFile -Force
     }
 
-    MeasureRestore $nugetClientPath $solutionPath $logsPath $resultsFilePath -iterationCount 3 -cleanLogs
-    Cleanup $nugetClientPath
+    Log "Running 1x warmup restore"
+    RunRestore $solutionFile $nugetClient $resultsFile $logsPath -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
+    Log "Running $($iterationCount)x clean restores"
+    1..$iterationCount | % { RunRestore $solutionFile $nugetClient $resultsFile $logsPath -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
+    Log "Running $($iterationCount)x without a global packages folder"
+    1..$iterationCount | % { RunRestore $solutionFile $nugetClient $resultsFile $logsPath -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
+    Log "Running $($iterationCount)x force restores"
+    1..$iterationCount | % { RunRestore $solutionFile $nugetClient $resultsFile $logsPath -force }
+    Log "Running $($iterationCount)x no-op restores"
+    1..$iterationCount | % { RunRestore $solutionFile $nugetClient $resultsFile $logsPath -force }
+
+    Log "Completed the performance measurements for $solutionFile, results are in $resultsFile" "green"
+
+    CleanNuGetFolders $nugetClientPath

@@ -28,7 +28,8 @@
 
     function GetAllPackagesInGlobalPackagesFolder([string]$packagesFolder)
     {
-        if(Test-Path $packagesFolder){
+        if(Test-Path $packagesFolder)
+        {
             $packages = Get-ChildItem $packagesFolder\*.nupkg -Recurse
             return $packages
         }
@@ -37,7 +38,8 @@
 
     function GetFiles([string]$folder)
     {
-        if(Test-Path $folder){
+        if(Test-Path $folder)
+        {
             $files = Get-ChildItem $folder -recurse
             return $files
         }
