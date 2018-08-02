@@ -63,7 +63,7 @@ namespace NuGet.Configuration
 
             foreach (var child in ChildrenSet)
             {
-                XElementUtility.AddIndented(element, child.Value.AsXNode());
+                element.Add(child.Value.AsXNode());
             }
 
             Node = element;

@@ -156,18 +156,16 @@ namespace NuGet.Configuration
         {
             // Search for the furthest from the user that can be written
             // to that is not clearing the ones before it on the hierarchy
-            var writteableSettingsFiles = Priority.Where(f => !f.IsMachineWide).Reverse();
-            foreach(var settingsFile in writteableSettingsFiles)
+            var writteableSettingsFiles = Priority.Where(f => !f.IsMachineWide);
+
+            var clearedSections = writteableSettingsFiles.Select(s => s.RootElement.GetSection(sectionName)).Where(s => s != null && s.HasClearChild());
+            if (clearedSections.Any())
             {
-                var section = settingsFile.RootElement.GetSection(sectionName);
-                if (section != null && section.HasClearChild())
-                {
-                    return settingsFile;
-                }
+                return clearedSections.Last().Origin;
             }
 
             // if none have a clear tag, default to furthest from the user
-            return writteableSettingsFiles.LastOrDefault();
+            return writteableSettingsFiles.FirstOrDefault();
         }
 
         /// <summary>
