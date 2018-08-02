@@ -26,10 +26,20 @@ namespace Test.Utility
 
         private TestDirectory _testDirectory;
 
+        private readonly string _configContent = @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <packageSources>
+    <add key='NuGet.org' value='https://api.nuget.org/v3/index.json' />
+  </packageSources>
+</configuration>";
+
         public TestSolutionManager(bool foo)
         {
             _testDirectory = TestDirectory.Create();
             SolutionDirectory = _testDirectory;
+
+            // create nuget config in solution root
+            File.WriteAllText(Path.Combine(SolutionDirectory, "NuGet.Config"), _configContent);
         }
 
         public TestSolutionManager(string solutionDirectory)

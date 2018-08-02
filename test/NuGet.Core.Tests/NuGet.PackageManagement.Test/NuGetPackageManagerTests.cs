@@ -6198,7 +6198,7 @@ namespace NuGet.Test
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
-                    NullSettings.Instance,
+                    Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config"),
                     solutionManager,
                     new TestDeleteOnRestartManager());
 
@@ -6241,7 +6241,7 @@ namespace NuGet.Test
 
                 Assert.True((string)telemetryEvents
                     .Where(p => p.Name == "ProjectRestoreInformation").
-                    Last()["ErrorCodes"] == NuGetLogCode.NU1100.ToString());
+                    Last()["ErrorCodes"] == NuGetLogCode.NU1102.ToString());
             }
         }
 
@@ -6269,7 +6269,7 @@ namespace NuGet.Test
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
-                    NullSettings.Instance,
+                    Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config"),
                     solutionManager,
                     new TestDeleteOnRestartManager());
 
@@ -6315,7 +6315,7 @@ namespace NuGet.Test
 
                 Assert.True((string)telemetryEvents
                     .Where(p => p.Name == "ProjectRestoreInformation").
-                    Last()["ErrorCodes"] == NuGetLogCode.NU1100.ToString());
+                    Last()["ErrorCodes"] == NuGetLogCode.NU1102.ToString());
             }
         }
 
@@ -6323,7 +6323,6 @@ namespace NuGet.Test
         [Fact]
         public async Task TestPacMan_PreviewInstallPackage_BuildIntegrated_RaiseTelemetryEventsWithWarningCode()
         {
-
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
 
@@ -6344,7 +6343,7 @@ namespace NuGet.Test
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
-                    NullSettings.Instance,
+                    Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config"),
                     solutionManager,
                     new TestDeleteOnRestartManager());
 
@@ -6427,7 +6426,7 @@ namespace NuGet.Test
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
-                    NullSettings.Instance,
+                    Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config"),
                     solutionManager,
                     new TestDeleteOnRestartManager());
 
