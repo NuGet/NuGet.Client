@@ -11,4 +11,15 @@ Param(
 
     . "$PSScriptRoot\..\PerformanceTestUtilities.ps1"
 
-    RunPerformanceTestsOnGitRepository $nugetClientFilePath $sourceRootDirectory "https://github.com/NuGet/NuGet.Client.git" "203c517a85791243f53ea08d404ee5b8fae36e35" $resultsDirectoryPath $logsPath
+    $repoUrl = "https://github.com/NuGet/NuGet.Client.git"
+    $commitHash = "203c517a85791243f53ea08d404ee5b8fae36e35"
+    $repoName = GenerateNameFromGitUrl $repoUrl
+    $resultsFilePath = [System.IO.Path]::Combine($resultsDirectoryPath, "$repoName.csv")
+    $sourcePath = $([System.IO.Path]::Combine($sourceRootDirectory, $repoName))
+    $solutionFilePath = SetupGitRepository $repoUrl $commitHash $sourcePath
+    SetupNuGetFolders $nugetClientFilePath
+    $currentWorkingDirectory = $pwd
+    cd $sourcePath
+    . $sourcePath\configure.ps1
+    cd $currentWorkingDirectory
+    . "$PSScriptRoot\..\RunPerformanceTests.ps1" $nugetClientFilePath $solutionFilePath $resultsFilePath $logsPath
