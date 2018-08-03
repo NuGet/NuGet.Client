@@ -138,7 +138,7 @@
 
   <PropertyGroup Condition=" '$(Version)' == '' ">
     <Version>$(SemanticVersion)$(PreReleaseInformationVersion)</Version>
-    <Version Condition="'$(BUILD_SOURCEVERSION)' != ''">$(SemanticVersion)$(PreReleaseInformationVersion)+$(BUILD_SOURCEVERSION)</Version>
+    <Version Condition="'$(BUILD_SOURCEVERSION)' != '' AND '$(IsCommandLinePackage)' != 'true'">$(SemanticVersion)$(PreReleaseInformationVersion)+$(BUILD_SOURCEVERSION)</Version>
   </PropertyGroup>
 
   <PropertyGroup>
