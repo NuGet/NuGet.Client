@@ -458,8 +458,7 @@ nuget update -Self</value>
     <value>Solution root for package restore.</value>
   </data>
   <data name="Option_ConfigFile" xml:space="preserve">
-    <value>The NuGet configuration file. If not specified, file %AppData%\NuGet\NuGet.config is used as configuration file.</value>
-    <comment>Please don't localize "%AppData%\NuGet\NuGet.config".</comment>
+    <value>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files  from the current directory will be used. To learn more about nuget configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior</value>
   </data>
   <data name="CommandDisableParallelProcessing" xml:space="preserve">
     <value>Disable parallel processing of packages for this command.</value>

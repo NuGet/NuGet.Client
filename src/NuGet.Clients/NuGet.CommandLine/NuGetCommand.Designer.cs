@@ -6023,7 +6023,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The NuGet configuration file. If not specified, file %AppData%\NuGet\NuGet.config is used as configuration file..
+        ///   Looks up a localized string similar to The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files  from the current directory will be used. To learn more about nuget configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior.
         /// </summary>
         internal static string Option_ConfigFile {
             get {
