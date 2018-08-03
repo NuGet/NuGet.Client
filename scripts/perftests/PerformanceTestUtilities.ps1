@@ -52,6 +52,11 @@
         return $nugetFolder
     }
 
+    function IsClientDotnetExe([string]$nugetClient)
+    {
+        return $nugetClient.endswith("dotnet.exe")
+    }
+
     function SetupNuGetFolders([string]$_nugetClientFilePath)
     {
         $nugetFolders = GetNuGetFoldersPath
@@ -59,7 +64,14 @@
         $Env:NUGET_HTTP_CACHE_PATH = [System.IO.Path]::Combine($nugetFolders, "hcp")
         $Env:NUGET_PLUGINS_CACHE_PATH = [System.IO.Path]::Combine($nugetFolders, "pcp")
 
-        . $_nugetClientFilePath locals -clear all -Verbosity quiet
+        if($(IsClientDotnetExe $_nugetClientFilePath))
+        {
+            . $_nugetClientFilePath nuget locals -clear all -Verbosity quiet
+        } 
+        else 
+        {
+            . $_nugetClientFilePath locals -clear all -Verbosity quiet
+        }
     }
 
     function SetupGitRepository([string]$repository, [string]$commitHash, [string]$sourceDirectoryPath)
@@ -125,7 +137,14 @@
     function CleanNuGetFolders([string]$nugetClient)
     {
         $nugetClient = GetAbsolutePath $nugetClient
-        . $nugetClient locals -clear all -Verbosity quiet
+        if($(IsClientDotnetExe $nugetClient))
+        {
+            . $nugetClient nuget locals -clear all -Verbosity quiet
+        } 
+        else 
+        {
+            . $nugetClient locals -clear all -Verbosity quiet
+        }
         $nugetFolders = GetNuGetFoldersPath
         & Remove-Item -r $nugetFolders -force > $null
         [Environment]::SetEnvironmentVariable("NUGET_PACKAGES",$null)

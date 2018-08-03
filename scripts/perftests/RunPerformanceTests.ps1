@@ -21,23 +21,32 @@ Param(
         {
             if($cleanGlobalPackagesFolder -And $cleanHttpCache -And $cleanPluginsCache)
             {
-                . $nuGetClient locals -clear all -Verbosity quiet
+                $localsArguments = "-clear all"
             }
             elseif($cleanGlobalPackagesFolder -And $cleanHttpCache)
             {
-                . $nuGetClient locals -clear http-cache global-packages -Verbosity quiet
+                $localsArguments =  "-clear http-cache global-packages"
             }
             elseif($cleanGlobalPackagesFolder)
             {
-                . $nuGetClient locals -clear global-packages -Verbosity quiet
+                $localsArguments =  "-clear global-packages"
             }
             elseif($cleanHttpCache)
             {
-                . $nuGetClient locals -clear http-cache -Verbosity quiet
+                $localsArguments = "-clear http-cache"
             } 
             else 
             {
                 Log "Too risky to invoke a locals clear with the specified parameters." "yellow"
+            }
+
+            if($(IsClientDotnetExe $nugetClient))
+            {
+                . $nugetClient "nuget locals $localsArguments -Verbosity quiet"
+            } 
+            else 
+            {
+                . $nugetClient "locals $localsArguments -Verbosity quiet"
             }
         }
 
