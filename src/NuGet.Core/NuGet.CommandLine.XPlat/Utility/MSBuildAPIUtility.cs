@@ -16,6 +16,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -349,9 +350,23 @@ namespace NuGet.CommandLine.XPlat
                     var projPackages = GetPackageReferencesPerFramework(project, "", tfm.ToString());
 
                     result.Add(tfm.ToString(), tfm.Dependencies.Select(d => {
+
+                        string versionStr;
+                        VersionRange version;
                         //If the package is not auto-referenced, get the version from the project file. Otherwise fall back on the assets file
-                        var version = !d.AutoReferenced ? projPackages.Where(p => p.EvaluatedInclude.Equals(d.Name)).First().GetMetadataValue(VERSION_TAG) : d.LibraryRange.VersionRange.ToString();
-                        return new PRPackage { package = d.Name, requestedVer = version, autoRef = d.AutoReferenced };
+                        if (!d.AutoReferenced)
+                        {
+                            versionStr = projPackages.Where(p => p.EvaluatedInclude.Equals(d.Name)).First().GetMetadataValue(VERSION_TAG);
+                            version = VersionRange.Parse(versionStr);
+                        }
+                        else
+                        {
+                            versionStr = d.LibraryRange.VersionRange.ToString();
+                            version = d.LibraryRange.VersionRange;
+                        }
+
+                        VersionRange.Parse(versionStr);
+                        return new PRPackage { package = d.Name, requestedVer = version, requestedVerStr = versionStr, autoRef = d.AutoReferenced };
                     }));
 
                 }
@@ -413,12 +428,12 @@ namespace NuGet.CommandLine.XPlat
                     {
                         
                         var resolvedVersion = library.Version.ToString();
-                        var packageInfo = new PRPackage { package = library.Name, resolvedVer = library.Version.ToString() };
+                        var packageInfo = new PRPackage { package = library.Name, resolvedVer = library.Version };
 
                         if (matchingPackages.Count() != 0)
                         {
                             var topLevelPackage = matchingPackages.Single();
-                            packageInfo = new PRPackage { package = packageInfo.package, resolvedVer = packageInfo.resolvedVer, requestedVer = topLevelPackage.requestedVer, autoRef = topLevelPackage.autoRef };
+                            packageInfo = new PRPackage { package = packageInfo.package, resolvedVer = packageInfo.resolvedVer, requestedVer = topLevelPackage.requestedVer, requestedVerStr = topLevelPackage.requestedVerStr, autoRef = topLevelPackage.autoRef };
                             topLevelPackages.Add(packageInfo);
                         }
                         else

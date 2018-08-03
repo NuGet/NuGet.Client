@@ -57,7 +57,7 @@ namespace NuGet.CommandLine.XPlat
                     Strings.ListPkg_TransitiveDescription,
                     CommandOptionType.NoValue);
 
-                listpkg.OnExecute(() =>
+                listpkg.OnExecute(async () =>
                 {
                     var logger = getLogger();
                     var frameworks = ParseFrameworks(framework.Value());
@@ -82,7 +82,7 @@ namespace NuGet.CommandLine.XPlat
 
                     var msBuild = new MSBuildAPIUtility(logger);
                     var listPackageCommandRunner = getCommandRunner();
-                    listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs, msBuild);
+                    await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs, msBuild);
                     return 0;
                 });
             });
