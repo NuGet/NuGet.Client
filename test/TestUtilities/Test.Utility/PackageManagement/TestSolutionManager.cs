@@ -52,9 +52,6 @@ namespace Test.Utility
             PackagesFolder = Path.Combine(SolutionDirectory, "packages");
             GlobalPackagesFolder = Path.Combine(SolutionDirectory, "globalpackages");
 
-            // set environment variable to isolate tests
-            Environment.SetEnvironmentVariable(GLOBAL_PACKAGES_ENV_KEY, GlobalPackagesFolder);
-
             // create nuget config in solution root
             File.WriteAllText(NuGetConfigPath, string.Format(_configContent, GlobalPackagesFolder));
         }

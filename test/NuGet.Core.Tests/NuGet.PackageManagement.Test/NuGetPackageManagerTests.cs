@@ -6521,7 +6521,7 @@ namespace NuGet.Test
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
-                    NullSettings.Instance,
+                    Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config"),
                     solutionManager,
                     new TestDeleteOnRestartManager());
 
@@ -6566,7 +6566,7 @@ namespace NuGet.Test
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
-                    NullSettings.Instance,
+                    Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config"),
                     solutionManager,
                     new TestDeleteOnRestartManager());
 
@@ -6589,9 +6589,9 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 // Assert
-                Assert.Equal(3, telemetryEvents.Count);
+                Assert.Equal(5, telemetryEvents.Count);
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == "PackagePreFetcherInformation").Count());
-                Assert.Equal(1, telemetryEvents.Where(p => p.Name == "PackageExtractionInformation").Count());
+                Assert.Equal(2, telemetryEvents.Where(p => p.Name == "PackageExtractionInformation").Count());
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
                 Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
                      Any(p => (string)p["SubStepName"] == TelemetryConstants.ExecuteActionStepName));
@@ -6619,17 +6619,17 @@ namespace NuGet.Test
             using (var settingsdir = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager(true))
             {
-                var Settings = new Settings(settingsdir);
+                var settings = Settings.LoadSpecificSettings(testSolutionManager.SolutionDirectory, "NuGet.Config");
                 foreach (var source in sourceRepositoryProvider.GetRepositories())
                 {
-                    Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+                    settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
                 }
 
                 var token = CancellationToken.None;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
-                    Settings,
+                    settings,
                     testSolutionManager,
                     deleteOnRestartManager);
 
@@ -6656,7 +6656,7 @@ namespace NuGet.Test
                     token);
 
                 // Assert
-                Assert.Equal(16, telemetryEvents.Count);
+                Assert.Equal(36, telemetryEvents.Count);
 
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateRestoreGraph").Count());

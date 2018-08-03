@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
@@ -15,7 +13,6 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.Test;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Test.Utility;
@@ -135,16 +132,14 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var rootFolder = TestDirectory.Create())
-            using (var configFolder = TestDirectory.Create())
-            using (var solutionFolderParent = TestDirectory.Create())
+            using (var solutionManager = new TestSolutionManager(false))
             {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+                var projectFolder = new DirectoryInfo(Path.Combine(solutionManager.SolutionDirectory, projectName));
                 projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                var projectJson = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
                 var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
 
-                File.WriteAllText(projectConfig.FullName, BuildIntegrationTestUtility.ProjectJsonWithPackage);
+                File.WriteAllText(projectJson.FullName, BuildIntegrationTestUtility.ProjectJsonWithPackage);
 
                 var sources = new List<SourceRepository>
                 {
@@ -154,7 +149,7 @@ namespace NuGet.Test
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
                     new TestNuGetProjectContext());
-                var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
+                var project = new ProjectJsonNuGetProject(projectJson.FullName, msbuildProjectPath.FullName);
 
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
                     <configuration>
@@ -166,21 +161,18 @@ namespace NuGet.Test
                     </packageSources>
                     </configuration>";
 
-                var configSubFolder = Path.Combine(configFolder, "sub");
-                Directory.CreateDirectory(configSubFolder);
+                var configLocation = solutionManager.NuGetConfigPath;
 
-                File.WriteAllText(Path.Combine(configFolder, "sub", "nuget.config"), configContents);
+                // delete the default config from the solution manager
+                if (File.Exists(configLocation))
+                {
+                    File.Delete(configLocation);
+                }
 
-                var settings = new Configuration.Settings(configSubFolder);
-
-                var solutionFolder = new DirectoryInfo(Path.Combine(solutionFolderParent, "solutionFolder"));
-                solutionFolder.Create();
-
-                var solutionManager = new TestSolutionManager(false);
+                File.WriteAllText(configLocation, configContents);
+                var settings = Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config");
                 solutionManager.NuGetProjects.Add(project);
-
                 var testLogger = new TestLogger();
-
                 var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
 
                 // Act
@@ -199,7 +191,7 @@ namespace NuGet.Test
                 // Assert
                 Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
 
-                var packagesFolder = Path.Combine(configFolder, "NuGetPackages");
+                var packagesFolder = Path.Combine(solutionManager.SolutionDirectory, @"..\NuGetPackages");
 
                 Assert.True(Directory.Exists(packagesFolder));
                 Assert.True(File.Exists(Path.Combine(
