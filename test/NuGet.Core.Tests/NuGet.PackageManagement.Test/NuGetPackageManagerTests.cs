@@ -6383,7 +6383,7 @@ namespace NuGet.Test
                 }
 
                 // Assert
-                Assert.Equal(15, telemetryEvents.Count);
+                Assert.Equal(17, telemetryEvents.Count);
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateRestoreGraph").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateAssetsFile").Count());
@@ -6418,7 +6418,7 @@ namespace NuGet.Test
                 .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
 
             var nugetProjectContext = new TestNuGetProjectContext();
-            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            var telemetryService = new TestNuGetVSTelemetryService(telemetrySession.Object, _logger);
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
@@ -6457,7 +6457,7 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 // Assert
-                Assert.Equal(15, telemetryEvents.Count);
+                Assert.Equal(19, telemetryEvents.Count);
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateRestoreGraph").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "GenerateAssetsFile").Count());
