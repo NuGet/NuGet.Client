@@ -2338,7 +2338,7 @@ function Test-InstallFailCleansUpSatellitePackageFiles
     Assert-NoSolutionPackage A.fr -Version 1.0.0
 }
 
-function Test-FileTransformWorksOnDependentFile
+function FileTransformWorksOnDependentFile
 {
     param($context)
 
