@@ -92,12 +92,17 @@ Param(
         {
             Log "The plugins cache folder $httpCacheFolder does not exist" "Yellow"
         }
-
+        
+        $processorDetails = Get-WmiObject Win32_processor
+        $cores = $processorDetails | Select-Object -ExpandProperty NumberOfCores
+        $logicalCores = $processorDetails | Select-Object -ExpandProperty NumberOfLogicalProcessors
+        $processorName = $processorDetails | Select-Object -ExpandProperty Name
+        
         if(!(Test-Path $resultsFile)){
-            OutFileWithCreateFolders $resultsFile "name,totalTime,force,globalPackagesFolderNupkgCount,globalPackagesFolderNupkgSize,globalPackagesFolderFilesCount,globalPackagesFolderFilesSize,cleanGlobalPackagesFolder,httpCacheFileCount,httpCacheFilesSize,cleanHttpCache,pluginsCacheFileCount,pluginsCacheFilesSize,cleanPluginsCache,killMsBuildAndDotnetExeProcesses"
+            OutFileWithCreateFolders $resultsFile "name,totalTime,force,globalPackagesFolderNupkgCount,globalPackagesFolderNupkgSize,globalPackagesFolderFilesCount,globalPackagesFolderFilesSize,cleanGlobalPackagesFolder,httpCacheFileCount,httpCacheFilesSize,cleanHttpCache,pluginsCacheFileCount,pluginsCacheFilesSize,cleanPluginsCache,killMsBuildAndDotnetExeProcesses,processorName,cores,logicalCores"
         }
 
-        Add-Content -Path $resultsFile -Value "$runName,$($totalTime.ToString()),$force,$($gpfNupkgFiles.Count),$gpfNupkgsSize,$($gpfFiles.Count),$gpfFilesSize,$cleanGlobalPackagesFolder,$($httpCacheFiles.Count),$httpCacheFilesSize,$cleanHttpCache,$($pluginsCacheFiles.Count),$pluginsCacheFilesSize,$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses"
+        Add-Content -Path $resultsFile -Value "$runName,$($totalTime.ToString()),$force,$($gpfNupkgFiles.Count),$gpfNupkgsSize,$($gpfFiles.Count),$gpfFilesSize,$cleanGlobalPackagesFolder,$($httpCacheFiles.Count),$httpCacheFilesSize,$cleanHttpCache,$($pluginsCacheFiles.Count),$pluginsCacheFilesSize,$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$processorName,$cores,$logicalCores"
 
         Log "Finished measuring."
     }
