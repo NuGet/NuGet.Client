@@ -343,38 +343,46 @@ namespace NuGet.CommandLine.XPlat
         {
             var result = new Dictionary<string, IEnumerable<PRPackage>>();
 
-            foreach (var tfm in assetsFile.PackageSpec.TargetFrameworks)
+            //Find the target farmeworks that matches the passed in frameworks
+            //If no frameworks are passed in, go through all of the frameworks
+            var foundTargetFrameworks = new List<TargetFrameworkInformation>();
+            if (userInputFrameworks.Count() == 0)
             {
-                if (userInputFrameworks.Count == 0 || userInputFrameworks.Contains(tfm.ToString())) //If tfm is in the list given by the user or no frameworks were specified
-                {
-                    var projPackages = GetPackageReferencesPerFramework(project, "", tfm.ToString());
+                foundTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks.ToList();
+            }
+            else
+            {
+                foundTargetFrameworks.AddRange(assetsFile.PackageSpec.TargetFrameworks.Where(tfm => userInputFrameworks.Contains(tfm.ToString())));
+            }
 
-                    result.Add(tfm.ToString(), tfm.Dependencies.Select(d => {
+            foreach (var tfm in foundTargetFrameworks)
+            {
+                var projPackages = GetPackageReferencesPerFramework(project, "", tfm.ToString());
+
+                result.Add(tfm.ToString(), tfm.Dependencies.Select(d => {
 
                         
-                        string versionStr; //requested version exactly as it is in the proj file
-                        VersionRange version; //requested version value as a range
-                        //If the package is not auto-referenced, get the version from the project file. Otherwise fall back on the assets file
-                        if (!d.AutoReferenced)
-                        {
-                            versionStr = projPackages.Where(p => p.EvaluatedInclude.Equals(d.Name)).First().GetMetadataValue(VERSION_TAG);
-                            version = VersionRange.Parse(versionStr);
-                        }
-                        else
-                        {
-                            versionStr = d.LibraryRange.VersionRange.ToString();
-                            version = d.LibraryRange.VersionRange;
-                        }
+                    string versionStr; //requested version exactly as it is in the proj file
+                    VersionRange version; //requested version value as a range
+                    //If the package is not auto-referenced, get the version from the project file. Otherwise fall back on the assets file
+                    if (!d.AutoReferenced)
+                    {
+                        versionStr = projPackages.Where(p => p.EvaluatedInclude.Equals(d.Name)).First().GetMetadataValue(VERSION_TAG);
+                        version = VersionRange.Parse(versionStr);
+                    }
+                    else
+                    {
+                        versionStr = d.LibraryRange.VersionRange.ToString();
+                        version = d.LibraryRange.VersionRange;
+                    }
 
-                        return new PRPackage {
-                            name = d.Name,
-                            requestedVersion = version,
-                            projectFileRequestedVersion = versionStr,
-                            autoReference = d.AutoReferenced
-                        };
-                    }));
-
-                }
+                    return new PRPackage {
+                        name = d.Name,
+                        requestedVersion = version,
+                        projectFileRequestedVersion = versionStr,
+                        autoReference = d.AutoReferenced
+                    };
+                }));
 
             }
 

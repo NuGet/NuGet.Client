@@ -186,6 +186,15 @@ namespace NuGet.CommandLine.XPlat
             return latestVersionAtSource;
         }
 
+        /// <summary>
+        /// Given the a found version from a source and the current version and the args
+        /// if list package, this function checks if the found version meets the required
+        /// highest-patch, highest-minor or prerelease
+        /// </summary>
+        /// <param name="newVersion">Version from a source</param>
+        /// <param name="p">The required package with its current version</param>
+        /// <param name="listPackageArgs">Used to get the constraints</param>
+        /// <returns>Whether the new version meets the constraints or not</returns>
         private bool MeetsConstraints(NuGetVersion newVersion, PRPackage p, ListPackageArgs listPackageArgs)
         {
             var result = true;
