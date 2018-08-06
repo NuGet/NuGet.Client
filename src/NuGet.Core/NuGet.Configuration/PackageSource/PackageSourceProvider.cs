@@ -505,10 +505,6 @@ namespace NuGet.Configuration
             }
         }
 
-        /// <remarks>
-        /// This function does not update package credentials.
-        /// It just adds if a new source has them or deletes them if a source is deleted
-        /// </remarks>
         public void SavePackageSources(IEnumerable<PackageSource> sources)
         {
             var existingSettingsLookup = GetExistingSettingsLookup();
@@ -517,10 +513,16 @@ namespace NuGet.Configuration
             var existingDisabledSources = disabledSourcesSection?.Children.Select(c => c as AddItem).Where(c => c != null);
             var existingDisabledSourcesLookup = existingDisabledSources?.ToDictionary(setting => setting.Key, StringComparer.OrdinalIgnoreCase);
 
+            var credentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
+            var existingCredentials = credentialsSection?.Children.Select(c => c as CredentialsItem).Where(c => c != null);
+            var existingCredentialsLookup = existingCredentials?.ToDictionary(setting => setting.Name, StringComparer.OrdinalIgnoreCase);
+
             foreach (var source in sources)
             {
                 AddItem existingDisabledSourceItem = null;
                 SourceItem existingSourceItem = null;
+                CredentialsItem existingCredentialsItem = null;
+
                 var existingSourceIsEnabled = existingDisabledSourcesLookup == null || existingDisabledSourcesLookup.TryGetValue(source.Name, out existingDisabledSourceItem);
 
                 if (existingSettingsLookup != null &&
@@ -529,14 +531,16 @@ namespace NuGet.Configuration
                 {
                     var oldPackageSource = ReadPackageSource(existingSourceItem, existingSourceIsEnabled);
 
+                    existingCredentialsLookup.TryGetValue(source.Name, out existingCredentialsItem);
+
                     UpdatePackageSource(
                         source,
                         oldPackageSource,
                         existingSourceItem,
                         existingDisabledSourceItem,
-                        existingCredentialsItem: null,
+                        existingCredentialsItem,
                         updateEnabled: true,
-                        updateCredentials: false,
+                        updateCredentials: true,
                         isBatchOperation: true);
                 }
                 else
