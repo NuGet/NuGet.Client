@@ -302,8 +302,8 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        public Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> GetPackageReferencesForList(
-            Project project, string projectPath, IList<string> userInputFrameworks, bool transitive)
+        internal Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> GetPackageReferencesForList(
+            Project project, IList<string> userInputFrameworks, bool transitive)
         {
             //Path to the assets file
             var assetsPath = project.GetPropertyValue(ASSETS_FILE_PATH_TAG);
@@ -313,7 +313,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AssetsFileNotFound,
-                    projectPath));
+                    project.FullPath));
                 return null;
             }
 
@@ -367,10 +367,10 @@ namespace NuGet.CommandLine.XPlat
                         }
 
                         return new PRPackage {
-                            package = d.Name,
-                            requestedVer = version,
-                            requestedVerStr = versionStr,
-                            autoRef = d.AutoReferenced
+                            name = d.Name,
+                            requestedVersion = version,
+                            projectFileRequestedVersion = versionStr,
+                            autoReference = d.AutoReferenced
                         };
                     }));
 
@@ -426,7 +426,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     
                     var matchingPackages = requestedFrameworkPackages.Where(p =>
-                        p.package.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
+                        p.name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
 
                     //In case we found a matching package in requestedVersions, the package will be
                     //top level. If not, then it is transitive, and include-transitive must be used
@@ -435,18 +435,18 @@ namespace NuGet.CommandLine.XPlat
                     {
                         
                         var resolvedVersion = library.Version.ToString();
-                        var packageInfo = new PRPackage { package = library.Name, resolvedVer = library.Version };
+                        var packageInfo = new PRPackage { name = library.Name, resolvedVersion = library.Version };
 
                         if (matchingPackages.Count() != 0)
                         {
                             var topLevelPackage = matchingPackages.Single();
 
                             packageInfo = new PRPackage {
-                                package = packageInfo.package,
-                                resolvedVer = packageInfo.resolvedVer,
-                                requestedVer = topLevelPackage.requestedVer,
-                                requestedVerStr = topLevelPackage.requestedVerStr,
-                                autoRef = topLevelPackage.autoRef
+                                name = packageInfo.name,
+                                resolvedVersion = packageInfo.resolvedVersion,
+                                requestedVersion = topLevelPackage.requestedVersion,
+                                projectFileRequestedVersion = topLevelPackage.projectFileRequestedVersion,
+                                autoReference = topLevelPackage.autoReference
                             };
 
                             topLevelPackages.Add(packageInfo);

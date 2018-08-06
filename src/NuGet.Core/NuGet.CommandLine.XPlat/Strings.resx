@@ -495,9 +495,6 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Error_AssetsFileNotFound" xml:space="preserve">
     <value>No assets file was found for `{0}`. Please make sure the project uses package references and run restore before running this command.</value>
   </data>
-  <data name="Error_NotPRProject" xml:space="preserve">
-    <value>The project `{0}` does not use project references.</value>
-  </data>
   <data name="ListPkgProjectHeaderLog" xml:space="preserve">
     <value>Project '{0}' has the following package references</value>
   </data>

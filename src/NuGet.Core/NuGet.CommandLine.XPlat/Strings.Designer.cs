@@ -341,15 +341,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project `{0}` does not use project references..
-        /// </summary>
-        internal static string Error_NotPRProject {
-            get {
-                return ResourceManager.GetString("Error_NotPRProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unable to {0} package. Argument &apos;{1}&apos; not provided..
         /// </summary>
         internal static string Error_PkgMissingArgument {

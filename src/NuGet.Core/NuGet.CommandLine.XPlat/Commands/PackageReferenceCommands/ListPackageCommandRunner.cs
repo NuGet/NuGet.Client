@@ -13,43 +13,27 @@ using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-
-/// <summary>
-/// A struct to simplify holding all of the information
-/// about a package reference when using list
-/// </summary>
-public struct PRPackage
-{
-    public string package;
-    public VersionRange requestedVer;
-    public string requestedVerStr;
-    public NuGetVersion resolvedVer;
-    public NuGetVersion suggestedVer;
-    public bool deprecated;
-    public bool autoRef;
-}
 
 namespace NuGet.CommandLine.XPlat
 {
     public class ListPackageCommandRunner : IListPackageCommandRunner
     {
-        private bool _autoReferenceFound = false;
+        private const string LeftPadding = "   ";
 
-        public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs, MSBuildAPIUtility msBuild)
+        public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
-
             //If the given file is a solution, get the list of projects
             //If not, then it's a project, which is put in a list
-            var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln")
-                           ?
-                           MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path)
-                           .Where(f => File.Exists(f))
-                           :
+            var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln")?
+                           MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path).Where(f => File.Exists(f)):
                            new List<string>(new string[] { listPackageArgs.Path });
+
+            var autoReferenceFound = false;
+
+            var msBuild = new MSBuildAPIUtility(listPackageArgs.Logger);
 
             //Loop through all of the project paths
             foreach (var projectPath in projectsPaths)
@@ -58,22 +42,24 @@ namespace NuGet.CommandLine.XPlat
                 var project = MSBuildAPIUtility.GetProject(projectPath);
                 var projectName = project.GetPropertyValue("MSBuildProjectName");
 
-                //Get all the packages that are referenced in a project
-                var packages = msBuild.GetPackageReferencesForList(project, projectPath, listPackageArgs.Frameworks, listPackageArgs.Transitive);
+                Debugger.Launch();
 
-                if (listPackageArgs.Outdated)
-                {
-                    packages = await AddLatestVersions(packages, listPackageArgs);
-                }
+                //Get all the packages that are referenced in a project
+                var packages = msBuild.GetPackageReferencesForList(project, listPackageArgs.Frameworks, listPackageArgs.IncludeTransitive);
 
                 //A null return means that reading the assets file failed
                 //or that no package references at all were found 
                 if (packages != null)
                 {
+                    if (listPackageArgs.IncludeOutdated)
+                    {
+                        packages = await AddLatestVersions(packages, listPackageArgs);
+                    }
+
                     //The count is not 0 means that a package reference was found
                     if (packages.Count() != 0)
                     {
-                        PrintProjectPackages(packages, projectName, listPackageArgs.Transitive, listPackageArgs.Outdated);
+                        autoReferenceFound = PrintProjectPackages(packages, projectName, listPackageArgs.IncludeTransitive, listPackageArgs.IncludeOutdated);
                     }
                     else
                     {
@@ -87,7 +73,7 @@ namespace NuGet.CommandLine.XPlat
 
             //If any auto-references were found, a line is printed
             //explaining what (A) means
-            if (_autoReferenceFound)
+            if (autoReferenceFound)
             {
                 Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
             }
@@ -111,23 +97,23 @@ namespace NuGet.CommandLine.XPlat
             {
                 var updatedTopLevel = frameworkPackages.Value.Item1.Select(async p =>
                     new PRPackage {
-                        autoRef = p.autoRef,
-                        package = p.package,
-                        requestedVer = p.requestedVer,
-                        requestedVerStr = p.requestedVerStr,
-                        resolvedVer = p.resolvedVer,
-                        suggestedVer = await GetLatestVersion(p, NuGetFramework.Parse(frameworkPackages.Key), listPackageArgs, providers)
+                        autoReference = p.autoReference,
+                        name = p.name,
+                        requestedVersion = p.requestedVersion,
+                        projectFileRequestedVersion = p.projectFileRequestedVersion,
+                        resolvedVersion = p.resolvedVersion,
+                        suggestedVersion = await GetLatestVersion(p, NuGetFramework.Parse(frameworkPackages.Key), listPackageArgs, providers)
                     }
                 );
 
                 var updatedTransitive = frameworkPackages.Value.Item2.Select(async p =>
                     new PRPackage {
-                        autoRef = p.autoRef,
-                        package = p.package,
-                        requestedVer = p.requestedVer,
-                        requestedVerStr = p.requestedVerStr,
-                        resolvedVer = p.resolvedVer,
-                        suggestedVer = await GetLatestVersion(p, NuGetFramework.Parse(frameworkPackages.Key), listPackageArgs, providers)
+                        autoReference = p.autoReference,
+                        name = p.name,
+                        requestedVersion = p.requestedVersion,
+                        projectFileRequestedVersion = p.projectFileRequestedVersion,
+                        resolvedVersion = p.resolvedVersion,
+                        suggestedVersion = await GetLatestVersion(p, NuGetFramework.Parse(frameworkPackages.Key), listPackageArgs, providers)
                     }
                 );
 
@@ -189,34 +175,42 @@ namespace NuGet.CommandLine.XPlat
         {
 
             var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
-            var dependencyInfoResource = await sourceRepository.GetResourceAsync<DependencyInfoResource>(listPackageArgs.CancellationToken);
-            var packages = (await dependencyInfoResource.ResolvePackages(p.package, framework, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken)).ToList();
+            var dependencyInfoResource = await sourceRepository.GetResourceAsync<FindPackageByIdResource>(listPackageArgs.CancellationToken);
 
-            var latestVersionAtSource = packages.Where(package => package.Listed
-            && MeetsConstraints(package, p, listPackageArgs))
-            .OrderByDescending(package => package.Version, VersionComparer.Default)
-            .Select(package => package.Version)
+            var packages = (await dependencyInfoResource.GetAllVersionsAsync(p.name, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken)).ToList();
+
+            var latestVersionAtSource = packages.Where(version => MeetsConstraints(version, p, listPackageArgs))
+            .OrderByDescending(version => version, VersionComparer.Default)
             .FirstOrDefault();
 
             return latestVersionAtSource;
         }
 
-        private bool MeetsConstraints(SourcePackageDependencyInfo package, PRPackage p, ListPackageArgs listPackageArgs)
+        private bool MeetsConstraints(NuGetVersion newVersion, PRPackage p, ListPackageArgs listPackageArgs)
         {
             var result = true;
-            var baseVersion = p.requestedVer.MaxVersion != null ? p.requestedVer.MaxVersion : p.requestedVer.MinVersion;
+            NuGetVersion currentVersion;
+            if (p.requestedVersion == null)
+            {
+                currentVersion = p.resolvedVersion;
+            }
+            else
+            {
+                currentVersion = p.requestedVersion.MaxVersion != null ?
+                                 p.requestedVersion.MaxVersion : p.requestedVersion.MinVersion;
+            }
+                
 
-            var prerelease = !package.Version.IsPrerelease || listPackageArgs.Prerelease;
-            prerelease = prerelease || baseVersion.IsPrerelease;
+            var prerelease = !newVersion.IsPrerelease || listPackageArgs.Prerelease || currentVersion.IsPrerelease;
             result = result && prerelease;
 
             result = listPackageArgs.HighestPatch ?
-                package.Version.Minor.Equals(baseVersion.Minor) && package.Version.Major.Equals(baseVersion.Major)
-                : result;
+                newVersion.Minor.Equals(currentVersion.Minor) && newVersion.Major.Equals(currentVersion.Major) && result:
+                result;
 
             result = listPackageArgs.HighestMinor ?
-                package.Version.Major.Equals(baseVersion.Major)
-                : result;
+                newVersion.Major.Equals(currentVersion.Major) && result :
+                result;
 
             return result;
         }
@@ -231,29 +225,36 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="projectName">The project name</param>
         /// <param name="transitive">Whether include-transitive flag exists or not</param>
         /// <param name="outdated"></param>
-        private void PrintProjectPackages(Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> packages,
+        private bool PrintProjectPackages(Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> packages,
            string projectName, bool transitive, bool outdated)
         {
+            var autoReferenceFound = false;
+
+            var frameworkMessage = new StringBuilder(LeftPadding);
+            frameworkMessage.Append("'{0}'");
+
             Console.WriteLine(string.Format(Strings.ListPkgProjectHeaderLog, projectName));
 
             foreach (var frameworkPackages in packages)
             {
                 if (frameworkPackages.Value.Item1.Count() == 0)
                 {
-                    Console.WriteLine(string.Format("    '{0}': " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Key));
-                    continue;
+                    frameworkMessage.Append(": ");
+                    Console.WriteLine(string.Format(frameworkMessage.ToString() + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Key));
                 }
-                Console.WriteLine(string.Format("    '{0}'", frameworkPackages.Key));
-
-                Console.WriteLine(PackagesTable(frameworkPackages.Value.Item1, false, outdated));
-
-                if (transitive)
+                else
                 {
-                    Console.WriteLine(PackagesTable(frameworkPackages.Value.Item2, true, outdated));
+                    Console.WriteLine(string.Format(frameworkMessage.ToString(), frameworkPackages.Key));
+
+                    autoReferenceFound = PackagesTable(frameworkPackages.Value.Item1, false, outdated) || autoReferenceFound;
+
+                    if (transitive)
+                    {
+                        autoReferenceFound = PackagesTable(frameworkPackages.Value.Item2, true, outdated) || autoReferenceFound;
+                    }
                 }
-
             }
-
+            return autoReferenceFound;
             
         }
 
@@ -265,9 +266,14 @@ namespace NuGet.CommandLine.XPlat
         /// packages table or not</param>
         /// <param name="outdated"></param>
         /// <returns>The table as a string</returns>
-        private string PackagesTable(IEnumerable<PRPackage> packages, bool printingTransitive, bool outdated)
+        private bool PackagesTable(IEnumerable<PRPackage> packages, bool printingTransitive, bool outdated)
         {
-            if (packages.Count() == 0) return "";
+            var autoReferenceFound = false;
+            if (packages.Count() == 0)
+            {
+                return autoReferenceFound;
+            }
+
             var sb = new StringBuilder();
             var headers = BuildTableHeaders(printingTransitive, outdated);
 
@@ -278,14 +284,14 @@ namespace NuGet.CommandLine.XPlat
                 {
                     sb.Append(packages.ToStringTable(
                         headers,
-                        p => "", p => p.package, p => "   ", p => p.resolvedVer.ToString(), p => p.suggestedVer.ToString()
+                        p => "", p => p.name, p => LeftPadding, p => p.resolvedVersion.ToString(), p => p.suggestedVersion == null ? "Not found at sources" : p.suggestedVersion.ToString()
                     ));
                 }
                 else
                 {
                     sb.Append(packages.ToStringTable(
                         headers,
-                        p => "", p => p.package, p => "   ", p => p.resolvedVer.ToString()
+                        p => "", p => p.name, p => LeftPadding, p => p.resolvedVersion.ToString()
                     ));
                 }
            
@@ -296,35 +302,36 @@ namespace NuGet.CommandLine.XPlat
                 {
                     sb.Append(packages.ToStringTable(
                        headers,
-                       p => "", p => p.package, p => {
-                           if (p.autoRef)
+                       p => "", p => p.name, p => {
+                           if (p.autoReference)
                            {
-                               _autoReferenceFound = true;
+                               autoReferenceFound = true;
                                return "(A)";
                            }
-                           return "   ";
-                       }, p => p.requestedVerStr, p => p.resolvedVer.ToString(), p => p.suggestedVer == null ? "Not found at sources" : p.suggestedVer.ToString()
+                           return LeftPadding;
+                       }, p => p.projectFileRequestedVersion, p => p.resolvedVersion.ToString(), p => p.suggestedVersion == null ? "Not found at sources" : p.suggestedVersion.ToString()
                    ));
                 }
                 else
                 {
                     sb.Append(packages.ToStringTable(
                        headers,
-                       p => "", p => p.package, p => {
-                           if (p.autoRef)
+                       p => "", p => p.name, p => {
+                           if (p.autoReference)
                            {
-                               _autoReferenceFound = true;
+                               autoReferenceFound = true;
                                return "(A)";
                            }
-                           return "   ";
-                       }, p => p.requestedVerStr, p => p.suggestedVer == null ? "Not found at sources" : p.suggestedVer.ToString()
+                           return LeftPadding;
+                       }, p => p.projectFileRequestedVersion, p => p.resolvedVersion.ToString()
                    ));
                 }
                 
 
             }
 
-            return sb.ToString();
+            Console.WriteLine(sb.ToString());
+            return autoReferenceFound;
         }
 
         /// <summary>
@@ -335,8 +342,7 @@ namespace NuGet.CommandLine.XPlat
         /// <returns></returns>
         private string[] BuildTableHeaders(bool printingTransitive, bool outdated)
         {
-            var padLeft = "   ";
-            var result = new List<string> { padLeft };
+            var result = new List<string> { LeftPadding };
             if (printingTransitive)
             {
                 result.Add("Transitive Package");
@@ -358,5 +364,20 @@ namespace NuGet.CommandLine.XPlat
 
             return result.ToArray();
         }
+    }
+
+    /// <summary>
+    /// A struct to simplify holding all of the information
+    /// about a package reference when using list
+    /// </summary>
+    internal struct PRPackage
+    {
+        public string name;
+        public VersionRange requestedVersion;
+        public string projectFileRequestedVersion;
+        public NuGetVersion resolvedVersion;
+        public NuGetVersion suggestedVersion;
+        //public bool deprecated;
+        public bool autoReference;
     }
 }

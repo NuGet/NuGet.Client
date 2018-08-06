@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Packaging.Core;
 using System.Threading;
 
 namespace NuGet.CommandLine.XPlat
@@ -16,11 +14,10 @@ namespace NuGet.CommandLine.XPlat
         public ILogger Logger { get; }
         public string Path { get; set; }
         public List<PackageSource> PackageSources { get; set; }
-        public bool Framework { get; set; }
         public IList<string> Frameworks { get; set; }
-        public bool Outdated { get; set; }
-        public bool Deprecated { get; set; }
-        public bool Transitive { get; set; }
+        public bool IncludeOutdated { get; set; }
+        public bool IncludeDeprecated { get; set; }
+        public bool IncludeTransitive { get; set; }
         public bool Prerelease { get; set; }
         public bool HighestPatch { get; set; }
         public bool HighestMinor { get; set; }
@@ -28,40 +25,30 @@ namespace NuGet.CommandLine.XPlat
         public CancellationToken CancellationToken { get; set; }
         
         public ListPackageArgs(
-            ILogger logger,
             string path,
             List<PackageSource> packageSources,
-            bool framework,
             IList<string> frameworks,
-            bool outdated,
-            bool deprecated,
-            bool transitive,
+            bool includeOutdated,
+            bool includeDeprecated,
+            bool includeTransitive,
             bool prerelease,
             bool highestPatch,
             bool highestMinor,
+            ILogger logger,
             CancellationToken cancellationToken)
         {
-            Logger = logger;
-            ValidateArgument(path);
-            Path = path;
+            Path = path ?? throw new ArgumentNullException(nameof(path));
             PackageSources = packageSources;
-            Framework = framework;
             Frameworks = frameworks;
-            Outdated = outdated;
-            Deprecated = deprecated;
-            Transitive = transitive;
+            IncludeOutdated = includeOutdated;
+            IncludeDeprecated = includeDeprecated;
+            IncludeTransitive = includeTransitive;
             Prerelease = prerelease;
             HighestPatch = highestPatch;
             HighestMinor = highestMinor;
+            Logger = logger;
             CancellationToken = cancellationToken;
         }
 
-        private void ValidateArgument(object arg)
-        {
-            if (arg == null)
-            {
-                throw new ArgumentNullException(nameof(arg));
-            }
-        }
     }
 }

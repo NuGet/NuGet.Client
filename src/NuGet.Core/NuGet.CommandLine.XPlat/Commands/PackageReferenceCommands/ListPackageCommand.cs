@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -12,8 +10,6 @@ using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -42,17 +38,17 @@ namespace NuGet.CommandLine.XPlat
                     Strings.ListPkg_FrameworkDescription,
                     CommandOptionType.SingleValue);
 
-                var outdated = listpkg.Option(
+                var includeOutdated = listpkg.Option(
                     "--outdated",
                     Strings.ListPkg_OutdatedDescription,
                     CommandOptionType.NoValue);
 
-                var deprecated = listpkg.Option(
+                var includeDeprecated = listpkg.Option(
                     "--deprecated",
                     Strings.ListPkg_DeprecatedDescription,
                     CommandOptionType.NoValue);
 
-                var transitive = listpkg.Option(
+                var includeTransitive = listpkg.Option(
                     "--include-transitive",
                     Strings.ListPkg_TransitiveDescription,
                     CommandOptionType.NoValue);
@@ -94,23 +90,21 @@ namespace NuGet.CommandLine.XPlat
                     var frameworks = ParseArgumentWithCommas(framework.Value());
                     
                     var packageRefArgs = new ListPackageArgs(
-                        logger,
                         path.Value,
                         packageSources,
-                        framework.HasValue(),
                         frameworks,
-                        outdated.HasValue(),
-                        deprecated.HasValue(),
-                        transitive.HasValue(),
+                        includeOutdated.HasValue(),
+                        includeDeprecated.HasValue(),
+                        includeTransitive.HasValue(),
                         prerelease.HasValue(),
                         highestPatch.HasValue(),
                         highestMinor.HasValue(),
+                        logger,
                         CancellationToken.None
                     );
 
-                    var msBuild = new MSBuildAPIUtility(logger);
                     var listPackageCommandRunner = getCommandRunner();
-                    await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs, msBuild);
+                    await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
                     return 0;
                 });
             });
@@ -140,7 +134,7 @@ namespace NuGet.CommandLine.XPlat
             
             var sourceProvider = new PackageSourceProvider(settings);
             var availableSources = sourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
-            var packageSources = new List<Configuration.PackageSource>();
+            var packageSources = new List<PackageSource>();
             foreach (var source in sources)
             {
                 packageSources.Add(PackageSourceProviderExtensions.ResolveSource(availableSources, source));
