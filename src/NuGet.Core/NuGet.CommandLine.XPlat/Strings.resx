@@ -513,4 +513,19 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="ListPkg_NoPackagesFoundForFrameworks" xml:space="preserve">
     <value>No packages were found for the project `{0}` given the specified frameworks</value>
   </data>
+  <data name="ListPkg_ConfigDescription" xml:space="preserve">
+    <value>Works only with `--outdated`. A path to a config file to specify sources</value>
+  </data>
+  <data name="ListPkg_HighestMinorDescription" xml:space="preserve">
+    <value>Works only with `--outdated`. Considers only the versions that have matching major</value>
+  </data>
+  <data name="ListPkg_HighestPatchDescription" xml:space="preserve">
+    <value>Works only with `--outdated`. Considers only the versions that have matching minor and major</value>
+  </data>
+  <data name="ListPkg_PrereleaseDescription" xml:space="preserve">
+    <value>Works only with `--outdated`. Considers prerelease versions when looking for latest</value>
+  </data>
+  <data name="ListPkg_SourceDescription" xml:space="preserve">
+    <value>Works only with `--outdated`. Sources to lookup for latest versions</value>
+  </data>
 </root>

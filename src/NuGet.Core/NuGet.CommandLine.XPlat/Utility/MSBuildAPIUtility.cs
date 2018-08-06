@@ -351,8 +351,9 @@ namespace NuGet.CommandLine.XPlat
 
                     result.Add(tfm.ToString(), tfm.Dependencies.Select(d => {
 
-                        string versionStr;
-                        VersionRange version;
+                        
+                        string versionStr; //requested version exactly as it is in the proj file
+                        VersionRange version; //requested version value as a range
                         //If the package is not auto-referenced, get the version from the project file. Otherwise fall back on the assets file
                         if (!d.AutoReferenced)
                         {
@@ -365,8 +366,12 @@ namespace NuGet.CommandLine.XPlat
                             version = d.LibraryRange.VersionRange;
                         }
 
-                        VersionRange.Parse(versionStr);
-                        return new PRPackage { package = d.Name, requestedVer = version, requestedVerStr = versionStr, autoRef = d.AutoReferenced };
+                        return new PRPackage {
+                            package = d.Name,
+                            requestedVer = version,
+                            requestedVerStr = versionStr,
+                            autoRef = d.AutoReferenced
+                        };
                     }));
 
                 }
@@ -411,7 +416,8 @@ namespace NuGet.CommandLine.XPlat
                 }
 
                 //The packages for the framework that were retrieved with GetRequestedVersions
-                var requestedFrameworkPackages = requestedVersions.Where(f => f.Key.Equals(target.TargetFramework.GetShortFolderName(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value;
+                var requestedFrameworkPackages = requestedVersions.Where(f =>
+                    f.Key.Equals(target.TargetFramework.GetShortFolderName(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value;
 
                 var topLevelPackages = new List<PRPackage>();
                 var transitivePackages = new List<PRPackage>();
@@ -419,7 +425,8 @@ namespace NuGet.CommandLine.XPlat
                 foreach (var library in target.Libraries)
                 {
                     
-                    var matchingPackages = requestedFrameworkPackages.Where(p => p.package.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
+                    var matchingPackages = requestedFrameworkPackages.Where(p =>
+                        p.package.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
 
                     //In case we found a matching package in requestedVersions, the package will be
                     //top level. If not, then it is transitive, and include-transitive must be used
@@ -433,7 +440,15 @@ namespace NuGet.CommandLine.XPlat
                         if (matchingPackages.Count() != 0)
                         {
                             var topLevelPackage = matchingPackages.Single();
-                            packageInfo = new PRPackage { package = packageInfo.package, resolvedVer = packageInfo.resolvedVer, requestedVer = topLevelPackage.requestedVer, requestedVerStr = topLevelPackage.requestedVerStr, autoRef = topLevelPackage.autoRef };
+
+                            packageInfo = new PRPackage {
+                                package = packageInfo.package,
+                                resolvedVer = packageInfo.resolvedVer,
+                                requestedVer = topLevelPackage.requestedVer,
+                                requestedVerStr = topLevelPackage.requestedVerStr,
+                                autoRef = topLevelPackage.autoRef
+                            };
+
                             topLevelPackages.Add(packageInfo);
                         }
                         else
@@ -446,7 +461,10 @@ namespace NuGet.CommandLine.XPlat
 
                 }
 
-                resultPackages.Add(target.TargetFramework.GetShortFolderName(), Tuple.Create(topLevelPackages.AsEnumerable(), transitivePackages.AsEnumerable()));
+                resultPackages.Add(
+                    target.TargetFramework.GetShortFolderName(),
+                    Tuple.Create(topLevelPackages.AsEnumerable(), transitivePackages.AsEnumerable())
+                );
             }
 
             return resultPackages;

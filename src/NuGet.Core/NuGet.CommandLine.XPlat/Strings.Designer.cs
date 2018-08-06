@@ -494,6 +494,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Works only with `--outdated`. A path to a config file to specify sources.
+        /// </summary>
+        internal static string ListPkg_ConfigDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_ConfigDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Displays only the packages that are marked deprecated by the authors.
         /// </summary>
         internal static string ListPkg_DeprecatedDescription {
@@ -517,6 +526,24 @@ namespace NuGet.CommandLine.XPlat {
         internal static string ListPkg_FrameworkDescription {
             get {
                 return ResourceManager.GetString("ListPkg_FrameworkDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Works only with `--outdated`. Considers only the versions that have matching major.
+        /// </summary>
+        internal static string ListPkg_HighestMinorDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_HighestMinorDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Works only with `--outdated`. Considers only the versions that have matching minor and major.
+        /// </summary>
+        internal static string ListPkg_HighestPatchDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_HighestPatchDescription", resourceCulture);
             }
         }
         
@@ -562,6 +589,24 @@ namespace NuGet.CommandLine.XPlat {
         internal static string ListPkg_PathDescription {
             get {
                 return ResourceManager.GetString("ListPkg_PathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Works only with `--outdated`. Considers prerelease versions when looking for latest.
+        /// </summary>
+        internal static string ListPkg_PrereleaseDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_PrereleaseDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Works only with `--outdated`. Sources to lookup for latest versions.
+        /// </summary>
+        internal static string ListPkg_SourceDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_SourceDescription", resourceCulture);
             }
         }
         

@@ -105,6 +105,8 @@ namespace NuGet.CommandLine.XPlat
         {
             var resultPackages = new Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>>();
 
+            var providers = Repository.Provider.GetCoreV3();
+
             foreach (var frameworkPackages in packages)
             {
                 var updatedTopLevel = frameworkPackages.Value.Item1.Select(async p =>
@@ -114,7 +116,7 @@ namespace NuGet.CommandLine.XPlat
                         requestedVer = p.requestedVer,
                         requestedVerStr = p.requestedVerStr,
                         resolvedVer = p.resolvedVer,
-                        suggestedVer = await GetLatestVersion(p.package, NuGetFramework.Parse(frameworkPackages.Key), listPackageArgs)
+                        suggestedVer = await GetLatestVersion(p, NuGetFramework.Parse(frameworkPackages.Key), listPackageArgs, providers)
                     }
                 );
 
@@ -125,7 +127,7 @@ namespace NuGet.CommandLine.XPlat
                         requestedVer = p.requestedVer,
                         requestedVerStr = p.requestedVerStr,
                         resolvedVer = p.resolvedVer,
-                        suggestedVer = await GetLatestVersion(p.package, NuGetFramework.Parse(frameworkPackages.Key), listPackageArgs)
+                        suggestedVer = await GetLatestVersion(p, NuGetFramework.Parse(frameworkPackages.Key), listPackageArgs, providers)
                     }
                 );
 
@@ -146,18 +148,23 @@ namespace NuGet.CommandLine.XPlat
         /// <summary>
         /// Fetches the latest version of the given packageId
         /// </summary>
-        /// <param name="packageId">The package Id to get the latest version for</param>
+        /// <param name="package">The package to get the latest version for</param>
         /// <param name="framework">The framework for the given package</param>
         /// <param name="listPackageArgs">List args for the token and source provider></param>
+        /// <param name="providers"></param>
         /// <returns>The highest version at sources as a string</returns>
-        private async Task<NuGetVersion> GetLatestVersion(string packageId, NuGetFramework framework, ListPackageArgs listPackageArgs)
+        private async Task<NuGetVersion> GetLatestVersion(
+            PRPackage package,
+            NuGetFramework framework,
+            ListPackageArgs listPackageArgs,
+            IEnumerable<Lazy<INuGetResourceProvider>> providers)
         {
-            var sources = listPackageArgs.SourceProvider.LoadPackageSources();
+            var sources = listPackageArgs.PackageSources;
             var tasks = new List<Task<NuGetVersion>>();
 
             foreach (var packageSource in sources)
             {
-                tasks.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, packageId, framework));
+                tasks.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, package, framework, providers));
             }
             var versions = await Task.WhenAll(tasks);
 
@@ -169,26 +176,49 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="packageSource">The source to look for pacakges at</param>
         /// <param name="listPackageArgs">The list args for the cancellation token</param>
-        /// <param name="packageId">Package to look for updates for</param>
+        /// <param name="p">Package to look for updates for</param>
         /// <param name="framework">The framework which the given package is for</param>
+        /// <param name="providers"></param>
         /// <returns>The highest NuGetVersion at the source</returns>
         private async Task<NuGetVersion> GetLatestVersionPerSourceAsync(
             PackageSource packageSource,
             ListPackageArgs listPackageArgs,
-            string packageId,
-            NuGetFramework framework)
+            PRPackage p,
+            NuGetFramework framework,
+            IEnumerable<Lazy<INuGetResourceProvider>> providers)
         {
-            var sourceRepository = Repository.Factory.GetCoreV3(packageSource.Source);
+
+            var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
             var dependencyInfoResource = await sourceRepository.GetResourceAsync<DependencyInfoResource>(listPackageArgs.CancellationToken);
-            var packages = (await dependencyInfoResource.ResolvePackages(packageId, framework, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken)).ToList();
+            var packages = (await dependencyInfoResource.ResolvePackages(p.package, framework, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken)).ToList();
 
             var latestVersionAtSource = packages.Where(package => package.Listed
-            && (!package.Version.IsPrerelease))
+            && MeetsConstraints(package, p, listPackageArgs))
             .OrderByDescending(package => package.Version, VersionComparer.Default)
             .Select(package => package.Version)
             .FirstOrDefault();
 
             return latestVersionAtSource;
+        }
+
+        private bool MeetsConstraints(SourcePackageDependencyInfo package, PRPackage p, ListPackageArgs listPackageArgs)
+        {
+            var result = true;
+            var baseVersion = p.requestedVer.MaxVersion != null ? p.requestedVer.MaxVersion : p.requestedVer.MinVersion;
+
+            var prerelease = !package.Version.IsPrerelease || listPackageArgs.Prerelease;
+            prerelease = prerelease || baseVersion.IsPrerelease;
+            result = result && prerelease;
+
+            result = listPackageArgs.HighestPatch ?
+                package.Version.Minor.Equals(baseVersion.Minor) && package.Version.Major.Equals(baseVersion.Major)
+                : result;
+
+            result = listPackageArgs.HighestMinor ?
+                package.Version.Major.Equals(baseVersion.Major)
+                : result;
+
+            return result;
         }
 
 
@@ -273,7 +303,7 @@ namespace NuGet.CommandLine.XPlat
                                return "(A)";
                            }
                            return "   ";
-                       }, p => p.requestedVerStr, p => p.resolvedVer.ToString(), p => p.suggestedVer.ToString()
+                       }, p => p.requestedVerStr, p => p.resolvedVer.ToString(), p => p.suggestedVer == null ? "Not found at sources" : p.suggestedVer.ToString()
                    ));
                 }
                 else
@@ -287,7 +317,7 @@ namespace NuGet.CommandLine.XPlat
                                return "(A)";
                            }
                            return "   ";
-                       }, p => p.requestedVerStr, p => p.resolvedVer.ToString()
+                       }, p => p.requestedVerStr, p => p.suggestedVer == null ? "Not found at sources" : p.suggestedVer.ToString()
                    ));
                 }
                 

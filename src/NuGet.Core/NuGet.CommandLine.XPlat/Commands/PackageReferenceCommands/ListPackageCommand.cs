@@ -38,45 +38,73 @@ namespace NuGet.CommandLine.XPlat
                     multipleValues: false);
 
                 var framework = listpkg.Option(
-                    "-f|--framework",
+                    "--framework",
                     Strings.ListPkg_FrameworkDescription,
                     CommandOptionType.SingleValue);
 
                 var outdated = listpkg.Option(
-                    "-o|--outdated",
+                    "--outdated",
                     Strings.ListPkg_OutdatedDescription,
                     CommandOptionType.NoValue);
 
                 var deprecated = listpkg.Option(
-                    "-d|--deprecated",
+                    "--deprecated",
                     Strings.ListPkg_DeprecatedDescription,
                     CommandOptionType.NoValue);
 
                 var transitive = listpkg.Option(
-                    "-t|--include-transitive",
+                    "--include-transitive",
                     Strings.ListPkg_TransitiveDescription,
                     CommandOptionType.NoValue);
+
+                var prerelease = listpkg.Option(
+                    "--include-prerelease",
+                    Strings.ListPkg_PrereleaseDescription,
+                    CommandOptionType.NoValue);
+
+                var highestPatch = listpkg.Option(
+                    "--highest-patch",
+                    Strings.ListPkg_HighestPatchDescription,
+                    CommandOptionType.NoValue);
+
+                var highestMinor = listpkg.Option(
+                    "--highest-minor",
+                    Strings.ListPkg_HighestMinorDescription,
+                    CommandOptionType.NoValue);
+
+                var source = listpkg.Option(
+                    "--source",
+                    Strings.ListPkg_SourceDescription,
+                    CommandOptionType.SingleValue);
+
+                var config = listpkg.Option(
+                    "--config",
+                    Strings.ListPkg_ConfigDescription,
+                    CommandOptionType.SingleValue);
 
                 listpkg.OnExecute(async () =>
                 {
                     var logger = getLogger();
-                    var frameworks = ParseFrameworks(framework.Value());
 
-                    var settings = XPlatUtility.CreateDefaultSettings();
+                    var settings = ProcessConfigFile(config.Value(), path.Value);
+                    var sources = ParseArgumentWithCommas(source.Value());
+                    
+                    var packageSources = GetPackageSources(settings, sources, config);
 
-                    var packageSources = GetPackageSources(settings, new List<string>());
-                    var sourceProvider = new PackageSourceProvider(settings);
-
-
+                    var frameworks = ParseArgumentWithCommas(framework.Value());
+                    
                     var packageRefArgs = new ListPackageArgs(
                         logger,
                         path.Value,
-                        sourceProvider,
+                        packageSources,
                         framework.HasValue(),
                         frameworks,
                         outdated.HasValue(),
                         deprecated.HasValue(),
                         transitive.HasValue(),
+                        prerelease.HasValue(),
+                        highestPatch.HasValue(),
+                        highestMinor.HasValue(),
                         CancellationToken.None
                     );
 
@@ -88,8 +116,28 @@ namespace NuGet.CommandLine.XPlat
             });
         }
 
-        private static List<PackageSource> GetPackageSources(ISettings settings, List<string> sources)
+        private static ISettings ProcessConfigFile(string configFile, string currentDirectory)
         {
+            if (string.IsNullOrEmpty(configFile))
+            {
+                return Settings.LoadDefaultSettings(currentDirectory);
+            }
+            else
+            {
+                var configFileFullPath = Path.GetFullPath(configFile);
+                var directory = Path.GetDirectoryName(configFileFullPath);
+                var configFileName = Path.GetFileName(configFileFullPath);
+                return Settings.LoadDefaultSettings(
+                    directory,
+                    configFileName,
+                    machineWideSettings: new XPlatMachineWideSetting());
+            }
+
+        }
+
+        private static List<PackageSource> GetPackageSources(ISettings settings, List<string> sources, CommandOption config)
+        {
+            
             var sourceProvider = new PackageSourceProvider(settings);
             var availableSources = sourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
             var packageSources = new List<Configuration.PackageSource>();
@@ -98,7 +146,7 @@ namespace NuGet.CommandLine.XPlat
                 packageSources.Add(PackageSourceProviderExtensions.ResolveSource(availableSources, source));
             }
 
-            if (packageSources.Count == 0)
+            if (packageSources.Count == 0 || config.HasValue())
             {
                 packageSources.AddRange(availableSources);
             }
@@ -106,14 +154,14 @@ namespace NuGet.CommandLine.XPlat
             return packageSources;
         }
 
-        private static List<string> ParseFrameworks(string frameworks)
+        private static List<string> ParseArgumentWithCommas(string argument)
         {
-            if (frameworks == null)
+            if (argument == null)
             {
                 return new List<string>();
             }
-            var frameworksList = frameworks.Split(',').ToList();
-            return frameworksList;
+            var argumentList = argument.Split(',').ToList();
+            return argumentList;
         }
 
     }
