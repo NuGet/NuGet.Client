@@ -74,6 +74,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandMinClientVersion")]
         public string MinClientVersion { get; set; }
 
+        [Option(typeof(NuGetCommand), "PackageCommandSymbolPackageFormat")]
+        public string SymbolPackageFormat { get; set; }
+
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
         public string MSBuildVersion { get; set; }
 
@@ -91,7 +94,7 @@ namespace NuGet.CommandLine
 
         public override void ExecuteCommand()
         {
-            PackArgs packArgs = new PackArgs();
+            var packArgs = new PackArgs();
             packArgs.Logger = Console;
             packArgs.Arguments = Arguments;
             packArgs.OutputDirectory = OutputDirectory;
@@ -106,13 +109,19 @@ namespace NuGet.CommandLine
 
             Console.WriteLine(LocalizedResourceManager.GetString("PackageCommandAttemptingToBuildPackage"), Path.GetFileName(packArgs.Path));
 
-            if (!String.IsNullOrEmpty(MinClientVersion))
+            if (!string.IsNullOrEmpty(MinClientVersion))
             {
                 if (!System.Version.TryParse(MinClientVersion, out _minClientVersionValue))
                 {
                     throw new CommandLineException(LocalizedResourceManager.GetString("PackageCommandInvalidMinClientVersion"));
                 }
             }
+
+            if(!string.IsNullOrEmpty(SymbolPackageFormat))
+            {
+                packArgs.SymbolPackageFormat = PackArgs.GetSymbolPackageFormat(SymbolPackageFormat);
+            }
+
 
             packArgs.Build = Build;
             packArgs.Exclude = Exclude;
@@ -154,12 +163,12 @@ namespace NuGet.CommandLine
                 NuGetVersion version;
                 if (!NuGetVersion.TryParse(Version, out version))
                 {
-                    throw new PackagingException(NuGetLogCode.NU5010, String.Format(CultureInfo.CurrentCulture, NuGetResources.InstallCommandPackageReferenceInvalidVersion, Version));
+                    throw new PackagingException(NuGetLogCode.NU5010, string.Format(CultureInfo.CurrentCulture, NuGetResources.InstallCommandPackageReferenceInvalidVersion, Version));
                 }
                 packArgs.Version = version.ToFullString();
             }
 
-            PackCommandRunner packCommandRunner = new PackCommandRunner(packArgs, ProjectFactory.ProjectCreator);
+            var packCommandRunner = new PackCommandRunner(packArgs, ProjectFactory.ProjectCreator);
             packCommandRunner.BuildPackage();
         }
    }

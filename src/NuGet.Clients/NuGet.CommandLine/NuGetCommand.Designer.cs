@@ -7832,6 +7832,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to If creating a symbols package, allows to choose between the &apos;snupkg&apos; and &apos;symbols.nupkg&apos; format..
+        /// </summary>
+        internal static string PackageCommandSymbolPackageFormat {
+            get {
+                return ResourceManager.GetString("PackageCommandSymbolPackageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Determines if a package containing sources and symbols should be created. When specified with a nuspec, creates a regular NuGet package file and the corresponding symbols package..
         /// </summary>
         internal static string PackageCommandSymbolsDescription {

@@ -5479,5 +5479,7 @@ This option should be used when specifying the certificate via -CertificateSubje
   <data name="SourcesCommandValidAuthenticationTypesDescription" xml:space="preserve">
     <value>Comma-separated list of valid authentication types for this source. By default, all authentication types are valid. Example: basic,negotiate</value>
     <comment>Please don't localize "basic,negotiate"</comment>
+  <data name="PackageCommandSymbolPackageFormat" xml:space="preserve">
+    <value>If creating a symbols package, allows to choose between the 'snupkg' and 'symbols.nupkg' format.</value>
   </data>
 </root>
