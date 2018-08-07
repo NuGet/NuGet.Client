@@ -282,18 +282,6 @@ namespace NuGet.PackageManagement
             // Before starting to restore package, set the nuGetProjectContext such that satellite files are not copied yet
             // Satellite files will be copied as a post operation. This helps restore packages in parallel
             // and not have to determine if the package is a satellite package beforehand
-            if (nuGetProjectContext.PackageExtractionContext == null)
-            {
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
-                nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv2,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    new LoggerAdapter(nuGetProjectContext),
-                    signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault());
-            }
-
             nuGetProjectContext.PackageExtractionContext.CopySatelliteFiles = false;
 
             packageRestoreContext.Token.ThrowIfCancellationRequested();
