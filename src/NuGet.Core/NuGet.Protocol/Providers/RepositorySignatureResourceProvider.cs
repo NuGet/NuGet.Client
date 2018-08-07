@@ -42,6 +42,12 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
+            var validUri = Uri.TryCreate(repoSignUrl, UriKind.Absolute, out var repoSignValidUri);
+            if (!validUri || !string.Equals(repoSignValidUri.Scheme, "https", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.RepositorySignaturesResourceMustBeHttps, source.PackageSource.Source));
+            }
+
             var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
             var client = httpSourceResource.HttpSource;
 

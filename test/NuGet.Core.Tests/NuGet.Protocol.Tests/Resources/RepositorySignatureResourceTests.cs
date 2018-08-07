@@ -97,7 +97,42 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task RepositorySignatureResource_WithNonHttpsSourceAsync()
+        public async Task RepositorySignatureResource_ContentURLNotHttpsAsync()
+        {
+            // Arrange
+            var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
+            var responses = new Dictionary<string, string>
+            {
+                { source, JsonData.RepoSignIndexJsonData },
+                { "https://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignDataNotHTTPS }
+            };
+
+            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<FatalProtocolException>(async () => await repo.GetResourceAsync<RepositorySignatureResource>());
+        }
+
+        [Fact]
+        public async Task RepositorySignatureResource_ResourceIsNotHttpsAsync()
+        {
+            // Arrange
+            var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
+            var responses = new Dictionary<string, string>
+            {
+                { source, JsonData.RepoSignIndexJsonDataResourceNotHTTPS },
+                { "http://api.nuget.org/v3-index/repository-signatures/index.json", JsonData.RepoSignDataNotHTTPS }
+            };
+
+            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<FatalProtocolException>(async () => await repo.GetResourceAsync<RepositorySignatureResource>());
+        }
+
+
+        [Fact]
+        public async Task RepositorySignatureResource_RepositorySignatureInfo_WithNonHttpsSourceAsync()
         {
             // Arrange
             var source = $"http://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
@@ -109,12 +144,24 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
 
-            // Act & Assert
-            await Assert.ThrowsAsync<FatalProtocolException>(async () => await repo.GetResourceAsync<RepositorySignatureResource>());
+            // Act
+            var repositorySignatureResource = await repo.GetResourceAsync<RepositorySignatureResource>();
+            repositorySignatureResource.UpdateRepositorySignatureInfo();
+
+            // Assert
+
+            RepositorySignatureInfoProvider.Instance.TryGetRepositorySignatureInfo(source, out var repositorySignatureInfo);
+
+            Assert.False(repositorySignatureInfo.AllRepositorySigned);
+            Assert.NotNull(repositorySignatureInfo.RepositoryCertificateInfos);
+            Assert.Equal(1, repositorySignatureInfo.RepositoryCertificateInfos.Count());
+
+            var certInfo = repositorySignatureInfo.RepositoryCertificateInfos.FirstOrDefault();
+            VerifyCertInfo(certInfo);
         }
 
         [Fact]
-        public async Task RepositorySignatureResource_RepositorySignatureInfoAsync()
+        public async Task RepositorySignatureResource_RepositorySignatureInfo_WithHttpsSourceAsync()
         {
             // Arrange
             var source = $"https://{Guid.NewGuid()}.unit.test/v3-with-flat-container/index.json";
