@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,10 +35,19 @@ namespace NuGet.Protocol
 
             HttpSourceResource curResource = null;
 
-            var throttle = Throttle ?? NullThrottle.Instance;
-
             if (source.PackageSource.IsHttp)
             {
+                IThrottle throttle = NullThrottle.Instance;
+
+                if (Throttle != null)
+                {
+                    throttle = Throttle;
+                }
+                else if (source.PackageSource.MaxHttpRequestsPerSource > 0)
+                {
+                    throttle = SemaphoreSlimThrottle.CreateSemaphoreThrottle(source.PackageSource.MaxHttpRequestsPerSource);
+                }
+
                 curResource = _cache.GetOrAdd(
                     source.PackageSource, 
                     packageSource => new HttpSourceResource(HttpSource.Create(source, throttle)));

@@ -48,6 +48,8 @@ namespace NuGet.Configuration
 
         public bool IsPersistable { get; private set; }
 
+        public int MaxHttpRequestsPerSource { get; set; }
+
         /// <summary>
         /// Gets or sets the protocol version of the source. Defaults to 2.
         /// </summary>

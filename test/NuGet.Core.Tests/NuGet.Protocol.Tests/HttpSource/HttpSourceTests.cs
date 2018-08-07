@@ -449,9 +449,41 @@ namespace NuGet.Protocol.Tests
             }
         }
 
+        [Fact]
+        public async Task HttpSource_ThrottlesRequestsFromSettings()
+        {
+            // Arrange
+            using (var td = TestDirectory.Create())
+            {
+                var tc = new TestContext(td, SemaphoreSlimThrottle.CreateSemaphoreThrottle(initialCount: 4));
+
+                tc.MessageHandler.WaitTimeInMs = 100;
+                var tasks = new List<Task>();
+
+                // Act
+
+                for (var i = 0; i < 18; i++)
+                {
+                    tasks.Add(Task.Run(() =>
+                    {
+                        return tc.HttpSource.ProcessStreamAsync(
+                            new HttpSourceRequest(tc.Url, tc.Logger),
+                            stream => Task.FromResult(true),
+                            tc.Logger,
+                            token: CancellationToken.None);
+                    }));
+                }
+
+                await Task.WhenAll(tasks);
+
+                // Assert
+                Assert.True(tc.MessageHandler.MaxConcurrencyRequest <= 4, $"MaxConcurrencyRequest is {tc.MessageHandler.MaxConcurrencyRequest}");
+            }
+        }
+
         private class TestContext
         {
-            public TestContext(TestDirectory testDirectory)
+            public TestContext(TestDirectory testDirectory, IThrottle throttle = null)
             {
                 // data
                 var source = FakeSource;
@@ -467,15 +499,15 @@ namespace NuGet.Protocol.Tests
                 // dependencies
                 var packageSource = new PackageSource(source);
                 var networkResponses = new Dictionary<string, string> { { Url, NetworkContent } };
-                var messageHandler = new TestMessageHandler(networkResponses, string.Empty);
-                var handlerResource = new TestHttpHandler(messageHandler);
+                MessageHandler = new TestMessageHandler(networkResponses, string.Empty);
+                var handlerResource = new TestHttpHandler(MessageHandler);
 
                 Logger = new TestLogger();
                 TestDirectory = testDirectory;
                 RetryHandlerMock = new Mock<IHttpRetryHandler>();
 
                 // target
-                HttpSource = new HttpSource(packageSource, () => Task.FromResult((HttpHandlerResource)handlerResource), Throttle.Object)
+                HttpSource = new HttpSource(packageSource, () => Task.FromResult((HttpHandlerResource)handlerResource), throttle ?? Throttle.Object)
                 {
                     HttpCacheDirectory = TestDirectory
                 };
@@ -495,6 +527,8 @@ namespace NuGet.Protocol.Tests
 
             public TestLogger Logger { get; }
 
+            public TestMessageHandler MessageHandler { get; }
+
             public HttpSourceCacheContext CacheContext
             {
                 get
@@ -507,7 +541,7 @@ namespace NuGet.Protocol.Tests
                 }
             }
 
-            public HttpSource HttpSource { get; }
+            public HttpSource HttpSource { get; set; }
 
             public Exception NetworkValidationException { get; }
 
