@@ -458,14 +458,7 @@ namespace NuGet.CommandLine.XPlat
         private static IEnumerable<ProjectItem> GetPackageReferencesPerFramework(Project project,
             LibraryDependency libraryDependency, string framework)
         {
-            var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                { { "TargetFramework", framework } };
-            var projectPerFramework = GetProject(project.FullPath, globalProperties);
-
-            var packages = GetPackageReferences(projectPerFramework, libraryDependency);
-            ProjectCollection.GlobalProjectCollection.UnloadProject(projectPerFramework);
-
-            return packages;
+            return GetPackageReferencesPerFramework(project, libraryDependency.Name, framework);
         }
 
         /// <summary>
