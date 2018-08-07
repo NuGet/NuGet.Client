@@ -66,11 +66,11 @@
 
         if($(IsClientDotnetExe $_nugetClientFilePath))
         {
-            . $_nugetClientFilePath nuget locals -clear all -Verbosity quiet
+            . $_nugetClientFilePath nuget locals -c all
         } 
         else 
         {
-            . $_nugetClientFilePath locals -clear all -Verbosity quiet
+            . $_nugetClientFilePath locals -c all -Verbosity quiet
         }
     }
 

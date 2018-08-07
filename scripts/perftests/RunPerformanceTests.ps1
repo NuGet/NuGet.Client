@@ -21,19 +21,19 @@ Param(
         {
             if($cleanGlobalPackagesFolder -And $cleanHttpCache -And $cleanPluginsCache)
             {
-                $localsArguments = "-clear all"
+                $localsArguments = "-c all"
             }
             elseif($cleanGlobalPackagesFolder -And $cleanHttpCache)
             {
-                $localsArguments =  "-clear http-cache global-packages"
+                $localsArguments =  "-c http-cache global-packages"
             }
             elseif($cleanGlobalPackagesFolder)
             {
-                $localsArguments =  "-clear global-packages"
+                $localsArguments =  "-c global-packages"
             }
             elseif($cleanHttpCache)
             {
-                $localsArguments = "-clear http-cache"
+                $localsArguments = "-c http-cache"
             } 
             else 
             {
@@ -42,11 +42,11 @@ Param(
 
             if($(IsClientDotnetExe $nugetClient))
             {
-                . $nugetClient "nuget locals $localsArguments -Verbosity quiet"
+                . $nugetClient nuget locals $localsArguments
             } 
             else 
             {
-                . $nugetClient "locals $localsArguments -Verbosity quiet"
+                . $nugetClient locals $localsArguments -Verbosity quiet
             }
         }
 
