@@ -46,6 +46,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ImportNuGetBuildTasksPackTargetsFromSdk Condition="'$(ImportNuGetBuildTasksPackTargetsFromSdk)' == ''">false</ImportNuGetBuildTasksPackTargetsFromSdk>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>.dll; .exe; .winmd; .json; .pri; .xml; $(AllowedOutputExtensionsInPackageBuildOutputFolder)</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>.pdb; .mdb; $(AllowedOutputExtensionsInPackageBuildOutputFolder); $(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder)</AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>
+    <AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder Condition="'$(SymbolPackageFormat)' == 'snupkg'">.pdb; .mdb</AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>
     <SuppressDependenciesWhenPacking Condition="'$(SuppressDependenciesWhenPacking)' == ''">false</SuppressDependenciesWhenPacking>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' == 'true' ">
@@ -83,7 +84,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         PackageId="$(PackageId)"
         PackageVersion="$(PackageVersion)"
         IncludeSymbols="$(IncludeSymbols)"
-        IncludeSource="$(IncludeSource)">
+        IncludeSource="$(IncludeSource)"
+        SymbolPackageFormat="$(SymbolPackageFormat)">
 
       <Output
         TaskParameter="OutputPackItems"
