@@ -54,7 +54,7 @@ namespace NuGet.Common
             }
         }
 
-        public virtual Task LogAsync(LogLevel level, string data)
+        public Task LogAsync(LogLevel level, string data)
         {
             Log(level, data);
 
