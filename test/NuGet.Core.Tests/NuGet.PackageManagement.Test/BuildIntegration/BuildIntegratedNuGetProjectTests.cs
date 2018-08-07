@@ -3,12 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
@@ -35,16 +32,14 @@ namespace NuGet.PackageManagement.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var packagesFolder = TestDirectory.Create())
-            using (var rootFolder = TestDirectory.Create())
+            using (var solutionManager = new TestSolutionManager(false))
             {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+                var projectFolder = new DirectoryInfo(Path.Combine(solutionManager.SolutionDirectory, projectName));
                 projectFolder.Create();
                 var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
                 var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
 
                 BuildIntegrationTestUtility.CreateConfigJson(projectConfig.FullName);
-
                 var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
 
                 JsonConfigUtility.AddDependency(json, new PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
@@ -55,14 +50,10 @@ namespace NuGet.PackageManagement.Test
                 }
 
                 var sources = new List<SourceRepository> { };
-
                 var testLogger = new TestLogger();
-                var settings = new Settings(rootFolder);
-                settings.SetValue(SettingsUtility.ConfigSection, "globalPackagesFolder", packagesFolder);
-
+                var settings = Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config");
                 var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
 
-                var solutionManager = new TestSolutionManager(false);
                 solutionManager.NuGetProjects.Add(project);
 
                 var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
@@ -94,12 +85,12 @@ namespace NuGet.PackageManagement.Test
                     testLogger,
                     CancellationToken.None);
 
-                foreach(var restoreSummary in noOpRestoreSummaries)
+                foreach (var restoreSummary in noOpRestoreSummaries)
                 {
                     Assert.True(restoreSummary.NoOpRestore);
                 }
 
-                var resolver = new VersionFolderPathResolver(packagesFolder);
+                var resolver = new VersionFolderPathResolver(solutionManager.GlobalPackagesFolder);
                 var hashPath = resolver.GetHashPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
 
                 File.Delete(hashPath);
@@ -128,6 +119,7 @@ namespace NuGet.PackageManagement.Test
                     "nugetSpec.dg");
 
                 Assert.True(File.Exists(filePath));
+
             }
         }
 
@@ -204,10 +196,9 @@ namespace NuGet.PackageManagement.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var packagesFolder = TestDirectory.Create())
-            using (var rootFolder = TestDirectory.Create())
+            using (var solutionManager = new TestSolutionManager(false))
             {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+                var projectFolder = new DirectoryInfo(Path.Combine(solutionManager.SolutionDirectory, projectName));
                 projectFolder.Create();
                 var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
                 var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
@@ -228,14 +219,10 @@ namespace NuGet.PackageManagement.Test
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
                 var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
-
-                var solutionManager = new TestSolutionManager(false);
                 solutionManager.NuGetProjects.Add(project);
 
                 var testLogger = new TestLogger();
-                var settings = new Settings(rootFolder);
-                settings.SetValue(SettingsUtility.ConfigSection, "globalPackagesFolder", packagesFolder);
-
+                var settings = Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config");
                 var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
                 var providersCache = new RestoreCommandProvidersCache();
 
@@ -268,7 +255,7 @@ namespace NuGet.PackageManagement.Test
                     Assert.True(restoreSummary.NoOpRestore);
                 }
 
-                var resolver = new VersionFolderPathResolver(packagesFolder);
+                var resolver = new VersionFolderPathResolver(solutionManager.GlobalPackagesFolder);
                 var pathToDelete = resolver.GetInstallPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
 
                 TestFileSystemUtility.DeleteRandomTestFolder(pathToDelete);
@@ -443,7 +430,7 @@ namespace NuGet.PackageManagement.Test
             }
         }
 
-        [Fact(Skip="Add nuget.config to bring in fallback folders")]
+        [Fact(Skip = "Add nuget.config to bring in fallback folders")]
         public async Task BuildIntegratedNuGetProject_IsRestoreRequiredWithNoChangesFallbackFolder()
         {
             // Arrange
