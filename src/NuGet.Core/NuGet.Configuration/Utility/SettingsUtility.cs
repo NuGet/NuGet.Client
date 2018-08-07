@@ -19,6 +19,7 @@ namespace NuGet.Configuration
         private const string HttpCacheEnvironmentKey = "NUGET_HTTP_CACHE_PATH";
         private const string PluginsCacheEnvironmentKey = "NUGET_PLUGINS_CACHE_PATH";
         private const string RepositoryPathKey = "repositoryPath";
+        private const string MaxHttpRequestsPerSource = "maxHttpRequestsPerSource";
         public static readonly string DefaultGlobalPackagesFolderPath = "packages" + Path.DirectorySeparatorChar;
 
         public static string GetRepositoryPath(ISettings settings)
@@ -30,6 +31,17 @@ namespace NuGet.Configuration
             }
 
             return path;
+        }
+
+        public static int GetMaxHttpRequest(ISettings settings)
+        {
+            var max = settings.GetValue(ConfigSection, MaxHttpRequestsPerSource, isPath: false);
+            if (!string.IsNullOrEmpty(max) && int.TryParse(max, out var result))
+            {
+                return result;
+            }
+
+            return 0;
         }
 
         public static string GetDecryptedValue(ISettings settings, string section, string key, bool isPath = false)
