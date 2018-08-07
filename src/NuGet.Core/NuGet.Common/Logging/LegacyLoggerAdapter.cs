@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -17,40 +17,40 @@ namespace NuGet.Common
             switch (level)
             {
                 case LogLevel.Debug:
-                    {
-                        LogDebug(data);
-                        break;
-                    }
+                {
+                    LogDebug(data);
+                    break;
+                }
 
                 case LogLevel.Error:
-                    {
-                        LogError(data);
-                        break;
-                    }
+                {
+                    LogError(data);
+                    break;
+                }
 
                 case LogLevel.Information:
-                    {
-                        LogInformation(data);
-                        break;
-                    }
+                {
+                    LogInformation(data);
+                    break;
+                }
 
                 case LogLevel.Minimal:
-                    {
-                        LogMinimal(data);
-                        break;
-                    }
+                {
+                    LogMinimal(data);
+                    break;
+                }
 
                 case LogLevel.Verbose:
-                    {
-                        LogVerbose(data);
-                        break;
-                    }
+                {
+                    LogVerbose(data);
+                    break;
+                }
 
                 case LogLevel.Warning:
-                    {
-                        LogWarning(data);
-                        break;
-                    }
+                {
+                    LogWarning(data);
+                    break;
+                }
             }
         }
 
@@ -61,12 +61,12 @@ namespace NuGet.Common
             return Task.FromResult(0);
         }
 
-        public void Log(ILogMessage message)
+        public virtual void Log(ILogMessage message)
         {
             Log(message.Level, message.Message);
         }
 
-        public async Task LogAsync(ILogMessage message)
+        public virtual async Task LogAsync(ILogMessage message)
         {
             await LogAsync(message.Level, message.Message);
         }
