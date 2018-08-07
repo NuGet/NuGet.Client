@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -21,6 +23,7 @@ namespace NuGet.CommandLine.XPlat
 {
     public class ListPackageCommandRunner : IListPackageCommandRunner
     {
+        private const string ASSETS_FILE_PATH_TAG = "ProjectAssetsFile";
         private const string LeftPadding = "   ";
 
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
@@ -40,12 +43,36 @@ namespace NuGet.CommandLine.XPlat
             {
                 //Open project to evaluate properties
                 var project = MSBuildAPIUtility.GetProject(projectPath);
+
+                if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
+                {
+                    Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Error_NotPRProject,
+                        projectPath));
+                    continue;
+                }
+
                 var projectName = project.GetPropertyValue("MSBuildProjectName");
+
+                var assetsPath = project.GetPropertyValue(ASSETS_FILE_PATH_TAG);
+
+                //If the property or file were not found, print an error message and return
+                if (assetsPath == "" || !File.Exists(assetsPath))
+                {
+                    Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Error_AssetsFileNotFound,
+                        projectPath));
+                    continue;
+                }
+
+
+                var lockFileFormat = new LockFileFormat();
+                var assetsFile = lockFileFormat.Read(assetsPath);
 
                 Debugger.Launch();
 
                 //Get all the packages that are referenced in a project
-                var packages = msBuild.GetPackageReferencesForList(project, listPackageArgs.Frameworks, listPackageArgs.IncludeTransitive);
+                var packages = msBuild.GetResolvedVersions(listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
 
                 //A null return means that reading the assets file failed
                 //or that no package references at all were found 
@@ -100,7 +127,7 @@ namespace NuGet.CommandLine.XPlat
                         autoReference = p.autoReference,
                         name = p.name,
                         requestedVersion = p.requestedVersion,
-                        projectFileRequestedVersion = p.projectFileRequestedVersion,
+                        printableRequestedVersion = p.printableRequestedVersion,
                         resolvedVersion = p.resolvedVersion,
                         suggestedVersion = await GetLatestVersion(p, NuGetFramework.Parse(frameworkPackages.Key), listPackageArgs, providers)
                     }
@@ -111,7 +138,7 @@ namespace NuGet.CommandLine.XPlat
                         autoReference = p.autoReference,
                         name = p.name,
                         requestedVersion = p.requestedVersion,
-                        projectFileRequestedVersion = p.projectFileRequestedVersion,
+                        printableRequestedVersion = p.printableRequestedVersion,
                         resolvedVersion = p.resolvedVersion,
                         suggestedVersion = await GetLatestVersion(p, NuGetFramework.Parse(frameworkPackages.Key), listPackageArgs, providers)
                     }
@@ -318,7 +345,7 @@ namespace NuGet.CommandLine.XPlat
                                return "(A)";
                            }
                            return LeftPadding;
-                       }, p => p.projectFileRequestedVersion, p => p.resolvedVersion.ToString(), p => p.suggestedVersion == null ? "Not found at sources" : p.suggestedVersion.ToString()
+                       }, p => p.printableRequestedVersion, p => p.resolvedVersion.ToString(), p => p.suggestedVersion == null ? "Not found at sources" : p.suggestedVersion.ToString()
                    ));
                 }
                 else
@@ -332,7 +359,7 @@ namespace NuGet.CommandLine.XPlat
                                return "(A)";
                            }
                            return LeftPadding;
-                       }, p => p.projectFileRequestedVersion, p => p.resolvedVersion.ToString()
+                       }, p => p.printableRequestedVersion, p => p.resolvedVersion.ToString()
                    ));
                 }
                 
@@ -383,7 +410,7 @@ namespace NuGet.CommandLine.XPlat
     {
         public string name;
         public VersionRange requestedVersion;
-        public string projectFileRequestedVersion;
+        public string printableRequestedVersion;
         public NuGetVersion resolvedVersion;
         public NuGetVersion suggestedVersion;
         //public bool deprecated;

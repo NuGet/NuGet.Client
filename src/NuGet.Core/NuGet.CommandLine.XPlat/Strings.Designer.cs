@@ -296,7 +296,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No assets file was found for `{0}`. Please make sure the project uses package references and run restore before running this command..
+        ///   Looks up a localized string similar to No assets file was found for `{0}`. Please run restore before running this command..
         /// </summary>
         internal static string Error_AssetsFileNotFound {
             get {
@@ -337,6 +337,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_NoMatchingSpecs {
             get {
                 return ResourceManager.GetString("Error_NoMatchingSpecs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects..
+        /// </summary>
+        internal static string Error_NotPRProject {
+            get {
+                return ResourceManager.GetString("Error_NotPRProject", resourceCulture);
             }
         }
         

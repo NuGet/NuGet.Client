@@ -302,91 +302,9 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        internal Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> GetPackageReferencesForList(
-            Project project, IList<string> userInputFrameworks, bool transitive)
+        internal static bool IsPackageReferenceProject(Project project)
         {
-            //Path to the assets file
-            var assetsPath = project.GetPropertyValue(ASSETS_FILE_PATH_TAG);
-
-            //If the property or file were not found, print an error message and return
-            if (assetsPath == "" || !File.Exists(assetsPath))
-            {
-                Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                    Strings.Error_AssetsFileNotFound,
-                    project.FullPath));
-                return null;
-            }
-
-
-            var lockFileFormat = new LockFileFormat();
-            var assetsFile = lockFileFormat.Read(assetsPath);
-
-            //Packages from the assets file
-            var requestedVersions = GetRequestedPackages(project, userInputFrameworks, assetsFile);
-
-            //Packages resolved versions from the assets file including transitive
-            //packages if include-transitive flag is used
-            var packagesPerFramework = GetResolvedVersions(userInputFrameworks, assetsFile, requestedVersions, transitive);
-
-            return packagesPerFramework;
-        }
-
-        /// <summary>
-        /// Given a project, a list of frameworks and an assets file, this function returns all the
-        /// target frameworks with their packages
-        /// </summary>
-        /// <param name="project">PR project file</param>
-        /// <param name="userInputFrameworks">List of frameworks</param>
-        /// <param name="assetsFile">Assets file</param>
-        /// <returns></returns>
-        private Dictionary<string, IEnumerable<PRPackage>> GetRequestedPackages(Project project, IList<string> userInputFrameworks, LockFile assetsFile)
-        {
-            var result = new Dictionary<string, IEnumerable<PRPackage>>();
-
-            //Find the target farmeworks that matches the passed in frameworks
-            //If no frameworks are passed in, go through all of the frameworks
-            var foundTargetFrameworks = new List<TargetFrameworkInformation>();
-            if (userInputFrameworks.Count() == 0)
-            {
-                foundTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks.ToList();
-            }
-            else
-            {
-                foundTargetFrameworks.AddRange(assetsFile.PackageSpec.TargetFrameworks.Where(tfm => userInputFrameworks.Contains(tfm.ToString())));
-            }
-
-            foreach (var tfm in foundTargetFrameworks)
-            {
-                var projPackages = GetPackageReferencesPerFramework(project, "", tfm.ToString());
-
-                result.Add(tfm.ToString(), tfm.Dependencies.Select(d => {
-
-                        
-                    string versionStr; //requested version exactly as it is in the proj file
-                    VersionRange version; //requested version value as a range
-                    //If the package is not auto-referenced, get the version from the project file. Otherwise fall back on the assets file
-                    if (!d.AutoReferenced)
-                    {
-                        versionStr = projPackages.Where(p => p.EvaluatedInclude.Equals(d.Name)).First().GetMetadataValue(VERSION_TAG);
-                        version = VersionRange.Parse(versionStr);
-                    }
-                    else
-                    {
-                        versionStr = d.LibraryRange.VersionRange.ToString();
-                        version = d.LibraryRange.VersionRange;
-                    }
-
-                    return new PRPackage {
-                        name = d.Name,
-                        requestedVersion = version,
-                        projectFileRequestedVersion = versionStr,
-                        autoReference = d.AutoReferenced
-                    };
-                }));
-
-            }
-
-            return result;
+            return (project.GetPropertyValue(RESTORE_STYLE_TAG) != "" || project.GetPropertyValue(PACKAGE_REFERENCE_TYPE_TAG) != "");
         }
 
         /// <summary>
@@ -395,46 +313,34 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="userInputFrameworks">A list of framework names</param>
         /// <param name="assetsFile">Assets file for all targets and libraries</param>
-        /// <param name="requestedVersions">Top-level packages with the requested versions</param>
         /// <param name="transitive">Include transitive packages in the result</param>
         /// <returns></returns>
-        private Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> GetResolvedVersions(
-            IList<string> userInputFrameworks,LockFile assetsFile,
-            Dictionary<string, IEnumerable<PRPackage>> requestedVersions, bool transitive)
+        internal Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> GetResolvedVersions(
+            IList<string> userInputFrameworks,LockFile assetsFile, bool transitive)
         {
             var resultPackages = new Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>>();
-
-            //Gets the targets from the assets file given the list of frameworks
-            var inputLockFileTargets = new List<LockFileTarget>();
-            foreach (var framework in assetsFile.PackageSpec.TargetFrameworks)
-            {
-                if (userInputFrameworks.Count == 0 || userInputFrameworks.Contains(framework.ToString()))
-                {
-                    inputLockFileTargets.Add(assetsFile.GetTarget(framework.FrameworkName, null));
-                }
-
-            }
              
             foreach (var target in assetsFile.Targets)
             {
+                var tfmInformation = assetsFile.PackageSpec.TargetFrameworks.Where(tfm => assetsFile.GetTarget(tfm.FrameworkName, null).Equals(target));
+
                 //If the target is not in the list of target frameworks, skip the target
-                if (!inputLockFileTargets.Contains(target))
+                if (tfmInformation.Count() < 1)
                 {
                     continue;
                 }
 
                 //The packages for the framework that were retrieved with GetRequestedVersions
-                var requestedFrameworkPackages = requestedVersions.Where(f =>
-                    f.Key.Equals(target.TargetFramework.GetShortFolderName(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value;
-
+                var frameworkDependencies = tfmInformation.Single().Dependencies;
+                    
                 var topLevelPackages = new List<PRPackage>();
                 var transitivePackages = new List<PRPackage>();
 
                 foreach (var library in target.Libraries)
                 {
                     
-                    var matchingPackages = requestedFrameworkPackages.Where(p =>
-                        p.name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
+                    var matchingPackages = frameworkDependencies.Where(d =>
+                        d.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
 
                     //In case we found a matching package in requestedVersions, the package will be
                     //top level. If not, then it is transitive, and include-transitive must be used
@@ -448,13 +354,13 @@ namespace NuGet.CommandLine.XPlat
                         if (matchingPackages.Count() != 0)
                         {
                             var topLevelPackage = matchingPackages.Single();
-
+                            
                             packageInfo = new PRPackage {
                                 name = packageInfo.name,
                                 resolvedVersion = packageInfo.resolvedVersion,
-                                requestedVersion = topLevelPackage.requestedVersion,
-                                projectFileRequestedVersion = topLevelPackage.projectFileRequestedVersion,
-                                autoReference = topLevelPackage.autoReference
+                                requestedVersion = topLevelPackage.LibraryRange.VersionRange,
+                                printableRequestedVersion = topLevelPackage.LibraryRange.VersionRange.ToString(),
+                                autoReference = topLevelPackage.AutoReferenced
                             };
 
                             topLevelPackages.Add(packageInfo);
