@@ -508,6 +508,8 @@ namespace NuGet.SolutionRestoreManager
 
                 // Mark packages coming from the SDK as AutoReferenced
                 AutoReferenced = GetPropertyBoolOrFalse(item, "IsImplicitlyDefined"),
+
+                GeneratePathProperty = GetPropertyBoolOrFalse(item, "GeneratePathProperty")
             };
 
             // Add warning suppressions
@@ -515,8 +517,6 @@ namespace NuGet.SolutionRestoreManager
             {
                 dependency.NoWarn.Add(code);
             }
-
-            dependency.GeneratePathProperty = GetPropertyBoolOrFalse(item, "GeneratePathProperty");
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
                 dependency,

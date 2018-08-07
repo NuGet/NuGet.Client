@@ -575,22 +575,23 @@ namespace NuGet.Commands
         {
             foreach (var item in GetItemByType(items, "Dependency"))
             {
-                var dependency = new LibraryDependency();
+                var dependency = new LibraryDependency
+                {
+                    LibraryRange = new LibraryRange(
+                        name: item.GetProperty("Id"),
+                        versionRange: GetVersionRange(item),
+                        typeConstraint: LibraryDependencyTarget.Package),
 
-                dependency.LibraryRange = new LibraryRange(
-                    name: item.GetProperty("Id"),
-                    versionRange: GetVersionRange(item),
-                    typeConstraint: LibraryDependencyTarget.Package);
+                    AutoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined"),
 
-                dependency.AutoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined");
+                    GeneratePathProperty = IsPropertyTrue(item, "GeneratePathProperty")
+                };
 
                 // Add warning suppressions
                 foreach (var code in MSBuildStringUtility.GetNuGetLogCodes(item.GetProperty("NoWarn")))
                 {
                     dependency.NoWarn.Add(code);
                 }
-
-                dependency.GeneratePathProperty = IsPropertyTrue(item, "GeneratePathProperty");
 
                 ApplyIncludeFlags(dependency, item);
 

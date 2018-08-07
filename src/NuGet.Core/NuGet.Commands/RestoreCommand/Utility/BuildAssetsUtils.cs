@@ -503,16 +503,14 @@ namespace NuGet.Commands
                 // Distinct union of tool packages and packages with GeneratePathProperty=true
                 var packageIdsToCreatePropertiesFor = packagesWithTools.Union(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name)).Distinct(StringComparer.OrdinalIgnoreCase);
 
+                var localPackages = sortedPackages.Select(e => e.Value);
+
                 // Find the packages with matching IDs in the list of sorted packages, filtering out ones that there was no match for or that don't exist
-                var packagePathProperties = packageIdsToCreatePropertiesFor
-                    // Cast sortedPackages as nullable
-                    .Select(packageId => sortedPackages.Cast<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>?>().FirstOrDefault(pkg => pkg != null && pkg.Value.Key.Name.Equals(packageId, StringComparison.OrdinalIgnoreCase)))
-                    // Check if there was a match found and the package exists on disk
-                    .Where(pkg => pkg != null && pkg.Value.Value.Exists())
-                    // Select just the value of the nullable KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>
-                    .Select(pkg => pkg.Value)
+                var packagePathProperties = localPackages
+                    .Where(pkg => packageIdsToCreatePropertiesFor.Contains(pkg.Value.Package.Id) && pkg.Exists())
+                    .Select(pkg => pkg.Value.Package)
                     // Get the property
-                    .Select(i => GeneratePackagePathProperty(i.Key.Name, i.Value.Value.Package.ExpandedPath));
+                    .Select(GeneratePackagePathProperty);
 
                 packagePathsPropertyGroup.Items.AddRange(packagePathProperties);
 
@@ -750,9 +748,9 @@ namespace NuGet.Commands
             return result;
         }
 
-        private static XElement GeneratePackagePathProperty(string packageName, string packagePath)
+        private static XElement GeneratePackagePathProperty(LocalPackageInfo localPackageInfo)
         {
-            return GenerateProperty($"Pkg{packageName.Replace(".", "_")}", packagePath);
+            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_")}", localPackageInfo.ExpandedPath);
         }
     }
 }
