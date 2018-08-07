@@ -66,7 +66,7 @@
 
         if($(IsClientDotnetExe $_nugetClientFilePath))
         {
-            . $_nugetClientFilePath nuget locals -c all
+            . $_nugetClientFilePath nuget locals -c all  *>>$null
         } 
         else 
         {

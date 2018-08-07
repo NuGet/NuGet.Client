@@ -42,8 +42,8 @@ Param(
 
             if($(IsClientDotnetExe $nugetClient))
             {
-                . $nugetClient nuget locals $localsArguments
-            } 
+                . $nugetClient nuget locals $localsArguments *>>$null
+            }
             else 
             {
                 . $nugetClient locals $localsArguments -Verbosity quiet
@@ -55,9 +55,16 @@ Param(
             Stop-Process -name msbuild*,dotnet* -Force
         }
 
-
         $start=Get-Date
-        $logs = . $nugetClient restore $solutionFilePath -noninteractive $forceArg
+        if($(IsClientDotnetExe $nugetClient))
+        {
+            $logs = . $nugetClient restore $solutionFilePath $forceArg
+        }
+        else 
+        {
+            $logs = . $nugetClient restore $solutionFilePath -noninteractive $forceArg
+        }
+        Log $logs
         $end=Get-Date
         $totalTime=$end-$start
 
@@ -145,7 +152,7 @@ Param(
         }
     }
 
-    $iterationCount = 3
+    $iterationCount = 1
 
     Log "Measuring restore for $solutionPath by $nugetClient" "Green"
 

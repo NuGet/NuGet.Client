@@ -20,6 +20,6 @@ Param(
     SetupNuGetFolders $nugetClientFilePath
     $currentWorkingDirectory = $pwd
     cd $sourcePath
-    . $sourcePath\configure.ps1
+    . "$sourcePath\configure.ps1" *>>$null
     cd $currentWorkingDirectory
     . "$PSScriptRoot\..\RunPerformanceTests.ps1" $nugetClientFilePath $solutionFilePath $resultsFilePath $logsPath
