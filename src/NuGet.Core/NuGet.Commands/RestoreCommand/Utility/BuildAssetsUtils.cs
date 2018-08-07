@@ -507,7 +507,7 @@ namespace NuGet.Commands
 
                 // Find the packages with matching IDs in the list of sorted packages, filtering out ones that there was no match for or that don't exist
                 var packagePathProperties = localPackages
-                    .Where(pkg => packageIdsToCreatePropertiesFor.Contains(pkg.Value.Package.Id) && pkg.Exists())
+                    .Where(pkg => pkg?.Value?.Package != null && packageIdsToCreatePropertiesFor.Contains(pkg.Value.Package.Id) && pkg.Exists())
                     .Select(pkg => pkg.Value.Package)
                     // Get the property
                     .Select(GeneratePackagePathProperty);

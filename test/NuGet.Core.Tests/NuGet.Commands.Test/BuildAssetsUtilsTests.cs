@@ -627,7 +627,7 @@ namespace NuGet.Commands.Test
             using (var randomProjectDirectory = TestDirectory.Create())
             {
                 // Arrange
-                var identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0"));
+                var identity = new PackageIdentity("packagea", NuGetVersion.Parse("1.0.0"));
 
                 var packageDirectory = Directory.CreateDirectory(Path.Combine(pathContext.UserPackagesFolder, identity.Id, identity.Version.ToNormalizedString()));
 
@@ -649,6 +649,8 @@ namespace NuGet.Commands.Test
                     new List<string>() { pathContext.FallbackFolder },
                     new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
                     projectWideWarningProperties: null);
+
+                spec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
 
                 spec.Dependencies.Add(new LibraryDependency
                 {
@@ -699,7 +701,10 @@ namespace NuGet.Commands.Test
                     new NuGetv3LocalRepository(pathContext.UserPackagesFolder)
                 };
 
-                var restoreRequest = new TestRestoreRequest(spec, new[] { new PackageSource(pathContext.PackageSource) }, pathContext.PackagesV2, logger);
+                var restoreRequest = new TestRestoreRequest(spec, new[] { new PackageSource(pathContext.PackageSource) }, pathContext.PackagesV2, logger)
+                {
+                    ProjectStyle = spec.RestoreMetadata.ProjectStyle
+                };
 
                 var assetsFilePath = Path.Combine(randomProjectDirectory, "obj", "project.assets.json");
 
@@ -732,7 +737,7 @@ namespace NuGet.Commands.Test
             using (var randomProjectDirectory = TestDirectory.Create())
             {
                 // Arrange
-                var identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0"));
+                var identity = new PackageIdentity("packagea", NuGetVersion.Parse("1.0.0"));
 
                 var packageDirectory = Directory.CreateDirectory(Path.Combine(pathContext.UserPackagesFolder, identity.Id, identity.Version.ToNormalizedString()));
 
@@ -754,6 +759,8 @@ namespace NuGet.Commands.Test
                     new List<string>() { pathContext.FallbackFolder },
                     new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
                     projectWideWarningProperties: null);
+
+                spec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
 
                 spec.Dependencies.Add(new LibraryDependency
                 {
@@ -804,7 +811,10 @@ namespace NuGet.Commands.Test
                     new NuGetv3LocalRepository(pathContext.UserPackagesFolder)
                 };
 
-                var restoreRequest = new TestRestoreRequest(spec, new[] { new PackageSource(pathContext.PackageSource) }, pathContext.PackagesV2, logger);
+                var restoreRequest = new TestRestoreRequest(spec, new[] { new PackageSource(pathContext.PackageSource) }, pathContext.PackagesV2, logger)
+                {
+                    ProjectStyle = spec.RestoreMetadata.ProjectStyle
+                };
 
                 var assetsFilePath = Path.Combine(randomProjectDirectory, "obj", "project.assets.json");
 
