@@ -30,10 +30,13 @@ namespace NuGet.Protocol
             AllRepositorySigned = allRepositorySigned;
             RepositoryCertificateInfos = data.OfType<JObject>().Select(p => p.FromJToken<RepositoryCertificateInfo>());
 
-            var validUri = Uri.TryCreate(source.PackageSource.Source, UriKind.Absolute, out var v3ServiceIndexUrl);
-            if (!validUri || !string.Equals(v3ServiceIndexUrl.Scheme, "https", StringComparison.OrdinalIgnoreCase))
+            foreach (var repositoryCertificateInfo in RepositoryCertificateInfos)
             {
-                throw new FatalProtocolException(Strings.RepositoryContentUrlMustBeHttps);
+                var validUri = Uri.TryCreate(repositoryCertificateInfo.ContentUrl, UriKind.Absolute, out var repositoryContentUrl);
+                if (!validUri || !string.Equals(repositoryContentUrl.Scheme, "https", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new FatalProtocolException(Strings.RepositoryContentUrlMustBeHttps);
+                }
             }
 
             Source = source.PackageSource.Source;
