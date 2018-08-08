@@ -78,6 +78,7 @@ namespace NuGet.Commands
         {
             // Add output files
             Files.Clear();
+            builder.Files.Clear();
 
             AddOutputFiles(builder);
 
@@ -156,13 +157,10 @@ namespace NuGet.Commands
             if (!Files.Any(p => packageFile.Target.Equals(p.Target, StringComparison.CurrentCultureIgnoreCase)))
             {
                 var fileExtension = Path.GetExtension(packageFile.Source);
-                var allowedExtensions = IncludeSymbols ?
-                    PackTargetArgs.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder :
-                    PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder;
 
                 if(IncludeSymbols &&
                     PackArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg &&
-                    !allowedExtensions.Contains(fileExtension, PathUtility.GetStringComparerBasedOnOS()))
+                    !string.Equals(fileExtension, ".pdb", PathUtility.GetStringComparisonBasedOnOS()))
                 {
                     return false;
                 }
