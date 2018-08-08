@@ -37,27 +37,27 @@ namespace NuGet.Packaging.Rules
             var nuspecReader = builder.NuspecReader;
             if (SampleProjectUrl.Equals(nuspecReader.GetProjectUrl(), StringComparison.OrdinalIgnoreCase))
             {
-                yield return CreateIssueFor("ProjectUrl", nuspecReader.GetProjectUrl());
+                yield return CreateIssueFor("projectUrl", nuspecReader.GetProjectUrl());
             }
             if (SampleLicenseUrl.Equals(nuspecReader.GetLicenseUrl(), StringComparison.OrdinalIgnoreCase))
             {
-                yield return CreateIssueFor("LicenseUrl", nuspecReader.GetLicenseUrl());
+                yield return CreateIssueFor("licenseUrl", nuspecReader.GetLicenseUrl());
             }
             if (SampleIconUrl.Equals(nuspecReader.GetIconUrl(), StringComparison.OrdinalIgnoreCase))
             {
-                yield return CreateIssueFor("IconUrl", nuspecReader.GetIconUrl());
+                yield return CreateIssueFor("iconUrl", nuspecReader.GetIconUrl());
             }
             if (SampleTags.Equals(nuspecReader.GetTags(), StringComparison.Ordinal))
             {
-                yield return CreateIssueFor("Tags", SampleTags);
+                yield return CreateIssueFor("tags", SampleTags);
             }
             if (SampleReleaseNotes.Equals(nuspecReader.GetReleaseNotes(), StringComparison.Ordinal))
             {
-                yield return CreateIssueFor("ReleaseNotes", SampleReleaseNotes);
+                yield return CreateIssueFor("releaseNotes", SampleReleaseNotes);
             }
             if (SampleDescription.Equals(nuspecReader.GetDescription(), StringComparison.Ordinal))
             {
-                yield return CreateIssueFor("Description", SampleDescription);
+                yield return CreateIssueFor("description", SampleDescription);
             }
 
             var dependency = nuspecReader.GetDependencyGroups().SelectMany(d => d.Packages).FirstOrDefault();
@@ -66,7 +66,7 @@ namespace NuGet.Packaging.Rules
                 dependency.VersionRange != null &&
                 dependency.VersionRange.ToString().Equals("[" + SampleManifestDependencyVersion + "]", StringComparison.OrdinalIgnoreCase))
             {
-                yield return CreateIssueFor("Dependency", dependency.ToString());
+                yield return CreateIssueFor("dependency", dependency.ToString());
             }
         }
 
