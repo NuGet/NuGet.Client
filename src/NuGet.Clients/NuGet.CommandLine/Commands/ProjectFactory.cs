@@ -591,6 +591,7 @@ namespace NuGet.CommandLine
                     referencedProject.ProjectProperties = ProjectProperties;
                     referencedProject.TargetFramework = TargetFramework;
                     referencedProject.BuildProject();
+                    referencedProject.SymbolPackageFormat = SymbolPackageFormat;
                     referencedProject.RecursivelyApply(action, alreadyAppliedProjects);
                 }
             }
@@ -705,6 +706,7 @@ namespace NuGet.CommandLine
                 var projectFactory = new ProjectFactory(_msbuildDirectory, _msbuildAssembly, _frameworkAssembly, project);
                 projectFactory.Build = Build;
                 projectFactory.ProjectProperties = ProjectProperties;
+                projectFactory.SymbolPackageFormat = SymbolPackageFormat;
                 projectFactory.BuildProject();
                 var builder = new Packaging.PackageBuilder();
 
