@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -40,30 +40,45 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Theory]
-        [InlineData(MessageResponseCode.Success, "a", "b")]
-        [InlineData(MessageResponseCode.NotFound, null, null)]
+        [InlineData(null)]
+        // double arrays to work around C# weirdness with passing arrays as the only argument to a 'params' parameter
+        [InlineData(new object[]{new string[0]})]
+        [InlineData(new object[]{new[] { "a" }})]
+        [InlineData(new object[]{new[] { "a", "b" }})]
+        public void Constructor_AllowsAnyAuthTypes(string[] authTypes)
+        {
+            new GetCredentialsResponse(MessageResponseCode.Success, username: "a", password: "b", authenticationTypes: authTypes);
+        }
+
+        [Theory]
+        [InlineData(MessageResponseCode.Success, "a", "b", new[]{"basic"})]
+        [InlineData(MessageResponseCode.NotFound, null, null, null)]
         public void Constructor_InitializesProperties(
             MessageResponseCode responseCode,
             string username,
-            string password)
+            string password,
+            string[] authTypes)
         {
-            var response = new GetCredentialsResponse(responseCode, username, password);
+            var response = new GetCredentialsResponse(responseCode, username, password, authTypes);
 
             Assert.Equal(responseCode, response.ResponseCode);
             Assert.Equal(username, response.Username);
             Assert.Equal(password, response.Password);
+            Assert.Equal(authTypes, response.AuthenticationTypes);
         }
 
         [Theory]
-        [InlineData(MessageResponseCode.NotFound, null, null, "{\"ResponseCode\":\"NotFound\"}")]
-        [InlineData(MessageResponseCode.Success, "a", "b", "{\"Password\":\"b\",\"ResponseCode\":\"Success\",\"Username\":\"a\"}")]
+        [InlineData(MessageResponseCode.NotFound, null, null, null, "{\"ResponseCode\":\"NotFound\"}")]
+        [InlineData(MessageResponseCode.Success, "a", "b", null, "{\"Password\":\"b\",\"ResponseCode\":\"Success\",\"Username\":\"a\"}")]
+        [InlineData(MessageResponseCode.Success, "a", "b", new[]{"basic", "negotiate"}, "{\"Password\":\"b\",\"ResponseCode\":\"Success\",\"Username\":\"a\",\"AuthenticationTypes\":[\"basic\",\"negotiate\"]}")]
         public void JsonSerialization_ReturnsCorrectJson(
             MessageResponseCode responseCode,
             string username,
             string password,
+            string[] authTypes,
             string expectedJson)
         {
-            var response = new GetCredentialsResponse(responseCode, username, password);
+            var response = new GetCredentialsResponse(responseCode, username, password, authTypes);
 
             var actualJson = TestUtilities.Serialize(response);
 
@@ -71,19 +86,22 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Theory]
-        [InlineData("{\"ResponseCode\":\"NotFound\"}", MessageResponseCode.NotFound, null, null)]
-        [InlineData("{\"Password\":\"a\",\"ResponseCode\":\"Success\",\"Username\":\"b\"}", MessageResponseCode.Success, "b", "a")]
+        [InlineData("{\"ResponseCode\":\"NotFound\"}", MessageResponseCode.NotFound, null, null, null)]
+        [InlineData("{\"Password\":\"a\",\"ResponseCode\":\"Success\",\"Username\":\"b\"}", MessageResponseCode.Success, "b", "a", null)]
+        [InlineData("{\"Password\":\"a\",\"ResponseCode\":\"Success\",\"Username\":\"b\",\"AuthenticationTypes\":[\"negotiate\",\"NTLM\"]}", MessageResponseCode.Success, "b", "a", new[]{"negotiate", "NTLM"})]
         public void JsonDeserialization_ReturnsCorrectObject(
             string json,
             MessageResponseCode responseCode,
             string username,
-            string password)
+            string password,
+            string[] authTypes)
         {
             var response = JsonSerializationUtilities.Deserialize<GetCredentialsResponse>(json);
 
             Assert.Equal(responseCode, response.ResponseCode);
             Assert.Equal(username, response.Username);
             Assert.Equal(password, response.Password);
+            Assert.Equal(authTypes, response.AuthenticationTypes);
         }
 
         [Theory]
