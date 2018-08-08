@@ -194,6 +194,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var dependency = new LibraryDependency
             {
+                AutoReferenced = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.IsImplicitlyDefined)),
+                GeneratePathProperty = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.GeneratePathProperty)),
                 LibraryRange = new LibraryRange(
                     name: reference.Name,
                     versionRange: VersionRange.Parse(reference.Version),
@@ -206,7 +208,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 GetReferenceMetadataValue(reference, ProjectItemProperties.ExcludeAssets),
                 GetReferenceMetadataValue(reference, ProjectItemProperties.PrivateAssets));
 
-            dependency.AutoReferenced = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.IsImplicitlyDefined));
 
             // Add warning suppressions
             foreach (var code in MSBuildStringUtility.GetNuGetLogCodes(GetReferenceMetadataValue(reference, ProjectItemProperties.NoWarn)))

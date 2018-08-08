@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
@@ -14,5 +14,6 @@ namespace NuGet.ProjectManagement
         public const string PrivateAssets = "PrivateAssets";
         public const string IsImplicitlyDefined = nameof(IsImplicitlyDefined);
         public const string NoWarn = nameof(NoWarn);
+        public const string GeneratePathProperty = "GeneratePathProperty";
     }
 }
