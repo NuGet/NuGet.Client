@@ -925,28 +925,22 @@ namespace NuGet.Commands
 
         private void BuildSymbolsPackage(string path)
         {
-            PackageBuilder symbolsBuilder;
-            if (ProjectJsonPathUtilities.IsProjectConfig(path))
+            var symbolsBuilder = CreatePackageBuilderFromNuspec(path);
+            if(_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg &&
+                !symbolsBuilder.PackageTypes.Contains(PackageType.SymbolsPackage))
             {
-                symbolsBuilder = CreatePackageBuilderFromProjectJson(path, _packArgs.GetPropertyValue);
-
-                // Add output files
-                AddOutputFiles(symbolsBuilder, includeSymbols: true);
-            }
-            else
-            {
-                symbolsBuilder = CreatePackageBuilderFromNuspec(path);
+                symbolsBuilder.PackageTypes.Add(PackageType.SymbolsPackage);
             }
 
             // remove unnecessary files when building the symbols package
-            ExcludeFilesForSymbolPackage(symbolsBuilder.Files);
+            ExcludeFilesForSymbolPackage(symbolsBuilder.Files, _packArgs.SymbolPackageFormat);
 
             if (!symbolsBuilder.Files.Any())
             {
                 throw new PackagingException(NuGetLogCode.NU5005, string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForSymbolsPackage, path, Strings.NuGetDocs));
             }
 
-            string outputPath = GetOutputPath(symbolsBuilder, _packArgs, symbols: true);
+            var outputPath = GetOutputPath(symbolsBuilder, _packArgs, symbols: true);
 
             InitCommonPackageBuilderProperties(symbolsBuilder);
             BuildPackage(symbolsBuilder, outputPath)?.Dispose();
@@ -984,9 +978,17 @@ namespace NuGet.Commands
             PathResolver.FilterPackageFiles(files, file => file.Path, _libPackageExcludes);
         }
 
-        internal static void ExcludeFilesForSymbolPackage(ICollection<IPackageFile> files)
+        internal static void ExcludeFilesForSymbolPackage(ICollection<IPackageFile> files, SymbolPackageFormat symbolPackageFormat)
         {
             PathResolver.FilterPackageFiles(files, file => file.Path, _symbolPackageExcludes);
+            if(symbolPackageFormat == SymbolPackageFormat.Snupkg)
+            {
+                var toRemove = files.Where(t => !string.Equals(Path.GetExtension(t.Path), ".pdb", StringComparison.OrdinalIgnoreCase)).ToList();
+                foreach(var fileToRemove in toRemove)
+                {
+                    files.Remove(fileToRemove);
+                }
+            }
         }
 
         // Gets the full path of the resulting nuget package including the file name
