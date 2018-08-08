@@ -28,6 +28,7 @@ namespace NuGet.CommandLine.XPlat
         private const string FRAMEWORKS_TAG = "TargetFrameworks";
         private const string ASSETS_DIRECTORY_TAG = "MSBuildProjectExtensionsPath";
         private const string RESTORE_STYLE_TAG = "RestoreProjectStyle";
+        private const string NUGET_STYLE_TAG = "NuGetProjectStyle";
         private const string ASSETS_FILE_PATH_TAG = "ProjectAssetsFile";
         private const string UPDATE_OPERATION = "Update";
         private const string REMOVE_OPERATION = "Remove";
@@ -304,7 +305,10 @@ namespace NuGet.CommandLine.XPlat
 
         internal static bool IsPackageReferenceProject(Project project)
         {
-            return (project.GetPropertyValue(RESTORE_STYLE_TAG) != "" || project.GetPropertyValue(PACKAGE_REFERENCE_TYPE_TAG) != "");
+            return (project.GetPropertyValue(RESTORE_STYLE_TAG) != "" ||
+                    project.GetPropertyValue(PACKAGE_REFERENCE_TYPE_TAG) != "" ||
+                    project.GetPropertyValue(NUGET_STYLE_TAG) != "" ||
+                    project.GetPropertyValue(ASSETS_FILE_PATH_TAG) != "");
         }
 
         /// <summary>
@@ -319,13 +323,23 @@ namespace NuGet.CommandLine.XPlat
             IList<string> userInputFrameworks,LockFile assetsFile, bool transitive)
         {
             var resultPackages = new Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>>();
-             
+
+            var foundTargetFrameworks = new List<TargetFrameworkInformation>();
+            if (userInputFrameworks.Count() == 0)
+            {
+                foundTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks.ToList();
+            }
+            else
+            {
+                foundTargetFrameworks.AddRange(assetsFile.PackageSpec.TargetFrameworks.Where(tfm => userInputFrameworks.Contains(tfm.ToString())));
+            }
+
             foreach (var target in assetsFile.Targets)
             {
-                var tfmInformation = assetsFile.PackageSpec.TargetFrameworks.Where(tfm => assetsFile.GetTarget(tfm.FrameworkName, null).Equals(target));
+                var tfmInformation = foundTargetFrameworks.Where(tfm => assetsFile.GetTarget(tfm.FrameworkName, null).Equals(target));
 
                 //If the target is not in the list of target frameworks, skip the target
-                if (tfmInformation.Count() < 1)
+                if (!tfmInformation.Any())
                 {
                     continue;
                 }

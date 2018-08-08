@@ -8,7 +8,7 @@ namespace NuGet.CommandLine.XPlat.Utility
 {
     public static class TableParser
     {
-        public static string ToStringTable<T>(
+        public static List<Tuple<string, ConsoleColor>> ToStringTable<T>(
           this IEnumerable<T> values,
           string[] columnHeaders,
           params Func<T, object>[] valueSelectors)
@@ -16,7 +16,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             return ToStringTable(values.ToArray(), columnHeaders, valueSelectors);
         }
 
-        public static string ToStringTable<T>(
+        public static List<Tuple<string, ConsoleColor>> ToStringTable<T>(
           this T[] values,
           string[] columnHeaders,
           params Func<T, object>[] valueSelectors)
@@ -60,31 +60,36 @@ namespace NuGet.CommandLine.XPlat.Utility
             return ToStringTable(arrValues);
         }
 
-        public static string ToStringTable(this string[,] arrValues)
+        public static List<Tuple<string, ConsoleColor>> ToStringTable(this string[,] arrValues)
         {
             var maxColumnsWidth = GetMaxColumnsWidth(arrValues);
+            var rows = new List<Tuple<string, ConsoleColor>>();
 
-            var sb = new StringBuilder();
             for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
             {
+                var sb = new StringBuilder();
+                var consoleColor = ConsoleColor.White;
                 for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
                 {
                     // Prvar cell
                     var cell = arrValues[rowIndex, colIndex];
+                    if (cell.Equals("(D)"))
+                    {
+                        consoleColor = Console.ForegroundColor == ConsoleColor.Red ? ConsoleColor.Yellow : ConsoleColor.Red;
+                    }
                     cell = cell.PadRight(maxColumnsWidth[colIndex]);
                     if (colIndex != 0)
                     {
                         sb.Append("     ");
                     }
                     sb.Append(cell);
+
                 }
 
-                // Prvar end of line
-                sb.AppendLine();
-
+                rows.Add(Tuple.Create(sb.ToString(), consoleColor));
             }
 
-            return sb.ToString();
+            return rows;
         }
 
         private static int[] GetMaxColumnsWidth(string[,] arrValues)

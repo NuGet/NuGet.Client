@@ -528,4 +528,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Error_NotPRProject" xml:space="preserve">
     <value>The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects.</value>
   </data>
+  <data name="ListPkg_DeprecatedPkgDescription" xml:space="preserve">
+    <value>(D) : The owner has unlisted this package. This could mean that the package is deprecated or shouldn't be used anymore.</value>
+  </data>
 </root>
