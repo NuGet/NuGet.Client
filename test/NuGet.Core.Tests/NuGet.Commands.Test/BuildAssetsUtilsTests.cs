@@ -821,26 +821,25 @@ namespace NuGet.Commands.Test
                 // Act
                 var outputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(spec, lockFile, targetGraphs, repositories, restoreRequest, assetsFilePath, true, logger);
 
+                var expectedPropertyName = $"Pkg{identity.Id.Replace(".", "_")}";
+
+                var actualPropertyElement = outputFiles.FirstOrDefault().Content.Root.Descendants().Where(i => i.Name.LocalName.Equals(expectedPropertyName)).FirstOrDefault();
+
                 if (hasTools)
                 {
                     // Assert
-                    var expectedPropertyGroup = outputFiles.FirstOrDefault().Content.Root.Elements().LastOrDefault();
+                    Assert.NotNull(actualPropertyElement);
 
-                    Assert.NotNull(expectedPropertyGroup);
 
-                    Assert.Equal(" '$(ExcludeRestorePackageImports)' != 'true' ", expectedPropertyGroup.Attribute("Condition")?.Value);
+                    Assert.Equal($" '$({actualPropertyElement.Name.LocalName})' == '' ", actualPropertyElement.Attribute("Condition")?.Value);
 
-                    var expectedProperty = expectedPropertyGroup.Elements().FirstOrDefault();
+                    Assert.Equal(packageDirectory.FullName, actualPropertyElement?.Value, ignoreCase: true);
 
-                    Assert.Equal($"Pkg{identity.Id.Replace(".", "_")}", expectedProperty.Name.LocalName);
-
-                    Assert.Equal($" '$({expectedProperty.Name.LocalName})' == '' ", expectedProperty.Attribute("Condition")?.Value);
-
-                    Assert.Equal(packageDirectory.FullName, expectedProperty?.Value, ignoreCase: true);
+                    Assert.Equal(" '$(ExcludeRestorePackageImports)' != 'true' ", actualPropertyElement.Parent.Attribute("Condition")?.Value);
                 }
                 else
                 {
-                    Assert.Null(outputFiles.FirstOrDefault().Content);
+                    Assert.Null(actualPropertyElement);
                 }
             }
         }
