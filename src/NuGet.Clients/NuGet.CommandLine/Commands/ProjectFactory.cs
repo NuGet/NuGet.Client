@@ -305,11 +305,7 @@ namespace NuGet.CommandLine
             // Add sources if this is a symbol package
             if (IncludeSymbols)
             {
-                if (SymbolPackageFormat == SymbolPackageFormat.Snupkg)
-                {
-                    builder.PackageTypes.Add(PackageType.SymbolsPackage);
-                }
-                else
+                if (SymbolPackageFormat != SymbolPackageFormat.Snupkg)
                 {
                     ApplyAction(p => p.AddFiles(builder, SourcesItemType, SourcesFolder));
                 }
