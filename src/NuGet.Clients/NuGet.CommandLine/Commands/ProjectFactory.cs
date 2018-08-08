@@ -819,11 +819,14 @@ namespace NuGet.CommandLine
                 if(SymbolPackageFormat == SymbolPackageFormat.Snupkg)
                 {
                     outputFileNames.Clear();
+                    outputFileNames.Add($"{targetFileName}.pdb");
                 }
-
-                outputFileNames.Add($"{targetFileName}.pdb");
-                outputFileNames.Add($"{targetFileName}.dll.mdb");
-                outputFileNames.Add($"{targetFileName}.exe.mdb");
+                else
+                {
+                    outputFileNames.Add($"{targetFileName}.pdb");
+                    outputFileNames.Add($"{targetFileName}.dll.mdb");
+                    outputFileNames.Add($"{targetFileName}.exe.mdb");
+                }
             }
 
             foreach (var file in GetFiles(projectOutputDirectory, outputFileNames, SearchOption.AllDirectories))
@@ -1253,6 +1256,13 @@ namespace NuGet.CommandLine
             {
                 string fullPath = item.GetMetadataValue("FullPath");
                 if (_excludeFiles.Contains(Path.GetFileName(fullPath)))
+                {
+                    continue;
+                }
+
+                if (IncludeSymbols &&
+                    SymbolPackageFormat == SymbolPackageFormat.Snupkg &&
+                    !string.Equals(Path.GetExtension(fullPath), ".pdb", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
