@@ -316,7 +316,7 @@
     <value>The name specified cannot be empty. Please provide a valid name.</value>
   </data>
   <data name="SourcesCommandSourceAddedSuccessfully" xml:space="preserve">
-    <value>Package Source with Name: {0} added successfully.</value>
+    <value>Package source with Name: {0} added successfully.</value>
   </data>
   <data name="SourcesCommandSourceRequired" xml:space="preserve">
     <value>The source specified cannot be empty. Please provide a valid source.</value>
