@@ -36,9 +36,22 @@ namespace NuGet.Configuration
         /// <summary>
         /// Specifies which values are allowed for a specific attribute.
         /// If an attribute is not defined every value is allowed.
+        /// Having allowed values does not imply that the attribute is required.
         /// </summary>
         protected virtual Dictionary<string, HashSet<string>> AllowedValues => null;
 
+        /// <summary>
+        /// Specifies values that are explicitely disallowed for a specific attribute.
+        /// If an attribute is not defined no value is disallowed.
+        /// Having disallowed values does not imply that the attribute is required.
+        /// </summary>
+        protected virtual Dictionary<string, HashSet<string>> DisallowedValues => null;
+
+        /// <summary>
+        /// Specifies if the element is empty.
+        /// Each element defines its own definition of empty.
+        /// The default definition of empty is an element without attributes.
+        /// </summary>
         public override bool IsEmpty() => !Attributes.Any();
 
         /// <summary>
@@ -68,6 +81,9 @@ namespace NuGet.Configuration
             }
         }
 
+        /// <summary>
+        /// Lazily creates the corresponding element as an XNode
+        /// </summary>
         public override XNode AsXNode()
         {
             if (Node != null && Node is XElement)
@@ -147,7 +163,7 @@ namespace NuGet.Configuration
                 foreach (var requireAttribute in RequiredAttributes)
                 {
                     var attribute = element.Attribute(requireAttribute);
-                    if (attribute == null || string.IsNullOrEmpty(attribute.Value))
+                    if (attribute == null)
                     {
                         throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
                     }
@@ -159,7 +175,19 @@ namespace NuGet.Configuration
                 foreach (var attributeValues in AllowedValues)
                 {
                     var attribute = element.Attribute(attributeValues.Key);
-                    if (attribute != null || !attributeValues.Value.Contains(attribute.Value))
+                    if (attribute != null && !attributeValues.Value.Contains(attribute.Value.Trim()))
+                    {
+                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+                    }
+                }
+            }
+
+            if (DisallowedValues != null)
+            {
+                foreach (var attributeValues in DisallowedValues)
+                {
+                    var attribute = element.Attribute(attributeValues.Key);
+                    if (attribute != null && attributeValues.Value.Contains(attribute.Value.Trim()))
                     {
                         throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
                     }

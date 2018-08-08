@@ -1935,7 +1935,7 @@ namespace NuGet.Configuration.Test
             var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 <packageSources>
-<add key="""" value=""C:\Temp\Nuget"" />
+<add key=""    "" value=""C:\Temp\Nuget"" />
 </packageSources>
 <activePackageSource>
 <add key=""test2"" value=""C:\Temp\Nuget"" />

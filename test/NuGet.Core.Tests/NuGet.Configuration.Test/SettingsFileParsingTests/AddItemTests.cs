@@ -52,30 +52,6 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void WithEmptyRequiredAttributes_Throws()
-        {
-            // Arrange
-            var config = @"
-<configuration>
-    <SectionName>
-        <add key='key2' value='' />
-    </SectionName>
-</configuration>";
-            var nugetConfigPath = "NuGet.Config";
-            using (var mockBaseDirectory = TestDirectory.Create())
-            {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-
-                // Act and Assert
-                var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
-
-                ex.Should().NotBeNull();
-                ex.Should().BeOfType<NuGetConfigurationException>();
-                ex.Message.Should().Be(string.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
-            }
-        }
-
-        [Fact]
         public void SingleTag_WithOnlyKeyAndValue_ParsedSuccessfully()
         {
             // Arrange

@@ -19,6 +19,11 @@ namespace NuGet.Configuration
 
         protected override HashSet<string> RequiredAttributes => new HashSet<string>() { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute };
 
+        protected override Dictionary<string, HashSet<string>> DisallowedValues => new Dictionary<string, HashSet<string>>()
+        {
+            { ConfigurationConstants.KeyAttribute, new HashSet<string>() { string.Empty } }
+        };
+
         internal AddItem(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
