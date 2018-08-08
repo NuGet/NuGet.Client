@@ -123,7 +123,7 @@ namespace NuGet.Commands
             {
                 throw new ArgumentNullException(nameof(settings));
             }
-            var values = settings.GetConfigRoots().AsList();
+            var values = SettingsUtility.GetConfigRoots(settings).AsList();
             if(dgSpecSources != null)
             {
                 values.AddRange(dgSpecSources.Select(e => e.Source));

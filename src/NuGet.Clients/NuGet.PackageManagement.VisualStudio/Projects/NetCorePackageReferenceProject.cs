@@ -178,7 +178,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private IList<string> GetConfigFilePaths(ISettings settings)
         {
-            return settings.GetConfigFilePaths().ToList();
+            return SettingsUtility.GetConfigFilePaths(settings).ToList();
         }
 
         private void IgnoreUnsupportProjectReference(PackageSpec project)

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
 using NuGet.Common;
 
 namespace NuGet.Configuration
@@ -188,16 +189,6 @@ namespace NuGet.Configuration
 
                 return found;
             }
-        }
-
-        public IEnumerable<string> GetConfigFilePaths()
-        {
-            return Priority.Select(config => Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
-        }
-
-        public IEnumerable<string> GetConfigRoots()
-        {
-            return Priority.Select(config => config.Root);
         }
 
         public void Save()
@@ -661,5 +652,404 @@ namespace NuGet.Configuration
 
             yield break;
         }
+
+        // TODO: Delete obsolete methods
+#pragma warning disable CS0618 // Type or member is obsolete
+
+        [Obsolete("GetValue(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        public string GetValue(string section, string key, bool isPath = false)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            var sectionElement = GetSection(section);
+            var item = sectionElement?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
+
+            if (isPath)
+            {
+                return item?.GetValueAsPath();
+            }
+
+            return item?.Value;
+        }
+
+        [Obsolete("GetAllSubsections(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        public IReadOnlyList<string> GetAllSubsections(string section)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            var sectionElement = GetSection(section);
+
+            if (sectionElement == null)
+            {
+                return new List<string>().AsReadOnly();
+            }
+
+            return sectionElement.Children.Where(c => c is CredentialsItem || c is UnknownItem).Select(i => i.Name).ToList().AsReadOnly();
+        }
+
+        [Obsolete("GetSettingValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            var sectionElement = GetSection(section);
+
+            if (sectionElement == null)
+            {
+                return new List<SettingValue>().AsReadOnly();
+            }
+
+            return sectionElement?.Children.Select(i =>
+            {
+                if (i is AddItem addItem)
+                {
+                    return TransformAddItem(addItem, isPath);
+                }
+
+                return null;
+            }).Where(i => i != null).ToList().AsReadOnly();
+        }
+
+        [Obsolete("GetNestedValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(subSection))
+            {
+                throw new ArgumentNullException(nameof(subSection));
+            }
+
+            var values = GetNestedSettingValues(section, subSection);
+
+            return values.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)).ToList().AsReadOnly();
+        }
+
+        [Obsolete("GetNestedSettingValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(subSection))
+            {
+                throw new ArgumentNullException(nameof(subSection));
+            }
+
+            var sectionElement = GetSection(section);
+            if (sectionElement == null)
+            {
+                return new List<SettingValue>().AsReadOnly();
+            }
+
+            return sectionElement.Children.SelectMany(i =>
+            {
+                var settingValues = new List<SettingValue>();
+
+                if (string.Equals(i.Name, subSection, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (i is CredentialsItem credentials)
+                    {
+                        settingValues.Add(TransformAddItem(credentials.Username));
+                        settingValues.Add(TransformAddItem(credentials.Password));
+                    }
+                    else if (i is UnknownItem unknown)
+                    {
+                        if (unknown.Children != null && unknown.Children.Any())
+                        {
+                            settingValues.AddRange(unknown.Children.Where(c => c is AddItem).Select(item => TransformAddItem(item as AddItem)).ToList());
+                        }
+                    }
+                }
+
+                return settingValues;
+            }).ToList().AsReadOnly();
+        }
+
+        [Obsolete("SetValue(...) is deprecated, please use SetItemInSection(...) to add an item to a section or interact directly with the SettingsElement you want.")]
+        public void SetValue(string section, string key, string value)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            SetItemInSection(section, new AddItem(key, value));
+        }
+
+        [Obsolete("SetValues(...) is deprecated, please use SetItemInSection(...) to add an item to a section or interact directly with the SettingsElement you want.")]
+        public void SetValues(string section, IReadOnlyList<SettingValue> values)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            foreach (var value in values)
+            {
+                SetItemInSection(section, TransformSettingValue(value), isBatchOperation: true);
+            }
+
+            Save();
+        }
+
+        [Obsolete("UpdateSections(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            foreach (var value in values)
+            {
+                SetItemInSection(section, TransformSettingValue(value), isBatchOperation: true);
+            }
+
+            Save();
+        }
+
+        [Obsolete("UpdateSubsections(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(subsection))
+            {
+                throw new ArgumentNullException(nameof(subsection));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            if (values.Any())
+            {
+                SettingsItem itemToAdd = null;
+
+                if (string.Equals(ConfigurationConstants.CredentialsSectionName, section, StringComparison.OrdinalIgnoreCase))
+                {
+                    var username = string.Empty;
+                    var password = string.Empty;
+                    var isPasswordClearText = true;
+
+                    foreach (var item in values)
+                    {
+                        if (string.Equals(item.Key, ConfigurationConstants.UsernameToken, StringComparison.OrdinalIgnoreCase))
+                        {
+                            username = item.Value;
+                        }
+                        else if (string.Equals(item.Key, ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase))
+                        {
+                            password = item.Value;
+                            isPasswordClearText = false;
+                        }
+                        else if (string.Equals(item.Key, ConfigurationConstants.ClearTextPasswordToken, StringComparison.OrdinalIgnoreCase))
+                        {
+                            password = item.Value;
+                            isPasswordClearText = true;
+                        }
+                    }
+
+                    itemToAdd = new CredentialsItem(subsection, username, password, isPasswordClearText);
+                }
+                else
+                {
+                    itemToAdd = new UnknownItem(subsection, attributes: null, children: values.Select(v => TransformSettingValue(v)));
+                }
+
+                SetItemInSection(section, itemToAdd);
+            }
+            else
+            {
+                var sectionElement = GetSection(section);
+                var item = sectionElement?.Children.Where(c => string.Equals(c.Name, subsection, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                item?.RemoveFromCollection();
+            }
+        }
+
+        [Obsolete("SetNestedValues(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(subsection))
+            {
+                throw new ArgumentNullException(nameof(subsection));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            SetNestedSettingValues(section, subsection, values.Select(kvp => new SettingValue(kvp.Key, kvp.Value, isMachineWide: false)).ToList());
+        }
+
+        [Obsolete("SetNestedSettingValues(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(subsection))
+            {
+                throw new ArgumentNullException(nameof(subsection));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            var updatedCurrentElement = false;
+            var sectionElement = GetSection(section);
+            if (sectionElement != null && values.Any())
+            {
+                var subsectionItem = sectionElement.Children.FirstOrDefault(c => string.Equals(c.Name, subsection, StringComparison.OrdinalIgnoreCase));
+
+                if (subsectionItem != null && subsectionItem is UnknownItem unknown)
+                {
+                    foreach(var value in values)
+                    {
+                        unknown.AddChild(TransformSettingValue(value), isBatchOperation: true);
+                    }
+
+                    Save();
+                    updatedCurrentElement = true;
+                }
+            }
+
+            if (!updatedCurrentElement)
+            {
+                SetItemInSection(section, new UnknownItem(subsection, attributes: null, children: values.Select(v => TransformSettingValue(v))));
+            }
+        }
+
+        [Obsolete("DeleteValue(...) is deprecated, please interact directly with the SettingsElement you want to delete.")]
+        public bool DeleteValue(string section, string key)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            var sectionElement = GetSection(section);
+            var item = sectionElement?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
+
+            if (item != null)
+            {
+                return item.RemoveFromCollection();
+            }
+
+            return false;
+        }
+
+        [Obsolete("DeleteSection(...) is deprecated, please interact directly with the SettingsElement you want to delete.")]
+        public bool DeleteSection(string section)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            var sectionElement = GetSection(section);
+
+            if (sectionElement != null)
+            {
+                var success = true;
+
+                foreach (var item in sectionElement.Children)
+                {
+                    success = success && item.RemoveFromCollection(isBatchOperation: true);
+                }
+
+                Save();
+
+                return success;
+            }
+
+            return false;
+        }
+
+        private SettingValue TransformAddItem(AddItem addItem, bool isPath = false)
+        {
+            var value = isPath ? addItem.GetValueAsPath() : addItem.Value;
+            addItem.TryGetAttributeValue(ConfigurationConstants.ValueAttribute, out var originalValue);
+
+            var settingValue = new SettingValue(addItem.Key, value, origin: this, isMachineWide: addItem.Origin?.IsMachineWide ?? false, originalValue: originalValue, priority: 0);
+
+            foreach (var attribute in addItem.Attributes)
+            {
+                // Add all attributes other than ConfigurationContants.KeyAttribute and ConfigurationContants.ValueAttribute to AdditionalValues
+                if (!string.Equals(attribute.Key, ConfigurationConstants.KeyAttribute, StringComparison.Ordinal) &&
+                    !string.Equals(attribute.Key, ConfigurationConstants.ValueAttribute, StringComparison.Ordinal))
+                {
+                    settingValue.AdditionalData[attribute.Key] = attribute.Value;
+                }
+            }
+
+            return settingValue;
+        }
+
+        private AddItem TransformSettingValue(SettingValue value)
+        {
+            return new AddItem(value.Key, value.Value, value.AdditionalData);
+        }
+
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

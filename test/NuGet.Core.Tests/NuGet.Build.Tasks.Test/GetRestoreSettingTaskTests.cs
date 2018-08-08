@@ -92,7 +92,7 @@ namespace NuGet.Build.Tasks.Test
                 // Test
 
                 var settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory,null, machineWideSettings);
-                var filePaths = settings.GetConfigFilePaths();
+                var filePaths = SettingsUtility.GetConfigFilePaths(settings);
 
                 Assert.Equal(3, filePaths.Count()); // Solution, app data + machine wide
                 Assert.True(filePaths.Contains(Path.Combine(solutionDirectoryConfig, baseConfigPath)));
@@ -100,7 +100,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Test 
                  settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory, Path.Combine(subFolder, baseConfigPath), machineWideSettings);
-                 filePaths = settings.GetConfigFilePaths();
+                 filePaths = SettingsUtility.GetConfigFilePaths(settings);
 
                 Assert.Equal(1, filePaths.Count());
                 Assert.True(filePaths.Contains(Path.Combine(subFolder, baseConfigPath)));
@@ -135,8 +135,8 @@ namespace NuGet.Build.Tasks.Test
                 // Assert
                 Assert.Equal("inner-value", innerValue);
                 Assert.Equal("outer-value", outerValue);
-                Assert.True(settings.GetConfigFilePaths().Contains(innerConfigFile));
-                Assert.True(settings.GetConfigFilePaths().Contains(outerConfigFile));
+                Assert.True(SettingsUtility.GetConfigFilePaths(settings).Contains(innerConfigFile));
+                Assert.True(SettingsUtility.GetConfigFilePaths(settings).Contains(outerConfigFile));
             }
         }
 
@@ -440,7 +440,7 @@ namespace NuGet.Build.Tasks.Test
                 // Test
 
                 var settings = RestoreSettingsUtils.ReadSettings(null, probePath, null, machineWideSettings);
-                var filePaths = settings.GetConfigFilePaths();
+                var filePaths = SettingsUtility.GetConfigFilePaths(settings);
 
                 Assert.Equal(4, filePaths.Count()); // base, parent, app data + machine wide
                 Assert.Contains(Path.Combine(basePath, configName), filePaths);

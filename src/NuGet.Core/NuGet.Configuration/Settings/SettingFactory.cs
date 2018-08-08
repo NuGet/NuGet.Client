@@ -24,7 +24,11 @@ namespace NuGet.Configuration
 
             if (node is XElement element)
             {
-                if (string.Equals(element.Name.LocalName, ConfigurationConstants.Add, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(element.Parent?.Name.LocalName, ConfigurationConstants.Configuration, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new SettingsSection(element, origin);
+                }
+                else if (string.Equals(element.Name.LocalName, ConfigurationConstants.Add, StringComparison.OrdinalIgnoreCase))
                 {
                     if (string.Equals(element.Parent?.Name.LocalName, ConfigurationConstants.PackageSources, StringComparison.OrdinalIgnoreCase))
                     {
@@ -42,7 +46,7 @@ namespace NuGet.Configuration
                     return new CredentialsItem(element, origin);
                 }
 
-                return new SettingsSection(element, origin);
+                return new UnknownItem(element, origin);
             }
 
             return null;
@@ -52,7 +56,7 @@ namespace NuGet.Configuration
         {
             var children = new List<T>();             
 
-            var descendants = xElement.Elements().Select(d => Parse(d, origin) as T).Where(c => c != null).Distinct();
+            var descendants = xElement.Elements().Select(d => Parse(d, origin) as T).Where(i => i != null).Distinct();
 
             foreach (var descendant in descendants)
             {

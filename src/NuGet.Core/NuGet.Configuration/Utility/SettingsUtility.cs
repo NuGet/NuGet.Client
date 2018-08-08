@@ -12,6 +12,8 @@ namespace NuGet.Configuration
 {
     public static class SettingsUtility
     {
+        //TODO: Delete all obsolete APIs.
+
         private const string GlobalPackagesFolderKey = "globalPackagesFolder";
         private const string GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES";
         private const string FallbackPackagesFolderEnvironmentKey = "NUGET_FALLBACK_PACKAGES";
@@ -59,6 +61,7 @@ namespace NuGet.Configuration
             return path;
         }
 
+<<<<<<< HEAD
         public static int GetMaxHttpRequest(ISettings settings)
         {
             var max = GetConfigValue(settings, ConfigurationConstants.MaxHttpRequestsPerSource);
@@ -68,6 +71,12 @@ namespace NuGet.Configuration
             }
 
             return 0;
+=======
+        [Obsolete("GetDecryptedValue is deprecated, please use GetDecryptedValueForAddItem instead")]
+        public static string GetDecryptedValue(ISettings settings, string section, string key, bool isPath = false)
+        {
+            return GetDecryptedValueForAddItem(settings, section, key, isPath);
+>>>>>>> Add deprecated APIs back and mark them as deprecated
         }
 
         public static string GetDecryptedValueForAddItem(ISettings settings, string section, string key, bool isPath = false)
@@ -99,6 +108,12 @@ namespace NuGet.Configuration
             }
 
             return decryptedString;
+        }
+
+        [Obsolete("SetEncryptedValue is deprecated, please use SetEncryptedValueForAddItem instead")]
+        public static void SetEncryptedValue(ISettings settings, string section, string key, string value)
+        {
+            SetEncryptedValueForAddItem(settings, section, key, value);
         }
 
         public static void SetEncryptedValueForAddItem(ISettings settings, string section, string key, string value)
@@ -338,18 +353,6 @@ namespace NuGet.Configuration
             return source;
         }
 
-        public static IEnumerable<string> GetConfigFilePaths(ISettings settings)
-        {
-            if (!(settings is NullSettings))
-            {
-                return settings.Priority.Select(config => Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
-            }
-            else
-            {
-                return new List<string>();
-            }
-        }
-
         public static RevocationMode GetRevocationMode()
         {
             var revocationModeSetting = Environment.GetEnvironmentVariable(RevocationModeEnvironmentKey);
@@ -359,6 +362,32 @@ namespace NuGet.Configuration
             }
 
             return RevocationMode.Online;
+        }
+
+        /// <summary>
+        /// Get a list of all the paths of the settings files used as part of this settings object
+        /// </summary>
+        public static IEnumerable<string> GetConfigFilePaths(ISettings settings)
+        {
+            if (settings is Settings settingsImpl)
+            {
+                return settingsImpl.Priority.Select(config => Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
+            }
+
+            return new List<string>();
+        }
+
+        /// <summary>
+        /// Get a list of all the roots of the settings files used as part of this settings object
+        /// </summary>
+        public static IEnumerable<string> GetConfigRoots(ISettings settings)
+        {
+            if (settings is Settings settingsImpl)
+            {
+                return settingsImpl.Priority.Select(config => config.Root);
+            }
+
+            return new List<string>();
         }
 
         private static string GetPathFromEnvOrConfig(string envVarName, string configKey, ISettings settings)

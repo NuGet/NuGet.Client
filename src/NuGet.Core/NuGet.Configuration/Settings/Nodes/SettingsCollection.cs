@@ -54,16 +54,11 @@ namespace NuGet.Configuration
                 return Node;
             }
 
-            var element = new XElement(Name);
+            var element = new XElement(Name, ChildrenSet.Select(c => c.Value.AsXNode()));
 
             foreach (var attr in Attributes)
             {
                 element.SetAttributeValue(attr.Key, attr.Value);
-            }
-
-            foreach (var child in ChildrenSet)
-            {
-                element.Add(child.Value.AsXNode());
             }
 
             Node = element;

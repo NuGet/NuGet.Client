@@ -291,10 +291,16 @@ namespace NuGet.Configuration
 
         public void RemovePackageSource(string name)
         {
-            RemovePackageSource(name, isBatchOperation: false);
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            var isDirty = false;
+            RemovePackageSource(name, isBatchOperation: false, isDirty: ref isDirty);
         }
 
-        private void RemovePackageSource(string name, bool isBatchOperation)
+        private void RemovePackageSource(string name, bool isBatchOperation, ref bool isDirty)
         {
             // get list of sources
             var packageSourcesSection = Settings.GetSection(ConfigurationConstants.PackageSources);
@@ -313,48 +319,80 @@ namespace NuGet.Configuration
             {
                 foreach (var source in sourcesToRemove)
                 {
-                    source.RemoveFromCollection(isBatchOperation: true);
+                    isDirty = isDirty || source.RemoveFromCollection(isBatchOperation: true);
                 }
             }
 
-            RemoveDisabledSource(name, isBatchOperation: true);
+            RemoveDisabledSource(name, isBatchOperation: true, isDirty: ref isDirty);
 
             if (credentialsToRemove != null)
             {
                 foreach (var credentials in credentialsToRemove)
                 {
-                    credentials.RemoveFromCollection(isBatchOperation: true);
+                    isDirty = isDirty || credentials.RemoveFromCollection(isBatchOperation: true);
                 }
             }
 
-            if (!isBatchOperation)
+            if (!isBatchOperation && isDirty)
             {
                 Settings.Save();
+                OnPackageSourcesChanged();
+                isDirty = false;
             }
+        }
+
+        [Obsolete("DisablePackageSource(PackageSource source) is deprecated, please use DisablePackageSource(string name) instead.")]
+        public void DisablePackageSource(PackageSource source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            var isDirty = false;
+            AddDisabledSource(source.Name, isBatchOperation: false, isDirty: ref isDirty);
         }
 
         public void DisablePackageSource(string name)
         {
-            AddDisabledSource(name, isBatchOperation: false);
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            var isDirty = false;
+            AddDisabledSource(name, isBatchOperation: false, isDirty: ref isDirty);
         }
 
-        private void AddDisabledSource(string name, bool isBatchOperation)
+        private void AddDisabledSource(string name, bool isBatchOperation, ref bool isDirty)
         {
             var settingsLookup = GetExistingSettingsLookup();
 
             if (!settingsLookup.TryGetValue(name, out var sourceSetting) ||
                 !sourceSetting.Origin.RootElement.AddItemInSection(ConfigurationConstants.DisabledPackageSources, new AddItem(name, "true"), isBatchOperation: isBatchOperation))
             {
-                Settings.SetItemInSection(ConfigurationConstants.DisabledPackageSources, new AddItem(name, "true"), isBatchOperation: isBatchOperation);
+                isDirty = isDirty || Settings.SetItemInSection(ConfigurationConstants.DisabledPackageSources, new AddItem(name, "true"), isBatchOperation: isBatchOperation);
+            }
+
+            if (!isBatchOperation && isDirty)
+            {
+                OnPackageSourcesChanged();
+                isDirty = false;
             }
         }
 
         public void EnablePackageSource(string name)
         {
-            RemoveDisabledSource(name, isBatchOperation: false);
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            var isDirty = false;
+            RemoveDisabledSource(name, isBatchOperation: false, isDirty: ref isDirty);
         }
 
-        private void RemoveDisabledSource(string name, bool isBatchOperation)
+        private void RemoveDisabledSource(string name, bool isBatchOperation, ref bool isDirty)
         {
             // get list of disabled sources
             var disabledSourcesSection = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
@@ -367,18 +405,25 @@ namespace NuGet.Configuration
             {
                 foreach (var disabledSource in disableSourcesToRemove)
                 {
-                    disabledSource.RemoveFromCollection(isBatchOperation: true);
+                    isDirty = isDirty || disabledSource.RemoveFromCollection(isBatchOperation: true);
                 }
             }
 
-            if (!isBatchOperation)
+            if (!isBatchOperation && isDirty)
             {
                 Settings.Save();
+                OnPackageSourcesChanged();
+                isDirty = false;
             }
         }
 
         public void UpdatePackageSource(PackageSource source, bool updateCredentials, bool updateEnabled)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             var packageSources = GetExistingSettingsLookup();
             packageSources.TryGetValue(source.Name, out var sourceToUpdate);
 
@@ -403,6 +448,7 @@ namespace NuGet.Configuration
                 }
 
                 var oldPackageSource = ReadPackageSource(sourceToUpdate, disabledSourceItem == null);
+                var isDirty = false;
 
                 UpdatePackageSource(
                     source,
@@ -412,7 +458,8 @@ namespace NuGet.Configuration
                     credentialsSettingsItem,
                     updateEnabled,
                     updateCredentials,
-                    isBatchOperation: false);
+                    isBatchOperation: false,
+                    isDirty: ref isDirty);
             }
         }
 
@@ -424,26 +471,27 @@ namespace NuGet.Configuration
             CredentialsItem existingCredentialsItem,
             bool updateEnabled,
             bool updateCredentials,
-            bool isBatchOperation)
+            bool isBatchOperation,
+            ref bool isDirty)
         {
             if (string.Equals(newSource.Name, existingSource.Name, StringComparison.OrdinalIgnoreCase))
             {
                 if ((!string.Equals(newSource.Source, existingSource.Source, StringComparison.OrdinalIgnoreCase) ||
                     newSource.ProtocolVersion != existingSource.ProtocolVersion) && newSource.IsPersistable)
                 {
-                        existingSourceItem.Update(newSource.AsSourceItem());
+                    isDirty = isDirty || existingSourceItem.Update(newSource.AsSourceItem());
                 }
 
                 if (updateEnabled)
                 {
                     if (newSource.IsEnabled && existingDisabledSourceItem != null)
                     {
-                        existingDisabledSourceItem.RemoveFromCollection(isBatchOperation: true);
+                        isDirty = isDirty || existingDisabledSourceItem.RemoveFromCollection(isBatchOperation: true);
                     }
 
                     if (!newSource.IsEnabled && existingDisabledSourceItem == null)
                     {
-                        AddDisabledSource(newSource.Name, isBatchOperation: true);
+                        AddDisabledSource(newSource.Name, isBatchOperation: true, isDirty: ref isDirty);
                     }
                 }
 
@@ -453,60 +501,76 @@ namespace NuGet.Configuration
                     {
                         if (newSource.Credentials == null)
                         {
-                            existingCredentialsItem.RemoveFromCollection(isBatchOperation: true);
+                            isDirty = isDirty || existingCredentialsItem.RemoveFromCollection(isBatchOperation: true);
                         }
                         else
                         {
-                            existingCredentialsItem.Update(newSource.Credentials.AsCredentialsItem());
+                            isDirty = isDirty || existingCredentialsItem.Update(newSource.Credentials.AsCredentialsItem());
                         }
                     }
                     else if (newSource.Credentials != null && newSource.Credentials.IsValid())
                     {
-                        Settings.SetItemInSection(ConfigurationConstants.CredentialsSectionName, newSource.Credentials.AsCredentialsItem(), isBatchOperation: true);
+                        isDirty = isDirty || Settings.SetItemInSection(ConfigurationConstants.CredentialsSectionName, newSource.Credentials.AsCredentialsItem(), isBatchOperation: true);
                     }
                 }
 
-                if (!isBatchOperation)
+                if (!isBatchOperation && isDirty)
                 {
                     Settings.Save();
+                    OnPackageSourcesChanged();
+                    isDirty = false;
                 }
             }
         }
 
         public void AddPackageSource(PackageSource source)
         {
-            AddPackageSource(source, isBatchOperation: false);
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            var isDirty = false;
+            AddPackageSource(source, isBatchOperation: false, isDirty: ref isDirty);
         }
 
-        private void AddPackageSource(PackageSource source, bool isBatchOperation)
+        private void AddPackageSource(PackageSource source, bool isBatchOperation, ref bool isDirty)
         {
             if (source.IsPersistable)
             {
-                Settings.SetItemInSection(ConfigurationConstants.PackageSources, source.AsSourceItem(), isBatchOperation: true);
+                isDirty = isDirty || Settings.SetItemInSection(ConfigurationConstants.PackageSources, source.AsSourceItem(), isBatchOperation: true);
             }
 
             if (source.IsEnabled)
             {
-                RemoveDisabledSource(source.Name, isBatchOperation: true);
+                RemoveDisabledSource(source.Name, isBatchOperation: true, isDirty: ref isDirty);
             }
             else
             {
-                AddDisabledSource(source.Name, isBatchOperation: true);
+                AddDisabledSource(source.Name, isBatchOperation: true, isDirty: ref isDirty);
             }
 
             if (source.Credentials != null && source.Credentials.IsValid())
             {
-                Settings.SetItemInSection(ConfigurationConstants.CredentialsSectionName, source.Credentials.AsCredentialsItem(), isBatchOperation: true);
+                isDirty = isDirty || Settings.SetItemInSection(ConfigurationConstants.CredentialsSectionName, source.Credentials.AsCredentialsItem(), isBatchOperation: true);
             }
 
-            if (!isBatchOperation)
+            if (!isBatchOperation && isDirty)
             {
                 Settings.Save();
+                OnPackageSourcesChanged();
+                isDirty = false;
             }
         }
 
         public void SavePackageSources(IEnumerable<PackageSource> sources)
         {
+            if (sources == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
+            var isDirty = false;
             var existingSettingsLookup = GetExistingSettingsLookup();
 
             var disabledSourcesSection = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
@@ -541,11 +605,12 @@ namespace NuGet.Configuration
                         existingCredentialsItem,
                         updateEnabled: true,
                         updateCredentials: true,
-                        isBatchOperation: true);
+                        isBatchOperation: true,
+                        isDirty: ref isDirty);
                 }
                 else
                 {
-                    AddPackageSource(source, isBatchOperation: true);
+                    AddPackageSource(source, isBatchOperation: true, isDirty: ref isDirty);
                 }
 
                 if (existingSourceItem != null)
@@ -566,21 +631,25 @@ namespace NuGet.Configuration
                 {
                     if (existingDisabledSourcesLookup != null && existingDisabledSourcesLookup.TryGetValue(sourceItem.Value.Key, out var existingDisabledSourceItem))
                     {
-                        existingDisabledSourceItem.RemoveFromCollection(isBatchOperation: true);
+                        isDirty = isDirty || existingDisabledSourceItem.RemoveFromCollection(isBatchOperation: true);
                     }
 
                     if (existingsourceCredentialsLookup != null && existingsourceCredentialsLookup.TryGetValue(sourceItem.Value.Key, out var existingSourceCredentialItem))
                     {
-                        existingSourceCredentialItem.RemoveFromCollection(isBatchOperation: true);
+                        isDirty = isDirty || existingSourceCredentialItem.RemoveFromCollection(isBatchOperation: true);
                     }
 
-                    sourceItem.Value.RemoveFromCollection(isBatchOperation: true);
+                    isDirty = isDirty || sourceItem.Value.RemoveFromCollection(isBatchOperation: true);
                 }
             }
 
-            Settings.Save();
 
-            OnPackageSourcesChanged();
+            if (isDirty)
+            {
+                Settings.Save();
+                OnPackageSourcesChanged();
+                isDirty = false;
+            }
         }
 
         private Dictionary<string, SourceItem> GetExistingSettingsLookup()
@@ -630,19 +699,30 @@ namespace NuGet.Configuration
             }
         }
 
-        internal bool IsPackageSourceEnabled(PackageSource source)
+        public bool IsPackageSourceEnabled(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            var disabledSources = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
+            var value = disabledSources?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, name);
+
+            // It doesn't matter what value it is.
+            // As long as the package source name is persisted in the <disabledPackageSources> section, the source is disabled.
+            return value == null;
+        }
+
+        [Obsolete("IsPackageSourceEnabled(PackageSource source) is deprecated, please use IsPackageSourceEnabled(string name) instead.")]
+        public bool IsPackageSourceEnabled(PackageSource source)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var disabledSources = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
-            var value = disabledSources?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, source.Name);
-
-            // It doesn't matter what value it is.
-            // As long as the package source name is persisted in the <disabledPackageSources> section, the source is disabled.
-            return value == null;
+            return IsPackageSourceEnabled(source.Name);
         }
 
         /// <summary>
