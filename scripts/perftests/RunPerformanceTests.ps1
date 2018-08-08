@@ -152,7 +152,7 @@ Param(
         }
     }
 
-    $iterationCount = 1
+    $iterationCount = 3
 
     Log "Measuring restore for $solutionPath by $nugetClient" "Green"
 
