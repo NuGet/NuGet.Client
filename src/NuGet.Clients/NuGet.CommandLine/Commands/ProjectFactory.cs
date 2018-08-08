@@ -68,13 +68,14 @@ namespace NuGet.CommandLine
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
         {
             return new ProjectFactory(packArgs.MsBuildDirectory.Value, path, packArgs.Properties)
-            {
+            {                
                 IsTool = packArgs.Tool,
                 LogLevel = packArgs.LogLevel,
                 Logger = packArgs.Logger,
                 MachineWideSettings = packArgs.MachineWideSettings,
                 Build = packArgs.Build,
-                IncludeReferencedProjects = packArgs.IncludeReferencedProjects 
+                IncludeReferencedProjects = packArgs.IncludeReferencedProjects,
+                SymbolPackageFormat = packArgs.SymbolPackageFormat
             };
         }
 
@@ -192,6 +193,8 @@ namespace NuGet.CommandLine
 
         public LogLevel LogLevel { get; set; }
 
+        public SymbolPackageFormat SymbolPackageFormat { get; set; }
+
         public ILogger Logger
         {
             get
@@ -302,7 +305,15 @@ namespace NuGet.CommandLine
             // Add sources if this is a symbol package
             if (IncludeSymbols)
             {
-                ApplyAction(p => p.AddFiles(builder, SourcesItemType, SourcesFolder));
+                if (SymbolPackageFormat == SymbolPackageFormat.Snupkg)
+                {
+                    builder.PackageTypes.Add(PackageType.SymbolsPackage);
+                }
+                else
+                {
+                    ApplyAction(p => p.AddFiles(builder, SourcesItemType, SourcesFolder));
+                }
+                
             }
 
             ProcessDependencies(builder);
@@ -804,6 +815,12 @@ namespace NuGet.CommandLine
 
             if (IncludeSymbols)
             {
+                // if this is a snupkg package, we don't want any files other than symbol files.
+                if(SymbolPackageFormat == SymbolPackageFormat.Snupkg)
+                {
+                    outputFileNames.Clear();
+                }
+
                 outputFileNames.Add($"{targetFileName}.pdb");
                 outputFileNames.Add($"{targetFileName}.dll.mdb");
                 outputFileNames.Add($"{targetFileName}.exe.mdb");
