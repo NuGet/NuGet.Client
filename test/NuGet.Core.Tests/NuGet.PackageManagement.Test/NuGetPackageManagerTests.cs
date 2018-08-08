@@ -6622,7 +6622,7 @@ namespace NuGet.Test
                 var settings = Settings.LoadSpecificSettings(testSolutionManager.SolutionDirectory, "NuGet.Config");
                 foreach (var source in sourceRepositoryProvider.GetRepositories())
                 {
-                    Settings.SetItemInSection(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
+                    settings.SetItemInSection(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
                 }
 
                 var token = CancellationToken.None;

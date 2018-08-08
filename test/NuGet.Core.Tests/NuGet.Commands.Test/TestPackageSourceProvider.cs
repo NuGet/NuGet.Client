@@ -50,5 +50,11 @@ namespace NuGet.Commands.Test
         public void UpdatePackageSource(PackageSource source, bool updateCredentials, bool updateEnabled) => throw new NotImplementedException();
 
         public void AddPackageSource(PackageSource source) => throw new NotImplementedException();
+
+        public bool IsPackageSourceEnabled(string name) => throw new NotImplementedException();
+
+        public void DisablePackageSource(PackageSource source) => throw new NotImplementedException();
+
+        public bool IsPackageSourceEnabled(PackageSource source) => throw new NotImplementedException();
     }
 }
