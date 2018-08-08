@@ -70,7 +70,7 @@
         } 
         else 
         {
-            . $_nugetClientFilePath locals -c all -Verbosity quiet
+            . $_nugetClientFilePath locals -clear all -Verbosity quiet
         }
     }
 
@@ -139,7 +139,7 @@
         $nugetClient = GetAbsolutePath $nugetClient
         if($(IsClientDotnetExe $nugetClient))
         {
-            . $nugetClient nuget locals -clear all -Verbosity quiet
+            . $nugetClient nuget locals -c all *>>$null
         } 
         else 
         {
