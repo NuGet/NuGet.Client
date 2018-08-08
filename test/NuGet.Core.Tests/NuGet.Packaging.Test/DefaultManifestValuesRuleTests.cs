@@ -15,8 +15,11 @@ namespace NuGet.Packaging.Test
 {
     public class DefaultManifestValuesRuleTests
     {
-        [Fact]
-        public void Validate_NuSpecFileWithDefaultProjectUrl_GeneratesWarning()
+        [Theory]
+        [InlineData("<projectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</projectUrl>", "projectUrl")]
+        [InlineData("<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl>", "licenseUrl")]
+        [InlineData("<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>", "iconUrl")]
+        public void Validate_NuSpecFileWithDefaultProjectUrl_GeneratesWarning(string urlMetadata, string urlType)
         {
             // Arrange
             var nuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
@@ -27,7 +30,7 @@ namespace NuGet.Packaging.Test
 "        <authors>Unit Test</authors>" +
 "        <description>Sample Description</description>" +
 "        <language>en-US</language>" +
-"        <projectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</projectUrl>" +
+urlMetadata +
 "    <dependencies>" +
 "      <dependency id=\"System.Collections.Immutable\" version=\"4.3.0\" />" +
 "    </dependencies>" +
@@ -66,7 +69,7 @@ namespace NuGet.Packaging.Test
                         issues.AddRange(rule.Validate(reader).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
                     }
 
-                    Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5102 && p.Message.Contains("projectUrl")));
+                    Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5102 && p.Message.Contains(urlType)));
                 }
             }
         }
@@ -84,6 +87,8 @@ namespace NuGet.Packaging.Test
 "        <description>Sample Description</description>" +
 "        <language>en-US</language>" +
 "        <projectUrl>http://unit.test</projectUrl>" +
+"        <licenseUrl>http://unit.test</licenseUrl>" +
+"        <iconUrl>http://unit.test</iconUrl>" +
 "    <dependencies>" +
 "      <dependency id=\"System.Collections.Immutable\" version=\"4.3.0\" />" +
 "    </dependencies>" +
@@ -122,7 +127,7 @@ namespace NuGet.Packaging.Test
                         issues.AddRange(rule.Validate(reader).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
                     }
 
-                    Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5102 && p.Message.Contains("projectUrl")));
+                    Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5102));
                 }
             }
         }
