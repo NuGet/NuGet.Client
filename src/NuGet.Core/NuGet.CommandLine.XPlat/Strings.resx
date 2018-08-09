@@ -499,7 +499,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Project '{0}' has the following package references</value>
   </data>
   <data name="ListPkg_AutoReferenceDescription" xml:space="preserve">
-    <value>A: Auto-referenced package</value>
+    <value>(A) : Auto-referenced package</value>
   </data>
   <data name="ListPkg_NoPackagesForFramework" xml:space="preserve">
     <value>No packages were found for this framework</value>

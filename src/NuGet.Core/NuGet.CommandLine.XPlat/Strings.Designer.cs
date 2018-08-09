@@ -485,7 +485,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A: Auto-referenced package.
+        ///   Looks up a localized string similar to (A) : Auto-referenced package.
         /// </summary>
         internal static string ListPkg_AutoReferenceDescription {
             get {

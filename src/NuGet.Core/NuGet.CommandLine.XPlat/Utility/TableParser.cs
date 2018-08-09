@@ -80,7 +80,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     cell = cell.PadRight(maxColumnsWidth[colIndex]);
                     if (colIndex != 0)
                     {
-                        sb.Append("     ");
+                        sb.Append("   ");
                     }
                     sb.Append(cell);
 
