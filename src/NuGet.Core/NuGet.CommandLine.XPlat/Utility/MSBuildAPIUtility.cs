@@ -303,6 +303,12 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        /// <summary>
+        /// A simple check for some of the evaluated properties to check
+        /// if the project is package reference project or not
+        /// </summary>
+        /// <param name="project"></param>
+        /// <returns></returns>
         internal static bool IsPackageReferenceProject(Project project)
         {
             return (project.GetPropertyValue(RESTORE_STYLE_TAG) != "" ||
