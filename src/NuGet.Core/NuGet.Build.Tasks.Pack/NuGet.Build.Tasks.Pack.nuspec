@@ -5,7 +5,7 @@
     <version>$version$</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
-    <description>NuGet pack for dotnet CLI</description>
+    <description>NuGet pack for dotnet CLI. Microsoft holds the copyright for this NuGet package. .NET Foundations holds the copyright to the source.</description>
     <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
   </metadata>
   <files>
