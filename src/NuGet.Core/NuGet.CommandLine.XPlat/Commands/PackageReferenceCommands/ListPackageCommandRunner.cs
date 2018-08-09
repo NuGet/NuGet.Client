@@ -44,8 +44,6 @@ namespace NuGet.CommandLine.XPlat
                 //Open project to evaluate properties
                 var project = MSBuildAPIUtility.GetProject(projectPath);
 
-                Debugger.Launch();
-
                 if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
                 {
                     Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
@@ -80,7 +78,7 @@ namespace NuGet.CommandLine.XPlat
                 //or that no package references at all were found 
                 if (packages != null)
                 {
-                    if (listPackageArgs.IncludeOutdated || listPackageArgs.IncludeOutdated)
+                    if (listPackageArgs.IncludeOutdated)
                     {
                         packages = await AddLatestVersions(packages, listPackageArgs);
                     }
@@ -180,7 +178,9 @@ namespace NuGet.CommandLine.XPlat
             var packages = await Task.WhenAll(tasks);
 
             package.suggestedVersion = packages.Max(p => p.suggestedVersion);
-            package.deprecated = packages.Any(p => p.deprecated);
+
+            //TODO: Delete this line and figure out deprecation the right way
+            package.deprecated = false;
 
             return package;
         }
@@ -203,19 +203,12 @@ namespace NuGet.CommandLine.XPlat
         {
 
             var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
-            var dependencyInfoResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(listPackageArgs.CancellationToken);
+            var dependencyInfoResource = await sourceRepository.GetResourceAsync<FindPackageByIdResource>(listPackageArgs.CancellationToken);
 
-            var packages = (await dependencyInfoResource.GetMetadataAsync(p.name, true, true, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken)).ToList();
-
-            var currentVersionPackage = packages.Where(package => package.Identity.Version.Equals(p.resolvedVersion));
-            if (currentVersionPackage.Any() && !currentVersionPackage.Single().IsListed)
-            {
-                p.deprecated = true;
-            }
-
-            var latestVersionAtSource = packages.Where(package => MeetsConstraints(package.Identity.Version, p, listPackageArgs))
-            .OrderByDescending(package => package.Identity.Version, VersionComparer.Default)
-            .Select(package => package.Identity.Version)
+            var packages = (await dependencyInfoResource.GetAllVersionsAsync(p.name, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken)).ToList();
+            
+            var latestVersionAtSource = packages.Where(version => MeetsConstraints(version, p, listPackageArgs))
+            .OrderByDescending(version => version, VersionComparer.Default)
             .FirstOrDefault();
 
             p.suggestedVersion = latestVersionAtSource;
