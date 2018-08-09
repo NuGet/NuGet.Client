@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
 using NuGet.Common;
+using NuGet.Frameworks;
 
 namespace NuGet.Packaging.Rules
 {
@@ -51,7 +52,8 @@ namespace NuGet.Packaging.Rules
                 fx = null;
             }
 
-            return fx != null;
+            // return false if the framework is Null or Unsupported
+            return fx != null && fx.Identifier != NuGetFramework.UnsupportedFramework.Framework;
         }
 
         private static bool IsValidCultureName(PackageArchiveReader builder, string name)
