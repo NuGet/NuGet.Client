@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,15 +15,13 @@ namespace NuGet.PackageManagement.VisualStudio
     public class VsMachineWideSettings : Configuration.IMachineWideSettings
     {
         private readonly AsyncLazy<Configuration.Settings[]> _settings;
+        private readonly IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
 
-        [ImportingConstructor]
-        public VsMachineWideSettings(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider)
+        public VsMachineWideSettings()
         {
-            if (serviceProvider == null)
+            if (_asyncServiceProvider == null)
             {
-                throw new ArgumentNullException(nameof(serviceProvider));
+                throw new ArgumentNullException(nameof(_asyncServiceProvider));
             }
 
             _settings = new AsyncLazy<Configuration.Settings[]>(async () =>
@@ -33,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     var baseDirectory = Common.NuGetEnvironment.GetFolderPath(
                         Common.NuGetFolderPath.MachineWideConfigDirectory);
 
-                    var dte = serviceProvider.GetDTE();
+                    var dte = await _asyncServiceProvider.GetDTEAsync();
 
                     return Configuration.Settings.LoadMachineWideSettings(
                         baseDirectory,

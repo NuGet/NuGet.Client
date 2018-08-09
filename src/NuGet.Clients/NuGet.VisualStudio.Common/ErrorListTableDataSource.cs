@@ -9,6 +9,9 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.TableControl;
 using Microsoft.VisualStudio.Shell.TableManager;
+using NuGet.VisualStudio;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+
 
 namespace NuGet.VisualStudio.Common
 {
@@ -22,7 +25,7 @@ namespace NuGet.VisualStudio.Common
     {
         private readonly object _initLockObj = new object();
         private readonly object _subscribeLockObj = new object();
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
         private IReadOnlyList<TableSubscription> _subscriptions = new List<TableSubscription>();
         private readonly List<ErrorListTableEntry> _entries = new List<ErrorListTableEntry>();
 
@@ -35,19 +38,6 @@ namespace NuGet.VisualStudio.Common
         private IErrorList _errorList;
         private ITableManager _tableManager;
         private bool _initialized;
-
-        [ImportingConstructor]
-        public ErrorListTableDataSource(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider)
-        {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            _serviceProvider = serviceProvider;
-        }
 
         /// <summary>
         /// Internal, used by tests.
@@ -207,7 +197,7 @@ namespace NuGet.VisualStudio.Common
                             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                             // Get the error list service from the UI thread
-                            _errorList = _serviceProvider.GetService(typeof(SVsErrorList)) as IErrorList;
+                            _errorList = await _asyncServiceProvider.GetServiceAsync<SVsErrorList, IErrorList>();
                             _tableManager = _errorList.TableControl.Manager;
 
                             _tableManager.AddSource(this);

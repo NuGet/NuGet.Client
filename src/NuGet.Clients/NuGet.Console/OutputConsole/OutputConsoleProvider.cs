@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,14 +27,18 @@ namespace NuGetConsole
 
         [ImportingConstructor]
         OutputConsoleProvider(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
             [ImportMany]
             IEnumerable<Lazy<IHostProvider, IHostMetadata>> hostProviders)
+            : this(AsyncServiceProvider.GlobalProvider, hostProviders)
+        { }
+
+        OutputConsoleProvider(
+            IAsyncServiceProvider asyncServiceProvider,
+            IEnumerable<Lazy<IHostProvider, IHostMetadata>> hostProviders)
         {
-            if (serviceProvider == null)
+            if (asyncServiceProvider == null)
             {
-                throw new ArgumentNullException(nameof(serviceProvider));
+                throw new ArgumentNullException(nameof(asyncServiceProvider));
             }
 
             if (hostProviders == null)
@@ -47,16 +51,14 @@ namespace NuGetConsole
             _vsOutputWindow = new AsyncLazy<IVsOutputWindow>(
                 async () =>
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return serviceProvider.GetService<SVsOutputWindow, IVsOutputWindow>();
+                    return await asyncServiceProvider.GetServiceAsync<SVsOutputWindow, IVsOutputWindow>();
                 },
                 NuGetUIThreadHelper.JoinableTaskFactory);
 
             _vsUIShell = new AsyncLazy<IVsUIShell>(
                 async () =>
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return serviceProvider.GetService<SVsUIShell, IVsUIShell>();
+                    return await asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>();
                 },
                 NuGetUIThreadHelper.JoinableTaskFactory);
 

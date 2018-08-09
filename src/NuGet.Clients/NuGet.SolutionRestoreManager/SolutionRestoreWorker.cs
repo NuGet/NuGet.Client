@@ -18,6 +18,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
@@ -37,7 +38,7 @@ namespace NuGet.SolutionRestoreManager
 
         private readonly object _lockPendingRequestsObj = new object();
 
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IAsyncServiceProvider _asyncServiceProvider;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<INuGetLockService> _lockService;
         private readonly Lazy<Common.ILogger> _logger;
@@ -82,17 +83,29 @@ namespace NuGet.SolutionRestoreManager
 
         [ImportingConstructor]
         public SolutionRestoreWorker(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
             Lazy<IVsSolutionManager> solutionManager,
             Lazy<INuGetLockService> lockService,
             [Import("VisualStudioActivityLogger")]
             Lazy<Common.ILogger> logger,
             Lazy<ErrorListTableDataSource> errorListTableDataSource)
+            : this(AsyncServiceProvider.GlobalProvider,
+                  solutionManager,
+                  lockService,
+                  logger,
+                  errorListTableDataSource)
+        { }
+
+
+        public SolutionRestoreWorker(
+            IAsyncServiceProvider asyncServiceProvider,
+            Lazy<IVsSolutionManager> solutionManager,
+            Lazy<INuGetLockService> lockService,
+            Lazy<Common.ILogger> logger,
+            Lazy<ErrorListTableDataSource> errorListTableDataSource)
         {
-            if (serviceProvider == null)
+            if (asyncServiceProvider == null)
             {
-                throw new ArgumentNullException(nameof(serviceProvider));
+                throw new ArgumentNullException(nameof(asyncServiceProvider));
             }
 
             if (solutionManager == null)
@@ -115,7 +128,7 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(errorListTableDataSource));
             }
 
-            _serviceProvider = serviceProvider;
+            _asyncServiceProvider = asyncServiceProvider;
             _solutionManager = solutionManager;
             _lockService = lockService;
             _logger = logger;
@@ -127,8 +140,7 @@ namespace NuGet.SolutionRestoreManager
 
             _componentModel = new AsyncLazy<IComponentModel>(async () =>
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    return serviceProvider.GetService<SComponentModel, IComponentModel>();
+                    return await asyncServiceProvider.GetServiceAsync<SComponentModel, IComponentModel>();
                 },
                 _joinableFactory);
             _solutionLoadedEvent = new AsyncManualResetEvent();
@@ -145,12 +157,12 @@ namespace NuGet.SolutionRestoreManager
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var dte = _serviceProvider.GetDTE();
+                    var dte = await _asyncServiceProvider.GetDTEAsync();
                     _solutionEvents = dte.Events.SolutionEvents;
                     _solutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
                     _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
 
-                    _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
+                    _vsSolution = await _asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>();
                     Assumes.Present(_vsSolution);
 #if VS15
                     // these properties are specific to VS15 since they are use to attach to solution events
