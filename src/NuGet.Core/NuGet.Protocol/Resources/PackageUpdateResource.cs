@@ -57,6 +57,7 @@ namespace NuGet.Protocol.Core.Types
             Func<string, string> getApiKey,
             Func<string, string> getSymbolApiKey,
             bool noServiceEndpoint,
+            SymbolPackageUpdateResourceV3 symbolPackageUpdateResource,
             ILogger log)
         {
             // TODO: Figure out how to hook this up with the HTTP request
@@ -68,18 +69,42 @@ namespace NuGet.Protocol.Core.Types
                 tokenSource.CancelAfter(requestTimeout);
                 var apiKey = getApiKey(_source);
 
-                await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, requestTimeout, log, tokenSource.Token);
+                await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, requestTimeout, log, tokenSource.Token, isSnupkgPush: false);
 
                 // symbolSource is only set when:
                 // - The user specified it on the command line
-                // - The package source is nuget.org and the default symbol source is used
+                // - The endpoint for main package supports pushing snupkgs
                 if (!string.IsNullOrEmpty(symbolSource))
                 {
                     var symbolApiKey = getSymbolApiKey(symbolSource);
 
-                    await PushSymbols(packagePath, symbolSource, symbolApiKey, noServiceEndpoint, requestTimeout, log, tokenSource.Token);
+                    await PushSymbols(packagePath, symbolSource, symbolApiKey,
+                        noServiceEndpoint, symbolPackageUpdateResource,
+                        requestTimeout, log, tokenSource.Token);
                 }
             }
+        }
+
+        public async Task Push(
+            string packagePath,
+            string symbolSource, // empty to not push symbols
+            int timeoutInSecond,
+            bool disableBuffering,
+            Func<string, string> getApiKey,
+            Func<string, string> getSymbolApiKey,
+            bool noServiceEndpoint,
+            ILogger log)
+        {
+            await Push(
+                packagePath,
+                symbolSource,
+                timeoutInSecond,
+                disableBuffering,
+                getApiKey,
+                getSymbolApiKey,
+                noServiceEndpoint,
+                null,
+                log);
         }
 
         public async Task Delete(string packageId,
@@ -122,12 +147,14 @@ namespace NuGet.Protocol.Core.Types
             string source,
             string apiKey,
             bool noServiceEndpoint,
+            SymbolPackageUpdateResourceV3 symbolPackageUpdateResource,
             TimeSpan requestTimeout,
             ILogger log,
             CancellationToken token)
         {
+            var isSymbolEndpointSnupkgCapable = symbolPackageUpdateResource != null;
             // Get the symbol package for this package
-            var symbolPackagePath = GetSymbolsPath(packagePath);
+            var symbolPackagePath = GetSymbolsPath(packagePath, isSymbolEndpointSnupkgCapable);
 
             // Push the symbols package if it exists
             if (File.Exists(symbolPackagePath))
@@ -143,16 +170,16 @@ namespace NuGet.Protocol.Core.Types
                         Strings.DefaultSymbolServer));
                 }
 
-                await PushPackage(symbolPackagePath, source, apiKey, noServiceEndpoint, requestTimeout, log, token);
+                await PushPackage(symbolPackagePath, source, apiKey, noServiceEndpoint, requestTimeout, log, token, isSnupkgPush: isSymbolEndpointSnupkgCapable);
             }
         }
 
         /// <summary>
         /// Get the symbols package from the original package. Removes the .nupkg and adds .symbols.nupkg
         /// </summary>
-        private static string GetSymbolsPath(string packagePath)
+        private static string GetSymbolsPath(string packagePath, bool isSnupkg)
         {
-            var symbolPath = Path.GetFileNameWithoutExtension(packagePath) + NuGetConstants.SymbolsExtension;
+            var symbolPath = Path.GetFileNameWithoutExtension(packagePath) + (isSnupkg ? NuGetConstants.SnupkgExtension : NuGetConstants.SymbolsExtension);
             var packageDir = Path.GetDirectoryName(packagePath);
             return Path.Combine(packageDir, symbolPath);
         }
@@ -163,7 +190,8 @@ namespace NuGet.Protocol.Core.Types
             bool noServiceEndpoint,
             TimeSpan requestTimeout,
             ILogger log,
-            CancellationToken token)
+            CancellationToken token,
+            bool isSnupkgPush)
         {
             var sourceUri = UriUtility.CreateSourceUri(source);
 
@@ -174,7 +202,7 @@ namespace NuGet.Protocol.Core.Types
                     GetSourceDisplayName(source)));
             }
 
-            var packagesToPush = LocalFolderUtility.ResolvePackageFromPath(packagePath);
+            var packagesToPush = LocalFolderUtility.ResolvePackageFromPath(packagePath, isSnupkgPush);
 
             LocalFolderUtility.EnsurePackageFileExists(packagePath, packagesToPush);
 
