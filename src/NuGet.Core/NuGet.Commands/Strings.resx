@@ -320,9 +320,6 @@
   <data name="Warning_DuplicatePropertyKey" xml:space="preserve">
     <value>'{0}' key already exists in Properties collection. Overriding value.</value>
   </data>
-  <data name="Warning_SemanticVersion" xml:space="preserve">
-    <value>Version "{0}" does not follow semantic versioning guidelines. Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org.</value>
-  </data>
   <data name="MSBuildWarning_MultiTarget" xml:space="preserve">
     <value>Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.</value>
   </data>

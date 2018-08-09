@@ -1647,15 +1647,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version &quot;{0}&quot; does not follow semantic versioning guidelines. Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org..
-        /// </summary>
-        internal static string Warning_SemanticVersion {
-            get {
-                return ResourceManager.GetString("Warning_SemanticVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; was included in the project but the path could not be resolved. Skipping....
         /// </summary>
         internal static string Warning_UnresolvedFilePath {

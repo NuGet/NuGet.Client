@@ -631,11 +631,6 @@ namespace NuGet.Common
         NU5112 = 5112,
 
         /// <summary>
-        /// Warning_SemanticVersion
-        /// </summary>
-        NU5113 = 5113,
-
-        /// <summary>
         /// Warning_DuplicatePropertyKey
         /// </summary>
         NU5114 = 5114,
