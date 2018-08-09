@@ -37,14 +37,19 @@ namespace NuGetVSExtension
 
         [ImportingConstructor]
         public OutputConsoleLogger(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
+            IOutputConsoleProvider consoleProvider,
+            Lazy<ErrorListTableDataSource> errorListDataSource)
+            : this(AsyncServiceProvider.GlobalProvider, consoleProvider, errorListDataSource)
+        { }
+
+        public OutputConsoleLogger(
+            IAsyncServiceProvider asyncServiceProvider,
             IOutputConsoleProvider consoleProvider,
             Lazy<ErrorListTableDataSource> errorListDataSource)
         {
-            if (serviceProvider == null)
+            if (asyncServiceProvider == null)
             {
-                throw new ArgumentNullException(nameof(serviceProvider));
+                throw new ArgumentNullException(nameof(asyncServiceProvider));
             }
 
             if (consoleProvider == null)
@@ -58,12 +63,11 @@ namespace NuGetVSExtension
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _dte = serviceProvider.GetDTE();
+                _dte = await asyncServiceProvider.GetDTEAsync();
                 _buildEvents = _dte.Events.BuildEvents;
                 _buildEvents.OnBuildBegin += (_, __) => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
                 _solutionEvents = _dte.Events.SolutionEvents;
                 _solutionEvents.AfterClosing += () => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
-
                 OutputConsole = consoleProvider.CreatePackageManagerConsole();
             });
         }

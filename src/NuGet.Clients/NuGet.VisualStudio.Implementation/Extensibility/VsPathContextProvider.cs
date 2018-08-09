@@ -19,7 +19,6 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio.Implementation.Resources;
 
@@ -32,26 +31,37 @@ namespace NuGet.VisualStudio
     public sealed class VsPathContextProvider : IVsPathContextProvider2
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
-        private readonly IServiceProvider _serviceprovider;
+        private readonly IAsyncServiceProvider _asyncServiceprovider;
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<NuGet.Common.ILogger> _logger;
         private readonly Lazy<IVsProjectAdapterProvider> _vsProjectAdapterProvider;
         private readonly Func<string, LockFile> _getLockFileOrNull;
-
         private readonly Lazy<INuGetProjectContext> _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext());
+        
 
         [ImportingConstructor]
         public VsPathContextProvider(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
             Lazy<ISettings> settings,
             Lazy<IVsSolutionManager> solutionManager,
             [Import("VisualStudioActivityLogger")]
             Lazy<NuGet.Common.ILogger> logger,
             Lazy<IVsProjectAdapterProvider> vsProjectAdapterProvider)
+            : this(AsyncServiceProvider.GlobalProvider,
+                  settings,
+                  solutionManager,
+                  logger,
+                  vsProjectAdapterProvider)
+        { }
+
+        public VsPathContextProvider(
+            IAsyncServiceProvider asyncServiceProvider,
+            Lazy<ISettings> settings,
+            Lazy<IVsSolutionManager> solutionManager,
+            Lazy<NuGet.Common.ILogger> logger,
+            Lazy<IVsProjectAdapterProvider> vsProjectAdapterProvider)
         {
-            _serviceprovider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            _asyncServiceprovider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -145,7 +155,7 @@ namespace NuGet.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = _serviceprovider.GetDTE();
+            var dte = await _asyncServiceprovider.GetDTEAsync();
             var supportedProjects = dte.Solution.Projects.Cast<EnvDTE.Project>();
 
             foreach (var solutionProject in supportedProjects)
