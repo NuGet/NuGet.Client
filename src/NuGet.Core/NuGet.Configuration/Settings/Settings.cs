@@ -875,6 +875,7 @@ namespace NuGet.Configuration
                     var username = string.Empty;
                     var password = string.Empty;
                     var isPasswordClearText = true;
+                    var validAuthenticationTypes = string.Empty;
 
                     foreach (var item in values)
                     {
@@ -892,9 +893,13 @@ namespace NuGet.Configuration
                             password = item.Value;
                             isPasswordClearText = true;
                         }
+                        else if (string.Equals(item.Key, ConfigurationConstants.ValidAuthenticationTypesToken, StringComparison.OrdinalIgnoreCase))
+                        {
+                            validAuthenticationTypes = item.Value;
+                        }
                     }
 
-                    itemToAdd = new CredentialsItem(subsection, username, password, isPasswordClearText);
+                    itemToAdd = new CredentialsItem(subsection, username, password, isPasswordClearText, validAuthenticationTypes);
                 }
                 else
                 {
