@@ -180,4 +180,7 @@
   <data name="Manifest_ReferencesIsEmpty" xml:space="preserve">
     <value>The element package\metadata\references\group must contain at least one &lt;reference&gt; child element.</value>
   </data>
+  <data name="Manifest_PropertyValueReadFailure" xml:space="preserve">
+    <value>Fatal exception while reading manifest property '{0}'. If using replacement tokens, ensure you are targeting the corresponding project file.</value>
+  </data>
 </root>
