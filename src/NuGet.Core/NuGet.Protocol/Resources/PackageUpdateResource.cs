@@ -80,6 +80,13 @@ namespace NuGet.Protocol.Core.Types
                 // - The endpoint for main package supports pushing snupkgs
                 if (!string.IsNullOrEmpty(symbolSource))
                 {
+                    // This is the scenario where user pushes *.nupkg on a source which supports pushing snupkg. Since the wildcard doesn't match
+                    // snupkg, we should not push snupkgs unintentionally.
+                    if(symbolPackageUpdateResource != null && packagePath.EndsWith(NuGetConstants.PackageExtension, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return;
+                    }
+
                     var symbolApiKey = getSymbolApiKey(symbolSource);
 
                     await PushSymbols(packagePath, symbolSource, symbolApiKey,
