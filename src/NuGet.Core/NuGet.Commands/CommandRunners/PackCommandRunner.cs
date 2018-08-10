@@ -951,14 +951,6 @@ namespace NuGet.Commands
         {
             IEnumerable<IPackageRule> packageRules = Rules;
             IList<PackagingLogMessage> issues = new List<PackagingLogMessage>();
-            NuGetVersion version;
-
-            if (!NuGetVersion.TryParseStrict(package.GetIdentity().Version.ToString(), out version))
-            {
-                issues.Add(PackagingLogMessage.CreateWarning(
-                    String.Format(CultureInfo.CurrentCulture, Strings.Warning_SemanticVersion, package.GetIdentity().Version),
-                    NuGetLogCode.NU5113));
-            }
 
             foreach (var rule in packageRules)
             {
