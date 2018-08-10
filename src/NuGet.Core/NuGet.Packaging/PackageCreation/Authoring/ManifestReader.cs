@@ -148,7 +148,15 @@ namespace NuGet.Packaging
             {
                 // Wrap the exception to pinpoint the exact property that is problematic,
                 // and include a hint about replacement tokens.
-                throw new InvalidDataException(string.Format(NuGetResources.Manifest_PropertyValueReadFailure, value, element.Name.LocalName), ex);
+                if (ex is InvalidDataException)
+                {
+                    throw ex;
+                }
+                else
+                {
+                    throw new InvalidDataException(string.Format(NuGetResources.Manifest_PropertyValueReadFailure, value, element.Name.LocalName), ex);
+                }
+                
             }
         }
 
