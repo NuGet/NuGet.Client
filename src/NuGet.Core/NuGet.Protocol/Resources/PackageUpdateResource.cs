@@ -69,7 +69,11 @@ namespace NuGet.Protocol.Core.Types
                 tokenSource.CancelAfter(requestTimeout);
                 var apiKey = getApiKey(_source);
 
-                await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, requestTimeout, log, tokenSource.Token, isSnupkgPush: false);
+                // if only a snupkg is being pushed, then don't try looking for nupkgs.
+                if(!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, requestTimeout, log, tokenSource.Token, isSnupkgPush: false);
+                }
 
                 // symbolSource is only set when:
                 // - The user specified it on the command line
@@ -157,7 +161,7 @@ namespace NuGet.Protocol.Core.Types
             var symbolPackagePath = GetSymbolsPath(packagePath, isSymbolEndpointSnupkgCapable);
 
             // Push the symbols package if it exists
-            if (File.Exists(symbolPackagePath))
+            if (File.Exists(symbolPackagePath) || symbolPackagePath.IndexOf('*') != -1)
             {
                 var sourceUri = UriUtility.CreateSourceUri(source);
 

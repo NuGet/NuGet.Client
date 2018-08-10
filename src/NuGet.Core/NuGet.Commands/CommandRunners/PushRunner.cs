@@ -46,7 +46,7 @@ namespace NuGet.Commands
                 && sourceUri.IsAbsoluteUri)
             {
                 symbolPackageUpdateResource = await CommandRunnerUtility.GetSymbolPackageUpdateResource(sourceProvider, source);
-                if(symbolPackageUpdateResource != null)
+                if (symbolPackageUpdateResource != null)
                 {
                     symbolSource = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
                     symbolApiKey = apiKey;
