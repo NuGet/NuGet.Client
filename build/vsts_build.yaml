@@ -72,9 +72,9 @@ phases:
         gci env:* | sort-object name
 
   - task: NuGetToolInstaller@0
-    displayName: "Use NuGet 4.7.0"
+    displayName: "Use NuGet 4.6.2"
     inputs:
-      versionSpec: "4.7.0"
+      versionSpec: "4.6.2"
 
   - task: PowerShell@1
     inputs:
