@@ -29,7 +29,7 @@ namespace NuGet.Configuration
             return new ClearItem();
         }
 
-        public override bool Update(SettingsItem item) => false;
+        public override bool Update(SettingsItem item, bool isBatchOperation = false) => false;
         public bool Equals(ClearItem other) => other != null;
         public bool DeepEquals(ClearItem other) =>  Equals(other);
         public override bool DeepEquals(SettingsNode other) => Equals(other as ClearItem);

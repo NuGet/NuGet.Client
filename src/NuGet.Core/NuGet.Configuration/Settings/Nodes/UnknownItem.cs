@@ -53,9 +53,9 @@ namespace NuGet.Configuration
 
         public override SettingsItem Copy() => new UnknownItem(Name, Attributes, Children);
 
-        public override bool Update(SettingsItem item)
+        public override bool Update(SettingsItem item, bool isBatchOperation = false)
         {
-            if (base.Update(item) && item is UnknownItem unknown)
+            if (base.Update(item, isBatchOperation: true) && item is UnknownItem unknown)
             {
                 Children = unknown.Children;
 
@@ -68,6 +68,11 @@ namespace NuGet.Configuration
                     {
                         XElementUtility.AddIndented(element, child.AsXNode());
                     }
+                }
+
+                if (!isBatchOperation)
+                {
+                    Origin.Save();
                 }
 
                 return true;

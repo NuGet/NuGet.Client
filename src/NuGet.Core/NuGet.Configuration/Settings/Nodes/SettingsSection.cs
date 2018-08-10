@@ -100,15 +100,7 @@ namespace NuGet.Configuration
                     return false;
                 }
 
-                if (currentChild.Update(item))
-                {
-                    if (!isBatchOperation)
-                    {
-                        currentChild.Origin.Save();
-                    }
-
-                    return true;
-                }
+                return currentChild.Update(item, isBatchOperation);
             }
 
             return false;

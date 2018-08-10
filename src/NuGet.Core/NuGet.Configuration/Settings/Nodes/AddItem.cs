@@ -42,13 +42,8 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
             Attributes.Add(ConfigurationConstants.KeyAttribute, key);
-            Attributes.Add(ConfigurationConstants.ValueAttribute, value);
+            Attributes.Add(ConfigurationConstants.ValueAttribute, value ?? string.Empty);
 
             if (additionalAttributes != null)
             {
@@ -100,6 +95,21 @@ namespace NuGet.Configuration
             if (other.Attributes.Count == Attributes.Count)
             {
                 return Attributes.OrderedEquals(other.Attributes, data => data.Key, StringComparer.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        public override bool Update(SettingsItem item, bool isBatchOperation = false)
+        {
+            if (Equals(item) && !Origin.IsMachineWide)
+            {
+                if (string.IsNullOrEmpty((item as AddItem).Value))
+                {
+                    return RemoveFromCollection(isBatchOperation);
+                }
+
+                return base.Update(item, isBatchOperation);
             }
 
             return false;

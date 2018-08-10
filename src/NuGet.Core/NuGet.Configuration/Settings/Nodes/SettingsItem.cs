@@ -26,7 +26,7 @@ namespace NuGet.Configuration
 
         public abstract SettingsItem Copy();
 
-        public virtual bool Update(SettingsItem item)
+        public virtual bool Update(SettingsItem item, bool isBatchOperation = false)
         {
             if (Equals(item) && !Origin.IsMachineWide)
             {
@@ -42,6 +42,11 @@ namespace NuGet.Configuration
                 }
 
                 Origin.IsDirty = true;
+
+                if (!isBatchOperation)
+                {
+                    Origin.Save();
+                }
 
                 return true;
             }

@@ -115,9 +115,9 @@ namespace NuGet.Configuration
             return new CredentialsItem(Name, Username.Value, Password.Value, IsPasswordClearText, ValidAuthenticationTypes?.Value);
         }
 
-        public override bool Update(SettingsItem item)
+        public override bool Update(SettingsItem item, bool isBatchOperation = false)
         {
-            if (base.Update(item) && item is CredentialsItem credentials)
+            if (base.Update(item, isBatchOperation: true) && item is CredentialsItem credentials)
             {
                 Username = credentials.Username;
                 IsPasswordClearText = credentials.IsPasswordClearText;
@@ -146,6 +146,11 @@ namespace NuGet.Configuration
                     {
                         XElementUtility.AddIndented(element, ValidAuthenticationTypes.AsXNode());
                     }
+                }
+
+                if (!isBatchOperation)
+                {
+                    Origin.Save();
                 }
 
                 return true;

@@ -798,11 +798,6 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
             SetItemInSection(section, new AddItem(key, value));
         }
 

@@ -2635,6 +2635,36 @@ namespace NuGet.Configuration.Test
             }
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void CallingSetValueWithEmptyOrNullWillDeleteAddItemIFExists(string setValueParam)
+        {
+            // Arrange
+            var configFile = "NuGet.Config";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <SectionName>
+    <add key=""key"" value=""value"" />
+  </SectionName>
+</configuration>";
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.SetValue("SectionName", "key", setValueParam);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+                Assert.Equal(result.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)).Replace("\r\n", "\n"));
+            }
+        }
+
         [Fact]
         public void CallingSetValueWillAddToSectionIfItExist()
         {
