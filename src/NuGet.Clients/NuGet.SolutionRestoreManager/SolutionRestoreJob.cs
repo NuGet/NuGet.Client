@@ -18,6 +18,8 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -489,6 +491,14 @@ namespace NuGet.SolutionRestoreManager
                         {
                             // Display the restore opt out message if it has not been shown yet
                             await l.WriteHeaderAsync();
+
+                            // initialize PackageExtractionContext to allow logging inside the restore call
+                            _nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Defaultv2,
+                                PackageExtractionBehavior.XmlDocFileSaveMode,
+                                _logger,
+                                new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders()),
+                                SignedPackageVerifierSettings.GetDefault());
 
                             await RestoreMissingPackagesInSolutionAsync(solutionDirectory, packages, t);
                         },
