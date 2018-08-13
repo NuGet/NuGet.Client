@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -78,7 +79,8 @@ namespace NuGet.PackageManagement
         /// <returns>Returns true if atleast one package was restored.</returns>
         Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(string solutionDirectory,
             INuGetProjectContext nuGetProjectContext,
-            CancellationToken token);
+            CancellationToken token,
+            ILogger logger);
 
         /// <summary>
         /// Restores the package references if they are missing
@@ -100,7 +102,8 @@ namespace NuGet.PackageManagement
             IEnumerable<PackageRestoreData> packages,
             INuGetProjectContext nuGetProjectContext,
             PackageDownloadContext downloadContext,
-            CancellationToken token);
+            CancellationToken token,
+            ILogger logger);
     }
 
     /// <summary>

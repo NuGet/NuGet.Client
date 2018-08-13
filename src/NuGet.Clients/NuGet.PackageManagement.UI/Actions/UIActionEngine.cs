@@ -122,7 +122,7 @@ namespace NuGet.PackageManagement.UI
             // Restore the project before proceeding
             var solutionDirectory = context.SolutionManager.SolutionDirectory;
 
-            await context.PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, uiService.ProjectContext, CancellationToken.None);
+            await context.PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory, uiService.ProjectContext, CancellationToken.None, new NullLogger());
 
             var packagesDependencyInfo = await context.PackageManager.GetInstalledPackagesDependencyInfo(nuGetProject, CancellationToken.None, includeUnresolved: true);
             var upgradeInformationWindowModel = new NuGetProjectUpgradeWindowModel(nuGetProject, packagesDependencyInfo.ToList());

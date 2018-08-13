@@ -146,7 +146,8 @@ namespace NuGet.PackageManagement.UI
                 var solutionDirectory = SolutionManager.SolutionDirectory;
                 await PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
                     this,
-                    token);
+                    token,
+                    new LoggerAdapter(this));
 
                 if (RestoreException == null)
                 {

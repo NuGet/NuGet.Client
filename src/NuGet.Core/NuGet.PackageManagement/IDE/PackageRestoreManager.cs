@@ -179,7 +179,8 @@ namespace NuGet.PackageManagement
         public virtual async Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(
             string solutionDirectory,
             INuGetProjectContext nuGetProjectContext,
-            CancellationToken token)
+            CancellationToken token,
+            ILogger logger)
         {
             var packageReferencesDictionary = await GetPackagesReferencesDictionaryAsync(token);
 
@@ -202,7 +203,8 @@ namespace NuGet.PackageManagement
                     packages,
                     nuGetProjectContext,
                     downloadContext,
-                    token);
+                    token,
+                    logger);
             }
         }
 
@@ -210,7 +212,8 @@ namespace NuGet.PackageManagement
             IEnumerable<PackageRestoreData> packages,
             INuGetProjectContext nuGetProjectContext,
             PackageDownloadContext downloadContext,
-            CancellationToken token)
+            CancellationToken token,
+            ILogger logger)
         {
             if (packages == null)
             {
@@ -228,7 +231,7 @@ namespace NuGet.PackageManagement
                 sourceRepositories: null,
                 maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
-            return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);
+            return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext, logger);
         }
 
         private NuGetPackageManager GetNuGetPackageManager(string solutionDirectory)
@@ -254,7 +257,8 @@ namespace NuGet.PackageManagement
         public static async Task<PackageRestoreResult> RestoreMissingPackagesAsync(
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext,
-            PackageDownloadContext downloadContext)
+            PackageDownloadContext downloadContext,
+            ILogger logger)
         {
             if (packageRestoreContext == null)
             {
@@ -289,7 +293,7 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    new LoggerAdapter(nuGetProjectContext),
+                    logger,
                     signedPackageVerifier,
                     SignedPackageVerifierSettings.GetDefault());
             }

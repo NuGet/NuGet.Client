@@ -203,7 +203,8 @@ namespace NuGet.CommandLine
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,
                     new ConsoleProjectContext(Console),
-                    downloadContext);
+                    downloadContext,
+                    Console);
 
                 if (downloadContext.DirectDownload)
                 {
