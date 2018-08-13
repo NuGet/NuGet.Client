@@ -27,7 +27,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Root element of configuration file. By definition of a nuget.config, the root element has to be a `configuration` element
         /// </summary>
-        public NuGetConfiguration RootElement { get; private set; }
+        private NuGetConfiguration RootElement { get; set; }
 
         /// <summary>
         /// Next config file to read in the hierarchy
@@ -117,6 +117,57 @@ namespace NuGet.Configuration
             {
                 settingFiles[i].Next = settingFiles[i - 1];
             }
+        }
+
+        internal void MergeSectionsInto(Dictionary<string, SettingsSection> sectionsContainer)
+        {
+            RootElement.MergeSectionsInto(sectionsContainer);
+        }
+
+        public SettingsSection GetSection(string sectionName)
+        {
+            return RootElement.GetSection(sectionName);
+        }
+
+        public bool CreateSection(SettingsSection section, bool isBatchOperation = false)
+        {
+            if (section == null)
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (section.IsEmpty() || GetSection(section.Name) != null)
+            {
+                return false;
+            }
+
+            return RootElement.AddChild(section, isBatchOperation);
+        }
+
+        public bool SetItemInSection(string sectionName, SettingsItem item, bool isBatchOperation = false)
+        {
+            if (string.IsNullOrEmpty(sectionName))
+            {
+                throw new ArgumentNullException(nameof(sectionName));
+            }
+
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            // Check if set is an update
+            var section = GetSection(sectionName);
+            if (section != null)
+            {
+                if (section.TryUpdateChildItem(item, isBatchOperation))
+                {
+                    return true;
+                }
+            }
+            
+            // Set is an add
+            return RootElement.AddItemInSection(sectionName, item.Copy(), isBatchOperation);
         }
 
         public void Save()

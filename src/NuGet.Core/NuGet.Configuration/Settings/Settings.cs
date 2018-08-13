@@ -74,7 +74,7 @@ namespace NuGet.Configuration
 
             if (outputSettingsFile != null)
             {
-                return outputSettingsFile.RootElement.AddChild(section, isBatchOperation);
+                return outputSettingsFile.CreateSection(section, isBatchOperation);
             }
 
             return false;
@@ -104,7 +104,7 @@ namespace NuGet.Configuration
             var outputSettingsFile = GetOutputSettingsFileForSection(sectionName);
 
             // Set is an add
-            return outputSettingsFile != null && outputSettingsFile.RootElement.AddItemInSection(sectionName, item.Copy(), isBatchOperation);
+            return outputSettingsFile != null && outputSettingsFile.SetItemInSection(sectionName, item.Copy(), isBatchOperation);
         }
 
         public event EventHandler SettingsChanged = delegate { };
@@ -125,19 +125,17 @@ namespace NuGet.Configuration
             var curr = _settingsHead;
             while (curr != null)
             {
-                curr.SettingsChanged += (_, __) => { RefreshSettingValues(); };
+                curr.SettingsChanged += (_, __) =>
+                {
+                    MergeSettingFilesValues();
+                    SettingsChanged?.Invoke(this, EventArgs.Empty);
+                };
+
                 curr = curr.Next;
             }
 
             MergeSettingFilesValues();
         }
-
-        private void RefreshSettingValues()
-        {
-            MergeSettingFilesValues();
-            SettingsChanged?.Invoke(this, EventArgs.Empty);
-        }
-
 
         private void MergeSettingFilesValues()
         {
@@ -146,7 +144,7 @@ namespace NuGet.Configuration
             var curr = _settingsHead;
             while (curr != null)
             {
-                curr.RootElement.MergeSectionsInto(computedSections);
+                curr.MergeSectionsInto(computedSections);
                 curr = curr.Next;
             }
 
@@ -159,7 +157,7 @@ namespace NuGet.Configuration
             // to that is not clearing the ones before it on the hierarchy
             var writteableSettingsFiles = Priority.Where(f => !f.IsMachineWide);
 
-            var clearedSections = writteableSettingsFiles.Select(s => s.RootElement.GetSection(sectionName)).Where(s => s != null && s.HasClearChild());
+            var clearedSections = writteableSettingsFiles.Select(s => s.GetSection(sectionName)).Where(s => s != null && s.HasClearChild());
             if (clearedSections.Any())
             {
                 return clearedSections.Last().Origin;
@@ -416,14 +414,14 @@ namespace NuGet.Configuration
 
                         var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: "3");
 
-                        var packageSourcesSection = userSpecificSettings.RootElement.GetSection(ConfigurationConstants.PackageSources);
+                        var packageSourcesSection = userSpecificSettings.GetSection(ConfigurationConstants.PackageSources);
                         if (packageSourcesSection != null)
                         {
                             packageSourcesSection.AddChild(defaultSource);
                         }
                         else
                         {
-                            userSpecificSettings.RootElement.AddChild(new SettingsSection(ConfigurationConstants.PackageSources, defaultSource));
+                            userSpecificSettings.CreateSection(new SettingsSection(ConfigurationConstants.PackageSources, defaultSource));
                         }
                     }
                 }

@@ -11,7 +11,7 @@ namespace NuGet.Configuration
     /// </summary>
     public interface ISettings
     {
-        //TODO: Delete all obsolete APIs. Priority should become internal in any ISettings implementation.
+        //TODO: Delete all obsolete APIs.
 
         /// <summary>
         /// Gets a value for the given key from the given section
@@ -131,17 +131,19 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="section">The non-emtpy section element.</param>
         /// <param name="isBatchOperation">If this operation is part of a batch operation, the caller should be responsible for saving the settings</param>
+        /// <returns>false if the given section is empty or already exists in settings</returns>
         bool CreateSection(SettingsSection section, bool isBatchOperation = false);
 
         /// <summary>
         /// Adds or updates the given <paramref name="item"/> to the settings.
         /// If the <paramref name="item"/> has to be added this method will add it
-        /// in the furthest compatible settings file.
+        /// in the user wide settings file, or walk down the hierarchy (starting from the user wide config)
+        /// until it finds a config where the given section is not cleared.
         /// </summary>
         /// <param name="sectionName">section where the <paramref name="item"/> has to be added. If this section does not exist, one will be created.</param>
         /// <param name="item">item to be added to the settings.</param>
         /// <param name="isBatchOperation">If this operation is part of a batch operation, the caller should be responsible for saving the settings</param>
-        /// <returns></returns>
+        /// <returns>true if the item was successfully updated or added in the settings</returns>
         bool SetItemInSection(string sectionName, SettingsItem item, bool isBatchOperation = false);
 
         /// <summary>

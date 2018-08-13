@@ -1710,7 +1710,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(Path.Combine(mockBaseDirectory, "TestingGlobalPath"));
 
                 // Act
-                var section = settingsFile.RootElement.GetSection("packageSources");
+                var section = settingsFile.GetSection("packageSources");
                 section.Should().NotBeNull();
                 section.Children.FirstOrDefault().RemoveFromCollection().Should().BeTrue();
 

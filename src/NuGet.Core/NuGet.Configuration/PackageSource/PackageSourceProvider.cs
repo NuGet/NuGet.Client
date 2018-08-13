@@ -371,7 +371,7 @@ namespace NuGet.Configuration
 
             if (settingsLookup.TryGetValue(name, out var sourceSetting))
             {
-                addedInSameFileAsCurrentSource = sourceSetting.Origin.RootElement.AddItemInSection(ConfigurationConstants.DisabledPackageSources, new AddItem(name, "true"), isBatchOperation: isBatchOperation);
+                addedInSameFileAsCurrentSource = sourceSetting.Origin.SetItemInSection(ConfigurationConstants.DisabledPackageSources, new AddItem(name, "true"), isBatchOperation: isBatchOperation);
                 isDirty = addedInSameFileAsCurrentSource || isDirty;
             }
 

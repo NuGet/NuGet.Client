@@ -54,7 +54,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
                 settingsFile.Should().NotBeNull();
 
-                var section = settingsFile.RootElement.GetSection("SectionName");
+                var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
                 section.Children.Count.Should().Be(1);
@@ -81,7 +81,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
                 settingsFile.Should().NotBeNull();
 
-                var section = settingsFile.RootElement.GetSection("SectionName");
+                var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
                 section.Children.Count.Should().Be(1);

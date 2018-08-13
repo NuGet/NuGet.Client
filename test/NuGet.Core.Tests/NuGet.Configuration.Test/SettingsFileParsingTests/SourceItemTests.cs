@@ -65,7 +65,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
                 settingsFile.Should().NotBeNull();
 
-                var section = settingsFile.RootElement.GetSection("packageSources");
+                var section = settingsFile.GetSection("packageSources");
                 section.Should().NotBeNull();
 
                 var children = section.Children.ToList();

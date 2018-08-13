@@ -32,7 +32,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
-                var section = settingsFile.RootElement.GetSection("SectionName");
+                var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
                 var key3Element = section.GetFirstItemWithAttribute<AddItem>("key", "key3");
@@ -61,7 +61,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
-                var section = settingsFile.RootElement.GetSection("SectionName");
+                var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
                 var children = section.Children;
@@ -98,7 +98,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
-                var section = settingsFile.RootElement.GetSection("config");
+                var section = settingsFile.GetSection("config");
                 section.Should().NotBeNull();
 
                 var children = section.Children.ToList();
@@ -134,10 +134,10 @@ namespace NuGet.Configuration.Test
                 var secondSettingsFile = new SettingsFile(mockRandomDirectory);
 
                 // Act
-                var section = settingsFile.RootElement.GetSection("Section");
+                var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
-                var secondSection = secondSettingsFile.RootElement.GetSection("Section");
+                var secondSection = secondSettingsFile.GetSection("Section");
                 secondSection.Should().NotBeNull();
 
                 var addElement = section.GetFirstItemWithAttribute<AddItem>("key", "key0");
@@ -171,7 +171,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
-                var section = settingsFile.RootElement.GetSection("Section");
+                var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
                 section.AddChild(new AddItem("key2", "value2")).Should().BeTrue();
@@ -203,7 +203,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
 
                 // Act
-                var section = settingsFile.RootElement.GetSection("Section");
+                var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
                 section.AddChild(new AddItem("key2", "value2")).Should().BeFalse();
@@ -235,7 +235,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
-                var section = settingsFile.RootElement.GetSection("Section");
+                var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
                 var child = section.GetFirstItemWithAttribute<AddItem>("key", "key0");
@@ -273,7 +273,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
 
                 // Act
-                var section = settingsFile.RootElement.GetSection("Section");
+                var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
                 var child = section.GetFirstItemWithAttribute<AddItem>("key", "key0");
@@ -307,7 +307,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
-                var section = settingsFile.RootElement.GetSection("Section");
+                var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
                 var child = section.GetFirstItemWithAttribute<AddItem>("key", "key0");
@@ -321,8 +321,7 @@ namespace NuGet.Configuration.Test
                 var updatedFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
                 updatedFileHash.Should().NotBeEquivalentTo(configFileHash);
 
-                settingsFile.RootElement.IsEmpty().Should().BeTrue();
-                section = settingsFile.RootElement.GetSection("Section");
+                section = settingsFile.GetSection("Section");
                 section.Should().BeNull();
             }
         }
@@ -348,7 +347,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
-                var section = settingsFile.RootElement.GetSection("Section");
+                var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
                 section.RemoveChild(new AddItem("key7", "value7")).Should().BeFalse();
@@ -407,7 +406,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
-                var section = settingsFile.RootElement.GetSection("SectionName");
+                var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
                 section.RemoveFromCollection().Should().BeTrue();
@@ -420,7 +419,7 @@ namespace NuGet.Configuration.Test
 </configuration>");
 
                 ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
-                section = settingsFile.RootElement.GetSection("SectionName");
+                section = settingsFile.GetSection("SectionName");
                 section.Should().BeNull();
             }
         }

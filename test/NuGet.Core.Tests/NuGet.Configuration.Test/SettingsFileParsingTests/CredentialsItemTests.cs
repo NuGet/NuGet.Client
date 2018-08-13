@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -211,7 +210,7 @@ namespace NuGet.Configuration.Test
             var credentials = new CredentialsItem(xelement, origin.Object);
 
             // Act
-            credentials.Update(new CredentialsItem("name", "newuser", "pass", isPasswordClearText: false, validAuthenticationTypes: null)).Should().BeTrue();
+            credentials.Update(new CredentialsItem("name", "newuser", "pass", isPasswordClearText: false, validAuthenticationTypes: null), isBatchOperation: true).Should().BeTrue();
 
             // Assert
             credentials.Username.Value.Should().Be("newuser");
@@ -243,7 +242,7 @@ namespace NuGet.Configuration.Test
             var credentials = new CredentialsItem(xelement, origin.Object);
 
             // Act
-            credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: false, validAuthenticationTypes: null)).Should().BeTrue();
+            credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: false, validAuthenticationTypes: null), isBatchOperation: true).Should().BeTrue();
 
             // Assert
             credentials.Password.Value.Should().Be("newpass");
@@ -275,7 +274,7 @@ namespace NuGet.Configuration.Test
             var credentials = new CredentialsItem(xelement, origin.Object);
 
             // Act
-            credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: true, validAuthenticationTypes: null)).Should().BeTrue();
+            credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: true, validAuthenticationTypes: null), isBatchOperation: true).Should().BeTrue();
 
             // Assert
             credentials.Password.Value.Should().Be("newpass");
@@ -307,7 +306,7 @@ namespace NuGet.Configuration.Test
             var credentials = new CredentialsItem(xelement, origin.Object);
 
             // Act
-            credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: true, validAuthenticationTypes: null)).Should().BeTrue();
+            credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: true, validAuthenticationTypes: null), isBatchOperation: true).Should().BeTrue();
 
             // Assert
             credentials.Password.Value.Should().Be("newpass");
@@ -339,7 +338,7 @@ namespace NuGet.Configuration.Test
             var credentials = new CredentialsItem(xelement, origin.Object);
 
             // Act
-            credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: false, validAuthenticationTypes: null)).Should().BeTrue();
+            credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: false, validAuthenticationTypes: null), isBatchOperation: true).Should().BeTrue();
 
             // Assert
             credentials.Password.Value.Should().Be("newpass");

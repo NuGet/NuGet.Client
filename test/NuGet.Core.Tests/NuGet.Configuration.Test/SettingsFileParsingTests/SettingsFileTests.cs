@@ -106,7 +106,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Assert
-                var section = settingsFile.RootElement.GetSection("SectionName");
+                var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
                 var key1Element = section.GetFirstItemWithAttribute<AddItem>("key", "key1");
@@ -139,7 +139,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory, configFile);
 
                 // Assert
-                var section = settingsFile.RootElement.GetSection("SectionName");
+                var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
                 var key1Element = section.GetFirstItemWithAttribute<AddItem>("key", "key1");
@@ -185,7 +185,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
-                var section = settingsFile.RootElement.GetSection("DoesNotExist");
+                var section = settingsFile.GetSection("DoesNotExist");
                 section.Should().BeNull();
             }
         }
@@ -212,8 +212,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
                 settingsFile.Should().NotBeNull();
 
-                settingsFile.RootElement.Children.Count.Should().Be(1);
-                var section = settingsFile.RootElement.GetSection("SectionName");
+                var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
                 var addItem = section.Children.FirstOrDefault() as AddItem;
@@ -287,6 +286,189 @@ namespace NuGet.Configuration.Test
                 subSubSettingsFile.Next.Should().BeSameAs(subSettingsFile);
                 subSettingsFile.Next.Should().BeSameAs(baseSettingsFile);
                 baseSettingsFile.Next.Should().BeNull();
+            }
+        }
+
+
+        [Fact]
+        public void CreateSection_WhenChildHasOrigin_Throws()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <add key='key0' value='value0' />
+        <add key='key1' value='value1' meta1='data1' meta2='data2'/>
+    </Section>
+</configuration>";
+
+            var config2 = @"
+<configuration>
+    <Section1>
+        <add key='key0' value='value0' />
+        <add key='key1' value='value1' meta1='data1' meta2='data2'/>
+    </Section1>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockRandomDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockRandomDirectory, config2);
+
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                var secondSettingsFile = new SettingsFile(mockRandomDirectory);
+
+                // Act
+                var section = settingsFile.GetSection("Section");
+                section.Should().NotBeNull();
+
+                var ex = Record.Exception(() => secondSettingsFile.CreateSection(section));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<InvalidOperationException>();
+                ex.Message.Should().Be(string.Format("Cannot add an element that is already part of another config. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            }
+        }
+
+
+        [Fact]
+        public void MergeSectionsInto_WhenSectionDoNotMatch_AllSectionsAreReturned()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section1>
+        <add key='key1' value='value1' />
+    </Section1>
+    <Section2>
+        <add key='key2' value='value2' />
+    </Section2>
+    <Section3>
+        <add key='key3' value='value3' />
+    </Section3>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+
+                // Act
+                var settingsDict = new Dictionary<string, SettingsSection>() {
+                    { "Section4", new SettingsSection("Section4", new AddItem("key4", "value4")) }
+                };
+
+                settingsFile.MergeSectionsInto(settingsDict);
+
+                var expectedSettingsDict = new Dictionary<string, SettingsSection>() {
+                    { "Section4", new SettingsSection("Section4", new AddItem("key4", "value4")) },
+                    { "Section1", new SettingsSection("Section1", new AddItem("key1", "value1")) },
+                    { "Section2", new SettingsSection("Section2", new AddItem("key2", "value2")) },
+                    { "Section3", new SettingsSection("Section3", new AddItem("key3", "value3")) }
+                };
+
+                foreach (var pair in settingsDict)
+                {
+                    expectedSettingsDict.TryGetValue(pair.Key, out var expectedSection).Should().BeTrue();
+                    pair.Value.DeepEquals(expectedSection).Should().BeTrue();
+                    expectedSettingsDict.Remove(pair.Key);
+                }
+                expectedSettingsDict.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public void MergeSectionsInto_WithSectionsInCommon_ReturnsConfigWithAllSectionsMerged()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section1>
+        <add key='key1' value='value1' />
+    </Section1>
+    <Section2>
+        <add key='key2' value='value2' />
+    </Section2>
+    <Section3>
+        <add key='key3' value='value3' />
+    </Section3>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+
+                // Act
+                var settingsDict = new Dictionary<string, SettingsSection>() {
+                    { "Section2", new SettingsSection("Section2", new AddItem("keyX", "valueX")) },
+                    { "Section3", new SettingsSection("Section3", new AddItem("key3", "valueY")) },
+                    { "Section4", new SettingsSection("Section4", new AddItem("key4", "value4")) }
+                };
+
+                settingsFile.MergeSectionsInto(settingsDict);
+
+                var expectedSettingsDict = new Dictionary<string, SettingsSection>() {
+                    { "Section2", new SettingsSection("Section2", new AddItem("keyX", "valueX"), new AddItem("key2", "value2")) },
+                    { "Section3", new SettingsSection("Section3", new AddItem("key3", "value3")) },
+                    { "Section4", new SettingsSection("Section4", new AddItem("key4", "value4")) },
+                    { "Section1", new SettingsSection("Section1", new AddItem("key1", "value1")) },
+                };
+
+                foreach (var pair in settingsDict)
+                {
+                    expectedSettingsDict.TryGetValue(pair.Key, out var expectedSection).Should().BeTrue();
+                    pair.Value.DeepEquals(expectedSection).Should().BeTrue();
+                    expectedSettingsDict.Remove(pair.Key);
+                }
+                expectedSettingsDict.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public void MergeSectionsInto_WithSectionsInCommon_AndClear_ClearsSection()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section1>
+        <add key='key1' value='value1' />
+    </Section1>
+    <Section2>
+        <clear />
+    </Section2>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+
+                // Act
+                var settingsDict = new Dictionary<string, SettingsSection>() {
+                    { "Section2", new SettingsSection("Section2", new AddItem("keyX", "valueX")) },
+                    { "Section3", new SettingsSection("Section3", new AddItem("key3", "valueY")) },
+                };
+
+                settingsFile.MergeSectionsInto(settingsDict);
+
+                var expectedSettingsDict = new Dictionary<string, SettingsSection>() {
+                    { "Section2", new SettingsSection("Section2", new ClearItem()) },
+                    { "Section3", new SettingsSection("Section3", new AddItem("key3", "valueY")) },
+                    { "Section1", new SettingsSection("Section1", new AddItem("key1", "value1")) },
+                };
+
+                foreach (var pair in settingsDict)
+                {
+                    expectedSettingsDict.TryGetValue(pair.Key, out var expectedSection).Should().BeTrue();
+                    pair.Value.DeepEquals(expectedSection).Should().BeTrue();
+                    expectedSettingsDict.Remove(pair.Key);
+                }
+                expectedSettingsDict.Should().BeEmpty();
             }
         }
     }
