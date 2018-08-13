@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.XPlat
                            MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path).Where(f => File.Exists(f)):
                            new List<string>(new string[] { listPackageArgs.Path });
 
-            var autoReferenceAndDeprecated = Tuple.Create(false, false);
+            var autoReferenceFound = false;
 
             var msBuild = new MSBuildAPIUtility(listPackageArgs.Logger);
 
@@ -86,8 +86,7 @@ namespace NuGet.CommandLine.XPlat
                     //The count is not 0 means that a package reference was found
                     if (packages.Count() != 0)
                     {
-                        var updateFlags = PrintProjectPackages(packages, projectName, listPackageArgs.IncludeTransitive, listPackageArgs.IncludeOutdated);
-                        autoReferenceAndDeprecated = Tuple.Create(updateFlags.Item1 || autoReferenceAndDeprecated.Item1, updateFlags.Item2 || autoReferenceAndDeprecated.Item2);
+                        autoReferenceFound = PrintProjectPackages(packages, projectName, listPackageArgs.IncludeTransitive, listPackageArgs.IncludeOutdated) || autoReferenceFound;
                     }
                     else
                     {
@@ -101,18 +100,12 @@ namespace NuGet.CommandLine.XPlat
 
             //If any auto-references were found, a line is printed
             //explaining what (A) means
-            if (autoReferenceAndDeprecated.Item1)
+            if (autoReferenceFound)
             {
                 Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
             }
 
-            //If any deprecated versions were found, a line is printed
-            //explaining what (D) means
-            if (autoReferenceAndDeprecated.Item2)
-            {
-                Console.WriteLine(Strings.ListPkg_DeprecatedPkgDescription);
-            }
-
+            
         }
 
         /// <summary>
@@ -178,9 +171,6 @@ namespace NuGet.CommandLine.XPlat
             var packages = await Task.WhenAll(tasks);
 
             package.suggestedVersion = packages.Max(p => p.suggestedVersion);
-
-            //TODO: Delete this line and figure out deprecation the right way
-            package.deprecated = false;
 
             return package;
         }
@@ -263,11 +253,12 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="projectName">The project name</param>
         /// <param name="transitive">Whether include-transitive flag exists or not</param>
         /// <param name="outdated"></param>
-        private Tuple<bool, bool> PrintProjectPackages(Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> packages,
+        private bool PrintProjectPackages(Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> packages,
            string projectName, bool transitive, bool outdated)
         {
-            var autoReferenceFound = Tuple.Create(false, false);
+            var autoReferenceFound = false;
 
+            Debugger.Launch();
             var frameworkMessage = new StringBuilder(LeftPadding);
             frameworkMessage.Append("'{0}'");
 
@@ -275,23 +266,38 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (var frameworkPackages in packages)
             {
-                if (frameworkPackages.Value.Item1.Count() == 0)
+                var frameworkTopLevelPackages = frameworkPackages.Value.Item1;
+                var frameworkTransitivePackages = frameworkPackages.Value.Item2;
+
+                if (outdated)
+                {
+                    frameworkTopLevelPackages = frameworkTopLevelPackages.Where(p => !p.requestedVersion.HasUpperBound ?
+                                               p.suggestedVersion != null && !p.autoReference && !p.requestedVersion.MinVersion.Equals(p.suggestedVersion) && !p.resolvedVersion.Equals(p.suggestedVersion) :
+                                               p.suggestedVersion != null && !p.autoReference && !p.resolvedVersion.Equals(p.suggestedVersion)).ToList();
+
+                    frameworkTransitivePackages = frameworkTransitivePackages.Where(p => p.suggestedVersion != null && !p.resolvedVersion.Equals(p.suggestedVersion)).ToList();
+                }
+
+                if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
                 {
                     frameworkMessage.Append(": ");
                     Console.WriteLine(string.Format(frameworkMessage.ToString() + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Key));
+                    return autoReferenceFound;
                 }
                 else
                 {
                     Console.WriteLine(string.Format(frameworkMessage.ToString(), frameworkPackages.Key));
+                }
 
-                    var updatedFlags = PackagesTable(frameworkPackages.Value.Item1, false, outdated);
-                    autoReferenceFound = Tuple.Create(autoReferenceFound.Item1 || updatedFlags.Item1, autoReferenceFound.Item2 || updatedFlags.Item2);
+                if (frameworkTopLevelPackages.Any())
+                {
+                    autoReferenceFound = PackagesTable(frameworkTopLevelPackages, false, outdated) || autoReferenceFound;
+                }
 
-                    if (transitive)
-                    {
-                        updatedFlags = PackagesTable(frameworkPackages.Value.Item2, true, outdated);
-                        autoReferenceFound = Tuple.Create(autoReferenceFound.Item1 || updatedFlags.Item1, autoReferenceFound.Item2 || updatedFlags.Item2);
-                    }
+                if (transitive && frameworkTransitivePackages.Any())
+                {
+                    autoReferenceFound = PackagesTable(frameworkTransitivePackages, true, outdated) || autoReferenceFound;
+                    
                 }
             }
             return autoReferenceFound;
@@ -306,57 +312,53 @@ namespace NuGet.CommandLine.XPlat
         /// packages table or not</param>
         /// <param name="outdated"></param>
         /// <returns>The table as a string</returns>
-        private Tuple<bool, bool> PackagesTable(IEnumerable<PRPackage> packages, bool printingTransitive, bool outdated)
+        private bool PackagesTable(IEnumerable<PRPackage> packages, bool printingTransitive, bool outdated)
         {
             var autoReferenceFound = false;
-            var deprecatedFound = false;
 
             if (packages.Count() == 0)
             {
-                return Tuple.Create(false, false);
+                return autoReferenceFound;
             }
 
             List<Tuple<string, ConsoleColor>> tableToPrint;
             var headers = BuildTableHeaders(printingTransitive, outdated);
 
-            if (printingTransitive)
+            if (outdated && printingTransitive)
             {
-
-                if (outdated)
-                {
-                    tableToPrint = packages.ToStringTable(
+                
+                tableToPrint = packages.ToStringTable(
+                       headers,
+                       p => "", p => p.name, p => "", p => p.resolvedVersion.ToString(), p => p.suggestedVersion == null ? "Not found at sources" : p.suggestedVersion.ToString()
+                   );
+            }
+            else if (outdated && !printingTransitive)
+            {
+                
+                tableToPrint = packages.ToStringTable(
+                       headers,
+                       p => "", p => p.name, p =>
+                       {
+                           if (p.autoReference)
+                           {
+                               autoReferenceFound = true;
+                               return "(A)";
+                           }
+                           return "";
+                       },
+                       p => p.printableRequestedVersion, p => p.resolvedVersion.ToString(), p => p.suggestedVersion == null ? "Not found at sources" : p.suggestedVersion.ToString()
+                   );
+            }
+            else if (!outdated && printingTransitive)
+            {
+                tableToPrint = packages.ToStringTable(
                         headers,
-                        p => "", p => p.name, p => "", p => {
-                            if (p.deprecated)
-                            {
-                                deprecatedFound = true;
-                                return "(D)";
-                            }
-                            return "";
-                        }, p => p.resolvedVersion.ToString(), p => p.suggestedVersion == null ? "Not found at sources" : p.suggestedVersion.ToString()
+                        p => "", p => p.name, p => "", p => p.resolvedVersion.ToString()
                     );
-                }
-                else
-                {
-                    tableToPrint = packages.ToStringTable(
-                        headers,
-                        p => "", p => p.name, p => "", p => {
-                            if (p.deprecated)
-                            {
-                                deprecatedFound = true;
-                                return "(D)";
-                            }
-                            return "";
-                        }, p => p.resolvedVersion.ToString()
-                    );
-                }
-           
             }
             else
             {
-                if (outdated)
-                {
-                    tableToPrint = packages.ToStringTable(
+                tableToPrint = packages.ToStringTable(
                        headers,
                        p => "", p => p.name, p => {
                            if (p.autoReference)
@@ -366,40 +368,8 @@ namespace NuGet.CommandLine.XPlat
                            }
                            return "";
                        },
-                       p => {
-                           if (p.deprecated)
-                           {
-                               deprecatedFound = true;
-                               return "(D)";
-                           }
-                           return "";
-                       }, p => p.printableRequestedVersion, p => p.resolvedVersion.ToString(), p => p.suggestedVersion == null ? "Not found at sources" : p.suggestedVersion.ToString()
+                       p => p.printableRequestedVersion, p => p.resolvedVersion.ToString()
                    );
-                }
-                else
-                {
-                    tableToPrint = packages.ToStringTable(
-                       headers,
-                       p => "", p => p.name, p => {
-                           if (p.autoReference)
-                           {
-                               autoReferenceFound = true;
-                               return "(A)";
-                           }
-                           return "";
-                       },
-                       p => {
-                           if (p.deprecated)
-                           {
-                               deprecatedFound = true;
-                               return "(D)";
-                           }
-                           return "";
-                       }, p => p.printableRequestedVersion, p => p.resolvedVersion.ToString()
-                   );
-                }
-                
-
             }
 
             foreach (var line in tableToPrint)
@@ -414,7 +384,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             Console.WriteLine();
-            return Tuple.Create(autoReferenceFound, deprecatedFound);
+            return autoReferenceFound;
         }
 
         /// <summary>
@@ -430,13 +400,11 @@ namespace NuGet.CommandLine.XPlat
             {
                 result.Add("Transitive Package");
                 result.Add("");
-                result.Add("");
                 result.Add("Resolved");
             }
             else
             {
                 result.Add("Top-level Package");
-                result.Add("");
                 result.Add("");
                 result.Add("Requested");
                 result.Add("Resolved");
@@ -462,7 +430,6 @@ namespace NuGet.CommandLine.XPlat
         public string printableRequestedVersion;
         public NuGetVersion resolvedVersion;
         public NuGetVersion suggestedVersion;
-        public bool deprecated;
         public bool autoReference;
     }
 }
