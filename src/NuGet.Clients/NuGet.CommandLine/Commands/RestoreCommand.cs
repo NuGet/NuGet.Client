@@ -19,7 +19,6 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Shared;
 
 namespace NuGet.CommandLine
 {
@@ -76,6 +75,7 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
+
             if (DisableParallelProcessing)
             {
                 HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
@@ -107,12 +107,6 @@ namespace NuGet.CommandLine
             {
                 var v2RestoreResult = await PerformNuGetV2RestoreAsync(restoreInputs);
                 restoreSummaries.Add(v2RestoreResult);
-
-                // log warnings
-                v2RestoreResult
-                    .Errors
-                    .Where(l => l.Level == LogLevel.Warning)
-                    .ForEach(l => Console.LogWarning(l.FormatWithCode()));
             }
 
             // project.json and PackageReference
@@ -326,17 +320,15 @@ namespace NuGet.CommandLine
             CheckRequireConsent();
 
             var collectorLogger = new RestoreCollectorLogger(Console);
-
             var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
             var projectContext = new ConsoleProjectContext(collectorLogger)
             {
                 PackageExtractionContext = new PackageExtractionContext(
-                        Packaging.PackageSaveMode.Defaultv2,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        collectorLogger,
-                        signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetDefault())
+                Packaging.PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                collectorLogger,
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.GetDefault())
             };
 
             if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
@@ -353,7 +345,7 @@ namespace NuGet.CommandLine
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,
-                    projectContext,                    
+                    projectContext,
                     downloadContext,
                     collectorLogger);
 
@@ -381,7 +373,7 @@ namespace NuGet.CommandLine
         {
             var result = new List<RestoreLogMessage>();
 
-            foreach(var failedEvent in failedEvents)
+            foreach (var failedEvent in failedEvents)
             {
                 if (failedEvent.Exception is SignatureException)
                 {
