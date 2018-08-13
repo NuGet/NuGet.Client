@@ -79,8 +79,8 @@ namespace NuGet.PackageManagement
         /// <returns>Returns true if atleast one package was restored.</returns>
         Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(string solutionDirectory,
             INuGetProjectContext nuGetProjectContext,
-            CancellationToken token,
-            ILogger logger);
+            ILogger logger,
+            CancellationToken token);
 
         /// <summary>
         /// Restores the package references if they are missing
@@ -102,8 +102,8 @@ namespace NuGet.PackageManagement
             IEnumerable<PackageRestoreData> packages,
             INuGetProjectContext nuGetProjectContext,
             PackageDownloadContext downloadContext,
-            CancellationToken token,
-            ILogger logger);
+            ILogger logger,
+            CancellationToken token);
     }
 
     /// <summary>

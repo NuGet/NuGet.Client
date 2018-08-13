@@ -490,7 +490,7 @@ namespace NuGet.SolutionRestoreManager
                             // Display the restore opt out message if it has not been shown yet
                             await l.WriteHeaderAsync();
 
-                            await RestoreMissingPackagesInSolutionAsync(solutionDirectory, packages, t, l);
+                            await RestoreMissingPackagesInSolutionAsync(solutionDirectory, packages, l, t);
                         },
                         token);
 
@@ -536,8 +536,8 @@ namespace NuGet.SolutionRestoreManager
         private async Task RestoreMissingPackagesInSolutionAsync(
             string solutionDirectory,
             IEnumerable<PackageRestoreData> packages,
-            CancellationToken token,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken token)
         {
             await TaskScheduler.Default;
 
@@ -553,8 +553,8 @@ namespace NuGet.SolutionRestoreManager
                     packages,
                     _nuGetProjectContext,
                     downloadContext,
-                    token,
-                    logger);
+                    logger,
+                    token);
             }
         }
 

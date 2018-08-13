@@ -179,8 +179,8 @@ namespace NuGet.PackageManagement
         public virtual async Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(
             string solutionDirectory,
             INuGetProjectContext nuGetProjectContext,
-            CancellationToken token,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken token)
         {
             var packageReferencesDictionary = await GetPackagesReferencesDictionaryAsync(token);
 
@@ -203,8 +203,8 @@ namespace NuGet.PackageManagement
                     packages,
                     nuGetProjectContext,
                     downloadContext,
-                    token,
-                    logger);
+                    logger,
+                    token);
             }
         }
 
@@ -212,8 +212,8 @@ namespace NuGet.PackageManagement
             IEnumerable<PackageRestoreData> packages,
             INuGetProjectContext nuGetProjectContext,
             PackageDownloadContext downloadContext,
-            CancellationToken token,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken token)
         {
             if (packages == null)
             {
