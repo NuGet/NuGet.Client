@@ -179,7 +179,8 @@ namespace NuGet.CommandLine
                 packageRestoredEvent: null,
                 packageRestoreFailedEvent: (sender, args) => { failedEvents.Enqueue(args); },
                 sourceRepositories: packageSources.Select(sourceRepositoryProvider.CreateRepository),
-                maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
+                maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
+                logger: Console);
 
             var missingPackageReferences = installedPackageReferences.Where(reference =>
                 !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity)).Any();
@@ -203,8 +204,7 @@ namespace NuGet.CommandLine
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,
                     new ConsoleProjectContext(Console),
-                    downloadContext,
-                    Console);
+                    downloadContext);
 
                 if (downloadContext.DirectDownload)
                 {

@@ -229,9 +229,10 @@ namespace NuGet.PackageManagement
                 PackageRestoredEvent,
                 PackageRestoreFailedEvent,
                 sourceRepositories: null,
-                maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism);
+                maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism,
+                logger: logger);
 
-            return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext, logger);
+            return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);
         }
 
         private NuGetPackageManager GetNuGetPackageManager(string solutionDirectory)
@@ -257,8 +258,7 @@ namespace NuGet.PackageManagement
         public static async Task<PackageRestoreResult> RestoreMissingPackagesAsync(
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext,
-            PackageDownloadContext downloadContext,
-            ILogger logger)
+            PackageDownloadContext downloadContext)
         {
             if (packageRestoreContext == null)
             {
@@ -293,7 +293,7 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    logger,
+                    packageRestoreContext.Logger,
                     signedPackageVerifier,
                     SignedPackageVerifierSettings.GetDefault());
             }
@@ -330,7 +330,8 @@ namespace NuGet.PackageManagement
         /// that dequeue from the ConcurrentQueue and perform package restore. So, this method should pre-populate the
         /// queue and must not enqueued to by other methods
         /// </summary>
-        private static async Task<IEnumerable<AttemptedPackage>> ThrottledPackageRestoreAsync(HashSet<PackageReference> packageReferences,
+        private static async Task<IEnumerable<AttemptedPackage>> ThrottledPackageRestoreAsync(
+            HashSet<PackageReference> packageReferences,
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext,
             PackageDownloadContext downloadContext)

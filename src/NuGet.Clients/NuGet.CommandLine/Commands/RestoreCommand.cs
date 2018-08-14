@@ -76,7 +76,6 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
-
             if (DisableParallelProcessing)
             {
                 HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
@@ -109,7 +108,6 @@ namespace NuGet.CommandLine
                 var v2RestoreResult = await PerformNuGetV2RestoreAsync(restoreInputs);
                 restoreSummaries.Add(v2RestoreResult);
 
-                // log warnings for a failure since the package extractor throws an exception without logging warnings
                 if (!v2RestoreResult.Success)
                 {
                     v2RestoreResult
@@ -315,6 +313,7 @@ namespace NuGet.CommandLine
 
             var installCount = 0;
             var failedEvents = new ConcurrentQueue<PackageRestoreFailedEventArgs>();
+            var collectorLogger = new RestoreCollectorLogger(Console);
 
             var packageRestoreContext = new PackageRestoreContext(
                 nuGetPackageManager,
@@ -325,11 +324,11 @@ namespace NuGet.CommandLine
                 sourceRepositories: repositories,
                 maxNumberOfParallelTasks: DisableParallelProcessing
                         ? 1
-                        : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
+                        : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
+                logger: collectorLogger);
 
             CheckRequireConsent();
 
-            var collectorLogger = new RestoreCollectorLogger(Console);
             var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
             var projectContext = new ConsoleProjectContext(collectorLogger)
             {
@@ -356,8 +355,7 @@ namespace NuGet.CommandLine
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,
                     projectContext,
-                    downloadContext,
-                    collectorLogger);
+                    downloadContext);
 
                 if (downloadContext.DirectDownload)
                 {

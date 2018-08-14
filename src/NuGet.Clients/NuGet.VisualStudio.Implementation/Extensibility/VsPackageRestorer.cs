@@ -48,7 +48,7 @@ namespace NuGet.VisualStudio
                 NuGetUIThreadHelper.JoinableTaskFactory.Run(() =>
                     _restoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
                     nuGetProjectContext,
-                    new NullLogger(),
+                    NullLogger.Instance,
                     CancellationToken.None));
             }
             catch (Exception ex)
