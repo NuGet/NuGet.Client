@@ -334,11 +334,11 @@ namespace NuGet.CommandLine
             var projectContext = new ConsoleProjectContext(collectorLogger)
             {
                 PackageExtractionContext = new PackageExtractionContext(
-                Packaging.PackageSaveMode.Defaultv2,
-                PackageExtractionBehavior.XmlDocFileSaveMode,
-                collectorLogger,
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault())
+                    Packaging.PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    collectorLogger,
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault())
             };
 
             if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
