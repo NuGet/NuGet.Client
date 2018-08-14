@@ -40,12 +40,6 @@ namespace NuGet.Protocol
                     }
                     symbolPackageUpdateResource = new SymbolPackageUpdateResourceV3(sourceUri, httpSource);
                 }
-                else
-                {
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
-                        Strings.PackageServerEndpoint_NotSupported,
-                        source));
-                }
             }
 
             var result = new Tuple<bool, INuGetResource>(symbolPackageUpdateResource != null, symbolPackageUpdateResource);
