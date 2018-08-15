@@ -383,10 +383,19 @@ namespace NuGet.Commands
 
             foreach (var file in package.Files)
             {
+                if (!lockFileLib.HasTools && HasTools(file))
+                {
+                    lockFileLib.HasTools = true;
+                }
                 lockFileLib.Files.Add(file);
             }
 
             return lockFileLib;
+        }
+
+        private static bool HasTools(string file)
+        {
+            return file.StartsWith("tools/", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

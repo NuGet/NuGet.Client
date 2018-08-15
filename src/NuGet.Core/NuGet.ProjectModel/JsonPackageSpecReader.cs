@@ -463,7 +463,7 @@ namespace NuGet.ProjectModel
                     var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
                     var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
                     var noWarn = new List<NuGetLogCode>();
-
+                    
                     // This method handles both the dependencies and framework assembly sections.
                     // Framework references should be limited to references.
                     // Dependencies should allow everything but framework references.
@@ -472,6 +472,7 @@ namespace NuGet.ProjectModel
                                                     : LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference;
 
                     var autoReferenced = false;
+                    var generatePathProperty = false;
 
                     string dependencyVersionValue = null;
                     var dependencyVersionToken = dependencyValue;
@@ -553,6 +554,8 @@ namespace NuGet.ProjectModel
                         }
 
                         autoReferenced = GetBoolOrFalse(dependencyValue, "autoReferenced", packageSpecPath);
+
+                        generatePathProperty = GetBoolOrFalse(dependencyValue, "generatePathProperty", packageSpecPath);
                     }
 
                     VersionRange dependencyVersionRange = null;
@@ -604,7 +607,8 @@ namespace NuGet.ProjectModel
                         IncludeType = includeFlags,
                         SuppressParent = suppressParentFlagsValue,
                         AutoReferenced = autoReferenced,
-                        NoWarn = noWarn.ToList()
+                        NoWarn = noWarn.ToList(),
+                        GeneratePathProperty = generatePathProperty
                     });
                 }
             }

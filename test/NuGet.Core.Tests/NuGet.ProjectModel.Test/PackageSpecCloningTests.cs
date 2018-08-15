@@ -131,7 +131,9 @@ namespace NuGet.ProjectModel.Test
                 includeType: LibraryIncludeFlags.None,
                 suppressParent: LibraryIncludeFlags.ContentFiles,
                 noWarn: new List<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1001, NuGetLogCode.NU1002 },
-                autoReferenced: false);
+                autoReferenced: false,
+                generatePathProperty: false
+                );
 
             return dependency;
         }
@@ -599,7 +601,8 @@ namespace NuGet.ProjectModel.Test
                 includeType: LibraryIncludeFlags.None,
                 suppressParent: LibraryIncludeFlags.ContentFiles,
                 noWarn: new List<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1001 },
-                autoReferenced: false);
+                autoReferenced: false,
+                generatePathProperty: false);
             var imports = NuGetFramework.Parse("net45"); // This makes no sense in the context of fallback, just for testing :)
 
             var originalTargetFrameworkInformation = new TargetFrameworkInformation();

@@ -22,11 +22,13 @@ namespace NuGet.LibraryModel
         public IList<NuGetLogCode> NoWarn { get; set; } = new List<NuGetLogCode>();
 
         public string Name => LibraryRange.Name;
-        
+
         /// <summary>
         /// True if the PackageReference is added by the SDK and not the user.
         /// </summary>
         public bool AutoReferenced { get; set; }
+
+        public bool GeneratePathProperty { get; set; }
 
         public LibraryDependency() { }
 
@@ -36,7 +38,8 @@ namespace NuGet.LibraryModel
             LibraryIncludeFlags includeType,
             LibraryIncludeFlags suppressParent,
             IList<NuGetLogCode> noWarn,
-            bool autoReferenced)
+            bool autoReferenced,
+            bool generatePathProperty)
         {
             LibraryRange = libraryRange;
             Type = type;
@@ -44,6 +47,7 @@ namespace NuGet.LibraryModel
             SuppressParent = suppressParent;
             NoWarn = noWarn;
             AutoReferenced = autoReferenced;
+            GeneratePathProperty = generatePathProperty;
         }
 
         public override string ToString()
@@ -75,6 +79,7 @@ namespace NuGet.LibraryModel
             hashCode.AddObject(SuppressParent);
             hashCode.AddObject(AutoReferenced);
             hashCode.AddSequence(NoWarn);
+            hashCode.AddObject(GeneratePathProperty);
 
             return hashCode.CombinedHash;
         }
@@ -101,7 +106,8 @@ namespace NuGet.LibraryModel
                    EqualityUtility.EqualsWithNullCheck(Type, other.Type) &&
                    IncludeType == other.IncludeType &&
                    SuppressParent == other.SuppressParent &&
-                   NoWarn.SequenceEqualWithNullCheck(other.NoWarn);
+                   NoWarn.SequenceEqualWithNullCheck(other.NoWarn) &&
+                   GeneratePathProperty == other.GeneratePathProperty;
         }
 
         public LibraryDependency Clone()
@@ -109,7 +115,7 @@ namespace NuGet.LibraryModel
             var clonedLibraryRange = new LibraryRange(LibraryRange.Name, LibraryRange.VersionRange, LibraryRange.TypeConstraint);
             var clonedNoWarn = new List<NuGetLogCode>(NoWarn);
 
-            return new LibraryDependency(clonedLibraryRange, Type, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced);
+            return new LibraryDependency(clonedLibraryRange, Type, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty);
         }
     }
 }

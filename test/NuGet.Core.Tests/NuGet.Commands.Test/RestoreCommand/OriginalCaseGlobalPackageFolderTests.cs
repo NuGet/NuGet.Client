@@ -224,7 +224,7 @@ namespace NuGet.Commands.Test
             };
         }
 
-        private static RestoreTargetGraph GetRestoreTargetGraph(
+        public static RestoreTargetGraph GetRestoreTargetGraph(
             string source,
             PackageIdentity identity,
             FileInfo packagePath,
