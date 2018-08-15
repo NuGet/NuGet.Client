@@ -426,6 +426,8 @@ namespace NuGet.Commands
             var ridlessTargets = assetsFile.Targets
                 .Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
 
+            var packagesWithTools = new HashSet<string>(assetsFile.Libraries.Where(i => i.HasTools).Select(i => i.Name));
+
             foreach (var ridlessTarget in ridlessTargets)
             {
                 // There could be multiple string matches from the MSBuild project.
@@ -492,6 +494,31 @@ namespace NuGet.Commands
                         .Select(GenerateImport));
 
                 props.AddRange(GenerateGroupsWithConditions(buildPropsGroup, isMultiTargeting, frameworkConditions));
+
+                // Create an empty PropertyGroup for package properties
+                var packagePathsPropertyGroup = MSBuildRestoreItemGroup.Create("PropertyGroup", Enumerable.Empty<XElement>(), 1000, isMultiTargeting ? frameworkConditions : Enumerable.Empty<string>());
+
+                var projectGraph = targetGraph.Graphs.FirstOrDefault();
+
+                // Distinct union of tool packages and packages with GeneratePathProperty=true
+                var packageIdsToCreatePropertiesFor = packagesWithTools.Union(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name)).Distinct(StringComparer.OrdinalIgnoreCase);
+
+                var localPackages = sortedPackages.Select(e => e.Value);
+
+                // Find the packages with matching IDs in the list of sorted packages, filtering out ones that there was no match for or that don't exist
+                var packagePathProperties = localPackages
+                    .Where(pkg => pkg?.Value?.Package != null && packageIdsToCreatePropertiesFor.Contains(pkg.Value.Package.Id) && pkg.Exists())
+                    .Select(pkg => pkg.Value.Package)
+                    // Get the property
+                    .Select(GeneratePackagePathProperty);
+
+                packagePathsPropertyGroup.Items.AddRange(packagePathProperties);
+
+                // Don't bother adding the PropertyGroup if there were no properties added
+                if (packagePathsPropertyGroup.Items.Any())
+                {
+                    props.Add(packagePathsPropertyGroup);
+                }
 
                 if (isMultiTargeting)
                 {
@@ -719,6 +746,11 @@ namespace NuGet.Commands
             }
 
             return result;
+        }
+
+        private static XElement GeneratePackagePathProperty(LocalPackageInfo localPackageInfo)
+        {
+            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_")}", localPackageInfo.ExpandedPath);
         }
     }
 }

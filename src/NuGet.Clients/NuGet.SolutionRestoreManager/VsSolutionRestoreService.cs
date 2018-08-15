@@ -508,6 +508,8 @@ namespace NuGet.SolutionRestoreManager
 
                 // Mark packages coming from the SDK as AutoReferenced
                 AutoReferenced = GetPropertyBoolOrFalse(item, "IsImplicitlyDefined"),
+
+                GeneratePathProperty = GetPropertyBoolOrFalse(item, "GeneratePathProperty")
             };
 
             // Add warning suppressions
