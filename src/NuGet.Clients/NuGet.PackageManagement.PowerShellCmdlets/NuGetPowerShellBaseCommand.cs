@@ -258,7 +258,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                             packages,
                             this,
                             downloadContext,
+                            new LoggerAdapter(this),
                             Token);
+
                         if (result.Restored)
                         {
                             await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
