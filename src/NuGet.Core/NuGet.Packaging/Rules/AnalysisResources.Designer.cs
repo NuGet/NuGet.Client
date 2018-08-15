@@ -107,6 +107,15 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The file at &apos;{0}&apos; uses the symbol for empty directory &apos;_._&apos;, but it is present in a directory that contains other files. Please remove this file from directories that contain other files..
+        /// </summary>
+        public static string InvalidPlaceholderFileWarning {
+            get {
+                return ResourceManager.GetString("InvalidPlaceholderFileWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A stable release of a package should not have a prerelease dependency. Either modify the version spec of dependency &quot;{0}&quot; or update the version field in the nuspec..
         /// </summary>
         public static string InvalidPrereleaseDependencyWarning {
