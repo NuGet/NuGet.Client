@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.XPlat
                 var framework = listpkg.Option(
                     "--framework",
                     Strings.ListPkg_FrameworkDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.MultipleValue);
 
                 var includeOutdated = listpkg.Option(
                     "--outdated",
@@ -71,7 +71,7 @@ namespace NuGet.CommandLine.XPlat
                 var source = listpkg.Option(
                     "--source",
                     Strings.ListPkg_SourceDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.MultipleValue);
 
                 var config = listpkg.Option(
                     "--config",
@@ -83,11 +83,11 @@ namespace NuGet.CommandLine.XPlat
                     var logger = getLogger();
 
                     var settings = ProcessConfigFile(config.Value(), path.Value);
-                    var sources = ParseArgumentWithCommas(source.Value());
+                    var sources = source.Values;
                     
                     var packageSources = GetPackageSources(settings, sources, config);
 
-                    var frameworks = ParseArgumentWithCommas(framework.Value());
+                    var frameworks = framework.Values;
                     
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
@@ -100,8 +100,7 @@ namespace NuGet.CommandLine.XPlat
                         highestPatch.HasValue(),
                         highestMinor.HasValue(),
                         logger,
-                        CancellationToken.None
-                    );
+                        CancellationToken.None);
 
                     var listPackageCommandRunner = getCommandRunner();
                     await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
@@ -110,33 +109,38 @@ namespace NuGet.CommandLine.XPlat
             });
         }
 
-        private static ISettings ProcessConfigFile(string configFile, string currentDirectory)
+        private static ISettings ProcessConfigFile(string configFile, string projectOrSolution)
         {
             if (string.IsNullOrEmpty(configFile))
             {
-                return Settings.LoadDefaultSettings(currentDirectory);
+                return Settings.LoadDefaultSettings(projectOrSolution);
             }
-            else
-            {
-                var configFileFullPath = Path.GetFullPath(configFile);
-                var directory = Path.GetDirectoryName(configFileFullPath);
-                var configFileName = Path.GetFileName(configFileFullPath);
-                return Settings.LoadDefaultSettings(
-                    directory,
-                    configFileName,
-                    machineWideSettings: new XPlatMachineWideSetting());
-            }
+
+            var configFileFullPath = Path.GetFullPath(configFile);
+            var directory = Path.GetDirectoryName(configFileFullPath);
+            var configFileName = Path.GetFileName(configFileFullPath);
+            return Settings.LoadDefaultSettings(
+                directory,
+                configFileName,
+                machineWideSettings: new XPlatMachineWideSetting());
 
         }
 
-        private static List<PackageSource> GetPackageSources(ISettings settings, List<string> sources, CommandOption config)
+        private static IEnumerable<PackageSource> GetPackageSources(ISettings settings, IEnumerable<string> sources, CommandOption config)
         {
             
             var sourceProvider = new PackageSourceProvider(settings);
-            var availableSources = sourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
+            var availableSources = sourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+            var uniqueSources = new HashSet<string>();
+
             var packageSources = new List<PackageSource>();
             foreach (var source in sources)
             {
+                if (uniqueSources.Contains(source))
+                {
+                    continue;
+                }
+                uniqueSources.Add(source);
                 packageSources.Add(PackageSourceProviderExtensions.ResolveSource(availableSources, source));
             }
 
@@ -147,16 +151,5 @@ namespace NuGet.CommandLine.XPlat
 
             return packageSources;
         }
-
-        private static List<string> ParseArgumentWithCommas(string argument)
-        {
-            if (argument == null)
-            {
-                return new List<string>();
-            }
-            var argumentList = argument.Split(',').ToList();
-            return argumentList;
-        }
-
     }
 }

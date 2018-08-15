@@ -3,20 +3,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -47,7 +42,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
         /// <returns>MSBuild.Evaluation.Project</returns>
-        public static Project GetProject(string projectCSProjPath)
+        internal static Project GetProject(string projectCSProjPath)
         {
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
@@ -73,7 +68,7 @@ namespace NuGet.CommandLine.XPlat
             return new Project(projectRootElement, globalProperties, toolsVersion: null);
         }
 
-        public static List<string> GetProjectsFromSolution(string solutionPath)
+        internal static List<string> GetProjectsFromSolution(string solutionPath)
         {
             var sln = SolutionFile.Parse(solutionPath);
             return sln.ProjectsInOrder.Select(p => p.AbsolutePath).ToList();
@@ -325,59 +320,57 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="assetsFile">Assets file for all targets and libraries</param>
         /// <param name="transitive">Include transitive packages in the result</param>
         /// <returns></returns>
-        internal Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>> GetResolvedVersions(
-            IList<string> userInputFrameworks,LockFile assetsFile, bool transitive)
+        internal IEnumerable<FrameworkPackages> GetResolvedVersions(
+            IEnumerable<string> userInputFrameworks,LockFile assetsFile, bool transitive)
         {
-            var resultPackages = new Dictionary<string, Tuple<IEnumerable<PRPackage>, IEnumerable<PRPackage>>>();
+            var resultPackages = new List<FrameworkPackages>();
+            var parsedUserFrameworks = userInputFrameworks.Select(f => NuGetFramework.Parse(f));
 
-            var foundTargetFrameworks = new List<TargetFrameworkInformation>();
-            if (userInputFrameworks.Count() == 0)
+            IEnumerable<TargetFrameworkInformation> requestedTargetFrameworks;
+
+            if (!parsedUserFrameworks.Any())
             {
-                foundTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks.ToList();
+                requestedTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks.ToList();
             }
             else
             {
-                foundTargetFrameworks.AddRange(assetsFile.PackageSpec.TargetFrameworks.Where(tfm => userInputFrameworks.Contains(tfm.ToString())));
+                requestedTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks.Where(tfm => parsedUserFrameworks.Contains(tfm.FrameworkName));
             }
 
-            foreach (var target in assetsFile.Targets)
-            {
-                var tfmInformation = foundTargetFrameworks.Where(tfm => assetsFile.GetTarget(tfm.FrameworkName, null).Equals(target));
+            var requestedTargets = requestedTargetFrameworks.Select(tfm => assetsFile.GetTarget(tfm.FrameworkName, null));
 
-                //If the target is not in the list of target frameworks, skip the target
-                if (!tfmInformation.Any())
-                {
-                    continue;
-                }
+            foreach (var target in requestedTargets)
+            {
+                // Find the tfminformation corresponding to the target to
+                // get the top-level dependencies
+                var tfmInformation = requestedTargetFrameworks.Where(tfm => tfm.FrameworkName.Equals(target.TargetFramework));
 
                 //The packages for the framework that were retrieved with GetRequestedVersions
-                var frameworkDependencies = tfmInformation.Single().Dependencies;
+                var frameworkDependencies = tfmInformation.First().Dependencies;
                     
                 var topLevelPackages = new List<PRPackage>();
                 var transitivePackages = new List<PRPackage>();
 
                 foreach (var library in target.Libraries)
                 {
-                    
                     var matchingPackages = frameworkDependencies.Where(d =>
                         d.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
 
                     //In case we found a matching package in requestedVersions, the package will be
                     //top level. If not, then it is transitive, and include-transitive must be used
                     //to add the package
-                    if (matchingPackages.Count() != 0 || transitive)
+                    if (matchingPackages.Any() || transitive)
                     {
                         
                         var resolvedVersion = library.Version.ToString();
-                        var packageInfo = new PRPackage { name = library.Name, resolvedVersion = library.Version };
 
-                        if (matchingPackages.Count() != 0)
+                        if (matchingPackages.Any())
                         {
                             var topLevelPackage = matchingPackages.Single();
                             
-                            packageInfo = new PRPackage {
-                                name = packageInfo.name,
-                                resolvedVersion = packageInfo.resolvedVersion,
+                            var packageInfo = new PRPackage {
+                                name = library.Name,
+                                resolvedVersion = library.Version,
                                 requestedVersion = topLevelPackage.LibraryRange.VersionRange,
                                 printableRequestedVersion = topLevelPackage.LibraryRange.VersionRange.ToString(),
                                 autoReference = topLevelPackage.AutoReferenced
@@ -387,6 +380,11 @@ namespace NuGet.CommandLine.XPlat
                         }
                         else
                         {
+                            var packageInfo = new PRPackage {
+                                name = library.Name,
+                                resolvedVersion = library.Version
+                            };
+
                             transitivePackages.Add(packageInfo);
                         }
 
@@ -395,10 +393,14 @@ namespace NuGet.CommandLine.XPlat
 
                 }
 
-                resultPackages.Add(
-                    target.TargetFramework.GetShortFolderName(),
-                    Tuple.Create(topLevelPackages.AsEnumerable(), transitivePackages.AsEnumerable())
-                );
+                var frameworkPackages = new FrameworkPackages
+                {
+                    framework = target.TargetFramework.GetShortFolderName(),
+                    topLevelPackages = topLevelPackages,
+                    transitivePacakges = transitivePackages
+                };
+
+                resultPackages.Add(frameworkPackages);
             }
 
             return resultPackages;
@@ -418,17 +420,14 @@ namespace NuGet.CommandLine.XPlat
             var packageReferences = project.AllEvaluatedItems
                 .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase));
 
-            if (packageId == "")
+            if (string.IsNullOrEmpty(packageId))
             {
                 return packageReferences.ToList();
             }
-            else
-            {
-                return packageReferences
-                    .Where(item => item.EvaluatedInclude.Equals(packageId, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-            }
 
+            return packageReferences
+                .Where(item => item.EvaluatedInclude.Equals(packageId, StringComparison.OrdinalIgnoreCase))
+            .ToList();
         }
 
         /// <summary>
@@ -517,7 +516,7 @@ namespace NuGet.CommandLine.XPlat
                     .AllEvaluatedProperties
                     .Where(p => p.Name.Equals(FRAMEWORKS_TAG, StringComparison.OrdinalIgnoreCase))
                     .Select(p => p.EvaluatedValue)
-                    .LastOrDefault();
+                    .FirstOrDefault();
                 frameworks = MSBuildStringUtility.Split(frameworksString);
             }
             return frameworks;
