@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Commands\NuGet.Commands.csproj" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.6.85" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.7.179" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>

@@ -127,7 +127,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                     try
                     {
                         var nugetSDKLogger = new NuGetSdkLogger(context.Logger, warnings, errors);
-                        DefaultCredentialServiceUtility.SetupDefaultCredentialService(nugetSDKLogger, nonInteractive: true);
+                        DefaultCredentialServiceUtility.SetupDefaultCredentialService(nugetSDKLogger, nonInteractive: !context.Interactive);
 
                         // Asynchronously run the restore without a commit which find the package on configured feeds, download, and unzip it without generating any other files
                         var results = RestoreRunnerEx.RunWithoutCommit(
