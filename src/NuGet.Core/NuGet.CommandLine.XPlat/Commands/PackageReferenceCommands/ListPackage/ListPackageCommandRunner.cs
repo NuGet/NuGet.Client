@@ -73,19 +73,21 @@ namespace NuGet.CommandLine.XPlat
                 var assetsFile = lockFileFormat.Read(assetsPath);
 
                 //Get all the packages that are referenced in a project
-                var packages = msBuild.GetResolvedVersions(listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
+                var packages = msBuild.GetResolvedVersions(project, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
 
                 //No packages means that no package references at all were found 
                 if (!packages.Any())
                 {
-                    Console.WriteLine(listPackageArgs.Frameworks.Count() == 0 ? string.Format(Strings.ListPkg_NoPackagesFound, projectName) : string.Format(Strings.ListPkg_NoPackagesFoundForFrameworks, projectName));
+                    Console.WriteLine(listPackageArgs.Frameworks.Count() == 0 ?
+                        string.Format(Strings.ListPkg_NoPackagesFound, projectName) :
+                        string.Format(Strings.ListPkg_NoPackagesFoundForFrameworks, projectName));
                 }
                 else
                 {
                     //Handle outdated
                     if (listPackageArgs.IncludeOutdated)
                     {
-                        packages = await AddLatestVersions(packages, listPackageArgs);
+                        await AddLatestVersionsAsync(packages, listPackageArgs);
                     }
 
                     //Printing packages of a single project and keeping track if
@@ -114,36 +116,28 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packages">The packages found in a project</param>
         /// <param name="listPackageArgs">List args for the token and source provider</param>
         /// <returns>A data structure like packages, but includes the latest versions</returns>
-        private async Task<IEnumerable<FrameworkPackages>> AddLatestVersions(
+        private async Task AddLatestVersionsAsync(
             IEnumerable<FrameworkPackages> packages, ListPackageArgs listPackageArgs)
         {
-            var resultPackages = new List<FrameworkPackages>();
-
             var providers = Repository.Provider.GetCoreV3();
 
             foreach (var frameworkPackages in packages)
             {
-                var updatedTopLevel = frameworkPackages.topLevelPackages.Select(async p =>
-                        await GetLatestVersion(p, NuGetFramework.Parse(frameworkPackages.framework), listPackageArgs, providers));
-
-                var updatedTransitive = frameworkPackages.transitivePacakges.Select(async p =>
-                        await GetLatestVersion(p, NuGetFramework.Parse(frameworkPackages.framework), listPackageArgs, providers));
-
-
-                var resolvedTopLevelPackages = await Task.WhenAll(updatedTopLevel);
-                var resolvedTransitivePackages = await Task.WhenAll(updatedTransitive);
-
-                var updatedPackages = new FrameworkPackages
+                var topLevelTasks = new List<Task>();
+                foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
                 {
-                    framework = frameworkPackages.framework,
-                    topLevelPackages = resolvedTopLevelPackages,
-                    transitivePacakges = resolvedTransitivePackages
-                };
-                resultPackages.Add(updatedPackages);
+                    topLevelTasks.Add(GetLatestVersionAsync(topLevelPackage, NuGetFramework.Parse(frameworkPackages.Framework), listPackageArgs, providers));
+                }
 
+                var transitiveTasks = new List<Task>();
+                foreach (var transitivePackage in frameworkPackages.TransitivePacakges)
+                {
+                    topLevelTasks.Add(GetLatestVersionAsync(transitivePackage, NuGetFramework.Parse(frameworkPackages.Framework), listPackageArgs, providers));
+                }
+
+                await Task.WhenAll(topLevelTasks);
+                await Task.WhenAll(transitiveTasks);
             }
-
-            return resultPackages;
         }
 
         /// <summary>
@@ -154,24 +148,21 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="listPackageArgs">List args for the token and source provider></param>
         /// <param name="providers">The providers to use when looking at sources</param>
         /// <returns>An updated pacakge with the highest version at sources</returns>
-        private async Task<PRPackage> GetLatestVersion(
-            PRPackage package,
+        private async Task GetLatestVersionAsync(
+            InstalledPackageReference package,
             NuGetFramework framework,
             ListPackageArgs listPackageArgs,
             IEnumerable<Lazy<INuGetResourceProvider>> providers)
         {
             var sources = listPackageArgs.PackageSources;
-            var tasks = new List<Task<PRPackage>>();
+            var tasks = new List<Task>();
 
             foreach (var packageSource in sources)
             {
                 tasks.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, package, framework, providers));
             }
 
-            var packages = await Task.WhenAll(tasks);
-            package.suggestedVersion = packages.Max(p => p.suggestedVersion);
-
-            return package;
+            await Task.WhenAll(tasks);
         }
 
         /// <summary>
@@ -183,24 +174,31 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="framework">The framework for the given package</param>
         /// <param name="providers">The providers to use when looking at sources</param>
         /// <returns>An updated pacakge with the highest version at a single source</returns>
-        private async Task<PRPackage> GetLatestVersionPerSourceAsync(
+        private async Task GetLatestVersionPerSourceAsync(
             PackageSource packageSource,
             ListPackageArgs listPackageArgs,
-            PRPackage package,
+            InstalledPackageReference package,
             NuGetFramework framework,
             IEnumerable<Lazy<INuGetResourceProvider>> providers)
         {
             var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
             var dependencyInfoResource = await sourceRepository.GetResourceAsync<FindPackageByIdResource>(listPackageArgs.CancellationToken);
 
-            var packages = (await dependencyInfoResource.GetAllVersionsAsync(package.name, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken)).ToList();
+            var packages = (await dependencyInfoResource.GetAllVersionsAsync(package.Name, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
             
             var latestVersionAtSource = packages.Where(version => MeetsConstraints(version, package, listPackageArgs))
             .OrderByDescending(version => version, VersionComparer.Default)
             .FirstOrDefault();
 
-            package.suggestedVersion = latestVersionAtSource;
-            return package;
+            if (package.SuggestedVersion == null)
+            {
+                package.SuggestedVersion = latestVersionAtSource;
+            }
+            else if (latestVersionAtSource != null && latestVersionAtSource > package.SuggestedVersion)
+            {
+                package.SuggestedVersion = latestVersionAtSource;
+            }
+
         }
 
         /// <summary>
@@ -212,29 +210,18 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="package">The required package with its current version</param>
         /// <param name="listPackageArgs">Used to get the constraints</param>
         /// <returns>Whether the new version meets the constraints or not</returns>
-        private bool MeetsConstraints(NuGetVersion newVersion, PRPackage package, ListPackageArgs listPackageArgs)
-        {
-            NuGetVersion currentVersion;
-            if (package.requestedVersion == null)
-            {
-                currentVersion = package.resolvedVersion;
-            }
-            else
-            {
-                currentVersion = package.requestedVersion.MaxVersion != null ?
-                                 package.resolvedVersion : package.requestedVersion.MinVersion;
-            }
-                
-            var result = !newVersion.IsPrerelease || listPackageArgs.Prerelease || package.resolvedVersion.IsPrerelease;
+        private bool MeetsConstraints(NuGetVersion newVersion, InstalledPackageReference package, ListPackageArgs listPackageArgs)
+        {                
+            var result = !newVersion.IsPrerelease || listPackageArgs.Prerelease || package.ResolvedVersion.IsPrerelease;
 
             if (listPackageArgs.HighestPatch)
             {
-                result = newVersion.Minor.Equals(currentVersion.Minor) && newVersion.Major.Equals(currentVersion.Major) && result;
+                result = newVersion.Minor.Equals(package.ResolvedVersion.Minor) && newVersion.Major.Equals(package.ResolvedVersion.Major) && result;
             }
 
             if (listPackageArgs.HighestMinor)
             {
-                result = newVersion.Major.Equals(currentVersion.Major) && result;
+                result = newVersion.Major.Equals(package.ResolvedVersion.Major) && result;
             }
 
             return result;
@@ -257,18 +244,18 @@ namespace NuGet.CommandLine.XPlat
             var frameworkMessage = new StringBuilder(LeftPadding);
             frameworkMessage.Append("'{0}'");
 
-            Console.WriteLine(string.Format(Strings.ListPkgProjectHeaderLog, projectName));
+            Console.WriteLine(string.Format(Strings.ListPkg_ProjectHeaderLog, projectName));
 
             foreach (var frameworkPackages in packages)
             {
-                var frameworkTopLevelPackages = frameworkPackages.topLevelPackages;
-                var frameworkTransitivePackages = frameworkPackages.transitivePacakges;
+                var frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
+                var frameworkTransitivePackages = frameworkPackages.TransitivePacakges;
 
                 //Filter the packages for outdated
                 if (outdated)
                 {
-                    frameworkTopLevelPackages = frameworkTopLevelPackages.Where(p => !p.autoReference && p.resolvedVersion < p.suggestedVersion);
-                    frameworkTransitivePackages = frameworkTransitivePackages.Where(p => p.resolvedVersion < p.suggestedVersion);
+                    frameworkTopLevelPackages = frameworkTopLevelPackages.Where(p => !p.AutoReference && p.ResolvedVersion < p.SuggestedVersion);
+                    frameworkTransitivePackages = frameworkTransitivePackages.Where(p => p.ResolvedVersion < p.SuggestedVersion);
                 }
 
                 //If no packages exist for this framework, print the
@@ -276,12 +263,12 @@ namespace NuGet.CommandLine.XPlat
                 if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
                 {
                     frameworkMessage.Append(": ");
-                    Console.WriteLine(string.Format(frameworkMessage.ToString() + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.framework));
+                    Console.WriteLine(string.Format(frameworkMessage.ToString() + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
                 }
                 else
                 {
                     //Print name of the framework
-                    Console.WriteLine(string.Format(frameworkMessage.ToString(), frameworkPackages.framework));
+                    Console.WriteLine(string.Format(frameworkMessage.ToString(), frameworkPackages.Framework));
 
                     //Print top-level packages
                     if (frameworkTopLevelPackages.Any())
@@ -311,7 +298,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="outdated"></param>
         /// <param name="autoRefWithinPackagesList"></param>
         /// <returns>The table as a string</returns>
-        private void PackagesTable(IEnumerable<PRPackage> packages, bool printingTransitive, bool outdated, out bool autoRefWithinPackagesList)
+        private void PackagesTable(IEnumerable<InstalledPackageReference> packages, bool printingTransitive, bool outdated, out bool autoRefWithinPackagesList)
         {
             var autoReferenceFound = false;
 
@@ -321,7 +308,9 @@ namespace NuGet.CommandLine.XPlat
                 return;
             }
 
-            List<Tuple<string, ConsoleColor>> tableToPrint;
+            packages = packages.OrderBy(p => p.Name);
+
+            ILookup<string, ConsoleColor> tableToPrint;
             var headers = BuildTableHeaders(printingTransitive, outdated);
 
             if (outdated && printingTransitive)
@@ -329,66 +318,69 @@ namespace NuGet.CommandLine.XPlat
                 tableToPrint = packages.ToStringTable(
                        headers,
                        p => "",
-                       p => p.name,
-                       p => "", p => p.resolvedVersion.ToString(),
-                       p => p.suggestedVersion == null ? "Not found at sources" : p.suggestedVersion.ToString());
+                       p => p.Name,
+                       p => "", p => p.ResolvedVersion.ToString(),
+                       p => p.SuggestedVersion == null ? Strings.ListPkg_NotFoundAtSources : p.SuggestedVersion.ToString());
             }
             else if (outdated && !printingTransitive)
             {
                 tableToPrint = packages.ToStringTable(
                        headers,
                        p => "",
-                       p => p.name,
+                       p => p.Name,
                        p =>
                        {
-                           if (p.autoReference)
+                           if (p.AutoReference)
                            {
                                autoReferenceFound = true;
                                return "(A)";
                            }
                            return "";
                        },
-                       p => p.printableRequestedVersion,
-                       p => p.resolvedVersion.ToString(),
-                       p => p.suggestedVersion == null ? "Not found at sources" : p.suggestedVersion.ToString());
+                       p => p.PrintableRequestedVersion,
+                       p => p.ResolvedVersion.ToString(),
+                       p => p.SuggestedVersion == null ? Strings.ListPkg_NotFoundAtSources : p.SuggestedVersion.ToString());
             }
             else if (!outdated && printingTransitive)
             {
                 tableToPrint = packages.ToStringTable(
                         headers,
                         p => "",
-                        p => p.name,
+                        p => p.Name,
                         p => "",
-                        p => p.resolvedVersion.ToString());
+                        p => p.ResolvedVersion.ToString());
             }
             else
             {
                 tableToPrint = packages.ToStringTable(
                        headers,
                        p => "",
-                       p => p.name,
+                       p => p.Name,
                        p => {
-                           if (p.autoReference)
+                           if (p.AutoReference)
                            {
                                autoReferenceFound = true;
                                return "(A)";
                            }
                            return "";
                        },
-                       p => p.printableRequestedVersion,
-                       p => p.resolvedVersion.ToString());
+                       p => p.PrintableRequestedVersion,
+                       p => p.ResolvedVersion.ToString());
             }
 
             //Handle printing with colors
-            foreach (var line in tableToPrint)
+            foreach (var lineGroup in tableToPrint)
             {
-                if (line.Item2 != ConsoleColor.White)
+                foreach (var line in lineGroup)
                 {
-                    Console.ForegroundColor = line.Item2;
-                }
+                    if (line != ConsoleColor.White)
+                    {
+                        Console.ForegroundColor = line;
+                    }
 
-                Console.WriteLine(line.Item1);
-                Console.ResetColor();
+                    Console.WriteLine(lineGroup.Key);
+                    Console.ResetColor();
+                }
             }
 
             Console.WriteLine();
@@ -406,45 +398,24 @@ namespace NuGet.CommandLine.XPlat
             var result = new List<string> { LeftPadding };
             if (printingTransitive)
             {
-                result.Add("Transitive Package");
+                result.Add(Strings.ListPkg_TransitiveHeader);
                 result.Add("");
-                result.Add("Resolved");
+                result.Add(Strings.ListPkg_Resolved);
             }
             else
             {
-                result.Add("Top-level Package");
+                result.Add(Strings.ListPkg_TopLevelHeader);
                 result.Add("");
-                result.Add("Requested");
-                result.Add("Resolved");
+                result.Add(Strings.ListPkg_Requested);
+                result.Add(Strings.ListPkg_Resolved);
             }
 
             if (outdated)
             {
-                result.Add("Latest");
+                result.Add(Strings.ListPkg_Latest);
             }
 
             return result.ToArray();
         }
-    }
-
-    internal struct FrameworkPackages
-    {
-        public string framework;
-        public IEnumerable<PRPackage> topLevelPackages;
-        public IEnumerable<PRPackage> transitivePacakges;
-    }
-
-    /// <summary>
-    /// A struct to simplify holding all of the information
-    /// about a package reference when using list
-    /// </summary>
-    internal struct PRPackage
-    {
-        public string name;
-        public VersionRange requestedVersion;
-        public string printableRequestedVersion;
-        public NuGetVersion resolvedVersion;
-        public NuGetVersion suggestedVersion;
-        public bool autoReference;
     }
 }

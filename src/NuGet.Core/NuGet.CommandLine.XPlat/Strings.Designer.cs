@@ -305,6 +305,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The logger cannot be passed as null.
+        /// </summary>
+        internal static string Error_LoggerNull {
+            get {
+                return ResourceManager.GetString("Error_LoggerNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
         internal static string Error_MissingSourceParameter {
@@ -557,6 +566,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Latest.
+        /// </summary>
+        internal static string ListPkg_Latest {
+            get {
+                return ResourceManager.GetString("ListPkg_Latest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No packages were found for this framework.
         /// </summary>
         internal static string ListPkg_NoPackagesForFramework {
@@ -580,6 +598,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string ListPkg_NoPackagesFoundForFrameworks {
             get {
                 return ResourceManager.GetString("ListPkg_NoPackagesFoundForFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not found at sources.
+        /// </summary>
+        internal static string ListPkg_NotFoundAtSources {
+            get {
+                return ResourceManager.GetString("ListPkg_NotFoundAtSources", resourceCulture);
             }
         }
         
@@ -611,11 +638,47 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; has the following package references.
+        /// </summary>
+        internal static string ListPkg_ProjectHeaderLog {
+            get {
+                return ResourceManager.GetString("ListPkg_ProjectHeaderLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Requested.
+        /// </summary>
+        internal static string ListPkg_Requested {
+            get {
+                return ResourceManager.GetString("ListPkg_Requested", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resolved.
+        /// </summary>
+        internal static string ListPkg_Resolved {
+            get {
+                return ResourceManager.GetString("ListPkg_Resolved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Works only with `--outdated`. Sources to lookup for latest versions.
         /// </summary>
         internal static string ListPkg_SourceDescription {
             get {
                 return ResourceManager.GetString("ListPkg_SourceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Top-level Package.
+        /// </summary>
+        internal static string ListPkg_TopLevelHeader {
+            get {
+                return ResourceManager.GetString("ListPkg_TopLevelHeader", resourceCulture);
             }
         }
         
@@ -629,11 +692,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project &apos;{0}&apos; has the following package references.
+        ///   Looks up a localized string similar to Transitive Package.
         /// </summary>
-        internal static string ListPkgProjectHeaderLog {
+        internal static string ListPkg_TransitiveHeader {
             get {
-                return ResourceManager.GetString("ListPkgProjectHeaderLog", resourceCulture);
+                return ResourceManager.GetString("ListPkg_TransitiveHeader", resourceCulture);
             }
         }
         

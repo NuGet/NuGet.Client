@@ -8,7 +8,7 @@ namespace NuGet.CommandLine.XPlat.Utility
 {
     public static class TableParser
     {
-        public static List<Tuple<string, ConsoleColor>> ToStringTable<T>(
+        public static ILookup<string, ConsoleColor> ToStringTable<T>(
           this IEnumerable<T> values,
           string[] columnHeaders,
           params Func<T, object>[] valueSelectors)
@@ -16,7 +16,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             return ToStringTable(values.ToArray(), columnHeaders, valueSelectors);
         }
 
-        public static List<Tuple<string, ConsoleColor>> ToStringTable<T>(
+        public static ILookup<string, ConsoleColor> ToStringTable<T>(
           this T[] values,
           string[] columnHeaders,
           params Func<T, object>[] valueSelectors)
@@ -60,7 +60,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             return ToStringTable(arrValues);
         }
 
-        public static List<Tuple<string, ConsoleColor>> ToStringTable(this string[,] arrValues)
+        public static ILookup<string, ConsoleColor> ToStringTable(this string[,] arrValues)
         {
             var maxColumnsWidth = GetMaxColumnsWidth(arrValues);
             var rows = new List<Tuple<string, ConsoleColor>>();
@@ -89,7 +89,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 rows.Add(Tuple.Create(sb.ToString(), consoleColor));
             }
 
-            return rows;
+            return rows.ToLookup(p => p.Item1, p => p.Item2);
         }
 
         private static int[] GetMaxColumnsWidth(string[,] arrValues)

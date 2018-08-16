@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
 using System.Collections.Generic;
 using NuGet.Common;
@@ -12,16 +11,16 @@ namespace NuGet.CommandLine.XPlat
     public class ListPackageArgs
     {
         public ILogger Logger { get; }
-        public string Path { get; set; }
-        public IEnumerable<PackageSource> PackageSources { get; set; }
-        public IEnumerable<string> Frameworks { get; set; }
-        public bool IncludeOutdated { get; set; }
-        public bool IncludeDeprecated { get; set; }
-        public bool IncludeTransitive { get; set; }
-        public bool Prerelease { get; set; }
-        public bool HighestPatch { get; set; }
-        public bool HighestMinor { get; set; }
-        public CancellationToken CancellationToken { get; set; }
+        public string Path { get; }
+        public IEnumerable<PackageSource> PackageSources { get; }
+        public IEnumerable<string> Frameworks { get; }
+        public bool IncludeOutdated { get; }
+        public bool IncludeDeprecated { get; }
+        public bool IncludeTransitive { get; }
+        public bool Prerelease { get; }
+        public bool HighestPatch { get; }
+        public bool HighestMinor { get; }
+        public CancellationToken CancellationToken { get; }
 
         /// <summary>
         /// A constructor for the arguments of list package
@@ -61,7 +60,7 @@ namespace NuGet.CommandLine.XPlat
             Prerelease = prerelease;
             HighestPatch = highestPatch;
             HighestMinor = highestMinor;
-            Logger = logger ?? throw new Exception("Logger cannot be null");
+            Logger = logger ?? throw new Exception(Strings.Error_LoggerNull);
             CancellationToken = cancellationToken;
         }
     }
