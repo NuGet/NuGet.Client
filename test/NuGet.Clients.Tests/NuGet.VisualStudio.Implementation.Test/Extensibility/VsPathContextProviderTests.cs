@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft;
 using Microsoft.VisualStudio.Threading;
 using Moq;
@@ -55,7 +56,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 settings,
                 Mock.Of<IVsSolutionManager>(),
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: null);
+                Mock.Of<IVsProjectAdapterProvider>(),
+                getLockFileOrNull: null);
 
             // Act
             var actual = target.GetSolutionPathContext();
@@ -84,7 +86,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 settings.Object,
                 Mock.Of<IVsSolutionManager>(),
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: null);
+                Mock.Of<IVsProjectAdapterProvider>(),
+                getLockFileOrNull: null);
 
             // Act
             var actual = target.GetSolutionPathContext();
@@ -120,11 +123,25 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     fallbackPackageFolder,
                     new PackageIdentity("Bar", NuGetVersion.Parse("1.0.2")));
 
+                var projectUniqueName = Guid.NewGuid().ToString();
+                var project = new Mock<EnvDTE.Project>();
+                var vsProjectAdapter = new Mock<IVsProjectAdapter>();
+                vsProjectAdapter
+                    .Setup(x => x.BuildProperties.GetPropertyValueAsync("ProjectAssetsFile"))
+                    .Returns(Task.FromResult("project.aseets.json"));
+
+
+                var vsProjectAdapterProvider = new Mock<IVsProjectAdapterProvider>();
+                vsProjectAdapterProvider
+                    .Setup(x => x.CreateAdapterForFullyLoadedProjectAsync(project.Object))
+                    .Returns(Task.FromResult(vsProjectAdapter.Object));
+
                 var target = new VsPathContextProvider(
                     Mock.Of<ISettings>(),
                     Mock.Of<IVsSolutionManager>(),
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: _ =>
+                    vsProjectAdapterProvider.Object,
+                    getLockFileOrNull: _ =>
                     {
                         var lockFile = new LockFile
                         {
@@ -150,13 +167,11 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                             }
                         };
 
-                        return Task.FromResult(lockFile);
+                        return lockFile;
                     });
 
-                var project = Mock.Of<BuildIntegratedNuGetProject>();
-
                 // Act
-                var actual = await target.CreatePathContextAsync(project, CancellationToken.None);
+                var actual = await target.CreatePathContextAsync(vsProjectAdapter.Object, "project.aseets.json", projectUniqueName, CancellationToken.None);
 
                 // Assert
                 Assert.NotNull(actual);
@@ -192,31 +207,59 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     userPackageFolder,
                     new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")));
 
+                var solutionManager = new Mock<IVsSolutionManager>();
+                solutionManager
+                    .Setup(x => x.SolutionDirectory)
+                    .Returns(testDirectory.Path);
+
                 var settings = Mock.Of<ISettings>();
                 Mock.Get(settings)
                     .Setup(x => x.GetValue("config", "globalPackagesFolder", true))
                     .Returns(() => userPackageFolder);
+                Mock.Get(settings)
+                    .Setup(x => x.GetValue("config", "repositoryPath", true))
+                    .Returns(() => userPackageFolder);
+
+                var pacakgesConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                                <packages>
+                                    <package id=""Foo"" version=""1.0.1"" targetFramework=""net45"" />
+                                </packages>";
+
+                var project1 = new DirectoryInfo(Path.Combine(testDirectory, "project1"));
+                project1.Create();
+                var projectFullPath = Path.Combine(project1.FullName, "project1.csproj");
+                File.WriteAllText(Path.Combine(project1.FullName, "packages.config"), pacakgesConfig);
+
+                var projectUniqueName = Guid.NewGuid().ToString();
+                var project = new Mock<EnvDTE.Project>();
+                var vsProjectAdapter = new Mock<IVsProjectAdapter>();
+                vsProjectAdapter
+                    .Setup(x => x.FullProjectPath)
+                    .Returns(projectFullPath);
+                vsProjectAdapter
+                    .Setup(x => x.ProjectDirectory)
+                    .Returns(project1.FullName);
+                vsProjectAdapter
+                    .Setup(x => x.BuildProperties.GetPropertyValueAsync("ProjectAssetsFile"))
+                    .Returns(Task.FromResult(string.Empty));
+                vsProjectAdapter
+                    .Setup(x => x.GetTargetFrameworkAsync())
+                    .Returns(Task.FromResult(NuGetFramework.AnyFramework));
+
+                var vsProjectAdapterProvider = new Mock<IVsProjectAdapterProvider>();
+                vsProjectAdapterProvider
+                    .Setup(x => x.CreateAdapterForFullyLoadedProjectAsync(project.Object))
+                    .Returns(Task.FromResult(vsProjectAdapter.Object));
 
                 var target = new VsPathContextProvider(
                     settings,
-                    Mock.Of<IVsSolutionManager>(),
+                    solutionManager.Object,
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: null);
-
-                var project = new Mock<MSBuildNuGetProject>(
-                    Mock.Of<IMSBuildProjectSystem>(), userPackageFolder, testDirectory.Path);
-
-                project
-                    .Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new[]
-                    {
-                        new PackageReference(
-                            new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")),
-                            NuGetFramework.AnyFramework)
-                    });
+                    vsProjectAdapterProvider.Object,
+                    getLockFileOrNull: null);
 
                 // Act
-                var actual = await target.CreatePathContextAsync(project.Object, CancellationToken.None);
+                var actual = await target.CreatePathContextAsync(vsProjectAdapter.Object, string.Empty, projectUniqueName, CancellationToken.None);
 
                 // Assert
                 Assert.NotNull(actual);
@@ -232,45 +275,100 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         }
 
         [Fact]
+        public async Task CreatePathContextAsync_WithUnrestoredPackageReference_Throws()
+        {
+            var projectUniqueName = Guid.NewGuid().ToString();
+            var project = new Mock<EnvDTE.Project>();
+
+            var vsProjectAdapter = new Mock<IVsProjectAdapter>();
+            vsProjectAdapter
+                .Setup(x => x.BuildProperties.GetPropertyValueAsync("ProjectAssetsFile"))
+                .Returns(Task.FromResult("project.aseets.json"));
+
+
+            var vsProjectAdapterProvider = new Mock<IVsProjectAdapterProvider>();
+            vsProjectAdapterProvider
+                .Setup(x => x.CreateAdapterForFullyLoadedProjectAsync(project.Object))
+                .Returns(Task.FromResult(vsProjectAdapter.Object));
+
+            var target = new VsPathContextProvider(
+                Mock.Of<ISettings>(),
+                Mock.Of<IVsSolutionManager>(),
+                Mock.Of<ILogger>(),
+                vsProjectAdapterProvider.Object,
+                getLockFileOrNull: null);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => target.CreatePathContextAsync(vsProjectAdapter.Object, "project.aseets.json", projectUniqueName, CancellationToken.None));
+
+            // Assert
+            Assert.Contains(projectUniqueName, exception.Message);
+        }
+
+        [Fact]
         public async Task CreatePathContextAsync_WithUnrestoredPackagesConfig_Throws()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
                 var userPackageFolder = Path.Combine(testDirectory.Path, "packagesA");
+                Directory.CreateDirectory(userPackageFolder);
+
+                var solutionManager = new Mock<IVsSolutionManager>();
+                solutionManager
+                    .Setup(x => x.SolutionDirectory)
+                    .Returns(testDirectory.Path);
 
                 var settings = Mock.Of<ISettings>();
                 Mock.Get(settings)
                     .Setup(x => x.GetValue("config", "globalPackagesFolder", true))
                     .Returns(() => userPackageFolder);
+                Mock.Get(settings)
+                    .Setup(x => x.GetValue("config", "repositoryPath", true))
+                    .Returns(() => userPackageFolder);
+
+                var pacakgesConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                                <packages>
+                                    <package id=""Foo"" version=""1.0.1"" targetFramework=""net45"" />
+                                </packages>";
+
+                var project1 = new DirectoryInfo(Path.Combine(testDirectory, "project1"));
+                project1.Create();
+                var projectFullPath = Path.Combine(project1.FullName, "project1.csproj");
+                File.WriteAllText(Path.Combine(project1.FullName, "packages.config"), pacakgesConfig);
+
+                var projectUniqueName = Guid.NewGuid().ToString();
+                var project = new Mock<EnvDTE.Project>();
+                var vsProjectAdapter = new Mock<IVsProjectAdapter>();
+                vsProjectAdapter
+                    .Setup(x => x.FullProjectPath)
+                    .Returns(projectFullPath);
+                vsProjectAdapter
+                    .Setup(x => x.ProjectDirectory)
+                    .Returns(project1.FullName);
+                vsProjectAdapter
+                    .Setup(x => x.BuildProperties.GetPropertyValueAsync("ProjectAssetsFile"))
+                    .Returns(Task.FromResult(string.Empty));
+                vsProjectAdapter
+                    .Setup(x => x.GetTargetFrameworkAsync())
+                    .Returns(Task.FromResult(NuGetFramework.AnyFramework));
+
+                var vsProjectAdapterProvider = new Mock<IVsProjectAdapterProvider>();
+                vsProjectAdapterProvider
+                    .Setup(x => x.CreateAdapterForFullyLoadedProjectAsync(project.Object))
+                    .Returns(Task.FromResult(vsProjectAdapter.Object));
 
                 var target = new VsPathContextProvider(
                     settings,
-                    Mock.Of<IVsSolutionManager>(),
+                    solutionManager.Object,
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: null);
-
-                var projectUniqueName = Guid.NewGuid().ToString();
-
-                var projectSystem = Mock.Of<IMSBuildProjectSystem>();
-                Mock.Get(projectSystem)
-                    .SetupGet(x => x.ProjectUniqueName)
-                    .Returns(projectUniqueName);
-
-                var project = new Mock<MSBuildNuGetProject>(
-                    projectSystem, userPackageFolder, testDirectory.Path);
-
-                project
-                    .Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new[]
-                    {
-                        new PackageReference(
-                            new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")),
-                            NuGetFramework.AnyFramework)
-                    });
+                    vsProjectAdapterProvider.Object,
+                    getLockFileOrNull: null);
 
                 // Act
-                var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => target.CreatePathContextAsync(project.Object, CancellationToken.None));
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => target.CreatePathContextAsync(vsProjectAdapter.Object, string.Empty, projectUniqueName, CancellationToken.None));
 
                 // Assert
                 Assert.Contains(projectUniqueName, exception.Message);
@@ -299,7 +397,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     settings,
                     solutionManager.Object,
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: null);
+                    Mock.Of<IVsProjectAdapterProvider>(),
+                    getLockFileOrNull: null);
 
                 // Act
                 var result = target.TryCreateSolutionContext(out var actual);
@@ -337,7 +436,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     settings.Object,
                     solutionManager.Object,
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: null);
+                    Mock.Of<IVsProjectAdapterProvider>(),
+                    getLockFileOrNull: null);
 
                 // Act
                 var result = target.TryCreateSolutionContext(out var actual);
@@ -378,7 +478,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 settings,
                 solutionManager.Object,
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: null);
+                Mock.Of<IVsProjectAdapterProvider>(),
+                getLockFileOrNull: null);
 
                 // Act
                 var result = target.TryCreateSolutionContext(out var actual);
@@ -403,7 +504,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 Mock.Of<ISettings>(),
                 Mock.Of<IVsSolutionManager>(),
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: null);
+                Mock.Of<IVsProjectAdapterProvider>(),
+                getLockFileOrNull: null);
 
                 // Act
                 var result = target.TryCreateSolutionContext(testDirectory.Path, out var actual);
@@ -413,26 +515,6 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 Assert.NotNull(actual);
                 Assert.Equal(solutionPackageFolder, actual.SolutionPackageFolder);
             }
-
-        }
-
-        [Fact]
-        public async Task CreatePathContextAsync_WithUnrestoredPackageReference_Throws()
-        {
-            var target = new VsPathContextProvider(
-                Mock.Of<ISettings>(),
-                Mock.Of<IVsSolutionManager>(),
-                Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: _ => Task.FromResult(null as LockFile));
-
-            var projectUniqueName = Guid.NewGuid().ToString();
-
-            var project = new TestPackageReferenceProject(projectUniqueName);
-
-            // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => target.CreatePathContextAsync(project, CancellationToken.None));
-
-            Assert.Contains(projectUniqueName, exception.Message);
         }
 
         private class TestPackageReferenceProject : BuildIntegratedNuGetProject
