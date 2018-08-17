@@ -843,15 +843,10 @@ namespace Proj2
                 // Assert
                 var package = new PackageArchiveReader(Path.Combine(proj2Directory, $"proj2.0.0.0.{extension}"));
                 var files = package.GetFiles()
-                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))
-                    .Select(t => t.Replace("/", "\\"))
+                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))                    
                     .ToArray();
                 Array.Sort(files);
-
-                if(symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg)
-                {
-                    Assert.Equal(
-                    new string[]
+                var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
                         Path.Combine("lib", "net40", "proj1.dll"),
@@ -861,20 +856,15 @@ namespace Proj2
                         "proj2.nuspec",
                         Path.Combine("src", "proj1", "proj1_file1.cs"),
                         Path.Combine("src", "proj2", "proj2_file1.cs"),
-                    },
-                    files);
-                }
-                else
-                {
-                    Assert.Equal(
-                    new string[]
+                    }
+                    : new string[]
                     {
                         Path.Combine("lib", "net40", "proj1.pdb"),
                         Path.Combine("lib", "net40", "proj2.pdb"),
                         "proj2.nuspec"
-                    },
-                    files);
-                }
+                    };
+                actual = actual.Select(t => NuGet.Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
+                Assert.Equal(actual, files);
                 
             }
         }
@@ -929,30 +919,20 @@ namespace Proj2
                     .Select(t => t.Replace("/", "\\"))
                     .ToArray();
                 Array.Sort(files);
-
-                if(symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg)
-                {
-                    Assert.Equal(
-                    new string[]
+                var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ?  new string[]
                     {
                         "A.nuspec",
                         Path.Combine("lib", "net40", "A.dll"),
                         Path.Combine("lib", "net40", "A.pdb"),
                         Path.Combine("src", "B.cs")
-                    },
-                    files);
-                }
-                else
-                {
-                    Assert.Equal(
-                    new string[]
+                    }
+                    : new string[]
                     {
                         "A.nuspec",
                         Path.Combine("lib", "net40", "A.pdb")
-                    },
-                    files);
-                }
-                
+                    };
+                actual = actual.Select(t => NuGet.Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
+                Assert.Equal(actual, files);
             }
         }
 
@@ -1008,29 +988,19 @@ public class B
                     .Select(t => t.Replace("/", "\\"))
                     .ToArray();
                 Array.Sort(files);
-
-                if(symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg)
-                {
-                    Assert.Equal(
-                    new string[]
+                var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
                     {
                         "A.nuspec",
                         Path.Combine("lib", "net40", "A.exe"),
                         Path.Combine("lib", "net40", "A.pdb"),
                         Path.Combine("src", "B.cs"),
-                    },
-                    files);
-                }
-                else
-                {
-                    Assert.Equal(
-                    new string[]
+                    }
+                    : new string[]
                     {
                         "A.nuspec",
                         Path.Combine("lib", "net40", "A.pdb"),
-                    },
-                    files);
-                }
+                    };
+                Assert.Equal(actual, files);
             }
         }
 
