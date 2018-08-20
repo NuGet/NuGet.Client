@@ -999,20 +999,19 @@ namespace Proj2
                 var package = new PackageArchiveReader(Path.Combine(projDirectory, $"A.0.0.0.{extension}"));
                 var files = package.GetFiles()
                     .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))
-                    .Select(t => t.Replace("/", "\\"))
                     .ToArray();
                 Array.Sort(files);
                 var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ?  new string[]
                     {
                         "A.nuspec",
-                        Path.Combine("lib", "net40", "A.dll"),
-                        Path.Combine("lib", "net40", "A.pdb"),
-                        Path.Combine("src", "B.cs")
+                        "lib/net40/A.dll",
+                        "lib/net40/A.pdb",
+                        "src/B.cs"
                     }
                     : new string[]
                     {
                         "A.nuspec",
-                        Path.Combine("lib", "net40", "A.pdb")
+                        "lib/net40/A.pdb"
                     };
                 actual = actual.Select(t => NuGet.Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
                 Assert.Equal(actual, files);
@@ -1074,14 +1073,14 @@ public class B
                 var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
                     {
                         "A.nuspec",
-                        Path.Combine("lib", "net40", "A.exe"),
-                        Path.Combine("lib", "net40", "A.pdb"),
-                        Path.Combine("src", "B.cs"),
+                        "lib/net40/A.exe",
+                        "lib/net40/A.pdb",
+                        "src/B.cs"
                     }
                     : new string[]
                     {
                         "A.nuspec",
-                        Path.Combine("lib", "net40", "A.pdb"),
+                        "lib/net40/A.pdb"
                     };
                 Assert.Equal(actual, files);
             }
