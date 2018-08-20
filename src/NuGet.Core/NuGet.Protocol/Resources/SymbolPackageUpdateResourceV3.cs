@@ -7,7 +7,7 @@ using NuGet.Common;
 namespace NuGet.Protocol.Core.Types
 {
     /// <summary>
-    /// Contains logics to push or delete packages in Http server or file system
+    /// Contains logics to push symbol packages in Http server or file system
     /// </summary>
     public class SymbolPackageUpdateResourceV3 : INuGetResource
     {

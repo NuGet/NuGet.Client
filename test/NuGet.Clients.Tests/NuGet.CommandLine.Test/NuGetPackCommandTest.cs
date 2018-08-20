@@ -1067,7 +1067,6 @@ public class B
                 var package = new PackageArchiveReader(Path.Combine(projDirectory, $"A.0.0.0.{extension}"));
                 var files = package.GetFiles()
                     .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))
-                    .Select(t => t.Replace("/", "\\"))
                     .ToArray();
                 Array.Sort(files);
                 var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]

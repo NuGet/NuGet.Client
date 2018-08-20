@@ -122,7 +122,6 @@ namespace NuGet.CommandLine
                 packArgs.SymbolPackageFormat = PackArgs.GetSymbolPackageFormat(SymbolPackageFormat);
             }
 
-
             packArgs.Build = Build;
             packArgs.Exclude = Exclude;
             packArgs.ExcludeEmptyDirectories = ExcludeEmptyDirectories;

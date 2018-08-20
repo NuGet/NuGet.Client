@@ -160,7 +160,7 @@ namespace NuGet.Commands
 
                 if(IncludeSymbols &&
                     PackArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg &&
-                    !string.Equals(fileExtension, ".pdb", PathUtility.GetStringComparisonBasedOnOS()))
+                    !string.Equals(fileExtension, ".pdb", StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
