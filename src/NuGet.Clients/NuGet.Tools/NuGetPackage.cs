@@ -522,13 +522,15 @@ namespace NuGetVSExtension
         private async void ExecuteUpgradeNuGetProjectCommandAsync(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            await ThreadHelper.JoinableTaskFactory.RunAsync(ExecuteUpgradeNuGetProjectCommandImplAsync);
-        }
 
-        private async Task ExecuteUpgradeNuGetProjectCommandImplAsync()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
             var project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+
+            if (!await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(null, project))
+            {
+                MessageHelper.ShowWarningMessage(Resources.ProjectMigrateErrorMessage, Resources.ErrorDialogBoxTitle);
+                return;
+            }
+
             var uniqueName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
             // Close NuGet Package Manager if it is open for this project
             var windowFrame = FindExistingWindowFrame(project);
@@ -835,7 +837,7 @@ namespace NuGetVSExtension
                     isConsoleBusy = ConsoleStatus.Value.IsBusy;
                 }
                 
-                command.Visible = IsSolutionOpen && await IsProjectUpgradeableAsync();
+                command.Visible = IsSolutionOpen;
                 command.Enabled = !isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
             });
         }
@@ -860,18 +862,13 @@ namespace NuGetVSExtension
                     isConsoleBusy = ConsoleStatus.Value.IsBusy;
                 }
 
-                command.Visible = IsSolutionOpen && await IsProjectUpgradeableAsync() && IsPackagesConfigSelected();
+                command.Visible = IsSolutionOpen && IsPackagesConfigSelected();
                 command.Enabled = !isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
             });
 
         }
 
         private bool IsSolutionOpen => _dte?.Solution != null && _dte.Solution.IsOpen;
-
-        private async  Task<bool> IsProjectUpgradeableAsync()
-        {
-            return await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(null, EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection));
-        }
 
         private bool IsPackagesConfigSelected()
         {

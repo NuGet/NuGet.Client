@@ -55,12 +55,7 @@ namespace NuGet.Tests.Apex
 
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
-            for (var i = 0; i < CommonUtility.GetIterations(); i++)
-            {
-                //yield return new object[] { ProjectTemplate.NetCoreClassLib };
-                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
-                yield return new object[] { ProjectTemplate.NetStandardClassLib };
-            }
+            yield return new object[] { ProjectTemplate.NetStandardClassLib };
         }
     }
 }

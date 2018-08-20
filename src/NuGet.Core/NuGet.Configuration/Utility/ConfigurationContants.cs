@@ -31,6 +31,8 @@ namespace NuGet.Configuration
 
         public static readonly string ClearTextPasswordToken = "ClearTextPassword";
 
+        public static readonly string ValidAuthenticationTypesToken = "ValidAuthenticationTypes";
+
         public static readonly string ActivePackageSourceSectionName = "activePackageSource";
 
         public static readonly string HostKey = "http_proxy";

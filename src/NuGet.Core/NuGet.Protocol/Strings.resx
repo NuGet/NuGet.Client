@@ -490,4 +490,8 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   <data name="RepositoryContentUrlMustBeHttps" xml:space="preserve">
     <value>Repository content URL for repository signatures must be HTTPS.</value>
   </data>
+  <data name="RepositorySignaturesResourceMustBeHttps" xml:space="preserve">
+    <value>Repository Signatures resouce must be served over HTTPS. Source: {0}</value>
+    <comment>{0} source service index</comment>
+  </data>
 </root>

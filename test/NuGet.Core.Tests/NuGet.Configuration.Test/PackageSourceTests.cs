@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using FluentAssertions;
 using Xunit;
 
@@ -12,7 +13,7 @@ namespace NuGet.Configuration
         public void Clone_CopiesAllPropertyValuesFromSource()
         {
             // Arrange
-            var credentials = new PackageSourceCredential("SourceName", "username", "password", isPasswordClearText: false);
+            var credentials = new PackageSourceCredential("SourceName", "username", "password", isPasswordClearText: false, validAuthenticationTypesText: null);
             var source = new PackageSource("Source", "SourceName", isEnabled: false)
                 {
                     Credentials = credentials,

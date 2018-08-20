@@ -1,13 +1,16 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.TableControl;
 using Microsoft.VisualStudio.Shell.TableManager;
 using Moq;
+using NuGet.Common;
 using Xunit;
 
-namespace NuGet.SolutionRestoreManager.Test
+namespace NuGet.VisualStudio.Common.Test
 {
     public class ErrorListTableDataSourceTests
     {
@@ -38,7 +41,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var source = new ErrorListTableDataSource(errorList, tableManager);
 
             // Act
-            var entry = new ErrorListTableEntry("test", Common.LogLevel.Minimal);
+            var entry = new ErrorListTableEntry("test", LogLevel.Minimal);
             source.AddNuGetEntries(entry);
 
             // Assert
@@ -72,10 +75,10 @@ namespace NuGet.SolutionRestoreManager.Test
             var source = new ErrorListTableDataSource(errorList, tableManager);
 
             // Act
-            var entry = new ErrorListTableEntry("test", Common.LogLevel.Minimal);
+            var entry = new ErrorListTableEntry("test", LogLevel.Minimal);
             source.AddNuGetEntries(entry);
 
-            var entry2 = new ErrorListTableEntry("test2", Common.LogLevel.Minimal);
+            var entry2 = new ErrorListTableEntry("test2", LogLevel.Minimal);
             source.AddNuGetEntries(entry2);
 
             // Assert
@@ -205,7 +208,7 @@ namespace NuGet.SolutionRestoreManager.Test
             // Act
             var subscription = source.Subscribe(sink);
 
-            var entry = new ErrorListTableEntry("test", Common.LogLevel.Minimal);
+            var entry = new ErrorListTableEntry("test", LogLevel.Minimal);
             source.AddNuGetEntries(entry);
 
             source.ClearNuGetEntries();
@@ -324,7 +327,7 @@ namespace NuGet.SolutionRestoreManager.Test
             s2.Dispose();
             s3.Dispose();
 
-            var entry = new ErrorListTableEntry("test", Common.LogLevel.Minimal);
+            var entry = new ErrorListTableEntry("test", LogLevel.Minimal);
             source.AddNuGetEntries(entry);
 
             source.ClearNuGetEntries();
@@ -416,7 +419,7 @@ namespace NuGet.SolutionRestoreManager.Test
             s2.Dispose();
             s3.Dispose();
 
-            var entry = new ErrorListTableEntry("test", Common.LogLevel.Minimal);
+            var entry = new ErrorListTableEntry("test", LogLevel.Minimal);
             source.AddNuGetEntries(entry);
 
             source.ClearNuGetEntries();
@@ -487,7 +490,7 @@ namespace NuGet.SolutionRestoreManager.Test
             // Act
             var s1 = source.Subscribe(sink);
 
-            var entry = new ErrorListTableEntry("test", Common.LogLevel.Minimal);
+            var entry = new ErrorListTableEntry("test", LogLevel.Minimal);
             source.AddNuGetEntries(entry);
 
             var s2 = source.Subscribe(sink2);
@@ -553,7 +556,7 @@ namespace NuGet.SolutionRestoreManager.Test
             // Act
             source.ClearNuGetEntries();
 
-            var entry = new ErrorListTableEntry("test", Common.LogLevel.Minimal);
+            var entry = new ErrorListTableEntry("test", LogLevel.Minimal);
             source.AddNuGetEntries(entry);
 
             var s1 = source.Subscribe(sink);

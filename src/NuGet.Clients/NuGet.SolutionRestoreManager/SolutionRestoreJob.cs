@@ -35,7 +35,7 @@ namespace NuGet.SolutionRestoreManager
     [PartCreationPolicy(CreationPolicy.NonShared)]
     internal sealed class SolutionRestoreJob : ISolutionRestoreJob
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IAsyncServiceProvider _asyncServiceProvider;
         private readonly IPackageRestoreManager _packageRestoreManager;
         private readonly IVsSolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
@@ -56,22 +56,36 @@ namespace NuGet.SolutionRestoreManager
 
         [ImportingConstructor]
         public SolutionRestoreJob(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
+            IPackageRestoreManager packageRestoreManager,
+            IVsSolutionManager solutionManager,
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            IRestoreEventsPublisher restoreEventsPublisher,
+            ISettings settings)
+            : this(AsyncServiceProvider.GlobalProvider,
+                  packageRestoreManager,
+                  solutionManager,
+                  sourceRepositoryProvider,
+                  restoreEventsPublisher,
+                  settings
+                )
+        { }
+
+        public SolutionRestoreJob(
+            IAsyncServiceProvider asyncServiceProvider,
             IPackageRestoreManager packageRestoreManager,
             IVsSolutionManager solutionManager,
             ISourceRepositoryProvider sourceRepositoryProvider,
             IRestoreEventsPublisher restoreEventsPublisher,
             ISettings settings)
         {
-            Assumes.Present(serviceProvider);
+            Assumes.Present(asyncServiceProvider);
             Assumes.Present(packageRestoreManager);
             Assumes.Present(solutionManager);
             Assumes.Present(sourceRepositoryProvider);
             Assumes.Present(restoreEventsPublisher);
             Assumes.Present(settings);
 
-            _serviceProvider = serviceProvider;
+            _asyncServiceProvider = asyncServiceProvider;
             _packageRestoreManager = packageRestoreManager;
             _solutionManager = solutionManager;
             _sourceRepositoryProvider = sourceRepositoryProvider;
@@ -476,7 +490,7 @@ namespace NuGet.SolutionRestoreManager
                             // Display the restore opt out message if it has not been shown yet
                             await l.WriteHeaderAsync();
 
-                            await RestoreMissingPackagesInSolutionAsync(solutionDirectory, packages, t);
+                            await RestoreMissingPackagesInSolutionAsync(solutionDirectory, packages, l, t);
                         },
                         token);
 
@@ -522,6 +536,7 @@ namespace NuGet.SolutionRestoreManager
         private async Task RestoreMissingPackagesInSolutionAsync(
             string solutionDirectory,
             IEnumerable<PackageRestoreData> packages,
+            ILogger logger,
             CancellationToken token)
         {
             await TaskScheduler.Default;
@@ -538,6 +553,7 @@ namespace NuGet.SolutionRestoreManager
                     packages,
                     _nuGetProjectContext,
                     downloadContext,
+                    logger,
                     token);
             }
         }
@@ -568,7 +584,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var dte = _serviceProvider.GetDTE();
+                var dte = await _asyncServiceProvider.GetDTEAsync();
                 var projects = dte.Solution.Projects;
                 return projects
                     .OfType<EnvDTE.Project>()

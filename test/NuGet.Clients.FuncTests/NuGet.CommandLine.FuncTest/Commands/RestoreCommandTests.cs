@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -28,9 +27,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
     public class RestoreCommandTests
     {
         private static readonly string _NU3008Message = "The package integrity check failed.";
-        private static readonly string _NU3008 = $"NU3008: {_NU3008Message}";
+        private static readonly string _NU3008 = "NU3008: {0}";
         private static readonly string _NU3027Message = "The signature should be timestamped to enable long-term signature validity after the certificate has expired.";
-        private static readonly string _NU3027 = $"NU3027: {_NU3027Message}";
+        private static readonly string _NU3027 = "NU3027: {0}";
 
         private SignCommandTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
@@ -47,7 +46,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public async Task Restore_TamperedPackageInPackagesConfig_FailsWithErrorAsync()
         {
             // Arrange
-            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
             var packagesConfigContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
                 "<packages>" +
                 "  <package id=\"X\" version=\"9.0.0\" targetFramework=\"net461\" />" +
@@ -90,8 +88,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(_NU3008);
-                result.AllOutput.Should().Contain(_NU3027);
+                result.Errors.Should().Contain(string.Format(_NU3008, SigningTestUtility.AddSignatureLogPrefix(_NU3008Message, packageX.Identity, pathContext.PackageSource)));
+                result.AllOutput.Should().Contain(string.Format(_NU3027, SigningTestUtility.AddSignatureLogPrefix(_NU3027Message, packageX.Identity, pathContext.PackageSource)));
             }
         }
 
@@ -99,8 +97,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public async Task Restore_TamperedPackage_FailsAsync()
         {
             // Arrange
-            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-
             using (var pathContext = new SimpleTestPathContext())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
@@ -136,18 +132,18 @@ namespace NuGet.CommandLine.FuncTest.Commands
             
                 // Assert
                 result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(_NU3008);
-                result.AllOutput.Should().Contain($"WARNING: {_NU3027}");
+                result.Errors.Should().Contain(string.Format(_NU3008, SigningTestUtility.AddSignatureLogPrefix(_NU3008Message, packageX.Identity, pathContext.PackageSource)));
+                result.AllOutput.Should().Contain($"WARNING: {string.Format(_NU3027, SigningTestUtility.AddSignatureLogPrefix(_NU3027Message, packageX.Identity, pathContext.PackageSource))}");
 
                 errors.Count().Should().Be(1);
                 errors.First().Code.Should().Be(NuGetLogCode.NU3008);
-                errors.First().Message.Should().Be(_NU3008Message);
-                errors.First().LibraryId.Should().Be(packageX.ToString());
+                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3008Message, packageX.Identity, pathContext.PackageSource));
+                errors.First().LibraryId.Should().Be(packageX.Id);
 
                 warnings.Count().Should().Be(1);
                 warnings.First().Code.Should().Be(NuGetLogCode.NU3027);
-                warnings.First().Message.Should().Be(_NU3027Message);
-                warnings.First().LibraryId.Should().Be("X.9.0.0");
+                warnings.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3027Message, packageX.Identity, pathContext.PackageSource));
+                warnings.First().LibraryId.Should().Be(packageX.Id);
             }
         }
 
@@ -163,15 +159,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var extraStore = new X509Certificate2Collection() { rootCertificate, intermediateCertificate };
                 var logger = new TestLogger();
 
-                var exception = Assert.ThrowsAsync<SignatureException>(
-                    async () => CertificateChainUtility.GetCertificateChain(
+                var exception = Assert.Throws<SignatureException>(
+                    () => CertificateChainUtility.GetCertificateChain(
                         leafCertificate,
                         extraStore,
                         logger,
                         CertificateType.Signature));
 
-                Assert.Equal(NuGetLogCode.NU3018, exception.Result.Code);
-                Assert.Equal("Certificate chain validation failed.", exception.Result.Message);
+                Assert.Equal(NuGetLogCode.NU3018, exception.Code);
+                Assert.Equal("Certificate chain validation failed.", exception.Message);
 
                 Assert.Equal(1, logger.Errors);
                 Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 2 : 1, logger.Warnings);

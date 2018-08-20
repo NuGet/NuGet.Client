@@ -160,6 +160,7 @@ namespace NuGet.Test
                 // Act
                 await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory,
                     testNuGetProjectContext,
+                    new TestLogger(),
                     CancellationToken.None);
 
                 Assert.Equal(1, restoredPackages.Count);
@@ -267,6 +268,7 @@ namespace NuGet.Test
                 // Act
                 await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory,
                     testNuGetProjectContext,
+                    new TestLogger(),
                     CancellationToken.None);
 
                 Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
@@ -358,6 +360,7 @@ namespace NuGet.Test
                 // Act
                 await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory,
                     testNuGetProjectContext,
+                    new TestLogger(),
                     CancellationToken.None);
 
                 // Assert

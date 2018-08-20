@@ -272,9 +272,9 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Theory]
-        [InlineData("netcoreapp2.0", "netcoreapp2.0")]
-        [InlineData("net46", "net46")]
-        public void GetReferenceNearestTargetFrameworkTask_WithSingleTfmAndSingleAtf(string referenceProjectFramework, string nearestMatchingFramework)
+        [InlineData("netcoreapp2.0", "netcoreapp2.0", false)]
+        [InlineData("net46", "net46", true)]
+        public void GetReferenceNearestTargetFrameworkTask_WithSingleTfmAndSingleAtf(string referenceProjectFramework, string nearestMatchingFramework, bool willGenerateWarning)
         {
             var buildEngine = new TestBuildEngine();
             var testLogger = buildEngine.TestLogger;
@@ -300,15 +300,15 @@ namespace NuGet.Build.Tasks.Test
             task.AssignedProjects.Should().HaveCount(1);
             task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be(nearestMatchingFramework);
 
-            testLogger.Warnings.Should().Be(0);
+            testLogger.Warnings.Should().Be(willGenerateWarning ? 1 : 0);
             testLogger.Errors.Should().Be(0);
             testLogger.DebugMessages.Count.Should().Be(DEBUG_MESSAGE_COUNT_INPUT_OUTPUT);
         }
 
         [Theory]
-        [InlineData("netcoreapp2.0", "netcoreapp2.0")]
-        [InlineData("net46", "net46")]
-        public void GetReferenceNearestTargetFrameworkTask_WithSingleTfmAndMultipleAtf(string referenceProjectFramework, string nearestMatchingFramework)
+        [InlineData("netcoreapp2.0", "netcoreapp2.0", false)]
+        [InlineData("net46", "net46", true)]
+        public void GetReferenceNearestTargetFrameworkTask_WithSingleTfmAndMultipleAtf(string referenceProjectFramework, string nearestMatchingFramework, bool willGenerateWarning)
         {
             var buildEngine = new TestBuildEngine();
             var testLogger = buildEngine.TestLogger;
@@ -334,15 +334,15 @@ namespace NuGet.Build.Tasks.Test
             task.AssignedProjects.Should().HaveCount(1);
             task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be(nearestMatchingFramework);
 
-            testLogger.Warnings.Should().Be(0);
+            testLogger.Warnings.Should().Be(willGenerateWarning ? 1 : 0);
             testLogger.Errors.Should().Be(0);
             testLogger.DebugMessages.Count.Should().Be(DEBUG_MESSAGE_COUNT_INPUT_OUTPUT);
         }
 
         [Theory]
-        [InlineData("netcoreapp2.0; netcoreapp1.0", "netcoreapp2.0")]
-        [InlineData("net45; net46", "net46")]
-        public void GetReferenceNearestTargetFrameworkTask_WithMultipleTfmAndSingleAtf(string referenceProjectFramework, string nearestMatchingFramework)
+        [InlineData("netcoreapp2.0; netcoreapp1.0", "netcoreapp2.0", false)]
+        [InlineData("net45; net46", "net46", true)]
+        public void GetReferenceNearestTargetFrameworkTask_WithMultipleTfmAndSingleAtf(string referenceProjectFramework, string nearestMatchingFramework, bool willGenerateWarning)
         {
             var buildEngine = new TestBuildEngine();
             var testLogger = buildEngine.TestLogger;
@@ -367,15 +367,15 @@ namespace NuGet.Build.Tasks.Test
             task.AssignedProjects.Should().HaveCount(1);
             task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be(nearestMatchingFramework);
 
-            testLogger.Warnings.Should().Be(0);
+            testLogger.Warnings.Should().Be(willGenerateWarning ? 1 : 0);
             testLogger.Errors.Should().Be(0);
             testLogger.DebugMessages.Count.Should().Be(DEBUG_MESSAGE_COUNT_INPUT_OUTPUT);
         }
 
         [Theory]
-        [InlineData("netcoreapp2.0; netcoreapp1.0", "netcoreapp2.0")]
-        [InlineData("net45; net46", "net46")]
-        public void GetReferenceNearestTargetFrameworkTask_WithMultipleTfmAndMultipleAtf(string referenceProjectFramework, string nearestMatchingFramework)
+        [InlineData("netcoreapp2.0; netcoreapp1.0", "netcoreapp2.0", false)]
+        [InlineData("net45; net46", "net46", true)]
+        public void GetReferenceNearestTargetFrameworkTask_WithMultipleTfmAndMultipleAtf(string referenceProjectFramework, string nearestMatchingFramework, bool willGenerateWarning)
         {
             var buildEngine = new TestBuildEngine();
             var testLogger = buildEngine.TestLogger;
@@ -400,7 +400,7 @@ namespace NuGet.Build.Tasks.Test
             task.AssignedProjects.Should().HaveCount(1);
             task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be(nearestMatchingFramework);
 
-            testLogger.Warnings.Should().Be(0);
+            testLogger.Warnings.Should().Be(willGenerateWarning ? 1 : 0);
             testLogger.Errors.Should().Be(0);
             testLogger.DebugMessages.Count.Should().Be(DEBUG_MESSAGE_COUNT_INPUT_OUTPUT);
         }

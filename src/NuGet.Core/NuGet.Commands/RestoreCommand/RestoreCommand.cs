@@ -300,6 +300,19 @@ namespace NuGet.Commands
             return result;
         }
 
+        /// <summary>
+        /// Accounts for using the restore commands on 2 projects living in the same path
+        /// </summary>
+        private bool VerifyAssetsFileMatchesProject()
+        {
+            if (_request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
+            {
+                return true;
+            }
+            var pathComparer = PathUtility.GetStringComparerBasedOnOS();
+            return (_request.ExistingLockFile != null && pathComparer.Equals( _request.ExistingLockFile.PackageSpec.FilePath , _request.Project.FilePath));
+        }
+
         private KeyValuePair<CacheFile, bool> EvaluateCacheFile()
         {
             CacheFile cacheFile;
@@ -317,7 +330,7 @@ namespace NuGet.Commands
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
-                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash))
+                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) && VerifyAssetsFileMatchesProject())
                 {
                     _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
                     _success = true;
@@ -446,7 +459,7 @@ namespace NuGet.Commands
         /// are not logged. This is to avoid flooding the log with long 
         /// dependency chains for every package.
         /// </summary>
-        private static async Task<bool> ValidateRestoreGraphsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        private async Task<bool> ValidateRestoreGraphsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
         {
             // Check for cycles
             var success = await ValidateCyclesAsync(graphs, logger);
@@ -487,17 +500,19 @@ namespace NuGet.Commands
         /// <summary>
         /// Logs an error and returns false if any conflicts exist.
         /// </summary>
-        private static async Task<bool> ValidateConflictsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        private async Task<bool> ValidateConflictsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
         {
             foreach (var graph in graphs)
             {
                 foreach (var versionConflict in graph.AnalyzeResult.VersionConflicts)
                 {
                     var message = string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Log_VersionConflict,
-                            versionConflict.Selected.Key.Name)
-                        + $" {Environment.NewLine} {versionConflict.Selected.GetPathWithLastRange()} {Environment.NewLine} {versionConflict.Conflicting.GetPathWithLastRange()}.";
+                           CultureInfo.CurrentCulture,
+                           Strings.Log_VersionConflict,
+                           versionConflict.Selected.Key.Name,
+                           versionConflict.Selected.GetIdAndVersionOrRange(),
+                           _request.Project.Name)
+                       + $" {Environment.NewLine} {versionConflict.Selected.GetPathWithLastRange()} {Environment.NewLine} {versionConflict.Conflicting.GetPathWithLastRange()}.";
 
                     await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1107, message, versionConflict.Selected.Key.Name, graph.TargetGraphName));
                     return false;

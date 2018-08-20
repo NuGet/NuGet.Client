@@ -19,7 +19,7 @@ namespace NuGet.Packaging.Rules
                 new InitScriptNotUnderToolsRule(AnalysisResources.MisplacedInitScriptWarning),
                 new WinRTNameIsObsoleteRule( AnalysisResources.WinRTObsoleteWarning),
                 new DefaultManifestValuesRule(AnalysisResources.DefaultSpecValueWarning),
-                new InvalidPlaceholderFileRule(AnalysisResources.InvalidFrameworkWarning),
+                new InvalidPlaceholderFileRule(AnalysisResources.InvalidPlaceholderFileWarning),
                 new LegacyVersionRule(AnalysisResources.LegacyVersionWarning),
                 new InvalidPrereleaseDependencyRule(AnalysisResources.InvalidPrereleaseDependencyWarning),
                 new UnspecifiedDependencyVersionRule(AnalysisResources.UnspecifiedDependencyVersionWarning),

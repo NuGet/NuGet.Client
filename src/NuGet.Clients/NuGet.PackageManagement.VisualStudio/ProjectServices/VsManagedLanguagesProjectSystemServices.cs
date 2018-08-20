@@ -59,11 +59,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         static VsManagedLanguagesProjectSystemServices()
         {
-            _referenceMetadata = Array.CreateInstance(typeof(string), 4);
+            _referenceMetadata = Array.CreateInstance(typeof(string), 5);
             _referenceMetadata.SetValue(ProjectItemProperties.IncludeAssets, 0);
             _referenceMetadata.SetValue(ProjectItemProperties.ExcludeAssets, 1);
             _referenceMetadata.SetValue(ProjectItemProperties.PrivateAssets, 2);
             _referenceMetadata.SetValue(ProjectItemProperties.NoWarn, 3);
+            _referenceMetadata.SetValue(ProjectItemProperties.GeneratePathProperty, 4);
         }
 
         public VsManagedLanguagesProjectSystemServices(
@@ -194,6 +195,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var dependency = new LibraryDependency
             {
+                AutoReferenced = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.IsImplicitlyDefined)),
+                GeneratePathProperty = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.GeneratePathProperty)),
                 LibraryRange = new LibraryRange(
                     name: reference.Name,
                     versionRange: VersionRange.Parse(reference.Version),
@@ -206,7 +209,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 GetReferenceMetadataValue(reference, ProjectItemProperties.ExcludeAssets),
                 GetReferenceMetadataValue(reference, ProjectItemProperties.PrivateAssets));
 
-            dependency.AutoReferenced = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.IsImplicitlyDefined));
 
             // Add warning suppressions
             foreach (var code in MSBuildStringUtility.GetNuGetLogCodes(GetReferenceMetadataValue(reference, ProjectItemProperties.NoWarn)))

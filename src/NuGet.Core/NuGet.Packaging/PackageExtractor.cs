@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
+using NuGet.Shared;
 
 namespace NuGet.Packaging
 {
@@ -1008,6 +1009,11 @@ namespace NuGet.Packaging
                 {
                     await LogPackageSignatureVerificationAsync(source, package, packageExtractionContext.Logger, verifyResult);
 
+                    // Update errors and warnings with package id and source
+                    verifyResult.Results
+                            .SelectMany(r => r.Issues)
+                            .ForEach(e => AddPackageIdentityToSignatureLog(source, package, e));
+
                     if (verifyResult.Valid)
                     {
                         // log any warnings
@@ -1024,6 +1030,18 @@ namespace NuGet.Packaging
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Adds a package ID and package source as a prefix to log messages and adds package ID to the message.LibraryId.
+        /// </summary>
+        /// <param name="source">package source.</param>
+        /// <param name="package">package identity.</param>
+        /// <param name="message">ILogMessage to be modified.</param>
+        private static void AddPackageIdentityToSignatureLog(string source, PackageIdentity package, SignatureLog message)
+        {
+            message.LibraryId = package.Id;
+            message.Message = string.Format(CultureInfo.CurrentCulture, Strings.ExtractionLog_InformationPrefix, package.Id, package.Version, source, message.Message);
         }
 
         private static async Task LogPackageSignatureVerificationAsync(

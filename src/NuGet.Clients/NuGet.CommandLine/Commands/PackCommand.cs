@@ -96,7 +96,7 @@ namespace NuGet.CommandLine
             packArgs.Arguments = Arguments;
             packArgs.OutputDirectory = OutputDirectory;
             packArgs.BasePath = BasePath;
-            packArgs.MsBuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console);
+            packArgs.MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console).Value.Path);
 
             // Get the input file
             packArgs.Path = PackCommandRunner.GetInputFile(packArgs);

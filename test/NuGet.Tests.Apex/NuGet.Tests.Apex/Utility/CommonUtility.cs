@@ -204,7 +204,8 @@ namespace NuGet.Tests.Apex
                         LibraryIncludeFlags.All,
                         LibraryIncludeFlags.None,
                         new List<NuGetLogCode>(),
-                        autoReferenced: false))
+                        autoReferenced: false,
+                        generatePathProperty: false))
                 .ToList();
         }
 
@@ -216,17 +217,16 @@ namespace NuGet.Tests.Apex
             testService.WaitForAutoRestore();
 
             var assetsFilePath = GetAssetsFilePath(project.FullPath);
-            File.Exists(assetsFilePath).Should().BeTrue(AppendErrors($"File does not exist: {assetsFilePath}", visualStudio));
-
+            
             // Project has an assets file, let's look there to assert
-            var inAssetsFile = IsPackageInstalledInAssetsFile(assetsFilePath, packageName, packageVersion);
+            var inAssetsFile = IsPackageInstalledInAssetsFile(assetsFilePath, packageName, packageVersion, true);
 
             logger.LogInformation($"Exists: {inAssetsFile}");
 
             inAssetsFile.Should().BeTrue(AppendErrors($"{packageName}/{packageVersion} should be installed in {project.Name}", visualStudio));
         }
 
-        public static void AssetPackageInPackagesConfig(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, string packageVersion, ILogger logger)
+        public static void AssertPackageInPackagesConfig(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, string packageVersion, ILogger logger)
         {
             logger.LogInformation($"Checking project {packageName}");
             var testService = visualStudio.Get<NuGetApexTestService>();
@@ -239,7 +239,7 @@ namespace NuGet.Tests.Apex
             exists.Should().BeTrue(AppendErrors($"{packageName}/{packageVersion} should be installed in {project.Name}", visualStudio));
         }
 
-        public static void AssetPackageInPackagesConfig(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, ILogger logger)
+        public static void AssertPackageInPackagesConfig(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, ILogger logger)
         {
             logger.LogInformation($"Checking project {packageName}");
             var testService = visualStudio.Get<NuGetApexTestService>();
@@ -258,10 +258,9 @@ namespace NuGet.Tests.Apex
             testService.WaitForAutoRestore();
 
             var assetsFilePath = GetAssetsFilePath(project.FullPath);
-            File.Exists(assetsFilePath).Should().BeTrue(AppendErrors($"File does not exist: {assetsFilePath}", visualStudio));
-
+            
             // Project has an assets file, let's look there to assert
-            var inAssetsFile = IsPackageInstalledInAssetsFile(assetsFilePath, packageName, packageVersion);
+            var inAssetsFile = IsPackageInstalledInAssetsFile(assetsFilePath, packageName, packageVersion, false);
             logger.LogInformation($"Exists: {inAssetsFile}");
 
             inAssetsFile.Should().BeFalse(AppendErrors($"{packageName}/{packageVersion} should not be installed in {project.Name}", visualStudio));
@@ -291,46 +290,47 @@ namespace NuGet.Tests.Apex
             exists.Should().BeFalse(AppendErrors($"{packageName} should NOT be in {project.Name}", visualStudio));
         }
 
-        public static bool IsPackageInstalledInAssetsFile(string assetsFilePath, string packageName, string packageVersion)
+        private static bool IsPackageInstalledInAssetsFile(string assetsFilePath, string packageName, string packageVersion, bool expected)
         {
-            return PackageExistsInLockFile(assetsFilePath, packageName, packageVersion);
+            return PackageExistsInLockFile(assetsFilePath, packageName, packageVersion, expected);
         }
 
-        /// <summary>
-        /// Iterations to use for theory tests
-        /// </summary>
-        /// <remarks>This makes it easier when stressing bad tests</remarks>
-        internal static int GetIterations()
+        // return true if package exists, but retry logic is based on what value is expected so there is enough time for assets file to be updated.
+        private static bool PackageExistsInLockFile(string pathToAssetsFile, string packageName, string packageVersion, bool expected)
         {
-            var iterations = 1;
-
-            if (int.TryParse(Environment.GetEnvironmentVariable("NUGET_APEX_TEST_ITERATIONS"), out var x) && x > 0)
+            var numAttempts = 0;
+            LockFileLibrary lockFileLibrary = null;
+            while(numAttempts++ < 3)
             {
-                iterations = x;
+                var version = NuGetVersion.Parse(packageVersion);
+                var lockFile = GetAssetsFileWithRetry(pathToAssetsFile);
+                lockFileLibrary = lockFile.Libraries
+                    .SingleOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, packageName)
+                                        && p.Version.Equals(version));
+                if (expected && lockFileLibrary != null)
+                {
+                    return true;
+                }
+                if (!expected && lockFileLibrary == null)
+                {
+                    return false;
+                }
+
+                Thread.Sleep(2000);
             }
-
-            return iterations;
-        }
-
-        private static bool PackageExistsInLockFile(string pathToAssetsFile, string packageName, string packageVersion)
-        {
-            var version = NuGetVersion.Parse(packageVersion);
-            var lockFile = GetAssetsFileWithRetry(pathToAssetsFile);
-            var lockFileLibrary = lockFile.Libraries
-                .SingleOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, packageName)
-                                    && p.Version.Equals(version));
 
             return lockFileLibrary != null;
         }
 
         private static LockFile GetAssetsFileWithRetry(string path)
         {
-            var timeout = TimeSpan.FromSeconds(10);
+            var timeout = TimeSpan.FromSeconds(20);
             var timer = Stopwatch.StartNew();
             string content = null;
 
             do
             {
+                Thread.Sleep(100);
                 if (File.Exists(path))
                 {
                     try
@@ -344,8 +344,6 @@ namespace NuGet.Tests.Apex
                         // Ignore errors from conflicting writes.
                     }
                 }
-
-                Thread.Sleep(100);
             }
             while (timer.Elapsed < timeout);
 

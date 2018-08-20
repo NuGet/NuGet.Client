@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -199,11 +200,9 @@ namespace NuGet.Credentials
             CredentialResponse taskResponse;
             if (credentialResponse.IsValid())
             {
-                ICredentials result = new NetworkCredential(credentialResponse.Username, credentialResponse.Password);
-                if (credentialResponse.AuthenticationTypes != null)
-                {
-                    result = new AuthTypeFilteredCredentials(result, credentialResponse.AuthenticationTypes);
-                }
+                ICredentials result = new AuthTypeFilteredCredentials(
+                    new NetworkCredential(credentialResponse.Username, credentialResponse.Password),
+                    credentialResponse.AuthenticationTypes ?? Enumerable.Empty<string>());
 
                 taskResponse = new CredentialResponse(result);
             }

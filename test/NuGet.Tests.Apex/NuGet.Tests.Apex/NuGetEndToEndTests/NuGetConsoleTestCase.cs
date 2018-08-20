@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -35,32 +36,6 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, packageVersion, XunitLogger);
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion, XunitLogger);
-            }
-        }
-
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task InstallPackageFromPMCVerifyInstallForPRAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                var packageName = "TestPackage";
-                var packageVersion = "1.0.0";
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-
-                // Build before the install check to ensure that everything is up to date.
-                testContext.Project.Build();
-
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, packageVersion, XunitLogger);
                 CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion, XunitLogger);
             }
         }
@@ -82,34 +57,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
-                CommonUtility.AssetPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, XunitLogger);
-            }
-        }
-
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task UninstallPackageFromPMCForPRAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                var packageName = "TestPackage";
-                var packageVersion = "1.0.0";
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-                testContext.Project.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                nugetConsole.UninstallPackageFromPMC(packageName);
-                testContext.Project.Build();
-
-                CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, packageName, packageVersion, XunitLogger);
-                CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion, XunitLogger);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, XunitLogger);
             }
         }
 
@@ -136,47 +84,6 @@ namespace NuGet.Tests.Apex
         }
 
         [NuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates), null, "2.0.0")]
-        [MemberData(nameof(GetPackageReferenceTemplates), "-ToHighestPatch", "1.0.1")]
-        [MemberData(nameof(GetPackageReferenceTemplates), "-ToHighestMinor", "1.1.0")]
-        public async Task UpdatePackageFromPMCForPRAsync(ProjectTemplate projectTemplate, string flag, string expectedVersion)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                var packageName = "TestPackage";
-                var packageVersion1 = "1.0.0";
-                var packageVersion2 = "2.0.0";
-                var packageVersion3 = "1.0.1";
-                var packageVersion4 = "1.1.0";
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion3);
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion4);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
-                testContext.Project.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                if(flag == null) {
-                    nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
-                }
-                else
-                {
-                    nugetConsole.UpdatePackageFromPMCWithConstraints(packageName, flag);
-                }
-                testContext.Project.Build();
-
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, expectedVersion, XunitLogger);
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, expectedVersion, XunitLogger);
-            }
-        }
-
-        [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
         public async Task UpdatePackageFromPMCForPCAsync(ProjectTemplate projectTemplate)
         {
@@ -196,41 +103,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
 
-                CommonUtility.AssetPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, XunitLogger);
-            }
-        }
-
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task InstallMultiplePackagesFromPMCForPRAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                var packageName1 = "TestPackage1";
-                var packageVersion1 = "1.0.0";
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName1, packageVersion1);
-
-                var packageName2 = "TestPackage2";
-                var packageVersion2 = "1.2.3";
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName2, packageVersion2);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
-                testContext.Project.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
-                testContext.Project.Build();
-
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName1, packageVersion1, XunitLogger);
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName2, packageVersion2, XunitLogger);
-
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName1, packageVersion1, XunitLogger);
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName2, packageVersion2, XunitLogger);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, XunitLogger);
             }
         }
 
@@ -256,47 +129,8 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
                 nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
 
-                CommonUtility.AssetPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion1, XunitLogger);
-                CommonUtility.AssetPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion2, XunitLogger);
-            }
-        }
-
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task UninstallMultiplePackagesFromPMCForPRAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-            var packageName1 = "TestPackage1";
-            var packageVersion1 = "1.0.0";
-            var packageName2 = "TestPackage2";
-            var packageVersion2 = "1.2.3";
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName1, packageVersion1);
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName2, packageVersion2);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
-                testContext.Project.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
-                testContext.Project.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                nugetConsole.UninstallPackageFromPMC(packageName1);
-                nugetConsole.UninstallPackageFromPMC(packageName2);
-                testContext.Project.Build();
-
-                CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, packageName1, packageVersion1, XunitLogger);
-                CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, packageName2, packageVersion2, XunitLogger);
-
-                CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, packageName1, packageVersion1, XunitLogger);
-                CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, packageName2, packageVersion2, XunitLogger);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion1, XunitLogger);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion2, XunitLogger);
             }
         }
 
@@ -319,52 +153,23 @@ namespace NuGet.Tests.Apex
                 var nugetConsole = GetConsole(testContext.Project);
 
                 nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 nugetConsole.UninstallPackageFromPMC(packageName1);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 nugetConsole.UninstallPackageFromPMC(packageName2);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion1, XunitLogger);
                 CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion2, XunitLogger);
-            }
-        }
-
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task DowngradePackageFromPMCForPRAsync(ProjectTemplate projectTemplate)
-        {
-            // Arrange
-            EnsureVisualStudioHost();
-            var packageName = "TestPackage";
-            var packageVersion1 = "1.0.0";
-            var packageVersion2 = "2.0.0";
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
-
-                var nugetConsole = GetConsole(testContext.Project);
-
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion2);
-                testContext.Project.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-
-                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion1);
-                testContext.Project.Build();
-
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, packageVersion1, XunitLogger);
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion1, XunitLogger);
             }
         }
 
@@ -388,7 +193,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion2);
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion1);
 
-                CommonUtility.AssetPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1, XunitLogger);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1, XunitLogger);
             }
         }
 
@@ -422,7 +227,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
                 project2.Build();
                 project3.Build();
                 projectX.Build();
@@ -451,7 +256,7 @@ namespace NuGet.Tests.Apex
             {
                 // Arrange
                 var solutionService = VisualStudio.Get<SolutionService>();
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
 
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
@@ -461,7 +266,7 @@ namespace NuGet.Tests.Apex
 
                 // Act
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1, source);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
 
                 // Assert
                 var expectedMessage = $"The 'Source' parameter is not respected for the transitive package management based project(s) {Path.GetFileNameWithoutExtension(testContext.Project.UniqueName)}. The enabled sources in your NuGet configuration will be used";
@@ -474,7 +279,7 @@ namespace NuGet.Tests.Apex
 
                 // Act
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2, source);
-                testContext.Project.Build();
+                testContext.SolutionService.Build();
 
                 // Assert
                 Assert.True(warns == nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
@@ -490,37 +295,22 @@ namespace NuGet.Tests.Apex
         // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
-            for (var i = 0; i < CommonUtility.GetIterations(); i++)
-            {
-                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
-                yield return new object[] { ProjectTemplate.NetStandardClassLib };
-            }
+            yield return new object[] { ProjectTemplate.NetStandardClassLib };
         }
 
         public static IEnumerable<object[]> GetPackageReferenceTemplates(string flag, string expectedVersion)
         {
-            for (var i = 0; i < CommonUtility.GetIterations(); i++)
-            {
-                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
-                yield return new object[] { ProjectTemplate.NetStandardClassLib , flag , expectedVersion};
-            }
+            yield return new object[] { ProjectTemplate.NetStandardClassLib , flag , expectedVersion};
         }
 
         public static IEnumerable<object[]> GetPackageReferenceTemplates()
         {
-            for (var i = 0; i < CommonUtility.GetIterations(); i++)
-            {
-                //yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
-                yield return new object[] { ProjectTemplate.NetStandardClassLib };
-            }
+            yield return new object[] { ProjectTemplate.NetStandardClassLib };
         }
 
         public static IEnumerable<object[]> GetPackagesConfigTemplates()
         {
-            for (var i = 0; i < CommonUtility.GetIterations(); i++)
-            {
-                yield return new object[] { ProjectTemplate.ClassLibrary };
-            }
+            yield return new object[] { ProjectTemplate.ClassLibrary };
         }
     }
 }

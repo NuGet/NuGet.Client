@@ -984,6 +984,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetValue("config", "maxHttpRequestsPerSource", false))
+               .Returns(() => null);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1018,6 +1020,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetValue("config", "maxHttpRequestsPerSource", false))
+               .Returns(() => null);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1050,6 +1054,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetValue("config", "maxHttpRequestsPerSource", false))
+               .Returns(() => null);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1646,7 +1652,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var encryptedPassword = Guid.NewGuid().ToString();
-            var credentials = new PackageSourceCredential("twoname", "User", encryptedPassword, isPasswordClearText: false);
+            var credentials = new PackageSourceCredential("twoname", "User", encryptedPassword, isPasswordClearText: false, validAuthenticationTypesText: null);
             var sources = new[]
                 {
                     new PackageSource("one"),
@@ -1828,7 +1834,7 @@ namespace NuGet.Configuration.Test
         public void SavePackageSources_SavesClearTextCredentials()
         {
             // Arrange
-            var credentials = new PackageSourceCredential("twoname", "User", "password", isPasswordClearText: true);
+            var credentials = new PackageSourceCredential("twoname", "User", "password", isPasswordClearText: true, validAuthenticationTypesText: null);
             var sources = new[]
                 {
                     new PackageSource("one"),
@@ -1879,6 +1885,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetValue("config", "maxHttpRequestsPerSource", false))
+                .Returns(() => null);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -2810,6 +2818,75 @@ namespace NuGet.Configuration.Test
                 Assert.Equal("test2", sources[0].Name);
                 Assert.Equal("https://nuget/test2", sources[0].Source);
                 Assert.Null(sources[0].Credentials);
+            }
+        }
+
+        [Fact]
+        public void LoadPackageSources_SetMaxHttpRequest()
+        {
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var configContents =
+@"<?xml version='1.0'?>
+<configuration>
+    <config>
+        <add key='maxHttpRequestsPerSource' value='2' />
+    </config>
+    <packageSources>
+        <add key='NuGet.org' value='https://NuGet.org' />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
+
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                   configFileName: null,
+                   machineWideSettings: null,
+                   loadAppDataSettings: true,
+                   useTestingGlobalPath: false);
+
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act
+                var packageSources = packageSourceProvider.LoadPackageSources();
+
+                // Assert
+                Assert.True(packageSources.All(p => p.MaxHttpRequestsPerSource == 2));
+            }
+        }
+
+        [Fact]
+        public void LoadPackageSources_NoMaxHttpRequest()
+        {
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var configContents =
+@"<?xml version='1.0'?>
+<configuration>
+    <packageSources>
+        <add key='NuGet.org' value='https://NuGet.org' />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
+
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                   configFileName: "NuGet.Config",
+                   machineWideSettings: null,
+                   loadAppDataSettings: true,
+                   useTestingGlobalPath: false);
+
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act
+                var packageSources = packageSourceProvider.LoadPackageSources();
+
+                // Assert
+                Assert.True(packageSources.All(p => p.MaxHttpRequestsPerSource == 0));
             }
         }
 

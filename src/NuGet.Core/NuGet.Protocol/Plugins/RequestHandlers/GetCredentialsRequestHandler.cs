@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
@@ -132,7 +133,7 @@ namespace NuGet.Protocol.Plugins
             var requestPayload = MessageUtilities.DeserializePayload<GetCredentialsRequest>(request);
             var packageSource = GetPackageSource(requestPayload.PackageSourceRepository);
 
-            GetCredentialsResponse responsePayload;
+            GetCredentialsResponse responsePayload = null;
 
             if (packageSource.IsHttp &&
                 string.Equals(
@@ -140,7 +141,7 @@ namespace NuGet.Protocol.Plugins
                     packageSource.Source,
                     StringComparison.OrdinalIgnoreCase))
             {
-                NetworkCredential credential = null;
+                ICredentials credential = null;
 
                 using (var progressReporter = AutomaticProgressReporter.Create(
                     _plugin.Connection,
@@ -154,19 +155,29 @@ namespace NuGet.Protocol.Plugins
                         cancellationToken);
                 }
 
-                if (credential == null)
-                {
-                    responsePayload = new GetCredentialsResponse(
-                        MessageResponseCode.NotFound,
-                        username: null,
-                        password: null);
-                }
-                else
+                if (credential is AuthTypeFilteredCredentials filteredCredentials)
                 {
                     responsePayload = new GetCredentialsResponse(
                         MessageResponseCode.Success,
-                        credential.UserName,
-                        credential.Password);
+                        filteredCredentials.InnerCredential.UserName,
+                        filteredCredentials.InnerCredential.Password,
+                        filteredCredentials.AuthTypes);
+                }
+                else if (credential is NetworkCredential networkCredential)
+                {
+                    responsePayload = new GetCredentialsResponse(
+                        MessageResponseCode.Success,
+                        networkCredential.UserName,
+                        networkCredential.Password);
+                }
+                else
+                {
+                    networkCredential = credential?.GetCredential(packageSource.SourceUri, null);
+
+                    responsePayload = new GetCredentialsResponse(
+                        networkCredential != null ? MessageResponseCode.Success : MessageResponseCode.NotFound,
+                        networkCredential?.UserName,
+                        networkCredential?.Password);
                 }
             }
             else
@@ -180,7 +191,7 @@ namespace NuGet.Protocol.Plugins
             await responseHandler.SendResponseAsync(request, responsePayload, cancellationToken);
         }
 
-        private async Task<NetworkCredential> GetCredentialAsync(
+        private async Task<ICredentials> GetCredentialAsync(
             PackageSource packageSource,
             HttpStatusCode statusCode,
             CancellationToken cancellationToken)
@@ -195,14 +206,14 @@ namespace NuGet.Protocol.Plugins
             return await GetPackageSourceCredential(requestType, packageSource, cancellationToken);
         }
 
-        private async Task<NetworkCredential> GetPackageSourceCredential(
+        private async Task<ICredentials> GetPackageSourceCredential(
             CredentialRequestType requestType,
             PackageSource packageSource,
             CancellationToken cancellationToken)
         {
             if (packageSource.Credentials != null && packageSource.Credentials.IsValid())
             {
-                return new NetworkCredential(packageSource.Credentials.Username, packageSource.Credentials.Password);
+                return packageSource.Credentials.ToICredentials();
             }
 
             if (_credentialService == null)
@@ -234,10 +245,10 @@ namespace NuGet.Protocol.Plugins
                 message,
                 cancellationToken);
 
-            return credentials?.GetCredential(sourceUri, authType: null);
+            return credentials;
         }
 
-        private async Task<NetworkCredential> GetProxyCredentialAsync(
+        private async Task<ICredentials> GetProxyCredentialAsync(
             PackageSource packageSource,
             CancellationToken cancellationToken)
         {

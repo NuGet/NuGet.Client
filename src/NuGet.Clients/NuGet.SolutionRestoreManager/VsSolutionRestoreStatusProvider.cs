@@ -43,6 +43,12 @@ namespace NuGet.SolutionRestoreManager
                 var graphContext = new DependencyGraphCacheContext();
                 var projects = (await _solutionManager.Value.GetNuGetProjectsAsync()).AsList();
 
+                // It could be that the project added to the solution has not yet been updated.
+                if(projects == null || projects.Count == 0)
+                {
+                    return false;
+                }
+
                 // Empty solutions with no projects are considered restored.
                 foreach (var project in projects)
                 {

@@ -316,7 +316,7 @@
     <value>The name specified cannot be empty. Please provide a valid name.</value>
   </data>
   <data name="SourcesCommandSourceAddedSuccessfully" xml:space="preserve">
-    <value>Package Source with Name: {0} added successfully.</value>
+    <value>Package source with Name: {0} added successfully.</value>
   </data>
   <data name="SourcesCommandSourceRequired" xml:space="preserve">
     <value>The source specified cannot be empty. Please provide a valid source.</value>
@@ -6166,5 +6166,11 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   </data>
   <data name="Warning_LongPath_UnsupportedOS" xml:space="preserve">
     <value>Long file path is currently only supported on Windows 10. Fore more details, please refer to https://aka.ms/nuget-long-path.</value>
+  </data>
+  <data name="SourcesCommandCredentialsRequiredWithAuthTypes" xml:space="preserve">
+    <value>Both UserName and Password must be specified if ValidAuthenticationTypes is specified</value>
+  </data>
+  <data name="SourcesCommandClearingExistingAuthTypes" xml:space="preserve">
+    <value>Clearing existing authentication types settings for package source '{0}'.</value>
   </data>
 </root>

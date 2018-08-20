@@ -205,9 +205,14 @@ namespace NuGet.Common
         NU1608 = 1608,
 
         /// <summary>
-        /// Fallback framework used.
+        /// Fallback framework used for a package reference.
         /// </summary>
         NU1701 = 1701,
+
+        /// <summary>
+        /// Fallback framework used for a project reference.
+        /// </summary>
+        NU1702 = 1702,
 
         /// <summary>
         /// Feed error converted to a warning when ignoreFailedSources is true.
@@ -446,11 +451,6 @@ namespace NuGet.Common
         NU5005 = 5005,
 
         /// <summary>
-        /// Error_PackFailed
-        /// </summary>
-        NU5006 = 5006,
-
-        /// <summary>
         /// Error_UnableToLocateBuildOutput
         /// </summary>
         NU5007 = 5007,
@@ -629,11 +629,6 @@ namespace NuGet.Common
         /// UnspecifiedDependencyVersionWarning
         /// </summary>
         NU5112 = 5112,
-
-        /// <summary>
-        /// Warning_SemanticVersion
-        /// </summary>
-        NU5113 = 5113,
 
         /// <summary>
         /// Warning_DuplicatePropertyKey

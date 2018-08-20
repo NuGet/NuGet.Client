@@ -573,6 +573,7 @@ namespace NuGet.PackageManagement
                     {
                         var task = Task.Run(async () => await source.GetResourceAsync<DependencyInfoResource>(token));
 
+                        getResourceTasks.Add(task);
                         depResources.Add(source, task);
 
                         // Limit the number of tasks to MaxThreads by awaiting each time we hit the limit

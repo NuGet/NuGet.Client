@@ -5,7 +5,6 @@
   <PropertyGroup>
     <Description>The core data structures for NuGet.Packaging</Description>
     <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.6</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackProject>true</PackProject>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,12 +16,7 @@ namespace NuGet.ProjectManagement
 
         public LoggerAdapter(INuGetProjectContext projectLogger)
         {
-            if (projectLogger == null)
-            {
-                throw new ArgumentNullException(nameof(projectLogger));
-            }
-
-            ProjectLogger = projectLogger;
+            ProjectLogger = projectLogger ?? throw new ArgumentNullException(nameof(projectLogger));
         }
 
         public override void LogDebug(string data)
@@ -57,6 +52,17 @@ namespace NuGet.ProjectManagement
         public override void LogInformationSummary(string data)
         {
             ProjectLogger.Log(MessageLevel.Debug, data);
+        }
+
+        public override void Log(ILogMessage message)
+        {
+            ProjectLogger.Log(message);
+        }
+
+        public override Task LogAsync(ILogMessage message)
+        {
+            ProjectLogger.Log(message);
+            return Task.FromResult(0);
         }
     }
 }

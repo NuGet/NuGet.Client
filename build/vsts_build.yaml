@@ -266,6 +266,8 @@ phases:
         $(VsixPublishDir)\\NuGet.Mssign.pdb
         $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.Core.json 
         $(VsixPublishDir)\\NuGet.Tools.vsix
+        $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.BuildTools.vsix
+        $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.BuildTools.json
         $(VsixPublishDir)\\EndToEnd.zip 
       TargetFolder: "$(BuildOutputTargetPath)\\artifacts"
 
@@ -355,7 +357,6 @@ phases:
         Get-ChildItem $(BuildOutputTargetPath) -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
         Remove-Item -Path $(BuildOutputTargetPath) -Force -Recurse -ErrorAction SilentlyContinue
     condition: "eq(variables['Agent.JobStatus'], 'Failed')"
-
 
 - phase: Functional_Tests_On_Windows
   dependsOn: Initialize_Build
@@ -637,7 +638,6 @@ phases:
         KillRunningInstancesOfVS
     condition: "always()"
 
-
 - phase: Apex_Tests_On_Windows
   dependsOn:
   - Build_and_UnitTest
@@ -651,6 +651,10 @@ phases:
     demands: DotNetFramework
 
   steps:
+  - checkout: self
+    clean: true
+    submodules: true
+    
   - task: PowerShell@1
     displayName: "Print Environment Variables"
     inputs:

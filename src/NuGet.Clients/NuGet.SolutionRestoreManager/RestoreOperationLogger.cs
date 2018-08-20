@@ -15,6 +15,8 @@ using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using MSBuildVerbosityLevel = NuGet.SolutionRestoreManager.VerbosityLevel;
 using Task = System.Threading.Tasks.Task;
 
@@ -27,7 +29,7 @@ namespace NuGet.SolutionRestoreManager
     [PartCreationPolicy(CreationPolicy.NonShared)]
     internal sealed class RestoreOperationLogger : LoggerBase, ILogger, IDisposable
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IAsyncServiceProvider _asyncServiceProvider;
         private readonly IOutputConsoleProvider _outputConsoleProvider;
 
         // Queue of (bool reportProgress, bool showAsOutputMessage, ILogMessage logMessage)
@@ -50,18 +52,23 @@ namespace NuGet.SolutionRestoreManager
         // of VS. From 0 (quiet) to 4 (Diagnostic).
         public int OutputVerbosity { get; private set; }
 
-        // Set the base logger to debug level, all filter will be done here.
         [ImportingConstructor]
         public RestoreOperationLogger(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
+            IOutputConsoleProvider outputConsoleProvider)
+            : this(AsyncServiceProvider.GlobalProvider, outputConsoleProvider)
+        { }
+
+        // Set the base logger to debug level, all filter will be done here.
+
+        public RestoreOperationLogger(
+            IAsyncServiceProvider asyncServiceProvider,
             IOutputConsoleProvider outputConsoleProvider)
             : base(LogLevel.Debug)
         {
-            Assumes.Present(serviceProvider);
+            Assumes.Present(asyncServiceProvider);
             Assumes.Present(outputConsoleProvider);
 
-            _serviceProvider = serviceProvider;
+            _asyncServiceProvider = asyncServiceProvider;
             _outputConsoleProvider = outputConsoleProvider;
         }
 
@@ -85,16 +92,16 @@ namespace NuGet.SolutionRestoreManager
             _externalCts.Token.Register(() => _cancelled = true);
 
 #if VS14
-            _progressFactory = t => WaitDialogProgress.StartAsync(_serviceProvider, _taskFactory, t);
+            _progressFactory = t => WaitDialogProgress.StartAsync(_asyncServiceProvider, _taskFactory, t);
 #else
-            _progressFactory = t => StatusBarProgress.StartAsync(_serviceProvider, _taskFactory, t);
+            _progressFactory = t => StatusBarProgress.StartAsync(_asyncServiceProvider, _taskFactory, t);
 #endif
 
             await _taskFactory.RunAsync(async () =>
             {
                 await _taskFactory.SwitchToMainThreadAsync();
 
-                OutputVerbosity = GetMSBuildOutputVerbositySetting();
+                OutputVerbosity = await GetMSBuildOutputVerbositySettingAsync();
 
                 switch (_operationSource)
                 {
@@ -460,11 +467,11 @@ namespace NuGet.SolutionRestoreManager
         /// <remarks>
         /// 0 is Quiet, while 4 is diagnostic.
         /// </remarks>
-        private int GetMSBuildOutputVerbositySetting()
+        private async Task<int> GetMSBuildOutputVerbositySettingAsync()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var dte = _serviceProvider.GetDTE();
+            var dte = await _asyncServiceProvider.GetDTEAsync();
 
             var properties = dte.get_Properties("Environment", "ProjectsAndSolution");
             var value = properties.Item("MSBuildOutputVerbosity").Value;
@@ -534,13 +541,13 @@ namespace NuGet.SolutionRestoreManager
             }
 
             public static async Task<RestoreOperationProgressUI> StartAsync(
-                IServiceProvider serviceProvider,
+                IAsyncServiceProvider asyncServiceProvider,
                 JoinableTaskFactory jtf,
                 CancellationToken token)
             {
                 await jtf.SwitchToMainThreadAsync();
 
-                var waitDialogFactory = serviceProvider.GetService<
+                var waitDialogFactory = await asyncServiceProvider.GetServiceAsync<
                     SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
 
                 var session = waitDialogFactory.StartWaitDialog(
@@ -601,13 +608,13 @@ namespace NuGet.SolutionRestoreManager
             }
 
             public static async Task<RestoreOperationProgressUI> StartAsync(
-                IServiceProvider serviceProvider,
+                IAsyncServiceProvider asyncServiceProvider,
                 JoinableTaskFactory jtf,
                 CancellationToken token)
             {
                 await jtf.SwitchToMainThreadAsync();
 
-                var statusBar = serviceProvider.GetService<SVsStatusbar, IVsStatusbar>();
+                var statusBar = await asyncServiceProvider.GetServiceAsync<SVsStatusbar, IVsStatusbar>();
 
                 // Make sure the status bar is not frozen
                 int frozen;

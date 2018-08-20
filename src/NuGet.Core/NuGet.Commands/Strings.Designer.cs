@@ -296,7 +296,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to find project information for &apos;{0}&apos;. The project file may be invalid or missing targets required for restore..
+        ///   Looks up a localized string similar to Unable to find project information for &apos;{0}&apos;. Inside Visual Studio, this may be because the project is unloaded or not part of current solution. Otherwise the project file may be invalid or missing targets required for restore..
         /// </summary>
         internal static string Error_UnableToFindProjectInfo {
             get {
@@ -1134,7 +1134,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version conflict detected for {0}. Reference the package directly from the project to resolve this issue..
+        ///   Looks up a localized string similar to Version conflict detected for {0}. Install/reference {1} directly to project {2} to resolve this issue..
         /// </summary>
         internal static string Log_VersionConflict {
             get {
@@ -1643,15 +1643,6 @@ namespace NuGet.Commands {
         internal static string Warning_ProjectDependencyMissingLowerBound {
             get {
                 return ResourceManager.GetString("Warning_ProjectDependencyMissingLowerBound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Version &quot;{0}&quot; does not follow semantic versioning guidelines. Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org..
-        /// </summary>
-        internal static string Warning_SemanticVersion {
-            get {
-                return ResourceManager.GetString("Warning_SemanticVersion", resourceCulture);
             }
         }
         

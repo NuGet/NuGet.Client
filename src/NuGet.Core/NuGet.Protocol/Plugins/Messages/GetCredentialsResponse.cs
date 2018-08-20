@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Newtonsoft.Json;
 
@@ -28,6 +29,9 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         public string Username { get; }
 
+        public IReadOnlyList<string> AuthenticationTypes { get; }
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GetCredentialsResponse" /> class.
         /// </summary>
@@ -38,7 +42,8 @@ namespace NuGet.Protocol.Plugins
         public GetCredentialsResponse(
             MessageResponseCode responseCode,
             string username,
-            string password)
+            string password,
+            IReadOnlyList<string> authenticationTypes = null)
         {
             if (!Enum.IsDefined(typeof(MessageResponseCode), responseCode))
             {
@@ -53,6 +58,7 @@ namespace NuGet.Protocol.Plugins
             ResponseCode = responseCode;
             Username = username;
             Password = password;
+            AuthenticationTypes = authenticationTypes;
         }
     }
 }

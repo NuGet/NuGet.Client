@@ -1800,7 +1800,7 @@ function Test-InstallPackageInstallsHighestPackageIfItIsReleaseWhenPreReleaseFla
 function Test-InstallingPackagesWorksInTurkishLocaleWhenPackageIdContainsLetterI
 {
     # Arrange
-    $p = New-ClassLibrary
+    $p = New-ClassLibraryNet46
 
     $currentCulture = [System.Threading.Thread]::CurrentThread.CurrentCulture
 
@@ -2338,7 +2338,7 @@ function Test-InstallFailCleansUpSatellitePackageFiles
     Assert-NoSolutionPackage A.fr -Version 1.0.0
 }
 
-function Test-FileTransformWorksOnDependentFile
+function FileTransformWorksOnDependentFile
 {
     param($context)
 
@@ -2461,7 +2461,7 @@ function Test-InstallPackageThrowsIfMinClientVersionIsNotSatisfied
     $currentSemanticVersion = Get-HostSemanticVersion
 
     # Act & Assert
-    Assert-Throws { $p | Install-Package Kitty -Source $context.RepositoryPath } "The 'kitty 1.0.0' package requires NuGet client version '5.0.0' or above, but the current NuGet version is '$currentSemanticVersion'. To upgrade NuGet, please go to http://docs.nuget.org/consume/installing-nuget"
+    Assert-Throws { $p | Install-Package Kitty -Source $context.RepositoryPath } "The 'kitty 1.0.0' package requires NuGet client version '100.0.0' or above, but the current NuGet version is '$currentSemanticVersion'. To upgrade NuGet, please go to http://docs.nuget.org/consume/installing-nuget"
     Assert-NoPackage $p "Kitty"
 }
 

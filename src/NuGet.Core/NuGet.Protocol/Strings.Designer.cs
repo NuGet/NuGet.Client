@@ -962,6 +962,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Repository Signatures resouce must be served over HTTPS. Source: {0}.
+        /// </summary>
+        internal static string RepositorySignaturesResourceMustBeHttps {
+            get {
+                return ResourceManager.GetString("RepositorySignaturesResourceMustBeHttps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The &apos;{0}&apos; installation feature was required by a package but is not supported on the current host..
         /// </summary>
         internal static string RequiredFeatureUnsupportedException_DefaultMessageWithFeature {

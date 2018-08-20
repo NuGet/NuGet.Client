@@ -59,9 +59,9 @@ namespace NuGet.CommandLine
         }
 
         // The directory that contains msbuild
-        private Lazy<string> _msbuildDirectory;
+        private Lazy<MsBuildToolset> _msbuildDirectory;
 
-        private Lazy<string> MsBuildDirectory
+        private Lazy<MsBuildToolset> MsBuildDirectory
         {
             get
             {
@@ -108,11 +108,13 @@ namespace NuGet.CommandLine
                 var v2RestoreResult = await PerformNuGetV2RestoreAsync(restoreInputs);
                 restoreSummaries.Add(v2RestoreResult);
 
-                // log warnings
-                v2RestoreResult
-                    .Errors
-                    .Where(l => l.Level == LogLevel.Warning)
-                    .ForEach(l => Console.LogWarning(l.FormatWithCode()));
+                if (!v2RestoreResult.Success)
+                {
+                    v2RestoreResult
+                        .Errors
+                        .Where(l => l.Level == LogLevel.Warning)
+                        .ForEach(l => Console.LogWarning(l.FormatWithCode()));
+                }
             }
 
             // project.json and PackageReference
@@ -311,6 +313,7 @@ namespace NuGet.CommandLine
 
             var installCount = 0;
             var failedEvents = new ConcurrentQueue<PackageRestoreFailedEventArgs>();
+            var collectorLogger = new RestoreCollectorLogger(Console);
 
             var packageRestoreContext = new PackageRestoreContext(
                 nuGetPackageManager,
@@ -321,22 +324,20 @@ namespace NuGet.CommandLine
                 sourceRepositories: repositories,
                 maxNumberOfParallelTasks: DisableParallelProcessing
                         ? 1
-                        : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
+                        : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
+                logger: collectorLogger);
 
             CheckRequireConsent();
 
-            var collectorLogger = new RestoreCollectorLogger(Console);
-
             var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
             var projectContext = new ConsoleProjectContext(collectorLogger)
             {
                 PackageExtractionContext = new PackageExtractionContext(
-                        Packaging.PackageSaveMode.Defaultv2,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        collectorLogger,
-                        signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetDefault())
+                    Packaging.PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    collectorLogger,
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault())
             };
 
             if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
@@ -380,7 +381,7 @@ namespace NuGet.CommandLine
         {
             var result = new List<RestoreLogMessage>();
 
-            foreach(var failedEvent in failedEvents)
+            foreach (var failedEvent in failedEvents)
             {
                 if (failedEvent.Exception is SignatureException)
                 {
@@ -839,7 +840,7 @@ namespace NuGet.CommandLine
                 restoreInputs.PackagesConfigFiles.Add(solutionLevelPackagesConfig);
             }
 
-            var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, MsBuildDirectory.Value);
+            var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, MsBuildDirectory.Value.Path);
 
             foreach (var projectFile in projectFiles)
             {

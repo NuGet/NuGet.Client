@@ -212,7 +212,7 @@
 {2}: resolved version</comment>
   </data>
   <data name="Log_VersionConflict" xml:space="preserve">
-    <value>Version conflict detected for {0}. Reference the package directly from the project to resolve this issue.</value>
+    <value>Version conflict detected for {0}. Install/reference {1} directly to project {2} to resolve this issue.</value>
   </data>
   <data name="Error_UnknownBuildAction" xml:space="preserve">
     <value>Package '{0}' specifies an invalid build action '{1}' for file '{2}'.</value>
@@ -319,9 +319,6 @@
   </data>
   <data name="Warning_DuplicatePropertyKey" xml:space="preserve">
     <value>'{0}' key already exists in Properties collection. Overriding value.</value>
-  </data>
-  <data name="Warning_SemanticVersion" xml:space="preserve">
-    <value>Version "{0}" does not follow semantic versioning guidelines. Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org.</value>
   </data>
   <data name="MSBuildWarning_MultiTarget" xml:space="preserve">
     <value>Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.</value>
@@ -570,7 +567,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Unable to find project '{0}'. Check that the project reference is valid and that the project file exists.</value>
   </data>
   <data name="Error_UnableToFindProjectInfo" xml:space="preserve">
-    <value>Unable to find project information for '{0}'. The project file may be invalid or missing targets required for restore.</value>
+    <value>Unable to find project information for '{0}'. Inside Visual Studio, this may be because the project is unloaded or not part of current solution. Otherwise the project file may be invalid or missing targets required for restore.</value>
   </data>
   <data name="FoundVersionsInSource" xml:space="preserve">
     <value>Found {0} version(s) in {1} [ Nearest version: {2} ]</value>

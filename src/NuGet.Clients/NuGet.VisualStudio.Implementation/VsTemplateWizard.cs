@@ -69,7 +69,7 @@ namespace NuGet.VisualStudio
 
             _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer, _vsProjectAdapterProvider);
 
-            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
+            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         private IEnumerable<PreinstalledPackageConfiguration> GetConfigurationsFromVsTemplateFile(string vsTemplatePath)

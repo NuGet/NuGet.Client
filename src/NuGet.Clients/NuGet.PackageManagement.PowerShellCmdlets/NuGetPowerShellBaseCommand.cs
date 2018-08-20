@@ -258,7 +258,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                             packages,
                             this,
                             downloadContext,
+                            new LoggerAdapter(this),
                             Token);
+
                         if (result.Restored)
                         {
                             await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
@@ -927,9 +929,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Implement INuGetProjectContext.Log(). Called by worker thread.
         /// </summary>
-        /// <param name="level"></param>
-        /// <param name="message"></param>
-        /// <param name="args"></param>
         public void Log(MessageLevel level, string message, params object[] args)
         {
             if (args.Length > 0)
@@ -938,6 +937,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             BlockingCollection.Add(new LogMessage(level, message));
+        }
+
+        /// <summary>
+        /// Implement INuGetProjectContext.Log(). Called by worker thread.
+        /// </summary>
+        public void Log(ILogMessage message)
+        {
+            BlockingCollection.Add(new LogMessage(LogUtility.LogLevelToMessageLevel(message.Level), message.FormatWithCode()));
         }
 
         /// <summary>
@@ -1093,6 +1100,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public ExecutionContext ExecutionContext { get; protected set; }
 
         public void ReportError(string message)
+        {
+            // no-op
+        }
+
+        public void ReportError(ILogMessage message)
         {
             // no-op
         }
