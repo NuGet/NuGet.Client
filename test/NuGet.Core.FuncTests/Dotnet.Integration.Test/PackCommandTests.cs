@@ -94,20 +94,6 @@ namespace Dotnet.Integration.Test
                 {
                     var nuspecReader = nupkgReader.NuspecReader;
 
-                    // Validate the output .nuspec.
-                    Assert.Equal("ClassLibrary1", nuspecReader.GetId());
-                    Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
-                    Assert.Equal("ClassLibrary1", nuspecReader.GetAuthors());
-                    Assert.Equal("ClassLibrary1", nuspecReader.GetOwners());
-                    Assert.Equal("Package Description", nuspecReader.GetDescription());
-                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
-
-                    var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
-                    Assert.Equal(1, dependencyGroups.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, dependencyGroups[0].TargetFramework);
-                    var packages = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(0, packages.Count);
-
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     var libSymItems = symbolReader.GetLibItems().ToList();
@@ -115,7 +101,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1, libSymItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
                     Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.dll" }, libItems[0].Items);
-                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.pdb" }, libItems[0].Items);
+                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.pdb" }, libSymItems[0].Items);
                 }
 
             }
