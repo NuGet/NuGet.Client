@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Configuration;
 using System.Threading;
+using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -13,7 +15,7 @@ namespace NuGet.CommandLine.XPlat
         public ILogger Logger { get; }
         public string Path { get; }
         public IEnumerable<PackageSource> PackageSources { get; }
-        public IEnumerable<string> Frameworks { get; }
+        public IEnumerable<NuGetFramework> Frameworks { get; }
         public bool IncludeOutdated { get; }
         public bool IncludeDeprecated { get; }
         public bool IncludeTransitive { get; }
@@ -41,7 +43,7 @@ namespace NuGet.CommandLine.XPlat
         public ListPackageArgs(
             string path,
             IEnumerable<PackageSource> packageSources,
-            IEnumerable<string> frameworks,
+            IEnumerable<NuGetFramework> frameworks,
             bool includeOutdated,
             bool includeDeprecated,
             bool includeTransitive,
@@ -52,15 +54,15 @@ namespace NuGet.CommandLine.XPlat
             CancellationToken cancellationToken)
         {
             Path = path ?? throw new ArgumentNullException(nameof(path));
-            PackageSources = packageSources ?? throw new ArgumentNullException("source");
-            Frameworks = frameworks ?? throw new ArgumentNullException("framework");
+            PackageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
+            Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
             IncludeOutdated = includeOutdated;
             IncludeDeprecated = includeDeprecated;
             IncludeTransitive = includeTransitive;
             Prerelease = prerelease;
             HighestPatch = highestPatch;
             HighestMinor = highestMinor;
-            Logger = logger ?? throw new Exception(Strings.Error_LoggerNull);
+            Logger = logger ?? throw new Exception(nameof(logger));
             CancellationToken = cancellationToken;
         }
     }

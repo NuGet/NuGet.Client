@@ -475,22 +475,22 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Allow the command to block and require manual action for operations like authentication.</value>
   </data>
   <data name="ListPkg_DeprecatedDescription" xml:space="preserve">
-    <value>Displays only the packages that are marked deprecated by the authors</value>
+    <value>Displays only the packages marked deprecated by the authors.</value>
   </data>
   <data name="ListPkg_Description" xml:space="preserve">
-    <value>Lists all the packages that are used by the current project(s)</value>
+    <value>Lists all the packages used by the current project(s).</value>
   </data>
   <data name="ListPkg_FrameworkDescription" xml:space="preserve">
-    <value>Specifies the target framework to which the packages will be listed</value>
+    <value>Specifies the target framework for which the packages will be listed.</value>
   </data>
   <data name="ListPkg_OutdatedDescription" xml:space="preserve">
-    <value>Displays only the packages that need updates with the latest version from the sources</value>
+    <value>Displays only the packages that need updates with the latest version from the sources.</value>
   </data>
   <data name="ListPkg_TransitiveDescription" xml:space="preserve">
-    <value>Includes transitive packages too in the result</value>
+    <value>Includes transitive packages too in the result.</value>
   </data>
   <data name="ListPkg_PathDescription" xml:space="preserve">
-    <value>A path to a project or solution file or directory</value>
+    <value>A path to a project or solution file or directory.</value>
   </data>
   <data name="Error_AssetsFileNotFound" xml:space="preserve">
     <value>No assets file was found for `{0}`. Please run restore before running this command.</value>
@@ -499,46 +499,52 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Project '{0}' has the following package references</value>
   </data>
   <data name="ListPkg_AutoReferenceDescription" xml:space="preserve">
-    <value>(A) : Auto-referenced package</value>
+    <value>(A) : Auto-referenced package.</value>
   </data>
   <data name="ListPkg_NoPackagesForFramework" xml:space="preserve">
-    <value>No packages were found for this framework</value>
-  </data>
-  <data name="ListPkg_NoPackagesFound" xml:space="preserve">
-    <value>No packages were found for the project `{0}`</value>
+    <value>No packages were found for this framework.</value>
   </data>
   <data name="ListPkg_NoPackagesFoundForFrameworks" xml:space="preserve">
-    <value>No packages were found for the project `{0}` given the specified frameworks</value>
+    <value>No packages were found for the project `{0}` given the specified frameworks.</value>
   </data>
   <data name="ListPkg_ConfigDescription" xml:space="preserve">
-    <value>Works only with `--outdated`. A path to a config file to specify sources</value>
+    <value>A path to a config file to specify sources. Works only with `--outdated`.</value>
   </data>
   <data name="ListPkg_HighestMinorDescription" xml:space="preserve">
-    <value>Works only with `--outdated`. Considers only the versions that have matching major</value>
+    <value>Considers only the versions with matching major. Works only with `--outdated`.</value>
   </data>
   <data name="ListPkg_HighestPatchDescription" xml:space="preserve">
-    <value>Works only with `--outdated`. Considers only the versions that have matching minor and major</value>
+    <value>Considers only the versions with matching minor and major. Works only with `--outdated`.</value>
   </data>
   <data name="ListPkg_PrereleaseDescription" xml:space="preserve">
-    <value>Works only with `--outdated`. Considers prerelease versions when looking for latest</value>
+    <value>Considers prerelease versions when looking for latest. Works only with `--outdated`.</value>
   </data>
   <data name="ListPkg_SourceDescription" xml:space="preserve">
-    <value>Works only with `--outdated`. Sources to lookup for latest versions</value>
+    <value>Sources to lookup for latest versions. Works only with `--outdated`.</value>
   </data>
   <data name="Error_NotPRProject" xml:space="preserve">
     <value>The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects.</value>
   </data>
   <data name="ListPkg_DeprecatedPkgDescription" xml:space="preserve">
-    <value>(D) : The owner has unlisted this package. This could mean that the package is deprecated or shouldn't be used anymore.</value>
+    <value>(D) : The owner has unlisted this package. This could mean the package is deprecated or shouldn't be used anymore.</value>
   </data>
   <data name="Error_LoggerNull" xml:space="preserve">
-    <value>The logger cannot be passed as null</value>
+    <value>The logger cannot be passed as null.</value>
+  </data>
+  <data name="ListPkg_ErrorReadingAssetsFile" xml:space="preserve">
+    <value>Unable to read the assets file `{0}`. Please make sure the file has the write format.</value>
+  </data>
+  <data name="ListPkg_ErrorReadingReferenceFromProject" xml:space="preserve">
+    <value>Unable to read a package reference from the project `{0}`. Please make sure that your project file and project.assets.json file are in sync by running restore.</value>
+  </data>
+  <data name="ListPkg_InvalidFramework" xml:space="preserve">
+    <value>Failed to parse one of the given frameworks. Please make sure the given frameworks are valid.</value>
   </data>
   <data name="ListPkg_Latest" xml:space="preserve">
     <value>Latest</value>
   </data>
   <data name="ListPkg_NotFoundAtSources" xml:space="preserve">
-    <value>Not found at sources</value>
+    <value>Not found at the sources</value>
   </data>
   <data name="ListPkg_Requested" xml:space="preserve">
     <value>Requested</value>

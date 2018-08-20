@@ -8,17 +8,19 @@ namespace NuGet.CommandLine.XPlat.Utility
 {
     public static class TableParser
     {
-        public static ILookup<string, ConsoleColor> ToStringTable<T>(
+        internal static IEnumerable<Tuple<string, ConsoleColor>> ToStringTable<T>(
           this IEnumerable<T> values,
           string[] columnHeaders,
+          Func<T, UpdateLevel> updateLevel,
           params Func<T, object>[] valueSelectors)
         {
-            return ToStringTable(values.ToArray(), columnHeaders, valueSelectors);
+            return ToStringTable(values.ToArray(), columnHeaders, updateLevel, valueSelectors);
         }
 
-        public static ILookup<string, ConsoleColor> ToStringTable<T>(
+        internal static IEnumerable<Tuple<string, ConsoleColor>> ToStringTable<T>(
           this T[] values,
           string[] columnHeaders,
+          Func<T, UpdateLevel> updateLevel,
           params Func<T, object>[] valueSelectors)
         {
             var headerSpace = 1;
@@ -57,39 +59,61 @@ namespace NuGet.CommandLine.XPlat.Utility
                 }
             }
 
-            return ToStringTable(arrValues);
+            return ToStringTable(values, arrValues, updateLevel);
         }
 
-        public static ILookup<string, ConsoleColor> ToStringTable(this string[,] arrValues)
+        internal static IEnumerable<Tuple<string, ConsoleColor>> ToStringTable<T>(this T[] values, string[,] arrValues, Func<T, UpdateLevel> updateLevel)
         {
             var maxColumnsWidth = GetMaxColumnsWidth(arrValues);
             var rows = new List<Tuple<string, ConsoleColor>>();
 
             for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
             {
-                var sb = new StringBuilder();
-                var consoleColor = ConsoleColor.White;
                 for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
                 {
-                    // Prvar cell
-                    var cell = arrValues[rowIndex, colIndex];
-                    if (cell.Equals("(D)"))
+                    if (colIndex == arrValues.GetLength(1) - 1 && rowIndex > 0)
                     {
-                        consoleColor = Console.ForegroundColor == ConsoleColor.Red ? ConsoleColor.Yellow : ConsoleColor.Red;
+                        var level = updateLevel.Invoke(values[rowIndex - 1]);
+                        var cell = arrValues[rowIndex, colIndex];
+                        cell = cell.PadRight(maxColumnsWidth[colIndex]);
+                        if (colIndex != 0)
+                        {
+                            cell = "   " + cell;
+                        }
+
+                        if (level == UpdateLevel.Major)
+                        {
+                            rows.Add(Tuple.Create(cell, ConsoleColor.Red));
+                        }
+                        else if (level == UpdateLevel.Minor)
+                        {
+                            rows.Add(Tuple.Create(cell, ConsoleColor.Yellow));
+                        }
+                        else if (level == UpdateLevel.Patch)
+                        {
+                            rows.Add(Tuple.Create(cell, ConsoleColor.Green));
+                        }
+                        else
+                        {
+                            rows.Add(Tuple.Create(cell, ConsoleColor.White));
+                        }
                     }
-                    cell = cell.PadRight(maxColumnsWidth[colIndex]);
-                    if (colIndex != 0)
+                    else
                     {
-                        sb.Append("   ");
+                        var cell = arrValues[rowIndex, colIndex];
+                        cell = cell.PadRight(maxColumnsWidth[colIndex]);
+                        if (colIndex != 0)
+                        {
+                            cell = "   " + cell;
+                        }
+                        rows.Add(Tuple.Create(cell, ConsoleColor.White));
                     }
-                    sb.Append(cell);
 
                 }
-
-                rows.Add(Tuple.Create(sb.ToString(), consoleColor));
+                rows.Add(Tuple.Create(Environment.NewLine, ConsoleColor.White));
             }
 
-            return rows.ToLookup(p => p.Item1, p => p.Item2);
+            return rows;
         }
 
         private static int[] GetMaxColumnsWidth(string[,] arrValues)

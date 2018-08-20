@@ -10,6 +10,7 @@ using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -87,7 +88,11 @@ namespace NuGet.CommandLine.XPlat
                     
                     var packageSources = GetPackageSources(settings, sources, config);
 
-                    var frameworks = framework.Values;
+                    var frameworks = framework.Values.Select(f => NuGetFramework.Parse(f));
+                    if (frameworks.Any(f => f.Framework.Equals("Unsupported", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        throw new ArgumentException(Strings.ListPkg_InvalidFramework, nameof(framework));
+                    }
                     
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
@@ -136,12 +141,11 @@ namespace NuGet.CommandLine.XPlat
             var packageSources = new List<PackageSource>();
             foreach (var source in sources)
             {
-                if (uniqueSources.Contains(source))
+                if (!uniqueSources.Contains(source))
                 {
-                    continue;
+                    uniqueSources.Add(source);
+                    packageSources.Add(PackageSourceProviderExtensions.ResolveSource(availableSources, source));
                 }
-                uniqueSources.Add(source);
-                packageSources.Add(PackageSourceProviderExtensions.ResolveSource(availableSources, source));
             }
 
             if (packageSources.Count == 0 || config.HasValue())

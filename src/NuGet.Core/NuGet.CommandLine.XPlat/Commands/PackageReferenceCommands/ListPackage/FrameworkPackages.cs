@@ -1,13 +1,16 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 
-namespace NuGet.CommandLine.XPlat.Utility
+namespace NuGet.CommandLine.XPlat
 {
     /// <summary>
     /// A class to simplify holding all of the information
     /// of a framework packages when using list
     /// </summary>
-    class FrameworkPackages
+    internal class FrameworkPackages
     {
         public string Framework { get; }
         public IEnumerable<InstalledPackageReference> TopLevelPackages { get; set; }
@@ -18,12 +21,10 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// initializes the top-level and transitive package
         /// lists
         /// </summary>
-        /// <param name="framework">Framework name that we have pacakges for</param>
-        public FrameworkPackages(string framework)
+        /// <param name="framework">Framework name</param>
+        public FrameworkPackages(string framework) : this(framework, new List<InstalledPackageReference>(), new List<InstalledPackageReference>())
         {
-            Framework = framework;
-            TopLevelPackages = new List<InstalledPackageReference>();
-            TransitivePacakges = new List<InstalledPackageReference>();
+            
         }
 
         /// <summary>
@@ -38,9 +39,9 @@ namespace NuGet.CommandLine.XPlat.Utility
             IEnumerable<InstalledPackageReference> topLevelPackages,
             IEnumerable<InstalledPackageReference> transitivePackages)
         {
-            Framework = framework;
-            TopLevelPackages = topLevelPackages ?? throw new ArgumentNullException("topLevelPackages");
-            TransitivePacakges = transitivePackages ?? throw new ArgumentNullException("transitivePackages");
+            Framework = framework ?? throw new ArgumentNullException(nameof(framework));
+            TopLevelPackages = topLevelPackages ?? throw new ArgumentNullException(nameof(topLevelPackages));
+            TransitivePacakges = transitivePackages ?? throw new ArgumentNullException(nameof(transitivePackages));
         }
     }
 }

@@ -305,7 +305,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The logger cannot be passed as null.
+        ///   Looks up a localized string similar to The logger cannot be passed as null..
         /// </summary>
         internal static string Error_LoggerNull {
             get {
@@ -494,7 +494,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to (A) : Auto-referenced package.
+        ///   Looks up a localized string similar to (A) : Auto-referenced package..
         /// </summary>
         internal static string ListPkg_AutoReferenceDescription {
             get {
@@ -503,7 +503,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Works only with `--outdated`. A path to a config file to specify sources.
+        ///   Looks up a localized string similar to A path to a config file to specify sources. Works only with `--outdated`..
         /// </summary>
         internal static string ListPkg_ConfigDescription {
             get {
@@ -512,7 +512,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Displays only the packages that are marked deprecated by the authors.
+        ///   Looks up a localized string similar to Displays only the packages marked deprecated by the authors..
         /// </summary>
         internal static string ListPkg_DeprecatedDescription {
             get {
@@ -521,7 +521,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to (D) : The owner has unlisted this package. This could mean that the package is deprecated or shouldn&apos;t be used anymore..
+        ///   Looks up a localized string similar to (D) : The owner has unlisted this package. This could mean the package is deprecated or shouldn&apos;t be used anymore..
         /// </summary>
         internal static string ListPkg_DeprecatedPkgDescription {
             get {
@@ -530,7 +530,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lists all the packages that are used by the current project(s).
+        ///   Looks up a localized string similar to Lists all the packages used by the current project(s)..
         /// </summary>
         internal static string ListPkg_Description {
             get {
@@ -539,7 +539,25 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the target framework to which the packages will be listed.
+        ///   Looks up a localized string similar to Unable to read the assets file `{0}`. Please make sure the file has the write format..
+        /// </summary>
+        internal static string ListPkg_ErrorReadingAssetsFile {
+            get {
+                return ResourceManager.GetString("ListPkg_ErrorReadingAssetsFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to read a package reference from the project `{0}`. Please make sure that your project file and project.assets.json file are in sync by running restore..
+        /// </summary>
+        internal static string ListPkg_ErrorReadingReferenceFromProject {
+            get {
+                return ResourceManager.GetString("ListPkg_ErrorReadingReferenceFromProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the target framework for which the packages will be listed..
         /// </summary>
         internal static string ListPkg_FrameworkDescription {
             get {
@@ -548,7 +566,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Works only with `--outdated`. Considers only the versions that have matching major.
+        ///   Looks up a localized string similar to Considers only the versions with matching major. Works only with `--outdated`..
         /// </summary>
         internal static string ListPkg_HighestMinorDescription {
             get {
@@ -557,11 +575,20 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Works only with `--outdated`. Considers only the versions that have matching minor and major.
+        ///   Looks up a localized string similar to Considers only the versions with matching minor and major. Works only with `--outdated`..
         /// </summary>
         internal static string ListPkg_HighestPatchDescription {
             get {
                 return ResourceManager.GetString("ListPkg_HighestPatchDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to parse one of the given frameworks. Please make sure the given frameworks are valid..
+        /// </summary>
+        internal static string ListPkg_InvalidFramework {
+            get {
+                return ResourceManager.GetString("ListPkg_InvalidFramework", resourceCulture);
             }
         }
         
@@ -575,7 +602,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No packages were found for this framework.
+        ///   Looks up a localized string similar to No packages were found for this framework..
         /// </summary>
         internal static string ListPkg_NoPackagesForFramework {
             get {
@@ -584,16 +611,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No packages were found for the project `{0}`.
-        /// </summary>
-        internal static string ListPkg_NoPackagesFound {
-            get {
-                return ResourceManager.GetString("ListPkg_NoPackagesFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No packages were found for the project `{0}` given the specified frameworks.
+        ///   Looks up a localized string similar to No packages were found for the project `{0}` given the specified frameworks..
         /// </summary>
         internal static string ListPkg_NoPackagesFoundForFrameworks {
             get {
@@ -602,7 +620,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not found at sources.
+        ///   Looks up a localized string similar to Not found at the sources.
         /// </summary>
         internal static string ListPkg_NotFoundAtSources {
             get {
@@ -611,7 +629,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Displays only the packages that need updates with the latest version from the sources.
+        ///   Looks up a localized string similar to Displays only the packages that need updates with the latest version from the sources..
         /// </summary>
         internal static string ListPkg_OutdatedDescription {
             get {
@@ -620,7 +638,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A path to a project or solution file or directory.
+        ///   Looks up a localized string similar to A path to a project or solution file or directory..
         /// </summary>
         internal static string ListPkg_PathDescription {
             get {
@@ -629,7 +647,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Works only with `--outdated`. Considers prerelease versions when looking for latest.
+        ///   Looks up a localized string similar to Considers prerelease versions when looking for latest. Works only with `--outdated`..
         /// </summary>
         internal static string ListPkg_PrereleaseDescription {
             get {
@@ -665,7 +683,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Works only with `--outdated`. Sources to lookup for latest versions.
+        ///   Looks up a localized string similar to Sources to lookup for latest versions. Works only with `--outdated`..
         /// </summary>
         internal static string ListPkg_SourceDescription {
             get {
@@ -683,7 +701,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Includes transitive packages too in the result.
+        ///   Looks up a localized string similar to Includes transitive packages too in the result..
         /// </summary>
         internal static string ListPkg_TransitiveDescription {
             get {
