@@ -16,7 +16,10 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <returns><code>true</code> if there should be no interactivity, otherwise <code>false</code>.</returns>
         public static bool IsNonInteractive(this SdkResolverContext context)
         {
-            return !(bool?)SdkResolverContextInteractivePropertyInfo?.GetValue(context) ?? false;
+            // Determine if SdkResolverContext's Interactive property, defaulting to false
+            var interactive = (bool?) SdkResolverContextInteractivePropertyInfo?.GetValue(context) ?? false;
+
+            return !interactive;
         }
     }
 }
