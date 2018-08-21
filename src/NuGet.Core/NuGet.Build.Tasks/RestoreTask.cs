@@ -78,6 +78,9 @@ namespace NuGet.Build.Tasks
         {
             var log = new MSBuildLogger(Log);
 
+            // set the ILogger here.
+            PluginManager.Logger = log;
+
             // Log inputs
             log.LogDebug($"(in) RestoreGraphItems Count '{RestoreGraphItems?.Count() ?? 0}'");
             log.LogDebug($"(in) RestoreDisableParallel '{RestoreDisableParallel}'");

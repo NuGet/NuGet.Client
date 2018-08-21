@@ -25,6 +25,9 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public sealed class PluginManager : IPluginManager, IDisposable
     {
+        // test
+        public static ILogger Logger;
+
         private static readonly Lazy<IPluginManager> Lazy = new Lazy<IPluginManager>(() => new PluginManager());
         public static IPluginManager Instance => Lazy.Value;
 
@@ -214,6 +217,7 @@ namespace NuGet.Protocol.Core.Types
                 {
                     if (cacheEntry.OperationClaims == null || cacheEntry.OperationClaims.Contains(requestedOperationClaim))
                     {
+                        Logger.LogDebug("no cache entry found or the cache entry contains the requested operation claim");
                         if (result.PluginFile.State.Value == PluginFileState.Valid)
                         {
                             var plugin = await _pluginFactory.GetOrCreateAsync(
@@ -222,6 +226,8 @@ namespace NuGet.Protocol.Core.Types
                                 new RequestHandlers(),
                                 _connectionOptions,
                                 cancellationToken);
+
+                            Logger.LogDebug($"the plugin was created at {plugin.FilePath}");
 
                             var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
 
@@ -234,6 +240,8 @@ namespace NuGet.Protocol.Core.Types
                                        packageSourceRepository,
                                        serviceIndex,
                                        cancellationToken))).Value;
+
+                            Logger.LogDebug($"The operation claims are {string.Join(";", operationClaims)}");
 
                             if (!EqualityUtility.SequenceEqualWithNullCheck(operationClaims, cacheEntry.OperationClaims))
                             {
