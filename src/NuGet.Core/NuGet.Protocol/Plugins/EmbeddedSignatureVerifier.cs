@@ -32,17 +32,11 @@ namespace NuGet.Protocol.Plugins
                 return new WindowsEmbeddedSignatureVerifier();
             }
 
-            if (RuntimeEnvironmentHelper.IsLinux || RuntimeEnvironmentHelper.IsMacOSX)
+            if (RuntimeEnvironmentHelper.IsLinux || RuntimeEnvironmentHelper.IsMacOSX || RuntimeEnvironmentHelper.IsMono)
             {
-                return new UnixPlatformsEmbeddedSignatureVerifier();
+                return new UnixAndMonoPlatformsEmbeddedSignatureVerifier();
             }
 
-#if IS_DESKTOP
-            if (RuntimeEnvironmentHelper.IsMono)
-            {
-                return new MonoEmbeddedSignatureVerifier();
-            }
-#endif
             return new FallbackEmbeddedSignatureVerifier();
         }
     }

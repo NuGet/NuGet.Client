@@ -6,9 +6,9 @@ using System;
 namespace NuGet.Protocol.Plugins
 {
     /// <summary>
-    /// Embedded Signature Verifier for the MacOS and Linux platforms.
+    /// Embedded Signature Verifier for the MacOS, Linux and Mono platforms.
     /// </summary>
-    public class UnixPlatformsEmbeddedSignatureVerifier : EmbeddedSignatureVerifier
+    public class UnixAndMonoPlatformsEmbeddedSignatureVerifier : EmbeddedSignatureVerifier
     {
         /// <summary>
         /// Checks if a file has a valid embedded signature.
@@ -24,7 +24,7 @@ namespace NuGet.Protocol.Plugins
             {
                 throw new ArgumentException(nameof(filePath));
             }
-            // There's no embedded signature verification on Linux and MacOS platforms
+            // There's no embedded signature verification on Linux, MacOS and Mono platforms
             return true;
         }
     }

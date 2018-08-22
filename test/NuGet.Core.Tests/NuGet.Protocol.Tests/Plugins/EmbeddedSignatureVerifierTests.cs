@@ -21,7 +21,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var verifier = EmbeddedSignatureVerifier.Create();
 
-            Assert.IsType<UnixPlatformsEmbeddedSignatureVerifier>(verifier);
+            Assert.IsType<UnixAndMonoPlatformsEmbeddedSignatureVerifier>(verifier);
         }
 
         [PlatformFact(Platform.Linux)]
@@ -29,7 +29,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var verifier = EmbeddedSignatureVerifier.Create();
 
-            Assert.IsType<UnixPlatformsEmbeddedSignatureVerifier>(verifier);
+            Assert.IsType<UnixAndMonoPlatformsEmbeddedSignatureVerifier>(verifier);
         }
     }
 }
