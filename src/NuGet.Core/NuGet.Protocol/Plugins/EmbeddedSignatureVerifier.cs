@@ -27,7 +27,7 @@ namespace NuGet.Protocol.Plugins
         /// <returns>An embedded signature verifier.</returns>
         public static EmbeddedSignatureVerifier Create()
         {
-            if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMono)
+            if (RuntimeEnvironmentHelper.IsWindows)
             {
                 return new WindowsEmbeddedSignatureVerifier();
             }
@@ -37,6 +37,12 @@ namespace NuGet.Protocol.Plugins
                 return new UnixPlatformsEmbeddedSignatureVerifier();
             }
 
+#if IS_DESKTOP
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                return new MonoEmbeddedSignatureVerifier();
+            }
+#endif
             return new FallbackEmbeddedSignatureVerifier();
         }
     }
