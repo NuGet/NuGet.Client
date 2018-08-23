@@ -629,6 +629,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                         {"TargetFramework", "net45" }
                     })},
                     Logger = new TestLogger(),
+                    SymbolPackageFormat = "symbols.nupkg",
                     FrameworkAssemblyReferences = new MSBuildItem[]{}
                 };
             }

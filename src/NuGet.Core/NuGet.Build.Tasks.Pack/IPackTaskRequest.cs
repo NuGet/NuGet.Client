@@ -63,6 +63,7 @@ namespace NuGet.Build.Tasks.Pack
         string RestoreOutputPath { get; }
         bool Serviceable { get; }
         TItem[] SourceFiles { get; }
+        string SymbolPackageFormat { get; }
         string[] Tags { get; }
         string[] TargetFrameworks { get; }
         TItem[] TargetPathsToSymbols { get; }
