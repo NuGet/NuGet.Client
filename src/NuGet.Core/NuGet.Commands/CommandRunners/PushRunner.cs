@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Common;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Commands
 {
@@ -36,6 +37,22 @@ namespace NuGet.Commands
             }
 
             var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, source);
+            SymbolPackageUpdateResourceV3 symbolPackageUpdateResource = null;
+
+            // figure out from index.json if pushing snupkg is supported
+            var sourceUri = packageUpdateResource.SourceUri;
+            if (string.IsNullOrEmpty(symbolSource)
+                && !noSymbols
+                && !sourceUri.IsFile
+                && sourceUri.IsAbsoluteUri)
+            {
+                symbolPackageUpdateResource = await CommandRunnerUtility.GetSymbolPackageUpdateResource(sourceProvider, source);
+                if (symbolPackageUpdateResource != null)
+                {
+                    symbolSource = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
+                    symbolApiKey = apiKey;
+                }
+            }
 
             await packageUpdateResource.Push(
                 packagePath,
@@ -45,6 +62,7 @@ namespace NuGet.Commands
                 endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source, defaultApiKey: null, isSymbolApiKey: false),
                 symbolsEndpoint => symbolApiKey ?? CommandRunnerUtility.GetApiKey(settings, symbolsEndpoint, symbolSource, apiKey, isSymbolApiKey: true),
                 noServiceEndpoint,
+                symbolPackageUpdateResource,
                 logger);
         }
     }

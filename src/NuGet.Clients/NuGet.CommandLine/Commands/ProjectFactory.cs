@@ -68,13 +68,14 @@ namespace NuGet.CommandLine
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
         {
             return new ProjectFactory(packArgs.MsBuildDirectory.Value, path, packArgs.Properties)
-            {
+            {                
                 IsTool = packArgs.Tool,
                 LogLevel = packArgs.LogLevel,
                 Logger = packArgs.Logger,
                 MachineWideSettings = packArgs.MachineWideSettings,
                 Build = packArgs.Build,
-                IncludeReferencedProjects = packArgs.IncludeReferencedProjects 
+                IncludeReferencedProjects = packArgs.IncludeReferencedProjects,
+                SymbolPackageFormat = packArgs.SymbolPackageFormat
             };
         }
 
@@ -192,6 +193,8 @@ namespace NuGet.CommandLine
 
         public LogLevel LogLevel { get; set; }
 
+        public SymbolPackageFormat SymbolPackageFormat { get; set; }
+
         public ILogger Logger
         {
             get
@@ -302,7 +305,11 @@ namespace NuGet.CommandLine
             // Add sources if this is a symbol package
             if (IncludeSymbols)
             {
-                ApplyAction(p => p.AddFiles(builder, SourcesItemType, SourcesFolder));
+                if (SymbolPackageFormat == SymbolPackageFormat.SymbolsNupkg)
+                {
+                    ApplyAction(p => p.AddFiles(builder, SourcesItemType, SourcesFolder));
+                }
+                
             }
 
             ProcessDependencies(builder);
@@ -580,6 +587,7 @@ namespace NuGet.CommandLine
                     referencedProject.ProjectProperties = ProjectProperties;
                     referencedProject.TargetFramework = TargetFramework;
                     referencedProject.BuildProject();
+                    referencedProject.SymbolPackageFormat = SymbolPackageFormat;
                     referencedProject.RecursivelyApply(action, alreadyAppliedProjects);
                 }
             }
@@ -694,6 +702,7 @@ namespace NuGet.CommandLine
                 var projectFactory = new ProjectFactory(_msbuildDirectory, _msbuildAssembly, _frameworkAssembly, project);
                 projectFactory.Build = Build;
                 projectFactory.ProjectProperties = ProjectProperties;
+                projectFactory.SymbolPackageFormat = SymbolPackageFormat;
                 projectFactory.BuildProject();
                 var builder = new Packaging.PackageBuilder();
 
@@ -803,9 +812,18 @@ namespace NuGet.CommandLine
 
             if (IncludeSymbols)
             {
-                outputFileNames.Add($"{targetFileName}.pdb");
-                outputFileNames.Add($"{targetFileName}.dll.mdb");
-                outputFileNames.Add($"{targetFileName}.exe.mdb");
+                // if this is a snupkg package, we don't want any files other than symbol files.
+                if(SymbolPackageFormat == SymbolPackageFormat.Snupkg)
+                {
+                    outputFileNames.Clear();
+                    outputFileNames.Add($"{targetFileName}.pdb");
+                }
+                else
+                {
+                    outputFileNames.Add($"{targetFileName}.pdb");
+                    outputFileNames.Add($"{targetFileName}.dll.mdb");
+                    outputFileNames.Add($"{targetFileName}.exe.mdb");
+                }
             }
 
             foreach (var file in GetFiles(projectOutputDirectory, outputFileNames, SearchOption.AllDirectories))
@@ -1235,6 +1253,13 @@ namespace NuGet.CommandLine
             {
                 string fullPath = item.GetMetadataValue("FullPath");
                 if (_excludeFiles.Contains(Path.GetFileName(fullPath)))
+                {
+                    continue;
+                }
+
+                if (IncludeSymbols &&
+                    SymbolPackageFormat == SymbolPackageFormat.Snupkg &&
+                    !string.Equals(Path.GetExtension(fullPath), ".pdb", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
