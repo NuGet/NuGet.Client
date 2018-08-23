@@ -231,6 +231,8 @@ namespace NuGet.Protocol.Core.Types
 
                             var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
 
+                            Logger.LogDebug($"Finished one time initialization {plugin.FilePath}");
+
                             // We still make the GetOperationClaims call even if we have the operation claims cached. This is a way to self-update the cache.
                             var operationClaims = await _pluginOperationClaims.GetOrAdd(
                                    requestKey,
@@ -272,6 +274,7 @@ namespace NuGet.Protocol.Core.Types
                                 path => new Lazy<IPluginMulticlientUtilities>(
                                     () => new PluginMulticlientUtilities()));
 
+            Logger.LogDebug("About to do 1 time initialization of the plugin");
             await utilities.Value.DoOncePerPluginLifetimeAsync(
                 MessageMethod.MonitorNuGetProcessExit.ToString(),
                 () => plugin.Connection.SendRequestAndReceiveResponseAsync<MonitorNuGetProcessExitRequest, MonitorNuGetProcessExitResponse>(
@@ -280,10 +283,16 @@ namespace NuGet.Protocol.Core.Types
                     cancellationToken),
                 cancellationToken);
 
+
+            Logger.LogDebug("Finished sending monitor process exit");
+
             await utilities.Value.DoOncePerPluginLifetimeAsync(
                 MessageMethod.Initialize.ToString(),
                 () => InitializePluginAsync(plugin, _connectionOptions.RequestTimeout, cancellationToken),
                 cancellationToken);
+
+            Logger.LogDebug("Finished sending initialize");
+
             return utilities;
         }
 
@@ -362,17 +371,43 @@ namespace NuGet.Protocol.Core.Types
             TimeSpan requestTimeout,
             CancellationToken cancellationToken)
         {
+            Logger.LogDebug("InitializePluginAsync");
+
             var clientVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
-            var culture = CultureInfo.CurrentCulture.Name;
-            var payload = new InitializeRequest(
+            var culture = string.IsNullOrEmpty(CultureInfo.CurrentCulture.Name) ? "Unknown" : CultureInfo.CurrentCulture.Name;
+
+            Logger.LogDebug($"clientVersion {clientVersion} \nculture {culture} \ntimespan {requestTimeout} ");
+            Logger.LogDebug($"current culture info{CultureInfo.CurrentCulture}");
+            InitializeRequest payload = null;
+
+            try
+            {
+                payload = new InitializeRequest(
                 clientVersion,
                 culture,
                 requestTimeout);
+            }
+            catch (Exception e)
+            {
+                Logger.LogDebug($"Damn it. {e.ToString()}");
+            }
+            Logger.LogDebug($"About to send the request.");
+            Logger.LogDebug($"request {payload.ToString()}");
 
-            var response = await plugin.Connection.SendRequestAndReceiveResponseAsync<InitializeRequest, InitializeResponse>(
-                MessageMethod.Initialize,
-                payload,
-                cancellationToken);
+            InitializeResponse response = null;
+            try
+            {
+                    response = await plugin.Connection.SendRequestAndReceiveResponseAsync<InitializeRequest, InitializeResponse>(
+                    MessageMethod.Initialize,
+                    payload,
+                    cancellationToken);
+            }
+            catch (Exception e)
+            {
+                Logger.LogDebug($"Shit there's an exception {e.ToString()}");
+            }
+
+            Logger.LogDebug($"Initialize - send and receive response from initialize request {response.ToString()}");
 
             if (response != null && response.ResponseCode != MessageResponseCode.Success)
             {
