@@ -1021,8 +1021,11 @@ namespace NuGet.Commands
                 }
             }
 
-            var outputFile = GetOutputFileName(builder.Id, versionToUse, isNupkg: isNupkg,
-                symbols: symbols, symbolPackageFormat: packArgs.SymbolPackageFormat,
+            var outputFile = GetOutputFileName(builder.Id,
+                versionToUse,
+                isNupkg: isNupkg,
+                symbols: symbols,
+                symbolPackageFormat: packArgs.SymbolPackageFormat,
                 excludeVersion: packArgs.OutputFileNamesWithoutVersion);
 
             var finalOutputDirectory = packArgs.OutputDirectory ?? packArgs.CurrentDirectory;

@@ -94,15 +94,9 @@ namespace NuGet.Commands
         public static async Task<SymbolPackageUpdateResourceV3> GetSymbolPackageUpdateResource(IPackageSourceProvider sourceProvider, string source)
         {
             // Use a loaded PackageSource if possible since it contains credential info
-            PackageSource packageSource = null;
-            foreach (var loadedPackageSource in sourceProvider.LoadPackageSources())
-            {
-                if (loadedPackageSource.IsEnabled && source == loadedPackageSource.Source)
-                {
-                    packageSource = loadedPackageSource;
-                    break;
-                }
-            }
+            var packageSource = sourceProvider.LoadPackageSources()
+                .Where(e => e.IsEnabled && string.Equals(source, e.Source, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
 
             if (packageSource == null)
             {

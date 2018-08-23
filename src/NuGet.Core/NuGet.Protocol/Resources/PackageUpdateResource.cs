@@ -107,8 +107,8 @@ namespace NuGet.Protocol.Core.Types
                 getApiKey,
                 getSymbolApiKey,
                 noServiceEndpoint,
-                null,
-                log);
+                symbolPackageUpdateResource: null,
+                log: log);
         }
 
         public async Task Delete(string packageId,

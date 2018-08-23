@@ -188,7 +188,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The provided SymbolPackageFormat value {0} is invalid. Possible allowed values are either &apos;snupkg&apos; or &apos;symbols.nupkg&apos;..
+        ///   Looks up a localized string similar to The provided SymbolPackageFormat value {0} is invalid. Allowed values : &apos;snupkg&apos;, &apos;symbols.nupkg&apos;..
         /// </summary>
         internal static string Error_InvalidSymbolPackageFormat {
             get {

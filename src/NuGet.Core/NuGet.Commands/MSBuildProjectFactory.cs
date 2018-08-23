@@ -90,10 +90,8 @@ namespace NuGet.Commands
             {
                 AddSourceFiles();
             }
-            
-            
 
-            Manifest manifest = new Manifest(new ManifestMetadata(builder), Files);
+            var manifest = new Manifest(new ManifestMetadata(builder), Files);
             var manifestPath = PackCommandRunner.GetOutputPath(
                 builder,
                 PackArgs,

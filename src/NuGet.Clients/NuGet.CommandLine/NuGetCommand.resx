@@ -5481,6 +5481,7 @@ This option should be used when specifying the certificate via -CertificateSubje
     <comment>Please don't localize "basic,negotiate"</comment>
   </data>
   <data name="PackageCommandSymbolPackageFormat" xml:space="preserve">
-    <value>If creating a symbols package, allows to choose between the 'snupkg' and 'symbols.nupkg' format.</value>
+    <value>When creating a symbols package, allows to choose between the 'snupkg' and 'symbols.nupkg' format.</value>
+    <comment>Do not localize snupkg and symbols.nupkg</comment>
   </data>
 </root>

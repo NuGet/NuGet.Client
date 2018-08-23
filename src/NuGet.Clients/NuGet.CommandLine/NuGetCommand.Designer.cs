@@ -7832,7 +7832,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If creating a symbols package, allows to choose between the &apos;snupkg&apos; and &apos;symbols.nupkg&apos; format..
+        ///   Looks up a localized string similar to When creating a symbols package, allows to choose between the &apos;snupkg&apos; and &apos;symbols.nupkg&apos; format..
         /// </summary>
         internal static string PackageCommandSymbolPackageFormat {
             get {

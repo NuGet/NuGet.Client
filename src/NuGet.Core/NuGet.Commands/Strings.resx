@@ -701,6 +701,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>{0}: Plugins cache path</comment>
   </data>
   <data name="Error_InvalidSymbolPackageFormat" xml:space="preserve">
-    <value>The provided SymbolPackageFormat value {0} is invalid. Possible allowed values are either 'snupkg' or 'symbols.nupkg'.</value>
+    <value>The provided SymbolPackageFormat value {0} is invalid. Allowed values : 'snupkg', 'symbols.nupkg'.</value>
+    <comment>Do not localize snupkg and symbols.nupkg</comment>
   </data>
 </root>
