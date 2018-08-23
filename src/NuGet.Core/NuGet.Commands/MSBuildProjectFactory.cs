@@ -122,7 +122,7 @@ namespace NuGet.Commands
             {
                 AddOutputLibFiles(PackTargetArgs.TargetPathsToSymbols, IncludeSymbols ? PackTargetArgs.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder : PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder);
 
-                AddOutputLibFiles(PackTargetArgs.TargetPathsToAssemblies, PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder);
+                AddOutputLibFiles(PackTargetArgs.TargetPathsToAssemblies, IncludeSymbols ? PackTargetArgs.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder : PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder);
             }
         }
 
