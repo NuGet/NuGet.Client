@@ -19,7 +19,7 @@
 
     function OutFileWithCreateFolders([string]$path, [string]$content){
         $folder = [System.IO.Path]::GetDirectoryName($path)
-        If(!(test-path $folder))
+        If(!(Test-Path $folder))
         {
             & New-Item -ItemType Directory -Force -Path $folder > $null
         }

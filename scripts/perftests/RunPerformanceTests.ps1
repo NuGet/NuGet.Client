@@ -14,7 +14,7 @@ Param(
     function RunRestore([string]$solutionFilePath, [string]$nugetClient, [string]$resultsFile, [string]$logsPath, [string]$runName,
             [switch]$cleanGlobalPackagesFolder, [switch]$cleanHttpCache, [switch]$cleanPluginsCache, [switch]$killMsBuildAndDotnetExeProcesses, [switch]$force)
     {
-        Log "Running $nugetClient restore $nugetClient with cleanGlobalPackagesFolder:$cleanGlobalPackagesFolder cleanHttpCache:$cleanHttpCache cleanPluginsCache:$cleanPluginsCache killMsBuildAndDotnetExeProcesses:$killMsBuildAndDotnetExeProcesses force:$force"
+        Log "Running $nugetClient restore with cleanGlobalPackagesFolder:$cleanGlobalPackagesFolder cleanHttpCache:$cleanHttpCache cleanPluginsCache:$cleanPluginsCache killMsBuildAndDotnetExeProcesses:$killMsBuildAndDotnetExeProcesses force:$force"
 
         # Do the required cleanup if necesarry
         if($cleanGlobalPackagesFolder -Or $cleanHttpCache -Or $cleanPluginsCache)
@@ -77,10 +77,10 @@ Param(
         $globalPackagesFolder = $Env:NUGET_PACKAGES
         if(Test-Path $globalPackagesFolder)
         {
-            $gpfNupkgFiles = GetAllPackagesInGlobalPackagesFolder $globalPackagesFolder
-            $gpfNupkgsSize = (($gpfNupkgFiles | Measure-Object -property length -sum).Sum/1000000)
-            $gpfFiles = GetFiles $globalPackagesFolder
-            $gpfFilesSize = (($gpfFiles | Measure-Object -property length -sum).Sum/1000000)
+            $globalPackagesFolderNupkgFiles = GetAllPackagesInGlobalPackagesFolder $globalPackagesFolder
+            $globalPackagesFolderNupkgsSize = (($globalPackagesFolderNupkgFiles | Measure-Object -property length -sum).Sum/1000000)
+            $globalPackagesFolderFiles = GetFiles $globalPackagesFolder
+            $globalPackagesFolderFilesSize = (($globalPackagesFolderFiles | Measure-Object -property length -sum).Sum/1000000)
         }
         else 
         {
@@ -118,7 +118,7 @@ Param(
             OutFileWithCreateFolders $resultsFile "name,totalTime,force,globalPackagesFolderNupkgCount,globalPackagesFolderNupkgSize,globalPackagesFolderFilesCount,globalPackagesFolderFilesSize,cleanGlobalPackagesFolder,httpCacheFileCount,httpCacheFilesSize,cleanHttpCache,pluginsCacheFileCount,pluginsCacheFilesSize,cleanPluginsCache,killMsBuildAndDotnetExeProcesses,processorName,cores,logicalCores"
         }
 
-        Add-Content -Path $resultsFile -Value "$runName,$($totalTime.ToString()),$force,$($gpfNupkgFiles.Count),$gpfNupkgsSize,$($gpfFiles.Count),$gpfFilesSize,$cleanGlobalPackagesFolder,$($httpCacheFiles.Count),$httpCacheFilesSize,$cleanHttpCache,$($pluginsCacheFiles.Count),$pluginsCacheFilesSize,$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$processorName,$cores,$logicalCores"
+        Add-Content -Path $resultsFile -Value "$runName,$($totalTime.ToString()),$force,$($globalPackagesFolderNupkgFiles.Count),$globalPackagesFolderNupkgsSize,$($globalPackagesFolderFiles.Count),$globalPackagesFolderFilesSize,$cleanGlobalPackagesFolder,$($httpCacheFiles.Count),$httpCacheFilesSize,$cleanHttpCache,$($pluginsCacheFiles.Count),$pluginsCacheFilesSize,$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$processorName,$cores,$logicalCores"
 
         Log "Finished measuring."
     }
