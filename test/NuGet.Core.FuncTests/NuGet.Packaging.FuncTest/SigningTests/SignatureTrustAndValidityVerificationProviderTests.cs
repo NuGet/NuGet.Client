@@ -259,7 +259,8 @@ namespace NuGet.Packaging.FuncTest
                 allowNoRepositoryCertificateList: true,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
-                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary);
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: RevocationMode.Online);
 
             using (var directory = TestDirectory.Create())
             using (var certificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -311,7 +312,8 @@ namespace NuGet.Packaging.FuncTest
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
                 allowNoClientCertificateList: true,
-                allowNoRepositoryCertificateList: true);
+                allowNoRepositoryCertificateList: true,
+                revocationMode: RevocationMode.Online);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -353,7 +355,8 @@ namespace NuGet.Packaging.FuncTest
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
                 allowNoClientCertificateList: true,
-                allowNoRepositoryCertificateList: true);
+                allowNoRepositoryCertificateList: true,
+                revocationMode: RevocationMode.Online);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -400,7 +403,8 @@ namespace NuGet.Packaging.FuncTest
                 allowNoRepositoryCertificateList: true,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
-                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists);
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
+                revocationMode: RevocationMode.Online);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -447,7 +451,8 @@ namespace NuGet.Packaging.FuncTest
                 allowNoRepositoryCertificateList: true,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
-                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary);
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: RevocationMode.Online);
 
             using (var dir = TestDirectory.Create())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
@@ -494,7 +499,8 @@ namespace NuGet.Packaging.FuncTest
                 allowNoRepositoryCertificateList: true,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
-                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary);
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: RevocationMode.Online);
 
             using (var dir = TestDirectory.Create())
             using (var trustedCertificate = _testFixture.TrustedTestCertificateWillExpireIn10Seconds)
@@ -542,7 +548,8 @@ namespace NuGet.Packaging.FuncTest
                 allowNoRepositoryCertificateList: true,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
-                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary);
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: RevocationMode.Online);
             var verifier = new PackageSignatureVerifier(_trustProviders);
 
             using (var testDirectory = TestDirectory.Create())
@@ -593,7 +600,8 @@ namespace NuGet.Packaging.FuncTest
                 allowNoRepositoryCertificateList: true,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
-                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists);
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
+                revocationMode: RevocationMode.Online);
 
             using (var dir = TestDirectory.Create())
             using (var trustedCertificate = _testFixture.TrustedTestCertificateWillExpireIn10Seconds)
@@ -678,7 +686,8 @@ namespace NuGet.Packaging.FuncTest
                 allowNoRepositoryCertificateList: true,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
-                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary);
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: RevocationMode.Online);
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
             var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
 
@@ -826,8 +835,8 @@ namespace NuGet.Packaging.FuncTest
 
             Assert.Equal(2, matchingIssues.Count);
 
-            AssertOfflineRevocation(matchingIssues, LogLevel.Warning);
-            AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning);
+            AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
+            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.NU3018, LogLevel.Warning);
         }
 
         [CIOnlyFact]
@@ -844,8 +853,8 @@ namespace NuGet.Packaging.FuncTest
 
             Assert.Equal(2, matchingIssues.Count);
 
-            AssertOfflineRevocation(matchingIssues, LogLevel.Warning);
-            AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning);
+            AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
+            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.NU3018, LogLevel.Warning);
         }
 
         [CIOnlyFact]
@@ -865,7 +874,8 @@ namespace NuGet.Packaging.FuncTest
                 allowNoRepositoryCertificateList: true,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
-                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary);
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: RevocationMode.Online);
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
@@ -877,7 +887,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WarnsAsync()
+        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WithOnlineRevocationMode_WarnsAsync()
         {
             // Arrange
             var setting = new SignedPackageVerifierSettings(
@@ -893,7 +903,8 @@ namespace NuGet.Packaging.FuncTest
                 allowNoRepositoryCertificateList: true,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
-                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary);
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: RevocationMode.Online);
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
@@ -903,8 +914,38 @@ namespace NuGet.Packaging.FuncTest
 
             Assert.Equal(2, matchingIssues.Count);
 
-            AssertOfflineRevocation(matchingIssues, LogLevel.Warning);
-            AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning);
+            AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
+            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.NU3018, LogLevel.Warning);
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WithOfflineRevocationMode_WarnsAsync()
+        {
+            // Arrange
+            var setting = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowIllegal: false,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: false,
+                allowMultipleTimestamps: false,
+                allowNoTimestamp: false,
+                allowUnknownRevocation: true,
+                reportUnknownRevocation: true,
+                allowNoClientCertificateList: true,
+                allowNoRepositoryCertificateList: true,
+                verificationTarget: VerificationTarget.All,
+                signaturePlacement: SignaturePlacement.Any,
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: RevocationMode.Offline);
+
+            // Act & Assert
+            var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
+                SignatureVerificationStatus.Valid,
+                LogLevel.Information,
+                setting);
+
+            AssertOfflineRevocationOfflineMode(matchingIssues);
+            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.Undefined, LogLevel.Information);
         }
 
         [CIOnlyFact]
@@ -969,7 +1010,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_WithRepositorySignedPackage_ReturnsUnknown()
+            public async Task GetTrustResultAsync_WithRepositorySignedPackage_ReturnsUnknownAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
@@ -984,7 +1025,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Author,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
 
                 using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(_fixture.TrustedTestCertificate.Source.Cert))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
@@ -998,7 +1040,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_WithValidSignature_ReturnsValid()
+            public async Task GetTrustResultAsync_WithValidSignature_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
@@ -1013,7 +1055,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Author,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateAuthorSignedPackageAsync(
@@ -1032,7 +1075,7 @@ namespace NuGet.Packaging.FuncTest
             [CIOnlyTheory]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
-            public async Task GetTrustResultAsync_WithValidSignatureButNoTimestamp_ReturnsStatus(
+            public async Task GetTrustResultAsync_WithValidSignatureButNoTimestamp_ReturnsStatusAsync(
                 bool allowNoTimestamp,
                 SignatureVerificationStatus expectedStatus)
             {
@@ -1049,7 +1092,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Author,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
 
                 using (var test = await Test.CreateAuthorSignedPackageAsync(_fixture.TrustedTestCertificate.Source.Cert))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
@@ -1065,7 +1109,7 @@ namespace NuGet.Packaging.FuncTest
             [CIOnlyTheory]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
-            public async Task GetTrustResultAsync_WithUntrustedSignature_ReturnsStatus(
+            public async Task GetTrustResultAsync_WithUntrustedSignature_ReturnsStatusAsync(
                 bool allowUntrusted,
                 SignatureVerificationStatus expectedStatus)
             {
@@ -1082,7 +1126,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Author,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateAuthorSignedPackageAsync(
@@ -1101,7 +1146,7 @@ namespace NuGet.Packaging.FuncTest
             [CIOnlyTheory]
             [InlineData(true)]
             [InlineData(false)]
-            public async Task GetTrustResultAsync_WithRevokedPrimaryCertificate_ReturnsSuspect(bool allowEverything)
+            public async Task GetTrustResultAsync_WithRevokedPrimaryCertificate_ReturnsSuspectAsync(bool allowEverything)
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: allowEverything,
@@ -1116,7 +1161,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Author,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
                 var testServer = await _fixture.GetSigningTestServerAsync();
                 var certificateAuthority = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
                 var issueCertificateOptions = IssueCertificateOptions.CreateDefaultForEndCertificate();
@@ -1151,7 +1197,7 @@ namespace NuGet.Packaging.FuncTest
             [CIOnlyTheory]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
-            public async Task GetTrustResultAsync_WithRevokedTimestampCertificate_ReturnsStatus(
+            public async Task GetTrustResultAsync_WithRevokedTimestampCertificate_ReturnsStatusAsync(
                 bool allowIgnoreTimestamp,
                 SignatureVerificationStatus expectedStatus)
             {
@@ -1168,7 +1214,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Author,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
                 var testServer = await _fixture.GetSigningTestServerAsync();
                 var certificateAuthority = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
                 var timestampService = TimestampService.Create(certificateAuthority);
@@ -1195,7 +1242,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_WithTamperedRepositoryPrimarySignedPackage_ReturnsValid()
+            public async Task GetTrustResultAsync_WithTamperedRepositoryPrimarySignedPackage_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
@@ -1210,7 +1257,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Author,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateAuthorSignedPackageAsync(
@@ -1254,7 +1302,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_WithAuthorSignedPackage_ReturnsUnknown()
+            public async Task GetTrustResultAsync_WithAuthorSignedPackage_ReturnsUnknownAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
@@ -1269,7 +1317,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
 
                 using (var test = await Test.CreateAuthorSignedPackageAsync(_fixture.TrustedTestCertificate.Source.Cert))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
@@ -1283,7 +1332,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_WithValidSignature_ReturnsValid()
+            public async Task GetTrustResultAsync_WithValidSignature_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
@@ -1298,7 +1347,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
@@ -1317,7 +1367,7 @@ namespace NuGet.Packaging.FuncTest
             [CIOnlyTheory]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
-            public async Task GetTrustResultAsync_WithValidSignatureButNoTimestamp_ReturnsStatus(
+            public async Task GetTrustResultAsync_WithValidSignatureButNoTimestamp_ReturnsStatusAsync(
                 bool allowNoTimestamp,
                 SignatureVerificationStatus expectedStatus)
             {
@@ -1334,7 +1384,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
 
                 using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
                     _fixture.TrustedRepositoryCertificate.Source.Cert))
@@ -1351,7 +1402,7 @@ namespace NuGet.Packaging.FuncTest
             [CIOnlyTheory]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
-            public async Task GetTrustResultAsync_WithUntrustedSignature_ReturnsStatus(
+            public async Task GetTrustResultAsync_WithUntrustedSignature_ReturnsStatusAsync(
                 bool allowUntrusted,
                 SignatureVerificationStatus expectedStatus)
             {
@@ -1368,7 +1419,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
@@ -1387,7 +1439,7 @@ namespace NuGet.Packaging.FuncTest
             [CIOnlyTheory]
             [InlineData(true)]
             [InlineData(false)]
-            public async Task GetTrustResultAsync_WithRevokedPrimaryCertificate_ReturnsSuspect(bool allowEverything)
+            public async Task GetTrustResultAsync_WithRevokedPrimaryCertificate_ReturnsSuspectAsync(bool allowEverything)
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: allowEverything,
@@ -1402,7 +1454,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
                 var testServer = await _fixture.GetSigningTestServerAsync();
                 var certificateAuthority = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
                 var issueCertificateOptions = IssueCertificateOptions.CreateDefaultForEndCertificate();
@@ -1437,7 +1490,7 @@ namespace NuGet.Packaging.FuncTest
             [CIOnlyTheory]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
-            public async Task GetTrustResultAsync_WithRevokedTimestampCertificate_ReturnsStatus(
+            public async Task GetTrustResultAsync_WithRevokedTimestampCertificate_ReturnsStatusAsync(
                 bool allowIgnoreTimestamp,
                 SignatureVerificationStatus expectedStatus)
             {
@@ -1454,7 +1507,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
                 var testServer = await _fixture.GetSigningTestServerAsync();
                 var certificateAuthority = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
                 var timestampService = TimestampService.Create(certificateAuthority);
@@ -1481,7 +1535,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_WithTamperedRepositoryPrimarySignedPackage_ReturnsValid()
+            public async Task GetTrustResultAsync_WithTamperedRepositoryPrimarySignedPackage_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
@@ -1496,7 +1550,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.PrimarySignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                    revocationMode: RevocationMode.Online);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
@@ -1522,7 +1577,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_WithAlwaysVerifyCountersignatureBehavior_ReturnsDisallowed()
+            public async Task GetTrustResultAsync_WithAlwaysVerifyCountersignatureBehavior_ReturnsDisallowedAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
@@ -1537,7 +1592,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.Any,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Always);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Always,
+                    revocationMode: RevocationMode.Online);
                 var testServer = await _fixture.GetSigningTestServerAsync();
                 var certificateAuthority = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
@@ -1583,7 +1639,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_WithAuthorSignedPackage_ReturnsUnknown()
+            public async Task GetTrustResultAsync_WithAuthorSignedPackage_ReturnsUnknownAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
@@ -1598,7 +1654,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.Countersignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
+                    revocationMode: RevocationMode.Online);
 
                 using (var test = await Test.CreateAuthorSignedPackageAsync(_fixture.TrustedTestCertificate.Source.Cert))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
@@ -1612,7 +1669,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_WithValidCountersignature_ReturnsValid()
+            public async Task GetTrustResultAsync_WithValidCountersignature_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
@@ -1627,7 +1684,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.Countersignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
+                    revocationMode: RevocationMode.Online);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
@@ -1646,7 +1704,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_WithValidCountersignatureAndUntrustedPrimarySignature_ReturnsValid()
+            public async Task GetTrustResultAsync_WithValidCountersignatureAndUntrustedPrimarySignature_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
@@ -1661,7 +1719,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.Countersignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
+                    revocationMode: RevocationMode.Online);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
@@ -1682,7 +1741,7 @@ namespace NuGet.Packaging.FuncTest
             [CIOnlyTheory]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
-            public async Task GetTrustResultAsync_WithValidCountersignatureButNoTimestamp_ReturnsStatus(
+            public async Task GetTrustResultAsync_WithValidCountersignatureButNoTimestamp_ReturnsStatusAsync(
                 bool allowNoTimestamp,
                 SignatureVerificationStatus expectedStatus)
             {
@@ -1699,7 +1758,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.Countersignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
+                    revocationMode: RevocationMode.Online);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
@@ -1719,7 +1779,7 @@ namespace NuGet.Packaging.FuncTest
             [CIOnlyTheory]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
-            public async Task VerifyAsync_WithUntrustedCountersignature_ReturnsStatus(
+            public async Task VerifyAsync_WithUntrustedCountersignature_ReturnsStatusAsync(
                 bool allowUntrusted,
                 SignatureVerificationStatus expectedStatus)
             {
@@ -1736,7 +1796,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.Countersignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
+                    revocationMode: RevocationMode.Online);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
@@ -1757,7 +1818,7 @@ namespace NuGet.Packaging.FuncTest
             [CIOnlyTheory]
             [InlineData(true)]
             [InlineData(false)]
-            public async Task VerifyAsync_WithRevokedCountersignatureCertificate_ReturnsSuspect(bool allowEverything)
+            public async Task VerifyAsync_WithRevokedCountersignatureCertificate_ReturnsSuspectAsync(bool allowEverything)
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: allowEverything,
@@ -1772,7 +1833,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.Countersignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
+                    revocationMode: RevocationMode.Online);
                 var testServer = await _fixture.GetSigningTestServerAsync();
                 var certificateAuthority = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
                 var issueCertificateOptions = IssueCertificateOptions.CreateDefaultForEndCertificate();
@@ -1809,7 +1871,7 @@ namespace NuGet.Packaging.FuncTest
             [CIOnlyTheory]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
-            public async Task VerifyAsync_WithRevokedTimestampCertificate_ReturnsStatus(
+            public async Task VerifyAsync_WithRevokedTimestampCertificate_ReturnsStatusAsync(
                 bool allowIgnoreTimestamp,
                 SignatureVerificationStatus expectedStatus)
             {
@@ -1826,7 +1888,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.Countersignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
+                    revocationMode: RevocationMode.Online);
                 var testServer = await _fixture.GetSigningTestServerAsync();
                 var certificateAuthority = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
@@ -1856,7 +1919,7 @@ namespace NuGet.Packaging.FuncTest
             }
 
             [CIOnlyFact]
-            public async Task VerifyAsync_WithTamperedRepositoryCountersignedPackage_ReturnsValid()
+            public async Task VerifyAsync_WithTamperedRepositoryCountersignedPackage_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
@@ -1871,7 +1934,8 @@ namespace NuGet.Packaging.FuncTest
                     allowNoClientCertificateList: true,
                     verificationTarget: VerificationTarget.Repository,
                     signaturePlacement: SignaturePlacement.Countersignature,
-                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists);
+                    repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
+                    revocationMode: RevocationMode.Online);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
                 using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
@@ -2016,18 +2080,26 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        private static void AssertOfflineRevocation(IEnumerable<SignatureLog> issues, LogLevel logLevel)
+        private static void AssertOfflineRevocationOnlineMode(IEnumerable<SignatureLog> issues, LogLevel logLevel)
         {
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message.Contains("The revocation function was unable to check revocation because the revocation server was offline."));
+                issue.Message.Contains("The revocation function was unable to check revocation because the revocation server could not be reached. For more information, visit https://aka.ms/certificateRevocationMode."));
         }
 
-        private static void AssertRevocationStatusUnknown(IEnumerable<SignatureLog> issues, LogLevel logLevel)
+        private static void AssertOfflineRevocationOfflineMode(IEnumerable<SignatureLog> issues)
         {
             Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Code == NuGetLogCode.Undefined &&
+                issue.Level == LogLevel.Information &&
+                issue.Message.Contains("The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and certificateRevocationMode has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode."));
+        }
+
+        private static void AssertRevocationStatusUnknown(IEnumerable<SignatureLog> issues, NuGetLogCode code, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == code &&
                 issue.Level == logLevel &&
                 issue.Message.Contains("The revocation function was unable to check revocation for the certificate."));
         }

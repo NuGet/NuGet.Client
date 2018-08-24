@@ -31,7 +31,7 @@ namespace NuGet.Packaging.FuncTest
 
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
-        private IList<ISignatureVerificationProvider> _trustProviders;
+        private readonly IList<ISignatureVerificationProvider> _trustProviders;
 
         private readonly SignedPackageVerifierSettings _settings;
 
@@ -57,7 +57,8 @@ namespace NuGet.Packaging.FuncTest
                 allowNoRepositoryCertificateList: true,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
-                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary);
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: RevocationMode.Online);
         }
 
         [CIOnlyFact]

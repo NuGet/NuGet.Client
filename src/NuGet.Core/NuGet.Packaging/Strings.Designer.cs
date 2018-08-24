@@ -1403,6 +1403,24 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and certificateRevocationMode has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode..
+        /// </summary>
+        internal static string VerifyCertTrustOfflineWhileRevocationModeOffline {
+            get {
+                return ResourceManager.GetString("VerifyCertTrustOfflineWhileRevocationModeOffline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The revocation function was unable to check revocation because the revocation server could not be reached. For more information, visit https://aka.ms/certificateRevocationMode..
+        /// </summary>
+        internal static string VerifyCertTrustOfflineWhileRevocationModeOnline {
+            get {
+                return ResourceManager.GetString("VerifyCertTrustOfflineWhileRevocationModeOnline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The {0} found a chain building issue: {1}.
         /// </summary>
         internal static string VerifyChainBuildingIssue {
