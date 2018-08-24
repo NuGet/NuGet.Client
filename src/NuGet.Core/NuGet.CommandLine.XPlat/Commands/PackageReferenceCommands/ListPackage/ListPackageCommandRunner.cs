@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -75,9 +76,8 @@ namespace NuGet.CommandLine.XPlat
                         assetsFile.Targets != null &&
                         assetsFile.Targets.Count != 0)
                     {
-
                         //Get all the packages that are referenced in a project
-                        var packages = msBuild.GetResolvedVersions(project, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
+                        var packages = msBuild.GetResolvedVersions(project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
 
                         // If packages equals null, it means something wrong happened
                         // with reading the packages and it was handled and message printed
@@ -133,18 +133,38 @@ namespace NuGet.CommandLine.XPlat
             IEnumerable<FrameworkPackages> packages, ListPackageArgs listPackageArgs)
         {
             var providers = Repository.Provider.GetCoreV3();
-            var packagesTasks = new List<Task>();
-            var uniquePackages = new HashSet<InstalledPackageReference>(new PackageReferenceComparerByName());
 
-            AddPackagesToUniqueSet(packages, uniquePackages);
+            //Handling concurrency and throttling variables
+            var maxTasks = Environment.ProcessorCount;
+            var contactSourcesRunningTasks = new List<Task>();
+            var latestVersionsRequests = new List<Task>();
 
-            foreach (var package in uniquePackages)
+            Debugger.Launch();
+            //Unique Dictionary for packages and list of latest versions to handle different sources
+            var uniquePackagesVersions = new Dictionary<InstalledPackageReference, IList<NuGetVersion>>(new PackageReferenceComparerByName());
+            AddPackagesToUniqueDict(packages, uniquePackagesVersions);
+
+            //Prepare requests for each of the packages
+            foreach (var package in uniquePackagesVersions)
             {
-                packagesTasks.Add(UpdatePackageLatestVersionAsync(package, listPackageArgs, providers));
+                PrepareLatestVersionsRequests(package.Key, listPackageArgs, providers, latestVersionsRequests, uniquePackagesVersions);
             }
-            await Task.WhenAll(packagesTasks);
 
-            GetVersionsFromUniqueSet(packages, uniquePackages);
+            //Make the calls to the sources
+            foreach (var latestVersionTask in latestVersionsRequests)
+            {
+                contactSourcesRunningTasks.Add(latestVersionTask);
+                //Throttle if needed
+                if (maxTasks <= contactSourcesRunningTasks.Count())
+                {
+                    var finishedTask = await Task.WhenAny(contactSourcesRunningTasks);
+                    contactSourcesRunningTasks.Remove(finishedTask);
+                }
+            }
+            await Task.WhenAll(contactSourcesRunningTasks);
+
+            //Save latest versions within the InstalledPackageReference
+            GetVersionsFromUniqueDict(packages, uniquePackagesVersions);
         }
 
         /// <summary>
@@ -153,24 +173,25 @@ namespace NuGet.CommandLine.XPlat
         /// times
         /// </summary>
         /// <param name="packages"> Packages found in the project </param>
-        /// <param name="uniquePackages"> An empty set to be filled with packages </param>
-        private void AddPackagesToUniqueSet(IEnumerable<FrameworkPackages> packages, HashSet<InstalledPackageReference> uniquePackages)
+        /// <param name="uniquePackagesVersions"> An empty dictionary to be filled with packages </param>
+        private void AddPackagesToUniqueDict(IEnumerable<FrameworkPackages> packages,
+            Dictionary<InstalledPackageReference, IList<NuGetVersion>> uniquePackagesVersions)
         {
             foreach (var frameworkPackages in packages)
             {
                 foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
                 {
-                    if (!uniquePackages.Contains(topLevelPackage))
+                    if (!uniquePackagesVersions.ContainsKey(topLevelPackage))
                     {
-                        uniquePackages.Add(topLevelPackage);
+                        uniquePackagesVersions.Add(topLevelPackage, new List<NuGetVersion>());
                     }
                 }
 
                 foreach (var transitivePackage in frameworkPackages.TransitivePacakges)
                 {
-                    if (!uniquePackages.Contains(transitivePackage))
+                    if (!uniquePackagesVersions.ContainsKey(transitivePackage))
                     {
-                        uniquePackages.Add(transitivePackage);
+                        uniquePackagesVersions.Add(transitivePackage, new List<NuGetVersion>());
                     }
                 }
             }
@@ -180,22 +201,24 @@ namespace NuGet.CommandLine.XPlat
         /// Get last versions for every package from the unqiue packages
         /// </summary>
         /// <param name="packages"> Project packages to get filled with latest versions </param>
-        /// <param name="uniquePackages"> Unique packages that have latest versions </param>
-        private void GetVersionsFromUniqueSet(IEnumerable<FrameworkPackages> packages, HashSet<InstalledPackageReference> uniquePackages)
+        /// <param name="uniquePackagesVersions"> Unique packages that are mapped to latest versions
+        /// from different sources </param>
+        private void GetVersionsFromUniqueDict(IEnumerable<FrameworkPackages> packages,
+            Dictionary<InstalledPackageReference, IList<NuGetVersion>> uniquePackagesVersions)
         {
             foreach (var frameworkPackages in packages)
             {
                 foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
                 {
-                    var matchingPackage = uniquePackages.Where(p => p.Name.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).Single();
-                    topLevelPackage.LatestVersion = matchingPackage.LatestVersion;
+                    var matchingPackage = uniquePackagesVersions.Where(p => p.Key.Name.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).Single();
+                    topLevelPackage.LatestVersion = matchingPackage.Value.Max();
                     topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedVersion, topLevelPackage.LatestVersion);
                 }
 
                 foreach (var transitivePackage in frameworkPackages.TransitivePacakges)
                 {
-                    var matchingPackage = uniquePackages.Where(p => p.Name.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).Single();
-                    transitivePackage.LatestVersion = matchingPackage.LatestVersion;
+                    var matchingPackage = uniquePackagesVersions.Where(p => p.Key.Name.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).Single();
+                    transitivePackage.LatestVersion = matchingPackage.Value.Max();
                     transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedVersion, transitivePackage.LatestVersion);
                 }
             }
@@ -210,6 +233,7 @@ namespace NuGet.CommandLine.XPlat
         /// <returns></returns>
         private UpdateLevel GetUpdateLevel(NuGetVersion resolvedVersion, NuGetVersion latestVersion)
         {
+            if (latestVersion == null) return UpdateLevel.NoUpdate;
             if (resolvedVersion.Major != latestVersion.Major)
             {
                 return UpdateLevel.Major;
@@ -226,27 +250,28 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Fetches the latest version of the given package
+        /// Prepares the calls to sources for latest versions and updates
+        /// the list of tasks with the requests
         /// </summary>
         /// <param name="package">The package to get the latest version for</param>
         /// <param name="listPackageArgs">List args for the token and source provider></param>
         /// <param name="providers">The providers to use when looking at sources</param>
+        /// <param name="latestVersionsRequests">Tasks for calls to the sources to be executed</param>
+        /// <param name="uniquePackages">A reference to the unique packages in the project
+        /// to be able to handle different sources having different latest versions</param>
         /// <returns>An updated pacakge with the highest version at sources</returns>
-        private async Task UpdatePackageLatestVersionAsync(
+        private void PrepareLatestVersionsRequests(
             InstalledPackageReference package,
             ListPackageArgs listPackageArgs,
-            IEnumerable<Lazy<INuGetResourceProvider>> providers)
+            IEnumerable<Lazy<INuGetResourceProvider>> providers,
+            IList<Task> latestVersionsRequests,
+            Dictionary<InstalledPackageReference, IList<NuGetVersion>> uniquePackages)
         {
             var sources = listPackageArgs.PackageSources;
-            var tasks = new List<Task<NuGetVersion>>();
-
             foreach (var packageSource in sources)
             {
-                tasks.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, package, providers));
+                latestVersionsRequests.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, package, providers, uniquePackages));
             }
-
-            var versions = await Task.WhenAll(tasks);
-            package.LatestVersion = versions.Max();
         }
 
         /// <summary>
@@ -256,12 +281,15 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="listPackageArgs">The list args for the cancellation token</param>
         /// <param name="package">Package to look for updates for</param>
         /// <param name="providers">The providers to use when looking at sources</param>
+        /// <param name="uniquePackages">A reference to the unique packages in the project
+        /// to be able to handle different sources having different latest versions</param>
         /// <returns>An updated pacakge with the highest version at a single source</returns>
-        private async Task<NuGetVersion> GetLatestVersionPerSourceAsync(
+        private async Task GetLatestVersionPerSourceAsync(
             PackageSource packageSource,
             ListPackageArgs listPackageArgs,
             InstalledPackageReference package,
-            IEnumerable<Lazy<INuGetResourceProvider>> providers)
+            IEnumerable<Lazy<INuGetResourceProvider>> providers,
+            Dictionary<InstalledPackageReference, IList<NuGetVersion>> uniquePackages)
         {
             var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
             var dependencyInfoResource = await sourceRepository.GetResourceAsync<FindPackageByIdResource>(listPackageArgs.CancellationToken);
@@ -272,7 +300,8 @@ namespace NuGet.CommandLine.XPlat
             .OrderByDescending(version => version, VersionComparer.Default)
             .FirstOrDefault();
 
-            return latestVersionAtSource;
+            var latestVersionsForPackage = uniquePackages.Where(p => p.Key.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase)).Single().Value;
+            latestVersionsForPackage.Add(latestVersionAtSource);
 
         }
 
@@ -329,8 +358,8 @@ namespace NuGet.CommandLine.XPlat
                 //Filter the packages for outdated
                 if (outdated)
                 {
-                    frameworkTopLevelPackages = frameworkTopLevelPackages.Where(p => !p.AutoReference && p.ResolvedVersion < p.LatestVersion);
-                    frameworkTransitivePackages = frameworkTransitivePackages.Where(p => p.ResolvedVersion < p.LatestVersion);
+                    frameworkTopLevelPackages = frameworkTopLevelPackages.Where(p => !p.AutoReference && (p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion));
+                    frameworkTransitivePackages = frameworkTransitivePackages.Where(p => p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion);
                 }
 
                 //If no packages exist for this framework, print the

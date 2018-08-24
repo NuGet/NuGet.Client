@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
-using NuGet.CommandLine.XPlat.Utility;
+using Microsoft.Build.Execution;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -318,22 +318,22 @@ namespace NuGet.CommandLine.XPlat
         /// Prepares the dictionary that maps frameworks to packages top-level
         /// and transitive.
         /// </summary>
-        /// <param name="project"></param>
+        /// <param name="projectPath"> Path to the project to get versions for its packages </param>
         /// <param name="parsedUserFrameworks">A list of frameworks</param>
         /// <param name="assetsFile">Assets file for all targets and libraries</param>
         /// <param name="transitive">Include transitive packages in the result</param>
         /// <returns></returns>
         internal IEnumerable<FrameworkPackages> GetResolvedVersions(
-            Project project, IEnumerable<NuGetFramework> parsedUserFrameworks, LockFile assetsFile, bool transitive)
+            string projectPath, IEnumerable<NuGetFramework> parsedUserFrameworks, LockFile assetsFile, bool transitive)
         {
             if (parsedUserFrameworks == null)
             {
                 throw new ArgumentNullException(nameof(parsedUserFrameworks));
             }
 
-            if (project == null)
+            if (projectPath == null)
             {
-                throw new ArgumentNullException(nameof(project));
+                throw new ArgumentNullException(nameof(projectPath));
             }
 
             if (assetsFile == null)
@@ -342,7 +342,6 @@ namespace NuGet.CommandLine.XPlat
             }
 
             var resultPackages = new List<FrameworkPackages>();
-
             IEnumerable<TargetFrameworkInformation> requestedTargetFrameworks;
 
             if (!parsedUserFrameworks.Any())
@@ -374,9 +373,7 @@ namespace NuGet.CommandLine.XPlat
 
                 //The packages for the framework that were retrieved with GetRequestedVersions
                 var frameworkDependencies = tfmInformation.Dependencies;
-
-                var projPackages = GetPackageReferencesPerFramework(project, "", tfmInformation.ToString());
-
+                var projPackages = GetPackageReferencesForList(projectPath, "", tfmInformation.ToString());
                 var topLevelPackages = new List<InstalledPackageReference>();
                 var transitivePackages = new List<InstalledPackageReference>();
 
@@ -392,51 +389,46 @@ namespace NuGet.CommandLine.XPlat
                     if (matchingPackages.Any())
                     {
                         var topLevelPackage = matchingPackages.Single();
-                        string projectFileVersion;
-                        VersionRange version;
+                        InstalledPackageReference installedPackage;
 
                         //If the package is not auto-referenced, get the version from the project file. Otherwise fall back on the assets file
                         if (!topLevelPackage.AutoReferenced)
                         {
                             try
                             { // In case proj and assets file are not in sync and some refs were deleted
-                                projectFileVersion = projPackages.Where(p => p.EvaluatedInclude.Equals(topLevelPackage.Name)).First().GetMetadataValue(VERSION_TAG);
-                                version = VersionRange.Parse(projectFileVersion);
+                                installedPackage = projPackages.Where(p => p.Name.Equals(topLevelPackage.Name)).First();
                             }
                             catch (Exception)
                             {
-                                Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingReferenceFromProject, project.FullPath));
+                                Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingReferenceFromProject, projectPath));
                                 return null;
-                            }
-                            
+                            }      
                         }
                         else
                         {
-                            projectFileVersion = topLevelPackage.LibraryRange.VersionRange.ToString();
-                            version = topLevelPackage.LibraryRange.VersionRange;
+                            var projectFileVersion = topLevelPackage.LibraryRange.VersionRange.ToString();
+                            var version = topLevelPackage.LibraryRange.VersionRange;
+                            installedPackage = new InstalledPackageReference(library.Name)
+                            {
+                                RequestedVersion = version,
+                                OriginalRequestedVersion = projectFileVersion
+                            };
                         }
 
-                        var packageInfo = new InstalledPackageReference(library.Name)
-                        {
-                            ResolvedVersion = library.Version,
-                            RequestedVersion = version,
-                            OriginalRequestedVersion = projectFileVersion,
-                            AutoReference = topLevelPackage.AutoReferenced
-                        };
+                        installedPackage.ResolvedVersion = library.Version;
+                        installedPackage.AutoReference = topLevelPackage.AutoReferenced;
 
-                        topLevelPackages.Add(packageInfo);
+                        topLevelPackages.Add(installedPackage);
                     }
                     // If no matching packages were found, then the package is transitive,
                     // and include-transitive must be used to add the package
                     else if (transitive)
                     {
-                        var packageInfo = new InstalledPackageReference(library.Name) {
+                        var installedPackage = new InstalledPackageReference(library.Name) {
                             ResolvedVersion = library.Version
                         };
-
-                        transitivePackages.Add(packageInfo);
+                        transitivePackages.Add(installedPackage);
                     }
-
                 }
 
                 var frameworkPackages = new FrameworkPackages(
@@ -484,6 +476,29 @@ namespace NuGet.CommandLine.XPlat
         private static IEnumerable<ProjectItem> GetPackageReferences(Project project, LibraryDependency libraryDependency)
         {
             return GetPackageReferences(project, libraryDependency.Name);                     
+        }
+
+        /// <summary>
+        /// Returns all package references after invoking the target CollectPackageReferences.
+        /// </summary>
+        /// <param name="projectPath"> Path to the project for which the package references have to be obtained.</param>
+        /// <param name="libraryName">Dependency of the package. If null, all references are returned</param>
+        /// <param name="framework">Framework to get reference(s) for</param>
+        /// <returns>List of Items containing the package reference for the package.
+        /// If the libraryDependency is null then it returns all package references</returns>
+        private static IEnumerable<InstalledPackageReference> GetPackageReferencesForList(string projectPath,
+           string libraryName, string framework)
+        {
+            var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                { { "TargetFramework", framework } };
+            var newProject = new ProjectInstance(projectPath, globalProperties, null);
+            newProject.Build(new[] { "CollectPackageReferences" }, new List<Microsoft.Build.Framework.ILogger> { }, out var targetOutputs);
+
+            return targetOutputs.Single().Value.Items.Select(p =>
+                new InstalledPackageReference(p.ItemSpec) {
+                    OriginalRequestedVersion = p.GetMetadata("version"),
+                    RequestedVersion = VersionRange.Parse(p.GetMetadata("version"))
+                });
         }
 
         /// <summary>
