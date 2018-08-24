@@ -1,3 +1,6 @@
+# Contains all the utility methods used by the performance tests.
+
+    # Appends the log time in front of the log statement with the color specified. 
     function Log([string]$logStatement, [string]$color)
     {
         if(-not ([string]::IsNullOrEmpty($color)))
@@ -10,6 +13,7 @@
         }
     }
 
+    # Given a relative path, gets the absolute path from the current directory
     function GetAbsolutePath([string]$Path)
     {
         $Path = [System.IO.Path]::Combine(((pwd).Path), ($Path));
@@ -17,6 +21,7 @@
         return $Path;
     }
 
+    # Writes the content to the given path. Creates the folder structure if needed
     function OutFileWithCreateFolders([string]$path, [string]$content){
         $folder = [System.IO.Path]::GetDirectoryName($path)
         If(!(Test-Path $folder))
@@ -26,6 +31,7 @@
         Add-Content -Path $path -Value $content
     }
 
+    # Gets a list of all the nupkgs recursively in the global packages folder
     function GetAllPackagesInGlobalPackagesFolder([string]$packagesFolder)
     {
         if(Test-Path $packagesFolder)
@@ -36,6 +42,7 @@
         return $null
     }
 
+    # Gets a list of all the files resursively in the given folder
     function GetFiles([string]$folder)
     {
         if(Test-Path $folder)
@@ -46,17 +53,18 @@
         return $null
     }
 
+    # Determines if the client is dotnet.exe by checking the path.
+    function IsClientDotnetExe([string]$nugetClient)
+    {
+        return $nugetClient.EndsWith("dotnet.exe")
+    }
+
+    # Gets the pretermined nuget folders path where all of the throwable data from the tests will be put.
     function GetNuGetFoldersPath()
     {
         $nugetFolder = [System.IO.Path]::Combine($env:UserProfile, "np")
         return $nugetFolder
     }
-
-    function IsClientDotnetExe([string]$nugetClient)
-    {
-        return $nugetClient.endswith("dotnet.exe")
-    }
-
     function SetupNuGetFolders([string]$_nugetClientFilePath)
     {
         $nugetFolders = GetNuGetFoldersPath
@@ -86,6 +94,14 @@
                 Log "Skipping the cloning of $repository as $sourceDirectoryPath is not empty" -color "Yellow"
         }
 
+        $solutionFile = GetSolutionFile $repository $sourceDirectoryPath
+
+        Log "Completed the repository setup. The solution file is $solutionFile" -color "Green"
+        return $solutionFile
+    }
+
+    function GetSolutionFile([string]$repository,[string]$sourceDirectoryPath) {
+
         $gitRepoName = $repository.Substring($($repository.LastIndexOf('/') + 1))
         $potentialSolutionFile = [System.IO.Path]::Combine($sourceDirectoryPath, "$($gitRepoName.Substring(0, $gitRepoName.Length - 4)).sln")
 
@@ -95,10 +111,17 @@
         } 
         else 
         {
-            $solutionFile = (Get-ChildItem $sourceDirectoryPath *.sln)[0] | Select-Object -f 1 | Select-Object -ExpandProperty FullName
+            $possibleSln = Get-ChildItem $sourceDirectoryPath *.sln
+            if($possibleSln.Length -eq 0)
+            {
+                Log "No solution files found in $sourceDirectoryPath" "red"
+            } 
+            else 
+            {
+            $solutionFile = $possibleSln[0] | Select-Object -f 1 | Select-Object -ExpandProperty FullName
+            }
         }
-        Log "Completed the repository setup. The solution file is $solutionFile" -color "Green"
-        return $solutionFile
+        return $solutionFile;
     }
 
     function RunPerformanceTestsOnGitRepository([string]$nugetClient, [string]$sourceRootDirectory, [string]$repoUrl,  [string]$commitHash, [string]$resultsDirPath, [string]$logsPath)
