@@ -9,6 +9,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -399,6 +400,89 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void PackCommand_SymbolPackageWithNuspecFile()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "lib", "uap10.0"),
+                    "packageA.dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "lib", "uap10.0"),
+                    "packageA.pdb",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles", "any", "any"),
+                    "image.jpg",
+                    "");
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles", "cs", "net45"),
+                    "code.cs",
+                    "");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec -symbols -SymbolPackageFormat snupkg",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
+                var symbolPath = Path.Combine(workingDirectory, "packageA.1.0.0.snupkg");
+                var package = new PackageArchiveReader(path);
+                var symbolPackage = new PackageArchiveReader(symbolPath);
+                var files = package.GetFiles()
+                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
+                    .ToArray();
+                var symbolFiles = symbolPackage.GetFiles()
+                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
+                    .ToArray();
+                Array.Sort(files);
+                Array.Sort(symbolFiles);
+
+                Assert.Equal(
+                    new string[]
+                    {
+                        "contentFiles/any/any/image.jpg",
+                        "contentFiles/cs/net45/code.cs",
+                        Path.Combine("lib", "uap10.0", "packageA.dll").Replace('\\', '/'),
+                    },
+                    files);
+                Assert.Equal(
+                    new string[]
+                    {
+                        Path.Combine("lib", "uap10.0", "packageA.pdb").Replace('\\','/'),
+                    },
+                    symbolFiles);
+            }
+        }
+
+        [Fact]
         public void PackCommand_ContentV2PackageFromNuspec()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -751,8 +835,10 @@ namespace Proj1
         }
 
         // Test creating symbol package with -IncludeReferencedProject.
-        [Fact]
-        public void PackCommand_WithProjectReferencesSymbols()
+        [Theory]
+        [InlineData(SymbolPackageFormat.SymbolsNupkg)]
+        [InlineData(SymbolPackageFormat.Snupkg)]
+        public void PackCommand_WithProjectReferencesSymbols(SymbolPackageFormat symbolPackageFormat)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -828,37 +914,48 @@ namespace Proj2
         public int A { get; set; }
     }
 }");
-
+                var extension = symbolPackageFormat == SymbolPackageFormat.Snupkg ? "snupkg" : "symbols.nupkg";
                 // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj2Directory,
-                    "pack proj2.csproj -build -IncludeReferencedProjects -symbols",
+                    $"pack proj2.csproj -build -IncludeReferencedProjects -symbols -SymbolPackageFormat {extension}",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.symbols.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(Path.Combine(proj2Directory, $"proj2.0.0.0.{extension}"));
+                var files = package.GetFiles()
+                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))                    
+                    .ToArray();
                 Array.Sort(files);
-
-                Assert.Equal(
-                    new string[]
+                var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
                         Path.Combine("lib", "net40", "proj1.dll"),
                         Path.Combine("lib", "net40", "proj1.pdb"),
                         Path.Combine("lib", "net40", "proj2.dll"),
                         Path.Combine("lib", "net40", "proj2.pdb"),
+                        "proj2.nuspec",
                         Path.Combine("src", "proj1", "proj1_file1.cs"),
                         Path.Combine("src", "proj2", "proj2_file1.cs"),
-                    },
-                    files);
+                    }
+                    : new string[]
+                    {
+                        Path.Combine("lib", "net40", "proj1.pdb"),
+                        Path.Combine("lib", "net40", "proj2.pdb"),
+                        "proj2.nuspec"
+                    };
+                actual = actual.Select(t => NuGet.Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
+                Assert.Equal(actual, files);
+                
             }
         }
 
-        [Fact]
-        public void PackCommand_IncludesDllSymbols()
+        [Theory]
+        [InlineData(SymbolPackageFormat.SymbolsNupkg)]
+        [InlineData(SymbolPackageFormat.Snupkg)]
+        public void PackCommand_IncludesDllSymbols(SymbolPackageFormat symbolPackageFormat)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -888,33 +985,43 @@ namespace Proj2
 {
     public int C { get; set; }
 }");
+                var extension = symbolPackageFormat == SymbolPackageFormat.Snupkg ? "snupkg" : "symbols.nupkg";
 
                 // Act
                 var result = CommandRunner.Run(
                     nugetexe,
                     projDirectory,
-                    "pack A.csproj -build -symbols",
+                    $"pack A.csproj -build -symbols -SymbolPackageFormat {extension}",
                     waitForExit: true);
                 Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(projDirectory, "A.0.0.0.symbols.nupkg"));
-                var files = package.GetFiles().Select(file => file.Path).ToArray();
+                var package = new PackageArchiveReader(Path.Combine(projDirectory, $"A.0.0.0.{extension}"));
+                var files = package.GetFiles()
+                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))
+                    .ToArray();
                 Array.Sort(files);
-
-                Assert.Equal(
-                    new string[]
+                var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ?  new string[]
                     {
-                        Path.Combine("lib", "net40", "A.dll"),
-                        Path.Combine("lib", "net40", "A.pdb"),
-                        Path.Combine("src", "B.cs")
-                    },
-                    files);
+                        "A.nuspec",
+                        "lib/net40/A.dll",
+                        "lib/net40/A.pdb",
+                        "src/B.cs"
+                    }
+                    : new string[]
+                    {
+                        "A.nuspec",
+                        "lib/net40/A.pdb"
+                    };
+                actual = actual.Select(t => NuGet.Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
+                Assert.Equal(actual, files);
             }
         }
 
-        [Fact]
-        public void PackCommand_IncludesExeSymbols()
+        [Theory]
+        [InlineData(SymbolPackageFormat.SymbolsNupkg)]
+        [InlineData(SymbolPackageFormat.Snupkg)]
+        public void PackCommand_IncludesExeSymbols(SymbolPackageFormat symbolPackageFormat)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -947,27 +1054,34 @@ public class B
     public static void Main() { }
 }");
 
+                var extension = symbolPackageFormat == SymbolPackageFormat.Snupkg ? "snupkg" : "symbols.nupkg";
                 // Act
                 var result = CommandRunner.Run(
                     nugetexe,
                     projDirectory,
-                    "pack A.csproj -build -symbols",
+                    $"pack A.csproj -build -symbols -SymbolPackageFormat {extension}",
                     waitForExit: true);
                 Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(projDirectory, "A.0.0.0.symbols.nupkg"));
-                var files = package.GetFiles().Select(file => file.Path).ToArray();
+                var package = new PackageArchiveReader(Path.Combine(projDirectory, $"A.0.0.0.{extension}"));
+                var files = package.GetFiles()
+                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))
+                    .ToArray();
                 Array.Sort(files);
-
-                Assert.Equal(
-                    new string[]
+                var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
                     {
-                        Path.Combine("lib", "net40", "A.exe"),
-                        Path.Combine("lib", "net40", "A.pdb"),
-                        Path.Combine("src", "B.cs")
-                    },
-                    files);
+                        "A.nuspec",
+                        "lib/net40/A.exe",
+                        "lib/net40/A.pdb",
+                        "src/B.cs"
+                    }
+                    : new string[]
+                    {
+                        "A.nuspec",
+                        "lib/net40/A.pdb"
+                    };
+                Assert.Equal(actual, files);
             }
         }
 

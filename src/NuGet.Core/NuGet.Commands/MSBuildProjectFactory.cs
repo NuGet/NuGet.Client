@@ -78,19 +78,20 @@ namespace NuGet.Commands
         {
             // Add output files
             Files.Clear();
+            builder.Files.Clear();
 
             AddOutputFiles(builder);
 
             // Add content files if there are any. They could come from a project or nuspec file
             AddContentFiles(builder);
-            
+
             // Add sources if this is a symbol package
             if (IncludeSymbols)
             {
                 AddSourceFiles();
             }
 
-            Manifest manifest = new Manifest(new ManifestMetadata(builder), Files);
+            var manifest = new Manifest(new ManifestMetadata(builder), Files);
             var manifestPath = PackCommandRunner.GetOutputPath(
                 builder,
                 PackArgs,
@@ -149,11 +150,23 @@ namespace NuGet.Commands
             }
         }
 
-        private void AddFileToBuilder(ManifestFile packageFile)
+        private bool AddFileToBuilder(ManifestFile packageFile)
         {
             if (!Files.Any(p => packageFile.Target.Equals(p.Target, StringComparison.CurrentCultureIgnoreCase)))
             {
-                Files.Add(packageFile);
+                var fileExtension = Path.GetExtension(packageFile.Source);
+
+                if(IncludeSymbols &&
+                    PackArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg &&
+                    !string.Equals(fileExtension, ".pdb", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+                else
+                {
+                    Files.Add(packageFile);
+                    return true;
+                }
             }
             else
             {
@@ -162,6 +175,7 @@ namespace NuGet.Commands
                         Strings.FileNotAddedToPackage,
                         packageFile.Source,
                         packageFile.Target), NuGetLogCode.NU5118));
+                return false;
             }
         }
 
@@ -172,7 +186,7 @@ namespace NuGet.Commands
                 var listOfContentMetadata = PackTargetArgs.ContentFiles[sourcePath];
                 foreach (var contentMetadata in listOfContentMetadata)
                 {
-                    string target = contentMetadata.Target;
+                    var target = contentMetadata.Target;
                     var packageFile = new ManifestFile()
                     {
                         Source = sourcePath,
@@ -180,10 +194,10 @@ namespace NuGet.Commands
                         ? Path.Combine(target, Path.GetFileName(sourcePath))
                         : target
                     };
-                    AddFileToBuilder(packageFile);
+                    var added = AddFileToBuilder(packageFile);
 
                     // Add contentFiles entry to the nuspec if applicable
-                    if (IsContentFile(contentMetadata.Target))
+                    if (added && IsContentFile(contentMetadata.Target))
                     {
                         var includePath = PathUtility.GetRelativePath("contentFiles" + Path.DirectorySeparatorChar, packageFile.Target, '/');
                         // This is just a check to see if the filename has already been appended to the target path. 

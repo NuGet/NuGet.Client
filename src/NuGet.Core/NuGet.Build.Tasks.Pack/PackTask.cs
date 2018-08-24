@@ -52,6 +52,7 @@ namespace NuGet.Build.Tasks.Pack
         public ITaskItem[] SourceFiles { get; set; }
         public bool NoPackageAnalysis { get; set; }
         public string NuspecFile { get; set; }
+        public string SymbolPackageFormat { get; set; }
         public string MinClientVersion { get; set; }
         public bool Serviceable { get; set; }
         public ITaskItem[] FrameworkAssemblyReferences { get; set; }
@@ -197,6 +198,7 @@ namespace NuGet.Build.Tasks.Pack
                 RestoreOutputPath = MSBuildStringUtility.TrimAndGetNullForEmpty(RestoreOutputPath),
                 Serviceable = Serviceable,
                 SourceFiles = MSBuildUtility.WrapMSBuildItem(SourceFiles),
+                SymbolPackageFormat = MSBuildStringUtility.TrimAndGetNullForEmpty(SymbolPackageFormat),
                 Tags = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Tags),
                 TargetFrameworks = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(TargetFrameworks),
                 TargetPathsToSymbols = MSBuildUtility.WrapMSBuildItem(TargetPathsToSymbols),

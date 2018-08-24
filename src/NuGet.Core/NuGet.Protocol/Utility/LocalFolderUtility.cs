@@ -955,14 +955,14 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="packagePath">Package path</param>
         /// <returns>A list of package paths that match the input path.</returns>
-        public static IEnumerable<string> ResolvePackageFromPath(string packagePath)
+        public static IEnumerable<string> ResolvePackageFromPath(string packagePath, bool isSnupkg = false)
         {
             // Ensure packagePath ends with *.nupkg
-            packagePath = EnsurePackageExtension(packagePath);
+            packagePath = EnsurePackageExtension(packagePath, isSnupkg);
             return PathResolver.PerformWildcardSearch(Directory.GetCurrentDirectory(), packagePath);
         }
 
-        private static string EnsurePackageExtension(string packagePath)
+        private static string EnsurePackageExtension(string packagePath, bool isSnupkg)
         {
             if (packagePath.IndexOf('*') == -1)
             {
@@ -970,7 +970,8 @@ namespace NuGet.Protocol
                 return packagePath;
             }
             // If the path does not contain wildcards, we need to add *.nupkg to it.
-            if (!packagePath.EndsWith(NuGetConstants.PackageExtension, StringComparison.OrdinalIgnoreCase))
+            if (!packagePath.EndsWith(NuGetConstants.PackageExtension, StringComparison.OrdinalIgnoreCase)
+                && !packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
             {
                 if (packagePath.EndsWith("**", StringComparison.OrdinalIgnoreCase))
                 {
@@ -980,7 +981,7 @@ namespace NuGet.Protocol
                 {
                     packagePath = packagePath + '*';
                 }
-                packagePath = packagePath + NuGetConstants.PackageExtension;
+                packagePath = packagePath + (isSnupkg? NuGetConstants.SnupkgExtension : NuGetConstants.PackageExtension);
             }
             return packagePath;
         }

@@ -8,6 +8,7 @@ using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Credentials;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -70,6 +71,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.NoServiceEndpoint_Description,
                     CommandOptionType.NoValue);
 
+                var interactive = push.Option(
+                    "--interactive",
+                    Strings.PushCommand_Interactive,
+                    CommandOptionType.SingleValue);
+
                 push.OnExecute(async () =>
                 {
                     if (arguments.Values.Count < 1)
@@ -92,10 +98,12 @@ namespace NuGet.CommandLine.XPlat
                         throw new ArgumentException(Strings.Push_InvalidTimeout);
                     }
 
-                    PackageSourceProvider sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
+                    var sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
 
                     try
                     {
+                        DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
+
                         await PushRunner.Run(
                             sourceProvider.Settings,
                             sourceProvider,
