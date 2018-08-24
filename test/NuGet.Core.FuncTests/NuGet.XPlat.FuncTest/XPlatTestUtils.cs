@@ -310,6 +310,16 @@ namespace NuGet.XPlat.FuncTest
             return true;
         }
 
+        public static bool ValidateAssetsFile(SimpleTestProjectContext project, string packageId)
+        {
+            if (!File.Exists(project.AssetsFileOutputPath))
+            {
+                return false;
+            }
+
+            return project.AssetsFile.Targets.Any(t => t.Libraries.Any(library => string.Equals(library.Name, packageId, StringComparison.OrdinalIgnoreCase)));
+        }
+
         public static bool ValidateNoReference(XElement root, string packageId, PackageType packageType = null)
         {
             var packageReferences = root
