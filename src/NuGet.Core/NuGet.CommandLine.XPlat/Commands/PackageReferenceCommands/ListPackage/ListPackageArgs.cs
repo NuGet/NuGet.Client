@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Configuration;
 using System.Threading;
-using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -15,7 +14,7 @@ namespace NuGet.CommandLine.XPlat
         public ILogger Logger { get; }
         public string Path { get; }
         public IEnumerable<PackageSource> PackageSources { get; }
-        public IEnumerable<NuGetFramework> Frameworks { get; }
+        public IEnumerable<string> Frameworks { get; }
         public bool IncludeOutdated { get; }
         public bool IncludeDeprecated { get; }
         public bool IncludeTransitive { get; }
@@ -43,7 +42,7 @@ namespace NuGet.CommandLine.XPlat
         public ListPackageArgs(
             string path,
             IEnumerable<PackageSource> packageSources,
-            IEnumerable<NuGetFramework> frameworks,
+            IEnumerable<string> frameworks,
             bool includeOutdated,
             bool includeDeprecated,
             bool includeTransitive,

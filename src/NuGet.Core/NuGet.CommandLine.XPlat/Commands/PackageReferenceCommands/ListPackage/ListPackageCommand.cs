@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -81,6 +82,7 @@ namespace NuGet.CommandLine.XPlat
 
                 listpkg.OnExecute(async () =>
                 {
+                    Debugger.Launch();
                     var logger = getLogger();
 
                     var settings = ProcessConfigFile(config.Value(), path.Value);
@@ -88,16 +90,12 @@ namespace NuGet.CommandLine.XPlat
                     
                     var packageSources = GetPackageSources(settings, sources, config);
 
-                    var frameworks = framework.Values.Select(f => NuGetFramework.Parse(f));
-                    if (frameworks.Any(f => f.Framework.Equals("Unsupported", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        throw new ArgumentException(Strings.ListPkg_InvalidFramework, nameof(framework));
-                    }
+                    VerifyValidFrameworks(framework);
                     
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
                         packageSources,
-                        frameworks,
+                        framework.Values,
                         includeOutdated.HasValue(),
                         includeDeprecated.HasValue(),
                         includeTransitive.HasValue(),
@@ -112,6 +110,16 @@ namespace NuGet.CommandLine.XPlat
                     return 0;
                 });
             });
+        }
+
+        private static void VerifyValidFrameworks(CommandOption framework)
+        {
+            var frameworks = framework.Values.Select(f =>
+                                NuGetFramework.Parse(f.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray()[0]));
+            if (frameworks.Any(f => f.Framework.Equals("Unsupported", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(Strings.ListPkg_InvalidFramework, nameof(framework));
+            }
         }
 
         private static ISettings ProcessConfigFile(string configFile, string projectOrSolution)

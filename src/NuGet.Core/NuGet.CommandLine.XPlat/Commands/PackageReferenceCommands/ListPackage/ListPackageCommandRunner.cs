@@ -24,7 +24,6 @@ namespace NuGet.CommandLine.XPlat
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
-        private const string LeftPadding = "   ";
 
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
@@ -345,9 +344,6 @@ namespace NuGet.CommandLine.XPlat
         {
             autoReferenceFound = false;
 
-            var frameworkMessage = new StringBuilder(LeftPadding);
-            frameworkMessage.Append("'{0}'");
-
             Console.WriteLine(string.Format(Strings.ListPkg_ProjectHeaderLog, projectName));
 
             foreach (var frameworkPackages in packages)
@@ -366,14 +362,17 @@ namespace NuGet.CommandLine.XPlat
                 //appropriate message
                 if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
                 {
-                    frameworkMessage.Append(": ");
-                    Console.WriteLine(string.Format(frameworkMessage.ToString() + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
+                    Console.ResetColor();
                 }
                 else
                 {
                     //Print name of the framework
-                    Console.WriteLine(string.Format(frameworkMessage.ToString(), frameworkPackages.Framework));
-
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine(string.Format("   [{0}]: ", frameworkPackages.Framework));
+                    Console.ResetColor();
+                    
                     //Print top-level packages
                     if (frameworkTopLevelPackages.Any())
                     {
@@ -504,7 +503,7 @@ namespace NuGet.CommandLine.XPlat
         /// <returns></returns>
         private string[] BuildTableHeaders(bool printingTransitive, bool outdated)
         {
-            var result = new List<string> { LeftPadding };
+            var result = new List<string> { "" };
             if (printingTransitive)
             {
                 result.Add(Strings.ListPkg_TransitiveHeader);

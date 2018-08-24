@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -319,16 +320,16 @@ namespace NuGet.CommandLine.XPlat
         /// and transitive.
         /// </summary>
         /// <param name="projectPath"> Path to the project to get versions for its packages </param>
-        /// <param name="parsedUserFrameworks">A list of frameworks</param>
+        /// <param name="userInputFrameworks">A list of frameworks</param>
         /// <param name="assetsFile">Assets file for all targets and libraries</param>
         /// <param name="transitive">Include transitive packages in the result</param>
         /// <returns></returns>
         internal IEnumerable<FrameworkPackages> GetResolvedVersions(
-            string projectPath, IEnumerable<NuGetFramework> parsedUserFrameworks, LockFile assetsFile, bool transitive)
+            string projectPath, IEnumerable<string> userInputFrameworks, LockFile assetsFile, bool transitive)
         {
-            if (parsedUserFrameworks == null)
+            if (userInputFrameworks == null)
             {
-                throw new ArgumentNullException(nameof(parsedUserFrameworks));
+                throw new ArgumentNullException(nameof(userInputFrameworks));
             }
 
             if (projectPath == null)
@@ -342,19 +343,40 @@ namespace NuGet.CommandLine.XPlat
             }
 
             var resultPackages = new List<FrameworkPackages>();
-            IEnumerable<TargetFrameworkInformation> requestedTargetFrameworks;
+            var requestedTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks;
+            var requestedTargets = assetsFile.Targets;
 
-            if (!parsedUserFrameworks.Any())
+            // If the user has entered frameworks, we want to filter
+            // the targets and frameworks from the assets file
+            if (userInputFrameworks.Any())
             {
-                requestedTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks;
-            }
-            else
-            {
-                requestedTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks.Where(tfm => parsedUserFrameworks.Contains(tfm.FrameworkName));
+                //Target frameworks filtering
+                var parsedUserFrameworks = userInputFrameworks.Select(f =>
+                                               NuGetFramework.Parse(f.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray()[0]));
+                requestedTargetFrameworks = requestedTargetFrameworks.Where(tfm => parsedUserFrameworks.Contains(tfm.FrameworkName)).ToList();
+
+                //Assets file targets filtering by framework and RID
+                var filteredTargets = new List<LockFileTarget>();
+                foreach (var frameworkAndRID in userInputFrameworks)
+                {
+                    var splitFrameworkAndRID = frameworkAndRID.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
+                    // If a / is not present in the string, we get all of the targets that
+                    // have matching framework regardless of RID.
+                    if (splitFrameworkAndRID.Count() == 1)
+                    {
+                        filteredTargets.AddRange(requestedTargets.Where(target => target.TargetFramework.Equals(NuGetFramework.Parse(splitFrameworkAndRID[0]))));
+                    }
+                    else
+                    {
+                        //RID is present in the user input, so we filter using it as well
+                        filteredTargets.AddRange(requestedTargets.Where(target => target.TargetFramework.Equals(NuGetFramework.Parse(splitFrameworkAndRID[0])) &&
+                                                                                  target.RuntimeIdentifier != null && target.RuntimeIdentifier.Equals(splitFrameworkAndRID[1])));
+                    }
+                }
+                requestedTargets = filteredTargets;
             }
 
-            var requestedTargets = requestedTargetFrameworks.Select(tfm => assetsFile.GetTarget(tfm.FrameworkName, null));
-
+            Debugger.Launch();
             foreach (var target in requestedTargets)
             {
                 // Find the tfminformation corresponding to the target to
@@ -432,7 +454,7 @@ namespace NuGet.CommandLine.XPlat
                 }
 
                 var frameworkPackages = new FrameworkPackages(
-                    target.TargetFramework.GetShortFolderName(),
+                    target.Name,
                     topLevelPackages,
                     transitivePackages);
 
