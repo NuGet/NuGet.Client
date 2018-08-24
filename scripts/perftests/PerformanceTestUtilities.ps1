@@ -22,7 +22,8 @@
 
     
     # The format of the URL is assumed to be https://github.com/NuGet/NuGet.Client.git. The result would be NuGet-Client-git
-    function GenerateNameFromGitUrl([string]$gitUrl){
+    function GenerateNameFromGitUrl([string]$gitUrl)
+    {
         return $gitUrl.Substring($($gitUrl.LastIndexOf('/') + 1)).Replace('.','-')
     }
 

@@ -17,6 +17,8 @@ Param(
     $resultsFilePath = [System.IO.Path]::Combine($resultsDirectoryPath, "$repoName.csv")
     $sourcePath = $([System.IO.Path]::Combine($sourceRootDirectory, $repoName))
     $solutionFilePath = SetupGitRepository $repoUrl $commitHash $sourcePath
+    # It's fine if this is run from here. It is run again the performance test script, but it'll set it to the same values.
+    # Additionally, this will cleanup the extras from the bootstrapping which are already in the local folder, allowing us to get more accurate measurements
     SetupNuGetFolders $nugetClientFilePath
     $currentWorkingDirectory = $pwd
     cd $sourcePath

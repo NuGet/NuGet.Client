@@ -5,7 +5,13 @@ Param(
     [string]$solutionPath,
     [Parameter(Mandatory=$true)]
     [string]$resultsFilePath,
-    [string]$logsPath
+    [string]$logsPath,
+    [int]$iterationCount = 3,
+    [switch]$skipWarmup,
+    [switch]$skipCleanRestores,
+    [switch]$skipColdRestores,
+    [switch]$skipForceRestores,
+    [switch]$skipNoOpRestores
 )
     . "$PSScriptRoot\PerformanceTestUtilities.ps1"
 
@@ -156,7 +162,8 @@ Param(
         }
     }
 
-    $iterationCount = 3
+    # Setup the NuGet folders - This includes global packages folder/http/plugin caches
+    SetupNuGetFolders $nugetClientPath
 
     Log "Measuring restore for $solutionPath by $nugetClient" "Green"
 
@@ -168,17 +175,31 @@ Param(
 
     $uniqueRunID = Get-Date -f d-m-y-h:m:s
 
-    Log "Running 1x warmup restore"
-    RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "warmup" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
-    Log "Running $($iterationCount)x clean restores"
-    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "arctic" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
-    Log "Running $($iterationCount)x without a global packages folder"
-    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "cold" $uniqueRunID -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
-    Log "Running $($iterationCount)x force restores"
-    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "force" $uniqueRunID -force }
-    Log "Running $($iterationCount)x no-op restores"
-    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "noop" $uniqueRunID -force }
-
+    if($skipWarmup)
+    {
+        Log "Running 1x warmup restore"
+        RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "warmup" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
+    }
+    if($skipCleanRestores)
+    {
+        Log "Running $($iterationCount)x clean restores"
+        1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "arctic" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
+    }
+    if($skipColdRestores)
+    {
+        Log "Running $($iterationCount)x without a global packages folder"
+        1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "cold" $uniqueRunID -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
+    }
+    if($skipForceRestores)
+    {
+        Log "Running $($iterationCount)x force restores"
+        1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "force" $uniqueRunID -force }
+    }
+    if($skipNoOpRestores){
+        Log "Running $($iterationCount)x no-op restores"
+        1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "noop" $uniqueRunID -force }
+    }
     Log "Completed the performance measurements for $solutionPath, results are in $resultsFilePath" "green"
 
+    # Clean the NuGet folders.
     CleanNuGetFolders $nugetClientPath
