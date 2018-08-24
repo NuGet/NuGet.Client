@@ -2,9 +2,9 @@
 <Project ToolsVersion="15.0">
   <!-- Version -->
   <PropertyGroup>
-    <IsEscrowMode>true</IsEscrowMode>
+    <IsEscrowMode>false</IsEscrowMode>
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">4</MajorNuGetVersion>
-    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">8</MinorNuGetVersion>
+    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">9</MinorNuGetVersion>
     <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     <VsTargetBranch>lab/d15.$(MinorNuGetVersion)stg</VsTargetBranch>
@@ -13,8 +13,8 @@
     <CliTargetBranch>release/2.1.4xx</CliTargetBranch>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">6</NetCoreAssemblyBuildNumber>
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">rtm</ReleaseLabel>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">2</NetCoreAssemblyBuildNumber>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
   </PropertyGroup>
 
   <!-- Dependency versions -->
