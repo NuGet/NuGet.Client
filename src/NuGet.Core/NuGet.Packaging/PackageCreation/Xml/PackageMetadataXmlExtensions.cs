@@ -35,8 +35,12 @@ namespace NuGet.Packaging.Xml
             elem.Add(new XElement(ns + "id", metadata.Id));
             AddElementIfNotNull(elem, ns, "version", metadata.Version?.ToFullString());
             AddElementIfNotNull(elem, ns, "title", metadata.Title);
-            AddElementIfNotNull(elem, ns, "authors", metadata.Authors, authors => string.Join(",", authors));
-            AddElementIfNotNull(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
+            if(!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
+            {
+                AddElementIfNotNull(elem, ns, "authors", metadata.Authors, authors => string.Join(",", authors));
+                AddElementIfNotNull(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
+            }
+            
             elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
             if (metadata.DevelopmentDependency)
             {

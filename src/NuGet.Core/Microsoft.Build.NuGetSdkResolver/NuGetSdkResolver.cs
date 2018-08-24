@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.Build.NuGetSdkResolver
 {
@@ -127,18 +128,19 @@ namespace Microsoft.Build.NuGetSdkResolver
                     try
                     {
                         var nugetSDKLogger = new NuGetSdkLogger(context.Logger, warnings, errors);
-                        DefaultCredentialServiceUtility.SetupDefaultCredentialService(nugetSDKLogger, nonInteractive: true);
+                        DefaultCredentialServiceUtility.SetupDefaultCredentialService(nugetSDKLogger, nonInteractive: context.IsNonInteractive());
 
                         // Asynchronously run the restore without a commit which find the package on configured feeds, download, and unzip it without generating any other files
-                        var results = RestoreRunnerEx.RunWithoutCommit(
-                                context.ProjectFilePath,
-                                sdk.Name,
-                                parsedSdkVersion.ToFullString(),
-                                settings,
-                                nugetSDKLogger)
-                            .ConfigureAwait(continueOnCapturedContext: false)
-                            .GetAwaiter()
-                            .GetResult();
+                        // This must be run in its own task because legacy project system evaluates projects on the UI thread which can cause RunWithoutCommit() to deadlock
+                        // https://developercommunity.visualstudio.com/content/problem/311379/solution-load-never-completes-when-project-contain.html
+                        var restoreTask = Task.Run(() => RestoreRunnerEx.RunWithoutCommit(
+                            context.ProjectFilePath,
+                            sdk.Name,
+                            parsedSdkVersion.ToFullString(),
+                            settings,
+                            nugetSDKLogger));
+
+                        var results = restoreTask.Result;
 
                         fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
 

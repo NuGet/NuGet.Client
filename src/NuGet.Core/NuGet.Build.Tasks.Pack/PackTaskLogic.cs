@@ -30,6 +30,7 @@ namespace NuGet.Build.Tasks.Pack
                 Serviceable = request.Serviceable,
                 Tool = request.IsTool,
                 Symbols = request.IncludeSymbols,
+                SymbolPackageFormat = PackArgs.GetSymbolPackageFormat(request.SymbolPackageFormat),
                 BasePath = request.NuspecBasePath,
                 NoPackageAnalysis = request.NoPackageAnalysis,
                 NoDefaultExcludes = request.NoDefaultExcludes,

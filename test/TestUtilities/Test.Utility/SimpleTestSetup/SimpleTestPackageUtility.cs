@@ -131,7 +131,7 @@ namespace NuGet.Test.Utility
                     zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
                     zip.AddEntry("lib/net45/a.dll", new byte[] { 0 });
                     zip.AddEntry("lib/netstandard1.0/a.dll", new byte[] { 0 });
-                    zip.AddEntry($"build/net45/{id}.targets", @"<targets />", Encoding.UTF8);
+                    zip.AddEntry($"build/net45/{id}.targets", @"<Project />", Encoding.UTF8);
                     zip.AddEntry("runtimes/any/native/a.dll", new byte[] { 0 });
                     zip.AddEntry("tools/a.exe", new byte[] { 0 });
                 }

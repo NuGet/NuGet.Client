@@ -49,6 +49,11 @@ namespace NuGet.Packaging
         /// </summary>
         public static readonly string ManifestExtension = ".nuspec";
 
+        public static readonly string SnupkgFormat = "snupkg";
+
+        public static readonly string SymbolsNupkgFormat = "symbols.nupkg";
+
+
         // Starting from nuget 2.0, we use a file with the special name '_._' to represent an empty folder.
         internal const string PackageEmptyFileName = "_._";
     }
