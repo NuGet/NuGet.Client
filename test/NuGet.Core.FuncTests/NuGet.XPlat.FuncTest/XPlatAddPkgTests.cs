@@ -161,6 +161,7 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(0, result);
                 Assert.NotNull(itemGroup);
                 Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, userInputVersion));
+                Assert.True(XPlatTestUtils.ValidateAssetsFile(projectA, packageX.Id));
             }
         }
 
@@ -199,6 +200,7 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(0, result);
                 Assert.NotNull(itemGroup);
                 Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, userInputVersion));
+                Assert.True(XPlatTestUtils.ValidateAssetsFile(projectA, packageX.Id));
             }
         }
 

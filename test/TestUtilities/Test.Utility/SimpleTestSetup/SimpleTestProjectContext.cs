@@ -227,7 +227,7 @@ namespace NuGet.Test.Utility
                 _packageSpec.RestoreMetadata.ProjectName = ProjectName;
                 _packageSpec.RestoreMetadata.ProjectPath = ProjectPath;
                 _packageSpec.RestoreMetadata.ProjectStyle = Type;
-                _packageSpec.RestoreMetadata.OutputPath = AssetsFileOutputPath;
+                _packageSpec.RestoreMetadata.OutputPath = OutputPath;
                 _packageSpec.RestoreMetadata.OriginalTargetFrameworks = OriginalFrameworkStrings;
                 _packageSpec.RestoreMetadata.TargetFrameworks = Frameworks
                     .Select(f => new ProjectRestoreMetadataFrameworkInfo(f.Framework))
