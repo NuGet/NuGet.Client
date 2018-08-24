@@ -11,7 +11,7 @@ Param(
 
     # Plugins cache is only available in 4.8+. We need to be careful when using that switch for older clients because it may blow up.
     # The logs location is optional
-    function RunRestore([string]$solutionFilePath, [string]$nugetClient, [string]$resultsFile, [string]$logsPath, [string]$runName,
+    function RunRestore([string]$solutionFilePath, [string]$nugetClient, [string]$resultsFile, [string]$logsPath, [string]$restoreName, [string]$testCaseId,
             [switch]$cleanGlobalPackagesFolder, [switch]$cleanHttpCache, [switch]$cleanPluginsCache, [switch]$killMsBuildAndDotnetExeProcesses, [switch]$force)
     {
         Log "Running $nugetClient restore with cleanGlobalPackagesFolder:$cleanGlobalPackagesFolder cleanHttpCache:$cleanHttpCache cleanPluginsCache:$cleanPluginsCache killMsBuildAndDotnetExeProcesses:$killMsBuildAndDotnetExeProcesses force:$force"
@@ -118,10 +118,10 @@ Param(
         $clientVersion = GetClientVersion $nugetClient
 
         if(!(Test-Path $resultsFile)){
-            OutFileWithCreateFolders $resultsFile "clientName,clientVersion,name,totalTime,force,globalPackagesFolderNupkgCount,globalPackagesFolderNupkgSize,globalPackagesFolderFilesCount,globalPackagesFolderFilesSize,cleanGlobalPackagesFolder,httpCacheFileCount,httpCacheFilesSize,cleanHttpCache,pluginsCacheFileCount,pluginsCacheFilesSize,cleanPluginsCache,killMsBuildAndDotnetExeProcesses,processorName,cores,logicalCores"
+            OutFileWithCreateFolders $resultsFile "clientName,clientVersion,testCaseId,name,totalTime,force,globalPackagesFolderNupkgCount,globalPackagesFolderNupkgSize,globalPackagesFolderFilesCount,globalPackagesFolderFilesSize,cleanGlobalPackagesFolder,httpCacheFileCount,httpCacheFilesSize,cleanHttpCache,pluginsCacheFileCount,pluginsCacheFilesSize,cleanPluginsCache,killMsBuildAndDotnetExeProcesses,processorName,cores,logicalCores"
         }
 
-        Add-Content -Path $resultsFile -Value "$clientName,$clientVersion,$runName,$($totalTime.ToString()),$force,$($globalPackagesFolderNupkgFiles.Count),$globalPackagesFolderNupkgsSize,$($globalPackagesFolderFiles.Count),$globalPackagesFolderFilesSize,$cleanGlobalPackagesFolder,$($httpCacheFiles.Count),$httpCacheFilesSize,$cleanHttpCache,$($pluginsCacheFiles.Count),$pluginsCacheFilesSize,$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$processorName,$cores,$logicalCores"
+        Add-Content -Path $resultsFile -Value "$clientName,$clientVersion,$testCaseId,$restoreName,$($totalTime.ToString()),$force,$($globalPackagesFolderNupkgFiles.Count),$globalPackagesFolderNupkgsSize,$($globalPackagesFolderFiles.Count),$globalPackagesFolderFilesSize,$cleanGlobalPackagesFolder,$($httpCacheFiles.Count),$httpCacheFilesSize,$cleanHttpCache,$($pluginsCacheFiles.Count),$pluginsCacheFilesSize,$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$processorName,$cores,$logicalCores"
 
         Log "Finished measuring."
     }
@@ -165,16 +165,18 @@ Param(
         & Remove-Item -r $resultsFilePath -Force
     }
 
+    $uniqueRunID = Get-Date -f d-m-y-h:m:s
+
     Log "Running 1x warmup restore"
-    RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "warmup" -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
+    RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "warmup" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
     Log "Running $($iterationCount)x clean restores"
-    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "arctic" -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
+    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "arctic" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
     Log "Running $($iterationCount)x without a global packages folder"
-    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "cold" -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
+    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "cold" $uniqueRunID -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
     Log "Running $($iterationCount)x force restores"
-    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "force" -force }
+    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "force" $uniqueRunID -force }
     Log "Running $($iterationCount)x no-op restores"
-    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "noop" -force }
+    1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "noop" $uniqueRunID -force }
 
     Log "Completed the performance measurements for $solutionPath, results are in $resultsFilePath" "green"
 
