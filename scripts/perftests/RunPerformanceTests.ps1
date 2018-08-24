@@ -117,7 +117,8 @@ Param(
         $clientName = GetClientName $nugetClient
         $clientVersion = GetClientVersion $nugetClient
 
-        if(!(Test-Path $resultsFile)){
+        if(!(Test-Path $resultsFile))
+        {
             OutFileWithCreateFolders $resultsFile "clientName,clientVersion,testCaseId,name,totalTime,force,globalPackagesFolderNupkgCount,globalPackagesFolderNupkgSize,globalPackagesFolderFilesCount,globalPackagesFolderFilesSize,cleanGlobalPackagesFolder,httpCacheFileCount,httpCacheFilesSize,cleanHttpCache,pluginsCacheFileCount,pluginsCacheFilesSize,cleanPluginsCache,killMsBuildAndDotnetExeProcesses,processorName,cores,logicalCores"
         }
 

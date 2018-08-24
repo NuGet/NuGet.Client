@@ -1,6 +1,6 @@
 Param(
     [Parameter(Mandatory=$true)]
-    [string]$nugetClientFilePath,
+    [string]$nugetClient,
     [Parameter(Mandatory=$true)]
     [string]$sourceRootDirectory,
     [Parameter(Mandatory=$true)]
@@ -11,4 +11,4 @@ Param(
 
     . "$PSScriptRoot\..\PerformanceTestUtilities.ps1"
 
-    RunPerformanceTestsOnGitRepository $nugetClientFilePath $sourceRootDirectory "https://github.com/dotnet/orleans.git" "00fe587cc9d18db3bb238f1e78abf46835b97457" $resultsDirectoryPath $logsPath
+    RunPerformanceTestsOnGitRepository $nugetClient $sourceRootDirectory "https://github.com/dotnet/orleans.git" "00fe587cc9d18db3bb238f1e78abf46835b97457" $resultsDirectoryPath $logsPath
