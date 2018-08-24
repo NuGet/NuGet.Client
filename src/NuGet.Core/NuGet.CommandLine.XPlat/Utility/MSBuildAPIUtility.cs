@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -376,7 +375,6 @@ namespace NuGet.CommandLine.XPlat
                 requestedTargets = filteredTargets;
             }
 
-            Debugger.Launch();
             foreach (var target in requestedTargets)
             {
                 // Find the tfminformation corresponding to the target to
