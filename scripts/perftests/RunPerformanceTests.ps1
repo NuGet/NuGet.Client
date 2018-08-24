@@ -114,11 +114,14 @@ Param(
         $logicalCores = $processorDetails | Select-Object -ExpandProperty NumberOfLogicalProcessors
         $processorName = $processorDetails | Select-Object -ExpandProperty Name
         
+        $clientName = GetClientName $nugetClient
+        $clientVersion = GetClientVersion $nugetClient
+
         if(!(Test-Path $resultsFile)){
-            OutFileWithCreateFolders $resultsFile "name,totalTime,force,globalPackagesFolderNupkgCount,globalPackagesFolderNupkgSize,globalPackagesFolderFilesCount,globalPackagesFolderFilesSize,cleanGlobalPackagesFolder,httpCacheFileCount,httpCacheFilesSize,cleanHttpCache,pluginsCacheFileCount,pluginsCacheFilesSize,cleanPluginsCache,killMsBuildAndDotnetExeProcesses,processorName,cores,logicalCores"
+            OutFileWithCreateFolders $resultsFile "clientName,clientVersion,name,totalTime,force,globalPackagesFolderNupkgCount,globalPackagesFolderNupkgSize,globalPackagesFolderFilesCount,globalPackagesFolderFilesSize,cleanGlobalPackagesFolder,httpCacheFileCount,httpCacheFilesSize,cleanHttpCache,pluginsCacheFileCount,pluginsCacheFilesSize,cleanPluginsCache,killMsBuildAndDotnetExeProcesses,processorName,cores,logicalCores"
         }
 
-        Add-Content -Path $resultsFile -Value "$runName,$($totalTime.ToString()),$force,$($globalPackagesFolderNupkgFiles.Count),$globalPackagesFolderNupkgsSize,$($globalPackagesFolderFiles.Count),$globalPackagesFolderFilesSize,$cleanGlobalPackagesFolder,$($httpCacheFiles.Count),$httpCacheFilesSize,$cleanHttpCache,$($pluginsCacheFiles.Count),$pluginsCacheFilesSize,$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$processorName,$cores,$logicalCores"
+        Add-Content -Path $resultsFile -Value "$clientName,$clientVersion,$runName,$($totalTime.ToString()),$force,$($globalPackagesFolderNupkgFiles.Count),$globalPackagesFolderNupkgsSize,$($globalPackagesFolderFiles.Count),$globalPackagesFolderFilesSize,$cleanGlobalPackagesFolder,$($httpCacheFiles.Count),$httpCacheFilesSize,$cleanHttpCache,$($pluginsCacheFiles.Count),$pluginsCacheFilesSize,$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$processorName,$cores,$logicalCores"
 
         Log "Finished measuring."
     }
