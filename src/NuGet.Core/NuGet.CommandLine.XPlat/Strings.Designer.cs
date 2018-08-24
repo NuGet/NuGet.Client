@@ -790,6 +790,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow the command to block and require manual action for operations like authentication..
+        /// </summary>
+        internal static string PushCommand_Interactive {
+            get {
+                return ResourceManager.GetString("PushCommand_Interactive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Removes a package reference from a project..
         /// </summary>
         internal static string RemovePkg_Description {
