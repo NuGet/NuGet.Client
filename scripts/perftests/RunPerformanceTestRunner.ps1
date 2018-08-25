@@ -1,7 +1,7 @@
 Param(
     [Parameter(Mandatory = $true)]
     [string]$resultsDirectoryPath,
-    [string]$nugetClientFilePath,
+    [string]$nugetClient,
     [string]$testDirectoryPath,
     [string]$logsDirectoryPath,
     [switch]$SkipCleanup
@@ -15,18 +15,18 @@ Param(
         exit(1)
     }
         
-    if ([string]::IsNullOrEmpty($nugetClientFilePath) -Or !$(Test-Path $nugetClientFilePath)) 
+    if ([string]::IsNullOrEmpty($nugetClient) -Or !$(Test-Path $nugetClient)) 
     {
-        Log "The NuGet client at '$nugetClientFilePath' cannot be resolved. Attempting to use the fallback option." "yellow"
+        Log "The NuGet client at '$nugetClient' cannot be resolved. Attempting to use the fallback option." "yellow"
 
         $relativePath = $([System.IO.Path]::Combine("..", "..", "artifacts", "VS15", "NuGet.exe"))
-        $nugetClientFilePath = GetAbsolutePath $([System.IO.Path]::Combine($PSScriptRoot, $relativePath))
-        if (!$(Test-Path $nugetClientFilePath)) 
+        $nugetClient = GetAbsolutePath $([System.IO.Path]::Combine($PSScriptRoot, $relativePath))
+        if (!$(Test-Path $nugetClient)) 
         {
-            Log "The project has not been built and there is not NuGet.exe available at $nugetClientFilePath. Either build the exe or pass a path to a NuGet client."
+            Log "The project has not been built and there is not NuGet.exe available at $nugetClient. Either build the exe or pass a path to a NuGet client."
             exit(1)
         }
-        Log "Using the fallback client from $nugetClientFilePath"
+        Log "Using the fallback client from $nugetClient"
     }
 
     if ([string]::IsNullOrEmpty($testDirectoryPath)) 
@@ -37,14 +37,12 @@ Param(
     try 
     {
         $testDirectoryPath = GetAbsolutePath $testDirectoryPath
-
         Log "Discovering the test cases."
         $testFiles = $(Get-ChildItem $PSScriptRoot\testCases "Test-*.ps1" ) | ForEach-Object { $_.FullName }
-
-        $testFiles | ForEach-Object { . $_ $nugetClientFilePath $([System.IO.Path]::Combine($testDirectoryPath, "source")) $resultsDirectoryPath $([System.IO.Path]::Combine($testDirectoryPath, "logs")) }
-
+        $testFiles | ForEach-Object { . $_ $nugetClient $([System.IO.Path]::Combine($testDirectoryPath, "source")) $resultsDirectoryPath $([System.IO.Path]::Combine($testDirectoryPath, "logs")) }
     }
-    finally {
+    finally 
+    {
         if (!$SkipCleanup) {
             Remove-Item -r -force $testDirectoryPath -ErrorAction Ignore > $null
         }

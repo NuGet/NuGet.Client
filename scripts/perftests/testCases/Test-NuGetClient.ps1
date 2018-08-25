@@ -1,6 +1,6 @@
 Param(
     [Parameter(Mandatory=$true)]
-    [string]$nugetClientFilePath,
+    [string]$nugetClient,
     [Parameter(Mandatory=$true)]
     [string]$sourceRootDirectory,
     [Parameter(Mandatory=$true)]
@@ -19,9 +19,9 @@ Param(
     $solutionFilePath = SetupGitRepository $repoUrl $commitHash $sourcePath
     # It's fine if this is run from here. It is run again the performance test script, but it'll set it to the same values.
     # Additionally, this will cleanup the extras from the bootstrapping which are already in the local folder, allowing us to get more accurate measurements
-    SetupNuGetFolders $nugetClientFilePath
+    SetupNuGetFolders $nugetClient
     $currentWorkingDirectory = $pwd
-    cd $sourcePath
+    Set-Location $sourcePath
     . "$sourcePath\configure.ps1" *>>$null
-    cd $currentWorkingDirectory
-    . "$PSScriptRoot\..\RunPerformanceTests.ps1" $nugetClientFilePath $solutionFilePath $resultsFilePath $logsPath
+    Set-Location $currentWorkingDirectory
+    . "$PSScriptRoot\..\RunPerformanceTests.ps1" $nugetClient $solutionFilePath $resultsFilePath $logsPath
