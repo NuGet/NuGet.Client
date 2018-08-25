@@ -165,7 +165,7 @@ Param(
     # Setup the NuGet folders - This includes global packages folder/http/plugin caches
     SetupNuGetFolders $nugetClientPath
 
-    Log "Measuring restore for $solutionPath by $nugetClient" "Green"
+    Log "Measuring restore for $solutionPath by $nugetClientPath" "Green"
 
     if(Test-Path $resultsFilePath)
     {
