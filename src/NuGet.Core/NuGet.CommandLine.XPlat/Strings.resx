@@ -557,6 +557,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="ListPkg_TransitiveHeader" xml:space="preserve">
     <value>Transitive Package</value>
+  </data>
   <data name="PushCommand_Interactive" xml:space="preserve">
     <value>Allow the command to block and require manual action for operations like authentication.</value>
   </data>

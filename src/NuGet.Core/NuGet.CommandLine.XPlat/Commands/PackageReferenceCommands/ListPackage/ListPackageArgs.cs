@@ -61,7 +61,7 @@ namespace NuGet.CommandLine.XPlat
             Prerelease = prerelease;
             HighestPatch = highestPatch;
             HighestMinor = highestMinor;
-            Logger = logger ?? throw new Exception(nameof(logger));
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             CancellationToken = cancellationToken;
         }
     }

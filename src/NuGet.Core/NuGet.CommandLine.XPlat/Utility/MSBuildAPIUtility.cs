@@ -393,7 +393,7 @@ namespace NuGet.CommandLine.XPlat
 
                 //The packages for the framework that were retrieved with GetRequestedVersions
                 var frameworkDependencies = tfmInformation.Dependencies;
-                var projPackages = GetPackageReferencesForList(projectPath, "", tfmInformation.ToString());
+                var projPackages = GetPackageReferencesFromTargets(projectPath, "", tfmInformation.ToString());
                 var topLevelPackages = new List<InstalledPackageReference>();
                 var transitivePackages = new List<InstalledPackageReference>();
 
@@ -506,7 +506,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="framework">Framework to get reference(s) for</param>
         /// <returns>List of Items containing the package reference for the package.
         /// If the libraryDependency is null then it returns all package references</returns>
-        private static IEnumerable<InstalledPackageReference> GetPackageReferencesForList(string projectPath,
+        private static IEnumerable<InstalledPackageReference> GetPackageReferencesFromTargets(string projectPath,
            string libraryName, string framework)
         {
             var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

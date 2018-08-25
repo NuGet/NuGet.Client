@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using NuGet.CommandLine.XPlat.Utility;
@@ -98,7 +96,7 @@ namespace NuGet.CommandLine.XPlat
 
                                 //Printing packages of a single project and keeping track if
                                 //an auto-referenced package was printed
-                                PrintProjectPackages(packages, projectName, listPackageArgs.IncludeTransitive, listPackageArgs.IncludeOutdated, out var autoRefFoundWithinProject);
+                                ProjectPackagesPrintUtility.PrintPackages(packages, projectName, listPackageArgs.IncludeTransitive, listPackageArgs.IncludeOutdated, out var autoRefFoundWithinProject);
                                 autoReferenceFound = autoReferenceFound || autoRefFoundWithinProject;
                             }
                         }
@@ -138,15 +136,14 @@ namespace NuGet.CommandLine.XPlat
             var contactSourcesRunningTasks = new List<Task>();
             var latestVersionsRequests = new List<Task>();
 
-            Debugger.Launch();
             //Unique Dictionary for packages and list of latest versions to handle different sources
-            var uniquePackagesVersions = new Dictionary<InstalledPackageReference, IList<NuGetVersion>>(new PackageReferenceComparerByName());
-            AddPackagesToUniqueDict(packages, uniquePackagesVersions);
+            var packagesVersionsDict = new Dictionary<InstalledPackageReference, IList<NuGetVersion>>(new InstalledPackageReferenceIdComparer());
+            AddPackagesToDict(packages, packagesVersionsDict);
 
             //Prepare requests for each of the packages
-            foreach (var package in uniquePackagesVersions)
+            foreach (var package in packagesVersionsDict)
             {
-                PrepareLatestVersionsRequests(package.Key, listPackageArgs, providers, latestVersionsRequests, uniquePackagesVersions);
+                PrepareLatestVersionsRequests(package.Key, listPackageArgs, providers, latestVersionsRequests, packagesVersionsDict);
             }
 
             //Make the calls to the sources
@@ -163,7 +160,7 @@ namespace NuGet.CommandLine.XPlat
             await Task.WhenAll(contactSourcesRunningTasks);
 
             //Save latest versions within the InstalledPackageReference
-            GetVersionsFromUniqueDict(packages, uniquePackagesVersions);
+            GetVersionsFromDict(packages, packagesVersionsDict);
         }
 
         /// <summary>
@@ -172,25 +169,25 @@ namespace NuGet.CommandLine.XPlat
         /// times
         /// </summary>
         /// <param name="packages"> Packages found in the project </param>
-        /// <param name="uniquePackagesVersions"> An empty dictionary to be filled with packages </param>
-        private void AddPackagesToUniqueDict(IEnumerable<FrameworkPackages> packages,
-            Dictionary<InstalledPackageReference, IList<NuGetVersion>> uniquePackagesVersions)
+        /// <param name="packagesVersionsDict"> An empty dictionary to be filled with packages </param>
+        private void AddPackagesToDict(IEnumerable<FrameworkPackages> packages,
+            Dictionary<InstalledPackageReference, IList<NuGetVersion>> packagesVersionsDict)
         {
             foreach (var frameworkPackages in packages)
             {
                 foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
                 {
-                    if (!uniquePackagesVersions.ContainsKey(topLevelPackage))
+                    if (!packagesVersionsDict.ContainsKey(topLevelPackage))
                     {
-                        uniquePackagesVersions.Add(topLevelPackage, new List<NuGetVersion>());
+                        packagesVersionsDict.Add(topLevelPackage, new List<NuGetVersion>());
                     }
                 }
 
                 foreach (var transitivePackage in frameworkPackages.TransitivePacakges)
                 {
-                    if (!uniquePackagesVersions.ContainsKey(transitivePackage))
+                    if (!packagesVersionsDict.ContainsKey(transitivePackage))
                     {
-                        uniquePackagesVersions.Add(transitivePackage, new List<NuGetVersion>());
+                        packagesVersionsDict.Add(transitivePackage, new List<NuGetVersion>());
                     }
                 }
             }
@@ -200,23 +197,23 @@ namespace NuGet.CommandLine.XPlat
         /// Get last versions for every package from the unqiue packages
         /// </summary>
         /// <param name="packages"> Project packages to get filled with latest versions </param>
-        /// <param name="uniquePackagesVersions"> Unique packages that are mapped to latest versions
+        /// <param name="packagesVersionsDict"> Unique packages that are mapped to latest versions
         /// from different sources </param>
-        private void GetVersionsFromUniqueDict(IEnumerable<FrameworkPackages> packages,
-            Dictionary<InstalledPackageReference, IList<NuGetVersion>> uniquePackagesVersions)
+        private void GetVersionsFromDict(IEnumerable<FrameworkPackages> packages,
+            Dictionary<InstalledPackageReference, IList<NuGetVersion>> packagesVersionsDict)
         {
             foreach (var frameworkPackages in packages)
             {
                 foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
                 {
-                    var matchingPackage = uniquePackagesVersions.Where(p => p.Key.Name.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).Single();
+                    var matchingPackage = packagesVersionsDict.Where(p => p.Key.Name.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).Single();
                     topLevelPackage.LatestVersion = matchingPackage.Value.Max();
                     topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedVersion, topLevelPackage.LatestVersion);
                 }
 
                 foreach (var transitivePackage in frameworkPackages.TransitivePacakges)
                 {
-                    var matchingPackage = uniquePackagesVersions.Where(p => p.Key.Name.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).Single();
+                    var matchingPackage = packagesVersionsDict.Where(p => p.Key.Name.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).Single();
                     transitivePackage.LatestVersion = matchingPackage.Value.Max();
                     transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedVersion, transitivePackage.LatestVersion);
                 }
@@ -256,7 +253,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="listPackageArgs">List args for the token and source provider></param>
         /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="latestVersionsRequests">Tasks for calls to the sources to be executed</param>
-        /// <param name="uniquePackages">A reference to the unique packages in the project
+        /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>An updated pacakge with the highest version at sources</returns>
         private void PrepareLatestVersionsRequests(
@@ -264,12 +261,12 @@ namespace NuGet.CommandLine.XPlat
             ListPackageArgs listPackageArgs,
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
             IList<Task> latestVersionsRequests,
-            Dictionary<InstalledPackageReference, IList<NuGetVersion>> uniquePackages)
+            Dictionary<InstalledPackageReference, IList<NuGetVersion>> packagesVersionsDict)
         {
             var sources = listPackageArgs.PackageSources;
             foreach (var packageSource in sources)
             {
-                latestVersionsRequests.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, package, providers, uniquePackages));
+                latestVersionsRequests.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, package, providers, packagesVersionsDict));
             }
         }
 
@@ -280,7 +277,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="listPackageArgs">The list args for the cancellation token</param>
         /// <param name="package">Package to look for updates for</param>
         /// <param name="providers">The providers to use when looking at sources</param>
-        /// <param name="uniquePackages">A reference to the unique packages in the project
+        /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>An updated pacakge with the highest version at a single source</returns>
         private async Task GetLatestVersionPerSourceAsync(
@@ -288,7 +285,7 @@ namespace NuGet.CommandLine.XPlat
             ListPackageArgs listPackageArgs,
             InstalledPackageReference package,
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
-            Dictionary<InstalledPackageReference, IList<NuGetVersion>> uniquePackages)
+            Dictionary<InstalledPackageReference, IList<NuGetVersion>> packagesVersionsDict)
         {
             var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
             var dependencyInfoResource = await sourceRepository.GetResourceAsync<FindPackageByIdResource>(listPackageArgs.CancellationToken);
@@ -299,7 +296,7 @@ namespace NuGet.CommandLine.XPlat
             .OrderByDescending(version => version, VersionComparer.Default)
             .FirstOrDefault();
 
-            var latestVersionsForPackage = uniquePackages.Where(p => p.Key.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase)).Single().Value;
+            var latestVersionsForPackage = packagesVersionsDict.Where(p => p.Key.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase)).Single().Value;
             latestVersionsForPackage.Add(latestVersionAtSource);
 
         }
@@ -328,202 +325,6 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return result;
-        }
-
-
-        /// <summary>
-        /// A function that prints all the package references of a project
-        /// </summary>
-        /// <param name="packages">A list of framework packages. Check <see cref="FrameworkPackages"/></param>
-        /// <param name="projectName">The project name</param>
-        /// <param name="transitive">Whether include-transitive flag exists or not</param>
-        /// <param name="outdated">Whether outdated flag exists or not</param>
-        /// <param name="autoReferenceFound">An out to return whether autoreference was found</param>
-        private void PrintProjectPackages(IEnumerable<FrameworkPackages> packages,
-           string projectName, bool transitive, bool outdated, out bool autoReferenceFound)
-        {
-            autoReferenceFound = false;
-
-            Console.WriteLine(string.Format(Strings.ListPkg_ProjectHeaderLog, projectName));
-
-            foreach (var frameworkPackages in packages)
-            {
-                var frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
-                var frameworkTransitivePackages = frameworkPackages.TransitivePacakges;
-
-                //Filter the packages for outdated
-                if (outdated)
-                {
-                    frameworkTopLevelPackages = frameworkTopLevelPackages.Where(p => !p.AutoReference && (p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion));
-                    frameworkTransitivePackages = frameworkTransitivePackages.Where(p => p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion);
-                }
-
-                //If no packages exist for this framework, print the
-                //appropriate message
-                if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
-                {
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
-                    Console.ResetColor();
-                }
-                else
-                {
-                    //Print name of the framework
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine(string.Format("   [{0}]: ", frameworkPackages.Framework));
-                    Console.ResetColor();
-                    
-                    //Print top-level packages
-                    if (frameworkTopLevelPackages.Any())
-                    {
-                        var autoRefWithinPackagesList = false;
-                        PackagesTable(frameworkTopLevelPackages, false, outdated, out autoRefWithinPackagesList);
-                        autoReferenceFound = autoReferenceFound || autoRefWithinPackagesList;
-                    }
-
-                    //Print transitive pacakges
-                    if (transitive && frameworkTransitivePackages.Any())
-                    {
-                        var autoRefWithinPackagesList = false;
-                        PackagesTable(frameworkTransitivePackages, true, outdated, out autoRefWithinPackagesList);
-                        autoReferenceFound = autoReferenceFound || autoRefWithinPackagesList;
-                    }
-                }
-            }            
-        }
-
-        /// <summary>
-        /// Given a list of packages, this function will print them in a table
-        /// </summary>
-        /// <param name="packages">The list of packages</param>
-        /// <param name="printingTransitive">Whether the function is printing transitive
-        /// packages table or not</param>
-        /// <param name="outdated"></param>
-        /// <param name="autoRefWithinPackagesList"></param>
-        /// <returns>The table as a string</returns>
-        private void PackagesTable(IEnumerable<InstalledPackageReference> packages, bool printingTransitive, bool outdated, out bool autoRefWithinPackagesList)
-        {
-            var autoReferenceFound = false;
-
-            if (!packages.Any())
-            {
-                autoRefWithinPackagesList = false;
-                return;
-            }
-
-            packages = packages.OrderBy(p => p.Name);
-
-            //To enable coloring only the latest version as appropriate
-            //we need to map every string in the table to a color, which
-            //this is used for
-            IEnumerable<Tuple<string, ConsoleColor>> tableToPrint;
-
-            var headers = BuildTableHeaders(printingTransitive, outdated);
-
-            if (outdated && printingTransitive)
-            {
-                tableToPrint = packages.ToStringTable(
-                       headers,
-                       p => p.UpdateLevel,
-                       p => "",
-                       p => p.Name,
-                       p => "", p => p.ResolvedVersion.ToString(),
-                       p => p.LatestVersion == null ? Strings.ListPkg_NotFoundAtSources : p.LatestVersion.ToString());
-            }
-            else if (outdated && !printingTransitive)
-            {
-                tableToPrint = packages.ToStringTable(
-                       headers,
-                       p => p.UpdateLevel,
-                       p => "",
-                       p => p.Name,
-                       p =>
-                       {
-                           if (p.AutoReference)
-                           {
-                               autoReferenceFound = true;
-                               return "(A)";
-                           }
-                           return "";
-                       },
-                       p => p.OriginalRequestedVersion,
-                       p => p.ResolvedVersion.ToString(),
-                       p => p.LatestVersion == null ? Strings.ListPkg_NotFoundAtSources : p.LatestVersion.ToString());
-            }
-            else if (!outdated && printingTransitive)
-            {
-                tableToPrint = packages.ToStringTable(
-                        headers,
-                        p => p.UpdateLevel,
-                        p => "",
-                        p => p.Name,
-                        p => "",
-                        p => p.ResolvedVersion.ToString());
-            }
-            else
-            {
-                tableToPrint = packages.ToStringTable(
-                       headers,
-                       p => p.UpdateLevel,
-                       p => "",
-                       p => p.Name,
-                       p => {
-                           if (p.AutoReference)
-                           {
-                               autoReferenceFound = true;
-                               return "(A)";
-                           }
-                           return "";
-                       },
-                       p => p.OriginalRequestedVersion,
-                       p => p.ResolvedVersion.ToString());
-            }
-
-            //Handle printing with colors
-            foreach (var text in tableToPrint)
-            {
-                if (text.Item2 != ConsoleColor.White)
-                {
-                    Console.ForegroundColor = text.Item2;
-                }
-                
-                Console.Write(text.Item1);
-                Console.ResetColor();
-            }
-
-            Console.WriteLine();
-            autoRefWithinPackagesList = autoReferenceFound;
-        }
-
-        /// <summary>
-        /// Prepares the headers for the tables that will be printed
-        /// </summary>
-        /// <param name="printingTransitive">Whether the table is for transitive or not</param>
-        /// <param name="outdated">Whether we have an outdated/latest column or not</param>
-        /// <returns></returns>
-        private string[] BuildTableHeaders(bool printingTransitive, bool outdated)
-        {
-            var result = new List<string> { "" };
-            if (printingTransitive)
-            {
-                result.Add(Strings.ListPkg_TransitiveHeader);
-                result.Add("");
-                result.Add(Strings.ListPkg_Resolved);
-            }
-            else
-            {
-                result.Add(Strings.ListPkg_TopLevelHeader);
-                result.Add("");
-                result.Add(Strings.ListPkg_Requested);
-                result.Add(Strings.ListPkg_Resolved);
-            }
-
-            if (outdated)
-            {
-                result.Add(Strings.ListPkg_Latest);
-            }
-
-            return result.ToArray();
         }
     }
 }

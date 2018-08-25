@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace NuGet.CommandLine.XPlat
 {
-    class PackageReferenceComparerByName : IEqualityComparer<InstalledPackageReference>
+    class InstalledPackageReferenceIdComparer : IEqualityComparer<InstalledPackageReference>
     {
         public bool Equals(InstalledPackageReference one, InstalledPackageReference two)
         {
