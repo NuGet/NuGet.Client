@@ -70,7 +70,6 @@ Param(
         {
             $logs = . $nugetClient restore $solutionFilePath -noninteractive $forceArg
         }
-        Log $logs
         $end=Get-Date
         $totalTime=$end-$start
 
