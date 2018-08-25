@@ -74,7 +74,7 @@ Param(
         $end=Get-Date
         $totalTime=$end-$start
 
-        if(!$logsPath)
+        if(![string]::IsNullOrEmpty($logsPath))
         {
             $logFile = [System.IO.Path]::Combine($logsPath, "restoreLog-$([System.IO.Path]::GetFileNameWithoutExtension($solutionFilePath))-$(get-date -f yyyyMMddTHHmmssffff).txt")
             OutFileWithCreateFolders $logFile $logs
@@ -132,74 +132,78 @@ Param(
 
         Log "Finished measuring."
     }
+    try {
+        ##### Script logic #####
 
-    ##### Script logic #####
-
-    if(!(Test-Path $solutionPath))
-    {
-        Log "$solutionPath does not exist!" "Red"
-        exit 1;
-    }
-
-    if(!(Test-Path $nugetClientPath))
-    {
-        Log "$nugetClientPath does not exist!" "Red"
-        exit 1;
-    }
-
-    $nugetClientPath = GetAbsolutePath $nugetClientPath
-    $solutionPath = GetAbsolutePath $solutionPath
-    $resultsFilePath = GetAbsolutePath $resultsFilePath
-
-    if(![string]::IsNullOrEmpty($logsPath))
-    {
-        $logsPath = GetAbsolutePath $logsPath
-
-        If($resultsFilePath.StartsWith($logsPath))
+        if(!(Test-Path $solutionPath))
         {
-            Log "$resultsFilePath cannot be under $logsPath" "red"
-            exit(1)
+            Log "$solutionPath does not exist!" "Red"
+            exit 1;
         }
+
+        if(!(Test-Path $nugetClientPath))
+        {
+            Log "$nugetClientPath does not exist!" "Red"
+            exit 1;
+        }
+
+        $nugetClientPath = GetAbsolutePath $nugetClientPath
+        $solutionPath = GetAbsolutePath $solutionPath
+        $resultsFilePath = GetAbsolutePath $resultsFilePath
+
+        if(![string]::IsNullOrEmpty($logsPath))
+        {
+            $logsPath = GetAbsolutePath $logsPath
+
+            If($resultsFilePath.StartsWith($logsPath))
+            {
+                Log "$resultsFilePath cannot be under $logsPath" "red"
+                exit(1)
+            }
+        }
+
+        # Setup the NuGet folders - This includes global packages folder/http/plugin caches
+        SetupNuGetFolders $nugetClientPath
+
+        Log "Measuring restore for $solutionPath by $nugetClientPath" "Green"
+
+        if(Test-Path $resultsFilePath)
+        {
+            Log "The results file $resultsFilePath already exists, deleting it" "yellow"
+            & Remove-Item -r $resultsFilePath -Force
+        }
+
+        $uniqueRunID = Get-Date -f d-m-y-h:m:s
+
+        if(!$skipWarmup)
+        {
+            Log "Running 1x warmup restore"
+            RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "warmup" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
+        }
+        if(!$skipCleanRestores)
+        {
+            Log "Running $($iterationCount)x clean restores"
+            1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "arctic" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
+        }
+        if(!$skipColdRestores)
+        {
+            Log "Running $($iterationCount)x without a global packages folder"
+            1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "cold" $uniqueRunID -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
+        }
+        if(!$skipForceRestores)
+        {
+            Log "Running $($iterationCount)x force restores"
+            1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "force" $uniqueRunID -force }
+        }
+        if(!$skipNoOpRestores){
+            Log "Running $($iterationCount)x no-op restores"
+            1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "noop" $uniqueRunID -force }
+        }
+
+        Log "Completed the performance measurements for $solutionPath, results are in $resultsFilePath" "green"
     }
-
-    # Setup the NuGet folders - This includes global packages folder/http/plugin caches
-    SetupNuGetFolders $nugetClientPath
-
-    Log "Measuring restore for $solutionPath by $nugetClientPath" "Green"
-
-    if(Test-Path $resultsFilePath)
+    finally 
     {
-        Log "The results file $resultsFilePath already exists, deleting it" "yellow"
-        & Remove-Item -r $resultsFilePath -Force
+        # Clean the NuGet folders.
+        CleanNuGetFolders $nugetClientPath
     }
-
-    $uniqueRunID = Get-Date -f d-m-y-h:m:s
-
-    if($skipWarmup)
-    {
-        Log "Running 1x warmup restore"
-        RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "warmup" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
-    }
-    if($skipCleanRestores)
-    {
-        Log "Running $($iterationCount)x clean restores"
-        1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "arctic" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
-    }
-    if($skipColdRestores)
-    {
-        Log "Running $($iterationCount)x without a global packages folder"
-        1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "cold" $uniqueRunID -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
-    }
-    if($skipForceRestores)
-    {
-        Log "Running $($iterationCount)x force restores"
-        1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "force" $uniqueRunID -force }
-    }
-    if($skipNoOpRestores){
-        Log "Running $($iterationCount)x no-op restores"
-        1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "noop" $uniqueRunID -force }
-    }
-    Log "Completed the performance measurements for $solutionPath, results are in $resultsFilePath" "green"
-
-    # Clean the NuGet folders.
-    CleanNuGetFolders $nugetClientPath

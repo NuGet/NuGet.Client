@@ -195,6 +195,7 @@
     # TODO NK - Does this delete the sources as well? Should not. 
     function CleanNuGetFolders([string]$nugetClient)
     {
+        Log "Cleanup up the NuGet folders - global packages folder, http/plugins caches"
         LocalsClearAll $nugetClient
         $nugetFolders = GetNuGetFoldersPath
 
