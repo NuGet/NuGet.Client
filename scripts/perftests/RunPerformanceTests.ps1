@@ -173,26 +173,26 @@ Param(
 
         $uniqueRunID = Get-Date -f d-m-y-h:m:s
 
-        # if(!$skipWarmup)
-        # {
-        #     Log "Running 1x warmup restore"
-        #     RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "warmup" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
-        # }
-        # if(!$skipCleanRestores)
-        # {
-        #     Log "Running $($iterationCount)x clean restores"
-        #     1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "arctic" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
-        # }
-        # if(!$skipColdRestores)
-        # {
-        #     Log "Running $($iterationCount)x without a global packages folder"
-        #     1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "cold" $uniqueRunID -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
-        # }
-        # if(!$skipForceRestores)
-        # {
-        #     Log "Running $($iterationCount)x force restores"
-        #     1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "force" $uniqueRunID -force }
-        # }
+        if(!$skipWarmup)
+        {
+            Log "Running 1x warmup restore"
+            RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "warmup" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force
+        }
+        if(!$skipCleanRestores)
+        {
+            Log "Running $($iterationCount)x clean restores"
+            1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "arctic" $uniqueRunID -cleanGlobalPackagesFolder -cleanHttpCache -cleanPluginsCache -killMSBuildAndDotnetExeProcess -force }
+        }
+        if(!$skipColdRestores)
+        {
+            Log "Running $($iterationCount)x without a global packages folder"
+            1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "cold" $uniqueRunID -cleanGlobalPackagesFolder -killMSBuildAndDotnetExeProcess -force }
+        }
+        if(!$skipForceRestores)
+        {
+            Log "Running $($iterationCount)x force restores"
+            1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "force" $uniqueRunID -force }
+        }
         if(!$skipNoOpRestores){
             Log "Running $($iterationCount)x no-op restores"
             1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "noop" $uniqueRunID }

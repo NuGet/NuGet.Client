@@ -21,7 +21,13 @@ Param(
     # Additionally, this will cleanup the extras from the bootstrapping which are already in the local folder, allowing us to get more accurate measurements
     SetupNuGetFolders $nugetClient
     $currentWorkingDirectory = $pwd
-    Set-Location $sourcePath
-    . "$sourcePath\configure.ps1" *>>$null
-    Set-Location $currentWorkingDirectory
-    . "$PSScriptRoot\..\RunPerformanceTests.ps1" $nugetClient $solutionFilePath $resultsFilePath $logsPath
+    try 
+    {
+        Set-Location $sourcePath
+        . "$sourcePath\configure.ps1" *>>$null
+    }
+    finally 
+    {
+        Set-Location $currentWorkingDirectory
+    }
+. "$PSScriptRoot\..\RunPerformanceTests.ps1" $nugetClient $solutionFilePath $resultsFilePath $logsPath
