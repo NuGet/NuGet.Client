@@ -168,8 +168,7 @@ Param(
 
         if(Test-Path $resultsFilePath)
         {
-            Log "The results file $resultsFilePath already exists, deleting it" "yellow"
-            & Remove-Item -r $resultsFilePath -Force
+            Log "The results file $resultsFilePath already exists. The test results of this run will be appended to the same file." "yellow"
         }
 
         $uniqueRunID = Get-Date -f d-m-y-h:m:s

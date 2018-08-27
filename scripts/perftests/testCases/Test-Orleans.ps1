@@ -11,4 +11,6 @@ Param(
 
     . "$PSScriptRoot\..\PerformanceTestUtilities.ps1"
 
-    RunPerformanceTestsOnGitRepository $nugetClient $sourceRootDirectory "https://github.com/dotnet/orleans.git" "00fe587cc9d18db3bb238f1e78abf46835b97457" $resultsDirectoryPath $logsPath
+    $testCaseName = GenerateNameFromGitUrl $repoUrl
+    $resultsFilePath = [System.IO.Path]::Combine($resultsDirectoryPath, "$testCaseName.csv")
+    RunPerformanceTestsOnGitRepository -nugetClient $nugetClient -sourceRootDirectory $sourceRootDirectory -testCaseName $testCaseName -repoUrl "https://github.com/dotnet/orleans.git" -commitHash "00fe587cc9d18db3bb238f1e78abf46835b97457" -resultsFilePath $resultsFilePath -logsPath $logsPath

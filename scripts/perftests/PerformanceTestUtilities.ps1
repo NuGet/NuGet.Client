@@ -192,7 +192,6 @@
 
     # Cleanup the nuget folders and delete the nuget folders path. 
     # This should only be invoked by the the performance tests
-    # TODO NK - Does this delete the sources as well? Should not. 
     function CleanNuGetFolders([string]$nugetClient)
     {
         Log "Cleanup up the NuGet folders - global packages folder, http/plugins caches"
@@ -206,13 +205,9 @@
     }
 
     # Given a repository, a client and directories for the results/logs, runs the configured performance tests.
-    function RunPerformanceTestsOnGitRepository([string]$nugetClient, [string]$sourceRootDirectory, [string]$repoUrl,  [string]$commitHash, [string]$resultsDirPath, [string]$logsPath)
+    function RunPerformanceTestsOnGitRepository([string]$nugetClient, [string]$sourceRootDirectory, [string]$testCaseName, [string]$repoUrl,  [string]$commitHash, [string]$resultsFilePath, [string]$logsPath)
     {
-        $repoName = GenerateNameFromGitUrl $repoUrl
-        $solutionFilePath = SetupGitRepository $repoUrl $commitHash $([System.IO.Path]::Combine($sourceRootDirectory, $repoName))
-
-        $resultsFilePath = [System.IO.Path]::Combine($resultsDirPath, "$repoName.csv")
+        $solutionFilePath = SetupGitRepository $repoUrl $commitHash $([System.IO.Path]::Combine($sourceRootDirectory, $testCaseName))
         SetupNuGetFolders $nugetClient
-
         . "$PSScriptRoot\RunPerformanceTests.ps1" $nugetClient $solutionFilePath $resultsFilePath $logsPath
     }

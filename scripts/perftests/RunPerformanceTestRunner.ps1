@@ -39,7 +39,16 @@ Param(
         $testDirectoryPath = GetAbsolutePath $testDirectoryPath
         Log "Discovering the test cases."
         $testFiles = $(Get-ChildItem $PSScriptRoot\testCases "Test-*.ps1" ) | ForEach-Object { $_.FullName }
-        $testFiles | ForEach-Object { . $_ $nugetClient $([System.IO.Path]::Combine($testDirectoryPath, "source")) $resultsDirectoryPath $([System.IO.Path]::Combine($testDirectoryPath, "logs")) }
+        $testFiles | ForEach-Object { 
+            try 
+            {
+            . $_ -nugetClient $nugetClient -sourceRootDirectory $([System.IO.Path]::Combine($testDirectoryPath, "source")) -resultsDirectoryPath $resultsDirectoryPath -logsPath $([System.IO.Path]::Combine($testDirectoryPath, "logs")) 
+            } 
+            catch 
+            {
+                Log "Problem running the test case $_" "red"
+            }
+        }
     }
     finally 
     {
