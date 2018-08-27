@@ -24,6 +24,8 @@ Param(
     {
         foreach($nugetClient in $nugetClients){
             try {
+                Log "Running tests for $nugetClient"
+
                 if ([string]::IsNullOrEmpty($nugetClient) -Or !$(Test-Path $nugetClient)) 
                 {
                     Log "The NuGet client at '$nugetClient' cannot be resolved. Attempting to use the fallback option." "yellow"
