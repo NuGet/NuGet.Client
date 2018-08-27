@@ -134,6 +134,7 @@
     # Given a repository and a hash, checks out the revision in the given source directory. The return is a solution file if found. 
     function SetupGitRepository([string]$repository, [string]$commitHash, [string]$sourceDirectoryPath)
     {
+        Log "Setting up $repository into $sourceDirectoryPath"
         DownloadRepository $repository $commitHash $sourceDirectoryPath
         $solutionFile = GetSolutionFile $repository $sourceDirectoryPath
         Log "Completed the repository setup. The solution file is $solutionFile" -color "Green"
@@ -207,7 +208,7 @@
     # Given a repository, a client and directories for the results/logs, runs the configured performance tests.
     function RunPerformanceTestsOnGitRepository([string]$nugetClient, [string]$sourceRootDirectory, [string]$testCaseName, [string]$repoUrl,  [string]$commitHash, [string]$resultsFilePath, [string]$logsPath)
     {
-        $solutionFilePath = SetupGitRepository $repoUrl $commitHash $([System.IO.Path]::Combine($sourceRootDirectory, $testCaseName))
+        $solutionFilePath = SetupGitRepository -repository $repoUrl -commitHash $commitHash -sourceDirectoryPath $([System.IO.Path]::Combine($sourceRootDirectory, $testCaseName))
         SetupNuGetFolders $nugetClient
         . "$PSScriptRoot\RunPerformanceTests.ps1" $nugetClient $solutionFilePath $resultsFilePath $logsPath
     }

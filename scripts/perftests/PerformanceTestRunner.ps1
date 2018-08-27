@@ -22,8 +22,10 @@ Param(
 
     try 
     {
-        foreach($nugetClient in $nugetClients){
-            try {
+        foreach($nugetClient in $nugetClients)
+        {
+            try 
+            {
                 Log "Running tests for $nugetClient"
 
                 if ([string]::IsNullOrEmpty($nugetClient) -Or !$(Test-Path $nugetClient)) 
