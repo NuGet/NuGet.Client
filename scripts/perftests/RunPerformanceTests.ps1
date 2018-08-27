@@ -196,7 +196,7 @@ Param(
         }
         if(!$skipNoOpRestores){
             Log "Running $($iterationCount)x no-op restores"
-            1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "noop" $uniqueRunID -force }
+            1..$iterationCount | % { RunRestore $solutionPath $nugetClientPath $resultsFilePath $logsPath "noop" $uniqueRunID }
         }
 
         Log "Completed the performance measurements for $solutionPath, results are in $resultsFilePath" "green"
