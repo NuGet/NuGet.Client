@@ -751,7 +751,21 @@ namespace NuGet.Build.Tasks.Pack
                                 string.Equals(library.Name, packageDependency.Name, StringComparison.OrdinalIgnoreCase));
                         if (package != null)
                         {
-                            packageDependency.LibraryRange.VersionRange = new VersionRange(package.Version);
+                            if(packageDependency.LibraryRange.VersionRange.HasUpperBound)
+                            {
+                                packageDependency.LibraryRange.VersionRange = new VersionRange(
+                                    minVersion: package.Version,
+                                    includeMinVersion: packageDependency.LibraryRange.VersionRange.IsMinInclusive,
+                                    maxVersion: packageDependency.LibraryRange.VersionRange.MaxVersion,
+                                    includeMaxVersion: packageDependency.LibraryRange.VersionRange.IsMaxInclusive);
+                            }
+                            else
+                            {
+                                packageDependency.LibraryRange.VersionRange = new VersionRange(
+                                    minVersion: package.Version,
+                                    includeMinVersion: packageDependency.LibraryRange.VersionRange.IsMinInclusive);
+                            }
+                            
                         }
                     }
 
