@@ -1403,7 +1403,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and certificateRevocationMode has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode..
+        ///   Looks up a localized string similar to The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and NUGET_CERT_REVOCATION_MODE environment variable has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode..
         /// </summary>
         internal static string VerifyCertTrustOfflineWhileRevocationModeOffline {
             get {

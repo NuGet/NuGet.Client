@@ -12,7 +12,7 @@ namespace NuGet.Packaging.Test
 {
     public class SignedPackageVerifierSettingsTests
     {
-        const string RevocationModeEnvVar = "certificateRevocationMode";
+        const string RevocationModeEnvVar = "NUGET_CERT_REVOCATION_MODE";
 
         [Fact]
         public void ConstructorWithoutLists_WhenVerificationTargetIsUnrecognized_Throws()

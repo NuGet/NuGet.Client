@@ -21,7 +21,7 @@ namespace NuGet.Configuration
         private const string RepositoryPathKey = "repositoryPath";
         private const string MaxHttpRequestsPerSource = "maxHttpRequestsPerSource";
         public static readonly string DefaultGlobalPackagesFolderPath = "packages" + Path.DirectorySeparatorChar;
-        private const string RevocationModeKey = "certificateRevocationMode";
+        private const string RevocationModeEnvironmentKey = "NUGET_CERT_REVOCATION_MODE";
 
         public static string GetRepositoryPath(ISettings settings)
         {
@@ -320,7 +320,7 @@ namespace NuGet.Configuration
 
         public static RevocationMode GetRevocationMode()
         {
-            var revocationModeSetting = Environment.GetEnvironmentVariable(RevocationModeKey);
+            var revocationModeSetting = Environment.GetEnvironmentVariable(RevocationModeEnvironmentKey);
             if (!string.IsNullOrEmpty(revocationModeSetting) && Enum.TryParse(revocationModeSetting, ignoreCase: true, result: out RevocationMode revocationMode))
             {
                 return revocationMode;

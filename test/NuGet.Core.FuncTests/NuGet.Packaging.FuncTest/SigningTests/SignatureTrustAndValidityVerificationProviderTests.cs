@@ -2093,7 +2093,7 @@ namespace NuGet.Packaging.FuncTest
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.Undefined &&
                 issue.Level == LogLevel.Information &&
-                issue.Message.Contains("The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and certificateRevocationMode has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode."));
+                issue.Message.Contains("The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and NUGET_CERT_REVOCATION_MODE environment variable has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode."));
         }
 
         private static void AssertRevocationStatusUnknown(IEnumerable<SignatureLog> issues, NuGetLogCode code, LogLevel logLevel)
