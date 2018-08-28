@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using Xunit;
 
@@ -11,6 +12,8 @@ namespace NuGet.Packaging.Test
 {
     public class SignedPackageVerifierSettingsTests
     {
+        const string RevocationModeEnvVar = "NUGET_CERT_REVOCATION_MODE";
+
         [Fact]
         public void ConstructorWithoutLists_WhenVerificationTargetIsUnrecognized_Throws()
         {
@@ -28,7 +31,8 @@ namespace NuGet.Packaging.Test
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
                 allowNoRepositoryCertificateList: false,
-                allowNoClientCertificateList: false));
+                allowNoClientCertificateList: false,
+                revocationMode: RevocationMode.Online));
 
             Assert.Equal("verificationTarget", exception.ParamName);
             Assert.StartsWith($"The enum value '{verificationTarget}' is unrecognized.", exception.Message);
@@ -51,7 +55,8 @@ namespace NuGet.Packaging.Test
                 signaturePlacement: signaturePlacement,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
                 allowNoRepositoryCertificateList: false,
-                allowNoClientCertificateList: false));
+                allowNoClientCertificateList: false,
+                revocationMode: RevocationMode.Online));
 
             Assert.Equal("signaturePlacement", exception.ParamName);
             Assert.StartsWith($"The enum value '{signaturePlacement}' is unrecognized.", exception.Message);
@@ -74,7 +79,8 @@ namespace NuGet.Packaging.Test
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: repositoryCountersignatureVerificationBehavior,
                 allowNoRepositoryCertificateList: false,
-                allowNoClientCertificateList: false));
+                allowNoClientCertificateList: false,
+                revocationMode: RevocationMode.Online));
 
             Assert.Equal("repositoryCountersignatureVerificationBehavior", exception.ParamName);
             Assert.StartsWith($"The enum value '{repositoryCountersignatureVerificationBehavior}' is unrecognized.", exception.Message);
@@ -125,20 +131,22 @@ namespace NuGet.Packaging.Test
                 signaturePlacement: signaturePlacement,
                 repositoryCountersignatureVerificationBehavior: repositoryCountersignatureVerificationBehavior,
                 allowNoRepositoryCertificateList: false,
-                allowNoClientCertificateList: false));
+                allowNoClientCertificateList: false,
+                revocationMode: RevocationMode.Online));
 
             Assert.Equal(parameterName2, exception.ParamName);
             Assert.StartsWith($"Invalid combination of arguments {parameterName1} and {parameterName2}.", exception.Message);
         }
 
         [Theory]
-        [InlineData(true, VerificationTarget.Author, SignaturePlacement.PrimarySignature, SignatureVerificationBehavior.Never)]
-        [InlineData(false, VerificationTarget.All, SignaturePlacement.Any, SignatureVerificationBehavior.IfExistsAndIsNecessary)]
+        [InlineData(true, VerificationTarget.Author, SignaturePlacement.PrimarySignature, SignatureVerificationBehavior.Never, RevocationMode.Online)]
+        [InlineData(false, VerificationTarget.All, SignaturePlacement.Any, SignatureVerificationBehavior.IfExistsAndIsNecessary, RevocationMode.Offline)]
         public void ConstructorWithoutLists_InitializesProperties(
             bool boolValue,
             VerificationTarget verificationTarget,
             SignaturePlacement signaturePlacement,
-            SignatureVerificationBehavior signatureVerificationBehavior)
+            SignatureVerificationBehavior signatureVerificationBehavior,
+            RevocationMode revocationMode)
         {
             // Arrange & Act
             var settings = new SignedPackageVerifierSettings(
@@ -154,7 +162,8 @@ namespace NuGet.Packaging.Test
                 signaturePlacement: signaturePlacement,
                 repositoryCountersignatureVerificationBehavior: signatureVerificationBehavior,
                 allowNoRepositoryCertificateList: boolValue,
-                allowNoClientCertificateList: boolValue);
+                allowNoClientCertificateList: boolValue,
+                revocationMode: revocationMode);
 
             // Assert
             settings.AllowUnsigned.Should().Be(boolValue);
@@ -168,6 +177,7 @@ namespace NuGet.Packaging.Test
             settings.AllowNoRepositoryCertificateList.Should().Be(boolValue);
             settings.AllowNoClientCertificateList.Should().Be(boolValue);
             settings.RepositoryCountersignatureVerificationBehavior.Should().Be(signatureVerificationBehavior);
+            settings.RevocationMode.Should().Be(revocationMode);
         }
 
         [Fact]
@@ -188,6 +198,7 @@ namespace NuGet.Packaging.Test
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
                 allowNoRepositoryCertificateList: false,
                 allowNoClientCertificateList: false,
+                revocationMode: RevocationMode.Online,
                 repoAllowListEntries: Array.Empty<VerificationAllowListEntry>(),
                 clientAllowListEntries: Array.Empty<VerificationAllowListEntry>()));
 
@@ -213,6 +224,7 @@ namespace NuGet.Packaging.Test
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
                 allowNoRepositoryCertificateList: false,
                 allowNoClientCertificateList: false,
+                revocationMode: RevocationMode.Online,
                 repoAllowListEntries: Array.Empty<VerificationAllowListEntry>(),
                 clientAllowListEntries: Array.Empty<VerificationAllowListEntry>()));
 
@@ -238,6 +250,7 @@ namespace NuGet.Packaging.Test
                 repositoryCountersignatureVerificationBehavior: repositoryCountersignatureVerificationBehavior,
                 allowNoRepositoryCertificateList: false,
                 allowNoClientCertificateList: false,
+                revocationMode: RevocationMode.Online,
                 repoAllowListEntries: Array.Empty<VerificationAllowListEntry>(),
                 clientAllowListEntries: Array.Empty<VerificationAllowListEntry>()));
 
@@ -297,6 +310,7 @@ namespace NuGet.Packaging.Test
                 repositoryCountersignatureVerificationBehavior: repositoryCountersignatureVerificationBehavior,
                 allowNoRepositoryCertificateList: false,
                 allowNoClientCertificateList: false,
+                revocationMode: RevocationMode.Online,
                 repoAllowListEntries: Array.Empty<VerificationAllowListEntry>(),
                 clientAllowListEntries: Array.Empty<VerificationAllowListEntry>()));
 
@@ -305,13 +319,14 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData(true, VerificationTarget.Unknown, SignaturePlacement.PrimarySignature, SignatureVerificationBehavior.Never)]
-        [InlineData(false, VerificationTarget.All, SignaturePlacement.Any, SignatureVerificationBehavior.IfExistsAndIsNecessary)]
+        [InlineData(true, VerificationTarget.Unknown, SignaturePlacement.PrimarySignature, SignatureVerificationBehavior.Never, RevocationMode.Online)]
+        [InlineData(false, VerificationTarget.All, SignaturePlacement.Any, SignatureVerificationBehavior.IfExistsAndIsNecessary, RevocationMode.Offline)]
         public void ConstructorWithLists_InitializesProperties(
             bool boolValue,
             VerificationTarget verificationTarget,
             SignaturePlacement signaturePlacement,
-            SignatureVerificationBehavior signatureVerificationBehavior)
+            SignatureVerificationBehavior signatureVerificationBehavior,
+            RevocationMode revocationMode)
         {
             // Arrange
             var repoList = new List<CertificateHashAllowListEntry>();
@@ -332,6 +347,7 @@ namespace NuGet.Packaging.Test
                 verificationTarget: verificationTarget,
                 signaturePlacement: signaturePlacement,
                 repositoryCountersignatureVerificationBehavior: signatureVerificationBehavior,
+                revocationMode: revocationMode,
                 repoAllowListEntries: repoList,
                 clientAllowListEntries: clientList);
 
@@ -346,20 +362,31 @@ namespace NuGet.Packaging.Test
             settings.AllowNoRepositoryCertificateList.Should().Be(boolValue);
             settings.AllowNoClientCertificateList.Should().Be(boolValue);
             settings.RepositoryCountersignatureVerificationBehavior.Should().Be(signatureVerificationBehavior);
+            settings.RevocationMode.Should().Be(revocationMode);
             settings.RepositoryCertificateList.Should().BeSameAs(repoList);
             settings.ClientCertificateList.Should().BeSameAs(clientList);
         }
 
-        [Fact]
-        public void GetDefault_InitializesProperties()
+        [Theory]
+        [InlineData(null, RevocationMode.Online)]
+        [InlineData("", RevocationMode.Online)]
+        [InlineData("online", RevocationMode.Online)]
+        [InlineData("offline", RevocationMode.Offline)]
+        [InlineData("Offline", RevocationMode.Offline)]
+        public void GetDefault_InitializesProperties(string revocationModeEnvVar, RevocationMode expectedRevocationMode)
         {
             // Arrange
             var repoList = new List<CertificateHashAllowListEntry>();
             var clientList = new List<CertificateHashAllowListEntry>();
             var defaultValue = true;
 
+            if (revocationModeEnvVar != null)
+            {
+                Environment.SetEnvironmentVariable(RevocationModeEnvVar, revocationModeEnvVar);
+            }
+
             // Act
-            var settings = SignedPackageVerifierSettings.GetDefault(repoList, clientList);
+            var settings = SignedPackageVerifierSettings.GetDefault( repoList, clientList);
 
             // Assert
             settings.AllowUnsigned.Should().Be(defaultValue);
@@ -375,17 +402,30 @@ namespace NuGet.Packaging.Test
             settings.VerificationTarget.Should().Be(VerificationTarget.All);
             settings.SignaturePlacement.Should().Be(SignaturePlacement.Any);
             settings.RepositoryCountersignatureVerificationBehavior.Should().Be(SignatureVerificationBehavior.IfExistsAndIsNecessary);
+            settings.RevocationMode.Should().Be(expectedRevocationMode);
             settings.RepositoryCertificateList.Should().BeSameAs(repoList);
             settings.ClientCertificateList.Should().BeSameAs(clientList);
+
+            Environment.SetEnvironmentVariable(RevocationModeEnvVar, string.Empty);
         }
 
-        [Fact]
-        public void GetAcceptModeDefaultPolicy_InitializesProperties()
+        [Theory]
+        [InlineData(null, RevocationMode.Online)]
+        [InlineData("", RevocationMode.Online)]
+        [InlineData("online", RevocationMode.Online)]
+        [InlineData("offline", RevocationMode.Offline)]
+        [InlineData("Offline", RevocationMode.Offline)]
+        public void GetAcceptModeDefaultPolicy_InitializesProperties(string revocationModeEnvVar, RevocationMode expectedRevocationMode)
         {
             // Arrange
             var repoList = new List<CertificateHashAllowListEntry>();
             var clientList = new List<CertificateHashAllowListEntry>();
             var defaultValue = true;
+
+            if (revocationModeEnvVar != null)
+            {
+                Environment.SetEnvironmentVariable(RevocationModeEnvVar, revocationModeEnvVar);
+            }
 
             // Act
             var settings = SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy(repoList, clientList);
@@ -404,16 +444,29 @@ namespace NuGet.Packaging.Test
             settings.VerificationTarget.Should().Be(VerificationTarget.All);
             settings.SignaturePlacement.Should().Be(SignaturePlacement.Any);
             settings.RepositoryCountersignatureVerificationBehavior.Should().Be(SignatureVerificationBehavior.IfExistsAndIsNecessary);
+            settings.RevocationMode.Should().Be(expectedRevocationMode);
             settings.RepositoryCertificateList.Should().BeSameAs(repoList);
             settings.ClientCertificateList.Should().BeSameAs(clientList);
+
+            Environment.SetEnvironmentVariable(RevocationModeEnvVar, string.Empty);
         }
 
-        [Fact]
-        public void GetRequireModeDefaultPolicy_InitializesProperties()
+        [Theory]
+        [InlineData(null, RevocationMode.Online)]
+        [InlineData("", RevocationMode.Online)]
+        [InlineData("online", RevocationMode.Online)]
+        [InlineData("offline", RevocationMode.Offline)]
+        [InlineData("Offline", RevocationMode.Offline)]
+        public void GetRequireModeDefaultPolicy_InitializesProperties(string revocationModeEnvVar, RevocationMode expectedRevocationMode)
         {
             // Arrange
             var repoList = new List<CertificateHashAllowListEntry>();
             var clientList = new List<CertificateHashAllowListEntry>();
+
+            if (revocationModeEnvVar != null)
+            {
+                Environment.SetEnvironmentVariable(RevocationModeEnvVar, revocationModeEnvVar);
+            }
 
             // Act
             var settings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(repoList, clientList);
@@ -432,16 +485,29 @@ namespace NuGet.Packaging.Test
             settings.VerificationTarget.Should().Be(VerificationTarget.All);
             settings.SignaturePlacement.Should().Be(SignaturePlacement.Any);
             settings.RepositoryCountersignatureVerificationBehavior.Should().Be(SignatureVerificationBehavior.IfExistsAndIsNecessary);
+            settings.RevocationMode.Should().Be(expectedRevocationMode);
             settings.RepositoryCertificateList.Should().BeSameAs(repoList);
             settings.ClientCertificateList.Should().BeSameAs(clientList);
+
+            Environment.SetEnvironmentVariable(RevocationModeEnvVar, string.Empty);
         }
 
-        [Fact]
-        public void GetVerifyCommandDefaultPolicy_InitializesProperties()
+        [Theory]
+        [InlineData(null, RevocationMode.Online)]
+        [InlineData("", RevocationMode.Online)]
+        [InlineData("online", RevocationMode.Online)]
+        [InlineData("offline", RevocationMode.Offline)]
+        [InlineData("Offline", RevocationMode.Offline)]
+        public void GetVerifyCommandDefaultPolicy_InitializesProperties(string revocationModeEnvVar, RevocationMode expectedRevocationMode)
         {
             // Arrange
             var repoList = new List<CertificateHashAllowListEntry>();
             var clientList = new List<CertificateHashAllowListEntry>();
+
+            if (revocationModeEnvVar != null)
+            {
+                Environment.SetEnvironmentVariable(RevocationModeEnvVar, revocationModeEnvVar);
+            }
 
             // Act
             var settings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(repoList, clientList);
@@ -460,8 +526,11 @@ namespace NuGet.Packaging.Test
             settings.VerificationTarget.Should().Be(VerificationTarget.All);
             settings.SignaturePlacement.Should().Be(SignaturePlacement.Any);
             settings.RepositoryCountersignatureVerificationBehavior.Should().Be(SignatureVerificationBehavior.IfExists);
+            settings.RevocationMode.Should().Be(expectedRevocationMode);
             settings.RepositoryCertificateList.Should().BeSameAs(repoList);
             settings.ClientCertificateList.Should().BeSameAs(clientList);
+
+            Environment.SetEnvironmentVariable(RevocationModeEnvVar, string.Empty);
         }
     }
 }

@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using NuGet.Common;
+using NuGet.Configuration;
 
 namespace NuGet.Packaging.Signing
 {
@@ -78,6 +80,11 @@ namespace NuGet.Packaging.Signing
         public SignatureVerificationBehavior RepositoryCountersignatureVerificationBehavior { get; }
 
         /// <summary>
+        /// Gets how the revocation verification should be performed.
+        /// </summary>
+        public RevocationMode RevocationMode { get; }
+
+        /// <summary>
         /// Allowlist of repository certificates hashes.
         /// </summary>
         public IReadOnlyList<VerificationAllowListEntry> RepositoryCertificateList { get; }
@@ -100,7 +107,8 @@ namespace NuGet.Packaging.Signing
             bool allowNoClientCertificateList,
             VerificationTarget verificationTarget,
             SignaturePlacement signaturePlacement,
-            SignatureVerificationBehavior repositoryCountersignatureVerificationBehavior)
+            SignatureVerificationBehavior repositoryCountersignatureVerificationBehavior,
+            RevocationMode revocationMode)
             : this(
                   allowUnsigned,
                   allowIllegal,
@@ -115,6 +123,7 @@ namespace NuGet.Packaging.Signing
                   verificationTarget,
                   signaturePlacement,
                   repositoryCountersignatureVerificationBehavior,
+                  revocationMode,
                   repoAllowListEntries: null,
                   clientAllowListEntries: null)
         {
@@ -134,6 +143,7 @@ namespace NuGet.Packaging.Signing
             VerificationTarget verificationTarget,
             SignaturePlacement signaturePlacement,
             SignatureVerificationBehavior repositoryCountersignatureVerificationBehavior,
+            RevocationMode revocationMode,
             IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries)
         {
@@ -206,6 +216,7 @@ namespace NuGet.Packaging.Signing
             VerificationTarget = verificationTarget;
             SignaturePlacement = signaturePlacement;
             RepositoryCountersignatureVerificationBehavior = repositoryCountersignatureVerificationBehavior;
+            RevocationMode = revocationMode;
             RepositoryCertificateList = repoAllowListEntries;
             ClientCertificateList = clientAllowListEntries;
         }
@@ -231,12 +242,13 @@ namespace NuGet.Packaging.Signing
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: SettingsUtility.GetRevocationMode(),
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
 
         /// <summary>
-        /// The aceept mode policy.
+        /// The accept mode policy.
         /// </summary>
         public static SignedPackageVerifierSettings GetAcceptModeDefaultPolicy(
             IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,
@@ -256,6 +268,7 @@ namespace NuGet.Packaging.Signing
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: SettingsUtility.GetRevocationMode(),
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
@@ -281,6 +294,7 @@ namespace NuGet.Packaging.Signing
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: SettingsUtility.GetRevocationMode(),
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
@@ -306,6 +320,7 @@ namespace NuGet.Packaging.Signing
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
+                revocationMode: SettingsUtility.GetRevocationMode(),
                 repoAllowListEntries: repoAllowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }

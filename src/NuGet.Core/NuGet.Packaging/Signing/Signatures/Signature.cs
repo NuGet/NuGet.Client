@@ -187,6 +187,16 @@ namespace NuGet.Packaging.Signing
                     chain.ChainPolicy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
 
                     CertificateChainUtility.SetCertBuildChainPolicy(chain.ChainPolicy, certificateExtraStore, timestamp.UpperLimit.LocalDateTime, CertificateType.Signature);
+
+                    if (settings.RevocationMode == RevocationMode.Offline)
+                    {
+                        chain.ChainPolicy.RevocationMode = X509RevocationMode.Offline;
+                    }
+                    else
+                    {
+                        chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
+                    }
+
                     var chainBuildingSucceeded = CertificateChainUtility.BuildCertificateChain(chain, certificate, out var chainStatuses);
                     var x509ChainString = CertificateUtility.X509ChainToString(chain, fingerprintAlgorithm);
 
@@ -235,14 +245,42 @@ namespace NuGet.Packaging.Signing
                             }
                         }
 
-                        const X509ChainStatusFlags RevocationStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
-                        if (CertificateChainUtility.TryGetStatusMessage(chainStatuses, RevocationStatusFlags, out messages))
+                        var offlineRevocationErrors = CertificateChainUtility.TryGetStatusMessage(chainStatuses, X509ChainStatusFlags.OfflineRevocation, out var _);
+                        var unknownRevocationErrors = CertificateChainUtility.TryGetStatusMessage(chainStatuses, X509ChainStatusFlags.RevocationStatusUnknown, out var unknownRevocationStatusMessages);
+                        if (offlineRevocationErrors || unknownRevocationErrors)
                         {
                             if (settings.ReportUnknownRevocation)
                             {
-                                foreach (var message in messages)
+                                string unknownRevocationMessage = null;
+
+                                if (unknownRevocationErrors)
                                 {
-                                    issues.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, FriendlyName, message)));
+                                    unknownRevocationMessage = string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, FriendlyName, unknownRevocationStatusMessages.First());
+                                }
+
+                                if (settings.RevocationMode == RevocationMode.Offline)
+                                {
+                                    if (offlineRevocationErrors)
+                                    {
+                                        issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, FriendlyName, Strings.VerifyCertTrustOfflineWhileRevocationModeOffline)));
+                                    }
+
+                                    if (unknownRevocationMessage != null)
+                                    {
+                                        issues.Add(SignatureLog.InformationLog(unknownRevocationMessage));
+                                    }
+                                }
+                                else
+                                {
+                                    if (offlineRevocationErrors)
+                                    {
+                                        issues.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, FriendlyName, Strings.VerifyCertTrustOfflineWhileRevocationModeOnline)));
+                                    }
+
+                                    if (unknownRevocationMessage != null)
+                                    {
+                                        issues.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3018, unknownRevocationMessage));
+                                    }
                                 }
                             }
 
