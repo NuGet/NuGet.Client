@@ -2008,7 +2008,9 @@ namespace ClassLibrary
                 Directory.CreateDirectory(workingDirectory);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.dll"), "hello world");
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.pdb"), "hello world");
                 var pathToDll = Path.Combine(workingDirectory, "abc.dll");
+                var pathToPdb = Path.Combine(workingDirectory, "abc.pdb");
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -2020,6 +2022,9 @@ namespace ClassLibrary
       <BuildOutputInPackage Include=""abc.dll"">
         <FinalOutputPath>{pathToDll}</FinalOutputPath>
       </BuildOutputInPackage>
+      <BuildOutputInPackage Include=""abc.pdb"">
+        <FinalOutputPath>{pathToPdb}</FinalOutputPath>
+      </BuildOutputInPackage>
     </ItemGroup>
   </Target>";
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, tfmProperty, tfmValue);
@@ -2029,35 +2034,47 @@ namespace ClassLibrary
                 }
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:IncludeSymbols=true /p:SymbolPackageFormat=symbols.nupkg");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                var symbolNupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
 
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                using (var symbolNupkgReader = new PackageArchiveReader(symbolNupkgPath))
                 {
                     var tfms = tfmValue.Split(';');
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
+                    var symbolLibItems = symbolNupkgReader.GetLibItems().ToList();
                     Assert.Equal(tfms.Length, libItems.Count);
 
                     if (tfms.Length == 2)
                     {
                         Assert.Equal(FrameworkConstants.CommonFrameworks.Net46, libItems[0].TargetFramework);
-                        Assert.Equal(new[] {"lib/net46/abc.dll", "lib/net46/ClassLibrary1.dll"},
+                        Assert.Equal(new[] { "lib/net46/abc.dll", "lib/net46/ClassLibrary1.dll" },
                             libItems[0].Items);
                         Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, libItems[1].TargetFramework);
                         Assert.Equal(new[] { "lib/netstandard1.4/abc.dll", "lib/netstandard1.4/ClassLibrary1.dll" },
                             libItems[1].Items);
+                        Assert.Equal(FrameworkConstants.CommonFrameworks.Net46, symbolLibItems[0].TargetFramework);
+                        Assert.Equal(new[] { "lib/net46/abc.dll", "lib/net46/abc.pdb", "lib/net46/ClassLibrary1.dll", "lib/net46/ClassLibrary1.pdb" },
+                            symbolLibItems[0].Items);
+                        Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, symbolLibItems[1].TargetFramework);
+                        Assert.Equal(new[] { "lib/netstandard1.4/abc.dll", "lib/netstandard1.4/abc.pdb", "lib/netstandard1.4/ClassLibrary1.dll", "lib/netstandard1.4/ClassLibrary1.pdb" },
+                            symbolLibItems[1].Items);
                     }
                     else
                     {
                         Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, libItems[0].TargetFramework);
                         Assert.Equal(new[] { "lib/netstandard1.4/abc.dll", "lib/netstandard1.4/ClassLibrary1.dll" },
                             libItems[0].Items);
+                        Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, symbolLibItems[0].TargetFramework);
+                        Assert.Equal(new[] { "lib/netstandard1.4/abc.dll", "lib/netstandard1.4/abc.pdb", "lib/netstandard1.4/ClassLibrary1.dll", "lib/netstandard1.4/ClassLibrary1.pdb" },
+                            symbolLibItems[0].Items);
                     }
                 }
             }
