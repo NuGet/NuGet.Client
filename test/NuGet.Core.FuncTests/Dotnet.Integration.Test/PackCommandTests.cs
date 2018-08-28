@@ -167,6 +167,71 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackProject_PackageReferenceFloatingVersionRange()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net45");
+
+                    var attributes = new Dictionary<string, string>();
+
+                    attributes["Version"] = "(10.0.*,11.0.1]";
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "Newtonsoft.Json",
+                        string.Empty,
+                        new Dictionary<string, string>(),
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    var dependencyGroups = nuspecReader
+                        .GetDependencyGroups()
+                        .OrderBy(x => x.TargetFramework,
+                            new NuGetFrameworkSorter())
+                        .ToList();
+
+                    Assert.Equal(1,
+                        dependencyGroups.Count);
+
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[0].TargetFramework);
+                    var packagesB = dependencyGroups[0].Packages.ToList();
+                    Assert.Equal(1, packagesB.Count);
+                    Assert.Equal("Newtonsoft.Json", packagesB[0].Id);
+                    Assert.Equal(new VersionRange(new NuGetVersion("10.0.3"), false, new NuGetVersion("11.0.1"), true), packagesB[0].VersionRange);
+                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesB[0].Exclude);
+                    Assert.Empty(packagesB[0].Include);
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackProject_SupportMultipleFrameworks()
         {
             // Arrange
