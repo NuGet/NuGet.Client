@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Common;
+
 namespace NuGet.Packaging.Signing
 {
     /// <summary>
@@ -29,16 +31,23 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public bool ReportUnknownRevocation { get; }
 
+        /// <summary>
+        /// Gets how the revocation verification should be performed.
+        /// </summary>
+        public RevocationMode RevocationMode { get; }
+
         public SignatureVerifySettings(
             bool allowIllegal,
             bool allowUntrusted,
             bool allowUnknownRevocation,
-            bool reportUnknownRevocation)
+            bool reportUnknownRevocation,
+            RevocationMode revocationMode)
         {
             AllowIllegal = allowIllegal;
             AllowUntrusted = allowUntrusted;
             AllowUnknownRevocation = allowUnknownRevocation;
             ReportUnknownRevocation = reportUnknownRevocation;
+            RevocationMode = revocationMode;
         }
 
         /// <summary>
@@ -48,6 +57,7 @@ namespace NuGet.Packaging.Signing
             allowIllegal: false,
             allowUntrusted: true,
             allowUnknownRevocation: true,
-            reportUnknownRevocation: true);
+            reportUnknownRevocation: true,
+            revocationMode: RevocationMode.Online);
     }
 }

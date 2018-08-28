@@ -2699,6 +2699,7 @@ namespace NuGet.Packaging.Test
                     verificationTarget: signedPackageVerifierSettings.VerificationTarget,
                     signaturePlacement: signedPackageVerifierSettings.SignaturePlacement,
                     repositoryCountersignatureVerificationBehavior: signedPackageVerifierSettings.RepositoryCountersignatureVerificationBehavior,
+                    revocationMode: signedPackageVerifierSettings.RevocationMode,
                     repoAllowListEntries: expectedAllowList,
                     clientAllowListEntries: signedPackageVerifierSettings.ClientCertificateList);
 
@@ -2772,6 +2773,7 @@ namespace NuGet.Packaging.Test
                     verificationTarget: signedPackageVerifierSettings.VerificationTarget,
                     signaturePlacement: signedPackageVerifierSettings.SignaturePlacement,
                     repositoryCountersignatureVerificationBehavior: signedPackageVerifierSettings.RepositoryCountersignatureVerificationBehavior,
+                    revocationMode: signedPackageVerifierSettings.RevocationMode,
                     repoAllowListEntries: expectedAllowList,
                     clientAllowListEntries: signedPackageVerifierSettings.ClientCertificateList);
 

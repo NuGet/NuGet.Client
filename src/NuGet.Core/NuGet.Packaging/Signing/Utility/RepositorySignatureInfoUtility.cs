@@ -56,6 +56,7 @@ namespace NuGet.Packaging.Signing
                     fallbackSettings.VerificationTarget,
                     fallbackSettings.SignaturePlacement,
                     fallbackSettings.RepositoryCountersignatureVerificationBehavior,
+                    fallbackSettings.RevocationMode,
                     repositoryAllowList?.AsReadOnly(),
                     fallbackSettings.ClientCertificateList);
             }

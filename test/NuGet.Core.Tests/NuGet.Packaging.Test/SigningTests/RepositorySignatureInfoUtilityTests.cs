@@ -286,6 +286,7 @@ namespace NuGet.Packaging.Test
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
+                revocationMode: RevocationMode.Online,
                 repoAllowListEntries: null,
                 clientAllowListEntries: expectedClientAllowList);
 

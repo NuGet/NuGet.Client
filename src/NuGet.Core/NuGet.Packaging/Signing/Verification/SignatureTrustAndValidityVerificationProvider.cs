@@ -67,7 +67,8 @@ namespace NuGet.Packaging.Signing
                 allowIllegal: settings.AllowIllegal,
                 allowUntrusted: settings.AllowUntrusted,
                 allowUnknownRevocation: settings.AllowUnknownRevocation,
-                reportUnknownRevocation: settings.ReportUnknownRevocation);
+                reportUnknownRevocation: settings.ReportUnknownRevocation,
+                revocationMode: settings.RevocationMode);
 
             SignatureVerificationSummary primarySummary = null;
 
@@ -133,7 +134,8 @@ namespace NuGet.Packaging.Signing
                         allowIllegal: settings.AllowIllegal,
                         allowUntrusted: settings.AllowUntrusted,
                         allowUnknownRevocation: settings.AllowUnknownRevocation,
-                        reportUnknownRevocation: settings.ReportUnknownRevocation);
+                        reportUnknownRevocation: settings.ReportUnknownRevocation,
+                        revocationMode: settings.RevocationMode);
 
                     var countersignatureSummary = VerifyValidityAndTrust(countersignature, settings, verifySettings, certificateExtraStore);
 
