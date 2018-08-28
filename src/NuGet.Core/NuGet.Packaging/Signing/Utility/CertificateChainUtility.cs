@@ -63,6 +63,8 @@ namespace NuGet.Packaging.Signing
                     DateTime.Now,
                     certificateType);
 
+                chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
+
                 if (chain.Build(certificate))
                 {
                     return GetCertificateChain(chain);
@@ -168,7 +170,6 @@ namespace NuGet.Packaging.Signing
             policy.ExtraStore.AddRange(additionalCertificates);
 
             policy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
-            policy.RevocationMode = X509RevocationMode.Online;
 
             if (certificateType != CertificateType.Timestamp)
             {

@@ -701,4 +701,18 @@ Valid from:</comment>
   <data name="NoRepositoryCountersignature" xml:space="preserve">
     <value>Verification settings require a repository countersignature, but the package does not have a repository countersignature.</value>
   </data>
+  <data name="ExtractionLog_InformationPrefix" xml:space="preserve">
+    <value>Package '{0} {1}' from source '{2}': {3}</value>
+    <comment>0 - package ID
+1 - package versions
+2 - package source url
+3 - Log Message</comment>
+  </data>
+  <data name="VerifyCertTrustOfflineWhileRevocationModeOffline" xml:space="preserve">
+    <value>The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and NUGET_CERT_REVOCATION_MODE environment variable has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode.</value>
+  </data>
+  <data name="VerifyCertTrustOfflineWhileRevocationModeOnline" xml:space="preserve">
+    <value>The revocation function was unable to check revocation because the revocation server could not be reached. For more information, visit https://aka.ms/certificateRevocationMode.</value>
+    <comment>0 - Signature friendly name</comment>
+  </data>
 </root>

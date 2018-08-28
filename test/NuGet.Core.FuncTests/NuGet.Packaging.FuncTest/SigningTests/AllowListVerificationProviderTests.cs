@@ -1177,6 +1177,7 @@ namespace NuGet.Packaging.FuncTest
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: RevocationMode.Online,
                 repoAllowListEntries: repoAllowList,
                 clientAllowListEntries: clientAllowList);
         }
