@@ -268,7 +268,7 @@ namespace NuGet.Protocol
                         return Task.FromResult<JObject>(null);
                     }
 
-                    return stream.AsJObjectAsync();
+                    return stream.AsJObjectAsync(token);
                 },
                 log: log,
                 token: token);

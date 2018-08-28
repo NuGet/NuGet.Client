@@ -18,14 +18,14 @@ namespace NuGet.Protocol
             await stream.CopyToAsync(destination, BufferSize, token);
         }
 
-        internal static async Task<JObject> AsJObjectAsync(this Stream stream)
+        internal static async Task<JObject> AsJObjectAsync(this Stream stream, CancellationToken token)
         {
             if (stream == null)
             {
                 return null;
             }
 
-            using (var reader = new StreamReader(await stream.AsSeekableStreamAsync()))
+            using (var reader = new StreamReader(await stream.AsSeekableStreamAsync(token)))
             {
                 return JsonUtility.LoadJson(reader);
             }
@@ -35,12 +35,12 @@ namespace NuGet.Protocol
         /// Read a stream into a memory stream if CanSeek is false.
         /// This method is used to ensure that network streams
         /// can be read by non-async reads without hanging.
-        /// 
+        ///
         /// Closes the original stream by default.
         /// </summary>
-        internal static Task<Stream> AsSeekableStreamAsync(this Stream stream)
+        internal static Task<Stream> AsSeekableStreamAsync(this Stream stream, CancellationToken token)
         {
-            return AsSeekableStreamAsync(stream, leaveStreamOpen: false);
+            return AsSeekableStreamAsync(stream, leaveStreamOpen: false, token: token);
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace NuGet.Protocol
         /// This method is used to ensure that network streams
         /// can be read by non-async reads without hanging.
         /// </summary>
-        internal static async Task<Stream> AsSeekableStreamAsync(this Stream stream, bool leaveStreamOpen)
+        internal static async Task<Stream> AsSeekableStreamAsync(this Stream stream, bool leaveStreamOpen, CancellationToken token)
         {
             if (stream == null)
             {
@@ -69,7 +69,7 @@ namespace NuGet.Protocol
             {
                 // Copy the the current stream to a memory stream.
                 // This avoids the sync .Read call.
-                await stream.CopyToAsync(memStream);
+                await stream.CopyToAsync(memStream, token);
                 memStream.Position = 0;
             }
             finally

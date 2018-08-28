@@ -387,7 +387,7 @@ namespace NuGet.Protocol
                                     return false;
                                 }
 
-                                var doc = await V2FeedParser.LoadXmlAsync(httpSourceResult.Stream);
+                                var doc = await V2FeedParser.LoadXmlAsync(httpSourceResult.Stream, cancellationToken);
 
                                 var result = doc.Root
                                     .Elements(_xnameEntry)

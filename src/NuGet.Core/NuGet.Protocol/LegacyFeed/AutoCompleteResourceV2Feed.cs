@@ -81,7 +81,7 @@ namespace NuGet.Protocol
                    new HttpSourceRequest(apiEndpointUri, logger),
                    async stream =>
                    {
-                       using (var reader = new StreamReader(await stream.AsSeekableStreamAsync()))
+                       using (var reader = new StreamReader(await stream.AsSeekableStreamAsync(token)))
                        using (var jsonReader = new JsonTextReader(reader))
                        {
                            var serializer = JsonSerializer.Create();
