@@ -18,6 +18,7 @@
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg</TargetsForTfmSpecificContentInPackage>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <PackageDescription>NuGet pack for dotnet CLI. Microsoft holds the copyright for this NuGet package. .NET Foundations holds the copyright to the source.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>
@@ -161,13 +162,6 @@
       </TfmSpecificPackageFile>
     </ItemGroup>    
   </Target>
-
-  <!--<PropertyGroup>
-    <NuspecFile Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">NuGet.Build.Tasks.Pack.XPlat.nuspec</NuspecFile>
-    <NuspecFile Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">NuGet.Build.Tasks.Pack.nuspec</NuspecFile>
-    <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
-    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
-  </PropertyGroup>-->
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
