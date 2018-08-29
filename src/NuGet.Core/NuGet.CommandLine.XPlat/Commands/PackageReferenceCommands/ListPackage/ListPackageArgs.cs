@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
-using System.Threading;
 
 namespace NuGet.CommandLine.XPlat
 {

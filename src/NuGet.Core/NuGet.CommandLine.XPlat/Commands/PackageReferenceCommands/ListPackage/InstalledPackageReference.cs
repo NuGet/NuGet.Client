@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Versioning;
 using System;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -15,7 +15,6 @@ namespace NuGet.CommandLine.XPlat
     internal class InstalledPackageReference
     {
         internal string Name { get; }
-        internal VersionRange RequestedVersion { get; set; }
         internal string OriginalRequestedVersion { get; set; }
         internal NuGetVersion ResolvedVersion { get; set; }
         internal NuGetVersion LatestVersion { get; set; }

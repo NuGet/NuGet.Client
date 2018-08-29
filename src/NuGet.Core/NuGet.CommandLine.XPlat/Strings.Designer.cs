@@ -629,6 +629,24 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No updates available for this framework packages..
+        /// </summary>
+        internal static string ListPkg_NoUpdatesForFramework {
+            get {
+                return ResourceManager.GetString("ListPkg_NoUpdatesForFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The given project `{0}` have no updates given the current sources..
+        /// </summary>
+        internal static string ListPkg_NoUpdatesForProject {
+            get {
+                return ResourceManager.GetString("ListPkg_NoUpdatesForProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Displays only the packages that need updates with the latest version from the sources..
         /// </summary>
         internal static string ListPkg_OutdatedDescription {
@@ -661,6 +679,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string ListPkg_ProjectHeaderLog {
             get {
                 return ResourceManager.GetString("ListPkg_ProjectHeaderLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project `{0}` has the following updates to its packages.
+        /// </summary>
+        internal static string ListPkg_ProjectUpdatesHeaderLog {
+            get {
+                return ResourceManager.GetString("ListPkg_ProjectUpdatesHeaderLog", resourceCulture);
             }
         }
         

@@ -369,7 +369,7 @@ namespace NuGet.CommandLine.XPlat
                     {
                         //RID is present in the user input, so we filter using it as well
                         filteredTargets.AddRange(requestedTargets.Where(target => target.TargetFramework.Equals(NuGetFramework.Parse(splitFrameworkAndRID[0])) &&
-                                                                                  target.RuntimeIdentifier != null && target.RuntimeIdentifier.Equals(splitFrameworkAndRID[1])));
+                                                                                  target.RuntimeIdentifier != null && target.RuntimeIdentifier.Equals(splitFrameworkAndRID[1], StringComparison.OrdinalIgnoreCase)));
                     }
                 }
                 requestedTargets = filteredTargets;
@@ -400,7 +400,7 @@ namespace NuGet.CommandLine.XPlat
                 foreach (var library in target.Libraries)
                 {
                     var matchingPackages = frameworkDependencies.Where(d =>
-                        d.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
+                        d.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase)).ToList();
 
                     var resolvedVersion = library.Version.ToString();
 
@@ -427,10 +427,8 @@ namespace NuGet.CommandLine.XPlat
                         else
                         {
                             var projectFileVersion = topLevelPackage.LibraryRange.VersionRange.ToString();
-                            var version = topLevelPackage.LibraryRange.VersionRange;
                             installedPackage = new InstalledPackageReference(library.Name)
                             {
-                                RequestedVersion = version,
                                 OriginalRequestedVersion = projectFileVersion
                             };
                         }
@@ -517,7 +515,6 @@ namespace NuGet.CommandLine.XPlat
             return targetOutputs.Single().Value.Items.Select(p =>
                 new InstalledPackageReference(p.ItemSpec) {
                     OriginalRequestedVersion = p.GetMetadata("version"),
-                    RequestedVersion = VersionRange.Parse(p.GetMetadata("version"))
                 });
         }
 

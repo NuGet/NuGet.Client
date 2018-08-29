@@ -95,24 +95,51 @@ namespace NuGet.CommandLine.XPlat
                             }
                             else
                             {
+                                var printPackages = true;
+
                                 //Handle outdated
                                 if (listPackageArgs.IncludeOutdated)
                                 {
                                     await AddLatestVersionsAsync(packages, listPackageArgs);
+                                    var noPackagesLeft = true;
+
+                                    //Filter the packages for outdated
+                                    foreach (var frameworkPackages in packages)
+                                    {
+                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => !p.AutoReference && (p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion));
+                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion);
+                                        if (frameworkPackages.TopLevelPackages.Any() || frameworkPackages.TopLevelPackages.Any())
+                                        {
+                                            noPackagesLeft = false;
+                                        }
+                                    }
+
+                                    // If after filtering, all packages were found up to date, inform the user
+                                    // and do not print anything
+                                    if (noPackagesLeft)
+                                    {
+                                        Console.WriteLine(string.Format(Strings.ListPkg_NoUpdatesForProject, projectName));
+                                        printPackages = false;
+                                    }
                                 }
 
-                                //Printing packages of a single project and keeping track if
-                                //an auto-referenced package was printed
-                                ProjectPackagesPrintUtility.PrintPackages(packages, projectName, listPackageArgs.IncludeTransitive, listPackageArgs.IncludeOutdated, out var autoRefFoundWithinProject);
-                                autoReferenceFound = autoReferenceFound || autoRefFoundWithinProject;
+                                // Make sure print is still needed, which may be changed in case
+                                // outdated filtered all packages out
+                                if (printPackages)
+                                {
+                                    //Printing packages of a single project and keeping track if
+                                    //an auto-referenced package was printed
+                                    ProjectPackagesPrintUtility.PrintPackages(packages, projectName, listPackageArgs.IncludeTransitive, listPackageArgs.IncludeOutdated, out var autoRefFoundWithinProject);
+                                    autoReferenceFound = autoReferenceFound || autoRefFoundWithinProject;
+                                }
                             }
                         }
-
                     }
                     else
                     {
                         Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingAssetsFile, assetsPath));
                     }
+
                     //Unload project
                     ProjectCollection.GlobalProjectCollection.UnloadProject(project);
                 }
@@ -150,13 +177,13 @@ namespace NuGet.CommandLine.XPlat
             //Prepare requests for each of the packages
             foreach (var package in packagesVersionsDict)
             {
-                PrepareLatestVersionsRequests(package.Key, listPackageArgs, providers, latestVersionsRequests, packagesVersionsDict);
+                latestVersionsRequests.AddRange(PrepareLatestVersionsRequests(package.Key, listPackageArgs, providers, packagesVersionsDict));
             }
 
             //Make the calls to the sources
             foreach (var latestVersionTask in latestVersionsRequests)
             {
-                contactSourcesRunningTasks.Add(latestVersionTask);
+                contactSourcesRunningTasks.Add(Task.Run(() => latestVersionTask));
                 //Throttle if needed
                 if (maxTasks <= contactSourcesRunningTasks.Count())
                 {
@@ -213,14 +240,14 @@ namespace NuGet.CommandLine.XPlat
             {
                 foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
                 {
-                    var matchingPackage = packagesVersionsDict.Where(p => p.Key.Name.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).Single();
+                    var matchingPackage = packagesVersionsDict.Where(p => p.Key.Name.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).First();
                     topLevelPackage.LatestVersion = matchingPackage.Value.Max();
                     topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedVersion, topLevelPackage.LatestVersion);
                 }
 
                 foreach (var transitivePackage in frameworkPackages.TransitivePackages)
                 {
-                    var matchingPackage = packagesVersionsDict.Where(p => p.Key.Name.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).Single();
+                    var matchingPackage = packagesVersionsDict.Where(p => p.Key.Name.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).First();
                     transitivePackage.LatestVersion = matchingPackage.Value.Max();
                     transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedVersion, transitivePackage.LatestVersion);
                 }
@@ -245,7 +272,8 @@ namespace NuGet.CommandLine.XPlat
             {
                 return UpdateLevel.Minor;
             }
-            else if (resolvedVersion.Patch != latestVersion.Patch)
+            //Patch or less important version props are different
+            else if (resolvedVersion != latestVersion)
             {
                 return UpdateLevel.Patch;
             }
@@ -259,22 +287,22 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="package">The package to get the latest version for</param>
         /// <param name="listPackageArgs">List args for the token and source provider></param>
         /// <param name="providers">The providers to use when looking at sources</param>
-        /// <param name="latestVersionsRequests">Tasks for calls to the sources to be executed</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
-        /// <returns>An updated pacakge with the highest version at sources</returns>
-        private void PrepareLatestVersionsRequests(
+        /// <returns>A list of tasks for all latest versions for packages from all sources</returns>
+        private IList<Task> PrepareLatestVersionsRequests(
             InstalledPackageReference package,
             ListPackageArgs listPackageArgs,
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
-            IList<Task> latestVersionsRequests,
             Dictionary<InstalledPackageReference, IList<NuGetVersion>> packagesVersionsDict)
         {
+            var latestVersionsRequests = new List<Task>();
             var sources = listPackageArgs.PackageSources;
             foreach (var packageSource in sources)
             {
                 latestVersionsRequests.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, package, providers, packagesVersionsDict));
             }
+            return latestVersionsRequests;
         }
 
         /// <summary>

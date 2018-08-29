@@ -26,26 +26,35 @@ namespace NuGet.CommandLine.XPlat.Utility
         {
             autoReferenceFound = false;
 
-            Console.WriteLine(string.Format(Strings.ListPkg_ProjectHeaderLog, projectName));
+            if (outdated)
+            {
+                Console.WriteLine(string.Format(Strings.ListPkg_ProjectUpdatesHeaderLog, projectName));
+            }
+            else
+            {
+                Console.WriteLine(string.Format(Strings.ListPkg_ProjectHeaderLog, projectName));
+            }
 
             foreach (var frameworkPackages in packages)
             {
                 var frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
                 var frameworkTransitivePackages = frameworkPackages.TransitivePackages;
 
-                //Filter the packages for outdated
-                if (outdated)
-                {
-                    frameworkTopLevelPackages = frameworkTopLevelPackages.Where(p => !p.AutoReference && (p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion));
-                    frameworkTransitivePackages = frameworkTransitivePackages.Where(p => p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion);
-                }
-
                 //If no packages exist for this framework, print the
                 //appropriate message
                 if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
                 {
                     Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
+
+                    if (outdated)
+                    {
+                        Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoUpdatesForFramework, frameworkPackages.Framework));
+                    }
+                    else
+                    {
+                        Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
+                    }
+
                     Console.ResetColor();
                 }
                 else
