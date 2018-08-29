@@ -715,4 +715,7 @@ Valid from:</comment>
     <value>The revocation function was unable to check revocation because the revocation server could not be reached. For more information, visit https://aka.ms/certificateRevocationMode.</value>
     <comment>0 - Signature friendly name</comment>
   </data>
+  <data name="SigningWouldRequireZip64" xml:space="preserve">
+    <value>The package cannot be signed as it would require the Zip64 format.</value>
+  </data>
 </root>

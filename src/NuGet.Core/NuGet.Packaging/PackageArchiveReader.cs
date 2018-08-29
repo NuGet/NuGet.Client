@@ -262,10 +262,7 @@ namespace NuGet.Packaging
         {
             token.ThrowIfCancellationRequested();
 
-            if (ZipReadStream == null)
-            {
-                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
-            }
+            ThrowIfZipReadStreamIsNull();
 
             PrimarySignature signature = null;
 
@@ -288,10 +285,7 @@ namespace NuGet.Packaging
         {
             token.ThrowIfCancellationRequested();
 
-            if (ZipReadStream == null)
-            {
-                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
-            }
+            ThrowIfZipReadStreamIsNull();
 
             var isSigned = false;
 
@@ -322,10 +316,7 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(signatureContent));
             }
 
-            if (ZipReadStream == null)
-            {
-                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
-            }
+            ThrowIfZipReadStreamIsNull();
 
             if (!await IsSignedAsync(token))
             {
@@ -351,10 +342,7 @@ namespace NuGet.Packaging
         {
             token.ThrowIfCancellationRequested();
 
-            if (ZipReadStream == null)
-            {
-                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
-            }
+            ThrowIfZipReadStreamIsNull();
 
             ZipReadStream.Seek(offset: 0, origin: SeekOrigin.Begin);
 
@@ -363,6 +351,14 @@ namespace NuGet.Packaging
                 var hash = hashAlgorithm.ComputeHash(ZipReadStream, leaveStreamOpen: true);
 
                 return Task.FromResult(hash);
+            }
+        }
+
+        protected void ThrowIfZipReadStreamIsNull()
+        {
+            if (ZipReadStream == null)
+            {
+                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
         }
     }

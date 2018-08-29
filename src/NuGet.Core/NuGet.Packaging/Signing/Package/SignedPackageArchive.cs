@@ -21,13 +21,13 @@ namespace NuGet.Packaging.Signing
         /// Stream underlying the ZipArchive. Used to do signature verification on a SignedPackageArchive.
         /// If this is null then we cannot perform signature verification.
         /// </summary>
-        private Stream ZipWriteStream { get; set; }
+        private readonly Stream _zipWriteStream;
 
         public SignedPackageArchive(Stream packageReadStream, Stream packageWriteStream)
             : base(new ZipArchive(packageReadStream, ZipArchiveMode.Read, leaveOpen: true), DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
             ZipReadStream = packageReadStream ?? throw new ArgumentNullException(nameof(packageReadStream));
-            ZipWriteStream = packageWriteStream ?? throw new ArgumentNullException(nameof(packageWriteStream));
+            _zipWriteStream = packageWriteStream ?? throw new ArgumentNullException(nameof(packageWriteStream));
         }
 
         /// <summary>
@@ -40,12 +40,9 @@ namespace NuGet.Packaging.Signing
         {
             token.ThrowIfCancellationRequested();
 
-            if (ZipReadStream == null)
-            {
-                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
-            }
+            ThrowIfZipReadStreamIsNull();
 
-            if (ZipWriteStream == null)
+            if (_zipWriteStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
             }
@@ -57,7 +54,7 @@ namespace NuGet.Packaging.Signing
 
             using (var reader = new BinaryReader(ZipReadStream, new UTF8Encoding(), leaveOpen: true))
             using (var writer = new BinaryWriter(
-                ZipWriteStream,
+                _zipWriteStream,
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true),
                 leaveOpen: true))
             {
@@ -79,7 +76,7 @@ namespace NuGet.Packaging.Signing
             }
 
             using (var reader = new BinaryReader(ZipReadStream, SigningSpecifications.Encoding, leaveOpen: true))
-            using (var writer = new BinaryWriter(ZipWriteStream, SigningSpecifications.Encoding, leaveOpen: true))
+            using (var writer = new BinaryWriter(_zipWriteStream, SigningSpecifications.Encoding, leaveOpen: true))
             {
                 SignedPackageArchiveUtility.UnsignZip(reader, writer);
             }
@@ -89,15 +86,25 @@ namespace NuGet.Packaging.Signing
         {
             token.ThrowIfCancellationRequested();
 
-            if (ZipReadStream == null)
-            {
-                throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
-            }
+            ThrowIfZipReadStreamIsNull();
 
             using (var bufferedStream = new ReadOnlyBufferedStream(ZipReadStream, leaveOpen: true))
             using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
             {
                 return Task.FromResult(SignedPackageArchiveUtility.IsZip64(reader));
+            }
+        }
+
+        internal uint GetPackageEntryCount()
+        {
+            ThrowIfZipReadStreamIsNull();
+
+            using (var bufferedStream = new ReadOnlyBufferedStream(ZipReadStream, leaveOpen: true))
+            using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
+            {
+                var eocdr = EndOfCentralDirectoryRecord.Read(reader);
+
+                return eocdr.CountOfEntriesInCentralDirectory;
             }
         }
 

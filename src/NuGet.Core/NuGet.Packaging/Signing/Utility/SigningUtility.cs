@@ -198,6 +198,14 @@ namespace NuGet.Packaging.Signing
                         throw new SignatureException(NuGetLogCode.NU3006, Strings.ErrorZip64NotSupported);
                     }
 
+                    // The maximum number of entries in a 32-bit ZIP file is 0xFFFE, as 0xFFFF indicates
+                    // that the archive is 64-bit ZIP.  The signature file itself adds one entry, so the
+                    // maximum number of entries in a package before we sign it is 0xFFFD.
+                    if (package.GetPackageEntryCount() >= ZipConstants.Mask16Bit - 1)
+                    {
+                        throw new SignatureException(NuGetLogCode.NU3039, Strings.SigningWouldRequireZip64);
+                    }
+
                     primarySignature = await package.GetPrimarySignatureAsync(token);
                     isSigned = primarySignature != null;
 
