@@ -25,6 +25,13 @@ namespace NuGet.CommandLine.XPlat
 
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
+            if (!File.Exists(listPackageArgs.Path))
+            {
+                Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                        Strings.ListPkg_ErrorFileNotFound,
+                        listPackageArgs.Path));
+                return;
+            }
             //If the given file is a solution, get the list of projects
             //If not, then it's a project, which is put in a list
             var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln")?
@@ -183,7 +190,7 @@ namespace NuGet.CommandLine.XPlat
                     }
                 }
 
-                foreach (var transitivePackage in frameworkPackages.TransitivePacakges)
+                foreach (var transitivePackage in frameworkPackages.TransitivePackages)
                 {
                     if (!packagesVersionsDict.ContainsKey(transitivePackage))
                     {
@@ -211,7 +218,7 @@ namespace NuGet.CommandLine.XPlat
                     topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedVersion, topLevelPackage.LatestVersion);
                 }
 
-                foreach (var transitivePackage in frameworkPackages.TransitivePacakges)
+                foreach (var transitivePackage in frameworkPackages.TransitivePackages)
                 {
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Name.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).Single();
                     transitivePackage.LatestVersion = matchingPackage.Value.Max();

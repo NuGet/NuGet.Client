@@ -10,7 +10,7 @@ namespace NuGet.CommandLine.XPlat
     {
         public bool Equals(InstalledPackageReference one, InstalledPackageReference two)
         {
-            return one.Name.Equals(two.Name);
+            return one.Name.Equals(two.Name, StringComparison.OrdinalIgnoreCase);
         }
 
         public int GetHashCode(InstalledPackageReference item)

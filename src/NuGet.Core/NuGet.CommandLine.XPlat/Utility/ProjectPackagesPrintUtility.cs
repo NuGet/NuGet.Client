@@ -31,7 +31,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             foreach (var frameworkPackages in packages)
             {
                 var frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
-                var frameworkTransitivePackages = frameworkPackages.TransitivePacakges;
+                var frameworkTransitivePackages = frameworkPackages.TransitivePackages;
 
                 //Filter the packages for outdated
                 if (outdated)

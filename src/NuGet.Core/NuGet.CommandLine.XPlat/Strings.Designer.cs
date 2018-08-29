@@ -305,15 +305,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The logger cannot be passed as null..
-        /// </summary>
-        internal static string Error_LoggerNull {
-            get {
-                return ResourceManager.GetString("Error_LoggerNull", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
         internal static string Error_MissingSourceParameter {
@@ -539,6 +530,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The given file `{0}` was not found.
+        /// </summary>
+        internal static string ListPkg_ErrorFileNotFound {
+            get {
+                return ResourceManager.GetString("ListPkg_ErrorFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to read the assets file `{0}`. Please make sure the file has the write format..
         /// </summary>
         internal static string ListPkg_ErrorReadingAssetsFile {
@@ -638,7 +638,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A path to a project or solution file or directory..
+        ///   Looks up a localized string similar to A path to a project, solution file or directory..
         /// </summary>
         internal static string ListPkg_PathDescription {
             get {

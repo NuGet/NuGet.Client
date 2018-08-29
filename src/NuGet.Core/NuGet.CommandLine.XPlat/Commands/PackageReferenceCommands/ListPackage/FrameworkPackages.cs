@@ -14,7 +14,7 @@ namespace NuGet.CommandLine.XPlat
     {
         public string Framework { get; }
         public IEnumerable<InstalledPackageReference> TopLevelPackages { get; set; }
-        public IEnumerable<InstalledPackageReference> TransitivePacakges { get; set; }
+        public IEnumerable<InstalledPackageReference> TransitivePackages { get; set; }
 
         /// <summary>
         /// A constructor that takes a framework name, and
@@ -41,7 +41,7 @@ namespace NuGet.CommandLine.XPlat
         {
             Framework = framework ?? throw new ArgumentNullException(nameof(framework));
             TopLevelPackages = topLevelPackages ?? throw new ArgumentNullException(nameof(topLevelPackages));
-            TransitivePacakges = transitivePackages ?? throw new ArgumentNullException(nameof(transitivePackages));
+            TransitivePackages = transitivePackages ?? throw new ArgumentNullException(nameof(transitivePackages));
         }
     }
 }
