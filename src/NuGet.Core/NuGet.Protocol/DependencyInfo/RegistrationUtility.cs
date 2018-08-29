@@ -52,7 +52,7 @@ namespace NuGet.Protocol
                 },
                 async httpSourceResult =>
                 {
-                    return await httpSourceResult.Stream.AsJObjectAsync();
+                    return await httpSourceResult.Stream.AsJObjectAsync(token);
                 },
                 log,
                 token);
@@ -87,7 +87,7 @@ namespace NuGet.Protocol
                             },
                             async httpSourceResult =>
                             {
-                                return await httpSourceResult.Stream.AsJObjectAsync();
+                                return await httpSourceResult.Stream.AsJObjectAsync(token);
                             },
                             log,
                             token));

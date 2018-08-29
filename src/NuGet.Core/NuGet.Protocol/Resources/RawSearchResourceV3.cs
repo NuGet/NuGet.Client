@@ -1,11 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,33 +78,34 @@ namespace NuGet.Protocol
 
                 queryUrl.Query = queryString;
 
-                if (!cancellationToken.IsCancellationRequested)
+                JObject searchJson = null;
+                try
                 {
-                    JObject searchJson = null;
-                    try
-                    {
-                        searchJson = await _client.GetJObjectAsync(
-                            new HttpSourceRequest(queryUrl.Uri, log),
-                            log,
-                            cancellationToken);
-                    }
-                    catch when (i < _searchEndpoints.Length - 1)
-                    {
-                        // Ignore all failures until the last endpoint
-                    }
-                    catch (JsonReaderException ex)
-                    {
-                        throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_MalformedMetadataError, queryUrl.Uri), ex);
-                    }
-                    catch (HttpRequestException ex)
-                    {
-                        throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_BadSource, queryUrl.Uri), ex);
-                    }
+                    searchJson = await _client.GetJObjectAsync(
+                        new HttpSourceRequest(queryUrl.Uri, log),
+                        log,
+                        cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch when (i < _searchEndpoints.Length - 1)
+                {
+                    // Ignore all failures until the last endpoint
+                }
+                catch (JsonReaderException ex)
+                {
+                    throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_MalformedMetadataError, queryUrl.Uri), ex);
+                }
+                catch (HttpRequestException ex)
+                {
+                    throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_BadSource, queryUrl.Uri), ex);
+                }
 
-                    if (searchJson != null)
-                    {
-                        return searchJson;
-                    }
+                if (searchJson != null)
+                {
+                    return searchJson;
                 }
             }
 

@@ -131,7 +131,7 @@ namespace NuGet.Protocol
                             },
                             async httpSourceResult =>
                             {
-                                var result = await ConsumeServiceIndexStreamAsync(httpSourceResult.Stream, utcNow);
+                                var result = await ConsumeServiceIndexStreamAsync(httpSourceResult.Stream, utcNow, token);
 
                                 return result;
                             },
@@ -157,10 +157,10 @@ namespace NuGet.Protocol
             return null;
         }
 
-        private async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, DateTime utcNow)
+        private async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, DateTime utcNow, CancellationToken token)
         {
             // Parse the JSON
-            JObject json = await stream.AsJObjectAsync();
+            JObject json = await stream.AsJObjectAsync(token);
 
             // Use SemVer instead of NuGetVersion, the service index should always be
             // in strict SemVer format

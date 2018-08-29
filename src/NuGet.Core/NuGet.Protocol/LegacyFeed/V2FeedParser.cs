@@ -437,7 +437,7 @@ namespace NuGet.Protocol
             var uri = string.Format("{0}{1}", _baseAddress, relativeUri);
             uris.Add(uri);
 
-            // page 
+            // page
             var page = 1;
 
             // http cache key
@@ -467,7 +467,7 @@ namespace NuGet.Protocol
                 docRequest = null;
                 if (max < 0 || results.Count < max)
                 {
-                    
+
                     // Request the next url in parallel to parsing the current page
                     if (!string.IsNullOrEmpty(nextUri))
                     {
@@ -549,7 +549,7 @@ namespace NuGet.Protocol
                             }
                             else
                             {
-                                return await LoadXmlAsync(response.Stream);
+                                return await LoadXmlAsync(response.Stream, token);
                             }
                         },
                         log,
@@ -583,7 +583,7 @@ namespace NuGet.Protocol
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
                         var networkStream = await response.Content.ReadAsStreamAsync();
-                        return await LoadXmlAsync(networkStream);
+                        return await LoadXmlAsync(networkStream, token);
                     }
                     else if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
                     {
@@ -623,9 +623,9 @@ namespace NuGet.Protocol
                     select nextLink.Value).FirstOrDefault();
         }
 
-        internal static async Task<XDocument> LoadXmlAsync(Stream stream)
+        internal static async Task<XDocument> LoadXmlAsync(Stream stream, CancellationToken token)
         {
-            using (var memStream = await stream.AsSeekableStreamAsync())
+            using (var memStream = await stream.AsSeekableStreamAsync(token))
             {
                 var xmlReader = XmlReader.Create(memStream, new XmlReaderSettings()
                 {
