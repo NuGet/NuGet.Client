@@ -16,6 +16,7 @@
     <XPLATProject>true</XPLATProject>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg</TargetsForTfmSpecificContentInPackage>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
   <ItemGroup>
@@ -64,7 +65,9 @@
     <ItemGroup>
       <_PackResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll" />
     </ItemGroup>
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="ILMergeNuGetPackResources" Properties="CurrentCulture=%(_PackResourceDlls.RecursiveDir);&#xD;&#xA;                  BuildProjectReferences=false">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="ILMergeNuGetPackResources"
+             Properties="CurrentCulture=%(_PackResourceDlls.RecursiveDir);
+                         BuildProjectReferences=false">
     </MSBuild>
   </Target>
 
@@ -134,14 +137,14 @@
   </Target>
 
   <Target Name="CreatePackNupkg">
-    <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
+    <ItemGroup Condition="'$(TargetFramework)' == 'net46' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">
       <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\NuGet.Build.Tasks.Pack.dll">
         <PackagePath>Desktop/</PackagePath>
       </TfmSpecificPackageFile>
       <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\NuGet.Build.Tasks.Pack.xml">
         <PackagePath>Desktop/</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\**\*.resources.dll">
+      <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\**\NuGet*.resources.dll">
         <PackagePath>Desktop/</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
@@ -152,7 +155,7 @@
       <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\NuGet.Build.Tasks.Pack.xml">
         <PackagePath>CoreCLR/</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\**\*.resources.dll">
+      <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\**\NuGet*.resources.dll">
         <PackagePath>CoreCLR/</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>    
