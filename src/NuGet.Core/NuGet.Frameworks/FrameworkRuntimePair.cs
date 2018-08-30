@@ -1,9 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Globalization;
-using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {
@@ -66,11 +62,6 @@ namespace NuGet.Frameworks
                 RuntimeIdentifier);
         }
 
-        public FrameworkRuntimePair Clone()
-        {
-            return new FrameworkRuntimePair(Framework, RuntimeIdentifier);
-        }
-
         public int CompareTo(FrameworkRuntimePair other)
         {
             var fxCompare = Framework.GetShortFolderName().CompareTo(other.Framework.GetShortFolderName());
@@ -92,22 +83,6 @@ namespace NuGet.Frameworks
                 return string.Format(
                     CultureInfo.CurrentCulture,
                     "{0} ({1})",
-                    framework,
-                    runtimeIdentifier);
-            }
-        }
-
-        public static string GetTargetGraphName(NuGetFramework framework, string runtimeIdentifier)
-        {
-            if (string.IsNullOrEmpty(runtimeIdentifier))
-            {
-                return framework.ToString();
-            }
-            else
-            {
-                return string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}/{1}",
                     framework,
                     runtimeIdentifier);
             }

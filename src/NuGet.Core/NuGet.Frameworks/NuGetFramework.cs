@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {
@@ -417,7 +416,6 @@ namespace NuGet.Frameworks
                         FrameworkConstants.FrameworkIdentifiers.NetStandardApp,
                         FrameworkConstants.FrameworkIdentifiers.NetCoreApp,
                         FrameworkConstants.FrameworkIdentifiers.UAP,
-                        FrameworkConstants.FrameworkIdentifiers.Tizen,
             },
             StringComparer.OrdinalIgnoreCase);
     }
