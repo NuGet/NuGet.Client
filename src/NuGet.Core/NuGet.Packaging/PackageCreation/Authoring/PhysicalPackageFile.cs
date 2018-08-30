@@ -12,7 +12,6 @@ namespace NuGet.Packaging
         private readonly Func<Stream> _streamFactory;
         private string _targetPath;
         private FrameworkName _targetFramework;
-        private DateTimeOffset _lastWriteTime;
 
         public PhysicalPackageFile()
         {
@@ -79,26 +78,15 @@ namespace NuGet.Packaging
         {
             if (_streamFactory != null)
             {
-                _lastWriteTime = DateTimeOffset.UtcNow;
                 return _streamFactory();
             }
             else if (SourcePath != null)
             {
-                _lastWriteTime = File.GetLastWriteTimeUtc(SourcePath);
                 return File.OpenRead(SourcePath);
             }
             else
             {
-                _lastWriteTime = DateTimeOffset.UtcNow;
                 return MemoryStream;
-            }
-        }
-
-        public DateTimeOffset LastWriteTime
-        {
-            get
-            {
-                return _lastWriteTime;
             }
         }
 

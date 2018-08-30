@@ -1,8 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -38,7 +39,6 @@ namespace NuGet.Packaging
         private const string IncludeFlags = "include";
         private const string ExcludeFlags = "exclude";
         private const string LicenseUrl = "licenseUrl";
-        private const string Repository = "repository";
         private static readonly char[] CommaArray = new char[] { ',' };
         private readonly IFrameworkNameProvider _frameworkProvider;
 
@@ -107,35 +107,45 @@ namespace NuGet.Packaging
         /// </summary>
         public IEnumerable<PackageDependencyGroup> GetDependencyGroups()
         {
-            return GetDependencyGroups(useStrictVersionCheck: false);
-        }
-
-        /// <summary>
-        /// Read package dependencies for all frameworks
-        /// </summary>
-        public IEnumerable<PackageDependencyGroup> GetDependencyGroups(bool useStrictVersionCheck)
-        {
             var ns = MetadataNode.GetDefaultNamespace().NamespaceName;
-            var dependencyNode = MetadataNode
-                .Elements(XName.Get(Dependencies, ns));
 
             var groupFound = false;
-            var dependencyGroups = dependencyNode
-                .Elements(XName.Get(Group, ns));
 
-            foreach (var depGroup in dependencyGroups)
+            foreach (var depGroup in MetadataNode.Elements(XName.Get(Dependencies, ns)).Elements(XName.Get(Group, ns)))
             {
                 groupFound = true;
 
                 var groupFramework = GetAttributeValue(depGroup, TargetFramework);
 
-                var dependencies = depGroup
-                    .Elements(XName.Get(Dependency, ns));
+                var packages = new HashSet<PackageDependency>();
 
-                var packages = GetPackageDependencies(dependencies, useStrictVersionCheck);
+                foreach (var depNode in depGroup.Elements(XName.Get(Dependency, ns)))
+                {
+                    VersionRange range = null;
 
-                var framework = string.IsNullOrEmpty(groupFramework)
-                    ? NuGetFramework.AnyFramework
+                    var rangeNode = GetAttributeValue(depNode, Version);
+
+                    if (!String.IsNullOrEmpty(rangeNode))
+                    {
+                        VersionRange.TryParse(rangeNode, out range);
+
+                        Debug.Assert(range != null, "Unable to parse range: " + rangeNode);
+                    }
+
+                    var includeFlags = GetFlags(GetAttributeValue(depNode, IncludeFlags));
+                    var excludeFlags = GetFlags(GetAttributeValue(depNode, ExcludeFlags));
+
+                    var dependency = new PackageDependency(
+                        GetAttributeValue(depNode, Id), 
+                        range,
+                        includeFlags,
+                        excludeFlags);
+
+                    packages.Add(dependency);
+                }
+
+                var framework = String.IsNullOrEmpty(groupFramework) 
+                    ? NuGetFramework.AnyFramework 
                     : NuGetFramework.Parse(groupFramework, _frameworkProvider);
 
                 yield return new PackageDependencyGroup(framework, packages);
@@ -144,16 +154,34 @@ namespace NuGet.Packaging
             // legacy behavior
             if (!groupFound)
             {
-                var legacyDependencies = dependencyNode
+                var depNodes = MetadataNode.Elements(XName.Get(Dependencies, ns))
                     .Elements(XName.Get(Dependency, ns));
 
-                var packages = GetPackageDependencies(legacyDependencies, useStrictVersionCheck);
+                var packages = new HashSet<PackageDependency>();
+
+                foreach (var depNode in depNodes)
+                {
+                    VersionRange range = null;
+
+                    var rangeNode = GetAttributeValue(depNode, Version);
+
+                    if (!String.IsNullOrEmpty(rangeNode))
+                    {
+                        VersionRange.TryParse(rangeNode, out range);
+
+                        Debug.Assert(range != null, "Unable to parse range: " + rangeNode);
+                    }
+
+                    packages.Add(new PackageDependency(GetAttributeValue(depNode, Id), range));
+                }
 
                 if (packages.Any())
                 {
                     yield return new PackageDependencyGroup(NuGetFramework.AnyFramework, packages);
                 }
             }
+
+            yield break;
         }
 
         /// <summary>
@@ -171,9 +199,9 @@ namespace NuGet.Packaging
 
                 var groupFramework = GetAttributeValue(group, TargetFramework);
 
-                var items = group.Elements(XName.Get(Reference, ns)).Select(n => GetAttributeValue(n, File)).Where(n => !string.IsNullOrEmpty(n)).ToArray();
+                var items = group.Elements(XName.Get(Reference, ns)).Select(n => GetAttributeValue(n, File)).Where(n => !String.IsNullOrEmpty(n)).ToArray();
 
-                var framework = string.IsNullOrEmpty(groupFramework) ? NuGetFramework.AnyFramework : NuGetFramework.Parse(groupFramework, _frameworkProvider);
+                var framework = String.IsNullOrEmpty(groupFramework) ? NuGetFramework.AnyFramework : NuGetFramework.Parse(groupFramework, _frameworkProvider);
 
                 yield return new FrameworkSpecificGroup(framework, items);
             }
@@ -182,7 +210,7 @@ namespace NuGet.Packaging
             if (!groupFound)
             {
                 var items = MetadataNode.Elements(XName.Get(References, ns))
-                    .Elements(XName.Get(Reference, ns)).Select(n => GetAttributeValue(n, File)).Where(n => !string.IsNullOrEmpty(n)).ToArray();
+                    .Elements(XName.Get(Reference, ns)).Select(n => GetAttributeValue(n, File)).Where(n => !String.IsNullOrEmpty(n)).ToArray();
 
                 if (items.Length > 0)
                 {
@@ -211,7 +239,7 @@ namespace NuGet.Packaging
                 var frameworks = new List<NuGetFramework>();
 
                 // Empty frameworks go under Any
-                if (string.IsNullOrEmpty(group.Key))
+                if (String.IsNullOrEmpty(group.Key))
                 {
                     frameworks.Add(NuGetFramework.AnyFramework);
                 }
@@ -219,7 +247,7 @@ namespace NuGet.Packaging
                 {
                     foreach (var fwString in group.Key.Split(CommaArray, StringSplitOptions.RemoveEmptyEntries))
                     {
-                        if (!string.IsNullOrEmpty(fwString))
+                        if (!String.IsNullOrEmpty(fwString))
                         {
                             frameworks.Add(NuGetFramework.Parse(fwString.Trim(), _frameworkProvider));
                         }
@@ -237,7 +265,7 @@ namespace NuGet.Packaging
                     }
 
                     // Merge items and ignore duplicates
-                    items.UnionWith(group.Select(item => GetAttributeValue(item, AssemblyName)).Where(item => !string.IsNullOrEmpty(item)));
+                    items.UnionWith(group.Select(item => GetAttributeValue(item, AssemblyName)).Where(item => !String.IsNullOrEmpty(item)));
                 }
             }
 
@@ -393,25 +421,6 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Source control repository information.
-        /// </summary>
-        public RepositoryMetadata GetRepositoryMetadata()
-        {
-            var repository = new RepositoryMetadata();
-            var node = MetadataNode.Elements(XName.Get(Repository, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
-
-            if (node != null)
-            {
-                repository.Type = GetAttributeValue(node, "type") ?? string.Empty;
-                repository.Url = GetAttributeValue(node, "url") ?? string.Empty;
-                repository.Branch = GetAttributeValue(node, "branch") ?? string.Empty;
-                repository.Commit = GetAttributeValue(node, "commit") ?? string.Empty;
-            }
-
-            return repository;
-        }
-
-        /// <summary>
         /// Require license acceptance when installing the package.
         /// </summary>
         public bool GetRequireLicenseAcceptance()
@@ -456,7 +465,6 @@ namespace NuGet.Packaging
         }
 
         private static readonly List<string> EmptyList = new List<string>();
-
         private static List<string> GetFlags(string flags)
         {
             if (string.IsNullOrEmpty(flags))
@@ -470,62 +478,6 @@ namespace NuGet.Packaging
                 StringComparer.OrdinalIgnoreCase);
 
             return set.OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList();
-        }
-
-        private HashSet<PackageDependency> GetPackageDependencies(IEnumerable<XElement> nodes, bool useStrictVersionCheck)
-        {
-            var packages = new HashSet<PackageDependency>();
-
-            foreach (var depNode in nodes)
-            {
-                VersionRange range = null;
-
-                var rangeNode = GetAttributeValue(depNode, Version);
-
-                if (!string.IsNullOrEmpty(rangeNode))
-                {
-                    var versionParsedSuccessfully = VersionRange.TryParse(rangeNode, out range);
-                    if (!versionParsedSuccessfully && useStrictVersionCheck)
-                    {
-                        // Invalid version
-                        var dependencyId = GetAttributeValue(depNode, Id);
-                        var message = string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.ErrorInvalidPackageVersionForDependency,
-                            dependencyId,
-                            GetIdentity(),
-                            rangeNode);
-
-                        throw new PackagingException(message);
-                    }
-                }
-                else if (useStrictVersionCheck)
-                {
-                    // Invalid version
-                    var dependencyId = GetAttributeValue(depNode, Id);
-                    var message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.ErrorInvalidPackageVersionForDependency,
-                        dependencyId,
-                        GetIdentity(),
-                        rangeNode);
-
-                    throw new PackagingException(message);
-                }
-
-                var includeFlags = GetFlags(GetAttributeValue(depNode, IncludeFlags));
-                var excludeFlags = GetFlags(GetAttributeValue(depNode, ExcludeFlags));
-
-                var dependency = new PackageDependency(
-                    GetAttributeValue(depNode, Id),
-                    range,
-                    includeFlags,
-                    excludeFlags);
-
-                packages.Add(dependency);
-            }
-
-            return packages;
         }
     }
 }

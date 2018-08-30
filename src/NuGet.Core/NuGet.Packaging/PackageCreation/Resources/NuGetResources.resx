@@ -180,7 +180,4 @@
   <data name="Manifest_ReferencesIsEmpty" xml:space="preserve">
     <value>The element package\metadata\references\group must contain at least one &lt;reference&gt; child element.</value>
   </data>
-  <data name="Manifest_PropertyValueReadFailure" xml:space="preserve">
-    <value>An error occured while trying to parse the value '{0}' of property '{1}' in the manifest file.</value>
-  </data>
 </root>
