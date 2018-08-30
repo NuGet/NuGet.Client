@@ -23,15 +23,22 @@ namespace NuGet.Shared
             get { return _combinedHash.GetHashCode(); }
         }
 
-        private void AddHashCode(int i)
+        internal void AddInt32(int i)
         {
+            CheckInitialized();
             _combinedHash = ((_combinedHash << 5) + _combinedHash) ^ i;
         }
 
         internal void AddObject(int i)
         {
             CheckInitialized();
-            AddHashCode(i);
+            AddInt32(i);
+        }
+
+        internal void AddObject(bool b)
+        {
+            CheckInitialized();
+            AddInt32(b.GetHashCode());
         }
 
         internal void AddObject<TValue>(TValue o, IEqualityComparer<TValue> comparer)
@@ -39,16 +46,16 @@ namespace NuGet.Shared
             CheckInitialized();
             if (o != null)
             {
-                AddHashCode(comparer.GetHashCode(o));
+                AddInt32(comparer.GetHashCode(o));
             }
         }
 
-        internal void AddObject<T>(T o)
+        internal void AddObject(object o)
         {
             CheckInitialized();
             if (o != null)
             {
-                AddHashCode(o.GetHashCode());
+                AddInt32(o.GetHashCode());
             }
         }
 
@@ -57,7 +64,7 @@ namespace NuGet.Shared
             CheckInitialized();
             if (s != null)
             {
-                AddHashCode(StringComparer.OrdinalIgnoreCase.GetHashCode(s));
+                AddObject(s, StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -65,62 +72,21 @@ namespace NuGet.Shared
         {
             if (sequence != null)
             {
-                CheckInitialized();
                 foreach (var item in sequence)
                 {
-                    AddHashCode(item.GetHashCode());
+                    AddObject(item);
                 }
             }
         }
 
-        internal void AddSequence<T>(T[] array)
-        {
-            if (array != null)
-            {
-                CheckInitialized();
-                foreach (var item in array)
-                {
-                    AddHashCode(item.GetHashCode());
-                }
-            }
-        }
-
-        internal void AddSequence<T>(IList<T> list)
-        {
-            if (list != null)
-            {
-                CheckInitialized();
-                var count = list.Count;
-                for (var i = 0; i < count; i++)
-                {
-                    AddHashCode(list[i].GetHashCode());
-                }
-            }
-        }
-
-#if !NET40
-        internal void AddSequence<T>(IReadOnlyList<T> list)
-        {
-            if (list != null)
-            {
-                CheckInitialized();
-                var count = list.Count;
-                for (var i = 0; i < count; i++)
-                {
-                    AddHashCode(list[i].GetHashCode());
-                }
-            }
-        }
-#endif
         internal void AddDictionary<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> dictionary)
         {
             if (dictionary != null)
             {
-                CheckInitialized();
                 foreach (var pair in dictionary.OrderBy(x => x.Key))
                 {
-                    AddHashCode(pair.Key.GetHashCode());
-                    AddHashCode(pair.Value.GetHashCode());
+                    AddObject(pair.Key);
+                    AddObject(pair.Value);
                 }
             }
         }
@@ -128,28 +94,14 @@ namespace NuGet.Shared
         /// <summary>
         /// Create a unique hash code for the given set of items
         /// </summary>
-        internal static int GetHashCode<T1, T2>(T1 o1, T2 o2)
+        internal static int GetHashCode(params object[] objects)
         {
             var combiner = new HashCodeCombiner();
-            combiner.CheckInitialized();
 
-            combiner.AddHashCode(o1.GetHashCode());
-            combiner.AddHashCode(o2.GetHashCode());
-
-            return combiner.CombinedHash;
-        }
-
-        /// <summary>
-        /// Create a unique hash code for the given set of items
-        /// </summary>
-        internal static int GetHashCode<T1, T2, T3>(T1 o1, T2 o2, T3 o3)
-        {
-            var combiner = new HashCodeCombiner();
-            combiner.CheckInitialized();
-
-            combiner.AddHashCode(o1.GetHashCode());
-            combiner.AddHashCode(o2.GetHashCode());
-            combiner.AddHashCode(o3.GetHashCode());
+            foreach (var obj in objects)
+            {
+                combiner.AddObject(obj);
+            }
 
             return combiner.CombinedHash;
         }
