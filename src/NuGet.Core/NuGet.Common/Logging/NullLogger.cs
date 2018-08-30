@@ -1,12 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Threading.Tasks;
-
 namespace NuGet.Common
 {
-    public class NullLogger : LoggerBase
+    public class NullLogger : ILogger
     {
         private static ILogger _instance;
 
@@ -23,13 +20,20 @@ namespace NuGet.Common
             }
         }
 
-        public override void Log(ILogMessage message) { }
+        public void LogDebug(string data) { }
 
-        public override void Log(LogLevel level, string data) { }
+        public void LogError(string data) { }
 
-        public override Task LogAsync(ILogMessage message) { return Task.FromResult(0); }
+        public void LogInformation(string data) { }
 
-        public override Task LogAsync(LogLevel level, string data) { return Task.FromResult(0); }
+        public void LogMinimal(string data) { }
 
+        public void LogVerbose(string data) { }
+
+        public void LogWarning(string data) { }
+
+        public void LogInformationSummary(string data) { }
+        
+        public void LogErrorSummary(string data) { }
     }
 }

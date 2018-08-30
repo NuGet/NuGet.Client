@@ -31,14 +31,7 @@ namespace NuGet.Common
         /// <summary>
         /// Removes files from the source that match any wildcard.
         /// </summary>
-        public static void FilterPackageFiles<T>(ICollection<T> source,
-            Func<T, string> getPath, IEnumerable<string> wildcards)
-        {
-            GetFilteredPackageFiles<T>(source, getPath, wildcards);
-        }
-
-        public static IEnumerable<T> GetFilteredPackageFiles<T>(ICollection<T> source,
-            Func<T, string> getPath, IEnumerable<string> wildcards)
+        public static void FilterPackageFiles<T>(ICollection<T> source, Func<T, string> getPath, IEnumerable<string> wildcards)
         {
             var matchedFiles = new HashSet<T>(GetMatches(source, getPath, wildcards));
 
@@ -47,8 +40,6 @@ namespace NuGet.Common
             {
                 source.Remove(item);
             }
-
-            return toRemove;
         }
 
         public static string NormalizeWildcardForExcludedFiles(string basePath, string wildcard)
