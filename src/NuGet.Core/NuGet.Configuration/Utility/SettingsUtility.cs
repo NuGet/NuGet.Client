@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,11 +17,8 @@ namespace NuGet.Configuration
         private const string GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES";
         private const string FallbackPackagesFolderEnvironmentKey = "NUGET_FALLBACK_PACKAGES";
         private const string HttpCacheEnvironmentKey = "NUGET_HTTP_CACHE_PATH";
-        private const string PluginsCacheEnvironmentKey = "NUGET_PLUGINS_CACHE_PATH";
         private const string RepositoryPathKey = "repositoryPath";
-        private const string MaxHttpRequestsPerSource = "maxHttpRequestsPerSource";
         public static readonly string DefaultGlobalPackagesFolderPath = "packages" + Path.DirectorySeparatorChar;
-        private const string RevocationModeEnvironmentKey = "NUGET_CERT_REVOCATION_MODE";
 
         public static string GetRepositoryPath(ISettings settings)
         {
@@ -32,17 +29,6 @@ namespace NuGet.Configuration
             }
 
             return path;
-        }
-
-        public static int GetMaxHttpRequest(ISettings settings)
-        {
-            var max = settings.GetValue(ConfigSection, MaxHttpRequestsPerSource, isPath: false);
-            if (!string.IsNullOrEmpty(max) && int.TryParse(max, out var result))
-            {
-                return result;
-            }
-
-            return 0;
         }
 
         public static string GetDecryptedValue(ISettings settings, string section, string key, bool isPath = false)
@@ -250,30 +236,6 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        ///  Get plugins cache folder
-        /// </summary>
-        public static string GetPluginsCacheFolder()
-        {
-            var path = Environment.GetEnvironmentVariable(PluginsCacheEnvironmentKey);
-            if (!string.IsNullOrEmpty(path))
-            {
-                // Verify the path is absolute
-                VerifyPathIsRooted(PluginsCacheEnvironmentKey, path);
-                path = PathUtility.GetPathWithDirectorySeparator(path);
-                path = Path.GetFullPath(path);
-                return path;
-            }
-
-            return NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetPluginsCacheDirectory);
-        }
-
-        public static IEnumerable<PackageSource> GetEnabledSources(ISettings settings)
-        {
-            var provider = new PackageSourceProvider(settings);
-            return provider.LoadPackageSources().Where(e => e.IsEnabled == true).ToList();
-        }
-
-        /// <summary>
         /// The DefaultPushSource can be:
         /// - An absolute URL
         /// - An absolute file path
@@ -304,29 +266,6 @@ namespace NuGet.Configuration
             }
 
             return source;
-        }
-
-        public static IEnumerable<string> GetConfigFilePaths(ISettings settings)
-        {
-            if (!(settings is NullSettings))
-            {
-                return settings.Priority.Select(config => Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
-            }
-            else
-            {
-                return new List<string>();
-            }
-        }
-
-        public static RevocationMode GetRevocationMode()
-        {
-            var revocationModeSetting = Environment.GetEnvironmentVariable(RevocationModeEnvironmentKey);
-            if (!string.IsNullOrEmpty(revocationModeSetting) && Enum.TryParse(revocationModeSetting, ignoreCase: true, result: out RevocationMode revocationMode))
-            {
-                return revocationMode;
-            }
-
-            return RevocationMode.Online;
         }
 
         private static string GetPathFromEnvOrConfig(string envVarName, string configKey, ISettings settings)

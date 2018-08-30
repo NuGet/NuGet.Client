@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,14 +6,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+
+#if !IS_CORECLR
 using NuGet.Common;
+#endif
 
 namespace NuGet.Configuration
 {
     public class PackageSourceProvider : IPackageSourceProvider
     {
-        private ITrustedSourceProvider _trustedSourceProvider;
-
         public ISettings Settings { get; private set; }
 
         private const int MaxSupportedProtocolVersion = 3;
@@ -40,11 +41,15 @@ namespace NuGet.Configuration
             IEnumerable<PackageSource> configurationDefaultSources
             )
         {
-            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            Settings = settings;
             Settings.SettingsChanged += (_, __) => { OnPackageSourcesChanged(); };
             _migratePackageSources = migratePackageSources;
             _configurationDefaultSources = LoadConfigurationDefaultSources(configurationDefaultSources);
-            _trustedSourceProvider = new TrustedSourceProvider(Settings);
         }
 
         private IEnumerable<PackageSource> LoadConfigurationDefaultSources(IEnumerable<PackageSource> configurationDefaultSources)
@@ -140,8 +145,8 @@ namespace NuGet.Configuration
 
             foreach (var packageSource in _configurationDefaultSources)
             {
-                var sourceMatching = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.CurrentCultureIgnoreCase));
-                var feedNameMatching = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase));
+                bool sourceMatching = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.CurrentCultureIgnoreCase));
+                bool feedNameMatching = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase));
 
                 if (!sourceMatching && !feedNameMatching)
                 {
@@ -164,20 +169,13 @@ namespace NuGet.Configuration
             var name = setting.Key;
             var packageSource = new PackageSource(setting.Value, name, isEnabled)
             {
-                IsMachineWide = setting.IsMachineWide,
-                MaxHttpRequestsPerSource = SettingsUtility.GetMaxHttpRequest(Settings)
+                IsMachineWide = setting.IsMachineWide
             };
 
             var credentials = ReadCredential(name);
             if (credentials != null)
             {
                 packageSource.Credentials = credentials;
-            }
-
-            var trustedSource = ReadTrustedSource(name);
-            if (trustedSource != null)
-            {
-                packageSource.TrustedSource = trustedSource;
             }
 
             packageSource.ProtocolVersion = ReadProtocolVersion(setting);
@@ -225,11 +223,6 @@ namespace NuGet.Configuration
             return packageIndex;
         }
 
-        private TrustedSource ReadTrustedSource(string name)
-        {
-            return _trustedSourceProvider.LoadTrustedSource(name);
-        }
-
         private PackageSourceCredential ReadCredential(string sourceName)
         {
             var environmentCredentials = ReadCredentialFromEnvironment(sourceName);
@@ -245,30 +238,18 @@ namespace NuGet.Configuration
             {
                 var userName = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.UsernameToken, StringComparison.OrdinalIgnoreCase)).Value;
 
-                if (!string.IsNullOrEmpty(userName))
+                if (!String.IsNullOrEmpty(userName))
                 {
-                    var authenticationTypesText = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.ValidAuthenticationTypesToken, StringComparison.OrdinalIgnoreCase)).Value;
-
                     var encryptedPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase)).Value;
-                    if (!string.IsNullOrEmpty(encryptedPassword))
+                    if (!String.IsNullOrEmpty(encryptedPassword))
                     {
-                        return new PackageSourceCredential(
-                            sourceName,
-                            userName,
-                            encryptedPassword,
-                            isPasswordClearText: false,
-                            validAuthenticationTypesText: authenticationTypesText);
+                        return new PackageSourceCredential(sourceName, userName, encryptedPassword, isPasswordClearText: false);
                     }
 
                     var clearTextPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.ClearTextPasswordToken, StringComparison.Ordinal)).Value;
-                    if (!string.IsNullOrEmpty(clearTextPassword))
+                    if (!String.IsNullOrEmpty(clearTextPassword))
                     {
-                        return new PackageSourceCredential(
-                            sourceName,
-                            userName,
-                            clearTextPassword,
-                            isPasswordClearText: true,
-                            validAuthenticationTypesText: authenticationTypesText);
+                        return new PackageSourceCredential(sourceName, userName, clearTextPassword, isPasswordClearText: true);
                     }
                 }
             }
@@ -284,7 +265,7 @@ namespace NuGet.Configuration
                 return null;
             }
 
-            var match = Regex.Match(rawCredentials.Trim(), @"^Username=(?<user>.*?);\s*Password=(?<pass>.*?)(?:;ValidAuthenticationTypes=(?<authTypes>.*?))?$", RegexOptions.IgnoreCase);
+            var match = Regex.Match(rawCredentials.Trim(), @"^Username=(?<user>.*?);\s*Password=(?<pass>.*?)$", RegexOptions.IgnoreCase);
             if (!match.Success)
             {
                 return null;
@@ -294,8 +275,7 @@ namespace NuGet.Configuration
                 sourceName,
                 match.Groups["user"].Value,
                 match.Groups["pass"].Value,
-                isPasswordClearText: true,
-                validAuthenticationTypesText: match.Groups["authTypes"].Value);
+                isPasswordClearText: true);
         }
 
         private void MigrateSources(List<PackageSource> loadedPackageSources)
@@ -458,17 +438,6 @@ namespace NuGet.Configuration
                     GetCredentialValues(source.Credentials));
             }
 
-            // Update/Add trusted sources
-            // Deletion of a trusted source should be done separately using TrustedSourceProvider.DeleteSource()
-            var trustedSources = sources
-                .Where(s => s.TrustedSource != null)
-                .Select(s => s.TrustedSource);
-
-            if (trustedSources.Any())
-            {
-                _trustedSourceProvider.SaveTrustedSources(trustedSources);
-            }
-
             OnPackageSourcesChanged();
         }
 
@@ -477,37 +446,30 @@ namespace NuGet.Configuration
         /// </summary>
         private void OnPackageSourcesChanged()
         {
-            PackageSourcesChanged?.Invoke(this, EventArgs.Empty);
+            if (PackageSourcesChanged != null)
+            {
+                PackageSourcesChanged(this, EventArgs.Empty);
+            }
         }
 
-        private static IList<KeyValuePair<string, string>> GetCredentialValues(PackageSourceCredential credentials)
+        private static KeyValuePair<string, string>[] GetCredentialValues(PackageSourceCredential credentials)
         {
             var passwordToken = credentials.IsPasswordClearText
                 ? ConfigurationConstants.ClearTextPasswordToken
                 : ConfigurationConstants.PasswordToken;
 
-            var entries = new List<KeyValuePair<string,string>>
+            return new[]
             {
                 new KeyValuePair<string, string>(ConfigurationConstants.UsernameToken, credentials.Username),
                 new KeyValuePair<string, string>(passwordToken, credentials.PasswordText)
             };
-
-            if (!string.IsNullOrEmpty(credentials.ValidAuthenticationTypesText))
-            {
-                entries.Add(
-                    new KeyValuePair<string, string>(
-                        ConfigurationConstants.ValidAuthenticationTypesToken,
-                        credentials.ValidAuthenticationTypesText));
-            }
-
-            return entries;
         }
 
         public string DefaultPushSource
         {
             get
             {
-                var source = SettingsUtility.GetDefaultPushSource(Settings);
+                string source = SettingsUtility.GetDefaultPushSource(Settings);
 
                 if (string.IsNullOrEmpty(source))
                 {
@@ -539,7 +501,7 @@ namespace NuGet.Configuration
 
             // It doesn't matter what value it is.
             // As long as the package source name is persisted in the <disabledPackageSources> section, the source is disabled.
-            return string.IsNullOrEmpty(value);
+            return String.IsNullOrEmpty(value);
         }
 
         /// <summary>
