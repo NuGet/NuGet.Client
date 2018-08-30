@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,6 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
-using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -18,10 +17,6 @@ namespace NuGet.Configuration
     /// </summary>
     public class Settings : ISettings
     {
-        private const string CLEAR = "clear";
-        private const string ADD = "add";
-        private const string CONFIGURATION = "configuration";
-
         /// <summary>
         /// Default file name for a settings file is 'NuGet.config'
         /// Also, the machine level setting file at '%APPDATA%\NuGet' always uses this name
@@ -32,7 +27,7 @@ namespace NuGet.Configuration
         /// NuGet config names with casing ordered by precedence.
         /// </summary>
         public static readonly string[] OrderedSettingsFileNames =
-            PathUtility.IsFileSystemCaseInsensitive ?
+            (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX) ?
             new[] { DefaultSettingsFileName } :
             new[]
             {
@@ -68,12 +63,12 @@ namespace NuGet.Configuration
 
         public Settings(string root, string fileName, bool isMachineWideSettings)
         {
-            if (string.IsNullOrEmpty(root))
+            if (String.IsNullOrEmpty(root))
             {
                 throw new ArgumentException("root cannot be null or empty", nameof(root));
             }
 
-            if (string.IsNullOrEmpty(fileName))
+            if (String.IsNullOrEmpty(fileName))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(fileName));
             }
@@ -123,7 +118,10 @@ namespace NuGet.Configuration
         /// <summary>
         /// Full path to the ConfigFile corresponding to this Settings object
         /// </summary>
-        public string ConfigFilePath => Path.GetFullPath(Path.Combine(Root, FileName));
+        public string ConfigFilePath
+        {
+            get { return Path.GetFullPath(Path.Combine(Root, FileName)); }
+        }
 
         /// <summary>
         /// Load default settings based on a directory.
@@ -223,78 +221,45 @@ namespace NuGet.Configuration
                             .Where(f => f != null));
                 }
 
-                return LoadSettingsForSpecificConfigs(root, configFileName, validSettingFiles, machineWideSettings, loadAppDataSettings, useTestingGlobalPath);
+                if (loadAppDataSettings)
+                {
+                    LoadUserSpecificSettings(validSettingFiles, root, configFileName, machineWideSettings, useTestingGlobalPath);
+                }
+
+                if (machineWideSettings != null && string.IsNullOrEmpty(configFileName))
+                {
+                    validSettingFiles.AddRange(
+                        machineWideSettings.Settings.Select(
+                            s => new Settings(s.Root, s.FileName, s.IsMachineWideSettings)));
+                }
+
+                if (validSettingFiles == null
+                    || !validSettingFiles.Any())
+                {
+                    // This means we've failed to load all config files and also failed to load or create the one in %AppData%
+                    // Work Item 1531: If the config file is malformed and the constructor throws, NuGet fails to load in VS.
+                    // Returning a null instance prevents us from silently failing and also from picking up the wrong config
+                    return NullSettings.Instance;
+                }
+
+                SetClearTagForSettings(validSettingFiles);
+
+                validSettingFiles[0]._priority = validSettingFiles.Count;
+
+                // if multiple setting files were loaded, chain them in a linked list
+                for (var i = 1; i < validSettingFiles.Count; ++i)
+                {
+                    validSettingFiles[i]._next = validSettingFiles[i - 1];
+                    validSettingFiles[i]._priority = validSettingFiles[i - 1]._priority - 1;
+                }
+
+                // return the linked list head. Typicall, it's either the config file in %ProgramData%\NuGet\Config,
+                // or the user specific config (%APPDATA%\NuGet\nuget.config) if there are no machine
+                // wide config files. The head file is the one we want to read first, while the user specific config
+                // is the one that we want to write to.
+                // TODO: add UI to allow specifying which one to write to
+                return validSettingFiles.Last();
             }
-        }
-
-        public static ISettings LoadSettingsGivenConfigPaths(IList<string> configFilePaths)
-        {
-            var settings = new List<Settings>();
-            if (configFilePaths == null || configFilePaths.Count == 0)
-            {
-                return NullSettings.Instance;
-            }
-
-            foreach (var configFile in configFilePaths)
-            {
-                settings.Add(LoadSettings(configFile));
-            }
-
-            return LoadSettingsForSpecificConfigs(settings.First().Root, settings.First().FileName, settings, null, false, false);
-        }
-
-        private static Settings LoadSettings(string configPath)
-        {
-            var file = new FileInfo(configPath);
-            return new Settings(file.DirectoryName, file.Name);
-        }
-
-        // Used to reconstruct the settings from give config files
-        public static ISettings LoadSettingsForSpecificConfigs(
-            string root,
-            string configFileName,
-            List<Settings> validSettingFiles,
-            IMachineWideSettings machineWideSettings,
-            bool loadAppDataSettings,
-            bool useTestingGlobalPath)
-        {
-            if (loadAppDataSettings)
-            {
-                LoadUserSpecificSettings(validSettingFiles, root, configFileName, machineWideSettings, useTestingGlobalPath);
-            }
-
-            if (machineWideSettings != null && string.IsNullOrEmpty(configFileName))
-            {
-                validSettingFiles.AddRange(
-                    machineWideSettings.Settings.Select(
-                        s => new Settings(s.Root, s.FileName, s.IsMachineWideSettings)));
-            }
-
-            if (validSettingFiles?.Any() != true)
-            {
-                // This means we've failed to load all config files and also failed to load or create the one in %AppData%
-                // Work Item 1531: If the config file is malformed and the constructor throws, NuGet fails to load in VS.
-                // Returning a null instance prevents us from silently failing and also from picking up the wrong config
-                return NullSettings.Instance;
-            }
-
-            SetClearTagForSettings(validSettingFiles);
-
-            validSettingFiles[0]._priority = validSettingFiles.Count;
-
-            // if multiple setting files were loaded, chain them in a linked list
-            for (var i = 1; i < validSettingFiles.Count; ++i)
-            {
-                validSettingFiles[i]._next = validSettingFiles[i - 1];
-                validSettingFiles[i]._priority = validSettingFiles[i - 1]._priority - 1;
-            }
-
-            // return the linked list head. Typicall, it's either the config file in %ProgramData%\NuGet\Config,
-            // or the user specific config (%APPDATA%\NuGet\nuget.config) if there are no machine
-            // wide config files. The head file is the one we want to read first, while the user specific config
-            // is the one that we want to write to.
-            // TODO: add UI to allow specifying which one to write to
-            return validSettingFiles.Last();
         }
 
         private static void LoadUserSpecificSettings(
@@ -309,14 +274,14 @@ namespace NuGet.Configuration
             {
                 // Path.Combine is performed with root so it should not be null
                 // However, it is legal for it be empty in this method
-                root = string.Empty;
+                root = String.Empty;
             }
             // for the default location, allow case where file does not exist, in which case it'll end
             // up being created if needed
             Settings appDataSettings = null;
             if (configFileName == null)
             {
-                var defaultSettingsFilePath = string.Empty;
+                var defaultSettingsFilePath = String.Empty;
                 if (useTestingGlobalPath)
                 {
                     defaultSettingsFilePath = Path.Combine(root, "TestingGlobalPath", DefaultSettingsFileName);
@@ -363,7 +328,7 @@ namespace NuGet.Configuration
                 else
                 {
                     appDataSettings = ReadSettings(root, defaultSettingsFilePath);
-                    var IsEmptyConfig = !appDataSettings.GetSettingValues(ConfigurationConstants.PackageSources).Any();
+                    bool IsEmptyConfig = !appDataSettings.GetSettingValues(ConfigurationConstants.PackageSources).Any();
 
                     if (IsEmptyConfig)
                     {
@@ -383,7 +348,7 @@ namespace NuGet.Configuration
             {
                 if (!FileSystemUtility.DoesFileExistIn(root, configFileName))
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture,
+                    var message = String.Format(CultureInfo.CurrentCulture,
                         Resources.FileDoesNotExist,
                         Path.Combine(root, configFileName));
                     throw new InvalidOperationException(message);
@@ -416,7 +381,7 @@ namespace NuGet.Configuration
             string root,
             params string[] paths)
         {
-            if (string.IsNullOrEmpty(root))
+            if (String.IsNullOrEmpty(root))
             {
                 throw new ArgumentException("root cannot be null or empty");
             }
@@ -454,12 +419,12 @@ namespace NuGet.Configuration
 
         public string GetValue(string section, string key, bool isPath = false)
         {
-            if (string.IsNullOrEmpty(section))
+            if (String.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
-            if (string.IsNullOrEmpty(key))
+            if (String.IsNullOrEmpty(key))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
@@ -496,7 +461,7 @@ namespace NuGet.Configuration
 
         public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
         {
-            if (string.IsNullOrEmpty(section))
+            if (String.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
@@ -512,62 +477,14 @@ namespace NuGet.Configuration
             return settingValues.AsReadOnly();
         }
 
-        public IReadOnlyList<string> GetAllSubsections(string section)
-        {
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-
-            var subsections = new List<string>();
-            var curr = this;
-            while (curr != null)
-            {
-                subsections.AddRange(curr.GetSubsections(section));
-                curr = curr._next;
-            }
-
-            return subsections.AsReadOnly();
-        }
-
-        private IReadOnlyList<string> GetSubsections(string section)
-        {
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-
-            var subsections = new List<string>();
-            var sectionElement = GetSection(ConfigXDocument.Root, section);
-
-            if (sectionElement != null)
-            {
-                var subsectionElements = sectionElement.Elements();
-
-                foreach (var element in subsectionElements)
-                {
-                    subsections.Add(element.Name.LocalName);
-                }
-            }
-
-            return subsections.AsReadOnly();
-        }
-
         public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
         {
-            var values = GetNestedSettingValues(section, subSection);
-
-            return values.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)).ToList().AsReadOnly();
-        }
-
-        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
-        {
-            if (string.IsNullOrEmpty(section))
+            if (String.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
-            if (string.IsNullOrEmpty(subSection))
+            if (String.IsNullOrEmpty(subSection))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subSection));
             }
@@ -580,7 +497,7 @@ namespace NuGet.Configuration
                 curr = curr._next;
             }
 
-            return values.AsReadOnly();
+            return values.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)).ToList().AsReadOnly();
         }
 
         public void SetValue(string section, string key, string value)
@@ -597,7 +514,7 @@ namespace NuGet.Configuration
                 return;
             }
 
-            if (string.IsNullOrEmpty(section))
+            if (String.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
@@ -620,7 +537,7 @@ namespace NuGet.Configuration
                 return;
             }
 
-            if (string.IsNullOrEmpty(section))
+            if (String.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
@@ -635,60 +552,6 @@ namespace NuGet.Configuration
                 SetValueInternal(sectionElement, value.Key, value.Value, value.AdditionalData);
             }
             Save();
-        }
-
-        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
-        {
-            // machine wide settings cannot be changed.
-            if (IsMachineWideSettings ||
-                ((section == ConfigurationConstants.PackageSources || section == ConfigurationConstants.DisabledPackageSources) && Cleared))
-            {
-                if (_next == null)
-                {
-                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
-                }
-
-                _next.UpdateSubsections(section, subsection, values);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-
-
-            if (string.IsNullOrEmpty(subsection))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subsection));
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            var valuesToWrite = _next == null ? values : values.Where(v => v.Priority < _next._priority);
-
-            var sectionElement = GetSection(ConfigXDocument.Root, section);
-            if (sectionElement == null && valuesToWrite.Any())
-            {
-                sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
-            }
-
-            UpdateSection(sectionElement, subsection, valuesToWrite);
-
-            if (!sectionElement.HasElements)
-            {
-                DeleteSectionFromRoot(ConfigXDocument.Root, section);
-            }
-
-            Save();
-
-            if (_next != null)
-            {
-                _next.UpdateSubsections(section, subsection, values.Where(v => v.Priority >= _next._priority).ToList());
-            }
         }
 
         public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
@@ -718,7 +581,23 @@ namespace NuGet.Configuration
 
             var valuesToWrite = _next == null ? values : values.Where(v => v.Priority < _next._priority);
 
-            UpdateSection(ConfigXDocument.Root, section, valuesToWrite);
+            var sectionElement = GetSection(ConfigXDocument.Root, section);
+
+            if (sectionElement == null && valuesToWrite.Any())
+            {
+                sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
+            }
+
+            // When updating attempt to preserve the clear tag (and any sources that appear prior to it)
+            // to avoid creating extra diffs in the source.
+            RemoveElementAfterClearTag(sectionElement);
+
+            foreach (var value in valuesToWrite)
+            {
+                var element = new XElement("add");
+                SetElementValues(element, value.Key, value.OriginalValue, value.AdditionalData);
+                XElementUtility.AddIndented(sectionElement, element);
+            }
 
             Save();
 
@@ -728,46 +607,7 @@ namespace NuGet.Configuration
             }
         }
 
-        /// <summary>
-        /// Adds or Updates a section in the root element with the values.
-        /// </summary>
-        /// <param name="root">Root element.</param>
-        /// <param name="section">Name of the section.</param>
-        /// <param name="valuesToWrite">Values to be added or updated in the section.</param>
-        private void UpdateSection(XElement root, string section, IEnumerable<SettingValue> valuesToWrite)
-        {
-            var sectionElement = GetSection(root, section);
-
-            if (sectionElement == null && valuesToWrite.Any())
-            {
-                sectionElement = GetOrCreateSection(root, section);
-            }
-
-            // When updating attempt to preserve the clear tag (and any sources that appear prior to it)
-            // to avoid creating extra diffs in the source.
-            RemoveElementBeforeClearTag(sectionElement);
-
-            if (valuesToWrite.Any())
-            {
-                foreach (var value in valuesToWrite)
-                {
-                    var element = new XElement(ADD);
-                    SetElementValues(element, value.Key, value.OriginalValue, value.AdditionalData);
-                    XElementUtility.AddIndented(sectionElement, element);
-                }
-            }
-            else if (!ContainsClearTag(sectionElement))
-            {
-                // Delete the section if it does not have values and a clear tag
-                DeleteSectionFromRoot(root, section);
-            }
-        }
-
-        /// <summary>
-        /// Removes all element nodes in the sectionElement which appear before a clear element.
-        /// </summary>
-        /// <param name="sectionElement">XElement section.</param>
-        private static void RemoveElementBeforeClearTag(XElement sectionElement)
+        private static void RemoveElementAfterClearTag(XElement sectionElement)
         {
             if (sectionElement == null)
             {
@@ -785,7 +625,7 @@ namespace NuGet.Configuration
 
                 var element = (XElement)node;
 
-                if (HasName(element, CLEAR))
+                if (element.Name.LocalName.Equals("clear", StringComparison.OrdinalIgnoreCase))
                 {
                     nodesToRemove.Clear();
                 }
@@ -805,43 +645,6 @@ namespace NuGet.Configuration
                     element.Remove();
                 }
             }
-        }
-
-        /// <summary>
-        /// Checks if a section contains clear tag.
-        /// </summary>
-        /// <param name="section">XElement section.</param>
-        private static bool ContainsClearTag(XElement section)
-        {
-            if (section == null)
-            {
-                return false;
-            }
-
-            return section
-                .Nodes()
-                .Any(n => IsElement(n) && HasName((XElement)n, CLEAR));
-        }
-
-        /// <summary>
-        /// Checks if an XNode is an XElement.
-        /// </summary>
-        /// <param name="node">XNode</param>
-        /// <returns>Bool indicating if the node is an element.</returns>
-        private static bool IsElement(XNode node)
-        {
-            return node.NodeType == XmlNodeType.Element;
-        }
-
-        /// <summary>
-        /// Checks if an XElement has a specific local name. Performs an OrdinalIgnoreCase comparison.
-        /// </summary>
-        /// <param name="element">XElement to be matched</param>
-        /// <param name="name">name to be matched</param>
-        /// <returns>Bool indicating if the element and has the same local name as the name parameter.</returns>
-        private static bool HasName(XElement element, string name)
-        {
-            return string.Equals(element.Name.LocalName, name, StringComparison.OrdinalIgnoreCase);
         }
 
         private static void SetElementValues(XElement element, string key, string value, IDictionary<string, string> attributes)
@@ -871,12 +674,7 @@ namespace NuGet.Configuration
             }
         }
 
-        public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values)
-        {
-            SetNestedSettingValues(section, subsection, values.Select(kvp => new SettingValue(kvp.Key, kvp.Value, isMachineWide: false)).AsList());
-        }
-
-        public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
+        public void SetNestedValues(string section, string key, IList<KeyValuePair<string, string>> values)
         {
             // machine wide settings cannot be changed.
             if (IsMachineWideSettings)
@@ -886,28 +684,26 @@ namespace NuGet.Configuration
                     throw new InvalidOperationException(Resources.Error_NoWritableConfig);
                 }
 
-                _next.SetNestedSettingValues(section, subsection, values);
+                _next.SetNestedValues(section, key, values);
                 return;
             }
 
-            if (string.IsNullOrEmpty(section))
+            if (String.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
-
             if (values == null)
             {
-                throw new ArgumentNullException(nameof(values));
+                throw new ArgumentNullException("values");
             }
 
             var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
-            var subsectionElement = GetOrCreateSection(sectionElement, subsection);
+            var element = GetOrCreateSection(sectionElement, key);
 
-            foreach (var value in values)
+            foreach (var kvp in values)
             {
-                SetValueInternal(subsectionElement, value.Key, value.Value, attributes: value.AdditionalData);
+                SetValueInternal(element, kvp.Key, kvp.Value, attributes: null);
             }
-
             Save();
         }
 
@@ -924,11 +720,11 @@ namespace NuGet.Configuration
                 return _next.DeleteValue(section, key);
             }
 
-            if (string.IsNullOrEmpty(section))
+            if (String.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
-            if (string.IsNullOrEmpty(key))
+            if (String.IsNullOrEmpty(key))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
@@ -951,17 +747,6 @@ namespace NuGet.Configuration
 
         public bool DeleteSection(string section)
         {
-            if (DeleteSectionFromRoot(ConfigXDocument.Root, section))
-            {
-                Save();
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool DeleteSectionFromRoot(XElement root, string section)
-        {
             // machine wide settings cannot be changed.
             if (IsMachineWideSettings)
             {
@@ -973,19 +758,19 @@ namespace NuGet.Configuration
                 return _next.DeleteSection(section);
             }
 
-            if (string.IsNullOrEmpty(section))
+            if (String.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
-            var sectionElement = GetSection(root, section);
+            var sectionElement = GetSection(ConfigXDocument.Root, section);
             if (sectionElement == null)
             {
                 return false;
             }
 
             XElementUtility.RemoveIndented(sectionElement);
-
+            Save();
             return true;
         }
 
@@ -1025,11 +810,13 @@ namespace NuGet.Configuration
             var result = curr;
             foreach (var element in sectionElement.Elements())
             {
-                if (HasName(element, CLEAR))
+                var elementName = element.Name.LocalName;
+                if (elementName.Equals("clear", StringComparison.OrdinalIgnoreCase))
                 {
                     result = null;
                 }
-                else if (HasName(element, ADD) &&
+                else if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase)
+                         &&
                          XElementUtility.GetOptionalAttributeValue(element, ConfigurationConstants.KeyAttribute).Equals(key, StringComparison.OrdinalIgnoreCase))
                 {
                     result = element;
@@ -1049,7 +836,7 @@ namespace NuGet.Configuration
             var value = XElementUtility.GetOptionalAttributeValue(element, ConfigurationConstants.ValueAttribute);
             value = ApplyEnvironmentTransform(value);
             if (!isPath
-                || string.IsNullOrEmpty(value))
+                || String.IsNullOrEmpty(value))
             {
                 return value;
             }
@@ -1106,11 +893,12 @@ namespace NuGet.Configuration
 
             foreach (var element in elements)
             {
-                if (HasName(element, ADD))
+                var elementName = element.Name.LocalName;
+                if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase))
                 {
                     values.Add(ReadSettingsValue(element, isPath));
                 }
-                else if (HasName(element, CLEAR))
+                else if (elementName.Equals("clear", StringComparison.OrdinalIgnoreCase))
                 {
                     values.Clear();
                 }
@@ -1123,10 +911,10 @@ namespace NuGet.Configuration
             var valueAttribute = element.Attribute(ConfigurationConstants.ValueAttribute);
 
             if (keyAttribute == null
-                || string.IsNullOrEmpty(keyAttribute.Value)
+                || String.IsNullOrEmpty(keyAttribute.Value)
                 || valueAttribute == null)
             {
-                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, ConfigFilePath));
+                throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, ConfigFilePath));
             }
 
             var value = ApplyEnvironmentTransform(valueAttribute.Value);
@@ -1161,7 +949,7 @@ namespace NuGet.Configuration
 
         private void SetValueInternal(XElement sectionElement, string key, string value, IDictionary<string, string> attributes)
         {
-            if (string.IsNullOrEmpty(key))
+            if (String.IsNullOrEmpty(key))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, ConfigurationConstants.KeyAttribute);
             }
@@ -1179,7 +967,7 @@ namespace NuGet.Configuration
             }
             else
             {
-                element = new XElement(ADD);
+                element = new XElement("add");
                 SetElementValues(element, key, value, attributes);
                 XElementUtility.AddIndented(sectionElement, element);
             }
@@ -1210,7 +998,7 @@ namespace NuGet.Configuration
             }
             else if (!FileSystemUtility.IsPathAFile(settingsPath))
             {
-                var fullPath = Path.Combine(root ?? string.Empty, settingsPath);
+                var fullPath = Path.Combine(root ?? String.Empty, settingsPath);
                 root = Path.GetDirectoryName(fullPath);
                 fileName = Path.GetFileName(fullPath);
             }
@@ -1316,9 +1104,9 @@ namespace NuGet.Configuration
 
         private static XDocument CreateDefaultConfig()
         {
-            return new XDocument(new XElement(CONFIGURATION,
+            return new XDocument(new XElement("configuration",
                                  new XElement(ConfigurationConstants.PackageSources,
-                                 new XElement(ADD,
+                                 new XElement("add",
                                  new XAttribute(ConfigurationConstants.KeyAttribute, NuGetConstants.FeedName),
                                  new XAttribute(ConfigurationConstants.ValueAttribute, NuGetConstants.V3FeedUrl),
                                  new XAttribute(ConfigurationConstants.ProtocolVersionAttribute, "3")))));
@@ -1327,7 +1115,8 @@ namespace NuGet.Configuration
         private static void SetClearTagForSettings(List<Settings> settings)
         {
             var result = new List<Settings>();
-            var foundClear = false;
+
+            bool foundClear = false;
 
             foreach (var setting in settings)
             {
@@ -1349,7 +1138,7 @@ namespace NuGet.Configuration
             {
                 foreach (var element in sectionElement.Elements())
                 {
-                    if (HasName(element, CLEAR))
+                    if (element.Name.LocalName.Equals("clear", StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -1361,7 +1150,7 @@ namespace NuGet.Configuration
         // this method will check NuGet.Config file, if the root is not configuration, it will throw.
         private void CheckConfigRoot()
         {
-            if (ConfigXDocument.Root.Name != CONFIGURATION)
+            if (ConfigXDocument.Root.Name != "configuration")
             {
                 throw new NuGetConfigurationException(
                          string.Format(Resources.ShowError_ConfigRootInvalid, ConfigFilePath));
