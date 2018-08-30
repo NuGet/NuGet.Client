@@ -475,7 +475,8 @@ namespace NuGet.Build.Tasks.Pack
                 }
             }
 
-            var buildAction = BuildAction.Parse(packageFile.GetProperty("BuildAction"));
+            var buildActionString = packageFile.GetProperty("BuildAction");
+            var buildAction = BuildAction.Parse(string.IsNullOrEmpty(buildActionString) ? "None" : buildActionString);
 
             // TODO: Do the work to get the right language of the project, tracked via https://github.com/NuGet/Home/issues/4100
             var language = buildAction.Equals(BuildAction.Compile) ? "cs" : "any";
@@ -557,7 +558,7 @@ namespace NuGet.Build.Tasks.Pack
 
             return totalSetOfTargetPaths.Select(target => new ContentMetadata()
             {
-                BuildAction = buildAction.IsKnown ? buildAction.Value : null,
+                BuildAction = buildAction.Value,
                 Source = sourcePath,
                 Target = target,
                 CopyToOutput = packageFile.GetProperty("PackageCopyToOutput"),
