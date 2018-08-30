@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,17 +6,12 @@ using NuGet.Shared;
 
 namespace NuGet.Packaging.Core
 {
-    /**
-     * It is important that this type remains immutable due to the cloning of package specs
-     **/
-    public class PackageType : IEquatable<PackageType>, IComparable<PackageType>
+    public class PackageType : IEquatable<PackageType>
     {
         public static readonly Version EmptyVersion = new Version(0, 0);
         public static readonly PackageType Legacy = new PackageType("Legacy", version: EmptyVersion);
         public static readonly PackageType DotnetCliTool = new PackageType("DotnetCliTool", version: EmptyVersion);
         public static readonly PackageType Dependency = new PackageType("Dependency", version: EmptyVersion);
-        public static readonly PackageType DotnetTool = new PackageType("DotnetTool", version: EmptyVersion);
-        public static readonly PackageType SymbolsPackage = new PackageType("SymbolsPackage", version: EmptyVersion);
 
         public PackageType(string name, Version version)
         {
@@ -33,8 +28,7 @@ namespace NuGet.Packaging.Core
             Name = name;
             Version = version;
         }
-
-
+        
         public string Name { get; }
 
         public Version Version { get; }
@@ -89,29 +83,6 @@ namespace NuGet.Packaging.Core
             combiner.AddObject(Version);
 
             return combiner.CombinedHash;
-        }
-
-        public int CompareTo(PackageType other)
-        {
-
-            if (other == null)
-            {
-                return 1;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return 0;
-            }
-
-            var res = StringComparer.OrdinalIgnoreCase.Compare(Name, other.Name);
-
-            if (res != 0)
-            {
-                return res;
-            }
-
-            return Version.CompareTo(other.Version);
         }
     }
 }
