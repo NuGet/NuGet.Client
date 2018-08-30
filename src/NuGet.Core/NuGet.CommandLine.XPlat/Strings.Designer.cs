@@ -296,6 +296,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No assets file was found for `{0}`. Please run restore before running this command..
+        /// </summary>
+        internal static string Error_AssetsFileNotFound {
+            get {
+                return ResourceManager.GetString("Error_AssetsFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
         internal static string Error_MissingSourceParameter {
@@ -328,6 +337,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_NoMatchingSpecs {
             get {
                 return ResourceManager.GetString("Error_NoMatchingSpecs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects..
+        /// </summary>
+        internal static string Error_NotPRProject {
+            get {
+                return ResourceManager.GetString("Error_NotPRProject", resourceCulture);
             }
         }
         
@@ -463,6 +481,267 @@ namespace NuGet.CommandLine.XPlat {
         internal static string InputFile_Description {
             get {
                 return ResourceManager.GetString("InputFile_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (A) : Auto-referenced package..
+        /// </summary>
+        internal static string ListPkg_AutoReferenceDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_AutoReferenceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A path to a config file to specify sources. Works only with `--outdated`..
+        /// </summary>
+        internal static string ListPkg_ConfigDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_ConfigDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Displays only the packages marked deprecated by the authors..
+        /// </summary>
+        internal static string ListPkg_DeprecatedDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_DeprecatedDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (D) : The owner has unlisted this package. This could mean the package is deprecated or shouldn&apos;t be used anymore..
+        /// </summary>
+        internal static string ListPkg_DeprecatedPkgDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_DeprecatedPkgDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lists all the packages used by the current project(s)..
+        /// </summary>
+        internal static string ListPkg_Description {
+            get {
+                return ResourceManager.GetString("ListPkg_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The given file `{0}` was not found.
+        /// </summary>
+        internal static string ListPkg_ErrorFileNotFound {
+            get {
+                return ResourceManager.GetString("ListPkg_ErrorFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to read the assets file `{0}`. Please make sure the file has the write format..
+        /// </summary>
+        internal static string ListPkg_ErrorReadingAssetsFile {
+            get {
+                return ResourceManager.GetString("ListPkg_ErrorReadingAssetsFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to read a package reference from the project `{0}`. Please make sure that your project file and project.assets.json file are in sync by running restore..
+        /// </summary>
+        internal static string ListPkg_ErrorReadingReferenceFromProject {
+            get {
+                return ResourceManager.GetString("ListPkg_ErrorReadingReferenceFromProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the target framework for which the packages will be listed..
+        /// </summary>
+        internal static string ListPkg_FrameworkDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_FrameworkDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Considers only the versions with matching major. Works only with `--outdated`..
+        /// </summary>
+        internal static string ListPkg_HighestMinorDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_HighestMinorDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Considers only the versions with matching minor and major. Works only with `--outdated`..
+        /// </summary>
+        internal static string ListPkg_HighestPatchDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_HighestPatchDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to parse one of the given frameworks. Please make sure the given frameworks are valid..
+        /// </summary>
+        internal static string ListPkg_InvalidFramework {
+            get {
+                return ResourceManager.GetString("ListPkg_InvalidFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Latest.
+        /// </summary>
+        internal static string ListPkg_Latest {
+            get {
+                return ResourceManager.GetString("ListPkg_Latest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No packages were found for this framework..
+        /// </summary>
+        internal static string ListPkg_NoPackagesForFramework {
+            get {
+                return ResourceManager.GetString("ListPkg_NoPackagesForFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No packages were found for the project `{0}` given the specified frameworks..
+        /// </summary>
+        internal static string ListPkg_NoPackagesFoundForFrameworks {
+            get {
+                return ResourceManager.GetString("ListPkg_NoPackagesFoundForFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not found at the sources.
+        /// </summary>
+        internal static string ListPkg_NotFoundAtSources {
+            get {
+                return ResourceManager.GetString("ListPkg_NotFoundAtSources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No updates available for this framework packages..
+        /// </summary>
+        internal static string ListPkg_NoUpdatesForFramework {
+            get {
+                return ResourceManager.GetString("ListPkg_NoUpdatesForFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The given project `{0}` have no updates given the current sources..
+        /// </summary>
+        internal static string ListPkg_NoUpdatesForProject {
+            get {
+                return ResourceManager.GetString("ListPkg_NoUpdatesForProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Displays only the packages that need updates with the latest version from the sources..
+        /// </summary>
+        internal static string ListPkg_OutdatedDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_OutdatedDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A path to a project, solution file or directory..
+        /// </summary>
+        internal static string ListPkg_PathDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_PathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Considers prerelease versions when looking for latest. Works only with `--outdated`..
+        /// </summary>
+        internal static string ListPkg_PrereleaseDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_PrereleaseDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; has the following package references.
+        /// </summary>
+        internal static string ListPkg_ProjectHeaderLog {
+            get {
+                return ResourceManager.GetString("ListPkg_ProjectHeaderLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project `{0}` has the following updates to its packages.
+        /// </summary>
+        internal static string ListPkg_ProjectUpdatesHeaderLog {
+            get {
+                return ResourceManager.GetString("ListPkg_ProjectUpdatesHeaderLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Requested.
+        /// </summary>
+        internal static string ListPkg_Requested {
+            get {
+                return ResourceManager.GetString("ListPkg_Requested", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resolved.
+        /// </summary>
+        internal static string ListPkg_Resolved {
+            get {
+                return ResourceManager.GetString("ListPkg_Resolved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sources to lookup for latest versions. Works only with `--outdated`..
+        /// </summary>
+        internal static string ListPkg_SourceDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_SourceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Top-level Package.
+        /// </summary>
+        internal static string ListPkg_TopLevelHeader {
+            get {
+                return ResourceManager.GetString("ListPkg_TopLevelHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Includes transitive packages too in the result..
+        /// </summary>
+        internal static string ListPkg_TransitiveDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_TransitiveDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transitive Package.
+        /// </summary>
+        internal static string ListPkg_TransitiveHeader {
+            get {
+                return ResourceManager.GetString("ListPkg_TransitiveHeader", resourceCulture);
             }
         }
         
