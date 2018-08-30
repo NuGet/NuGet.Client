@@ -1,7 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +11,6 @@ namespace NuGet.Common
     public static class FileUtility
     {
         public static readonly int MaxTries = 3;
-        public static readonly FileShare FileSharePermissions = FileShare.ReadWrite | FileShare.Delete;
 
         /// <summary>
         /// Get the full path to a new temp file
@@ -113,39 +109,6 @@ namespace NuGet.Common
             }
         }
 
-        public static async Task ReplaceAsync(Func<string, Task> writeSourceFile, string destFilePath)
-        {
-            if (writeSourceFile == null)
-            {
-                throw new ArgumentNullException(nameof(writeSourceFile));
-            }
-
-            if (destFilePath == null)
-            {
-                throw new ArgumentNullException(nameof(destFilePath));
-            }
-
-            var tempPath = GetTempFilePath(Path.GetDirectoryName(destFilePath));
-
-            try
-            {
-                // Write to temp path
-                await writeSourceFile(tempPath);
-
-                // Delete the previous file and move the temporary file
-                // This will throw if there is a failure
-                Replace(tempPath, destFilePath);
-            }
-            catch
-            {
-                // Clean up the temporary file
-                Delete(tempPath);
-
-                // Throw since this failed
-                throw;
-            }
-        }
-
         /// <summary>
         /// Delete the existing file with retries.
         /// Move a file with retries.
@@ -176,7 +139,7 @@ namespace NuGet.Common
             }
 
             // Run up to 3 times
-            for (var i = 0; i < MaxTries; i++)
+            for (int i = 0; i < MaxTries; i++)
             {
                 // Ignore exceptions for the first attempts
                 try
@@ -203,7 +166,7 @@ namespace NuGet.Common
             }
 
             // Run up to 3 times
-            for (var i = 0; i < MaxTries; i++)
+            for (int i = 0; i < MaxTries; i++)
             {
                 // Ignore exceptions for the first attempts
                 try
@@ -221,51 +184,6 @@ namespace NuGet.Common
                 }
             }
         }
-
-        public static T SafeRead<T>(string filePath, Func<FileStream, string, T> read)
-        {
-            var retries = MaxTries;
-            for (var i = 1; i <= retries; i++)
-            {
-                // Ignore exceptions for the first attempts
-                try
-                {
-                    using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileSharePermissions))
-                    {
-                        return read(stream, filePath);
-                    }
-                }
-                catch (Exception ex) when ((i < retries) && (ex is UnauthorizedAccessException || ex is IOException))
-                {
-                    Sleep(100);
-                }
-            }
-            // This will never reached, but the compiler can't detect that 
-            return default(T);
-        }
-
-        public static async Task<T> SafeReadAsync<T>(string filePath, Func<FileStream, string, Task<T>> read)
-        {
-            var retries = MaxTries;
-            for (var i = 1; i <= retries; i++)
-            {
-                // Ignore exceptions for the first attempts
-                try
-                {
-                    using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileSharePermissions))
-                    {
-                        return await read(stream, filePath);
-                    }
-                }
-                catch (Exception ex) when ((i < retries) && (ex is UnauthorizedAccessException || ex is IOException))
-                {
-                    Sleep(100);
-                }
-            }
-            // This will never reached, but the compiler can't detect that 
-            return default(T);
-        }
-
 
         private static void Sleep(int ms)
         {

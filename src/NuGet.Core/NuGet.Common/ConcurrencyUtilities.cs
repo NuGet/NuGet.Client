@@ -29,17 +29,16 @@ namespace NuGet.Common
             // limit the number of unauthorized, this should be around 30 seconds.
             var unauthorizedAttemptsLeft = NumberOfRetries;
 
+            var lockPath = FileLockPath(filePath);
+
             while (true)
             {
                 FileStream fs = null;
-                var lockPath = string.Empty;
 
                 try
                 {
                     try
                     {
-                        lockPath = FileLockPath(filePath);
-
                         fs = AcquireFileStream(lockPath);
                     }
                     catch (DirectoryNotFoundException)
@@ -52,11 +51,6 @@ namespace NuGet.Common
 
                         if (unauthorizedAttemptsLeft < 1)
                         {
-                            if (string.IsNullOrEmpty(lockPath))
-                            {
-                                lockPath = BasePath;
-                            }
-
                             var message = string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.UnauthorizedLockFail,
@@ -106,16 +100,15 @@ namespace NuGet.Common
             // limit the number of unauthorized, this should be around 30 seconds.
             var unauthorizedAttemptsLeft = NumberOfRetries;
 
+            var lockPath = FileLockPath(filePath);
+
             while (true)
             {
                 FileStream fs = null;
-                var lockPath = string.Empty;
                 try
                 {
                     try
                     {
-                        lockPath = FileLockPath(filePath);
-
                         fs = AcquireFileStream(lockPath);
                     }
                     catch (DirectoryNotFoundException)
@@ -126,11 +119,6 @@ namespace NuGet.Common
                     {
                         if (unauthorizedAttemptsLeft < 1)
                         {
-                            if (string.IsNullOrEmpty(lockPath))
-                            {
-                                lockPath = BasePath;
-                            }
-
                             var message = string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.UnauthorizedLockFail,

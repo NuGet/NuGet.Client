@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.IO;
 
 namespace NuGet.Common
@@ -11,10 +10,6 @@ namespace NuGet.Common
     {
         private const string DotNet = "dotnet";
         private const string DotNetExe = "dotnet.exe";
-        private const string Home = "HOME";
-        private const string DotNetHome = "DOTNET_CLI_HOME";
-        private const string UserProfile = "USERPROFILE";
-        private static readonly Lazy<string> _getHome = new Lazy<string>(() => GetHome());
 
         public static string GetFolderPath(NuGetFolderPath folder)
         {
@@ -59,12 +54,6 @@ namespace NuGet.Common
                         "NuGet",
                         "v3-cache");
 
-                case NuGetFolderPath.NuGetPluginsCacheDirectory:
-                    return Path.Combine(
-                        GetFolderPath(SpecialFolder.LocalApplicationData),
-                        "NuGet",
-                        "plugins-cache");
-
                 case NuGetFolderPath.DefaultMsBuildPath:
                     var programFilesPath = GetFolderPath(SpecialFolder.ProgramFilesX86);
                     if (string.IsNullOrEmpty(programFilesPath))
@@ -96,7 +85,7 @@ namespace NuGet.Common
                     return Environment.GetEnvironmentVariable("PROGRAMFILES");
 
                 case SpecialFolder.UserProfile:
-                    return _getHome.Value;
+                    return GetHome();
 
                 case SpecialFolder.CommonApplicationData:
                     if (RuntimeEnvironmentHelper.IsWindows)
@@ -133,7 +122,7 @@ namespace NuGet.Common
                     }
                     else
                     {
-                        return Path.Combine(_getHome.Value, ".nuget");
+                        return Path.Combine(GetHome(), ".nuget");
                     }
 
                 case SpecialFolder.LocalApplicationData:
@@ -149,17 +138,12 @@ namespace NuGet.Common
                             return xdgDataHome;
                         }
 
-                        return Path.Combine(_getHome.Value, ".local", "share");
+                        return Path.Combine(GetHome(), ".local", "share");
                     }
 
                 default:
                     return null;
             }
-        }
-
-        private static string GetDotNetHome()
-        {
-            return Environment.GetEnvironmentVariable(DotNetHome);
         }
 
 #else
@@ -187,7 +171,7 @@ namespace NuGet.Common
                         return userProfile;
                     }
 
-                    return _getHome.Value;
+                    return GetHome();
 
                 case SpecialFolder.CommonApplicationData:
                     converted = Environment.SpecialFolder.CommonApplicationData;
@@ -212,80 +196,34 @@ namespace NuGet.Common
 
         private static string GetHome()
         {
-#if IS_CORECLR
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                return GetValueOrThrowMissingEnvVarsDotnet(() => GetDotNetHome() ?? GetHomeWindows(), UserProfile, DotNetHome);
+                var userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+                if (!string.IsNullOrEmpty(userProfile))
+                {
+                    return userProfile;
+                }
+                else
+                {
+                    return Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");
+                }
             }
             else
             {
-                return GetValueOrThrowMissingEnvVarsDotnet(() => GetDotNetHome() ?? Environment.GetEnvironmentVariable(Home), Home, DotNetHome);
+                return Environment.GetEnvironmentVariable("HOME");
             }
-#else
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                return GetValueOrThrowMissingEnvVar(() => GetHomeWindows(), UserProfile);
-            }
-            else
-            {
-                return GetValueOrThrowMissingEnvVar(() => Environment.GetEnvironmentVariable(Home), Home);
-            }
-#endif
-        }
-
-        private static string GetHomeWindows()
-        {
-            var userProfile = Environment.GetEnvironmentVariable(UserProfile);
-            if (!string.IsNullOrEmpty(userProfile))
-            {
-                return userProfile;
-            }
-            else
-            {
-                return Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");
-            }
-        }
-
-        /// <summary>
-        /// Throw a helpful message if the required env vars are not set.
-        /// </summary>
-        private static string GetValueOrThrowMissingEnvVarsDotnet(Func<string> getValue, string home, string dotnetHome)
-        {
-            var value = getValue();
-
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.MissingRequiredEnvVarsDotnet, home, dotnetHome));
-            }
-
-            return value;
-        }
-
-        /// <summary>
-        /// Throw a helpful message if a required env var is not set.
-        /// </summary>
-        private static string GetValueOrThrowMissingEnvVar(Func<string> getValue, string name)
-        {
-            var value = getValue();
-
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.MissingRequiredEnvVar, name));
-            }
-
-            return value;
         }
 
         public static string GetDotNetLocation()
         {
             var path = Environment.GetEnvironmentVariable("PATH");
-            var isWindows = RuntimeEnvironmentHelper.IsWindows;
-            var splitChar = isWindows ? ';' : ':';
+            bool isWindows = RuntimeEnvironmentHelper.IsWindows;
+            char splitChar = isWindows ? ';' : ':';
             var executable = isWindows ? DotNetExe : DotNet;
 
             foreach (var dir in path.Split(splitChar))
             {
-                var fullPath = Path.Combine(dir, executable);
+                string fullPath = Path.Combine(dir, executable);
                 if (File.Exists(fullPath))
                 {
                     return fullPath;
@@ -297,7 +235,7 @@ namespace NuGet.Common
                 var programFiles = GetFolderPath(SpecialFolder.ProgramFiles);
                 if (!string.IsNullOrEmpty(programFiles))
                 {
-                    var fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
+                    string fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
                     if (File.Exists(fullPath))
                     {
                         return fullPath;

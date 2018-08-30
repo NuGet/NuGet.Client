@@ -1,10 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
 
 namespace NuGet.Common
 {
@@ -38,7 +41,7 @@ namespace NuGet.Common
         /// </summary>
         public CryptoHashProvider(string hashAlgorithm)
         {
-            if (string.IsNullOrEmpty(hashAlgorithm))
+            if (String.IsNullOrEmpty(hashAlgorithm))
             {
                 hashAlgorithm = SHA512HashAlgorithm;
             }
@@ -47,10 +50,21 @@ namespace NuGet.Common
                      !hashAlgorithm.Equals(SHA256HashAlgorithm, StringComparison.OrdinalIgnoreCase))
             {
                 // Only support a vetted list of hash algorithms.
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithm, hashAlgorithm), nameof(hashAlgorithm));
+                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithm, hashAlgorithm), "hashAlgorithm");
             }
 
             _hashAlgorithm = hashAlgorithm;
+        }
+
+        /// <summary>
+        /// Determines if we are to only allow Fips compliant algorithms.
+        /// </summary>
+        /// <remarks>
+        /// CryptoConfig.AllowOnlyFipsAlgorithm does not exist in Mono.
+        /// </remarks>
+        private static bool AllowOnlyFipsAlgorithms
+        {
+            get { return ReadFipsConfigValue(); }
         }
 
         /// <summary>
@@ -58,7 +72,7 @@ namespace NuGet.Common
         /// </summary>
         public byte[] CalculateHash(Stream stream)
         {
-            using (var hashAlgorithm = CryptoHashUtility.GetHashAlgorithm(_hashAlgorithm))
+            using (var hashAlgorithm = GetHashAlgorithm())
             {
                 return hashAlgorithm.ComputeHash(stream);
             }
@@ -69,7 +83,7 @@ namespace NuGet.Common
         /// </summary>
         public byte[] CalculateHash(byte[] data)
         {
-            using (var hashAlgorithm = CryptoHashUtility.GetHashAlgorithm(_hashAlgorithm))
+            using (var hashAlgorithm = GetHashAlgorithm())
             {
                 return hashAlgorithm.ComputeHash(data);
             }
@@ -82,6 +96,49 @@ namespace NuGet.Common
         {
             var dataHash = CalculateHash(data);
             return Enumerable.SequenceEqual(dataHash, hash);
+        }
+
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "We want to return the object.")]
+        private HashAlgorithm GetHashAlgorithm()
+        {
+#if !IS_CORECLR
+            if (_hashAlgorithm.Equals(SHA256HashAlgorithm, StringComparison.OrdinalIgnoreCase))
+            {
+                return AllowOnlyFipsAlgorithms ? (HashAlgorithm)new SHA256CryptoServiceProvider() : (HashAlgorithm)new SHA256Managed();
+            }
+
+            return AllowOnlyFipsAlgorithms ? (HashAlgorithm)new SHA512CryptoServiceProvider() : (HashAlgorithm)new SHA512Managed();
+#else
+    // TODO: Review FIPS compliance for CoreCLR
+            if (_hashAlgorithm.Equals(SHA256HashAlgorithm, StringComparison.OrdinalIgnoreCase))
+            {
+                return SHA256.Create();
+            }
+
+            return SHA512.Create();
+#endif
+        }
+
+        private static bool ReadFipsConfigValue()
+        {
+#if !IS_CORECLR
+            // Mono does not currently support this method. Have this in a separate method to avoid JITing exceptions.
+            var cryptoConfig = typeof(CryptoConfig);
+
+            if (cryptoConfig != null)
+            {
+                var allowOnlyFipsAlgorithmsProperty = cryptoConfig.GetProperty("AllowOnlyFipsAlgorithms", BindingFlags.Public | BindingFlags.Static);
+
+                if (allowOnlyFipsAlgorithmsProperty != null)
+                {
+                    return (bool)allowOnlyFipsAlgorithmsProperty.GetValue(null, null);
+                }
+            }
+
+            return false;
+#else
+            return false;
+#endif
         }
     }
 }
