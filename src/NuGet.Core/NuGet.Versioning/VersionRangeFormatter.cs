@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Text;
 
 namespace NuGet.Versioning
@@ -41,7 +42,7 @@ namespace NuGet.Versioning
             {
                 formatted = ((IFormattable)arg).ToString(format, formatProvider);
             }
-            else if (!string.IsNullOrEmpty(format))
+            else if (!String.IsNullOrEmpty(format))
             {
                 var range = arg as VersionRange;
 
@@ -119,38 +120,6 @@ namespace NuGet.Versioning
                 case 'T':
                     s = GetLegacyShortString(range);
                     break;
-                case 'A':
-                    s = GetShortString(range);
-                    break;
-            }
-
-            return s;
-        }
-
-        private string GetShortString(VersionRange range)
-        {
-            string s = null;
-
-            if (range.HasLowerBound
-                && range.IsMinInclusive
-                && !range.HasUpperBound)
-            {
-                s = range.IsFloating ?
-                    range.Float.ToString() :
-                    string.Format(_versionFormatter, ZeroN, range.MinVersion);
-            }
-            else if (range.HasLowerAndUpperBounds
-                     && range.IsMinInclusive
-                     && range.IsMaxInclusive
-                     &&
-                     range.MinVersion.Equals(range.MaxVersion))
-            {
-                // Floating should be ignored here.
-                s = string.Format(_versionFormatter, "[{0:N}]", range.MinVersion);
-            }
-            else
-            {
-                s = GetNormalizedString(range);
             }
 
             return s;
@@ -281,56 +250,68 @@ namespace NuGet.Versioning
         /// </summary>
         private string PrettyPrint(VersionRange range)
         {
-            // empty range
-            if (!range.HasLowerBound
-                 && !range.HasUpperBound)
-            {
-                return string.Empty;
-            }
+            var sb = new StringBuilder("(");
 
+            // no upper
+            if (range.HasLowerBound
+                && !range.HasUpperBound)
+            {
+                sb.Append(GreaterThanOrEqualTo);
+                sb.AppendFormat(_versionFormatter, " {0:N}", range.MinVersion);
+            }
             // single version
-            if (range.HasLowerAndUpperBounds
+            else if (range.HasLowerAndUpperBounds
                      && range.MaxVersion.Equals(range.MinVersion)
                      && range.IsMinInclusive
                      && range.IsMaxInclusive)
             {
-                return string.Format(_versionFormatter, "(= {0:N})", range.MinVersion);
+                sb.AppendFormat(_versionFormatter, "= {0:N}", range.MinVersion);
             }
-
-            // normal case with a lower, upper, or both.
-            var sb = new StringBuilder("(");
-
-            if (range.HasLowerBound)
+            else // normal range
             {
-                PrettyPrintBound(sb, range.MinVersion, range.IsMinInclusive, ">");
-            }
+                if (range.HasLowerBound)
+                {
+                    if (range.IsMinInclusive)
+                    {
+                        sb.AppendFormat(CultureInfo.InvariantCulture, "{0} ", GreaterThanOrEqualTo);
+                    }
+                    else
+                    {
+                        sb.Append("> ");
+                    }
 
-            if (range.HasLowerAndUpperBounds)
-            {
-                sb.Append(" && ");
-            }
+                    sb.AppendFormat(_versionFormatter, ZeroN, range.MinVersion);
+                }
 
-            if (range.HasUpperBound)
-            {
-                PrettyPrintBound(sb, range.MaxVersion, range.IsMaxInclusive, "<");
+                if (range.HasLowerAndUpperBounds)
+                {
+                    sb.Append(" && ");
+                }
+
+                if (range.HasUpperBound)
+                {
+                    if (range.IsMaxInclusive)
+                    {
+                        sb.AppendFormat(CultureInfo.InvariantCulture, "{0} ", LessThanOrEqualTo);
+                    }
+                    else
+                    {
+                        sb.Append("< ");
+                    }
+
+                    sb.AppendFormat(_versionFormatter, ZeroN, range.MaxVersion);
+                }
             }
 
             sb.Append(")");
 
-            return sb.ToString();
-        }
-
-        private void PrettyPrintBound(StringBuilder sb, NuGetVersion version, bool inclusive, string boundChar)
-        {
-            sb.Append(boundChar);
-
-            if (inclusive)
+            // avoid ()
+            if (sb.Length == 2)
             {
-                sb.Append("=");
+                sb.Clear();
             }
 
-            sb.Append(" ");
-            sb.AppendFormat(_versionFormatter, ZeroN, version);
+            return sb.ToString();
         }
     }
 }
