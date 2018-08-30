@@ -10,7 +10,7 @@ namespace NuGet.CommandLine.XPlat.Utility
 {
     public static class TableParser
     {
-        internal static IEnumerable<Tuple<string, ConsoleColor>> ToStringTable<T>(
+        internal static IEnumerable<string> ToStringTable<T>(
           this IEnumerable<T> values,
           string[] columnHeaders,
           Func<T, UpdateLevel> updateLevel,
@@ -19,7 +19,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             return ToStringTable(values.ToArray(), columnHeaders, updateLevel, valueSelectors);
         }
 
-        internal static IEnumerable<Tuple<string, ConsoleColor>> ToStringTable<T>(
+        internal static IEnumerable<string> ToStringTable<T>(
           this T[] values,
           string[] columnHeaders,
           Func<T, UpdateLevel> updateLevel,
@@ -64,55 +64,25 @@ namespace NuGet.CommandLine.XPlat.Utility
             return ToStringTable(values, arrValues, updateLevel);
         }
 
-        internal static IEnumerable<Tuple<string, ConsoleColor>> ToStringTable<T>(this T[] values, string[,] arrValues, Func<T, UpdateLevel> updateLevel)
+        internal static IEnumerable<string> ToStringTable<T>(this T[] values, string[,] arrValues, Func<T, UpdateLevel> updateLevel)
         {
             var maxColumnsWidth = GetMaxColumnsWidth(arrValues);
-            var rows = new List<Tuple<string, ConsoleColor>>();
+            var rows = new List<string>();
 
             for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
             {
                 for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
                 {
-                    if (colIndex == arrValues.GetLength(1) - 1 && rowIndex > 0)
+                    var cell = arrValues[rowIndex, colIndex];
+                    cell = cell.PadRight(maxColumnsWidth[colIndex]);
+                    if (colIndex != 0)
                     {
-                        var level = updateLevel.Invoke(values[rowIndex - 1]);
-                        var cell = arrValues[rowIndex, colIndex];
-                        cell = cell.PadRight(maxColumnsWidth[colIndex]);
-                        if (colIndex != 0)
-                        {
-                            cell = "   " + cell;
-                        }
-
-                        if (level == UpdateLevel.Major)
-                        {
-                            rows.Add(Tuple.Create(cell, ConsoleColor.Red));
-                        }
-                        else if (level == UpdateLevel.Minor)
-                        {
-                            rows.Add(Tuple.Create(cell, ConsoleColor.Yellow));
-                        }
-                        else if (level == UpdateLevel.Patch)
-                        {
-                            rows.Add(Tuple.Create(cell, ConsoleColor.Green));
-                        }
-                        else
-                        {
-                            rows.Add(Tuple.Create(cell, ConsoleColor.White));
-                        }
+                        cell = "   " + cell;
                     }
-                    else
-                    {
-                        var cell = arrValues[rowIndex, colIndex];
-                        cell = cell.PadRight(maxColumnsWidth[colIndex]);
-                        if (colIndex != 0)
-                        {
-                            cell = "   " + cell;
-                        }
-                        rows.Add(Tuple.Create(cell, ConsoleColor.White));
-                    }
-
+                    rows.Add(cell);
                 }
-                rows.Add(Tuple.Create(Environment.NewLine, ConsoleColor.White));
+
+                rows.Add(Environment.NewLine);
             }
 
             return rows;

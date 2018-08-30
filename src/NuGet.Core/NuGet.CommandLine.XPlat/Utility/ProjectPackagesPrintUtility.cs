@@ -107,7 +107,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             //To enable coloring only the latest version as appropriate
             //we need to map every string in the table to a color, which
             //this is used for
-            IEnumerable<Tuple<string, ConsoleColor>> tableToPrint;
+            IEnumerable<string> tableToPrint;
 
             var headers = BuildTableHeaders(printingTransitive, outdated);
 
@@ -173,12 +173,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             //Handle printing with colors
             foreach (var text in tableToPrint)
             {
-                if (text.Item2 != ConsoleColor.White)
-                {
-                    Console.ForegroundColor = text.Item2;
-                }
-
-                Console.Write(text.Item1);
+                Console.Write(text);
                 Console.ResetColor();
             }
 

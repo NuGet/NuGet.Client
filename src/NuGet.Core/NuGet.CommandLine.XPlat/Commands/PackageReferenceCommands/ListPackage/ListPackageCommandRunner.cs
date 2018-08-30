@@ -186,7 +186,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 contactSourcesRunningTasks.Add(Task.Run(() => latestVersionTask));
                 //Throttle if needed
-                if (maxTasks <= contactSourcesRunningTasks.Count())
+                if (maxTasks <= contactSourcesRunningTasks.Count)
                 {
                     var finishedTask = await Task.WhenAny(contactSourcesRunningTasks);
                     contactSourcesRunningTasks.Remove(finishedTask);
