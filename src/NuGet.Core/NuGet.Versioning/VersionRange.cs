@@ -317,28 +317,21 @@ namespace NuGet.Versioning
 
             var lastLabel = version.ReleaseLabels.LastOrDefault() ?? string.Empty;
 
-            var endsWithZero = lastLabel == "0";
-            var endsWithDash = lastLabel.EndsWith("-", StringComparison.Ordinal);
-
-            if (endsWithZero || endsWithDash)
+            if (lastLabel.EndsWith("-", StringComparison.Ordinal))
             {
                 var fixedReleaseLabel = string.Empty;
 
-                if (endsWithDash)
+                if (lastLabel.EndsWith("--", StringComparison.Ordinal))
                 {
-                    if (lastLabel.EndsWith("--", StringComparison.Ordinal))
-                    {
-                        // For labels such as rc1-* an additional - is added by nuget
-                        fixedReleaseLabel = lastLabel.Substring(0, lastLabel.Length - 2);
-                    }
-                    else
-                    {
-                        // Remove the - for 1.0.0-* (1.0.0--)
-                        fixedReleaseLabel = lastLabel.Substring(0, lastLabel.Length - 1);
-                    }
+                    // For labels such as rc1-* an additional - is added by nuget
+                    fixedReleaseLabel = lastLabel.Substring(0, lastLabel.Length - 2);
+                }
+                else
+                {
+                    // Remove the - for 1.0.0-* (1.0.0--)
+                    fixedReleaseLabel = lastLabel.Substring(0, lastLabel.Length - 1);
                 }
 
-                // Remove the last label and add in the fixed label if one exists.
                 var fixedLabels = version.ReleaseLabels.Take(version.ReleaseLabels.Count() - 1).ToList();
 
                 if (!string.IsNullOrEmpty(fixedReleaseLabel))
@@ -356,14 +349,6 @@ namespace NuGet.Versioning
             }
 
             return nonSnapshotVersion;
-        }
-
-        /// <summary>
-        /// ToLegacyShortString that also includes floating ranges
-        /// </summary>
-        public virtual string ToShortString()
-        {
-            return ToString("A", new VersionRangeFormatter());
         }
     }
 }
