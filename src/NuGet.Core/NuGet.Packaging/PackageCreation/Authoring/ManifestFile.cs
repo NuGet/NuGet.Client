@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using NuGet.Common;
 using NuGet.Packaging.PackageCreation.Resources;
 
 namespace NuGet.Packaging
@@ -21,19 +20,9 @@ namespace NuGet.Packaging
         internal static readonly char[] ReferenceFileInvalidCharacters = _invalidSourceCharacters.Concat(new[] { ':', '*', '?', '\\', '/' }).ToArray();
         private static readonly char[] _invalidTargetChars = ReferenceFileInvalidCharacters.Except(new[] { '\\', '/' }).ToArray();
 
-        private string _target;
         public string Source { get; set; }
 
-        public string Target {
-            get
-            {
-                return _target;
-            }
-            set
-            {
-                _target = string.IsNullOrEmpty(value) ? value : PathUtility.GetPathWithDirectorySeparator(value);
-            }
-        }
+        public string Target { get; set; }
 
         public string Exclude { get; set; }
 

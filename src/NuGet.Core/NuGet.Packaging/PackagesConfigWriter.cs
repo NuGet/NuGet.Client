@@ -522,7 +522,7 @@ namespace NuGet.Packaging
                 var directorypath = Path.GetDirectoryName(fullPath);
 
                 var configFileCopyPath = Path.Combine(directorypath, 
-                    @"packages.config.old." + DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture));
+                    @"packages.config.old." + DateTime.Now.ToString("yyyyMMddHHmmss"));
 
                 // Delete configFileCopyPath if it already exists
                 FileUtility.Delete(configFileCopyPath);
@@ -550,7 +550,7 @@ namespace NuGet.Packaging
                     }
 
                     var configFileNewPath = Path.Combine(directorypath,
-                        @"packages.config.new." + DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture));
+                        @"packages.config.new." + DateTime.Now.ToString("yyyyMMddHHmmss"));
 
                     using (var tempConfigStream = File.Create(configFileNewPath))
                     {
