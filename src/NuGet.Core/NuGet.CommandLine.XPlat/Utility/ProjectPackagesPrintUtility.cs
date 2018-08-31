@@ -216,7 +216,7 @@ namespace NuGet.CommandLine.XPlat.Utility
         {
             foreach (var source in packageSources)
             {
-                Console.WriteLine(source.Source);
+                Console.WriteLine("   " + source.Source);
             }
         }
     }
