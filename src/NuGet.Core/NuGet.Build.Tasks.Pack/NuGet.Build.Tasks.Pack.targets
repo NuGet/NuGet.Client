@@ -62,9 +62,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BuildOutputInPackage>
       <TargetFramework>$(TargetFramework)</TargetFramework>
     </BuildOutputInPackage>
-    <TfmSpecificPackageFile>
-      <BuildAction>None</BuildAction>
-    </TfmSpecificPackageFile>
   </ItemDefinitionGroup>
 
   <Target Name="_GetOutputItemsFromPack"
@@ -424,6 +421,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <TfmSpecificPackageFileWithRecursiveDir Include="@(TfmSpecificPackageFile)">
         <NuGetRecursiveDir>%(TfmSpecificPackageFile.RecursiveDir)</NuGetRecursiveDir>
+        <BuildAction>%(TfmSpecificPackageFile.BuildAction)</BuildAction>
       </TfmSpecificPackageFileWithRecursiveDir>
     </ItemGroup>
   </Target>
