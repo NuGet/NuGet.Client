@@ -9,7 +9,7 @@
     <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</licenseUrl>
     <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
     <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
-    <description>NuGet localization package. Microsoft holds the copyright for this NuGet package. .NET Foundations holds the copyright to the source.</description>
+    <description>NuGet localization package. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.</description>
     <tags>nuget</tags>
   </metadata>
 

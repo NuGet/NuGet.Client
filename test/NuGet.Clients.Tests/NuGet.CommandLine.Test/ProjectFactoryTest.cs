@@ -82,7 +82,7 @@ namespace NuGet.CommandLine
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
-                Assert.Equal("NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundations holds the copyright to the source.", xdoc.XPathSelectElement("/package/metadata/description").Value);
+                Assert.Equal("NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.", xdoc.XPathSelectElement("/package/metadata/description").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
                 Assert.Equal(
                 testAssembly.GetCustomAttributes<AssemblyMetadataAttribute>()
@@ -160,7 +160,7 @@ namespace NuGet.CommandLine
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
-                Assert.Equal("NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundations holds the copyright to the source.", xdoc.XPathSelectElement("/package/metadata/description").Value);
+                Assert.Equal("NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.", xdoc.XPathSelectElement("/package/metadata/description").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
                 Assert.Equal(
                     cmdLineProperties["owner"],
@@ -234,7 +234,7 @@ namespace NuGet.CommandLine
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
-                Assert.Equal("NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundations holds the copyright to the source.", xdoc.XPathSelectElement("/package/metadata/description").Value);
+                Assert.Equal("NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.", xdoc.XPathSelectElement("/package/metadata/description").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
                 Assert.Equal(
                     cmdLineProperties["overriden"],
