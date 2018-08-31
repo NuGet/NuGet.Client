@@ -549,6 +549,7 @@ phases:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "  	
   queue:
+    timeoutInMinutes: 90
     name: DDNuGet-Windows
     demands: DotNetFramework
 
