@@ -43,6 +43,15 @@ namespace NuGet.CommandLine.XPlat
 
             var msBuild = new MSBuildAPIUtility(listPackageArgs.Logger);
 
+            //Print sources
+            if(listPackageArgs.IncludeOutdated)
+            {
+                Console.WriteLine();
+                Console.WriteLine(Strings.ListPkg_SourcesUsedDescription);
+                ProjectPackagesPrintUtility.PrintSources(listPackageArgs.PackageSources);
+                Console.WriteLine();
+            }
+
             //Loop through all of the project paths
             foreach (var projectPath in projectsPaths)
             {
@@ -326,9 +335,9 @@ namespace NuGet.CommandLine.XPlat
             Dictionary<string, IList<NuGetVersion>> packagesVersionsDict)
         {
             var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
-            var dependencyInfoResource = await sourceRepository.GetResourceAsync<FindPackageByIdResource>(listPackageArgs.CancellationToken);
+            var dependencyInfoResource = await sourceRepository.GetResourceAsync<MetadataResource>(listPackageArgs.CancellationToken);
 
-            var packages = (await dependencyInfoResource.GetAllVersionsAsync(package, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
+            var packages = (await dependencyInfoResource.GetVersions(package, true, false, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
 
             var latestVersionsForPackage = packagesVersionsDict.Where(p => p.Key.Equals(package, StringComparison.OrdinalIgnoreCase)).Single().Value;
             latestVersionsForPackage.AddRange(packages);

@@ -719,6 +719,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The following sources will be used for outdated:.
+        /// </summary>
+        internal static string ListPkg_SourcesUsedDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_SourcesUsedDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Top-level Package.
         /// </summary>
         internal static string ListPkg_TopLevelHeader {
