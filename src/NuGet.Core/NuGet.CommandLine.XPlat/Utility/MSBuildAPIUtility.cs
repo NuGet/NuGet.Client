@@ -450,7 +450,7 @@ namespace NuGet.CommandLine.XPlat
                 }
 
                 var frameworkPackages = new FrameworkPackages(
-                    target.Name,
+                    target.TargetFramework.GetShortFolderName(),
                     topLevelPackages,
                     transitivePackages);
 
