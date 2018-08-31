@@ -1214,6 +1214,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package cannot be signed as it would require the Zip64 format..
+        /// </summary>
+        internal static string SigningWouldRequireZip64 {
+            get {
+                return ResourceManager.GetString("SigningWouldRequireZip64", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The stream must be readable..
         /// </summary>
         internal static string StreamMustBeReadable {

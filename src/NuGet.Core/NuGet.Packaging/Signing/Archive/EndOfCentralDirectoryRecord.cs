@@ -29,7 +29,7 @@ namespace NuGet.Packaging.Signing
         {
             SeekToEndOfCentralDirectoryRecord(reader);
 
-             var header = new EndOfCentralDirectoryRecord();
+            var header = new EndOfCentralDirectoryRecord();
 
             header.OffsetFromStart = reader.BaseStream.Position;
 
