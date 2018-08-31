@@ -570,4 +570,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="ListPkg_ProjectUpdatesHeaderLog" xml:space="preserve">
     <value>Project `{0}` has the following updates to its packages</value>
   </data>
+  <data name="ListPkg_SourcesUsedDescription" xml:space="preserve">
+    <value>The following sources will be used for outdated:</value>
+  </data>
 </root>
