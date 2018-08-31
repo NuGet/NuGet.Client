@@ -349,13 +349,31 @@ namespace NuGet.Protocol.Core.Types
             }
         }
 
+        /// <summary>
+        /// Gets the current culture.
+        /// An invariant culture's name will be "". Since InitializeRequest has a null or empty check, this can be a problem.
+        /// Because the InitializeRequest message is part of a protocol, and the reason why we set the culture is allow the plugins to localize their messages,
+        /// we can safely default to en. 
+        /// </summary>
+        /// <returns>CurrentCulture or an en default if the current culture is invariant</returns>
+        private static string GetCurrentCultureName()
+        {
+            var currentCultureName = CultureInfo.CurrentCulture.Name;
+            if (string.IsNullOrEmpty(currentCultureName))
+            {
+                currentCultureName = "en";
+            }
+            return currentCultureName;
+        }
+
         private static async Task InitializePluginAsync(
             IPlugin plugin,
             TimeSpan requestTimeout,
             CancellationToken cancellationToken)
         {
             var clientVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
-            var culture = CultureInfo.CurrentCulture.Name;
+            var culture = GetCurrentCultureName();
+
             var payload = new InitializeRequest(
                 clientVersion,
                 culture,

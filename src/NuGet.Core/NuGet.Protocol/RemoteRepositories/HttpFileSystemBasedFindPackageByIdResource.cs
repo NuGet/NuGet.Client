@@ -367,7 +367,7 @@ namespace NuGet.Protocol
                             {
                                 try
                                 {
-                                    result = await ConsumeFlatContainerIndexAsync(httpSourceResult.Stream, id, baseUri);
+                                    result = await ConsumeFlatContainerIndexAsync(httpSourceResult.Stream, id, baseUri, cancellationToken);
                                 }
                                 catch
                                 {
@@ -378,7 +378,7 @@ namespace NuGet.Protocol
                             }
                             else if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromNetwork)
                             {
-                                result = await ConsumeFlatContainerIndexAsync(httpSourceResult.Stream, id, baseUri);
+                                result = await ConsumeFlatContainerIndexAsync(httpSourceResult.Stream, id, baseUri, cancellationToken);
                             }
 
                             return result;
@@ -408,9 +408,9 @@ namespace NuGet.Protocol
             return null;
         }
 
-        private async Task<SortedDictionary<NuGetVersion, PackageInfo>> ConsumeFlatContainerIndexAsync(Stream stream, string id, string baseUri)
+        private async Task<SortedDictionary<NuGetVersion, PackageInfo>> ConsumeFlatContainerIndexAsync(Stream stream, string id, string baseUri, CancellationToken token)
         {
-            var doc = await stream.AsJObjectAsync();
+            var doc = await stream.AsJObjectAsync(token);
 
             var streamResults = new SortedDictionary<NuGetVersion, PackageInfo>();
 

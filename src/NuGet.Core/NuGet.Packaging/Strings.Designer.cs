@@ -1214,6 +1214,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package cannot be signed as it would require the Zip64 format..
+        /// </summary>
+        internal static string SigningWouldRequireZip64 {
+            get {
+                return ResourceManager.GetString("SigningWouldRequireZip64", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The stream must be readable..
         /// </summary>
         internal static string StreamMustBeReadable {
@@ -1399,6 +1408,24 @@ namespace NuGet.Packaging {
         internal static string Verify_ErrorNoCertificate {
             get {
                 return ResourceManager.GetString("Verify_ErrorNoCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and NUGET_CERT_REVOCATION_MODE environment variable has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode..
+        /// </summary>
+        internal static string VerifyCertTrustOfflineWhileRevocationModeOffline {
+            get {
+                return ResourceManager.GetString("VerifyCertTrustOfflineWhileRevocationModeOffline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The revocation function was unable to check revocation because the revocation server could not be reached. For more information, visit https://aka.ms/certificateRevocationMode..
+        /// </summary>
+        internal static string VerifyCertTrustOfflineWhileRevocationModeOnline {
+            get {
+                return ResourceManager.GetString("VerifyCertTrustOfflineWhileRevocationModeOnline", resourceCulture);
             }
         }
         

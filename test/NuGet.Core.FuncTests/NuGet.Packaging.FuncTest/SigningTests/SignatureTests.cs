@@ -40,7 +40,8 @@ namespace NuGet.Packaging.FuncTest
                 allowIllegal: false,
                 allowUntrusted: false,
                 allowUnknownRevocation: false,
-                reportUnknownRevocation: true);
+                reportUnknownRevocation: true,
+                revocationMode: RevocationMode.Online);
 
             using (var test = await VerifyTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {
@@ -64,7 +65,8 @@ namespace NuGet.Packaging.FuncTest
                 allowIllegal: false,
                 allowUntrusted: true,
                 allowUnknownRevocation: false,
-                reportUnknownRevocation: true);
+                reportUnknownRevocation: true,
+                revocationMode: RevocationMode.Online);
 
             using (var test = await VerifyTest.CreateAsync(settings, _untrustedTestCertificate.Cert))
             {

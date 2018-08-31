@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using NuGet.Configuration;
 
 namespace NuGet.CommandLine.XPlat.Utility
 {
@@ -210,6 +210,14 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
 
             return result.ToArray();
+        }
+
+        internal static void PrintSources(IEnumerable<PackageSource> packageSources)
+        {
+            foreach (var source in packageSources)
+            {
+                Console.WriteLine(source.Source);
+            }
         }
     }
 }

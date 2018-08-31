@@ -421,6 +421,11 @@ namespace NuGet.Common
         NU3038 = 3038,
 
         /// <summary>
+        /// The package cannot be signed as it would require the Zip64 format.
+        /// </summary>
+        NU3039 = 3039,
+
+        /// <summary>
         /// Undefined Package Error.
         /// </summary>
         NU5000 = 5000,

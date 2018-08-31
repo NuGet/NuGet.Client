@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 #if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
@@ -556,6 +557,51 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(1, test.Logger.Warnings);
                 Assert.Equal(1, test.Logger.Messages.Count());
                 Assert.True(test.Logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenPackageEntryCountWouldRequireZip64_FailsAsync()
+        {
+            const ushort desiredFileCount = 0xFFFF - 1;
+
+            var package = new SimpleTestPackageContext();
+
+            var requiredFileCount = desiredFileCount - package.Files.Count;
+
+            for (var i = 0; i < requiredFileCount - 1 /*nuspec*/; ++i)
+            {
+                package.AddFile(i.ToString());
+            }
+
+            using (var packageStream = await package.CreateAsStreamAsync())
+            {
+                using (var zipArchive = new ZipArchive(packageStream, ZipArchiveMode.Read, leaveOpen: true))
+                {
+                    // Sanity check before testing.
+                    Assert.Equal(desiredFileCount, zipArchive.Entries.Count());
+                }
+
+                packageStream.Position = 0;
+
+                using (var test = SignTest.Create(
+                     _fixture.GetDefaultCertificate(),
+                    HashAlgorithmName.SHA256,
+                    packageStream.ToArray(),
+                    new X509SignatureProvider(timestampProvider: null)))
+                {
+                    var exception = await Assert.ThrowsAsync<SignatureException>(
+                        () => SigningUtility.SignAsync(test.Options, test.Request, CancellationToken.None));
+
+                    Assert.Equal(NuGetLogCode.NU3039, exception.Code);
+                    Assert.Equal("The package cannot be signed as it would require the Zip64 format.", exception.Message);
+
+                    Assert.Equal(0, test.Options.OutputPackageStream.Length);
+                    Assert.Equal(0, test.Logger.Errors);
+                    Assert.Equal(1, test.Logger.Warnings);
+                    Assert.Equal(1, test.Logger.Messages.Count());
+                    Assert.True(test.Logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
+                }
             }
         }
 

@@ -70,7 +70,7 @@ namespace NuGet.Protocol
                             },
                             async httpSourceResult =>
                             {
-                                var json = await httpSourceResult.Stream.AsJObjectAsync();
+                                var json = await httpSourceResult.Stream.AsJObjectAsync(token);
 
                                 return new RepositorySignatureResource(json, source);
                             },
