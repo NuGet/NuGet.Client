@@ -8,8 +8,8 @@
     <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</licenseUrl>
     <projectUrl>https://aka.ms/nugetprj</projectUrl>
     <iconUrl>https://raw.githubusercontent.com/NuGet/Media/master/Images/MainLogo/256x256/nuget_256.png</iconUrl>
-    <copyright>&#169; .NET Foundation. All rights reserved.</copyright>
-    <description>NuGet Command Line Tool</description>
+    <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
+    <description>NuGet Command Line Tool. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.</description>
     <developmentDependency>true</developmentDependency>
   </metadata>
   <files>
