@@ -53,7 +53,7 @@ namespace NuGet.CommandLine.XPlat
 
                 var interactive = delete.Option(
                     "--interactive",
-                    Strings.PushCommand_Interactive,
+                    Strings.PushDeleteCommand_Interactive,
                     CommandOptionType.SingleValue);
 
                 delete.OnExecute(async () =>

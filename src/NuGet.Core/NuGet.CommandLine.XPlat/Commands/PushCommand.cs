@@ -73,7 +73,7 @@ namespace NuGet.CommandLine.XPlat
 
                 var interactive = push.Option(
                     "--interactive",
-                    Strings.PushCommand_Interactive,
+                    Strings.PushDeleteCommand_Interactive,
                     CommandOptionType.SingleValue);
 
                 push.OnExecute(async () =>
