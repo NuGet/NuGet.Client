@@ -1080,9 +1080,9 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///   Looks up a localized string similar to Allow the command to block and require manual action for operations like authentication..
         /// </summary>
-        internal static string PushCommand_Interactive {
+        internal static string PushDeleteCommand_Interactive {
             get {
-                return ResourceManager.GetString("PushCommand_Interactive", resourceCulture);
+                return ResourceManager.GetString("PushDeleteCommand_Interactive", resourceCulture);
             }
         }
         
