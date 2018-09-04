@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Packaging\NuGet.Common.csproj" />
+    <ProjectReference Include="..\NuGet.Common\NuGet.Common.csproj" />
     <ProjectReference Include="..\NuGet.Packaging\NuGet.Packaging.csproj" />
     <ProjectReference Include="..\NuGet.Configuration\NuGet.Configuration.csproj" />    
   </ItemGroup>
