@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.LibraryModel
@@ -41,10 +40,9 @@ namespace NuGet.LibraryModel
             {
                 return true;
             }
-
-            return Type.Equals(other.Type)
-                    && Equals(Version, other.Version)
-                    && string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
+                   Equals(Version, other.Version) &&
+                   Equals(Type, other.Type);
         }
 
         public override bool Equals(object obj)
@@ -54,13 +52,12 @@ namespace NuGet.LibraryModel
 
         public override int GetHashCode()
         {
-            var combiner = new HashCodeCombiner();
-
-            combiner.AddStringIgnoreCase(Name);
-            combiner.AddObject(Version);
-            combiner.AddObject(Type);
-
-            return combiner.CombinedHash;
+            unchecked
+            {
+                return ((Name != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(Name) : 0) * 397) ^
+                       (Version != null ? Version.GetHashCode() : 0) ^
+                       (Type != null ? Type.GetHashCode() : 0);
+            }
         }
 
         public static bool operator ==(LibraryIdentity left, LibraryIdentity right)

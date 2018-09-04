@@ -67,7 +67,7 @@ namespace NuGet.LibraryModel
 
         public override string ToString()
         {
-            return Value;
+            return $"{Value}";
         }
 
         public bool Equals(LibraryType other)
@@ -82,12 +82,12 @@ namespace NuGet.LibraryModel
 
         public static bool operator ==(LibraryType left, LibraryType right)
         {
-            return left.Equals(right);
+            return Equals(left, right);
         }
 
         public static bool operator !=(LibraryType left, LibraryType right)
         {
-            return !left.Equals(right);
+            return !Equals(left, right);
         }
 
         public static implicit operator string(LibraryType libraryType)
