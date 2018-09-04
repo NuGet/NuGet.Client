@@ -1,0 +1,64 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <TargetFramework />
+    <NoWarn>$(NoWarn);CS1591;CS1573;CS0012;CS8073</NoWarn>
+    <PackageTags>nuget protocol</PackageTags>
+    <PackProject>true</PackProject>
+    <Shipping>true</Shipping>
+    <IncludeInVSIX>true</IncludeInVSIX>
+    <XPLATProject>true</XPLATProject>
+    <Description>NuGet Protocol for 3.1.0 servers</Description>
+    <Copyright>Copyright .NET Foundation. All rights reserved.</Copyright>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.0</NetStandardImplicitPackageVersion>
+</PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
+    <TargetFrameworks />
+    <TargetFramework>net45</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Packaging\NuGet.Packaging.csproj" />
+    <ProjectReference Include="..\NuGet.Common\NuGet.Common.csproj" />    
+    <ProjectReference Include="..\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.csproj" />    
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Strings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.IO.Compression" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.0.11" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <PackageReference Include="Newtonsoft.Json" Version="6.0.4" />
+  </ItemGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>
