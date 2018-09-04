@@ -43,7 +43,7 @@ namespace NuGet.CommandLine.Test
                     root, null, null);
 
                 var configSection = settings.GetSection("config");
-                var values = configSection?.Children.Select(c => c as AddItem).Where(c => c != null).ToList();
+                var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
                 AssertEqualCollections(values, new[]
                     {
                         "Name1",
@@ -90,7 +90,7 @@ namespace NuGet.CommandLine.Test
                     Path.GetFileName(configFile),
                     null);
                 var configSection = settings.GetSection("config");
-                var values = configSection?.Children.Select(c => c as AddItem).Where(c => c != null).ToList();
+                var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
                 AssertEqualCollections(values, new[]
                     {
                         "Name1",

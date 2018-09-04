@@ -149,7 +149,7 @@ namespace NuGetConsole.Host.PowerShell.Test
                 var userPackageFolder = Path.Combine(testDirectory.Path, "packagesA");
                 Directory.CreateDirectory(userPackageFolder);
 
-                testSettings.SetItemInSection("config", new AddItem("repositoryPath", userPackageFolder));
+                testSettings.AddOrUpdate("config", new AddItem("repositoryPath", userPackageFolder));
 
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(
                     solutionDirectory, testSettings);
@@ -229,7 +229,7 @@ namespace NuGetConsole.Host.PowerShell.Test
             var settings = new Settings(settingsDirectory);
             foreach (var source in sourceRepositoryProvider.GetRepositories())
             {
-                settings.SetItemInSection(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
+                settings.AddOrUpdate(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
             }
 
             return settings;

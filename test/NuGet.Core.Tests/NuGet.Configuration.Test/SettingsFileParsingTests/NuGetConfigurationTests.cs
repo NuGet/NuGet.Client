@@ -17,7 +17,7 @@ namespace NuGet.Configuration.Test
         public void AsXNode_ReturnsExpectedXNode()
         {
             var configuration = new NuGetConfiguration(
-                new SettingsSection("Section",
+                new AbstractSettingSection("Section",
                     new AddItem("key0", "value0")));
 
             var expectedXNode = new XElement("configuration",
@@ -32,7 +32,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void AddChild_OnMachineWideConfig_ReturnsFalse()
+        public void AddOrUpdate_OnMachineWideConfig_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -51,11 +51,15 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
 
                 // Act
-                var section = settingsFile.GetSection("Section");
-                section.Should().NotBeNull();
+                var ex = Record.Exception(() => settingsFile.AddOrUpdate("Section", new AddItem("key2", "value2")));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<InvalidOperationException>();
+                ex.Message.Should().Be("Unable to update setting since it is in a machine wide NuGet.Config");
 
-                section.AddChild(new AddItem("key2", "value2")).Should().BeFalse();
-                section.Children.Count.Should().Be(1);
+                settingsFile.SaveToDisk();
+
+                var section = settingsFile.GetSection("Section");
+                section.Items.Count.Should().Be(1);
 
                 var updatedFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
                 updatedFileHash.Should().BeEquivalentTo(configFileHash);

@@ -46,7 +46,7 @@ namespace NuGet.CommandLine.Test
                 var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("http://test_source", sourceItem.Value);
+                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
             }
         }
 
@@ -84,15 +84,15 @@ namespace NuGet.CommandLine.Test
 
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("http://test_source", sourceItem.Value);
+                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
 
                 var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
-                var credentialItem = sourceCredentialsSection?.Children.First(c => string.Equals(c.Name, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
+                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.Name, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
                 Assert.NotNull(credentialItem);
 
-                Assert.Equal("test_user_name", credentialItem.Username.Value);
+                Assert.Equal("test_user_name", credentialItem.Username);
 
-                var password = Configuration.EncryptionUtility.DecryptString(credentialItem.Password.Value);
+                var password = Configuration.EncryptionUtility.DecryptString(credentialItem.Password);
                 Assert.Equal("test_password", password);
             }
         }
@@ -132,14 +132,14 @@ namespace NuGet.CommandLine.Test
 
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("http://test_source", sourceItem.Value);
+                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
 
                 var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
-                var credentialItem = sourceCredentialsSection?.Children.First(c => string.Equals(c.Name, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
+                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.Name, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
                 Assert.NotNull(credentialItem);
 
-                Assert.Equal("test_user_name", credentialItem.Username.Value);
-                Assert.Equal("test_password", credentialItem.Password.Value);
+                Assert.Equal("test_user_name", credentialItem.Username);
+                Assert.Equal("test_password", credentialItem.Password);
             }
         }
 
@@ -191,15 +191,15 @@ namespace NuGet.CommandLine.Test
 
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("http://test_source", sourceItem.Value);
+                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
 
                 var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
-                var credentialItem = sourceCredentialsSection?.Children.First(c => string.Equals(c.Name, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
+                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.Name, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
                 Assert.NotNull(credentialItem);
 
-                Assert.Equal("test_user_name", credentialItem.Username.Value);
+                Assert.Equal("test_user_name", credentialItem.Username);
 
-                var password = Configuration.EncryptionUtility.DecryptString(credentialItem.Password.Value);
+                var password = Configuration.EncryptionUtility.DecryptString(credentialItem.Password);
                 Assert.Equal("test_password", password);
             }
         }
@@ -266,7 +266,7 @@ namespace NuGet.CommandLine.Test
                     null);
 
                 var disabledSourcesSection = settings.GetSection("disabledPackageSources");
-                var disabledSources = disabledSourcesSection?.Children.Select(c => c as AddItem).Where(c => c != null).ToList();
+                var disabledSources = disabledSourcesSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
                 Assert.Single(disabledSources);
                 var disabledSource = disabledSources.Single();
                 Assert.Equal("Microsoft and .NET", disabledSource.Key);
@@ -388,7 +388,7 @@ namespace NuGet.CommandLine.Test
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
 
-                Assert.Equal("http://test_source", sourceItem.Value);
+                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
             }
         }
     }

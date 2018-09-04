@@ -57,8 +57,8 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                section.Children.Count.Should().Be(1);
-                section.Children.FirstOrDefault().Should().BeOfType<ClearItem>();
+                section.Items.Count.Should().Be(1);
+                section.Items.FirstOrDefault().Should().BeOfType<ClearItem>();
             }
         }
 
@@ -84,8 +84,8 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                section.Children.Count.Should().Be(1);
-                section.Children.FirstOrDefault().Should().BeOfType<ClearItem>();
+                section.Items.Count.Should().Be(1);
+                section.Items.FirstOrDefault().Should().BeOfType<ClearItem>();
             }
         }
 

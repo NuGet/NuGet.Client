@@ -71,6 +71,24 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The item passed to the Update method cannot refer to a different item to the one to be updated..
+        /// </summary>
+        internal static string CannotUpdateDifferentItems {
+            get {
+                return ResourceManager.GetString("CannotUpdateDifferentItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to update setting since it is in a machine wide NuGet.Config.
+        /// </summary>
+        internal static string CannotUpdateMachineWide {
+            get {
+                return ResourceManager.GetString("CannotUpdateMachineWide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not add disabled package source.
         /// </summary>
         internal static string Error_CouldNotDisableSources {
@@ -85,6 +103,15 @@ namespace NuGet.Configuration {
         internal static string Error_EncryptionUnsupported {
             get {
                 return ResourceManager.GetString("Error_EncryptionUnsupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The attribute {0}-{1} is not valid..
+        /// </summary>
+        internal static string Error_InvalidAttribute {
+            get {
+                return ResourceManager.GetString("Error_InvalidAttribute", resourceCulture);
             }
         }
         
@@ -125,6 +152,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The item does not exist in the {0} section..
+        /// </summary>
+        internal static string ItemDoesNotExist {
+            get {
+                return ResourceManager.GetString("ItemDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; must contain an absolute path &apos;{1}&apos;..
         /// </summary>
         internal static string MustContainAbsolutePath {
@@ -143,6 +179,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} cannot be null or empty..
+        /// </summary>
+        internal static string PropertyCannotBeNull {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Environment variable &apos;{0}&apos; must contain an absolute path, the full path of &apos;{1}&apos; cannot be determined..
         /// </summary>
         internal static string RelativeEnvVarPath {
@@ -152,20 +197,20 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The section does not exist in the settings.
+        /// </summary>
+        internal static string SectionDoesNotExist {
+            get {
+                return ResourceManager.GetString("SectionDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parameter &apos;fileName&apos; to Settings must be just a fileName and not a path.
         /// </summary>
         internal static string Settings_FileName_Cannot_Be_A_Path {
             get {
                 return ResourceManager.GetString("Settings_FileName_Cannot_Be_A_Path", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Cannot add an element that is already part of another config. Path: &apos;{0}&apos;..
-        /// </summary>
-        internal static string ShowError_AddChildAlreadyHasOrigin {
-            get {
-                return ResourceManager.GetString("ShowError_AddChildAlreadyHasOrigin", resourceCulture);
             }
         }
         

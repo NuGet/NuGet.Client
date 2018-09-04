@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     }
                 };
                 var settings = new Settings(mockBaseDirectory);
-                settings.SetItemInSection(ConfigurationConstants.FallbackPackageFolders, new AddItem("defaultFallback", @"C:\defaultFallback"));
+                settings.AddOrUpdate(ConfigurationConstants.FallbackPackageFolders, new AddItem("defaultFallback", @"C:\defaultFallback"));
 
                 //Act
                 var actualFallbackFolders = VSRestoreSettingsUtilities.GetFallbackFolders(settings, spec);
@@ -149,7 +149,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     }
                 };
                 var settings = new Settings(mockBaseDirectory);
-                settings.SetItemInSection(ConfigurationConstants.Config, new AddItem("globalPackagesFolder", @"C:\defaultPackagesPath"));
+                settings.AddOrUpdate(ConfigurationConstants.Config, new AddItem("globalPackagesFolder", @"C:\defaultPackagesPath"));
 
                 // Act
                 var actualPackagesPath = VSRestoreSettingsUtilities.GetPackagesPath(settings,spec);

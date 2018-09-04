@@ -1105,7 +1105,7 @@ namespace NuGet.Test
 
             foreach (var source in sourceRepositoryProvider.GetRepositories())
             {
-                settings.SetItemInSection(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
+                settings.AddOrUpdate(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
             }
 
             return settings;

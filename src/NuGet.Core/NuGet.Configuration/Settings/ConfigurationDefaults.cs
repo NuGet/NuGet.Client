@@ -56,13 +56,13 @@ namespace NuGet.Configuration
                 if (_defaultPackageSources == null)
                 {
                     _defaultPackageSources = new List<PackageSource>();
-                    var disabledPackageSources = _settingsManager.GetSection(ConfigurationConstants.DisabledPackageSources)?.Children.Select(c => c as AddItem).Where(a => a != null) ?? new List<AddItem>();
-                    var packageSources = _settingsManager.GetSection(ConfigurationConstants.PackageSources)?.Children.Select(c => c as SourceItem).Where(a => a != null) ?? new List<SourceItem>();
+                    var disabledPackageSources = _settingsManager.GetSection(ConfigurationConstants.DisabledPackageSources)?.Items.OfType<AddItem>() ?? new List<AddItem>();
+                    var packageSources = _settingsManager.GetSection(ConfigurationConstants.PackageSources)?.Items.OfType<SourceItem>() ?? new List<SourceItem>();
 
                     foreach (var source in packageSources)
                     {
                         // In a SettingValue representing a package source, the Key represents the name of the package source and the Value its source
-                        _defaultPackageSources.Add(new PackageSource(source.Value,
+                        _defaultPackageSources.Add(new PackageSource(source.GetValueAsPath(),
                             source.Key,
                             isEnabled: !disabledPackageSources.Any(p => p.Key.Equals(source.Key, StringComparison.CurrentCultureIgnoreCase)),
                             isOfficial: true));

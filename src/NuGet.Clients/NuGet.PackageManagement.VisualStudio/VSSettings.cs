@@ -91,26 +91,32 @@ namespace NuGet.PackageManagement.VisualStudio
             SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public SettingsSection GetSection(string sectionName)
+        public SettingSection GetSection(string sectionName)
         {
             return SolutionSettings.GetSection(sectionName);
         }
 
-        public bool CreateSection(SettingsSection section, bool isBatchOperation = false)
-        {
-            return CanChangeSettings && CreateSection(section, isBatchOperation);
-        }
-
-        public bool SetItemInSection(string sectionName, SettingsItem item, bool isBatchOperation = false)
-        {
-            return CanChangeSettings && SolutionSettings.SetItemInSection(sectionName, item, isBatchOperation);
-        }
-
-        public void Save()
+        public void AddOrUpdate(string sectionName, SettingItem item)
         {
             if (CanChangeSettings)
             {
-                SolutionSettings.Save();
+                SolutionSettings.AddOrUpdate(sectionName, item);
+            }
+        }
+
+        public void Remove(string sectionName, SettingItem item)
+        {
+            if (CanChangeSettings)
+            {
+                SolutionSettings.Remove(sectionName, item);
+            }
+        }
+
+        public void SaveToDisk()
+        {
+            if (CanChangeSettings)
+            {
+                SolutionSettings.SaveToDisk();
             }
         }
 

@@ -35,8 +35,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 return IsSet(settingsValue, false); // Don't skip by default
             }
 
-            set => _settings.SetItemInSection(ConfigurationConstants.BindingRedirectsSection,
+            set
+            {
+                _settings.AddOrUpdate(ConfigurationConstants.BindingRedirectsSection,
                     new AddItem(ConfigurationConstants.SkipBindingRedirectsKey, value.ToString(CultureInfo.InvariantCulture)));
+                _settings.SaveToDisk();
+            }
         }
 
         public bool FailOperations
@@ -53,8 +57,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 return IsSet(settingsValue, false); // Ignore failures by default and just warn.
             }
 
-            set => _settings.SetItemInSection(ConfigurationConstants.BindingRedirectsSection,
+            set
+            {
+                _settings.AddOrUpdate(ConfigurationConstants.BindingRedirectsSection,
                     new AddItem(ConfigurationConstants.FailOnBindingRedirects, value.ToString(CultureInfo.InvariantCulture)));
+                _settings.SaveToDisk();
+            }
         }
 
         private static bool IsSet(string value, bool defaultValue)

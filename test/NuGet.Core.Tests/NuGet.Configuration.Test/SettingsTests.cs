@@ -41,7 +41,7 @@ namespace NuGet.Configuration.Test
                 section.Should().NotBeNull();
 
                 // Assert
-                var children = section.Children.ToList();
+                var children = section.Items.ToList();
                 children.Count.Should().Be(3);
                 children[1].DeepEquals(new AddItem("key3", "value3")).Should().BeTrue();
                 children[2].DeepEquals(new AddItem("key4", "value4")).Should().BeTrue();
@@ -85,7 +85,7 @@ namespace NuGet.Configuration.Test
                 section.Should().NotBeNull();
 
                 // Assert
-                var children = section.Children.ToList();
+                var children = section.Items.ToList();
                 children.Count.Should().Be(3);
 
                 children[0].Should().BeOfType<ClearItem>();
@@ -144,6 +144,49 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void GetValues_ItemsAndSectionsAreAbstract()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""value3"" />
+        <add key=""key3"" value=""value4"" />
+    </SectionName>
+</configuration>";
+
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1", "dir2"), config);
+
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""value1"" />
+        <add key=""key2"" value=""value2"" />
+    </SectionName>
+</configuration>";
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+
+                // Act
+                var settings = Settings.LoadDefaultSettings(
+                    root: Path.Combine(mockBaseDirectory, "dir1", "dir2"),
+                    configFileName: null,
+                    machineWideSettings: null);
+
+                var section = settings.GetSection("SectionName");
+                section.Should().NotBeNull();
+                section.IsAbstract().Should().BeTrue();
+
+                foreach (var item in section.Items)
+                {
+                    item.IsAbstract().Should().BeTrue();
+                }
+            }
+        }
+
+        [Fact]
         public void GetValues_MultipleConfigFiles_AllDifferentItems_MergeCorrectly()
         {
             // Arrange
@@ -177,7 +220,7 @@ namespace NuGet.Configuration.Test
                 var section = settings.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                section.Children.Count.Should().Be(4);
+                section.Items.Count.Should().Be(4);
 
                 var item = section.GetFirstItemWithAttribute<AddItem>("key", "key1") as AddItem;
                 item.Value.Should().Be("value1");
@@ -378,7 +421,7 @@ namespace NuGet.Configuration.Test
                 var section = settings.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var children = section.Children.ToList();
+                var children = section.Items.ToList();
 
                 // Assert
                 children.Count.Should().Be(2);
@@ -530,7 +573,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SetItemInSection_WithEmptySectionName_Throws()
+        public void AddOrUpdate_WithEmptySectionName_Throws()
         {
             // Arrange
             var configFile = "NuGet.Config";
@@ -541,14 +584,14 @@ namespace NuGet.Configuration.Test
                 var settings = new Settings(mockBaseDirectory);
 
                 // Act & Assert
-                var ex = Record.Exception(() => settings.SetItemInSection("", new AddItem("SomeKey", "SomeValue")));
+                var ex = Record.Exception(() => settings.AddOrUpdate("", new AddItem("SomeKey", "SomeValue")));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<ArgumentNullException>();
             }
         }
 
         [Fact]
-        public void SetItemInSection_WithNullItem_Throws()
+        public void AddOrUpdate_WithNullItem_Throws()
         {
             // Arrange
             var configFile = "NuGet.Config";
@@ -559,14 +602,14 @@ namespace NuGet.Configuration.Test
                 var settings = new Settings(mockBaseDirectory);
 
                 // Act & Assert
-                var ex = Record.Exception(() => settings.SetItemInSection("SomeKey", item: null));
+                var ex = Record.Exception(() => settings.AddOrUpdate("SomeKey", item: null));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<ArgumentNullException>();
             }
         }
 
         [Fact]
-        public void SetItemInSection_SectionThatDoesntExist_WillAddSection()
+        public void AddOrUpdate_SectionThatDoesntExist_WillAddSection()
         {
             // Arrange
             var configFile = "NuGet.Config";
@@ -584,7 +627,8 @@ namespace NuGet.Configuration.Test
                 var settings = new Settings(mockBaseDirectory);
 
                 // Act
-                settings.SetItemInSection("NewSectionName", new AddItem("key", "value")).Should().BeTrue();
+                settings.AddOrUpdate("NewSectionName", new AddItem("key", "value"));
+                settings.SaveToDisk();
 
                 // Assert
                 var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -600,12 +644,12 @@ namespace NuGet.Configuration.Test
                 ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, configFile))).Should().Be(result);
                 var section = settings.GetSection("NewSectionName");
                 section.Should().NotBeNull();
-                section.Children.Count.Should().Be(1);
+                section.Items.Count.Should().Be(1);
             }
         }
 
         [Fact]
-        public void SetItemInSection_SectionThatExist_WillAddToSection()
+        public void AddOrUpdate_SectionThatExist_WillAddToSection()
         {
             // Arrange
             var configFile = "NuGet.Config";
@@ -622,7 +666,8 @@ namespace NuGet.Configuration.Test
                 var settings = new Settings(mockBaseDirectory);
 
                 // Act
-                settings.SetItemInSection("SectionName", new AddItem("keyTwo", "valueTwo")).Should().BeTrue();
+                settings.AddOrUpdate("SectionName", new AddItem("keyTwo", "valueTwo"));
+                settings.SaveToDisk();
 
                 // Assert
                 var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -638,7 +683,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SetItemInSection_WhenItemExistsInSection_OverrideItem()
+        public void AddOrUpdate_WhenItemExistsInSection_OverrideItem()
         {
             // Arrange
             var configFile = "NuGet.Config";
@@ -656,7 +701,8 @@ namespace NuGet.Configuration.Test
                 var settings = new Settings(mockBaseDirectory);
 
                 // Act
-                settings.SetItemInSection("SectionName", new AddItem("key", "NewValue")).Should().BeTrue();
+                settings.AddOrUpdate("SectionName", new AddItem("key", "NewValue"));
+                settings.SaveToDisk();
 
                 // Assert
                 var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -677,7 +723,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SetItemInSection_WithMachineWideSettings_OnlyUpdatesUserSpecific()
+        public void AddOrUpdate_WithMachineWideSettings_OnlyUpdatesUserSpecific()
         {
             // Arrange
             using (var mockBaseDirectory = TestDirectory.Create())
@@ -718,7 +764,8 @@ namespace NuGet.Configuration.Test
                     machineWideSettings: m.Object);
 
                 // Act
-                settings.SetItemInSection("SectionName", new AddItem("key1", "newValue")).Should().BeTrue();
+                settings.AddOrUpdate("SectionName", new AddItem("key1", "newValue"));
+                settings.SaveToDisk();
 
                 // Assert
                 var text = ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "user.config")));
@@ -749,7 +796,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SetItemInSection_WithMultipleSections_ClearedInDifferentConfigs_AddsItemInFurthestCompatibleConfig()
+        public void AddOrUpdate_WithMultipleSections_ClearedInDifferentConfigs_AddsItemInFurthestCompatibleConfig()
         {
             var configFile = "NuGet.Config";
 
@@ -809,10 +856,11 @@ namespace NuGet.Configuration.Test
                     useTestingGlobalPath: true);
 
                 // Act
-                settings.SetItemInSection("Section1", new AddItem("newKey1", "newValue")).Should().BeTrue();
-                settings.SetItemInSection("Section2", new AddItem("newKey2", "newValue")).Should().BeTrue();
-                settings.SetItemInSection("Section3", new AddItem("newKey3", "newValue")).Should().BeTrue();
-                settings.SetItemInSection("SectionN", new AddItem("newKeyN", "newValue")).Should().BeTrue();
+                settings.AddOrUpdate("Section1", new AddItem("newKey1", "newValue"));
+                settings.AddOrUpdate("Section2", new AddItem("newKey2", "newValue"));
+                settings.AddOrUpdate("Section3", new AddItem("newKey3", "newValue"));
+                settings.AddOrUpdate("SectionN", new AddItem("newKeyN", "newValue"));
+                settings.SaveToDisk();
 
                 // Assert
                 var actualFurthestConfig = ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)));
@@ -911,7 +959,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SetItemInSection_PreserveComments()
+        public void AddOrUpdate_PreserveComments()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -934,7 +982,8 @@ namespace NuGet.Configuration.Test
                 var settings = new Settings(mockBaseDirectory);
 
                 // Act & Assert
-                settings.SetItemInSection("SectionName", new AddItem("newKey", "value")).Should().BeTrue();
+                settings.AddOrUpdate("SectionName", new AddItem("newKey", "value"));
+                settings.SaveToDisk();
 
                 var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <!-- Comment in nuget configuration -->
@@ -962,7 +1011,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SetItemInSection_PreserveUnknownItems()
+        public void AddOrUpdate_PreserveUnknownItems()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -987,7 +1036,8 @@ namespace NuGet.Configuration.Test
                 var settings = new Settings(mockBaseDirectory);
 
                 // Act & Assert
-                settings.SetItemInSection("SectionName", new AddItem("newKey", "value")).Should().BeTrue();
+                settings.AddOrUpdate("SectionName", new AddItem("newKey", "value"));
+                settings.SaveToDisk();
 
                 var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1017,7 +1067,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void RemovingValue_MachineWide_ReturnsFalse()
+        public void Remove_MachineWide_Throws()
         {
             // Arrange
             var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -1049,7 +1099,12 @@ namespace NuGet.Configuration.Test
                 item.Should().NotBeNull();
                 item.Value.Should().Be("value1");
 
-                item.RemoveFromCollection().Should().BeFalse();
+                var ex = Record.Exception(() => settings.Remove("SectionName", item));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<InvalidOperationException>();
+                ex.Message.Should().Be("Unable to update setting since it is in a machine wide NuGet.Config");
+
+                settings.SaveToDisk();
 
                 ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "nuget", "Config", "a1.config"))).Should().Be(ConfigurationFileTestUtility.RemoveWhitespace(config1));
 
@@ -1063,7 +1118,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void RemovingValue_LastValueInSectionOfComputedValues_RemovesSection()
+        public void Remove_LastValueInSectionOfComputedValues_RemovesSection()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -1088,7 +1143,8 @@ namespace NuGet.Configuration.Test
                 item.Should().NotBeNull();
                 item.Value.Should().Be("value2");
 
-                item.RemoveFromCollection().Should().BeTrue();
+                settings.Remove("SectionName", item);
+                settings.SaveToDisk();
 
                 ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?><configuration></configuration>"));
 
@@ -1098,7 +1154,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void RemovingValue_LastValueInOneSpecificConfig_RemovesSectionInThatConfig_DoesNotRemoveSectionInComputedValues()
+        public void Remove_LastValueInOneSpecificConfig_RemovesSectionInThatConfig_DoesNotRemoveSectionInComputedValues()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -1142,7 +1198,8 @@ namespace NuGet.Configuration.Test
                 item.Should().NotBeNull();
                 item.Value.Should().Be("value3");
 
-                item.RemoveFromCollection().Should().BeTrue();
+                settings.Remove("SectionName", item);
+                settings.SaveToDisk();
 
                 var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1165,7 +1222,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void RemovingValue_RemovesAllMergedValuesInAllConfigs_ExceptMachineWide()
+        public void Remove_RemovesAllMergedValuesInAllConfigs_ExceptMachineWide()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -1217,7 +1274,8 @@ namespace NuGet.Configuration.Test
                 item.Should().NotBeNull();
                 item.Value.Should().Be("value3");
 
-                item.RemoveFromCollection().Should().BeFalse();
+                settings.Remove("SectionName", item);
+                settings.SaveToDisk();
 
                 var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1240,7 +1298,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void RemovingValue_RemovesAllMergedValuesInAllConfigs()
+        public void Remove_RemovesAllMergedValuesInAllConfigs()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -1268,7 +1326,6 @@ namespace NuGet.Configuration.Test
     </SectionName>
 </configuration>";
 
-
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
@@ -1285,7 +1342,8 @@ namespace NuGet.Configuration.Test
                 item.Should().NotBeNull();
                 item.Value.Should().Be("value3");
 
-                item.RemoveFromCollection().Should().BeTrue();
+                settings.Remove("SectionName", item);
+                settings.SaveToDisk();
 
                 var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1307,7 +1365,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void RemovingValue_RemovesAllMergedValuesInAllConfigsAfterClear()
+        public void Remove_RemovesAllMergedValuesInAllConfigsAfterClear()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -1353,7 +1411,8 @@ namespace NuGet.Configuration.Test
                 item.Should().NotBeNull();
                 item.Value.Should().Be("value3");
 
-                item.RemoveFromCollection().Should().BeTrue();
+                settings.Remove("SectionName", item);
+                settings.SaveToDisk();
 
                 var result1 = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1383,7 +1442,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void RemovingValue_WithValidSectionAndKey_DeletesTheEntryAndReturnsTrue()
+        public void Remove_WithValidSectionAndKey_DeletesTheEntryAndReturnsTrue()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -1407,8 +1466,9 @@ namespace NuGet.Configuration.Test
                 var section = settings.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var item = section.GetFirstItemWithAttribute<SettingsItem>("key", "DeleteMe");
-                item.RemoveFromCollection().Should().BeTrue();
+                var item = section.GetFirstItemWithAttribute<SettingItem>("key", "DeleteMe");
+                settings.Remove("SectionName", item);
+                settings.SaveToDisk();
 
                 var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1431,7 +1491,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void RemovingValue_PreserveComments()
+        public void Remove_PreserveComments()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -1458,8 +1518,9 @@ namespace NuGet.Configuration.Test
                 var section = settings.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var item = section.GetFirstItemWithAttribute<SettingsItem>("key", "DeleteMe");
-                item.RemoveFromCollection().Should().BeTrue();
+                var item = section.GetFirstItemWithAttribute<SettingItem>("key", "DeleteMe");
+                settings.Remove("SectionName", item);
+                settings.SaveToDisk();
 
                 var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <!-- Comment in nuget configuration -->
@@ -1485,7 +1546,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void RemovingValue_PreserveUnknownItems()
+        public void Remove_PreserveUnknownItems()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -1514,8 +1575,9 @@ namespace NuGet.Configuration.Test
                 var section = settings.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var item = section.GetFirstItemWithAttribute<SettingsItem>("key", "DeleteMe");
-                item.RemoveFromCollection().Should().BeTrue();
+                var item = section.GetFirstItemWithAttribute<SettingItem>("key", "DeleteMe");
+                settings.Remove("SectionName", item);
+                settings.SaveToDisk();
 
                 var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1712,7 +1774,8 @@ namespace NuGet.Configuration.Test
                 // Act
                 var section = settingsFile.GetSection("packageSources");
                 section.Should().NotBeNull();
-                section.Children.FirstOrDefault().RemoveFromCollection().Should().BeTrue();
+                settingsFile.Remove("packageSources", section.Items.First());
+                settingsFile.SaveToDisk();
 
                 settings = Settings.LoadSettings(
                                     root: mockBaseDirectory,
@@ -3146,7 +3209,117 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void CallingSetNestedSettingValuesAfterSetNestedSettingValuesReadsValues()
+        public void CallingSetNestedSettingValuesAddsACredentialsItemIfCorrectSection()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+            var username = new SettingValue("Username", "user", false);
+            var clearTextPassword = new SettingValue("ClearTextPassword", "pass", false);
+
+            var values = new List<SettingValue>()
+            {
+                username,
+                clearTextPassword
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.SetNestedSettingValues("packageSourceCredentials", "source", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSourceCredentials>
+    <source>
+      <add key=""Username"" value=""user"" />
+      <add key=""ClearTextPassword"" value=""pass"" />
+    </source>
+  </packageSourceCredentials>
+</configuration>";
+                Assert.Equal(ConfigurationFileTestUtility.RemoveWhitespace(result),
+                    ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))));
+
+                var section = settings.GetSection("packageSourceCredentials");
+                section.Should().NotBeNull();
+                section.Items.Count.Should().Be(1);
+
+                var item = section.Items.FirstOrDefault();
+                item.Should().NotBeNull();
+                item.Should().BeOfType<CredentialsItem>();
+
+                var credentials = item as CredentialsItem;
+                credentials.Username.Should().Be("user");
+                credentials.Password.Should().Be("pass");
+                credentials.IsPasswordClearText.Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public void CallingSetNestedSettingValuesUpdatesACredentialsItemIfCorrectSection()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSourceCredentials>
+    <source>
+      <add key=""Username"" value=""user"" />
+      <add key=""ClearTextPassword"" value=""pass"" />
+    </source>
+  </packageSourceCredentials>
+</configuration>";
+            var password = new SettingValue("Password", "pass", false);
+
+            var values = new List<SettingValue>()
+            {
+                password
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.SetNestedSettingValues("packageSourceCredentials", "source", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSourceCredentials>
+    <source>
+      <add key=""Username"" value=""user"" />
+      <add key=""Password"" value=""pass"" />
+    </source>
+  </packageSourceCredentials>
+</configuration>";
+                Assert.Equal(ConfigurationFileTestUtility.RemoveWhitespace(result),
+                    ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))));
+
+                var section = settings.GetSection("packageSourceCredentials");
+                section.Should().NotBeNull();
+                section.Items.Count.Should().Be(1);
+
+                var item = section.Items.FirstOrDefault();
+                item.Should().NotBeNull();
+                item.Should().BeOfType<CredentialsItem>();
+
+                var credentials = item as CredentialsItem;
+                credentials.Username.Should().Be("user");
+                credentials.Password.Should().Be("pass");
+                credentials.IsPasswordClearText.Should().BeFalse();
+            }
+        }
+
+        [Fact]
+        public void CallingGetNestedSettingValuesAfterSetNestedSettingValuesReadsValues()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -4029,6 +4202,7 @@ namespace NuGet.Configuration.Test
                 // Act
                 settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
                 var settingValues = settings.GetNestedSettingValues("section", "subsection");
+                settingValues.Should().BeEmpty();
 
                 // Assert
                 var result1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -4092,6 +4266,8 @@ namespace NuGet.Configuration.Test
                 // Act
                 settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
                 var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                settingValues.Should().BeEmpty();
 
                 // Assert
                 var result1 = @"<?xml version=""1.0"" encoding=""utf-8""?>

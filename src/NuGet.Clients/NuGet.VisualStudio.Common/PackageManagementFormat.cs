@@ -102,10 +102,11 @@ namespace NuGet.VisualStudio
 
         public void ApplyChanges()
         {
-            _settings.SetItemInSection(ConfigurationConstants.PackageManagementSection,
+            _settings.AddOrUpdate(ConfigurationConstants.PackageManagementSection,
                 new AddItem(ConfigurationConstants.DefaultPackageManagementFormatKey, _selectedPackageFormat.ToString(CultureInfo.InvariantCulture)));
-            _settings.SetItemInSection(ConfigurationConstants.PackageManagementSection,
+            _settings.AddOrUpdate(ConfigurationConstants.PackageManagementSection,
                 new AddItem(ConfigurationConstants.DoNotShowPackageManagementSelectionKey, _showDialogValue.Value.ToString(CultureInfo.InvariantCulture)));
+            _settings.SaveToDisk();
         }
 
         private static bool IsSet(string value, bool defaultValue)

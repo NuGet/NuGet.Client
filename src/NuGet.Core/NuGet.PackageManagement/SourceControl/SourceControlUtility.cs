@@ -18,7 +18,8 @@ namespace NuGet.ProjectManagement
 
         public static void DisableSourceControlMode(ISettings settings)
         {
-            settings.SetItemInSection(SolutionSection, new AddItem(DisableSourceControlIntegerationKey, "true"));
+            settings.AddOrUpdate(SolutionSection, new AddItem(DisableSourceControlIntegerationKey, "true"));
+            settings.SaveToDisk();
         }
 
         public static SourceControlManager GetSourceControlManager(INuGetProjectContext nuGetProjectContext)

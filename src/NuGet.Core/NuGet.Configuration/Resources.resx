@@ -120,11 +120,22 @@
   <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
     <value>Value cannot be null or empty string.</value>
   </data>
+  <data name="CannotUpdateDifferentItems" xml:space="preserve">
+    <value>The item passed to the Update method cannot refer to a different item to the one to be updated.</value>
+  </data>
+  <data name="CannotUpdateMachineWide" xml:space="preserve">
+    <value>Unable to update setting since it is in a machine wide NuGet.Config</value>
+  </data>
   <data name="Error_CouldNotDisableSources" xml:space="preserve">
     <value>Could not add disabled package source</value>
   </data>
   <data name="Error_EncryptionUnsupported" xml:space="preserve">
     <value>Encryption is not supported on non-Windows platforms.</value>
+  </data>
+  <data name="Error_InvalidAttribute" xml:space="preserve">
+    <value>The attribute {0}-{1} is not valid.</value>
+    <comment>0 - attribute name
+1 - attribute value</comment>
   </data>
   <data name="Error_MergeTwoDifferentSections" xml:space="preserve">
     <value>Cannot merge two different sections.</value>
@@ -138,20 +149,28 @@
   <data name="InvalidNullSettingsOperation" xml:space="preserve">
     <value>"{0}" cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to "%AppData%\NuGet\NuGet.config".</value>
   </data>
+  <data name="ItemDoesNotExist" xml:space="preserve">
+    <value>The item does not exist in the {0} section.</value>
+    <comment>0 - section name</comment>
+  </data>
   <data name="MustContainAbsolutePath" xml:space="preserve">
     <value>'{0}' must contain an absolute path '{1}'.</value>
   </data>
   <data name="PackageSource_Invalid" xml:space="preserve">
     <value>The package source does not belong to the collection of available sources.</value>
   </data>
+  <data name="PropertyCannotBeNull" xml:space="preserve">
+    <value>{0} cannot be null or empty.</value>
+    <comment>0 - property name</comment>
+  </data>
   <data name="RelativeEnvVarPath" xml:space="preserve">
     <value>Environment variable '{0}' must contain an absolute path, the full path of '{1}' cannot be determined.</value>
   </data>
+  <data name="SectionDoesNotExist" xml:space="preserve">
+    <value>The section does not exist in the settings</value>
+  </data>
   <data name="Settings_FileName_Cannot_Be_A_Path" xml:space="preserve">
     <value>Parameter 'fileName' to Settings must be just a fileName and not a path</value>
-  </data>
-  <data name="ShowError_AddChildAlreadyHasOrigin" xml:space="preserve">
-    <value>Cannot add an element that is already part of another config. Path: '{0}'.</value>
   </data>
   <data name="ShowError_CannotHaveChildren" xml:space="preserve">
     <value>Error parsing NuGet.Config. Element '{0}' cannot have descendant elements. Path: '{1}'.</value>

@@ -6,10 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Xml.Linq;
 using FluentAssertions;
 using Moq;
-using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -585,7 +583,7 @@ namespace NuGet.Configuration.Test
                 var disabledPackagesSection = settings.GetSection("disabledPackageSources");
                 disabledPackagesSection.Should().NotBeNull();
 
-                var expectedDisabledSources = disabledPackagesSection?.Children.ToList();
+                var expectedDisabledSources = disabledPackagesSection?.Items.ToList();
 
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
@@ -602,7 +600,7 @@ namespace NuGet.Configuration.Test
                 var actualDisabledSourcesSection = newSettings.GetSection("disabledPackageSources");
                 actualDisabledSourcesSection.Should().NotBeNull();
 
-                var actualDisabledSources = actualDisabledSourcesSection?.Children.ToList();
+                var actualDisabledSources = actualDisabledSourcesSection?.Items.ToList();
 
                 Assert.Equal(expectedDisabledSources.Count, actualDisabledSources.Count);
                 foreach (var item in expectedDisabledSources)
@@ -644,7 +642,7 @@ namespace NuGet.Configuration.Test
                 var disabledPackagesSection = settings.GetSection("disabledPackageSources");
                 disabledPackagesSection.Should().NotBeNull();
 
-                var disabledSources = disabledPackagesSection?.Children.Select(c => c as AddItem).ToList();
+                var disabledSources = disabledPackagesSection?.Items.Select(c => c as AddItem).ToList();
 
                 // Pre-Assert
                 Assert.Equal(2, disabledSources.Count);
@@ -674,7 +672,7 @@ namespace NuGet.Configuration.Test
                 disabledPackagesSection = newSettings.GetSection("disabledPackageSources");
                 disabledPackagesSection.Should().NotBeNull();
 
-                disabledSources = disabledPackagesSection?.Children.Select(c => c as AddItem).ToList();
+                disabledSources = disabledPackagesSection?.Items.Select(c => c as AddItem).ToList();
 
                 Assert.Equal(1, disabledSources.Count);
                 Assert.Equal("Microsoft and .NET", disabledSources[0].Key);
@@ -697,7 +695,7 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>(MockBehavior.Strict);
 
             settings.Setup(s => s.GetSection("packageSources"))
-                .Returns(new SettingsSection("packageSources",
+                .Returns(new AbstractSettingSection("packageSources",
                     new SourceItem("one", "onesource"),
                     new SourceItem("two", "twosource"),
                     new SourceItem("three", "threesource")
@@ -705,9 +703,9 @@ namespace NuGet.Configuration.Test
                 .Verifiable();
 
             settings.Setup(s => s.GetSection("disabledPackageSources"))
-                .Returns(new SettingsSection("disabledPackageSources"));
+                .Returns(new AbstractSettingSection("disabledPackageSources"));
             settings.Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new SettingsSection("packageSourceCredentials"));
+                .Returns(new AbstractSettingSection("packageSourceCredentials"));
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -727,19 +725,19 @@ namespace NuGet.Configuration.Test
             // Arrange
             var settings = new Mock<ISettings>(MockBehavior.Strict);
             settings.Setup(s => s.GetSection("packageSources"))
-                .Returns(new SettingsSection("packageSources",
+                .Returns(new AbstractSettingSection("packageSources",
                         new SourceItem("one", "onesource"),
                         new SourceItem("two", "twosource"),
                         new SourceItem("three", "threesource")
                     ));
 
             settings.Setup(s => s.GetSection("disabledPackageSources"))
-                .Returns(new SettingsSection("packageSources",
+                .Returns(new AbstractSettingSection("packageSources",
                     new AddItem("two", "true")
                     ));
 
             settings.Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new SettingsSection("packageSourceCredentials"));
+                .Returns(new AbstractSettingSection("packageSourceCredentials"));
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -762,7 +760,7 @@ namespace NuGet.Configuration.Test
             var settingWithV3Protocol2 = new SourceItem("Source3", "Source3", "3");
 
             settings.Setup(s => s.GetSection("packageSources"))
-                .Returns(new SettingsSection("packageSources",
+                .Returns(new AbstractSettingSection("packageSources",
                     new SourceItem("Source1", "https://some-source.org"),
                     settingWithV3Protocol1,
                     settingWithV3Protocol2,
@@ -771,12 +769,12 @@ namespace NuGet.Configuration.Test
 
             settings
                 .Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new SettingsSection("packageSourceCredentials",
+                .Returns(new AbstractSettingSection("packageSourceCredentials",
                     new CredentialsItem("Source3", "source3-user", "source3-password", isPasswordClearText: true, validAuthenticationTypes: null)));
 
             settings
                 .Setup(s => s.GetSection("disabledPackageSources"))
-                .Returns(new SettingsSection("disabledPackageSources",
+                .Returns(new AbstractSettingSection("disabledPackageSources",
                         new AddItem("Source4", "true")
                     ));
 
@@ -827,11 +825,12 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var settings = new Mock<ISettings>(MockBehavior.Strict);
-            settings.Setup(s =>
-                s.SetItemInSection("disabledPackageSources", new AddItem("A", "true"), false))
-                .Returns(true).Verifiable();
             settings.Setup(s => s.GetSection("packageSources"))
                 .Returns(() => null).Verifiable();
+            settings.Setup(s => s.AddOrUpdate("disabledPackageSources", It.IsAny<AddItem>())).Verifiable();
+            settings.Setup(s => s.SaveToDisk()).Verifiable();
+
+
             var provider = CreatePackageSourceProvider(settings.Object);
 
             // Act
@@ -847,13 +846,13 @@ namespace NuGet.Configuration.Test
             // Arrange
             var settings = new Mock<ISettings>(MockBehavior.Strict);
             settings.Setup(s => s.GetSection("disabledPackageSources"))
-                .Returns(new SettingsSection("disabledPackageSources",
+                .Returns(new AbstractSettingSection("disabledPackageSources",
                     new AddItem("A", "sdfds")
                     ));
             var provider = CreatePackageSourceProvider(settings.Object);
 
             // Act
-            var isEnabled = provider.IsPackageSourceEnabled(new PackageSource("source", "A"));
+            var isEnabled = provider.IsPackageSourceEnabled("A");
 
             // Assert
             Assert.False(isEnabled);
@@ -868,7 +867,7 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>();
             settings
                 .Setup(s => s.GetSection("packageSources"))
-                .Returns(new SettingsSection("packageSources",
+                .Returns(new AbstractSettingSection("packageSources",
                     new SourceItem("one", "onesource"),
                     new SourceItem("two", "twosource"),
                     new SourceItem("three", "threesource")
@@ -876,7 +875,7 @@ namespace NuGet.Configuration.Test
 
             settings
                 .Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new SettingsSection("two",
+                .Returns(new AbstractSettingSection("two",
                     new CredentialsItem("two", "user1", encryptedPassword, isPasswordClearText: false, validAuthenticationTypes: null)
                     ));
 
@@ -900,7 +899,7 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>();
             settings
                 .Setup(s => s.GetSection("packageSources"))
-                .Returns(new SettingsSection("packageSources",
+                .Returns(new AbstractSettingSection("packageSources",
                     new SourceItem("one", "onesource"),
                     new SourceItem("two", "twosource"),
                     new SourceItem("three", "threesource")
@@ -908,7 +907,7 @@ namespace NuGet.Configuration.Test
 
             settings
              .Setup(s => s.GetSection("packageSourceCredentials"))
-             .Returns(new SettingsSection("two",
+             .Returns(new AbstractSettingSection("two",
                  new CredentialsItem("two", "user1", clearTextPassword, isPasswordClearText: true, validAuthenticationTypes: null)
                  ));
 
@@ -930,7 +929,7 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>();
             settings
                 .Setup(s => s.GetSection("packageSources"))
-                .Returns(new SettingsSection("packageSources",
+                .Returns(new AbstractSettingSection("packageSources",
                     new SourceItem("one", "onesource"),
                     new SourceItem("two", "twosource"),
                     new SourceItem("three", "threesource")
@@ -938,7 +937,7 @@ namespace NuGet.Configuration.Test
 
             settings
                 .Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new SettingsSection("two",
+                .Returns(new AbstractSettingSection("two",
                     new CredentialsItem("two", "settinguser", "settingpassword", isPasswordClearText: true, validAuthenticationTypes: null)
                     ));
 
@@ -974,10 +973,10 @@ namespace NuGet.Configuration.Test
                 // Assert
                 var packageSourcesSection = settings.GetSection("packageSources");
                 packageSourcesSection.Should().NotBeNull();
-                packageSourcesSection.Children.Count.Should().Be(3);
-                packageSourcesSection.Children.Should().AllBeOfType<SourceItem>();
+                packageSourcesSection.Items.Count.Should().Be(3);
+                packageSourcesSection.Items.Should().AllBeOfType<SourceItem>();
 
-                var children = packageSourcesSection.Children.Select(c => c as SourceItem).ToList();
+                var children = packageSourcesSection.Items.Select(c => c as SourceItem).ToList();
                 children[0].Key.Should().Be("one");
                 children[0].ProtocolVersion.Should().BeNullOrEmpty();
                 children[1].Key.Should().Be("two");
@@ -1017,10 +1016,10 @@ namespace NuGet.Configuration.Test
                 // Assert
                 var packageSourcesSection = settings.GetSection("packageSources");
                 packageSourcesSection.Should().NotBeNull();
-                packageSourcesSection.Children.Count.Should().Be(3);
-                packageSourcesSection.Children.Should().AllBeOfType<SourceItem>();
+                packageSourcesSection.Items.Count.Should().Be(3);
+                packageSourcesSection.Items.Should().AllBeOfType<SourceItem>();
 
-                var children = packageSourcesSection.Children.Select(c => c as SourceItem).ToList();
+                var children = packageSourcesSection.Items.Select(c => c as SourceItem).ToList();
                 children[0].Key.Should().Be("Source2-Name");
                 children[0].ProtocolVersion.Should().BeNullOrEmpty();
                 children[1].Key.Should().Be("Source1-Name");
@@ -1055,10 +1054,10 @@ namespace NuGet.Configuration.Test
                 // Assert
                 var packageSourcesSection = settings.GetSection("packageSources");
                 packageSourcesSection.Should().NotBeNull();
-                packageSourcesSection.Children.Count.Should().Be(3);
-                packageSourcesSection.Children.Should().AllBeOfType<SourceItem>();
+                packageSourcesSection.Items.Count.Should().Be(3);
+                packageSourcesSection.Items.Should().AllBeOfType<SourceItem>();
 
-                var children = packageSourcesSection.Children.Select(c => c as SourceItem).ToList();
+                var children = packageSourcesSection.Items.Select(c => c as SourceItem).ToList();
                 children[0].Key.Should().Be("one");
                 children[0].ProtocolVersion.Should().BeNullOrEmpty();
                 children[1].Key.Should().Be("two");
@@ -1068,9 +1067,9 @@ namespace NuGet.Configuration.Test
 
                 var disabledPackageSourcesSection = settings.GetSection("disabledPackageSources");
                 disabledPackageSourcesSection.Should().NotBeNull();
-                disabledPackageSourcesSection.Children.Count.Should().Be(1);
+                disabledPackageSourcesSection.Items.Count.Should().Be(1);
 
-                var two = disabledPackageSourcesSection.Children.FirstOrDefault() as AddItem;
+                var two = disabledPackageSourcesSection.Items.FirstOrDefault() as AddItem;
                 two.Should().NotBeNull();
                 two.Key.Should().Be("two");
                 two.Value.Should().Be("true");
@@ -1106,14 +1105,14 @@ namespace NuGet.Configuration.Test
                 // Assert
                 var packageSourcesSection = settings.GetSection("packageSources");
                 packageSourcesSection.Should().NotBeNull();
-                packageSourcesSection.Children.Count.Should().Be(3);
-                packageSourcesSection.Children.Should().AllBeOfType<SourceItem>();
+                packageSourcesSection.Items.Count.Should().Be(3);
+                packageSourcesSection.Items.Should().AllBeOfType<SourceItem>();
 
-                var children = packageSourcesSection.Children.Select(c => c as SourceItem).ToList();
+                var children = packageSourcesSection.Items.Select(c => c as SourceItem).ToList();
                 children[0].Key.Should().Be("one");
                 children[0].ProtocolVersion.Should().BeNullOrEmpty();
                 children[1].Key.Should().Be("twoname");
-                children[1].Value.Should().Be("http://twosource");
+                children[1].GetValueAsPath().Should().Be("http://twosource");
                 children[1].ProtocolVersion.Should().BeNullOrEmpty();
                 children[2].Key.Should().Be("three");
                 children[2].ProtocolVersion.Should().BeNullOrEmpty();
@@ -1123,13 +1122,13 @@ namespace NuGet.Configuration.Test
 
                 var sourcesCredentialsSection = settings.GetSection("packageSourceCredentials");
                 sourcesCredentialsSection.Should().NotBeNull();
-                sourcesCredentialsSection.Children.Count.Should().Be(1);
-                var two = sourcesCredentialsSection.Children.FirstOrDefault() as CredentialsItem;
+                sourcesCredentialsSection.Items.Count.Should().Be(1);
+                var two = sourcesCredentialsSection.Items.FirstOrDefault() as CredentialsItem;
                 two.Should().NotBeNull();
                 two.Name.Should().Be("twoname");
-                two.Username.Value.Should().Be("User");
-                two.Password.Key.Should().Be("Password");
-                two.Password.Value.Should().Be(encryptedPassword);
+                two.Username.Should().Be("User");
+                two.IsPasswordClearText.Should().BeFalse();
+                two.Password.Should().Be(encryptedPassword);
             }
         }
 
@@ -1161,14 +1160,14 @@ namespace NuGet.Configuration.Test
                 // Assert
                 var packageSourcesSection = settings.GetSection("packageSources");
                 packageSourcesSection.Should().NotBeNull();
-                packageSourcesSection.Children.Count.Should().Be(3);
-                packageSourcesSection.Children.Should().AllBeOfType<SourceItem>();
+                packageSourcesSection.Items.Count.Should().Be(3);
+                packageSourcesSection.Items.Should().AllBeOfType<SourceItem>();
 
-                var children = packageSourcesSection.Children.Select(c => c as SourceItem).ToList();
+                var children = packageSourcesSection.Items.Select(c => c as SourceItem).ToList();
                 children[0].Key.Should().Be("one");
                 children[0].ProtocolVersion.Should().BeNullOrEmpty();
                 children[1].Key.Should().Be("twoname");
-                children[1].Value.Should().Be("http://twosource");
+                children[1].GetValueAsPath().Should().Be("http://twosource");
                 children[1].ProtocolVersion.Should().BeNullOrEmpty();
                 children[2].Key.Should().Be("three");
                 children[2].ProtocolVersion.Should().BeNullOrEmpty();
@@ -1178,13 +1177,13 @@ namespace NuGet.Configuration.Test
 
                 var sourcesCredentialsSection = settings.GetSection("packageSourceCredentials");
                 sourcesCredentialsSection.Should().NotBeNull();
-                sourcesCredentialsSection.Children.Count.Should().Be(1);
-                var two = sourcesCredentialsSection.Children.FirstOrDefault() as CredentialsItem;
+                sourcesCredentialsSection.Items.Count.Should().Be(1);
+                var two = sourcesCredentialsSection.Items.FirstOrDefault() as CredentialsItem;
                 two.Should().NotBeNull();
                 two.Name.Should().Be("twoname");
-                two.Username.Value.Should().Be("User");
-                two.Password.Key.Should().Be("ClearTextPassword");
-                two.Password.Value.Should().Be("password");
+                two.Username.Should().Be("User");
+                two.IsPasswordClearText.Should().BeTrue();
+                two.Password.Should().Be("password");
             }
         }
 
@@ -1194,17 +1193,17 @@ namespace NuGet.Configuration.Test
             // Arrange
             var settings = new Mock<ISettings>(MockBehavior.Strict);
             settings.Setup(s => s.GetSection("packageSources"))
-                .Returns(new SettingsSection("packageSources",
+                .Returns(new AbstractSettingSection("packageSources",
                         new SourceItem("one", "onesource"),
                         new SourceItem("TWO", "twosource"),
                         new SourceItem("three", "threesource")
                     ));
             settings.Setup(s => s.GetSection("disabledPackageSources"))
-                .Returns(new SettingsSection("disabledPackageSources",
+                .Returns(new AbstractSettingSection("disabledPackageSources",
                     new AddItem("TWO", "true")
                     ));
             settings.Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new SettingsSection("packageSourceCredentials"));
+                .Returns(new AbstractSettingSection("packageSourceCredentials"));
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -2017,10 +2016,10 @@ namespace NuGet.Configuration.Test
 
                 File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
 
-                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                var settings = Settings.LoadSettings(mockBaseDirectory.Path,
                    configFileName: null,
                    machineWideSettings: null,
-                   loadAppDataSettings: true,
+                   loadUserWideSettings: true,
                    useTestingGlobalPath: false);
 
 
@@ -2050,10 +2049,10 @@ namespace NuGet.Configuration.Test
 
                 File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
 
-                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                var settings = Settings.LoadSettings(mockBaseDirectory.Path,
                    configFileName: "NuGet.Config",
                    machineWideSettings: null,
-                   loadAppDataSettings: true,
+                   loadUserWideSettings: true,
                    useTestingGlobalPath: false);
 
 

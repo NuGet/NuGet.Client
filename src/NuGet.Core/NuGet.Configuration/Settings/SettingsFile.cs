@@ -8,26 +8,30 @@ using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
-using static NuGet.Configuration.Settings;
 
 namespace NuGet.Configuration
 {
-    internal class SettingsFile : ISettingsFile
+    internal sealed class SettingsFile
     {
         /// <summary>
-        /// Name of the root element of settings file
+        /// Full path to the settings file
         /// </summary>
-        private static string _rootElementName => ConfigurationConstants.Configuration;
+        public string ConfigFilePath => Path.GetFullPath(Path.Combine(DirectoryPath, FileName));
 
         /// <summary>
-        /// XML element for settings file
+        /// Event handler to be called when this setting file has changed.
         /// </summary>
-        private XDocument _xDocument { get; }
+        public event EventHandler SettingsChanged = delegate { };
 
         /// <summary>
-        /// Root element of configuration file. By definition of a nuget.config, the root element has to be a `configuration` element
+        /// Folder under which the settings file is present
         /// </summary>
-        private NuGetConfiguration RootElement { get; set; }
+        internal string DirectoryPath { get; }
+
+        /// <summary>
+        /// Filename of the settings file
+        /// </summary>
+        internal string FileName { get; }
 
         /// <summary>
         /// Next config file to read in the hierarchy
@@ -35,51 +39,59 @@ namespace NuGet.Configuration
         internal SettingsFile Next { get; private set; }
 
         /// <summary>
-        /// Folder under which the settings file is present
+        /// Defines if the configuration settings have been changed but have not been saved to disk
         /// </summary>
-        public string Root { get; }
-
-        /// <summary>
-        /// Filename of the settings file
-        /// </summary>
-        public string FileName { get; }
-
-        /// <summary>
-        /// Full path to the settings file
-        /// </summary>
-        public string ConfigFilePath => Path.GetFullPath(Path.Combine(Root, FileName));
+        internal bool IsDirty { get; set; }
 
         /// <summary>
         /// Defines if the settings file is considered a machine wide settings file
         /// </summary>
         /// <remarks>Machine wide settings files cannot be eddited.</remarks>
-        public bool IsMachineWide { get; }
+        internal bool IsMachineWide { get; }
 
         /// <summary>
-        /// Defines if the configuration settings have been changed but have not been saved to disk
+        /// XML element for settings file
         /// </summary>
-        public bool IsDirty { get; set; }
-        
-        /// <summary>
-        /// Event handler to be called when this setting file has changed.
-        /// </summary>
-        public event EventHandler SettingsChanged = delegate { };
+        private XDocument _xDocument { get; }
 
-        public SettingsFile(string root)
-            : this(root, DefaultSettingsFileName, false)
+        /// <summary>
+        /// Root element of configuration file.
+        /// By definition of a nuget.config, the root element has to be a 'configuration' element
+        /// </summary>
+        private NuGetConfiguration _rootElement { get; set; }
+
+        /// <summary>
+        /// Creates an instance of a non machine wide SettingsFile with the default filename.
+        /// </summary>
+        /// <param name="directoryPath">path to the directory where the file is</param>
+        public SettingsFile(string directoryPath)
+            : this(directoryPath, Settings.DefaultSettingsFileName, false)
         {
         }
 
-        internal SettingsFile(string root, string fileName)
-            : this(root, fileName, false)
+        /// <summary>
+        /// Creates an instance of a non machine wide SettingsFile.
+        /// </summary>
+        /// <param name="directoryPath">path to the directory where the file is</param>
+        /// <param name="fileName">name of config file</param>
+        public SettingsFile(string directoryPath, string fileName)
+            : this(directoryPath, fileName, false)
         {
         }
 
-        public SettingsFile(string root, string fileName, bool isMachineWide)
+        /// <summary>
+        /// Creates an instance of a SettingsFile
+        /// </summary>
+        /// <remarks>It will parse the specified document,
+        /// if it doesn't exist it will create one with the default configuration.</remarks>
+        /// <param name="directoryPath">path to the directory where the file is</param>
+        /// <param name="fileName">name of config file</param>
+        /// <param name="isMachineWide">specifies if the SettingsFile is machine wide</param>
+        public SettingsFile(string directoryPath, string fileName, bool isMachineWide)
         {
-            if (string.IsNullOrEmpty(root))
+            if (string.IsNullOrEmpty(directoryPath))
             {
-                throw new ArgumentNullException(nameof(root), Resources.Argument_Cannot_Be_Null_Or_Empty);
+                throw new ArgumentNullException(nameof(directoryPath), Resources.Argument_Cannot_Be_Null_Or_Empty);
             }
 
             if (string.IsNullOrEmpty(fileName))
@@ -92,85 +104,58 @@ namespace NuGet.Configuration
                 throw new ArgumentException(Resources.Settings_FileName_Cannot_Be_A_Path, nameof(fileName));
             }
 
-            Root = root;
+            DirectoryPath = directoryPath;
             FileName = fileName;
             IsMachineWide = isMachineWide;
 
             XDocument config = null;
-            var self = this;
             ExecuteSynchronized(() =>
             {
-                config = XmlUtility.GetOrCreateDocument(self.CreateDefaultConfig(), ConfigFilePath);
+                config = XmlUtility.GetOrCreateDocument(CreateDefaultConfig(), ConfigFilePath);
             });
 
             _xDocument = config;
 
-            ParseNuGetConfiguration();
+            _rootElement = new NuGetConfiguration(_xDocument.Root, origin: this);
         }
 
-        public bool IsEmpty() => RootElement == null || RootElement.IsEmpty();
-
-        internal static void ConnectSettingsFilesLinkedList(IList<SettingsFile> settingFiles)
+        /// <summary>
+        /// Gets the section with a given name.
+        /// </summary>
+        /// <param name="sectionName">name to match sections</param>
+        /// <returns>null if no section with the given name was found</returns>
+        public SettingSection GetSection(string sectionName)
         {
-            // if multiple setting files were loaded, chain them in a linked list
-            for (var i = 1; i < settingFiles.Count; ++i)
-            {
-                settingFiles[i].Next = settingFiles[i - 1];
-            }
+            return _rootElement.GetSection(sectionName);
         }
 
-        internal void MergeSectionsInto(Dictionary<string, SettingsSection> sectionsContainer)
+        /// <summary>
+        /// Adds or updates the given <paramref name="item"/> to the settings.
+        /// </summary>
+        /// <param name="sectionName">section where the <paramref name="item"/> has to be added. If this section does not exist, one will be created.</param>
+        /// <param name="item">item to be added to the settings.</param>
+        /// <returns>true if the item was successfully updated or added in the settings</returns>
+        public void AddOrUpdate(string sectionName, SettingItem item)
         {
-            RootElement.MergeSectionsInto(sectionsContainer);
+            _rootElement.AddOrUpdate(sectionName, item);
         }
 
-        public SettingsSection GetSection(string sectionName)
+        /// <summary>
+        /// Removes the given <paramref name="item"/> from the settings.
+        /// If the <paramref name="item"/> is the last item in the section, the section will also be removed.
+        /// </summary>
+        /// <param name="sectionName">Section where the <paramref name="item"/> is stored. If this section does not exist, the method will throw</param>
+        /// <param name="item">item to be removed from the settings</param>
+        /// <remarks> If the SettingsFile is a machine wide config this method will throw</remarks>
+        public void Remove(string sectionName, SettingItem item)
         {
-            return RootElement.GetSection(sectionName);
+            _rootElement.Remove(sectionName, item);
         }
 
-        public bool CreateSection(SettingsSection section, bool isBatchOperation = false)
-        {
-            if (section == null)
-            {
-                throw new ArgumentNullException(nameof(section));
-            }
-
-            if (section.IsEmpty() || GetSection(section.Name) != null)
-            {
-                return false;
-            }
-
-            return RootElement.AddChild(section, isBatchOperation);
-        }
-
-        public bool SetItemInSection(string sectionName, SettingsItem item, bool isBatchOperation = false)
-        {
-            if (string.IsNullOrEmpty(sectionName))
-            {
-                throw new ArgumentNullException(nameof(sectionName));
-            }
-
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            // Check if set is an update
-            var section = GetSection(sectionName);
-            if (section != null)
-            {
-                if (section.TryUpdateChildItem(item, isBatchOperation))
-                {
-                    return true;
-                }
-            }
-            
-            // Set is an add
-            return RootElement.AddItemInSection(sectionName, item.Copy(), isBatchOperation);
-        }
-
-        public void Save()
+        /// <summary>
+        /// Flushes any in-memory updates in the SettingsFile to disk.
+        /// </summary>
+        public void SaveToDisk()
         {
             if (IsDirty)
             {
@@ -184,15 +169,32 @@ namespace NuGet.Configuration
             }
         }
 
-        private void ParseNuGetConfiguration()
-        {
-            if (_xDocument.Root.Name != _rootElementName)
-            {
-                throw new NuGetConfigurationException(
-                         string.Format(Resources.ShowError_ConfigRootInvalid, ConfigFilePath));
-            }
+        internal bool IsEmpty() => _rootElement == null || _rootElement.IsEmpty();
 
-            RootElement = new NuGetConfiguration(_xDocument.Root, origin: this);
+        internal bool TryGetSection(string sectionName, out SettingSection section)
+        {
+            var result = _rootElement.Sections.TryGetValue(sectionName, out var parsedSection);
+            section = parsedSection;
+            return result;
+        }
+
+        internal static void ConnectSettingsFilesLinkedList(IList<SettingsFile> settingFiles)
+        {
+            // if multiple setting files were loaded, chain them in a linked list
+            for (var i = 1; i < settingFiles.Count; ++i)
+            {
+                settingFiles[i].SetNextFile(settingFiles[i - 1]);
+            }
+        }
+
+        internal void SetNextFile(SettingsFile settingsFile)
+        {
+            Next = settingsFile;
+        }
+
+        internal void MergeSectionsInto(Dictionary<string, AbstractSettingSection> sectionsContainer)
+        {
+            _rootElement.MergeSectionsInto(sectionsContainer);
         }
 
         private XDocument CreateDefaultConfig()

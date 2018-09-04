@@ -13,13 +13,13 @@ namespace NuGet.Configuration
 
         public static NullSettings Instance { get; } = new NullSettings();
 
-        public SettingsSection GetSection(string sectionName) => null;
+        public SettingSection GetSection(string sectionName) => null;
 
-        public bool CreateSection(SettingsSection section, bool isBatchOperation = false) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(CreateSection)));
+        public void AddOrUpdate(string sectionName, SettingItem item) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(AddOrUpdate)));
 
-        public bool SetItemInSection(string sectionName, SettingsItem item, bool isBatchOperation = false) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetItemInSection)));
+        public void Remove(string sectionName, SettingItem item) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(Remove)));
 
-        public void Save() { }
+        public void SaveToDisk() { }
 
         //TODO: Remove deprecated methods
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -39,28 +39,28 @@ namespace NuGet.Configuration
         [Obsolete("GetNestedSettingValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
         public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection) => new List<SettingValue>().AsReadOnly();
 
-        [Obsolete("SetValue(...) is deprecated, please use SetItemInSection(...) to add an item to a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("SetValue(...) is deprecated, please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
         public void SetValue(string section, string key, string value) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetValue)));
 
-        [Obsolete("SetValues(...) is deprecated, please use SetItemInSection(...) to add an item to a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("SetValues(...) is deprecated, please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
         public void SetValues(string section, IReadOnlyList<SettingValue> values) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetValues)));
 
-        [Obsolete("UpdateSections(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("UpdateSections(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         public void UpdateSections(string section, IReadOnlyList<SettingValue> values) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(UpdateSections)));
 
-        [Obsolete("UpdateSubsections(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("UpdateSubsections(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(UpdateSubsections)));
 
-        [Obsolete("SetNestedValues(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("SetNestedValues(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetNestedValues)));
 
-        [Obsolete("SetNestedSettingValues(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("SetNestedSettingValues(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetNestedSettingValues)));
 
-        [Obsolete("DeleteValue(...) is deprecated, please interact directly with the SettingsElement you want to delete.")]
+        [Obsolete("DeleteValue(...) is deprecated, please use Remove(...) with the item you want to remove from the setttings.")]
         public bool DeleteValue(string section, string key) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(DeleteValue)));
 
-        [Obsolete("DeleteSection(...) is deprecated, please interact directly with the SettingsElement you want to delete.")]
+        [Obsolete("DeleteSection(...) is deprecated,, please use Remove(...) with all the items in the section you want to remove from the setttings.")]
         public bool DeleteSection(string section) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(DeleteSection)));
 #pragma warning restore CS0618 // Type or member is obsolete
     }

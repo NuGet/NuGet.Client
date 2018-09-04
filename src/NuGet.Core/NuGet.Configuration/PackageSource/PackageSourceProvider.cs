@@ -57,12 +57,12 @@ namespace NuGet.Configuration
         private Dictionary<string, IndexedPackageSource> LoadPackageSourceLookup(bool byName)
         {
             var packageSourcesSection = Settings.GetSection(ConfigurationConstants.PackageSources);
-            var sources = packageSourcesSection?.Children.Select(s => s as SourceItem)
+            var sources = packageSourcesSection?.Items.Select(s => s as SourceItem)
                 .Where(s => s != null);
 
             // get list of disabled packages
             var disabledSourcesSection = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
-            var disabledSourcesSettings = disabledSourcesSection?.Children.Select(s => s as AddItem)
+            var disabledSourcesSettings = disabledSourcesSection?.Items.Select(s => s as AddItem)
                 .Where(s => s != null);
 
             var disabledSources = new HashSet<string>(disabledSourcesSettings?.GroupBy(setting => setting.Key).Select(group => group.First().Key) ?? new List<string>());
@@ -142,9 +142,9 @@ namespace NuGet.Configuration
         private PackageSource ReadPackageSource(SourceItem setting, bool isEnabled)
         {
             var name = setting.Key;
-            var packageSource = new PackageSource(setting.Value, name, isEnabled)
+            var packageSource = new PackageSource(setting.GetValueAsPath(), name, isEnabled)
             {
-                IsMachineWide = setting.Origin?.IsMachineWide ?? false
+                IsMachineWide = setting.Origin?.IsMachineWide ?? false,
                 MaxHttpRequestsPerSource = SettingsUtility.GetMaxHttpRequest(Settings)
             };
 
@@ -204,13 +204,13 @@ namespace NuGet.Configuration
             }
 
             var credentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
-            var credentialsItem = credentialsSection?.Children.Select(c => c as CredentialsItem).Where(s => s != null).FirstOrDefault(s => string.Equals(s.Name, sourceName, StringComparison.Ordinal));
+            var credentialsItem = credentialsSection?.Items.Select(c => c as CredentialsItem).Where(s => s != null).FirstOrDefault(s => string.Equals(s.Name, sourceName, StringComparison.Ordinal));
 
             if (credentialsItem != null && !credentialsItem.IsEmpty())
             {
-                var username = credentialsItem.Username.Value;
-                var password = credentialsItem.Password.Value;
-                var authenticationTypes = credentialsItem.ValidAuthenticationTypes?.Value;
+                var username = credentialsItem.Username;
+                var password = credentialsItem.Password;
+                var authenticationTypes = credentialsItem.ValidAuthenticationTypes;
 
                 return new PackageSourceCredential(sourceName, username, password, credentialsItem.IsPasswordClearText, authenticationTypes);
             }
@@ -297,19 +297,19 @@ namespace NuGet.Configuration
             }
 
             var isDirty = false;
-            RemovePackageSource(name, isBatchOperation: false, isDirty: ref isDirty);
+            RemovePackageSource(name, shouldSkipSave: false, isDirty: ref isDirty);
         }
 
-        private void RemovePackageSource(string name, bool isBatchOperation, ref bool isDirty)
+        private void RemovePackageSource(string name, bool shouldSkipSave, ref bool isDirty)
         {
             // get list of sources
             var packageSourcesSection = Settings.GetSection(ConfigurationConstants.PackageSources);
-            var sourcesSettings = packageSourcesSection?.Children.Select(s => s as SourceItem)
+            var sourcesSettings = packageSourcesSection?.Items.Select(s => s as SourceItem)
                 .Where(s => s != null);
 
             // get list of credentials for sources
             var sourceCredentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
-            var sourceCredentialsSettings = sourceCredentialsSection?.Children.Select(s => s as CredentialsItem)
+            var sourceCredentialsSettings = sourceCredentialsSection?.Items.Select(s => s as CredentialsItem)
                 .Where(s => s != null);
 
             var sourcesToRemove = sourcesSettings?.Where(s => string.Equals(s.Key, name, StringComparison.OrdinalIgnoreCase));
@@ -319,23 +319,33 @@ namespace NuGet.Configuration
             {
                 foreach (var source in sourcesToRemove)
                 {
-                    isDirty = source.RemoveFromCollection(isBatchOperation: true) || isDirty;
+                    try
+                    {
+                        Settings.Remove(ConfigurationConstants.PackageSources, source);
+                        isDirty = true;
+                    }
+                    catch { }
                 }
             }
 
-            RemoveDisabledSource(name, isBatchOperation: true, isDirty: ref isDirty);
+            RemoveDisabledSource(name, shouldSkipSave: true, isDirty: ref isDirty);
 
             if (credentialsToRemove != null)
             {
                 foreach (var credentials in credentialsToRemove)
                 {
-                    isDirty = credentials.RemoveFromCollection(isBatchOperation: true) || isDirty;
+                    try
+                    {
+                        Settings.Remove(ConfigurationConstants.CredentialsSectionName, credentials);
+                        isDirty = true;
+                    }
+                    catch { }
                 }
             }
 
-            if (!isBatchOperation && isDirty)
+            if (!shouldSkipSave && isDirty)
             {
-                Settings.Save();
+                Settings.SaveToDisk();
                 OnPackageSourcesChanged();
                 isDirty = false;
             }
@@ -350,7 +360,7 @@ namespace NuGet.Configuration
             }
 
             var isDirty = false;
-            AddDisabledSource(source.Name, isBatchOperation: false, isDirty: ref isDirty);
+            AddDisabledSource(source.Name, shouldSkipSave: false, isDirty: ref isDirty);
         }
 
         public void DisablePackageSource(string name)
@@ -361,27 +371,35 @@ namespace NuGet.Configuration
             }
 
             var isDirty = false;
-            AddDisabledSource(name, isBatchOperation: false, isDirty: ref isDirty);
+            AddDisabledSource(name, shouldSkipSave: false, isDirty: ref isDirty);
         }
 
-        private void AddDisabledSource(string name, bool isBatchOperation, ref bool isDirty)
+        private void AddDisabledSource(string name, bool shouldSkipSave, ref bool isDirty)
         {
             var settingsLookup = GetExistingSettingsLookup();
             var addedInSameFileAsCurrentSource = false;
 
             if (settingsLookup.TryGetValue(name, out var sourceSetting))
             {
-                addedInSameFileAsCurrentSource = sourceSetting.Origin.SetItemInSection(ConfigurationConstants.DisabledPackageSources, new AddItem(name, "true"), isBatchOperation: isBatchOperation);
-                isDirty = addedInSameFileAsCurrentSource || isDirty;
+                try
+                {
+                    (Settings as Settings).AddOrUpdate(sourceSetting.Origin, ConfigurationConstants.DisabledPackageSources, new AddItem(name, "true"));
+                    isDirty = true;
+                    addedInSameFileAsCurrentSource = true;
+                }
+                // We ignore any errors since this means the current source file could not be edited
+                catch { }
             }
 
             if (!addedInSameFileAsCurrentSource)
             {
-                isDirty = Settings.SetItemInSection(ConfigurationConstants.DisabledPackageSources, new AddItem(name, "true"), isBatchOperation: isBatchOperation) || isDirty;
+                Settings.AddOrUpdate(ConfigurationConstants.DisabledPackageSources, new AddItem(name, "true"));
+                isDirty = true;
             }
 
-            if (!isBatchOperation && isDirty)
+            if (!shouldSkipSave && isDirty)
             {
+                Settings.SaveToDisk();
                 OnPackageSourcesChanged();
                 isDirty = false;
             }
@@ -395,14 +413,14 @@ namespace NuGet.Configuration
             }
 
             var isDirty = false;
-            RemoveDisabledSource(name, isBatchOperation: false, isDirty: ref isDirty);
+            RemoveDisabledSource(name, shouldSkipSave: false, isDirty: ref isDirty);
         }
 
-        private void RemoveDisabledSource(string name, bool isBatchOperation, ref bool isDirty)
+        private void RemoveDisabledSource(string name, bool shouldSkipSave, ref bool isDirty)
         {
             // get list of disabled sources
             var disabledSourcesSection = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
-            var disabledSourcesSettings = disabledSourcesSection?.Children.Select(s => s as AddItem)
+            var disabledSourcesSettings = disabledSourcesSection?.Items.Select(s => s as AddItem)
                 .Where(s => s != null);
 
             var disableSourcesToRemove = disabledSourcesSettings?.Where(s => string.Equals(s.Key, name, StringComparison.OrdinalIgnoreCase));
@@ -411,13 +429,14 @@ namespace NuGet.Configuration
             {
                 foreach (var disabledSource in disableSourcesToRemove)
                 {
-                    isDirty = disabledSource.RemoveFromCollection(isBatchOperation: true) || isDirty;
+                    Settings.Remove(ConfigurationConstants.DisabledPackageSources, disabledSource);
+                    isDirty = true;
                 }
             }
 
-            if (!isBatchOperation && isDirty)
+            if (!shouldSkipSave && isDirty)
             {
-                Settings.Save();
+                Settings.SaveToDisk();
                 OnPackageSourcesChanged();
                 isDirty = false;
             }
@@ -449,7 +468,7 @@ namespace NuGet.Configuration
                 {
                     // get list of credentials for sources
                     var credentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
-                    credentialsSettingsItem = credentialsSection?.Children.Select(s => s as CredentialsItem)
+                    credentialsSettingsItem = credentialsSection?.Items.Select(s => s as CredentialsItem)
                         .Where(s => s != null).Where(s => string.Equals(s.Name, sourceToUpdate.Key, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 }
 
@@ -459,12 +478,11 @@ namespace NuGet.Configuration
                 UpdatePackageSource(
                     source,
                     oldPackageSource,
-                    sourceToUpdate,
                     disabledSourceItem,
                     credentialsSettingsItem,
                     updateEnabled,
                     updateCredentials,
-                    isBatchOperation: false,
+                    shouldSkipSave: false,
                     isDirty: ref isDirty);
             }
         }
@@ -472,12 +490,11 @@ namespace NuGet.Configuration
         private void UpdatePackageSource(
             PackageSource newSource,
             PackageSource existingSource,
-            SourceItem existingSourceItem,
             AddItem existingDisabledSourceItem, 
             CredentialsItem existingCredentialsItem,
             bool updateEnabled,
             bool updateCredentials,
-            bool isBatchOperation,
+            bool shouldSkipSave,
             ref bool isDirty)
         {
             if (string.Equals(newSource.Name, existingSource.Name, StringComparison.OrdinalIgnoreCase))
@@ -485,19 +502,21 @@ namespace NuGet.Configuration
                 if ((!string.Equals(newSource.Source, existingSource.Source, StringComparison.OrdinalIgnoreCase) ||
                     newSource.ProtocolVersion != existingSource.ProtocolVersion) && newSource.IsPersistable)
                 {
-                    isDirty = existingSourceItem.Update(newSource.AsSourceItem()) || isDirty;
+                    Settings.AddOrUpdate(ConfigurationConstants.PackageSources, newSource.AsSourceItem());
+                    isDirty = true;
                 }
 
                 if (updateEnabled)
                 {
                     if (newSource.IsEnabled && existingDisabledSourceItem != null)
                     {
-                        isDirty = existingDisabledSourceItem.RemoveFromCollection(isBatchOperation: true) || isDirty;
+                        Settings.Remove(ConfigurationConstants.DisabledPackageSources, existingDisabledSourceItem);
+                        isDirty = true;
                     }
 
                     if (!newSource.IsEnabled && existingDisabledSourceItem == null)
                     {
-                        AddDisabledSource(newSource.Name, isBatchOperation: true, isDirty: ref isDirty);
+                        AddDisabledSource(newSource.Name, shouldSkipSave: true, isDirty: ref isDirty);
                     }
                 }
 
@@ -507,22 +526,25 @@ namespace NuGet.Configuration
                     {
                         if (newSource.Credentials == null)
                         {
-                            isDirty = existingCredentialsItem.RemoveFromCollection(isBatchOperation: true) || isDirty;
+                            Settings.Remove(ConfigurationConstants.CredentialsSectionName, existingCredentialsItem);
+                            isDirty = true;
                         }
                         else
                         {
-                            isDirty = existingCredentialsItem.Update(newSource.Credentials.AsCredentialsItem()) || isDirty;
+                            Settings.AddOrUpdate(ConfigurationConstants.CredentialsSectionName, newSource.Credentials.AsCredentialsItem());
+                            isDirty = true;
                         }
                     }
                     else if (newSource.Credentials != null && newSource.Credentials.IsValid())
                     {
-                        isDirty = Settings.SetItemInSection(ConfigurationConstants.CredentialsSectionName, newSource.Credentials.AsCredentialsItem(), isBatchOperation: true) || isDirty;
+                        Settings.AddOrUpdate(ConfigurationConstants.CredentialsSectionName, newSource.Credentials.AsCredentialsItem());
+                        isDirty = true;
                     }
                 }
 
-                if (!isBatchOperation && isDirty)
+                if (!shouldSkipSave && isDirty)
                 {
-                    Settings.Save();
+                    Settings.SaveToDisk();
                     OnPackageSourcesChanged();
                     isDirty = false;
                 }
@@ -537,33 +559,35 @@ namespace NuGet.Configuration
             }
 
             var isDirty = false;
-            AddPackageSource(source, isBatchOperation: false, isDirty: ref isDirty);
+            AddPackageSource(source, shouldSkipSave: false, isDirty: ref isDirty);
         }
 
-        private void AddPackageSource(PackageSource source, bool isBatchOperation, ref bool isDirty)
+        private void AddPackageSource(PackageSource source, bool shouldSkipSave, ref bool isDirty)
         {
             if (source.IsPersistable)
             {
-                isDirty = Settings.SetItemInSection(ConfigurationConstants.PackageSources, source.AsSourceItem(), isBatchOperation: true) || isDirty;
+                Settings.AddOrUpdate(ConfigurationConstants.PackageSources, source.AsSourceItem());
+                isDirty = true;
             }
 
             if (source.IsEnabled)
             {
-                RemoveDisabledSource(source.Name, isBatchOperation: true, isDirty: ref isDirty);
+                RemoveDisabledSource(source.Name, shouldSkipSave: true, isDirty: ref isDirty);
             }
             else
             {
-                AddDisabledSource(source.Name, isBatchOperation: true, isDirty: ref isDirty);
+                AddDisabledSource(source.Name, shouldSkipSave: true, isDirty: ref isDirty);
             }
 
             if (source.Credentials != null && source.Credentials.IsValid())
             {
-                isDirty = Settings.SetItemInSection(ConfigurationConstants.CredentialsSectionName, source.Credentials.AsCredentialsItem(), isBatchOperation: true) || isDirty;
+                Settings.AddOrUpdate(ConfigurationConstants.CredentialsSectionName, source.Credentials.AsCredentialsItem());
+                isDirty = true;
             }
 
-            if (!isBatchOperation && isDirty)
+            if (!shouldSkipSave && isDirty)
             {
-                Settings.Save();
+                Settings.SaveToDisk();
                 OnPackageSourcesChanged();
                 isDirty = false;
             }
@@ -580,11 +604,11 @@ namespace NuGet.Configuration
             var existingSettingsLookup = GetExistingSettingsLookup();
 
             var disabledSourcesSection = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
-            var existingDisabledSources = disabledSourcesSection?.Children.Select(c => c as AddItem).Where(c => c != null);
+            var existingDisabledSources = disabledSourcesSection?.Items.Select(c => c as AddItem).Where(c => c != null);
             var existingDisabledSourcesLookup = existingDisabledSources?.ToDictionary(setting => setting.Key, StringComparer.OrdinalIgnoreCase);
 
             var credentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
-            var existingCredentials = credentialsSection?.Children.Select(c => c as CredentialsItem).Where(c => c != null);
+            var existingCredentials = credentialsSection?.Items.Select(c => c as CredentialsItem).Where(c => c != null);
             var existingCredentialsLookup = existingCredentials?.ToDictionary(setting => setting.Name, StringComparer.OrdinalIgnoreCase);
 
             foreach (var source in sources)
@@ -606,17 +630,16 @@ namespace NuGet.Configuration
                     UpdatePackageSource(
                         source,
                         oldPackageSource,
-                        existingSourceItem,
                         existingDisabledSourceItem,
                         existingCredentialsItem,
                         updateEnabled: true,
                         updateCredentials: true,
-                        isBatchOperation: true,
+                        shouldSkipSave: true,
                         isDirty: ref isDirty);
                 }
                 else
                 {
-                    AddPackageSource(source, isBatchOperation: true, isDirty: ref isDirty);
+                    AddPackageSource(source, shouldSkipSave: true, isDirty: ref isDirty);
                 }
 
                 if (existingSourceItem != null)
@@ -629,7 +652,7 @@ namespace NuGet.Configuration
             {
                 // get list of credentials for sources
                 var sourceCredentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
-                var sourceCredentialsSettings = sourceCredentialsSection?.Children.Select(s => s as CredentialsItem)
+                var sourceCredentialsSettings = sourceCredentialsSection?.Items.Select(s => s as CredentialsItem)
                     .Where(s => s != null);
                 var existingsourceCredentialsLookup = sourceCredentialsSettings?.ToDictionary(setting => setting.Name, StringComparer.OrdinalIgnoreCase);
 
@@ -637,22 +660,25 @@ namespace NuGet.Configuration
                 {
                     if (existingDisabledSourcesLookup != null && existingDisabledSourcesLookup.TryGetValue(sourceItem.Value.Key, out var existingDisabledSourceItem))
                     {
-                        isDirty = existingDisabledSourceItem.RemoveFromCollection(isBatchOperation: true) || isDirty;
+                        Settings.Remove(ConfigurationConstants.DisabledPackageSources, existingDisabledSourceItem);
+                        isDirty = true;
                     }
 
                     if (existingsourceCredentialsLookup != null && existingsourceCredentialsLookup.TryGetValue(sourceItem.Value.Key, out var existingSourceCredentialItem))
                     {
-                        isDirty = existingSourceCredentialItem.RemoveFromCollection(isBatchOperation: true) || isDirty;
+                        Settings.Remove(ConfigurationConstants.CredentialsSectionName, existingSourceCredentialItem);
+                        isDirty = true;
                     }
 
-                    isDirty = sourceItem.Value.RemoveFromCollection(isBatchOperation: true) || isDirty;
+                    Settings.Remove(ConfigurationConstants.PackageSources, sourceItem.Value);
+                    isDirty = true;
                 }
             }
 
 
             if (isDirty)
             {
-                Settings.Save();
+                Settings.SaveToDisk();
                 OnPackageSourcesChanged();
                 isDirty = false;
             }
@@ -661,7 +687,7 @@ namespace NuGet.Configuration
         private Dictionary<string, SourceItem> GetExistingSettingsLookup()
         {
             var sourcesSection = Settings.GetSection(ConfigurationConstants.PackageSources);
-            var existingSettings = sourcesSection?.Children.Select(c => c as SourceItem).Where(c => c != null && !c.Origin.IsMachineWide).ToList();
+            var existingSettings = sourcesSection?.Items.OfType<SourceItem>().Where(c => !c.Origin.IsMachineWide).ToList();
 
             var existingSettingsLookup = new Dictionary<string, SourceItem>(StringComparer.OrdinalIgnoreCase);
             if (existingSettings != null)
@@ -739,7 +765,7 @@ namespace NuGet.Configuration
             get
             {
                 var activeSourceSection = Settings.GetSection(ConfigurationConstants.ActivePackageSourceSectionName);
-                return activeSourceSection?.Children.Select(c => c as AddItem).Where(c => c != null).FirstOrDefault()?.Key;
+                return activeSourceSection?.Items.Select(c => c as AddItem).Where(c => c != null).FirstOrDefault()?.Key;
             }
         }
 
@@ -755,16 +781,16 @@ namespace NuGet.Configuration
 
                 if (activePackageSourceSection != null)
                 {
-                    foreach(var activePackageSource in activePackageSourceSection.Children)
+                    foreach(var activePackageSource in activePackageSourceSection.Items)
                     {
-                        activePackageSource.RemoveFromCollection(isBatchOperation: true);
+                        Settings.Remove(ConfigurationConstants.ActivePackageSourceSectionName, activePackageSource);
                     }
                 }
 
-                Settings.Save();
-
-                Settings.SetItemInSection(ConfigurationConstants.ActivePackageSourceSectionName,
+                Settings.AddOrUpdate(ConfigurationConstants.ActivePackageSourceSectionName,
                         new AddItem(source.Name, source.Source));
+
+                Settings.SaveToDisk();
             }
             catch (Exception)
             {

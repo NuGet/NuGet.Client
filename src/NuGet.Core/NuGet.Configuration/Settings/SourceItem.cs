@@ -9,10 +9,6 @@ namespace NuGet.Configuration
 {
     public sealed class SourceItem : AddItem
     {
-        public override string Value => Settings.ResolvePath(Origin, Attributes[ConfigurationConstants.ValueAttribute]);
-
-        protected override HashSet<string> AllowedAttributes => new HashSet<string>() { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute, ConfigurationConstants.ProtocolVersionAttribute };
-
         public string ProtocolVersion
         {
             get
@@ -21,22 +17,13 @@ namespace NuGet.Configuration
                 {
                     return Settings.ApplyEnvironmentTransform(attribute);
                 }
+
                 return null;
             }
-            set => Attributes[ConfigurationConstants.ProtocolVersionAttribute] = value;
+            set => AddOrUpdateAttribute(ConfigurationConstants.ProtocolVersionAttribute, value);
         }
 
-        public SourceItem(string key, string value)
-            : this(key, value, protocolVersion: "")
-        {
-        }
-
-        internal SourceItem(XElement element, ISettingsFile origin)
-            : base (element, origin)
-        {
-        }
-
-        public SourceItem(string key, string value, string protocolVersion)
+        public SourceItem(string key, string value, string protocolVersion = "")
             : base(key, value)
         {
             if (!string.IsNullOrEmpty(protocolVersion))
@@ -44,13 +31,6 @@ namespace NuGet.Configuration
                 ProtocolVersion = protocolVersion;
             }
         }
-
-        public override SettingsItem Copy()
-        {
-            return new SourceItem(Key, Value, ProtocolVersion);
-        }
-
-        public override string GetValueAsPath() => Value;
 
         public override int GetHashCode()
         {
@@ -64,6 +44,21 @@ namespace NuGet.Configuration
             }
 
             return combiner.CombinedHash;
+        }
+
+        protected override HashSet<string> AllowedAttributes => new HashSet<string>() { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute, ConfigurationConstants.ProtocolVersionAttribute };
+
+        internal SourceItem(XElement element, SettingsFile origin)
+            : base(element, origin)
+        {
+        }
+
+        internal override SettingBase Clone()
+        {
+            return new SourceItem(Key, Value, ProtocolVersion)
+            {
+                Origin = Origin,
+            };
         }
     }
 }

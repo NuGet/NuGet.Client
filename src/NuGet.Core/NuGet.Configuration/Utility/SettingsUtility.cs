@@ -43,9 +43,16 @@ namespace NuGet.Configuration
         public static bool DeleteValue(ISettings settings, string section, string attributeKey, string attributeValue)
         {
             var sectionElement = settings.GetSection(section);
-            var element = sectionElement?.GetFirstItemWithAttribute<SettingsItem>(attributeKey, attributeValue);
+            var element = sectionElement?.GetFirstItemWithAttribute<SettingItem>(attributeKey, attributeValue);
 
-            return element.RemoveFromCollection();
+            if (element != null)
+            {
+                settings.Remove(section, element);
+
+                return true;
+            }
+
+            return false;
         }
 
 
@@ -61,7 +68,6 @@ namespace NuGet.Configuration
             return path;
         }
 
-<<<<<<< HEAD
         public static int GetMaxHttpRequest(ISettings settings)
         {
             var max = GetConfigValue(settings, ConfigurationConstants.MaxHttpRequestsPerSource);
@@ -71,12 +77,12 @@ namespace NuGet.Configuration
             }
 
             return 0;
-=======
+        }
+
         [Obsolete("GetDecryptedValue is deprecated, please use GetDecryptedValueForAddItem instead")]
         public static string GetDecryptedValue(ISettings settings, string section, string key, bool isPath = false)
         {
             return GetDecryptedValueForAddItem(settings, section, key, isPath);
->>>>>>> Add deprecated APIs back and mark them as deprecated
         }
 
         public static string GetDecryptedValueForAddItem(ISettings settings, string section, string key, bool isPath = false)
@@ -104,7 +110,7 @@ namespace NuGet.Configuration
 
             if (isPath)
             {
-                return Settings.ResolvePath(encryptedItem.Origin, decryptedString);
+                return Settings.ResolvePathFromOrigin(encryptedItem.Origin.DirectoryPath, encryptedItem.Origin.ConfigFilePath, decryptedString);
             }
 
             return decryptedString;
@@ -135,7 +141,8 @@ namespace NuGet.Configuration
                 elementValue = EncryptionUtility.EncryptString(value);
             }
 
-            settings.SetItemInSection(section, new AddItem(key, elementValue));
+            settings.AddOrUpdate(section, new AddItem(key, elementValue));
+            settings.SaveToDisk();
         }
 
         /// <summary>
@@ -171,7 +178,8 @@ namespace NuGet.Configuration
             }
             else
             {
-                settings.SetItemInSection(ConfigurationConstants.Config, new AddItem(key, value));
+                settings.AddOrUpdate(ConfigurationConstants.Config, new AddItem(key, value));
+                settings.SaveToDisk();
             }
         }
 
@@ -262,7 +270,7 @@ namespace NuGet.Configuration
         private static IReadOnlyList<string> GetFallbackPackageFoldersFromConfig(ISettings settings)
         {
             var fallbackFoldersSection = settings.GetSection(ConfigurationConstants.FallbackPackageFolders);
-            var fallbackValues = fallbackFoldersSection?.Children ?? Enumerable.Empty<SettingsItem>();
+            var fallbackValues = fallbackFoldersSection?.Items ?? Enumerable.Empty<SettingItem>();
 
             return fallbackValues
                 .Select(f => f as AddItem)
@@ -346,7 +354,7 @@ namespace NuGet.Configuration
                 if (!allSources.Any(s => s.IsEnabled && s.Name.Equals(source, StringComparison.OrdinalIgnoreCase)))
                 {
                     // It wasn't the name of a source, so treat it like a relative file 
-                    source = Settings.ResolvePath(configSetting.Origin, source);
+                    source = Settings.ResolvePathFromOrigin(configSetting.Origin.DirectoryPath, configSetting.Origin.ConfigFilePath, source);
                 }
             }
 
@@ -371,7 +379,7 @@ namespace NuGet.Configuration
         {
             if (settings is Settings settingsImpl)
             {
-                return settingsImpl.Priority.Select(config => Path.GetFullPath(Path.Combine(config.Root, config.FileName)));
+                return settingsImpl.Priority.Select(config => Path.GetFullPath(Path.Combine(config.DirectoryPath, config.FileName)));
             }
 
             return new List<string>();
@@ -384,7 +392,7 @@ namespace NuGet.Configuration
         {
             if (settings is Settings settingsImpl)
             {
-                return settingsImpl.Priority.Select(config => config.Root);
+                return settingsImpl.Priority.Select(config => config.DirectoryPath);
             }
 
             return new List<string>();

@@ -3,11 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using System.Xml.Linq;
 using NuGet.Common;
 
 namespace NuGet.Configuration
@@ -42,45 +43,21 @@ namespace NuGet.Configuration
             new[] { "*.config" } :
             new[] { "*.Config", "*.config" };
 
-        private bool Cleared { get; set; }
-
         private SettingsFile _settingsHead { get; }
 
-        private Dictionary<string, SettingsSection> _computedSections { get; set; }
+        private Dictionary<string, AbstractSettingSection> _computedSections { get; set; }
 
-        public SettingsSection GetSection(string sectionName)
+        public SettingSection GetSection(string sectionName)
         {
             if (_computedSections.TryGetValue(sectionName, out var section))
             {
-                return section;
+                return section.Clone() as SettingSection;
             }
 
             return null;
         }
 
-        public bool CreateSection(SettingsSection section, bool isBatchOperation = false)
-        {
-            if (section == null)
-            {
-                throw new ArgumentNullException(nameof(section));
-            }
-
-            if (section.IsEmpty() || _computedSections.ContainsKey(section.Name))
-            {
-                return false;
-            }
-
-            var outputSettingsFile = GetOutputSettingsFileForSection(section.Name);
-
-            if (outputSettingsFile != null)
-            {
-                return outputSettingsFile.CreateSection(section, isBatchOperation);
-            }
-
-            return false;
-        }
-
-        public bool SetItemInSection(string sectionName, SettingsItem item, bool isBatchOperation = false)
+        public void AddOrUpdate(string sectionName, SettingItem item)
         {
             if (string.IsNullOrEmpty(sectionName))
             {
@@ -92,19 +69,90 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(item));
             }
 
-            // Check if set is an update
-            if (_computedSections.TryGetValue(sectionName, out var section))
+            Debug.Assert(item.IsAbstract());
+
+            // Operation is an update
+            if (_computedSections.TryGetValue(sectionName, out var section) && section.Items.Contains(item))
             {
-                if (section.TryUpdateChildItem(item, isBatchOperation))
+                // An update could not be possible here because the operation might be
+                // in a machine wide config. If so then we want to add the item to
+                // the output config.
+                if (section.Update(item))
                 {
-                    return true;
+                    return;
                 }
             }
 
-            var outputSettingsFile = GetOutputSettingsFileForSection(sectionName);
+            // Operation is an add
+            var outputSettingsFile = GetOutputSettingFileForSection(sectionName);
+            if (outputSettingsFile != null)
+            {
+                AddOrUpdate(outputSettingsFile, sectionName, item);
+            }
+        }
 
-            // Set is an add
-            return outputSettingsFile != null && outputSettingsFile.SetItemInSection(sectionName, item.Copy(), isBatchOperation);
+        internal void AddOrUpdate(SettingsFile settingsFile, string sectionName, SettingItem item)
+        {
+            if (string.IsNullOrEmpty(sectionName))
+            {
+                throw new ArgumentNullException(nameof(sectionName));
+            }
+
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (!Priority.Contains(settingsFile))
+            {
+                Priority.Last().SetNextFile(settingsFile);
+            }
+
+            Debug.Assert(item.IsAbstract());
+
+            settingsFile.AddOrUpdate(sectionName, item);
+
+            if (_computedSections.TryGetValue(sectionName, out var section))
+            {
+                section.Add(item);
+            }
+            else
+            {
+                _computedSections.Add(sectionName,
+                    new AbstractSettingSection(settingsFile.GetSection(sectionName)));
+            }
+        }
+
+        public void Remove(string sectionName, SettingItem item)
+        {
+            if (string.IsNullOrEmpty(sectionName))
+            {
+                throw new ArgumentNullException(nameof(sectionName));
+            }
+
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            Debug.Assert(item.IsAbstract());
+
+            if (!_computedSections.TryGetValue(sectionName, out var section))
+            {
+                throw new InvalidOperationException(Resources.SectionDoesNotExist);
+            }
+
+            if (!section.Items.Contains(item))
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.ItemDoesNotExist, sectionName));
+            }
+
+            section.Remove(item);
+
+            if (section.IsEmpty())
+            {
+                _computedSections.Remove(sectionName);
+            }
         }
 
         public event EventHandler SettingsChanged = delegate { };
@@ -121,43 +169,33 @@ namespace NuGet.Configuration
         private Settings(SettingsFile settingsHead)
         {
             _settingsHead = settingsHead;
-
-            var curr = _settingsHead;
-            while (curr != null)
-            {
-                curr.SettingsChanged += (_, __) =>
-                {
-                    MergeSettingFilesValues();
-                    SettingsChanged?.Invoke(this, EventArgs.Empty);
-                };
-
-                curr = curr.Next;
-            }
-
-            MergeSettingFilesValues();
-        }
-
-        private void MergeSettingFilesValues()
-        {
-            var computedSections = new Dictionary<string, SettingsSection>();
+            var computedSections = new Dictionary<string, AbstractSettingSection>();
 
             var curr = _settingsHead;
             while (curr != null)
             {
                 curr.MergeSectionsInto(computedSections);
+                curr.SettingsChanged += (_, __) => SettingsChanged?.Invoke(this, EventArgs.Empty);
                 curr = curr.Next;
             }
 
             _computedSections = computedSections;
         }
 
-        private ISettingsFile GetOutputSettingsFileForSection(string sectionName)
+        private SettingsFile GetOutputSettingFileForSection(string sectionName)
         {
             // Search for the furthest from the user that can be written
             // to that is not clearing the ones before it on the hierarchy
             var writteableSettingsFiles = Priority.Where(f => !f.IsMachineWide);
 
-            var clearedSections = writteableSettingsFiles.Select(s => s.GetSection(sectionName)).Where(s => s != null && s.HasClearChild());
+            var clearedSections = writteableSettingsFiles.Select(f => {
+                if(f.TryGetSection(sectionName, out var section))
+                {
+                    return section;
+                }
+                return null;
+            }).Where(s => s != null && s.Items.Contains(new ClearItem()));
+
             if (clearedSections.Any())
             {
                 return clearedSections.Last().Origin;
@@ -168,10 +206,10 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Enumerates the sequence of <see cref="ISettingsFile"/> instances
+        /// Enumerates the sequence of <see cref="SettingsFile"/> instances
         /// used in the order they where read
         /// </summary>
-        internal IEnumerable<ISettingsFile> Priority
+        internal IEnumerable<SettingsFile> Priority
         {
             get
             {
@@ -189,11 +227,11 @@ namespace NuGet.Configuration
             }
         }
 
-        public void Save()
+        public void SaveToDisk()
         {
             foreach(var settingsFile in Priority)
             {
-                settingsFile.Save();
+                settingsFile.SaveToDisk();
             }
         }
 
@@ -288,7 +326,7 @@ namespace NuGet.Configuration
             }
 
             return LoadSettingsForSpecificConfigs(
-                settings.First().Root,
+                settings.First().DirectoryPath,
                 settings.First().FileName,
                 validSettingFiles: settings,
                 machineWideSettings: null,
@@ -350,7 +388,7 @@ namespace NuGet.Configuration
                 // them to the other configs
                 validSettingFiles.AddRange(
                     mwSettings.Priority.Reverse().Select(
-                        s => new SettingsFile(s.Root, s.FileName, s.IsMachineWide)));
+                        s => new SettingsFile(s.DirectoryPath, s.FileName, s.IsMachineWide)));
             }
 
             if (validSettingFiles?.Any() != true)
@@ -413,16 +451,8 @@ namespace NuGet.Configuration
                         File.Create(trackFilePath).Dispose();
 
                         var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: "3");
-
-                        var packageSourcesSection = userSpecificSettings.GetSection(ConfigurationConstants.PackageSources);
-                        if (packageSourcesSection != null)
-                        {
-                            packageSourcesSection.AddChild(defaultSource);
-                        }
-                        else
-                        {
-                            userSpecificSettings.CreateSection(new SettingsSection(ConfigurationConstants.PackageSources, defaultSource));
-                        }
+                        userSpecificSettings.AddOrUpdate(ConfigurationConstants.PackageSources, defaultSource);
+                        userSpecificSettings.SaveToDisk();
                     }
                 }
             }
@@ -538,19 +568,21 @@ namespace NuGet.Configuration
             return new Tuple<string, string>(fileName, directory);
         }
 
-        internal static string ResolvePath(ISettingsFile originConfig, string path)
+        internal static string ResolvePathFromOrigin(string originDirectoryPath, string originFilePath, string path)
         {
-            if (Uri.TryCreate(path, UriKind.Relative, out var _) && originConfig != null)
+            if (Uri.TryCreate(path, UriKind.Relative, out var _) &&
+                !string.IsNullOrEmpty(originDirectoryPath) &&
+                !string.IsNullOrEmpty(originFilePath))
             {
-                return ResolveRelativePath(originConfig, path);
+                return ResolveRelativePath(originDirectoryPath, originFilePath, path);
             }
 
             return path;
         }
 
-        private static string ResolveRelativePath(ISettingsFile originConfig, string path)
+        private static string ResolveRelativePath(string originDirectoryPath, string originFilePath, string path)
         {
-            if (originConfig == null)
+            if (string.IsNullOrEmpty(originDirectoryPath) || string.IsNullOrEmpty(originFilePath))
             {
                 return null;
             }
@@ -560,7 +592,7 @@ namespace NuGet.Configuration
                 return path;
             }
 
-            return Path.Combine(originConfig.Root, ResolvePath(Path.GetDirectoryName(originConfig.ConfigFilePath), path));
+            return Path.Combine(originDirectoryPath, ResolvePath(Path.GetDirectoryName(originFilePath), path));
         }
 
         private static string ResolvePath(string configDirectory, string value)
@@ -693,7 +725,7 @@ namespace NuGet.Configuration
                 return new List<string>().AsReadOnly();
             }
 
-            return sectionElement.Children.Where(c => c is CredentialsItem || c is UnknownItem).Select(i => i.Name).ToList().AsReadOnly();
+            return sectionElement.Items.Where(c => c is CredentialsItem || c is UnknownItem).Select(i => i.Name).ToList().AsReadOnly();
         }
 
         [Obsolete("GetSettingValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
@@ -711,7 +743,7 @@ namespace NuGet.Configuration
                 return new List<SettingValue>().AsReadOnly();
             }
 
-            return sectionElement?.Children.Select(i =>
+            return sectionElement?.Items.Select(i =>
             {
                 if (i is AddItem addItem)
                 {
@@ -759,7 +791,7 @@ namespace NuGet.Configuration
                 return new List<SettingValue>().AsReadOnly();
             }
 
-            return sectionElement.Children.SelectMany(i =>
+            return sectionElement.Items.SelectMany(i =>
             {
                 var settingValues = new List<SettingValue>();
 
@@ -767,8 +799,32 @@ namespace NuGet.Configuration
                 {
                     if (i is CredentialsItem credentials)
                     {
-                        settingValues.Add(TransformAddItem(credentials.Username));
-                        settingValues.Add(TransformAddItem(credentials.Password));
+                        settingValues.Add(new SettingValue(
+                            ConfigurationConstants.UsernameToken,
+                            credentials.Username,
+                            origin: this,
+                            isMachineWide: credentials.Origin?.IsMachineWide ?? false,
+                            originalValue: credentials.Username,
+                            priority: 0));
+
+                        settingValues.Add(new SettingValue(
+                            credentials.IsPasswordClearText ? ConfigurationConstants.ClearTextPasswordToken : ConfigurationConstants.PasswordToken,
+                            credentials.Password,
+                            origin: this,
+                            isMachineWide: credentials.Origin?.IsMachineWide ?? false,
+                            originalValue: credentials.Password,
+                            priority: 0));
+
+                        if (!string.IsNullOrEmpty(credentials.ValidAuthenticationTypes))
+                        {
+                            settingValues.Add(new SettingValue(
+                                ConfigurationConstants.ValidAuthenticationTypesToken,
+                                credentials.ValidAuthenticationTypes,
+                                origin: this,
+                                isMachineWide: credentials.Origin?.IsMachineWide ?? false,
+                                originalValue: credentials.ValidAuthenticationTypes,
+                                priority: 0));
+                        }
                     }
                     else if (i is UnknownItem unknown)
                     {
@@ -783,7 +839,7 @@ namespace NuGet.Configuration
             }).ToList().AsReadOnly();
         }
 
-        [Obsolete("SetValue(...) is deprecated, please use SetItemInSection(...) to add an item to a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("SetValue(...) is deprecated, please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
         public void SetValue(string section, string key, string value)
         {
             if (string.IsNullOrEmpty(section))
@@ -796,10 +852,11 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(key));
             }
 
-            SetItemInSection(section, new AddItem(key, value));
+            AddOrUpdate(section, new AddItem(key, value));
+            SaveToDisk();
         }
 
-        [Obsolete("SetValues(...) is deprecated, please use SetItemInSection(...) to add an item to a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("SetValues(...) is deprecated, please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
         public void SetValues(string section, IReadOnlyList<SettingValue> values)
         {
             if (string.IsNullOrEmpty(section))
@@ -814,13 +871,13 @@ namespace NuGet.Configuration
 
             foreach (var value in values)
             {
-                SetItemInSection(section, TransformSettingValue(value), isBatchOperation: true);
+                AddOrUpdate(section, TransformSettingValue(value));
             }
 
-            Save();
+            SaveToDisk();
         }
 
-        [Obsolete("UpdateSections(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("UpdateSections(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
         {
             if (string.IsNullOrEmpty(section))
@@ -835,13 +892,13 @@ namespace NuGet.Configuration
 
             foreach (var value in values)
             {
-                SetItemInSection(section, TransformSettingValue(value), isBatchOperation: true);
+                AddOrUpdate(section, TransformSettingValue(value));
             }
 
-            Save();
+            SaveToDisk();
         }
 
-        [Obsolete("UpdateSubsections(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("UpdateSubsections(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
         {
             if (string.IsNullOrEmpty(section))
@@ -861,37 +918,11 @@ namespace NuGet.Configuration
 
             if (values.Any())
             {
-                SettingsItem itemToAdd = null;
+                SettingItem itemToAdd = null;
 
-                if (string.Equals(ConfigurationConstants.CredentialsSectionName, section, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(ConfigurationConstants.CredentialsSectionName, section, StringComparison.OrdinalIgnoreCase) &&
+                    GetCredentialsItemValues(values, out var username, out var password, out var isPasswordClearText, out var validAuthenticationTypes))
                 {
-                    var username = string.Empty;
-                    var password = string.Empty;
-                    var isPasswordClearText = true;
-                    var validAuthenticationTypes = string.Empty;
-
-                    foreach (var item in values)
-                    {
-                        if (string.Equals(item.Key, ConfigurationConstants.UsernameToken, StringComparison.OrdinalIgnoreCase))
-                        {
-                            username = item.Value;
-                        }
-                        else if (string.Equals(item.Key, ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase))
-                        {
-                            password = item.Value;
-                            isPasswordClearText = false;
-                        }
-                        else if (string.Equals(item.Key, ConfigurationConstants.ClearTextPasswordToken, StringComparison.OrdinalIgnoreCase))
-                        {
-                            password = item.Value;
-                            isPasswordClearText = true;
-                        }
-                        else if (string.Equals(item.Key, ConfigurationConstants.ValidAuthenticationTypesToken, StringComparison.OrdinalIgnoreCase))
-                        {
-                            validAuthenticationTypes = item.Value;
-                        }
-                    }
-
                     itemToAdd = new CredentialsItem(subsection, username, password, isPasswordClearText, validAuthenticationTypes);
                 }
                 else
@@ -899,17 +930,26 @@ namespace NuGet.Configuration
                     itemToAdd = new UnknownItem(subsection, attributes: null, children: values.Select(v => TransformSettingValue(v)));
                 }
 
-                SetItemInSection(section, itemToAdd);
+                AddOrUpdate(section, itemToAdd);
             }
             else
             {
-                var sectionElement = GetSection(section);
-                var item = sectionElement?.Children.Where(c => string.Equals(c.Name, subsection, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                item?.RemoveFromCollection();
+                try
+                {
+                    var sectionElement = GetSection(section);
+                    var item = sectionElement?.Items.Where(c => string.Equals(c.Name, subsection, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+
+                    if (item != null)
+                    {
+                        Remove(section, item);
+                    }
+                } catch { }
             }
+
+            SaveToDisk();
         }
 
-        [Obsolete("SetNestedValues(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("SetNestedValues(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values)
         {
             if (string.IsNullOrEmpty(section))
@@ -930,7 +970,7 @@ namespace NuGet.Configuration
             SetNestedSettingValues(section, subsection, values.Select(kvp => new SettingValue(kvp.Key, kvp.Value, isMachineWide: false)).ToList());
         }
 
-        [Obsolete("SetNestedSettingValues(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("SetNestedSettingValues(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
         {
             if (string.IsNullOrEmpty(section))
@@ -949,30 +989,107 @@ namespace NuGet.Configuration
             }
 
             var updatedCurrentElement = false;
-            var sectionElement = GetSection(section);
-            if (sectionElement != null && values.Any())
+
+            if (_computedSections.TryGetValue(section, out var sectionElement) && values.Any())
             {
-                var subsectionItem = sectionElement.Children.FirstOrDefault(c => string.Equals(c.Name, subsection, StringComparison.OrdinalIgnoreCase));
+                var subsectionItem = sectionElement.Items.FirstOrDefault(c => string.Equals(c.Name, subsection, StringComparison.OrdinalIgnoreCase));
 
-                if (subsectionItem != null && subsectionItem is UnknownItem unknown)
+                if (subsectionItem != null)
                 {
-                    foreach(var value in values)
+                    if (subsectionItem is CredentialsItem credential)
                     {
-                        unknown.AddChild(TransformSettingValue(value), isBatchOperation: true);
-                    }
+                        var updatedCredential = credential.Clone() as CredentialsItem;
 
-                    Save();
-                    updatedCurrentElement = true;
+                        GetCredentialsItemValues(values, out var username, out var password, out var isPasswordClearText, out var validAuthenticationTypes);
+                        if (!string.IsNullOrEmpty(username))
+                        {
+                            updatedCredential.Username = username;
+                        }
+
+                        if (!string.IsNullOrEmpty(password))
+                        {
+                            updatedCredential.UpdatePassword(password, isPasswordClearText);
+                        }
+
+                        if (!string.IsNullOrEmpty(validAuthenticationTypes))
+                        {
+                            updatedCredential.ValidAuthenticationTypes = validAuthenticationTypes;
+                        }
+
+                        credential.Update(updatedCredential);
+
+                        updatedCurrentElement = true;
+
+                    }
+                    else if (subsectionItem is UnknownItem unknown)
+                    {
+                        foreach (var value in values)
+                        {
+                            unknown.Add(TransformSettingValue(value));
+                        }
+
+                        updatedCurrentElement = true;
+                    }
                 }
             }
 
             if (!updatedCurrentElement)
             {
-                SetItemInSection(section, new UnknownItem(subsection, attributes: null, children: values.Select(v => TransformSettingValue(v))));
+                var isItemUnknown = true;
+                SettingItem item = null;
+
+
+                if (string.Equals(section, ConfigurationConstants.CredentialsSectionName, StringComparison.OrdinalIgnoreCase) &&
+                    GetCredentialsItemValues(values, out var username, out var password, out var isPasswordClearText, out var validAuthenticationTypes))
+                {
+                    isItemUnknown = false;
+                    item = new CredentialsItem(subsection, username, password, isPasswordClearText, validAuthenticationTypes);
+                }
+
+                if (isItemUnknown)
+                {
+                    item = new UnknownItem(subsection, attributes: null, children: values.Select(v => TransformSettingValue(v)));
+                }
+
+                AddOrUpdate(section, item);
             }
+
+            SaveToDisk();
         }
 
-        [Obsolete("DeleteValue(...) is deprecated, please interact directly with the SettingsElement you want to delete.")]
+        private bool GetCredentialsItemValues(IEnumerable<SettingValue> values, out string username, out string password, out bool isPasswordClearText, out string validAuthenticationTypes)
+        {
+            username = string.Empty;
+            password = string.Empty;
+            isPasswordClearText = true;
+            validAuthenticationTypes = string.Empty;
+
+            foreach (var item in values)
+            {
+                if (string.Equals(item.Key, ConfigurationConstants.UsernameToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    username = item.Value;
+                }
+                else if (string.Equals(item.Key, ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    password = item.Value;
+                    isPasswordClearText = false;
+                }
+                else if (string.Equals(item.Key, ConfigurationConstants.ClearTextPasswordToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    password = item.Value;
+                    isPasswordClearText = true;
+                }
+                else if (string.Equals(item.Key, ConfigurationConstants.ValidAuthenticationTypesToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    validAuthenticationTypes = item.Value;
+                }
+            }
+
+            return !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password);
+        }
+
+        [Obsolete("DeleteValue(...) is deprecated, please use Remove(...) with the item you want to remove from the setttings.")]
         public bool DeleteValue(string section, string key)
         {
             if (string.IsNullOrEmpty(section))
@@ -990,13 +1107,20 @@ namespace NuGet.Configuration
 
             if (item != null)
             {
-                return item.RemoveFromCollection();
+                try
+                {
+                    Remove(section, item);
+                    SaveToDisk();
+
+                    return true;
+                }
+                catch { }
             }
 
             return false;
         }
 
-        [Obsolete("DeleteSection(...) is deprecated, please interact directly with the SettingsElement you want to delete.")]
+        [Obsolete("DeleteSection(...) is deprecated,, please use Remove(...) with all the items in the section you want to remove from the setttings.")]
         public bool DeleteSection(string section)
         {
             if (string.IsNullOrEmpty(section))
@@ -1010,12 +1134,19 @@ namespace NuGet.Configuration
             {
                 var success = true;
 
-                foreach (var item in sectionElement.Children)
+                foreach (var item in sectionElement.Items)
                 {
-                    success = success && item.RemoveFromCollection(isBatchOperation: true);
+                    try
+                    {
+                        Remove(section, item);
+                    }
+                    catch
+                    {
+                        success = false;
+                    }
                 }
 
-                Save();
+                SaveToDisk();
 
                 return success;
             }
@@ -1026,7 +1157,7 @@ namespace NuGet.Configuration
         private SettingValue TransformAddItem(AddItem addItem, bool isPath = false)
         {
             var value = isPath ? addItem.GetValueAsPath() : addItem.Value;
-            addItem.TryGetAttributeValue(ConfigurationConstants.ValueAttribute, out var originalValue);
+            var originalValue = addItem.Attributes[ConfigurationConstants.ValueAttribute];
 
             var settingValue = new SettingValue(addItem.Key, value, origin: this, isMachineWide: addItem.Origin?.IsMachineWide ?? false, originalValue: originalValue, priority: 0);
 
@@ -1045,7 +1176,7 @@ namespace NuGet.Configuration
 
         private AddItem TransformSettingValue(SettingValue value)
         {
-            return new AddItem(value.Key, value.Value, value.AdditionalData);
+            return new AddItem(value.Key, value.Value, new ReadOnlyDictionary<string, string>(value.AdditionalData));
         }
 
 #pragma warning restore CS0618 // Type or member is obsolete

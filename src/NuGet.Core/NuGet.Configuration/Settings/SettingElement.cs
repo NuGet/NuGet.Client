@@ -1,25 +1,21 @@
-// Copyright(c) .NET Foundation.All rights reserved.
+// Copyright(c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 
 namespace NuGet.Configuration
 {
-    public abstract class SettingsElement : SettingsNode
+    public abstract class SettingElement : SettingBase
     {
         /// <summary>
         /// Text that differentiates element tag
         /// </summary>
         public virtual string Name { get; protected set; }
-
-        /// <summary>
-        /// Attributes for xml element
-        /// </summary>
-        internal IDictionary<string, string> Attributes { get; }
 
         /// <summary>
         /// Specifies the keys for the attributes that the element can have
@@ -48,19 +44,48 @@ namespace NuGet.Configuration
         protected virtual Dictionary<string, HashSet<string>> DisallowedValues => null;
 
         /// <summary>
+        ///  Key-value pairs that give more information about the element
+        /// </summary>
+        protected IDictionary<string, string> MutableAttributes { get; }
+
+        /// <summary>
+        /// Read only key-value pairs that give more information about the element
+        /// </summary>
+        internal IReadOnlyDictionary<string, string> Attributes => new ReadOnlyDictionary<string, string>(MutableAttributes);
+
+        /// <summary>
         /// Specifies if the element is empty.
         /// Each element defines its own definition of empty.
         /// The default definition of empty is an element without attributes.
         /// </summary>
-        public override bool IsEmpty() => !Attributes.Any();
+        internal override bool IsEmpty() => !Attributes.Any();
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        protected SettingsElement()
+        protected SettingElement()
             : base()
         {
-            Attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            MutableAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        protected SettingElement(IReadOnlyDictionary<string, string> attributes)
+            : this()
+        {
+            if (attributes != null)
+            {
+                foreach (var attribute in attributes)
+                {
+                    if (IsAttributeValid(attribute.Key, attribute.Value))
+                    {
+                        MutableAttributes.Add(attribute.Key, attribute.Value);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_InvalidAttribute, attribute.Key, attribute.Value));
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -68,23 +93,20 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="element">Xelement read from XML file document tree</param>
         /// <param name="origin">Settings file that this element was read from</param>
-        internal SettingsElement(XElement element, ISettingsFile origin)
+        internal SettingElement(XElement element, SettingsFile origin)
             : base(element, origin)
         {
             ValidateAttributes(element, origin);
 
-            Attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            MutableAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var existingAttribute in element.Attributes())
             {
-                Attributes.Add(existingAttribute.Name.LocalName, existingAttribute.Value);
+                MutableAttributes.Add(existingAttribute.Name.LocalName, existingAttribute.Value);
             }
         }
 
-        /// <summary>
-        /// Lazily creates the corresponding element as an XNode
-        /// </summary>
-        public override XNode AsXNode()
+        internal override XNode AsXNode()
         {
             if (Node != null && Node is XElement)
             {
@@ -98,49 +120,129 @@ namespace NuGet.Configuration
                 element.SetAttributeValue(attr.Key, attr.Value);
             }
 
-            Node = element;
-
-            return Node;
+            return element;
         }
 
-        internal bool TryGetAttributeValue(string key, out string value)
+        internal SettingItem MergedWith { get; set; }
+
+        internal ISettingsGroup Parent { get; set; }
+
+        protected void AddOrUpdateAttribute(string attributeName, string value)
         {
-            return Attributes.TryGetValue(key, out value);
-        }
-
-        internal bool UpdateAttributeValue(string key, string newValue, bool isBatchOperation = false)
-        {
-            if (string.IsNullOrEmpty(newValue))
+            if (!UpdateAttribute(attributeName, value))
             {
-                throw new ArgumentNullException(nameof(newValue));
-            }
-
-            if (Origin != null && Origin.IsMachineWide)
-            {
-                return false;
-            }
-
-            if (Attributes.ContainsKey(key))
-            {
-                if (Node != null && Node is XElement xElement)
+                if (value != null)
                 {
-                    xElement.SetAttributeValue(key, newValue);
-                    Origin.IsDirty = true;
+                    AddAttribute(attributeName, value);
+                }
+            }
+        }
 
-                    if (!isBatchOperation)
-                    {
-                        Origin.Save();
-                    }
+        internal bool UpdateAttribute(string attributeName, string newValue)
+        {
+            if (string.IsNullOrEmpty(attributeName))
+            {
+                throw new ArgumentNullException(nameof(attributeName));
+            }
+
+            if (!IsAttributeValid(attributeName, newValue))
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_InvalidAttribute, attributeName, newValue));
+            }
+
+            if (Attributes.ContainsKey(attributeName))
+            {
+                if (newValue == null)
+                {
+                    MutableAttributes.Remove(attributeName);
+                }
+                else
+                {
+                    MutableAttributes[attributeName] = newValue;
                 }
 
-                Attributes[key] = newValue;
                 return true;
             }
 
             return false;
         }
 
-        private void ValidateAttributes(XElement element, ISettingsFile origin)
+        protected void AddAttribute(string attributeName, string value)
+        {
+            if (string.IsNullOrEmpty(attributeName))
+            {
+                throw new ArgumentNullException(nameof(attributeName));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (!IsAttributeValid(attributeName, value))
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_InvalidAttribute, attributeName, value));
+            }
+
+            if (!Attributes.ContainsKey(attributeName))
+            {
+                MutableAttributes[attributeName] = value;
+            }
+        }
+
+        /// <summary>
+        /// Convenience method to add an Origin to an element and all its children when adding it in a collection
+        /// </summary>
+        internal virtual void AddToOrigin(SettingsFile origin)
+        {
+            Origin = origin;
+        }
+
+        private bool IsAttributeValid(string attributeName, string value)
+        {
+            if (AllowedAttributes != null)
+            {
+                // No attributes are allowed
+                if (!AllowedAttributes.Any())
+                {
+                    return false;
+                }
+
+                if (!AllowedAttributes.Contains(attributeName))
+                {
+                    return false;
+                }
+            }
+
+            if (RequiredAttributes != null)
+            {
+                if (value == null && RequiredAttributes.Contains(attributeName))
+                {
+                    // Don't delete any required attributes
+                    return false;
+                }
+            }
+
+            if (AllowedValues != null)
+            {
+                if (AllowedValues.TryGetValue(attributeName, out var allowed) && !allowed.Contains(value.Trim()))
+                {
+                    return false;
+                }
+            }
+
+            if (DisallowedValues != null)
+            {
+                if (DisallowedValues.TryGetValue(attributeName, out var disallowed) && disallowed.Contains(value.Trim()))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void ValidateAttributes(XElement element, SettingsFile origin)
         {
             if (AllowedAttributes != null)
             {

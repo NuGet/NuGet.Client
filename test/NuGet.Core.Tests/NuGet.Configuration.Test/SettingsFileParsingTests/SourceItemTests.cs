@@ -68,7 +68,7 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("packageSources");
                 section.Should().NotBeNull();
 
-                var children = section.Children.ToList();
+                var children = section.Items.ToList();
 
                 children.Should().NotBeEmpty();
                 children.Count.Should().Be(2);

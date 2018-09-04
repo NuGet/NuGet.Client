@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -23,7 +24,6 @@ namespace NuGet.Configuration.Test
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
         }
-
 
         [Fact]
         public void WithoutRequiredAttributes_Throws()
@@ -72,7 +72,7 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
-                var element = section.Children.FirstOrDefault();
+                var element = section.Items.FirstOrDefault();
                 element.Should().NotBeNull();
 
                 // Assert
@@ -103,7 +103,7 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
-                var element = section.Children.FirstOrDefault();
+                var element = section.Items.FirstOrDefault();
                 element.Should().NotBeNull();
 
                 // Assert
@@ -124,10 +124,10 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var expectedSetting = new AddItem("key1", "value1",
-                new Dictionary<string, string>{
+                new ReadOnlyDictionary<string, string>(new Dictionary<string, string>{
                     { "meta1", "data1" },
                     { "meta2", "data2" }
-                });
+                }));
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
@@ -138,7 +138,7 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
-                var value = section.Children.FirstOrDefault();
+                var value = section.Items.FirstOrDefault();
                 value.Should().NotBeNull();
 
                 // Assert
@@ -174,42 +174,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void UpdatingAttribute_InMachineWide_ReturnsFalse()
-        {
-            // Arrange
-            var nugetConfigPath = "NuGet.Config";
-            var config = @"
-<configuration>
-    <Section>
-        <add key='key1' value='value1' />
-    </Section>
-</configuration>";
-
-            using (var mockBaseDirectory = TestDirectory.Create())
-            {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-                var configFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
-
-                // Act and Assert
-                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
-
-                // Act
-                var section = settingsFile.GetSection("Section");
-                section.Should().NotBeNull();
-
-                var element = section.Children.FirstOrDefault() as AddItem;
-                element.Should().NotBeNull();
-
-                element.UpdateAttributeValue("value", "newValue").Should().BeFalse();
-                element.Value.Should().Be("value1");
-
-                var updatedFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
-                updatedFileHash.Should().BeEquivalentTo(configFileHash);
-            }
-        }
-
-        [Fact]
-        public void UpdatingAttribute_SuccessfullyUpdatesConfigFile()
+        public void UpdatingAttribute_WithAddOrUpdate_SuccessfullyUpdatesConfigFile()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -232,11 +197,29 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
-                var element = section.Children.FirstOrDefault() as AddItem;
+                var element = section.Items.FirstOrDefault() as AddItem;
                 element.Should().NotBeNull();
 
-                element.UpdateAttributeValue("value", "newValue").Should().BeTrue();
+                element.Value = "newValue";
                 element.Value.Should().Be("newValue");
+
+                var section2 = settingsFile.GetSection("Section");
+                section2.Should().NotBeNull();
+
+                var element2 = section2.Items.FirstOrDefault() as AddItem;
+                element2.Should().NotBeNull();
+                element2.Value.Should().Be("value1");
+
+
+                settingsFile.AddOrUpdate("Section", element);
+                settingsFile.SaveToDisk();
+
+                var section3 = settingsFile.GetSection("Section");
+                section3.Should().NotBeNull();
+
+                var element3 = section.Items.FirstOrDefault() as AddItem;
+                element3.Should().NotBeNull();
+                element3.Value.Should().Be("newValue");
 
                 var updatedFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
                 updatedFileHash.Should().NotBeEquivalentTo(configFileHash);
@@ -291,12 +274,12 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 section.Should().NotBeNull();
-                section.Children.Should().NotBeEmpty();
-                section.Children.Should().AllBeOfType<AddItem>();
+                section.Items.Should().NotBeEmpty();
+                section.Items.Should().AllBeOfType<AddItem>();
 
                 if (RuntimeEnvironmentHelper.IsWindows)
                 {
-                    section.Children.Count.Should().Be(7);
+                    section.Items.Count.Should().Be(7);
 
                     var item = section.GetFirstItemWithAttribute<AddItem>("key", "key1");
                     item.Should().NotBeNull();
@@ -322,7 +305,7 @@ namespace NuGet.Configuration.Test
                 }
                 else
                 {
-                    section.Children.Count.Should().Be(5);
+                    section.Items.Count.Should().Be(5);
 
                     var item = section.GetFirstItemWithAttribute<AddItem>("key", "key1");
                     item.Should().NotBeNull();

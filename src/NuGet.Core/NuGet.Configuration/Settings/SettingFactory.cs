@@ -10,7 +10,7 @@ namespace NuGet.Configuration
 {
     internal static class SettingFactory
     {
-        internal static SettingsNode Parse(XNode node, ISettingsFile origin)
+        internal static SettingBase Parse(XNode node, SettingsFile origin)
         {
             if (node == null)
             {
@@ -19,14 +19,14 @@ namespace NuGet.Configuration
 
             if (node is XText textNode)
             {
-                return new SettingsTextContent(textNode, origin);
+                return new SettingText(textNode, origin);
             }
 
             if (node is XElement element)
             {
                 if (string.Equals(element.Parent?.Name.LocalName, ConfigurationConstants.Configuration, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new SettingsSection(element, origin);
+                    return new ParsedSettingSection(element, origin);
                 }
                 else if (string.Equals(element.Name.LocalName, ConfigurationConstants.Add, StringComparison.OrdinalIgnoreCase))
                 {
@@ -52,11 +52,11 @@ namespace NuGet.Configuration
             return null;
         }
 
-        internal static IEnumerable<T> ParseChildren<T>(XElement xElement, ISettingsFile origin, bool canBeCleared) where T : SettingsNode
+        internal static IEnumerable<T> ParseChildren<T>(XElement xElement, SettingsFile origin, bool canBeCleared) where T : SettingElement
         {
-            var children = new List<T>();             
+            var children = new List<T>();
 
-            var descendants = xElement.Elements().Select(d => Parse(d, origin) as T).Where(i => i != null).Distinct();
+            var descendants = xElement.Elements().Select(d => Parse(d, origin)).OfType<T>().Distinct();
 
             foreach (var descendant in descendants)
             {

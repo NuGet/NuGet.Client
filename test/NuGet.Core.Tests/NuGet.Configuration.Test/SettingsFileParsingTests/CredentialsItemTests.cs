@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using FluentAssertions;
-using Moq;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -14,7 +13,6 @@ namespace NuGet.Configuration.Test
 {
     public class CredentialsItemTests
     {
-
         [Theory]
         [InlineData(null, "user", "pass")]
         [InlineData("", "user", "pass")]
@@ -142,216 +140,209 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Update_WhenItemIsNotCredentialsItem_ReturnsFalse()
+        public void Update_WhenItemIsNotCredentialsItem_Throws()
         {
             // Arrange
             var credentials = new CredentialsItem("name", "user", "pass", isPasswordClearText: true, validAuthenticationTypes: null);
 
             // Act
-            credentials.Update(new AddItem("key", "value")).Should().BeFalse();
+            var ex = Record.Exception(() => credentials.Update(new AddItem("key", "value")));
 
             // Assert
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<InvalidOperationException>();
+            ex.Message.Should().Be("The item passed to the Update method cannot refer to a different item to the one to be updated.");
+
             credentials.Name.Should().Be("name");
-            credentials.Username.Value.Should().Be("user");
-            credentials.Password.Value.Should().Be("pass");
+            credentials.Username.Should().Be("user");
+            credentials.Password.Should().Be("pass");
         }
 
         [Fact]
-        public void Update_WhenItemIsADifferentCredentialsItem_ReturnsFalse()
+        public void Update_WhenOriginIsMachineWide_Throws()
         {
             // Arrange
-            var credentials = new CredentialsItem("name", "user", "pass", isPasswordClearText: true, validAuthenticationTypes: null);
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var origin = new SettingsFile(mockBaseDirectory, fileName: Settings.DefaultSettingsFileName, isMachineWide: true);
 
-            // Act
-            credentials.Update(new CredentialsItem("notName", "user", "notpass", isPasswordClearText: true, validAuthenticationTypes: null)).Should().BeFalse();
-
-            // Assert
-            credentials.Name.Should().Be("name");
-            credentials.Username.Value.Should().Be("user");
-            credentials.Password.Value.Should().Be("pass");
-        }
-
-        [Fact]
-        public void Update_WhenOriginIsMachineWide_ReturnsFalse()
-        {
-            // Arrange
-            var origin = new Mock<ISettingsFile>(MockBehavior.Strict);
-            origin.Setup(s => s.IsMachineWide)
-                .Returns(true);
-
-            var xelement = new XElement("name",
+                var xelement = new XElement("name",
                                 new XElement("add", new XAttribute("key", "Username"), new XAttribute("value", "user")),
                                 new XElement("add", new XAttribute("key", "Password"), new XAttribute("value", "pass")));
 
-            var credentials = new CredentialsItem(xelement, origin.Object);
+                var credentials = new CredentialsItem(xelement, origin);
 
-            // Act
-            credentials.Update(new CredentialsItem("name", "user", "notpass", isPasswordClearText: true, validAuthenticationTypes: null)).Should().BeFalse();
+                // Act
+                var ex = Record.Exception(() =>
+                    credentials.Update(new CredentialsItem("name", "user", "notpass", isPasswordClearText: true, validAuthenticationTypes: null)));
 
-            // Assert
-            credentials.Password.Value.Should().Be("pass");
+                // Assert
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<InvalidOperationException>();
+                ex.Message.Should().Be("Unable to update setting since it is in a machine wide NuGet.Config");
+
+                credentials.Password.Should().Be("pass");
+            }
         }
 
         [Fact]
         public void Update_ChangeUsername_UpdatesObjectAndXNode()
         {
             // Arrange
-            var origin = new Mock<ISettingsFile>(MockBehavior.Strict);
-            origin.Setup(o => o.IsMachineWide)
-                .Returns(false);
-            origin.Setup(o => o.IsDirty)
-                .Returns(true);
-            origin.SetupSet(o => o.IsDirty = It.IsAny<bool>()).Verifiable();
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var origin = new SettingsFile(mockBaseDirectory);
 
-            var xelement = new XElement("name",
+                var xelement = new XElement("name",
                                 new XElement("add", new XAttribute("key", "Username"), new XAttribute("value", "user")),
                                 new XElement("add", new XAttribute("key", "Password"), new XAttribute("value", "pass")));
 
-            var credentials = new CredentialsItem(xelement, origin.Object);
+                var credentials = new CredentialsItem(xelement, origin);
 
-            // Act
-            credentials.Update(new CredentialsItem("name", "newuser", "pass", isPasswordClearText: false, validAuthenticationTypes: null), isBatchOperation: true).Should().BeTrue();
+                // Act
+                credentials.Update(new CredentialsItem("name", "newuser", "pass", isPasswordClearText: false, validAuthenticationTypes: null));
 
-            // Assert
-            credentials.Username.Value.Should().Be("newuser");
+                // Assert
+                credentials.Username.Should().Be("newuser");
 
-            var credentialElement = credentials.AsXNode() as XElement;
-            var childElements = credentialElement.Elements().ToList();
+                var credentialElement = credentials.AsXNode() as XElement;
+                var childElements = credentialElement.Elements().ToList();
 
-            childElements.Count.Should().Be(2);
-            childElements[0].Name.LocalName.Should().Be("add");
-            var elattr = childElements[0].Attributes().ToList();
-            elattr.Count.Should().Be(2);
-            elattr[0].Value.Should().Be("Username");
-            elattr[1].Value.Should().Be("newuser");
+                childElements.Count.Should().Be(2);
+                childElements[0].Name.LocalName.Should().Be("add");
+                var elattr = childElements[0].Attributes().ToList();
+                elattr.Count.Should().Be(2);
+                elattr[0].Value.Should().Be("Username");
+                elattr[1].Value.Should().Be("newuser");
+            }
         }
 
         [Fact]
         public void Update_ChangePassword_UpdatesObjectAndXNode()
         {
             // Arrange
-            var origin = new Mock<ISettingsFile>(MockBehavior.Strict);
-            origin.Setup(s => s.IsMachineWide)
-                .Returns(false);
-            origin.SetupSet(o => o.IsDirty = It.IsAny<bool>()).Verifiable();
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var origin = new SettingsFile(mockBaseDirectory);
 
-            var xelement = new XElement("name",
+                var xelement = new XElement("name",
                                 new XElement("add", new XAttribute("key", "Username"), new XAttribute("value", "user")),
                                 new XElement("add", new XAttribute("key", "Password"), new XAttribute("value", "pass")));
 
-            var credentials = new CredentialsItem(xelement, origin.Object);
+                var credentials = new CredentialsItem(xelement, origin);
 
-            // Act
-            credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: false, validAuthenticationTypes: null), isBatchOperation: true).Should().BeTrue();
+                // Act
+                credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: false, validAuthenticationTypes: null));
 
-            // Assert
-            credentials.Password.Value.Should().Be("newpass");
+                // Assert
+                credentials.Password.Should().Be("newpass");
 
-            var credentialElement = credentials.AsXNode() as XElement;
-            var childElements = credentialElement.Elements().ToList();
+                var credentialElement = credentials.AsXNode() as XElement;
+                var childElements = credentialElement.Elements().ToList();
 
-            childElements.Count.Should().Be(2);
-            childElements[1].Name.LocalName.Should().Be("add");
-            var elattr = childElements[1].Attributes().ToList();
-            elattr.Count.Should().Be(2);
-            elattr[0].Value.Should().Be("Password");
-            elattr[1].Value.Should().Be("newpass");
+                childElements.Count.Should().Be(2);
+                childElements[1].Name.LocalName.Should().Be("add");
+                var elattr = childElements[1].Attributes().ToList();
+                elattr.Count.Should().Be(2);
+                elattr[0].Value.Should().Be("Password");
+                elattr[1].Value.Should().Be("newpass");
+            }
         }
 
         [Fact]
         public void Update_ChangeClearTextPassword_UpdatesObjectAndXNode()
         {
             // Arrange
-            var origin = new Mock<ISettingsFile>(MockBehavior.Strict);
-            origin.Setup(s => s.IsMachineWide)
-                .Returns(false);
-            origin.SetupSet(o => o.IsDirty = It.IsAny<bool>()).Verifiable();
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var origin = new SettingsFile(mockBaseDirectory);
 
-            var xelement = new XElement("name",
-                                new XElement("add", new XAttribute("key", "Username"), new XAttribute("value", "user")),
-                                new XElement("add", new XAttribute("key", "ClearTextPassword"), new XAttribute("value", "pass")));
+                var xelement = new XElement("name",
+                                    new XElement("add", new XAttribute("key", "Username"), new XAttribute("value", "user")),
+                                    new XElement("add", new XAttribute("key", "ClearTextPassword"), new XAttribute("value", "pass")));
 
-            var credentials = new CredentialsItem(xelement, origin.Object);
+                var credentials = new CredentialsItem(xelement, origin);
 
-            // Act
-            credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: true, validAuthenticationTypes: null), isBatchOperation: true).Should().BeTrue();
+                // Act
+                credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: true, validAuthenticationTypes: null));
 
-            // Assert
-            credentials.Password.Value.Should().Be("newpass");
+                // Assert
+                credentials.Password.Should().Be("newpass");
 
-            var credentialElement = credentials.AsXNode() as XElement;
-            var childElements = credentialElement.Elements().ToList();
+                var credentialElement = credentials.AsXNode() as XElement;
+                var childElements = credentialElement.Elements().ToList();
 
-            childElements.Count.Should().Be(2);
-            childElements[1].Name.LocalName.Should().Be("add");
-            var elattr = childElements[1].Attributes().ToList();
-            elattr.Count.Should().Be(2);
-            elattr[0].Value.Should().Be("ClearTextPassword");
-            elattr[1].Value.Should().Be("newpass");
+                childElements.Count.Should().Be(2);
+                childElements[1].Name.LocalName.Should().Be("add");
+                var elattr = childElements[1].Attributes().ToList();
+                elattr.Count.Should().Be(2);
+                elattr[0].Value.Should().Be("ClearTextPassword");
+                elattr[1].Value.Should().Be("newpass");
+            }
         }
 
         [Fact]
         public void Update_MakingPasswordClearText_UpdatesObjectAndXNode()
         {
             // Arrange
-            var origin = new Mock<ISettingsFile>(MockBehavior.Strict);
-            origin.Setup(s => s.IsMachineWide)
-                .Returns(false);
-            origin.SetupSet(o => o.IsDirty = It.IsAny<bool>()).Verifiable();
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var origin = new SettingsFile(mockBaseDirectory);
 
-            var xelement = new XElement("name",
-                                new XElement("add", new XAttribute("key", "Username"), new XAttribute("value", "user")),
-                                new XElement("add", new XAttribute("key", "Password"), new XAttribute("value", "pass")));
+                var xelement = new XElement("name",
+                                    new XElement("add", new XAttribute("key", "Username"), new XAttribute("value", "user")),
+                                    new XElement("add", new XAttribute("key", "Password"), new XAttribute("value", "pass")));
 
-            var credentials = new CredentialsItem(xelement, origin.Object);
+                var credentials = new CredentialsItem(xelement, origin);
 
-            // Act
-            credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: true, validAuthenticationTypes: null), isBatchOperation: true).Should().BeTrue();
+                // Act
+                credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: true, validAuthenticationTypes: null));
 
-            // Assert
-            credentials.Password.Value.Should().Be("newpass");
+                // Assert
+                credentials.Password.Should().Be("newpass");
 
-            var credentialElement = credentials.AsXNode() as XElement;
-            var childElements = credentialElement.Elements().ToList();
+                var credentialElement = credentials.AsXNode() as XElement;
+                var childElements = credentialElement.Elements().ToList();
 
-            childElements.Count.Should().Be(2);
-            childElements[1].Name.LocalName.Should().Be("add");
-            var elattr = childElements[1].Attributes().ToList();
-            elattr.Count.Should().Be(2);
-            elattr[0].Value.Should().Be("ClearTextPassword");
-            elattr[1].Value.Should().Be("newpass");
+                childElements.Count.Should().Be(2);
+                childElements[1].Name.LocalName.Should().Be("add");
+                var elattr = childElements[1].Attributes().ToList();
+                elattr.Count.Should().Be(2);
+                elattr[0].Value.Should().Be("ClearTextPassword");
+                elattr[1].Value.Should().Be("newpass");
+            }
         }
 
         [Fact]
         public void Update_MakingPasswordEncrypted_UpdatesObjectAndXNode()
         {
             // Arrange
-            var origin = new Mock<ISettingsFile>(MockBehavior.Strict);
-            origin.Setup(s => s.IsMachineWide)
-                .Returns(false);
-            origin.SetupSet(o => o.IsDirty = It.IsAny<bool>()).Verifiable();
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var origin = new SettingsFile(mockBaseDirectory);
 
-            var xelement = new XElement("name",
+                var xelement = new XElement("name",
                                 new XElement("add", new XAttribute("key", "Username"), new XAttribute("value", "user")),
                                 new XElement("add", new XAttribute("key", "ClearTextPassword"), new XAttribute("value", "pass")));
 
-            var credentials = new CredentialsItem(xelement, origin.Object);
+                var credentials = new CredentialsItem(xelement, origin);
 
-            // Act
-            credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: false, validAuthenticationTypes: null), isBatchOperation: true).Should().BeTrue();
+                // Act
+                credentials.Update(new CredentialsItem("name", "user", "newpass", isPasswordClearText: false, validAuthenticationTypes: null));
 
-            // Assert
-            credentials.Password.Value.Should().Be("newpass");
+                // Assert
+                credentials.Password.Should().Be("newpass");
 
-            var credentialElement = credentials.AsXNode() as XElement;
-            var childElements = credentialElement.Elements().ToList();
+                var credentialElement = credentials.AsXNode() as XElement;
+                var childElements = credentialElement.Elements().ToList();
 
-            childElements.Count.Should().Be(2);
-            childElements[1].Name.LocalName.Should().Be("add");
-            var elattr = childElements[1].Attributes().ToList();
-            elattr.Count.Should().Be(2);
-            elattr[0].Value.Should().Be("Password");
-            elattr[1].Value.Should().Be("newpass");
+                childElements.Count.Should().Be(2);
+                childElements[1].Name.LocalName.Should().Be("add");
+                var elattr = childElements[1].Attributes().ToList();
+                elattr.Count.Should().Be(2);
+                elattr[0].Value.Should().Be("Password");
+                elattr[1].Value.Should().Be("newpass");
+            }
         }
 
 
