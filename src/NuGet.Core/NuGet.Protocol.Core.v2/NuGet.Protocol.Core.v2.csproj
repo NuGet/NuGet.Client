@@ -9,7 +9,6 @@
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
-    <XPLATProject>true</XPLATProject>
     <Description>NuGet Protocol v2</Description>
     <Copyright>Copyright .NET Foundation. All rights reserved.</Copyright>
   </PropertyGroup>
