@@ -13,7 +13,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         public static TargetFrameworkInformation GetTargetFramework(this PackageSpec project, NuGetFramework targetFramework)
         {
-            var frameworkInfo = project.TargetFrameworks.FirstOrDefault(f => NuGetFrameworkFullComparer.Equals(targetFramework, f));
+            var frameworkInfo = project.TargetFrameworks.FirstOrDefault(f => f.FrameworkName.Equals(targetFramework));
             if (frameworkInfo == null)
             {
                 frameworkInfo = NuGetFrameworkUtility.GetNearest(project.TargetFrameworks,

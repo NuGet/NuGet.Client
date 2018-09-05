@@ -1,10 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Shared;
 
@@ -16,6 +14,12 @@ namespace NuGet.ProjectModel
         /// Target framework
         /// </summary>
         public NuGetFramework FrameworkName { get; set; }
+
+        /// <summary>
+        /// The original string before parsing the framework name. In some cases, it is important to keep this around
+        /// because MSBuild framework conditions require the framework name to be the original string (non-normalized).
+        /// </summary>
+        public string OriginalFrameworkName { get; set; }
 
         /// <summary>
         /// Project references
@@ -41,6 +45,7 @@ namespace NuGet.ProjectModel
             var hashCode = new HashCodeCombiner();
 
             hashCode.AddObject(FrameworkName);
+            hashCode.AddObject(OriginalFrameworkName);
             hashCode.AddSequence(ProjectReferences);
 
             return hashCode.CombinedHash;
@@ -64,15 +69,8 @@ namespace NuGet.ProjectModel
             }
 
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
-                   ProjectReferences.OrderedEquals(other.ProjectReferences, e => e.ProjectPath, PathUtility.GetStringComparerBasedOnOS());
-        }
-
-        public ProjectRestoreMetadataFrameworkInfo Clone()
-        {
-            var clonedObject = new ProjectRestoreMetadataFrameworkInfo();
-            clonedObject.FrameworkName = FrameworkName;
-            clonedObject.ProjectReferences = ProjectReferences?.Select(c => c.Clone()).ToList();
-            return clonedObject;
+                   OriginalFrameworkName == other.OriginalFrameworkName &&
+                   EqualityUtility.SequenceEqualWithNullCheck(ProjectReferences, other.ProjectReferences);
         }
     }
 }

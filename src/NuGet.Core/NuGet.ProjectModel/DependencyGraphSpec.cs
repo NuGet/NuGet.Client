@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,16 +8,13 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
-using NuGet.Packaging;
 
 namespace NuGet.ProjectModel
 {
     public class DependencyGraphSpec
     {
-        private readonly SortedSet<string> _restore = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
-        private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
-
-        private const int _version = 1;
+        private readonly SortedSet<string> _restore = new SortedSet<string>(StringComparer.Ordinal);
+        private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(StringComparer.Ordinal);
 
         public DependencyGraphSpec(JObject json)
         {
@@ -86,7 +83,7 @@ namespace NuGet.ProjectModel
                     project.RestoreMetadata.ProjectUniqueName,
                     rootUniqueName))
                 {
-                    var closure = GetClosure(project.RestoreMetadata.ProjectUniqueName);
+                    var closure = GetClosureWithoutSorting(project.RestoreMetadata.ProjectUniqueName);
 
                     if (closure.Any(e => StringComparer.OrdinalIgnoreCase.Equals(
                         e.RestoreMetadata.ProjectUniqueName,
@@ -97,33 +94,14 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            return parents
+            return SortPackagesByDependencyOrder(parents)
                 .Select(e => e.RestoreMetadata.ProjectUniqueName)
                 .ToList();
         }
 
         /// <summary>
-        /// Retrieve a DependencyGraphSpec with the project closure.
-        /// </summary>
-        /// <param name="projectUniqueName"></param>
-        /// <returns></returns>
-        public DependencyGraphSpec WithProjectClosure(string projectUniqueName)
-        {
-
-            var projectDependencyGraphSpec = new DependencyGraphSpec();
-            projectDependencyGraphSpec.AddRestore(projectUniqueName);
-            foreach (var spec in GetClosure(projectUniqueName))
-            {
-                projectDependencyGraphSpec.AddProject(spec.Clone());
-            }
-
-            return projectDependencyGraphSpec;
-        }
-
-        /// <summary>
         /// Retrieve the full project closure including the root project itself.
         /// </summary>
-        /// <remarks>Results are not sorted in any form.</remarks>
         public IReadOnlyList<PackageSpec> GetClosure(string rootUniqueName)
         {
             if (rootUniqueName == null)
@@ -131,12 +109,21 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(rootUniqueName));
             }
 
-            var projectsByUniqueName = _projects
-                .ToDictionary(t => t.Value.RestoreMetadata.ProjectUniqueName, t => t.Value, PathUtility.GetStringComparerBasedOnOS());
+            var closure = GetClosureWithoutSorting(rootUniqueName);
+
+            return SortPackagesByDependencyOrder(closure);
+        }
+
+        private IReadOnlyList<PackageSpec> GetClosureWithoutSorting(string rootUniqueName)
+        {
+            if (rootUniqueName == null)
+            {
+                throw new ArgumentNullException(nameof(rootUniqueName));
+            }
 
             var closure = new List<PackageSpec>();
 
-            var added = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
+            var added = new SortedSet<string>(StringComparer.Ordinal);
             var toWalk = new Stack<PackageSpec>();
 
             // Start with the root
@@ -152,7 +139,7 @@ namespace NuGet.ProjectModel
                     closure.Add(spec);
 
                     // Find children
-                    foreach (var projectName in GetProjectReferenceNames(spec, projectsByUniqueName))
+                    foreach (var projectName in GetProjectReferenceNames(spec))
                     {
                         if (added.Add(projectName))
                         {
@@ -165,14 +152,14 @@ namespace NuGet.ProjectModel
             return closure;
         }
 
-        private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec, Dictionary<string, PackageSpec> projectsByUniqueName)
+        private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec)
         {
             // Handle projects which may not have specs, and which may not have references
             return spec?.RestoreMetadata?
                 .TargetFrameworks
                 .SelectMany(e => e.ProjectReferences)
-                .Where(project => projectsByUniqueName.ContainsKey(project.ProjectUniqueName))
                 .Select(project => project.ProjectUniqueName)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 ?? Enumerable.Empty<string>();
         }
 
@@ -197,7 +184,7 @@ namespace NuGet.ProjectModel
         {
             var projects =
                 dgSpecs.SelectMany(e => e.Projects)
-                    .GroupBy(e => e.RestoreMetadata.ProjectUniqueName, PathUtility.GetStringComparerBasedOnOS())
+                    .GroupBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal)
                     .Select(e => e.First())
                     .ToList();
 
@@ -236,7 +223,7 @@ namespace NuGet.ProjectModel
         {
             var writer = new RuntimeModel.JsonObjectWriter();
 
-            Write(writer, PackageSpecWriter.Write);
+            Write(writer);
 
             return writer.GetJson();
         }
@@ -267,11 +254,11 @@ namespace NuGet.ProjectModel
             JObject json;
 
             using (var stream = new FileStream(packageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (var reader = new StreamReader(stream))
+            using (var reader = new JsonTextReader(new StreamReader(stream)))
             {
                 try
                 {
-                    json = JsonUtility.LoadJson(reader);
+                    json = JObject.Load(reader);
                 }
                 catch (JsonReaderException ex)
                 {
@@ -287,14 +274,15 @@ namespace NuGet.ProjectModel
             using (var hashFunc = new Sha512HashFunction())
             using (var writer = new HashObjectWriter(hashFunc))
             {
-                Write(writer, PackageSpecWriter.Write);
+                Write(writer);
+
                 return writer.GetHash();
             }
         }
 
-        private void Write(RuntimeModel.IObjectWriter writer, Action<PackageSpec, RuntimeModel.IObjectWriter> writeAction)
+        private void Write(RuntimeModel.IObjectWriter writer)
         {
-            writer.WriteNameValue("format", _version);
+            writer.WriteNameValue("format", 1);
 
             writer.WriteObjectStart("restore");
 
@@ -315,7 +303,7 @@ namespace NuGet.ProjectModel
                 var project = pair.Value;
 
                 writer.WriteObjectStart(project.RestoreMetadata.ProjectUniqueName);
-                writeAction.Invoke(project, writer);
+                PackageSpecWriter.Write(project, writer);
                 writer.WriteObjectEnd();
             }
 
@@ -328,11 +316,40 @@ namespace NuGet.ProjectModel
         public static IReadOnlyList<PackageSpec> SortPackagesByDependencyOrder(
             IEnumerable<PackageSpec> packages)
         {
-            return TopologicalSortUtility.SortPackagesByDependencyOrder(
-                items: packages,
-                comparer: PathUtility.GetStringComparerBasedOnOS(),
-                getId: GetPackageSpecId,
-                getDependencies: GetPackageSpecDependencyIds);
+            var sorted = new List<PackageSpec>();
+            var toSort = packages.Distinct().ToList();
+
+            while (toSort.Count > 0)
+            {
+                // Order packages by parent count, take the child with the lowest number of parents
+                // and remove it from the list
+                var nextPackage = toSort.OrderBy(package => GetParentCount(toSort, package.RestoreMetadata.ProjectUniqueName))
+                    .ThenBy(package => package.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).First();
+
+                sorted.Add(nextPackage);
+                toSort.Remove(nextPackage);
+            }
+
+            // the list is ordered by parents first, reverse to run children first
+            sorted.Reverse();
+
+            return sorted;
+        }
+
+        private static int GetParentCount(List<PackageSpec> packages, string projectUniqueName)
+        {
+            int count = 0;
+
+            foreach (var package in packages)
+            {
+                if (package.RestoreMetadata.TargetFrameworks.SelectMany(r => r.ProjectReferences).Any(dependency =>
+                    string.Equals(projectUniqueName, dependency.ProjectUniqueName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         public DependencyGraphSpec WithoutRestores()
@@ -381,27 +398,6 @@ namespace NuGet.ProjectModel
             }
 
             return newSpec;
-        }
-
-        /// <summary>
-        /// PackageSpec -> id
-        /// </summary>
-        private static string GetPackageSpecId(PackageSpec spec)
-        {
-            return spec.RestoreMetadata.ProjectUniqueName;
-        }
-
-        /// <summary>
-        /// PackageSpec -> Project dependency ids
-        /// </summary>
-        private static string[] GetPackageSpecDependencyIds(PackageSpec spec)
-        {
-            return spec.RestoreMetadata
-                .TargetFrameworks
-                .SelectMany(r => r.ProjectReferences)
-                .Select(r => r.ProjectUniqueName)
-                .Distinct(PathUtility.GetStringComparerBasedOnOS())
-                .ToArray();
         }
     }
 }

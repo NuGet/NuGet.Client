@@ -1,7 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-namespace NuGet.ProjectModel
+﻿namespace NuGet.ProjectModel
 {
     public enum ProjectStyle : ushort
     {
@@ -21,7 +18,7 @@ namespace NuGet.ProjectModel
         PackageReference = 2,
 
         /// <summary>
-        /// DotnetCliToolReference "project"
+        /// Tool
         /// </summary>
         DotnetCliTool = 3,
 
@@ -33,11 +30,6 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Packages.config project
         /// </summary>
-        PackagesConfig = 5, 
-
-                /// <summary>
-        /// DotnetToolReference project
-        /// </summary>
-        DotnetToolReference = 6
+        PackagesConfig = 5
     }
 }

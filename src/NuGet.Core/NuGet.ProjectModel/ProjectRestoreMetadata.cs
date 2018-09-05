@@ -1,10 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Shared;
 
@@ -53,19 +51,9 @@ namespace NuGet.ProjectModel
         public string PackagesPath { get; set; }
 
         /// <summary>
-        /// Cache file path
-        /// </summary>
-        public string CacheFilePath { get; set; }
-
-        /// <summary>
         /// Fallback folders.
         /// </summary>
         public IList<string> FallbackFolders { get; set; } = new List<string>();
-
-        /// <summary>
-        /// ConfigFilePaths used.
-        /// </summary>
-        public IList<string> ConfigFilePaths { get; set; } = new List<string>();
 
         /// <summary>
         /// Framework specific metadata, this may be a subset of the project's frameworks.
@@ -102,14 +90,9 @@ namespace NuGet.ProjectModel
         public bool ValidateRuntimeAssets { get; set; }
 
         /// <summary>
-        /// True if this is a Legacy Package Reference project
+        /// True if this is an XPlat PackageReference project.
         /// </summary>
         public bool SkipContentFileWrite { get; set; }
-
-        /// <summary>
-        /// Contains Project wide properties for Warnings.
-        /// </summary>
-        public WarningProperties ProjectWideWarningProperties { get; set; } = new WarningProperties();
 
         public override int GetHashCode()
         {
@@ -123,7 +106,6 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(ProjectUniqueName);
             hashCode.AddSequence(Sources);
             hashCode.AddObject(PackagesPath);
-            hashCode.AddSequence(ConfigFilePaths);
             hashCode.AddSequence(FallbackFolders);
             hashCode.AddSequence(TargetFrameworks);
             hashCode.AddSequence(OriginalTargetFrameworks);
@@ -132,7 +114,6 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(Files);
             hashCode.AddObject(ValidateRuntimeAssets);
             hashCode.AddObject(SkipContentFileWrite);
-            hashCode.AddObject(ProjectWideWarningProperties);
 
             return hashCode.CombinedHash;
         }
@@ -155,49 +136,21 @@ namespace NuGet.ProjectModel
             }
 
             return ProjectStyle == other.ProjectStyle &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectPath, other.ProjectPath) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectJsonPath, other.ProjectJsonPath) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(OutputPath, other.OutputPath) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectName, other.ProjectName) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectUniqueName, other.ProjectUniqueName) &&
-                   Sources.OrderedEquals(other.Sources.Distinct(), source => source.Source, StringComparer.OrdinalIgnoreCase) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(PackagesPath, other.PackagesPath) &&
-                   ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, filePath => filePath, PathUtility.GetStringComparerBasedOnOS(), PathUtility.GetStringComparerBasedOnOS()) &&
-                   FallbackFolders.OrderedEquals(other.FallbackFolders, fallbackFolder => fallbackFolder, PathUtility.GetStringComparerBasedOnOS(), PathUtility.GetStringComparerBasedOnOS()) &&
+                   ProjectPath == other.ProjectPath &&
+                   ProjectJsonPath == other.ProjectJsonPath &&
+                   OutputPath == other.OutputPath &&
+                   ProjectName == other.ProjectName &&
+                   ProjectUniqueName == other.ProjectUniqueName &&
+                   EqualityUtility.SequenceEqualWithNullCheck(Sources, other.Sources) &&
+                   PackagesPath == other.PackagesPath &&
+                   EqualityUtility.SequenceEqualWithNullCheck(FallbackFolders, other.FallbackFolders) &&
                    EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
-                   OriginalTargetFrameworks.OrderedEquals(other.OriginalTargetFrameworks, fw => fw, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase) &&
+                   EqualityUtility.SequenceEqualWithNullCheck(OriginalTargetFrameworks, other.OriginalTargetFrameworks) &&
                    CrossTargeting == other.CrossTargeting &&
                    LegacyPackagesDirectory == other.LegacyPackagesDirectory &&
                    ValidateRuntimeAssets == other.ValidateRuntimeAssets &&
                    SkipContentFileWrite == other.SkipContentFileWrite &&
-                   EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files) &&
-                   EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties);
-        }
-
-        public ProjectRestoreMetadata Clone()
-        {
-            return new ProjectRestoreMetadata
-            {
-                ProjectStyle = ProjectStyle,
-                ProjectPath = ProjectPath,
-                ProjectJsonPath = ProjectJsonPath,
-                OutputPath = OutputPath,
-                ProjectName = ProjectName,
-                ProjectUniqueName = ProjectUniqueName,
-                PackagesPath = PackagesPath,
-                CacheFilePath = CacheFilePath,
-                CrossTargeting = CrossTargeting,
-                LegacyPackagesDirectory = LegacyPackagesDirectory,
-                SkipContentFileWrite = SkipContentFileWrite,
-                ValidateRuntimeAssets = ValidateRuntimeAssets,
-                FallbackFolders = FallbackFolders != null ? new List<string>(FallbackFolders) : null,
-                ConfigFilePaths = ConfigFilePaths != null ? new List<string>(ConfigFilePaths) : null,
-                OriginalTargetFrameworks = OriginalTargetFrameworks != null ? new List<string>(OriginalTargetFrameworks) : null,
-                Sources = Sources?.Select(c => c.Clone()).ToList(),
-                TargetFrameworks = TargetFrameworks?.Select(c => c.Clone()).ToList(),
-                Files = Files?.Select(c => c.Clone()).ToList(),
-                ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone()
-            };
+                   EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files);
         }
     }
 }

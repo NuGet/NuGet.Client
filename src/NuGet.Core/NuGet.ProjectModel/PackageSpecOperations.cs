@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -50,9 +50,11 @@ namespace NuGet.ProjectModel
                 includeGenericDependencies: false,
                 frameworksToConsider: frameworksToAdd);
 
+            var range = dependency.VersionRange;
+
             foreach (var list in lists)
             {
-                AddOrUpdateDependencyInDependencyList(list, dependency.Id, dependency.VersionRange);
+                AddDependency(list, dependency.Id, range);
             }
         }
 
@@ -123,33 +125,6 @@ namespace NuGet.ProjectModel
                     .SelectMany(list => list)
                     .Where(library => StringComparer.OrdinalIgnoreCase.Equals(library.Name, packageId))
                     .ToList();
-        }
-
-        private static void AddOrUpdateDependencyInDependencyList(
-            IList<LibraryDependency> list,
-            string packageId,
-            VersionRange range)
-        {
-
-            var dependencies = list.Where(e => StringComparer.OrdinalIgnoreCase.Equals(e.Name, packageId)).ToList();
-
-            if (dependencies.Count != 0)
-            {
-                foreach (var library in dependencies)
-                {
-                    library.LibraryRange.VersionRange = range;
-                }
-            }
-            else
-            {
-                var dependency = new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange(packageId, range, LibraryDependencyTarget.Package)
-                };
-
-                list.Add(dependency);
-            }
-
         }
 
         private static void AddDependency(

@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using NuGet.Common;
 using NuGet.DependencyResolver;
@@ -100,11 +102,11 @@ namespace NuGet.ProjectModel
 
             var projectStyle = packageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
-            // Read references from external project - we don't care about dotnettool projects, since they don't have project refs
+            // Read references from external project
             if (projectStyle == ProjectStyle.PackageReference)
             {
                 // NETCore
-                dependencies.AddRange(GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework)); 
+                dependencies.AddRange(GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework));
             }
             else
             {
@@ -184,14 +186,6 @@ namespace NuGet.ProjectModel
                 library[KnownLibraryProperties.ProjectFrameworks] = frameworks;
 
                 var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
-
-                // FrameworkReducer.GetNearest does not consider ATF since it is used for more than just compat
-                if (targetFrameworkInfo.FrameworkName == null && targetFramework is AssetTargetFallbackFramework)
-                {
-                    var atfFramework = targetFramework as AssetTargetFallbackFramework;
-                    targetFrameworkInfo = packageSpec.GetTargetFramework(atfFramework.AsFallbackFramework());
-                }
-
                 library[KnownLibraryProperties.TargetFrameworkInformation] = targetFrameworkInfo;
 
                 // Add framework references
