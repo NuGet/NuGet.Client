@@ -1,0 +1,32 @@
+﻿<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <TargetFramework/>
+    <Shipping>true</Shipping>
+    <IncludeInVSIX>true</IncludeInVSIX>
+    <PackProject>true</PackProject>
+    <Description>NuGet v3 core library</Description>    
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <XPLATProject>true</XPLATProject>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.0</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
+    <TargetFrameworks />
+    <TargetFramework>net45</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Versioning\NuGet.Versioning.csproj" />
+    <ProjectReference Include="..\NuGet.Packaging\NuGet.Packaging.csproj" />
+    <ProjectReference Include="..\NuGet.Repositories\NuGet.Repositories.csproj" />
+    <ProjectReference Include="..\NuGet.RuntimeModel\NuGet.RuntimeModel.csproj" />
+    <ProjectReference Include="..\NuGet.ContentModel\NuGet.ContentModel.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>
