@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574</NoWarn>
     <PackProject>true</PackProject>
@@ -15,27 +15,15 @@
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
     <TargetFrameworks />
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net45</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
+ <ItemGroup>
     <ProjectReference Include="..\NuGet.LibraryModel\NuGet.LibraryModel.csproj" />
-    <ProjectReference Include="..\NuGet.Protocol\NuGet.Protocol.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Strings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Strings.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Strings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <ProjectReference Include="..\NuGet.Frameworks\NuGet.Frameworks.csproj" />
+    <ProjectReference Include="..\NuGet.Protocol.Core.v3\NuGet.Protocol.Core.v3.csproj" />
+    <ProjectReference Include="..\NuGet.Repositories\NuGet.Repositories.csproj" />
+    <ProjectReference Include="..\NuGet.RuntimeModel\NuGet.RuntimeModel.csproj" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
