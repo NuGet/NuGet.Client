@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -179,7 +179,7 @@ namespace NuGet.Commands
 
                 new XElement(Namespace + "Project",
                     new XAttribute("ToolsVersion", "14.0"),
-                    new XElement(Namespace + "PropertyGroup",
+                    new XElement(Namespace + "PropertyGroup", 
                         new XElement(Namespace + "MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"))));
 
             return doc;
@@ -361,26 +361,6 @@ namespace NuGet.Commands
             return result;
         }
 
-        public static string GetMSBuildFilePath(PackageSpec project, RestoreRequest request, string extension)
-        {
-            string path;
-
-            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.DotnetToolReference) 
-            {
-                // PackageReference style projects
-                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-                path = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.{extension}");
-            }
-            else
-            {
-                // Project.json style projects
-                var dir = Path.GetDirectoryName(project.FilePath);
-                path = Path.Combine(dir, $"{project.Name}.nuget.{extension}");
-            }
-            return path;
-        }
-
-
         public static List<MSBuildOutputFile> GetMSBuildOutputFiles(PackageSpec project,
             LockFile assetsFile,
             IEnumerable<RestoreTargetGraph> targetGraphs,
@@ -391,8 +371,25 @@ namespace NuGet.Commands
             ILogger log)
         {
             // Generate file names
-            var targetsPath = GetMSBuildFilePath(project,request,"targets");
-            var propsPath = GetMSBuildFilePath(project, request, "props");
+            var targetsPath = string.Empty;
+            var propsPath = string.Empty;
+
+            if (request.ProjectStyle == ProjectStyle.PackageReference)
+            {
+                // PackageReference style projects
+                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
+
+                targetsPath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.targets");
+                propsPath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.props");
+            }
+            else
+            {
+                // Project.json style projects
+                var dir = Path.GetDirectoryName(project.FilePath);
+
+                targetsPath = Path.Combine(dir, $"{project.Name}.nuget.targets");
+                propsPath = Path.Combine(dir, $"{project.Name}.nuget.props");
+            }
 
             // Targets files contain a macro for the repository root. If only the user package folder was used
             // allow a replacement. If fallback folders were used the macro cannot be applied.
@@ -425,8 +422,6 @@ namespace NuGet.Commands
             // Skip runtime graphs, msbuild targets may not come from RID specific packages.
             var ridlessTargets = assetsFile.Targets
                 .Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
-
-            var packagesWithTools = new HashSet<string>(assetsFile.Libraries.Where(i => i.HasTools).Select(i => i.Name));
 
             foreach (var ridlessTarget in ridlessTargets)
             {
@@ -494,31 +489,6 @@ namespace NuGet.Commands
                         .Select(GenerateImport));
 
                 props.AddRange(GenerateGroupsWithConditions(buildPropsGroup, isMultiTargeting, frameworkConditions));
-
-                // Create an empty PropertyGroup for package properties
-                var packagePathsPropertyGroup = MSBuildRestoreItemGroup.Create("PropertyGroup", Enumerable.Empty<XElement>(), 1000, isMultiTargeting ? frameworkConditions : Enumerable.Empty<string>());
-
-                var projectGraph = targetGraph.Graphs.FirstOrDefault();
-
-                // Distinct union of tool packages and packages with GeneratePathProperty=true
-                var packageIdsToCreatePropertiesFor = packagesWithTools.Union(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name)).Distinct(StringComparer.OrdinalIgnoreCase);
-
-                var localPackages = sortedPackages.Select(e => e.Value);
-
-                // Find the packages with matching IDs in the list of sorted packages, filtering out ones that there was no match for or that don't exist
-                var packagePathProperties = localPackages
-                    .Where(pkg => pkg?.Value?.Package != null && packageIdsToCreatePropertiesFor.Contains(pkg.Value.Package.Id) && pkg.Exists())
-                    .Select(pkg => pkg.Value.Package)
-                    // Get the property
-                    .Select(GeneratePackagePathProperty);
-
-                packagePathsPropertyGroup.Items.AddRange(packagePathProperties);
-
-                // Don't bother adding the PropertyGroup if there were no properties added
-                if (packagePathsPropertyGroup.Items.Any())
-                {
-                    props.Add(packagePathsPropertyGroup);
-                }
 
                 if (isMultiTargeting)
                 {
@@ -746,11 +716,6 @@ namespace NuGet.Commands
             }
 
             return result;
-        }
-
-        private static XElement GeneratePackagePathProperty(LocalPackageInfo localPackageInfo)
-        {
-            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_")}", localPackageInfo.ExpandedPath);
         }
     }
 }

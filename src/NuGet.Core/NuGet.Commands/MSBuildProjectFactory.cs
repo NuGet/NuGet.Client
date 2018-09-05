@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,8 +10,6 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectModel;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -24,6 +22,32 @@ namespace NuGet.Commands
         private static readonly string ReferenceFolder = PackagingConstants.Folders.Lib;
         private static readonly string ToolsFolder = PackagingConstants.Folders.Tools;
         private static readonly string SourcesFolder = PackagingConstants.Folders.Source;
+        
+        // List of extensions to allow in the output path
+        private static readonly HashSet<string> _allowedOutputExtensions
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".dll",
+            ".exe",
+            ".xml",
+            ".json",
+            ".winmd",
+            ".pri"
+        };
+
+        // List of extensions to allow in the output path if IncludeSymbols is set
+        private static readonly HashSet<string> _allowedOutputExtensionsForSymbols
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".dll",
+            ".exe",
+            ".xml",
+            ".winmd",
+            ".json",
+            ".pri",
+            ".pdb",
+            ".mdb"
+        };
 
         private MSBuildPackTargetArgs PackTargetArgs { get; set; }
         private PackArgs PackArgs { get; set; }
@@ -69,8 +93,7 @@ namespace NuGet.Commands
                 MachineWideSettings = packArgs.MachineWideSettings,
                 Build = false,
                 PackTargetArgs = packArgs.PackTargetArgs,
-                Files = new HashSet<ManifestFile>(),
-                ProjectProperties = new Dictionary<string, string>()
+                Files = new HashSet<ManifestFile>()
             };
         }
 
@@ -78,20 +101,21 @@ namespace NuGet.Commands
         {
             // Add output files
             Files.Clear();
-            builder.Files.Clear();
-
-            AddOutputFiles(builder);
+            if (PackTargetArgs.IncludeBuildOutput)
+            {
+                AddOutputFiles(builder);
+            }
 
             // Add content files if there are any. They could come from a project or nuspec file
             AddContentFiles(builder);
-
+            
             // Add sources if this is a symbol package
             if (IncludeSymbols)
             {
                 AddSourceFiles();
             }
 
-            var manifest = new Manifest(new ManifestMetadata(builder), Files);
+            Manifest manifest = new Manifest(new ManifestMetadata(builder), Files);
             var manifestPath = PackCommandRunner.GetOutputPath(
                 builder,
                 PackArgs,
@@ -118,64 +142,68 @@ namespace NuGet.Commands
 
         private void AddOutputFiles(PackageBuilder builder)
         {
-            if (PackTargetArgs.IncludeBuildOutput)
+            var allowedOutputExtensions = _allowedOutputExtensions;
+            var listOfFiles = PackTargetArgs.TargetPathsToAssemblies.ToList();
+            if (IncludeSymbols)
             {
-                AddOutputLibFiles(PackTargetArgs.TargetPathsToSymbols, IncludeSymbols ? PackTargetArgs.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder : PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder);
-
-                AddOutputLibFiles(PackTargetArgs.TargetPathsToAssemblies, IncludeSymbols ? PackTargetArgs.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder : PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder);
+                // Include pdbs for symbol packages
+                allowedOutputExtensions = _allowedOutputExtensionsForSymbols;
+                listOfFiles.AddRange(PackTargetArgs.TargetPathsToSymbols);
             }
-        }
-
-        private void AddOutputLibFiles(IEnumerable<OutputLibFile> libFiles, HashSet<string> allowedExtensions)
-        {
-            var targetFolder = PackTargetArgs.BuildOutputFolder;
-            foreach (var file in libFiles)
+            
+            // By default we add all files in the project's output directory
+            foreach (var file in listOfFiles)
             {
-                var extension = Path.GetExtension(file.FinalOutputPath);
+                var projectOutputDirectory = Path.GetDirectoryName(file);
+                var extension = Path.GetExtension(file);
 
                 // Only look at files we care about
-                if (!allowedExtensions.Contains(extension))
+                if (!allowedOutputExtensions.Contains(extension))
                 {
                     continue;
                 }
-                var tfm = NuGetFramework.Parse(file.TargetFramework).GetShortFolderName();
-                var targetPath = file.TargetPath;
+
+                var targetFolder = PackTargetArgs.BuildOutputFolder;
+                
+                if (!IsTool)
+                {
+                    if (PackTargetArgs.TargetFrameworks.Count > 0)
+                    {
+                        //This should always execute in the new MSBuild world. This is the case where project.json is not being read,
+                        // therefore packagebuilder has no targetframeworks
+                        var frameworkName = Path.GetFileName(projectOutputDirectory);
+                        var folderNameAsNuGetFramework = NuGetFramework.Parse(frameworkName);
+                        var shortFolderName = string.Empty;
+                        if (PackTargetArgs.TargetFrameworks.Contains(folderNameAsNuGetFramework))
+                        {
+                            shortFolderName = folderNameAsNuGetFramework.GetShortFolderName();
+                        }
+                        targetFolder = Path.Combine(targetFolder, shortFolderName);
+                    }
+                }
                 var packageFile = new ManifestFile()
                 {
-                    Source = file.FinalOutputPath,
-                    Target = IsTool ? Path.Combine(targetFolder, targetPath) : Path.Combine(targetFolder, tfm, targetPath)
+                    Source = file,
+                    Target = Path.Combine(targetFolder, Path.GetFileName(file))
                 };
-
                 AddFileToBuilder(packageFile);
             }
         }
 
-        private bool AddFileToBuilder(ManifestFile packageFile)
+        private void AddFileToBuilder(ManifestFile packageFile)
         {
             if (!Files.Any(p => packageFile.Target.Equals(p.Target, StringComparison.CurrentCultureIgnoreCase)))
             {
-                var fileExtension = Path.GetExtension(packageFile.Source);
-
-                if(IncludeSymbols &&
-                    PackArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg &&
-                    !string.Equals(fileExtension, ".pdb", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-                else
-                {
-                    Files.Add(packageFile);
-                    return true;
-                }
+                Files.Add(packageFile);
             }
             else
             {
-                Logger.Log(PackagingLogMessage.CreateWarning(string.Format(
+                _logger.LogWarning(
+                    string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.FileNotAddedToPackage,
                         packageFile.Source,
-                        packageFile.Target), NuGetLogCode.NU5118));
-                return false;
+                        packageFile.Target));
             }
         }
 
@@ -186,7 +214,7 @@ namespace NuGet.Commands
                 var listOfContentMetadata = PackTargetArgs.ContentFiles[sourcePath];
                 foreach (var contentMetadata in listOfContentMetadata)
                 {
-                    var target = contentMetadata.Target;
+                    string target = contentMetadata.Target;
                     var packageFile = new ManifestFile()
                     {
                         Source = sourcePath,
@@ -194,10 +222,10 @@ namespace NuGet.Commands
                         ? Path.Combine(target, Path.GetFileName(sourcePath))
                         : target
                     };
-                    var added = AddFileToBuilder(packageFile);
+                    AddFileToBuilder(packageFile);
 
                     // Add contentFiles entry to the nuspec if applicable
-                    if (added && IsContentFile(contentMetadata.Target))
+                    if (IsContentFile(contentMetadata.Target))
                     {
                         var includePath = PathUtility.GetRelativePath("contentFiles" + Path.DirectorySeparatorChar, packageFile.Target, '/');
                         // This is just a check to see if the filename has already been appended to the target path. 
@@ -212,8 +240,6 @@ namespace NuGet.Commands
                         {
                             BuildAction = contentMetadata.BuildAction,
                             Include = includePath,
-                            CopyToOutput = contentMetadata.CopyToOutput,
-                            Flatten = contentMetadata.Flatten
                         };
                         
                         builder.ContentFiles.Add(manifestContentFile);
@@ -227,64 +253,37 @@ namespace NuGet.Commands
             foreach (var sourcePath in PackTargetArgs.SourceFiles.Keys)
             {
                 var projectDirectory = PackTargetArgs.SourceFiles[sourcePath];
-                var finalTargetPath = GetTargetPathForSourceFile(sourcePath, projectDirectory);
-
+                if (projectDirectory.EndsWith("\\"))
+                {
+                    projectDirectory = projectDirectory.Substring(0, projectDirectory.LastIndexOf("\\"));
+                }
+                var projectName = Path.GetFileName(projectDirectory);
+                string targetPath = Path.Combine(SourcesFolder, projectName);
+                if (sourcePath.Contains(projectDirectory))
+                {
+                    var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectory, string.Empty);
+                    if (relativePath.StartsWith("\\"))
+                    {
+                        relativePath = relativePath.Substring(1, relativePath.Length - 1);
+                    }
+                    if (relativePath.EndsWith("\\"))
+                    {
+                        relativePath = relativePath.Substring(0, relativePath.LastIndexOf("\\"));
+                    }
+                    targetPath = Path.Combine(targetPath, relativePath);
+                }
                 var packageFile = new ManifestFile()
                 {
                     Source = sourcePath,
-                    Target = finalTargetPath
+                    Target = Path.Combine(targetPath, Path.GetFileName(sourcePath))
                 };
                 AddFileToBuilder(packageFile);
             }
         }
 
-        public static string GetTargetPathForSourceFile(string sourcePath, string projectDirectory)
-        {
-            if(string.IsNullOrEmpty(sourcePath))
-            {
-                throw new PackagingException(NuGetLogCode.NU5020, string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourceFilePath));
-            }
-
-            if (string.IsNullOrEmpty(projectDirectory))
-            {
-                throw new PackagingException(NuGetLogCode.NU5021, string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourceFileProjectDirectory, sourcePath));
-            }
-
-            if (PathUtility.HasTrailingDirectorySeparator(projectDirectory))
-            {
-                projectDirectory = projectDirectory.Substring(0, projectDirectory.Length - 1);
-            }
-            var projectName = Path.GetFileName(projectDirectory);
-            var targetPath = Path.Combine(SourcesFolder, projectName);
-            if (sourcePath.Contains(projectDirectory))
-            {
-                // This is needed because Path.GetDirectoryName returns a path with Path.DirectorySepartorChar
-                var projectDirectoryWithSeparatorChar = PathUtility.GetPathWithDirectorySeparator(projectDirectory);
-
-                var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectoryWithSeparatorChar, string.Empty);
-                if (!string.IsNullOrEmpty(relativePath) && PathUtility.IsDirectorySeparatorChar(relativePath[0]))
-                {
-                    relativePath = relativePath.Substring(1, relativePath.Length - 1);
-                }
-                if (PathUtility.HasTrailingDirectorySeparator(relativePath))
-                {
-                    relativePath = relativePath.Substring(0, relativePath.Length - 1);
-                }
-                targetPath = Path.Combine(targetPath, relativePath);
-            }
-
-            var finalTargetPath = Path.Combine(targetPath, Path.GetFileName(sourcePath));
-            return finalTargetPath;
-        }
-
         private static bool IsContentFile(string contentFileTargetPath)
         {
             return contentFileTargetPath != null && contentFileTargetPath.StartsWith("contentFiles", StringComparison.Ordinal);
-        }
-
-        public WarningProperties GetWarningPropertiesForProject()
-        {
-            return PackArgs.WarningProperties;
         }
     }
 }

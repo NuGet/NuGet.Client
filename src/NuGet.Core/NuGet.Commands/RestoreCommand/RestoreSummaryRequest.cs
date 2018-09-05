@@ -1,7 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -15,22 +12,27 @@ namespace NuGet.Commands
     {
         public RestoreRequest Request { get; }
 
-        public IEnumerable<string> ConfigFiles { get; }
+        public ISettings Settings { get; }
 
         public IReadOnlyList<SourceRepository> Sources { get; }
 
         public string InputPath { get; }
 
+        public CollectorLogger CollectorLogger {get; }
+
         public RestoreSummaryRequest(
             RestoreRequest request,
             string inputPath,
-            IEnumerable<string> configFiles,
+            ISettings settings,
             IReadOnlyList<SourceRepository> sources)
         {
             Request = request;
-            ConfigFiles = configFiles;
+            Settings = settings;
             Sources = sources;
             InputPath = inputPath;
+
+            CollectorLogger = new CollectorLogger(request.Log);
+            request.Log = CollectorLogger;
         }
     }
 }

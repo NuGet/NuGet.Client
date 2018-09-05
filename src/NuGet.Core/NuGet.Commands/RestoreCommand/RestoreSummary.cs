@@ -1,22 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
-using NuGet.Shared;
 
 namespace NuGet.Commands
 {
     public class RestoreSummary
     {
         public bool Success { get; }
-
-        public bool NoOpRestore { get; }
 
         public string InputPath { get; }
 
@@ -26,30 +23,32 @@ namespace NuGet.Commands
 
         public int InstallCount { get; }
 
-        public IList<IRestoreLogMessage> Errors { get; }
+        public IList<string> Errors { get; }
 
         public RestoreSummary(bool success)
         {
             Success = success;
-            NoOpRestore = false;
             InputPath = null;
             ConfigFiles = new List<string>().AsReadOnly();
             FeedsUsed = new List<string>().AsReadOnly();
             InstallCount = 0;
-            Errors = new List<IRestoreLogMessage>().AsReadOnly();
+            Errors = new List<string>().AsReadOnly();
         }
 
         public RestoreSummary(
             RestoreResult result,
             string inputPath,
-            IEnumerable<string> configFiles,
+            ISettings settings,
             IEnumerable<SourceRepository> sourceRepositories,
-            IEnumerable<RestoreLogMessage> errors)
+            IEnumerable<string> errors)
         {
             Success = result.Success;
-            NoOpRestore = result is NoOpRestoreResult;
             InputPath = inputPath;
-            ConfigFiles = configFiles.AsList().AsReadOnly();
+            ConfigFiles = settings
+                .Priority
+                .Select(childSettings => Path.Combine(childSettings.Root, childSettings.FileName))
+                .ToList()
+                .AsReadOnly();
             FeedsUsed = sourceRepositories
                 .Select(source => source.PackageSource.Source)
                 .ToList()
@@ -64,7 +63,7 @@ namespace NuGet.Commands
             IEnumerable<string> configFiles,
             IEnumerable<string> feedsUsed,
             int installCount,
-            IEnumerable<IRestoreLogMessage> errors)
+            IEnumerable<string> errors)
         {
             Success = success;
             InputPath = inputPath;
@@ -74,24 +73,29 @@ namespace NuGet.Commands
             Errors = errors.ToArray();
         }
 
-        public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries, bool logErrors = false)
+        public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries)
         {
-            if (restoreSummaries.Count() == 0)
+            if (!restoreSummaries.Any())
             {
                 return;
             }
 
-            // This should only be true by nuget exe since it does not have msbuild logger
-            if (logErrors)
+            // Display the errors summary
+            foreach (var restoreSummary in restoreSummaries)
             {
-                // Display the errors summary
-                foreach (var restoreSummary in restoreSummaries)
+                if (!restoreSummary.Errors.Any())
                 {
-                    // log errors
-                    LogErrorsToConsole(
-                        restoreSummary,
-                        string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath),
-                        logger);
+                    continue;
+                }
+
+                logger.LogErrorSummary(string.Empty);
+                logger.LogErrorSummary(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
+                foreach (var error in restoreSummary.Errors)
+                {
+                    foreach (var line in IndentLines(error))
+                    {
+                        logger.LogErrorSummary(line);
+                    }
                 }
             }
 
@@ -140,30 +144,6 @@ namespace NuGet.Commands
                         Strings.Log_InstalledSummaryCount,
                         pair.Value,
                         pair.Key));
-                }
-            }
-        }
-
-        private static void LogErrorsToConsole(
-            RestoreSummary restoreSummary,
-            string logHeading,
-            ILogger logger)
-        {
-            var logs = restoreSummary
-                        .Errors
-                        .Where(m => m.Level == LogLevel.Error)
-                        .ToList();
-
-            if (logs.Count > 0)
-            {
-                logger.LogInformation(string.Empty);
-                logger.LogError(logHeading);
-                foreach (var error in logs)
-                {
-                    foreach (var line in IndentLines(error.FormatWithCode()))
-                    {
-                        logger.LogError(line);
-                    }
                 }
             }
         }

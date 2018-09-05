@@ -1,10 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
@@ -19,11 +15,9 @@ namespace NuGet.Commands
         /// its own project. For now, we always restore for a null runtime and a single
         /// constant framework.
         /// </summary>
-        public static PackageSpec GetSpec(string projectFilePath, string id, VersionRange versionRange, NuGetFramework framework, string packagesPath, IList<string> fallbackFolders, IList<PackageSource> sources, WarningProperties projectWideWarningProperties)
-
+        public static PackageSpec GetSpec(string projectFilePath, string id, VersionRange versionRange, NuGetFramework framework)
         {
-            var frameworkShortFolderName = framework.GetShortFolderName();
-            var name = GetUniqueName(id, frameworkShortFolderName, versionRange);
+            var name = $"{id}-{Guid.NewGuid().ToString()}";
 
             return new PackageSpec()
             {
@@ -49,29 +43,9 @@ namespace NuGet.Commands
                     ProjectStyle = ProjectStyle.DotnetCliTool,
                     ProjectName = name,
                     ProjectUniqueName = name,
-                    ProjectPath = projectFilePath,
-                    PackagesPath = packagesPath,
-                    FallbackFolders = fallbackFolders,
-                    Sources = sources,
-                    OriginalTargetFrameworks = {
-                        frameworkShortFolderName
-                    },
-                    TargetFrameworks =
-                    {
-                        new ProjectRestoreMetadataFrameworkInfo
-                        {
-                            FrameworkName = framework,
-                            ProjectReferences = { }
-                        }
-                    },
-                    ProjectWideWarningProperties = projectWideWarningProperties ?? new WarningProperties()
+                    ProjectPath = projectFilePath
                 }
             };
-        }
-
-        public static string GetUniqueName(string id, string framework, VersionRange versionRange)
-        {
-            return $"{id}-{framework}-{versionRange.ToNormalizedString()}".ToLowerInvariant();
         }
 
         /// <summary>

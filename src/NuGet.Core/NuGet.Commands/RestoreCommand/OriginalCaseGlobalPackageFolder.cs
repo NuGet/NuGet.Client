@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,14 +8,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
 using NuGet.Repositories;
 
 namespace NuGet.Commands
@@ -27,14 +24,7 @@ namespace NuGet.Commands
         private readonly ToolPathResolver _toolPathResolver;
         private readonly VersionFolderPathResolver _pathResolver;
 
-        public Guid ParentId { get; }
-
-        public OriginalCaseGlobalPackageFolder(RestoreRequest request) :
-            this(request, Guid.Empty)
-        {
-        }
-
-        public OriginalCaseGlobalPackageFolder(RestoreRequest request, Guid parentId)
+        public OriginalCaseGlobalPackageFolder(RestoreRequest request)
         {
             if (request == null)
             {
@@ -61,9 +51,6 @@ namespace NuGet.Commands
             // Keep track of the packages we've already converted to original case.
             var converted = new HashSet<PackageIdentity>();
 
-            var originalCaseContext = GetPathContext();
-            var versionFolderPathResolver = new VersionFolderPathResolver(_request.PackagesDirectory, _request.IsLowercasePackagesDirectory);
-
             // Iterate over every package node.
             foreach (var graph in graphs)
             {
@@ -84,45 +71,20 @@ namespace NuGet.Commands
                         continue;
                     }
 
-                    var localPackageSourceInfo = GetLocalPackageSourceInfo(remoteMatch);
-                    var packageIdentity = new PackageIdentity(remoteMatch.Library.Name, remoteMatch.Library.Version);
-                    IPackageDownloader packageDependency = null;
-
-                    if (string.IsNullOrEmpty(localPackageSourceInfo?.Package.ZipPath))
-                    {
-                        packageDependency = await remoteMatch.Provider.GetPackageDownloaderAsync(
-                            packageIdentity,
-                            _request.CacheContext,
-                            _request.Log,
-                            token);
-                    }
-                    else
-                    {
-                        packageDependency = new LocalPackageArchiveDownloader(
-                            localPackageSourceInfo.Repository.RepositoryRoot,
-                            localPackageSourceInfo.Package.ZipPath,
-                            packageIdentity,
-                            _request.Log);
-                    }
+                    var originalCaseContext = GetPathContext(identity, isLowercase: _request.IsLowercasePackagesDirectory);
 
                     // Install the package.
-                    using (packageDependency)
-                    {
-                        var result = await PackageExtractor.InstallFromSourceAsync(
-                            identity,
-                            packageDependency,
-                            versionFolderPathResolver,
-                            originalCaseContext,
-                            token,
-                            ParentId);
+                    var installed = await PackageExtractor.InstallFromSourceAsync(
+                        destination => CopyToAsync(remoteMatch, destination, token),
+                        originalCaseContext,
+                        token);
 
-                        if (result)
-                        {
-                            _request.Log.LogMinimal(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Log_ConvertedPackageToOriginalCase,
-                                identity));
-                        }
+                    if (installed)
+                    {
+                        _request.Log.LogMinimal(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Log_ConvertedPackageToOriginalCase,
+                            identity));
                     }
                 }
             }
@@ -141,16 +103,15 @@ namespace NuGet.Commands
             }
         }
 
-        private PackageExtractionContext GetPathContext()
+        private VersionFolderPathContext GetPathContext(PackageIdentity packageIdentity, bool isLowercase)
         {
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
-            return new PackageExtractionContext(
-                _request.PackageSaveMode,
-                _request.XmlDocFileSaveMode,
+            return new VersionFolderPathContext(
+                packageIdentity,
+                _request.PackagesDirectory,
+                isLowercase,
                 _request.Log,
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
+                _request.PackageSaveMode,
+                _request.XmlDocFileSaveMode);
         }
 
         private static PackageIdentity GetPackageIdentity(RemoteMatch remoteMatch)
@@ -160,11 +121,11 @@ namespace NuGet.Commands
                 remoteMatch.Library.Version);
         }
 
-        private LocalPackageSourceInfo GetLocalPackageSourceInfo(RemoteMatch remoteMatch)
+        private async Task CopyToAsync(RemoteMatch remoteMatch, Stream destination, CancellationToken token)
         {
             var library = remoteMatch.Library;
-
-            // Try to get the package from the local repositories first.
+            
+            // Try to get the package from the local repositories first. 
             var localPackage = NuGetv3LocalRepositoryUtility.GetPackage(
                 _localRepositories,
                 library.Name,
@@ -172,10 +133,27 @@ namespace NuGet.Commands
 
             if (localPackage != null && File.Exists(localPackage.Package.ZipPath))
             {
-                return localPackage;
+                using (var stream = new FileStream(
+                    localPackage.Package.ZipPath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read,
+                    bufferSize: 4096,
+                    useAsync: true))
+                {
+                    await stream.CopyToAsync(destination, bufferSize: 4096, cancellationToken: token);
+                }
             }
-
-            return null;
+            else
+            {
+                // Otherwise, get it from the provider.
+                await remoteMatch.Provider.CopyToAsync(
+                    remoteMatch.Library,
+                    destination,
+                    _request.CacheContext,
+                    _request.Log,
+                    token);
+            }
         }
     }
 }

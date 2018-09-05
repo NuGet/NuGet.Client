@@ -1,7 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using NuGet.Common;
@@ -17,16 +14,18 @@ namespace NuGet.Commands
     /// </summary>
     public class RestoreCommandProvidersCache
     {
+        // Paths are case insensitive on windows
+        private static readonly StringComparer _comparer 
+            = RuntimeEnvironmentHelper.IsWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+
         private readonly ConcurrentDictionary<SourceRepository, IRemoteDependencyProvider> _remoteProviders
             = new ConcurrentDictionary<SourceRepository, IRemoteDependencyProvider>();
 
         private readonly ConcurrentDictionary<string, IRemoteDependencyProvider> _localProvider
-            = new ConcurrentDictionary<string, IRemoteDependencyProvider>(PathUtility.GetStringComparerBasedOnOS());
+            = new ConcurrentDictionary<string, IRemoteDependencyProvider>(_comparer);
 
         private readonly ConcurrentDictionary<string, NuGetv3LocalRepository> _globalCache
-            = new ConcurrentDictionary<string, NuGetv3LocalRepository>(PathUtility.GetStringComparerBasedOnOS());
-
-        private readonly LocalPackageFileCache _fileCache = new LocalPackageFileCache();
+            = new ConcurrentDictionary<string, NuGetv3LocalRepository>(_comparer);
 
         public RestoreCommandProviders GetOrCreate(
             string globalPackagesPath,
@@ -35,7 +34,7 @@ namespace NuGet.Commands
             SourceCacheContext cacheContext,
             ILogger log)
         {
-            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, (path) => new NuGetv3LocalRepository(path, _fileCache));
+            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, (path) => new NuGetv3LocalRepository(path));
 
             var local = _localProvider.GetOrAdd(globalPackagesPath, (path) =>
             {
@@ -48,8 +47,7 @@ namespace NuGet.Commands
                     log,
                     cacheContext,
                     ignoreFailedSources: true,
-                    ignoreWarning: true,
-                    fileCache: _fileCache);
+                    ignoreWarning: true);
             });
 
             var localProviders = new List<IRemoteDependencyProvider>() { local };
@@ -57,7 +55,7 @@ namespace NuGet.Commands
 
             foreach (var fallbackPath in fallbackPackagesPaths)
             {
-                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path, _fileCache));
+                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path));
                 fallbackFolders.Add(cache);
 
                 var localProvider = _localProvider.GetOrAdd(fallbackPath, (path) =>
@@ -71,8 +69,7 @@ namespace NuGet.Commands
                         log,
                         cacheContext,
                         ignoreFailedSources: false,
-                        ignoreWarning: false,
-                        fileCache: _fileCache);
+                        ignoreWarning: false);
                 });
 
                 localProviders.Add(localProvider);
@@ -87,13 +84,12 @@ namespace NuGet.Commands
                     log,
                     cacheContext,
                     cacheContext.IgnoreFailedSources,
-                    ignoreWarning: false,
-                    fileCache: _fileCache));
+                    ignoreWarning: false));
 
                 remoteProviders.Add(remoteProvider);
             }
 
-            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, _fileCache);
+            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders);
         }
     }
 }
