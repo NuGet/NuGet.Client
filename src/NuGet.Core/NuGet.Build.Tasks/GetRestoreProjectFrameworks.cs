@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Build.Framework;
@@ -12,7 +12,7 @@ namespace NuGet.Build.Tasks
     /// Determine the project's targetframework(s) based
     /// on the available properties.
     /// </summary>
-    public class GetProjectTargetFrameworksTask : Task
+    public class GetRestoreProjectFrameworks : Task
     {
         /// <summary>
         /// Full path to the msbuild project.
@@ -29,11 +29,6 @@ namespace NuGet.Build.Tasks
         /// Optional TargetPlatformIdentifier property value.
         /// </summary>
         public string TargetPlatformIdentifier { get; set; }
-
-        /// <summary>
-        /// Optional TargetPlatformMinVersion property value.
-        /// </summary>
-        public string TargetPlatformMinVersion { get; set; }
 
         /// <summary>
         /// Optional TargetPlatformVersion property value.
@@ -63,7 +58,6 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) TargetFrameworkMoniker '{TargetFrameworkMoniker}'");
             log.LogDebug($"(in) TargetPlatformIdentifier '{TargetPlatformIdentifier}'");
             log.LogDebug($"(in) TargetPlatformVersion '{TargetPlatformVersion}'");
-            log.LogDebug($"(in) TargetPlatformMinVersion '{TargetPlatformMinVersion}'");
             log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
             log.LogDebug($"(in) TargetFramework '{TargetFramework}'");
 
@@ -74,8 +68,7 @@ namespace NuGet.Build.Tasks
                 targetFramework: TargetFramework,
                 targetFrameworkMoniker: TargetFrameworkMoniker,
                 targetPlatformIdentifier: TargetPlatformIdentifier,
-                targetPlatformVersion: TargetPlatformVersion,
-                targetPlatformMinVersion: TargetPlatformMinVersion);
+                targetPlatformVersion: TargetPlatformVersion);
 
             ProjectTargetFrameworks = string.Join(";", frameworks);
 

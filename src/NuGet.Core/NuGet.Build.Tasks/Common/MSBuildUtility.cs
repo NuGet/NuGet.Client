@@ -9,7 +9,7 @@ using NuGet.Common;
 
 namespace NuGet.Build
 {
-    internal static class MSBuildUtility
+    public static class MSBuildUtility
     {
         public static IMSBuildItem WrapMSBuildItem(ITaskItem item)
         {

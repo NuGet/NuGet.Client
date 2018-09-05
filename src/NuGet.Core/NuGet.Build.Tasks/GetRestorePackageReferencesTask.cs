@@ -1,7 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Build.Framework;
@@ -40,22 +37,13 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) PackageReferences '{string.Join(";", PackageReferences.Select(p => p.ItemSpec))}'");
 
             var entries = new List<ITaskItem>();
-            var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var msbuildItem in PackageReferences)
             {
-                var packageId = msbuildItem.ItemSpec;
-
-                if (string.IsNullOrEmpty(packageId) || !seenIds.Add(packageId))
-                {
-                    // Skip empty or already processed ids
-                    continue;
-                }
-
                 var properties = new Dictionary<string, string>();
                 properties.Add("ProjectUniqueName", ProjectUniqueName);
                 properties.Add("Type", "Dependency");
-                properties.Add("Id", packageId);
+                properties.Add("Id", msbuildItem.ItemSpec);
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version", "VersionRange");
 
                 if (!string.IsNullOrEmpty(TargetFrameworks))
@@ -66,9 +54,6 @@ namespace NuGet.Build.Tasks
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "IncludeAssets");
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "ExcludeAssets");
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "PrivateAssets");
-                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "NoWarn");
-                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "IsImplicitlyDefined");
-                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "GeneratePathProperty");
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
             }
