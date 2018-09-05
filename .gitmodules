@@ -9,3 +9,7 @@
 [submodule "submodules/NuGet.Build.Localization"]
 	path = submodules/NuGet.Build.Localization
 	url = https://github.com/NuGet/NuGet.Build.Localization.git
+[submodule "submodules/NuGet.Services.Metadata"]
+	path = submodules/NuGet.Services.Metadata
+	url = https://github.com/nuget/nuget.services.metadata.git
+	branch = searchcloud
