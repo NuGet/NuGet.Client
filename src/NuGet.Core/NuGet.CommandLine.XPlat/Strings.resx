@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -279,7 +279,7 @@
     <value>Determines if the output files of the project should be in the tool folder.</value>
   </data>
   <data name="Restore_Switch_IgnoreFailedSource_Description" xml:space="preserve">
-    <value>Only warn about failed sources if there are packages meeting version requirement.</value>
+    <value>Only warning failed sources if there are packages meeting version requirement</value>
   </data>
   <data name="Exclude_Description" xml:space="preserve">
     <value>Specifies one or more wildcard patterns to exclude when creating a package.</value>
@@ -292,8 +292,6 @@
   </data>
   <data name="OutputNuGetVersion" xml:space="preserve">
     <value>{0} Version: {1}</value>
-    <comment>{0}: App full name
-{1}: App version</comment>
   </data>
   <data name="Serviceable_Description" xml:space="preserve">
     <value>Sets the nuspec serviceable element to true.</value>
@@ -318,25 +316,25 @@
     <value>List the selected local resources or cache location(s).</value>
   </data>
   <data name="LocalsCommand_Description" xml:space="preserve">
-    <value>Clears or lists local NuGet resources such as http requests cache, packages folder, plugin operations cache  or machine-wide global packages folder.</value>
+    <value>Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder.</value>
   </data>
   <data name="LocalsCommand_Help" xml:space="preserve">
-    <value>usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
+    <value>usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
 For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="LocalsCommand_MultipleOperations" xml:space="preserve">
     <value>Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.
-usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
+usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
 For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="LocalsCommand_NoArguments" xml:space="preserve">
     <value>No Cache Type was specified.
-usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
+usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
 For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="LocalsCommand_NoOperation" xml:space="preserve">
     <value>Please specify an operation i.e. --list or --clear.
-usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
+usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
 For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="Error_MsBuildUnableToOpenProject" xml:space="preserve">
@@ -412,7 +410,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Error while performing {0} for package '{1}'. Cannot edit items in imported files - {2}{3}</value>
     <comment>{0} - Operation Name
 {1} - packageId
-{2} - New line (this is just to hold a new line between sentences. does not need any translation)
+{2} - New line
 {3} - Error string</comment>
   </data>
   <data name="Info_AddPkgAdded" xml:space="preserve">
@@ -457,120 +455,5 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Unable to {0} package. Missing or Invalid project file '{1}'.</value>
     <comment>{0} - Operation Name
 {1} - project file path</comment>
-  </data>
-  <data name="Error_NoMatchingSpecs" xml:space="preserve">
-    <value>No matching package specs found when attempting to add package '{0}' to project '{1}'.</value>
-    <comment>{0} - Package ID
-{1} - Project path</comment>
-  </data>
-  <data name="Error_UnsupportedProject" xml:space="preserve">
-    <value>Error while adding package '{0}' to project '{1}'. The project does not support adding package references through the add package command.</value>
-    <comment>{0} - Package Id
-{1} - Project path</comment>
-  </data>
-  <data name="NoServiceEndpoint_Description" xml:space="preserve">
-    <value>--no-service-endpoint does not append "api/v2/packages" to the source URL.</value>
-  </data>
-  <data name="AddPkg_InteractiveDescription" xml:space="preserve">
-    <value>Allow the command to block and require manual action for operations like authentication.</value>
-  </data>
-  <data name="ListPkg_DeprecatedDescription" xml:space="preserve">
-    <value>Displays only the packages marked deprecated by the authors.</value>
-  </data>
-  <data name="ListPkg_Description" xml:space="preserve">
-    <value>Lists all the packages used by the current project(s).</value>
-  </data>
-  <data name="ListPkg_FrameworkDescription" xml:space="preserve">
-    <value>Specifies the target framework for which the packages will be listed.</value>
-  </data>
-  <data name="ListPkg_OutdatedDescription" xml:space="preserve">
-    <value>Displays only the packages that need updates with the latest version from the sources.</value>
-  </data>
-  <data name="ListPkg_TransitiveDescription" xml:space="preserve">
-    <value>Includes transitive packages too in the result.</value>
-  </data>
-  <data name="ListPkg_PathDescription" xml:space="preserve">
-    <value>A path to a project, solution file or directory.</value>
-  </data>
-  <data name="Error_AssetsFileNotFound" xml:space="preserve">
-    <value>No assets file was found for `{0}`. Please run restore before running this command.</value>
-  </data>
-  <data name="ListPkg_ProjectHeaderLog" xml:space="preserve">
-    <value>Project '{0}' has the following package references</value>
-  </data>
-  <data name="ListPkg_AutoReferenceDescription" xml:space="preserve">
-    <value>(A) : Auto-referenced package.</value>
-  </data>
-  <data name="ListPkg_NoPackagesForFramework" xml:space="preserve">
-    <value>No packages were found for this framework.</value>
-  </data>
-  <data name="ListPkg_NoPackagesFoundForFrameworks" xml:space="preserve">
-    <value>No packages were found for the project `{0}` given the specified frameworks.</value>
-  </data>
-  <data name="ListPkg_ConfigDescription" xml:space="preserve">
-    <value>A path to a config file to specify sources. Works only with `--outdated`.</value>
-  </data>
-  <data name="ListPkg_HighestMinorDescription" xml:space="preserve">
-    <value>Considers only the versions with matching major. Works only with `--outdated`.</value>
-  </data>
-  <data name="ListPkg_HighestPatchDescription" xml:space="preserve">
-    <value>Considers only the versions with matching minor and major. Works only with `--outdated`.</value>
-  </data>
-  <data name="ListPkg_PrereleaseDescription" xml:space="preserve">
-    <value>Considers prerelease versions when looking for latest. Works only with `--outdated`.</value>
-  </data>
-  <data name="ListPkg_SourceDescription" xml:space="preserve">
-    <value>Sources to lookup for latest versions. Works only with `--outdated`.</value>
-  </data>
-  <data name="Error_NotPRProject" xml:space="preserve">
-    <value>The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects.</value>
-  </data>
-  <data name="ListPkg_DeprecatedPkgDescription" xml:space="preserve">
-    <value>(D) : The owner has unlisted this package. This could mean the package is deprecated or shouldn't be used anymore.</value>
-  </data>
-  <data name="ListPkg_ErrorReadingAssetsFile" xml:space="preserve">
-    <value>Unable to read the assets file `{0}`. Please make sure the file has the write format.</value>
-  </data>
-  <data name="ListPkg_ErrorReadingReferenceFromProject" xml:space="preserve">
-    <value>Unable to read a package reference from the project `{0}`. Please make sure that your project file and project.assets.json file are in sync by running restore.</value>
-  </data>
-  <data name="ListPkg_InvalidFramework" xml:space="preserve">
-    <value>Failed to parse one of the given frameworks. Please make sure the given frameworks are valid.</value>
-  </data>
-  <data name="ListPkg_Latest" xml:space="preserve">
-    <value>Latest</value>
-  </data>
-  <data name="ListPkg_NotFoundAtSources" xml:space="preserve">
-    <value>Not found at the sources</value>
-  </data>
-  <data name="ListPkg_Requested" xml:space="preserve">
-    <value>Requested</value>
-  </data>
-  <data name="ListPkg_Resolved" xml:space="preserve">
-    <value>Resolved</value>
-  </data>
-  <data name="ListPkg_TopLevelHeader" xml:space="preserve">
-    <value>Top-level Package</value>
-  </data>
-  <data name="ListPkg_TransitiveHeader" xml:space="preserve">
-    <value>Transitive Package</value>
-  </data>
-  <data name="PushCommand_Interactive" xml:space="preserve">
-    <value>Allow the command to block and require manual action for operations like authentication.</value>
-  </data>
-  <data name="ListPkg_ErrorFileNotFound" xml:space="preserve">
-    <value>The given file `{0}` was not found</value>
-  </data>
-  <data name="ListPkg_NoUpdatesForFramework" xml:space="preserve">
-    <value>No updates available for this framework packages.</value>
-  </data>
-  <data name="ListPkg_NoUpdatesForProject" xml:space="preserve">
-    <value>The given project `{0}` have no updates given the current sources.</value>
-  </data>
-  <data name="ListPkg_ProjectUpdatesHeaderLog" xml:space="preserve">
-    <value>Project `{0}` has the following updates to its packages</value>
-  </data>
-  <data name="ListPkg_SourcesUsedDescription" xml:space="preserve">
-    <value>The following sources were used:</value>
   </data>
 </root>

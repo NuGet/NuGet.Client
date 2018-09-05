@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,6 +21,7 @@ namespace NuGet.CommandLine.XPlat
         {
             // Start with a default logger, this will be updated according to the passed in verbosity
             var log = new CommandOutputLogger(LogLevel.Information);
+
             return MainInternal(args, log);
         }
 
@@ -142,7 +143,6 @@ namespace NuGet.CommandLine.XPlat
             {
                 AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
                 RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
-                ListPackageCommand.Register(app, () => log, () => new ListPackageCommandRunner());
             }
             else
             {

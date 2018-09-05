@@ -1,6 +1,3 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -8,7 +5,6 @@ using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Credentials;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -66,16 +62,6 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Push_Package_ApiKey_Description,
                     multipleValues: true);
 
-                var noServiceEndpointDescription = push.Option(
-                    "--no-service-endpoint",
-                    Strings.NoServiceEndpoint_Description,
-                    CommandOptionType.NoValue);
-
-                var interactive = push.Option(
-                    "--interactive",
-                    Strings.PushCommand_Interactive,
-                    CommandOptionType.SingleValue);
-
                 push.OnExecute(async () =>
                 {
                     if (arguments.Values.Count < 1)
@@ -90,7 +76,6 @@ namespace NuGet.CommandLine.XPlat
                     string symbolApiKeyValue = symbolApiKey.Value();
                     bool disableBufferingValue = disableBuffering.HasValue();
                     bool noSymbolsValue = noSymbols.HasValue();
-                    bool noServiceEndpoint = noServiceEndpointDescription.HasValue();
                     int timeoutSeconds = 0;
 
                     if (timeout.HasValue() && !int.TryParse(timeout.Value(), out timeoutSeconds))
@@ -98,12 +83,10 @@ namespace NuGet.CommandLine.XPlat
                         throw new ArgumentException(Strings.Push_InvalidTimeout);
                     }
 
-                    var sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
+                    PackageSourceProvider sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
 
                     try
                     {
-                        DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
-
                         await PushRunner.Run(
                             sourceProvider.Settings,
                             sourceProvider,
@@ -115,7 +98,6 @@ namespace NuGet.CommandLine.XPlat
                             timeoutSeconds,
                             disableBufferingValue,
                             noSymbolsValue,
-                            noServiceEndpoint,
                             getLogger());
                     }
                     catch (TaskCanceledException ex)

@@ -1,7 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
@@ -45,11 +42,6 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Delete_PackageIdAndVersion_Description,
                     multipleValues: true);
 
-                var noServiceEndpointDescription = delete.Option(
-                    "--no-service-endpoint",
-                    Strings.NoServiceEndpoint_Description,
-                    CommandOptionType.NoValue);
-
                 delete.OnExecute(async () =>
                 {
                     if (arguments.Values.Count < 2)
@@ -62,7 +54,6 @@ namespace NuGet.CommandLine.XPlat
                     string sourcePath = source.Value();
                     string apiKeyValue = apikey.Value();
                     bool nonInteractiveValue = nonInteractive.HasValue();
-                    bool noServiceEndpoint = noServiceEndpointDescription.HasValue();
 
                     PackageSourceProvider sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
 
@@ -74,7 +65,6 @@ namespace NuGet.CommandLine.XPlat
                         sourcePath,
                         apiKeyValue,
                         nonInteractiveValue,
-                        noServiceEndpoint,
                         Confirm,
                         getLogger());
 
