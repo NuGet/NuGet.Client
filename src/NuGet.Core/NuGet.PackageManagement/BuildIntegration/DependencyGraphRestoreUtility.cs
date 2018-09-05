@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,10 +10,12 @@ using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.LibraryModel;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
@@ -28,18 +30,49 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Restore a solution and cache the dg spec to context.
         /// </summary>
+        public static Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
+            ISolutionManager solutionManager,
+            DependencyGraphCacheContext context,
+            RestoreCommandProvidersCache providerCache,
+            Action<SourceCacheContext> cacheContextModifier,
+            IEnumerable<SourceRepository> sources,
+            ISettings settings,
+            ILogger log,
+            CancellationToken token)
+        {
+            return RestoreAsync(
+                solutionManager,
+                context,
+                providerCache,
+                cacheContextModifier,
+                sources,
+                userPackagesPath: null,
+                settings: settings,
+                log: log,
+                token: token);
+        }
+
+        /// <summary>
+        /// Restore a solution and cache the dg spec to context.
+        /// </summary>
         public static async Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            Guid parentId,
-            bool forceRestore,
-            DependencyGraphSpec dgSpec,
+            string userPackagesPath,
+            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
+            // Get full dg spec
+            var dgSpec = await GetSolutionRestoreSpec(solutionManager, context);
+
+            // Cache spec
+            context.SolutionSpec = dgSpec;
+            context.SolutionSpecHash = dgSpec.GetHash();
+
             // Check if there are actual projects to restore before running.
             if (dgSpec.Restore.Count > 0)
             {
@@ -51,17 +84,15 @@ namespace NuGet.PackageManagement
                     var restoreContext = GetRestoreContext(
                         context,
                         providerCache,
+                        settings,
                         sourceCacheContext,
                         sources,
                         dgSpec,
-                        parentId,
-                        forceRestore);
+                        userPackagesPath);
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
 
                     RestoreSummary.Log(log, restoreSummaries);
-
-                    await PersistDGSpec(dgSpec);
 
                     return restoreSummaries;
                 }
@@ -79,8 +110,7 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            Guid parentId,
-            bool forceRestore,
+            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -95,11 +125,11 @@ namespace NuGet.PackageManagement
                     var restoreContext = GetRestoreContext(
                         context,
                         providerCache,
+                        settings,
                         sourceCacheContext,
                         sources,
                         dgSpec,
-                        parentId,
-                        forceRestore: forceRestore);
+                        userPackagesPath: null);
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
 
@@ -112,26 +142,33 @@ namespace NuGet.PackageManagement
             return new List<RestoreSummary>();
         }
 
-        private static async Task PersistDGSpec(DependencyGraphSpec dgSpec)
+        /// <summary>
+        /// Restore without writing the lock file
+        /// </summary>
+        internal static Task<RestoreResultPair> PreviewRestoreAsync(
+            ISolutionManager solutionManager,
+            BuildIntegratedNuGetProject project,
+            PackageSpec packageSpec,
+            DependencyGraphCacheContext context,
+            RestoreCommandProvidersCache providerCache,
+            Action<SourceCacheContext> cacheContextModifier,
+            IEnumerable<SourceRepository> sources,
+            ISettings settings,
+            ILogger log,
+            CancellationToken token)
         {
-            try
-            {
-                var filePath = Path.Combine(
-                        NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
-                        "nuget-dg",
-                        "nugetSpec.dg");
-
-                // create nuget temp folder if not exists
-                DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(filePath));
-
-                // delete existing dg spec file (if exists) then replace it with new file.
-                await FileUtility.ReplaceWithLock(
-                    (tempFile) => dgSpec.Save(tempFile), filePath);
-            }
-            catch (Exception)
-            {
-                //ignore any failure if it fails to write or replace dg spec file.
-            }
+            return PreviewRestoreAsync(
+                solutionManager,
+                project,
+                packageSpec,
+                context,
+                providerCache,
+                cacheContextModifier,
+                sources,
+                userPackagesPath: null,
+                settings: settings,
+                log: log,
+                token: token);
         }
 
         /// <summary>
@@ -145,7 +182,8 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            Guid parentId,
+            string userPackagesPath,
+            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
@@ -166,7 +204,7 @@ namespace NuGet.PackageManagement
                 cacheContextModifier(sourceCacheContext);
 
                 // Settings passed here will be used to populate the restore requests.
-                var restoreContext = GetRestoreContext(context, providerCache, sourceCacheContext, sources, dgFile, parentId, forceRestore: true);
+                RestoreArgs restoreContext = GetRestoreContext(context, providerCache, settings, sourceCacheContext, sources, dgFile, userPackagesPath);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -175,7 +213,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Restore a build integrated project(PackageReference and Project.Json only) and update the lock file
+        /// Restore a build integrated project and update the lock file
         /// </summary>
         public static async Task<RestoreResult> RestoreProjectAsync(
             ISolutionManager solutionManager,
@@ -184,14 +222,14 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
-            Guid parentId,
+            ISettings settings,
             ILogger log,
             CancellationToken token)
         {
             // Restore
             var specs = await project.GetPackageSpecsAsync(context);
             var spec = specs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
-                || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson); // Do not restore global tools Project Style in VS. 
+                || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson);
 
             var result = await PreviewRestoreAsync(
                 solutionManager,
@@ -201,7 +239,7 @@ namespace NuGet.PackageManagement
                 providerCache,
                 cacheContextModifier,
                 sources,
-                parentId,
+                settings,
                 log,
                 token);
 
@@ -216,27 +254,68 @@ namespace NuGet.PackageManagement
             return result.Result;
         }
 
-        public static bool IsRestoreRequired(
-            DependencyGraphSpec solutionDgSpec)
+        public static async Task<bool> IsRestoreRequiredAsync(
+            ISolutionManager solutionManager,
+            bool forceRestore,
+            INuGetPathContext pathContext,
+            DependencyGraphCacheContext cacheContext,
+            string oldDependencyGraphSpecHash)
         {
+            var projects = solutionManager.GetNuGetProjects().OfType<IDependencyGraphProject>().ToArray();
+
+            var solutionDgSpec = await GetSolutionRestoreSpec(solutionManager, cacheContext);
+
             if (solutionDgSpec.Restore.Count < 1)
             {
                 // Nothing to restore
                 return false;
             }
-            // NO Op will be checked in the restore command 
-            return true;
+
+            var newDependencyGraphSpecHash = solutionDgSpec.GetHash();
+            cacheContext.SolutionSpec = solutionDgSpec;
+            cacheContext.SolutionSpecHash = newDependencyGraphSpecHash;
+
+            // Comment by @emgarten from PR -
+            // Force is only done during a rebuild, all of the work done here to build the dg file is stored in the cache context and used again later on.
+            // The time different should only be the time it takes to create the hash, which @dtivel has perf numbers on.
+            if (forceRestore || (oldDependencyGraphSpecHash != newDependencyGraphSpecHash))
+            {
+                // A new project has been added
+                return true;
+            }
+
+            // Read package folder locations, initializing them in order of priority
+            var packageFolderPaths = new List<string>();
+            packageFolderPaths.Add(pathContext.UserPackageFolder);
+            packageFolderPaths.AddRange(pathContext.FallbackPackageFolders);
+            var pathResolvers = packageFolderPaths.Select(path => new VersionFolderPathResolver(path));
+
+            var packagesChecked = new HashSet<PackageIdentity>();
+            if (
+                projects.Select(async p => await p.IsRestoreRequired(pathResolvers, packagesChecked, cacheContext))
+                    .Any(r => r.Result == true))
+            {
+                // The project.json file does not match the lock file
+                return true;
+            }
+
+            if (cacheContext.DeferredPackageSpecs.Where(spec => spec.RestoreMetadata.ProjectJsonPath != null).
+                Select(p => IsRestoreRequired(p, pathResolvers, packagesChecked, cacheContext))
+                .Any(r => r == true))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public static async Task<PackageSpec> GetProjectSpec(IDependencyGraphProject project, DependencyGraphCacheContext context)
         {
             var specs = await project.GetPackageSpecsAsync(context);
 
-            var projectSpec =  specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
+            return specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
                 && e.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
                 .FirstOrDefault();
-
-            return projectSpec;
         }
 
         public static async Task<DependencyGraphSpec> GetSolutionRestoreSpec(
@@ -245,7 +324,20 @@ namespace NuGet.PackageManagement
         {
             var dgSpec = new DependencyGraphSpec();
 
-            var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>();
+            foreach (var packageSpec in context.DeferredPackageSpecs)
+            {
+                dgSpec.AddProject(packageSpec);
+
+                if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
+                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
+                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
+                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone)
+                {
+                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+                }
+            }
+
+            var projects = solutionManager.GetNuGetProjects().OfType<IDependencyGraphProject>();
 
             foreach (var project in projects)
             {
@@ -258,7 +350,7 @@ namespace NuGet.PackageManagement
                     if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
                         packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
                         packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
-                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone) // Don't add global tools to restore specs for solutions
+                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone)
                     {
                         dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
                     }
@@ -274,31 +366,95 @@ namespace NuGet.PackageManagement
         private static RestoreArgs GetRestoreContext(
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
+            ISettings settings,
             SourceCacheContext sourceCacheContext,
             IEnumerable<SourceRepository> sources,
             DependencyGraphSpec dgFile,
-            Guid parentId,
-            bool forceRestore)
+            string userPackagesPath)
         {
-            var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings));
-            foreach( var source in sources)
-            {
-                caching.AddSourceRepository(source);
-            }
-
-            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile);
+            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile, settings);
 
             var restoreContext = new RestoreArgs()
             {
                 CacheContext = sourceCacheContext,
                 PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>() { dgProvider },
                 Log = context.Logger,
-                AllowNoOp = !forceRestore,
-                CachingSourceProvider = caching,
-                ParentId = parentId
+                SourceRepositories = sources.ToList(),
+                GlobalPackagesFolder = userPackagesPath // Optional, this will load from settings if null
             };
 
             return restoreContext;
+        }
+
+        private static bool IsRestoreRequired(
+            PackageSpec packageSpec,
+            IEnumerable<VersionFolderPathResolver> pathResolvers,
+            ISet<PackageIdentity> packagesChecked,
+            DependencyGraphCacheContext context)
+        {
+            var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(packageSpec.RestoreMetadata.ProjectJsonPath);
+
+            if (!File.Exists(lockFilePath))
+            {
+                // If the lock file does not exist a restore is needed
+                return true;
+            }
+
+            var lockFileFormat = new LockFileFormat();
+            LockFile lockFile;
+            try
+            {
+                lockFile = lockFileFormat.Read(lockFilePath, context.Logger);
+            }
+            catch
+            {
+                // If the lock file is invalid, then restore.
+                return true;
+            }
+
+            // Verify all libraries are on disk
+            var packages = lockFile.Libraries.Where(library => library.Type == LibraryType.Package);
+
+            foreach (var library in packages)
+            {
+                var identity = new PackageIdentity(library.Name, library.Version);
+
+                // Each id/version only needs to be checked once
+                if (packagesChecked.Add(identity))
+                {
+                    var found = false;
+
+                    //  Check each package folder. These need to match the order used for restore.
+                    foreach (var resolver in pathResolvers)
+                    {
+                        // Verify the SHA for each package
+                        var hashPath = resolver.GetHashPath(library.Name, library.Version);
+
+                        if (File.Exists(hashPath))
+                        {
+                            found = true;
+                            var sha512 = File.ReadAllText(hashPath);
+
+                            if (library.Sha512 != sha512)
+                            {
+                                // A package has changed
+                                return true;
+                            }
+
+                            // Skip checking the rest of the package folders
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        // A package is missing
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }
