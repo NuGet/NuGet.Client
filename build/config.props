@@ -25,7 +25,7 @@
     <TestSDKVersion>15.5.0</TestSDKVersion>
     <MoqVersion>4.7.145</MoqVersion>
     <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
-    <MicrosoftBuildPackageVersion>15.1.1012</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>0.1.0-preview-00038-160914</MicrosoftBuildPackageVersion>
   </PropertyGroup>
 
   <!-- Config -->

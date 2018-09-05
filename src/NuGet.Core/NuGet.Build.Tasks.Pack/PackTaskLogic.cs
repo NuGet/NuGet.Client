@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -24,28 +23,30 @@ namespace NuGet.Build.Tasks.Pack
         {
             var packArgs = new PackArgs
             {
-                InstallPackageToOutputPath = request.InstallPackageToOutputPath,
-                OutputFileNamesWithoutVersion = request.OutputFileNamesWithoutVersion,
+                Logger = request.Logger,
                 OutputDirectory = request.PackageOutputPath,
                 Serviceable = request.Serviceable,
                 Tool = request.IsTool,
                 Symbols = request.IncludeSymbols,
-                SymbolPackageFormat = PackArgs.GetSymbolPackageFormat(request.SymbolPackageFormat),
                 BasePath = request.NuspecBasePath,
                 NoPackageAnalysis = request.NoPackageAnalysis,
-                NoDefaultExcludes = request.NoDefaultExcludes,
-                WarningProperties = WarningProperties.GetWarningProperties(request.TreatWarningsAsErrors, request.WarningsAsErrors, request.NoWarn),
-                PackTargetArgs = new MSBuildPackTargetArgs()
+                PackTargetArgs = new MSBuildPackTargetArgs
+                {
+                    TargetPathsToAssemblies = GetTargetPathsToAssemblies(request),
+                    TargetPathsToSymbols = request.TargetPathsToSymbols,
+                    AssemblyName = request.AssemblyName,
+                    IncludeBuildOutput = request.IncludeBuildOutput,
+                    BuildOutputFolder = request.BuildOutputFolder,
+                    TargetFrameworks = ParseFrameworks(request)
+                }
             };
-
-            packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties);
 
             if (request.MinClientVersion != null)
             {
                 Version version;
                 if (!Version.TryParse(request.MinClientVersion, out version))
                 {
-                    throw new PackagingException(NuGetLogCode.NU5022, string.Format(
+                    throw new ArgumentException(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.InvalidMinClientVersion,
                         request.MinClientVersion));
@@ -54,43 +55,28 @@ namespace NuGet.Build.Tasks.Pack
                 packArgs.MinClientVersion = version;
             }
 
+            if (request.NuspecProperties != null && request.NuspecProperties.Any())
+            {
+                packArgs.Properties.AddRange(ParsePropertiesAsDictionary(request.NuspecProperties));
+                if (packArgs.Properties.ContainsKey("version"))
+                {
+                    packArgs.Version = packArgs.Properties["version"];
+                }
+            }
 
             InitCurrentDirectoryAndFileName(request, packArgs);
             InitNuspecOutputPath(request, packArgs);
+
+            if (request.IncludeSource)
+            {
+                packArgs.PackTargetArgs.SourceFiles = GetSourceFiles(request, packArgs.CurrentDirectory);
+                packArgs.Symbols = request.IncludeSource;
+            }
+
             PackCommandRunner.SetupCurrentDirectory(packArgs);
 
-            if (!string.IsNullOrEmpty(request.NuspecFile))
-            {
-                if (request.NuspecProperties != null && request.NuspecProperties.Any())
-                {
-                    packArgs.Properties.AddRange(ParsePropertiesAsDictionary(request.NuspecProperties));
-                    if (packArgs.Properties.ContainsKey("version"))
-                    {
-                        packArgs.Version = packArgs.Properties["version"];
-                    }
-                }
-            }
-            else
-            {
-                // This only needs to happen when packing via csproj, not nuspec.
-                packArgs.PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInPackageBuildOutputFolder);
-                packArgs.PackTargetArgs.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder);
-                packArgs.PackTargetArgs.TargetPathsToAssemblies = InitLibFiles(request.BuildOutputInPackage);
-                packArgs.PackTargetArgs.TargetPathsToSymbols = InitLibFiles(request.TargetPathsToSymbols);
-                packArgs.PackTargetArgs.AssemblyName = request.AssemblyName;
-                packArgs.PackTargetArgs.IncludeBuildOutput = request.IncludeBuildOutput;
-                packArgs.PackTargetArgs.BuildOutputFolder = request.BuildOutputFolder;
-                packArgs.PackTargetArgs.TargetFrameworks = ParseFrameworks(request);
-
-                if (request.IncludeSource)
-                {
-                    packArgs.PackTargetArgs.SourceFiles = GetSourceFiles(request, packArgs.CurrentDirectory);
-                    packArgs.Symbols = request.IncludeSource;
-                }
-
-                var contentFiles = ProcessContentToIncludeInPackage(request, packArgs);
-                packArgs.PackTargetArgs.ContentFiles = contentFiles;
-            }
+            var contentFiles = ProcessContentToIncludeInPackage(request, packArgs);
+            packArgs.PackTargetArgs.ContentFiles = contentFiles;
 
             return packArgs;
         }
@@ -101,7 +87,7 @@ namespace NuGet.Build.Tasks.Pack
             var assetsFilePath = Path.Combine(request.RestoreOutputPath, LockFileFormat.AssetsFileName);
             if (!File.Exists(assetsFilePath))
             {
-                throw new PackagingException(NuGetLogCode.NU5023, string.Format(
+                throw new InvalidOperationException(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.AssetsFileNotFound,
                     assetsFilePath));
@@ -117,18 +103,13 @@ namespace NuGet.Build.Tasks.Pack
                 RequireLicenseAcceptance = request.RequireLicenseAcceptance,
                 PackageTypes = ParsePackageTypes(request)
             };
-
-            if (request.DevelopmentDependency)
-            {
-                builder.DevelopmentDependency = true;
-            }
-
+            
             if (request.PackageVersion != null)
             {
                 NuGetVersion version;
                 if (!NuGetVersion.TryParse(request.PackageVersion, out version))
                 {
-                    throw new PackagingException(NuGetLogCode.NU5024, string.Format(
+                    throw new ArgumentException(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.InvalidPackageVersion,
                         request.PackageVersion));
@@ -165,18 +146,14 @@ namespace NuGet.Build.Tasks.Pack
             }
             if (!string.IsNullOrEmpty(request.RepositoryUrl) || !string.IsNullOrEmpty(request.RepositoryType))
             {
-                builder.Repository = new RepositoryMetadata(
-                    request.RepositoryType,
-                    request.RepositoryUrl,
-                    request.RepositoryBranch,
-                    request.RepositoryCommit);
+                builder.Repository = new RepositoryMetadata(request.RepositoryType, request.RepositoryUrl);
             }
             if (request.MinClientVersion != null)
             {
                 Version version;
                 if (!Version.TryParse(request.MinClientVersion, out version))
                 {
-                    throw new PackagingException(NuGetLogCode.NU5022, string.Format(
+                    throw new ArgumentException(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.InvalidMinClientVersion,
                         request.MinClientVersion));
@@ -192,65 +169,14 @@ namespace NuGet.Build.Tasks.Pack
 
             if (assetsFile.PackageSpec == null)
             {
-                throw new PackagingException(NuGetLogCode.NU5025, string.Format(
+                throw new InvalidOperationException(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.AssetsFileDoesNotHaveValidPackageSpec,
                     assetsFilePath));
             }
-
-            var projectRefToVersionMap = new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
-
-            if (request.ProjectReferencesWithVersions != null && request.ProjectReferencesWithVersions.Any())
-            {
-                projectRefToVersionMap = request
-                    .ProjectReferencesWithVersions
-                    .ToDictionary(msbuildItem => msbuildItem.Identity,
-                    msbuildItem => msbuildItem.GetProperty("ProjectVersion"), PathUtility.GetStringComparerBasedOnOS());
-            }
-            var nuGetFrameworkComparer = new NuGetFrameworkFullComparer();
-            var frameworksWithSuppressedDependencies = new HashSet<NuGetFramework>(nuGetFrameworkComparer);
-            if (request.FrameworksWithSuppressedDependencies != null && request.FrameworksWithSuppressedDependencies.Any())
-            {
-                frameworksWithSuppressedDependencies =
-                    new HashSet<NuGetFramework>(request.FrameworksWithSuppressedDependencies
-                    .Select(t => NuGetFramework.Parse(t.Identity)).ToList(), nuGetFrameworkComparer);
-            }
-
-            PopulateProjectAndPackageReferences(builder,
-                assetsFile,
-                projectRefToVersionMap,
-                frameworksWithSuppressedDependencies);
-
-            PopulateFrameworkAssemblyReferences(builder, request);
-
+            
+            PopulateProjectAndPackageReferences(builder, assetsFile);
             return builder;
-        }
-
-        private void PopulateFrameworkAssemblyReferences(PackageBuilder builder, IPackTaskRequest<IMSBuildItem> request)
-        {
-            // First add all the assembly references which are not specific to a certain TFM.
-            var tfmSpecificRefs = new Dictionary<string, IList<string>>(StringComparer.OrdinalIgnoreCase);
-            // Then add the TFM specific framework assembly references, and ignore any which have already been added above.
-            foreach (var tfmRef in request.FrameworkAssemblyReferences)
-            {
-                var targetFramework = tfmRef.GetProperty("TargetFramework");
-
-                if (tfmSpecificRefs.ContainsKey(tfmRef.Identity))
-                {
-                    tfmSpecificRefs[tfmRef.Identity].Add(targetFramework);
-                }
-                else
-                {
-                    tfmSpecificRefs.Add(tfmRef.Identity, new List<string>() { targetFramework });
-                }
-            }
-
-            builder.FrameworkReferences.AddRange(
-                tfmSpecificRefs.Select(
-                    t => new FrameworkAssemblyReference(
-                        t.Key, t.Value.Select(
-                            k => NuGetFramework.Parse(k))
-                            )));
         }
 
         public PackCommandRunner GetPackCommandRunner(
@@ -273,56 +199,19 @@ namespace NuGet.Build.Tasks.Pack
             runner.BuildPackage();
         }
 
-        private IEnumerable<OutputLibFile> InitLibFiles(IMSBuildItem[] libFiles)
+        private string[] GetTargetPathsToAssemblies(IPackTaskRequest<IMSBuildItem> request)
         {
-            var assemblies = new List<OutputLibFile>();
-            if (libFiles == null)
+            if (request.TargetPathsToAssemblies == null)
             {
-                return assemblies;
+                return new string[0];
             }
 
-
-            foreach (var assembly in libFiles)
-            {
-                var finalOutputPath = assembly.GetProperty("FinalOutputPath");
-
-                // Fallback to using Identity if FinalOutputPath is not set.
-                // See bug https://github.com/NuGet/Home/issues/5408 
-                if (string.IsNullOrEmpty(finalOutputPath))
-                {
-                    finalOutputPath = assembly.GetProperty(IdentityProperty);
-                }
-
-                var targetPath = assembly.GetProperty("TargetPath");
-                var targetFramework = assembly.GetProperty("TargetFramework");
-
-                if (!File.Exists(finalOutputPath))
-                {
-                    throw new PackagingException(NuGetLogCode.NU5026, string.Format(CultureInfo.CurrentCulture, Strings.Error_FileNotFound, finalOutputPath));
-                }
-
-                // If target path is not set, default it to the file name. Only satellite DLLs have a special target path
-                // where culture is part of the target path. This condition holds true for files like runtimeconfig.json file
-                // in netcore projects.
-                if (targetPath == null)
-                {
-                    targetPath = Path.GetFileName(finalOutputPath);
-                }
-
-                if (string.IsNullOrEmpty(targetFramework) || NuGetFramework.Parse(targetFramework).IsSpecificFramework == false)
-                {
-                    throw new PackagingException(NuGetLogCode.NU5027, string.Format(CultureInfo.CurrentCulture, Strings.InvalidTargetFramework, finalOutputPath));
-                }
-
-                assemblies.Add(new OutputLibFile()
-                {
-                    FinalOutputPath = finalOutputPath,
-                    TargetPath = targetPath,
-                    TargetFramework = targetFramework
-                });
-            }
-
-            return assemblies;
+            return request.TargetPathsToAssemblies
+                .Where(path => path != null)
+                .Select(path => path.Trim())
+                .Where(path => path != string.Empty)
+                .Distinct()
+                .ToArray();
         }
 
         private ISet<NuGetFramework> ParseFrameworks(IPackTaskRequest<IMSBuildItem> request)
@@ -361,7 +250,7 @@ namespace NuGet.Build.Tasks.Pack
         {
             if (request.PackItem == null)
             {
-                throw new PackagingException(NuGetLogCode.NU5028, Strings.NoPackItemProvided);
+                throw new InvalidOperationException(Strings.NoPackItemProvided);
             }
 
             packArgs.CurrentDirectory = Path.Combine(
@@ -395,12 +284,12 @@ namespace NuGet.Build.Tasks.Pack
             }
         }
 
-        private Dictionary<string, IEnumerable<ContentMetadata>> ProcessContentToIncludeInPackage(
+        private Dictionary<string, HashSet<ContentMetadata>> ProcessContentToIncludeInPackage(
             IPackTaskRequest<IMSBuildItem> request,
             PackArgs packArgs)
         {
             // This maps from source path on disk to target path inside the nupkg.
-            var fileModel = new Dictionary<string, IEnumerable<ContentMetadata>>();
+            var fileModel = new Dictionary<string, HashSet<ContentMetadata>>();
             if (request.PackageFiles != null)
             {
                 var excludeFiles = CalculateFilesToExcludeInPack(request);
@@ -417,11 +306,11 @@ namespace NuGet.Build.Tasks.Pack
                     if (fileModel.ContainsKey(sourcePath))
                     {
                         var existingContentMetadata = fileModel[sourcePath];
-                        fileModel[sourcePath] = existingContentMetadata.Concat(totalContentMetadata);
+                        existingContentMetadata.AddRange(totalContentMetadata);
                     }
                     else
                     {
-                        var existingContentMetadata = new List<ContentMetadata>();
+                        var existingContentMetadata = new HashSet<ContentMetadata>();
                         existingContentMetadata.AddRange(totalContentMetadata);
                         fileModel.Add(sourcePath, existingContentMetadata);
                     }
@@ -437,8 +326,13 @@ namespace NuGet.Build.Tasks.Pack
             PackArgs packArgs, string[] contentTargetFolders)
         {
             var targetPaths = contentTargetFolders
-                .Select(PathUtility.EnsureTrailingSlash)
+                .Where(f => !f.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                .Select(f => string.Concat(f, Path.DirectorySeparatorChar))
                 .ToList();
+            
+            targetPaths.AddRange(
+                contentTargetFolders
+                .Where(f => f.EndsWith(Path.DirectorySeparatorChar.ToString())));
 
             var isPackagePathSpecified = packageFile.Properties.Contains("PackagePath");
             // if user specified a PackagePath, then use that. Look for any ** which are indicated by the RecrusiveDir metadata in msbuild.
@@ -455,47 +349,44 @@ namespace NuGet.Build.Tasks.Pack
                     .ToList();
 
                 var recursiveDir = packageFile.GetProperty("RecursiveDir");
-                // The below NuGetRecursiveDir workaround needs to be done due to msbuild bug https://github.com/Microsoft/msbuild/issues/3121
-                recursiveDir = string.IsNullOrEmpty(recursiveDir) ? packageFile.GetProperty("NuGetRecursiveDir") : recursiveDir;
                 if (!string.IsNullOrEmpty(recursiveDir))
                 {
                     var newTargetPaths = new List<string>();
-                    var fileName = Path.GetFileName(sourcePath);
                     foreach (var targetPath in targetPaths)
                     {
-                        newTargetPaths.Add(PathUtility.GetStringComparerBasedOnOS().
-                            Compare(Path.GetExtension(fileName),
-                            Path.GetExtension(targetPath)) == 0
-                            && !String.IsNullOrEmpty(Path.GetExtension(fileName))
-                                ? targetPath
-                                : Path.Combine(targetPath, recursiveDir));
+                        if (targetPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                        {
+                            newTargetPaths.Add(Path.Combine(targetPath, recursiveDir));
+                        }
+                        else
+                        {
+                            newTargetPaths.Add(targetPath);
+                        }
                     }
-
                     targetPaths = newTargetPaths;
                 }
             }
 
-            var buildActionString = packageFile.GetProperty("BuildAction");
-            var buildAction = BuildAction.Parse(string.IsNullOrEmpty(buildActionString) ? "None" : buildActionString);
+            var buildAction = BuildAction.Parse(packageFile.GetProperty("BuildAction"));
 
             // TODO: Do the work to get the right language of the project, tracked via https://github.com/NuGet/Home/issues/4100
             var language = buildAction.Equals(BuildAction.Compile) ? "cs" : "any";
 
 
-            var setOfTargetPaths = new HashSet<string>(targetPaths, PathUtility.GetStringComparerBasedOnOS());
+            var setOfTargetPaths = new HashSet<string>(targetPaths, StringComparer.Ordinal);
 
             // If package path wasn't specified, then we expand the "contentFiles" value we
             // got from ContentTargetFolders and expand it to contentFiles/any/<TFM>/
             if (!isPackagePathSpecified)
             {
                 if (setOfTargetPaths.Remove("contentFiles" + Path.DirectorySeparatorChar)
+                || setOfTargetPaths.Remove("contentFiles" + Path.AltDirectorySeparatorChar)
                 || setOfTargetPaths.Remove("contentFiles"))
                 {
                     foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
                     {
-                        setOfTargetPaths.Add(PathUtility.EnsureTrailingSlash(
-                            Path.Combine("contentFiles", language, framework.GetShortFolderName()
-                            )));
+                        setOfTargetPaths.Add(Path.Combine("contentFiles",
+                            Path.Combine(language, framework.GetShortFolderName())) + Path.DirectorySeparatorChar);
                     }
                 }
             }
@@ -506,18 +397,18 @@ namespace NuGet.Build.Tasks.Pack
             // <Content Include= "folderA\folderB\abc.txt">
             // Since the package path wasn't specified, we will add this to the package paths obtained via ContentTargetFolders and preserve
             // relative directory structure
-            if (!isPackagePathSpecified &&
+            if (!isPackagePathSpecified && 
                 sourcePath.StartsWith(packArgs.CurrentDirectory, StringComparison.CurrentCultureIgnoreCase) &&
                      !Path.GetFileName(sourcePath)
                          .Equals(packageFile.GetProperty(IdentityProperty), StringComparison.CurrentCultureIgnoreCase))
             {
                 var newTargetPaths = new List<string>();
                 var identity = packageFile.GetProperty(IdentityProperty);
-
+                
                 // Identity can be a rooted absolute path too, in which case find the path relative to the current directory
                 if (Path.IsPathRooted(identity))
                 {
-                    identity = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(packArgs.CurrentDirectory), identity);
+                    identity = PathUtility.GetRelativePath(packArgs.CurrentDirectory + Path.DirectorySeparatorChar, identity);
                     identity = Path.GetDirectoryName(identity);
                 }
 
@@ -533,36 +424,36 @@ namespace NuGet.Build.Tasks.Pack
                     // We need to do this because evaluated identity in the above line of code can be an empty string
                     // in the case when the original identity string was the absolute path to a file in project directory, and is in
                     // the same directory as the csproj file. 
-                    newTargetPath = PathUtility.EnsureTrailingSlash(newTargetPath);
+                    if (!newTargetPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                    {
+                        newTargetPath = newTargetPath + Path.DirectorySeparatorChar;
+                    }
                     newTargetPaths.Add(newTargetPath);
                 }
-                setOfTargetPaths = new HashSet<string>(newTargetPaths, PathUtility.GetStringComparerBasedOnOS());
+                setOfTargetPaths = new HashSet<string>(newTargetPaths, StringComparer.Ordinal);
             }
 
             // we take the final set of evaluated target paths and append the file name to it if not
             // already done. we check whether the extension of the target path is the same as the extension
             // of the source path and add the filename accordingly.
-            var totalSetOfTargetPaths = new List<string>();
+            var totalSetOfTargetPaths = new HashSet<string>(StringComparer.Ordinal);
             foreach (var targetPath in setOfTargetPaths)
             {
                 var currentPath = targetPath;
                 var fileName = Path.GetFileName(sourcePath);
-                if (String.IsNullOrEmpty(Path.GetExtension(fileName)) ||
-                    !Path.GetExtension(fileName)
+                if (!Path.GetExtension(fileName)
                     .Equals(Path.GetExtension(targetPath), StringComparison.OrdinalIgnoreCase))
                 {
                     currentPath = Path.Combine(targetPath, fileName);
                 }
                 totalSetOfTargetPaths.Add(currentPath);
             }
-
+            
             return totalSetOfTargetPaths.Select(target => new ContentMetadata()
             {
-                BuildAction = buildAction.Value,
+                BuildAction = buildAction.IsKnown ? buildAction.Value : null,
                 Source = sourcePath,
-                Target = target,
-                CopyToOutput = packageFile.GetProperty("PackageCopyToOutput"),
-                Flatten = packageFile.GetProperty("PackageFlatten")
+                Target = target
             });
         }
 
@@ -613,14 +504,12 @@ namespace NuGet.Build.Tasks.Pack
             return sourceFiles;
         }
 
-        private void PopulateProjectAndPackageReferences(PackageBuilder packageBuilder, LockFile assetsFile,
-            IDictionary<string, string> projectRefToVersionMap,
-            ISet<NuGetFramework> frameworksWithSuppressedDependencies)
+        private void PopulateProjectAndPackageReferences(PackageBuilder packageBuilder, LockFile assetsFile)
         {
             var dependenciesByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
 
-            InitializeProjectDependencies(assetsFile, dependenciesByFramework, projectRefToVersionMap, frameworksWithSuppressedDependencies);
-            InitializePackageDependencies(assetsFile, dependenciesByFramework, frameworksWithSuppressedDependencies);
+            InitializeProjectDependencies(assetsFile, dependenciesByFramework);
+            InitializePackageDependencies(assetsFile, dependenciesByFramework);
 
             foreach (var pair in dependenciesByFramework)
             {
@@ -630,9 +519,7 @@ namespace NuGet.Build.Tasks.Pack
 
         private static void InitializeProjectDependencies(
             LockFile assetsFile,
-            IDictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework,
-            IDictionary<string, string> projectRefToVersionMap,
-            ISet<NuGetFramework> frameworkWithSuppressedDependencies)
+            Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework)
         {
             // From the package spec, all we know is each absolute path to the project reference the the target
             // framework that project reference applies to.
@@ -656,7 +543,7 @@ namespace NuGet.Build.Tasks.Pack
             foreach (var framework in assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks)
             {
                 var target = assetsFile.GetTarget(framework.FrameworkName, runtimeIdentifier: null);
-                if (target == null || frameworkWithSuppressedDependencies.Contains(framework.FrameworkName))
+                if (target == null)
                 {
                     continue;
                 }
@@ -687,13 +574,6 @@ namespace NuGet.Build.Tasks.Pack
                         continue;
                     }
 
-                    var versionToUse = targetLibrary.Version;
-
-                    // Use the project reference version obtained at build time if it exists, otherwise fallback to the one in assets file. 
-                    if (projectRefToVersionMap.TryGetValue(projectReference.ProjectPath, out var projectRefVersion))
-                    {
-                        versionToUse = NuGetVersion.Parse(projectRefVersion);
-                    }
                     // TODO: Implement <TreatAsPackageReference>false</TreatAsPackageReference>
                     //   https://github.com/NuGet/Home/issues/3891
                     //
@@ -702,7 +582,7 @@ namespace NuGet.Build.Tasks.Pack
                     {
                         LibraryRange = new LibraryRange(
                             targetLibrary.Name,
-                            new VersionRange(versionToUse),
+                            new VersionRange(targetLibrary.Version),
                             LibraryDependencyTarget.All),
                         IncludeType = projectReference.IncludeAssets & ~projectReference.ExcludeAssets,
                         SuppressParent = projectReference.PrivateAssets
@@ -715,17 +595,11 @@ namespace NuGet.Build.Tasks.Pack
 
         private static void InitializePackageDependencies(
             LockFile assetsFile,
-            Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework,
-            ISet<NuGetFramework> frameworkWithSuppressedDependencies)
+            Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework)
         {
             // From the package spec, we know the direct package dependencies of this project.
             foreach (var framework in assetsFile.PackageSpec.TargetFrameworks)
             {
-                if(frameworkWithSuppressedDependencies.Contains(framework.FrameworkName))
-                {
-                    continue;
-                }
-
                 // First, add each of the generic package dependencies to the framework-specific list.
                 var packageDependencies = assetsFile
                     .PackageSpec
@@ -752,21 +626,7 @@ namespace NuGet.Build.Tasks.Pack
                                 string.Equals(library.Name, packageDependency.Name, StringComparison.OrdinalIgnoreCase));
                         if (package != null)
                         {
-                            if(packageDependency.LibraryRange.VersionRange.HasUpperBound)
-                            {
-                                packageDependency.LibraryRange.VersionRange = new VersionRange(
-                                    minVersion: package.Version,
-                                    includeMinVersion: packageDependency.LibraryRange.VersionRange.IsMinInclusive,
-                                    maxVersion: packageDependency.LibraryRange.VersionRange.MaxVersion,
-                                    includeMaxVersion: packageDependency.LibraryRange.VersionRange.IsMaxInclusive);
-                            }
-                            else
-                            {
-                                packageDependency.LibraryRange.VersionRange = new VersionRange(
-                                    minVersion: package.Version,
-                                    includeMinVersion: packageDependency.LibraryRange.VersionRange.IsMinInclusive);
-                            }
-                            
+                            packageDependency.LibraryRange.VersionRange = new VersionRange(package.Version);
                         }
                     }
 
@@ -780,7 +640,7 @@ namespace NuGet.Build.Tasks.Pack
             var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var item in properties)
             {
-                var index = item.IndexOf("=");
+                int index = item.IndexOf("=");
                 // Make sure '=' is not the first or the last character of the string
                 if (index > 0 && index < item.Length - 1)
                 {
@@ -788,25 +648,13 @@ namespace NuGet.Build.Tasks.Pack
                     var value = item.Substring(index + 1);
                     dictionary[key] = value;
                 }
-                // if value is empty string, set it to string.Empty instead of erroring out
-                else if (index == item.Length - 1)
-                {
-                    var key = item.Substring(0, index);
-                    var value = string.Empty;
-                    dictionary[key] = value;
-                }
                 else
                 {
-                    throw new PackagingException(NuGetLogCode.NU5029, Strings.InvalidNuspecProperties);
+                    throw new InvalidOperationException(Strings.InvalidNuspecProperties);
                 }
             }
 
             return dictionary;
-        }
-
-        private HashSet<string> InitOutputExtensions(IEnumerable<string> outputExtensions)
-        {
-            return new HashSet<string>(outputExtensions.Distinct(StringComparer.OrdinalIgnoreCase));
         }
     }
 }

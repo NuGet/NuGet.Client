@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyName>NuGet.Build.Tasks.Pack</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
@@ -22,23 +22,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\NuGet.Build.Tasks\Common\MSBuildLogger.cs" />
-    <Compile Include="..\NuGet.Build.Tasks\GetProjectTargetFrameworksTask.cs" />
-    <Content Include="NuGet.Build.Tasks.Pack.targets" Pack="true" PackagePath="build;buildCrossTargeting">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\NuGet.Commands\NuGet.Commands.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="Microsoft.Build.Utilities.v4.0" Pack="false" />
     <Reference Include="Microsoft.Build.Framework" Pack="false" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
@@ -139,7 +131,7 @@
   </Target>
 
   <Target Name="CreatePackNupkg">
-    <ItemGroup Condition="'$(TargetFramework)' == 'net46' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">
+    <ItemGroup Condition="'$(TargetFramework)' == 'net45' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">
       <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\NuGet.Build.Tasks.Pack.dll">
         <PackagePath>Desktop/</PackagePath>
       </TfmSpecificPackageFile>
@@ -150,7 +142,7 @@
         <PackagePath>Desktop/</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.6'">
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
       <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\NuGet.Build.Tasks.Pack.dll">
         <PackagePath>CoreCLR/</PackagePath>
       </TfmSpecificPackageFile>
