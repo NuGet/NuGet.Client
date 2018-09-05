@@ -1,0 +1,26 @@
+﻿<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp1.0;net46</TargetFrameworks>
+    <RuntimeIdentifier Condition=" '$(TargetFramework)' == 'net46' ">win7-x86</RuntimeIdentifier>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <OutputType>Exe</OutputType>
+    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">1.0.3</RuntimeFrameworkVersion>
+    <Shipping>false</Shipping>
+    <PackProject>false</PackProject>
+    <XPLATProject>false</XPLATProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Common\NuGet.Common.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">
+    <PackageReference Include="System.Diagnostics.Process" Version="4.1.0" />
+  </ItemGroup>
+  
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>
