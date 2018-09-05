@@ -37,7 +37,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         {
             const string expectedMessage = "67170559A4EC47FE88FCC3E8B68E3522";
 
-            VerifyLog(sdkLogger => sdkLogger.LogInformation(expectedMessage), expectedMessage, MessageImportance.Low, isWarning: false, isError: false);
+            VerifyLog(sdkLogger => sdkLogger.LogInformation(expectedMessage), expectedMessage, MessageImportance.Normal, isWarning: false, isError: false);
         }
 
         [Fact]
@@ -45,13 +45,13 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         {
             const string expectedMessage = "EA9F5D816A0342E38A4A87DB955ABC33";
 
-            VerifyLog(sdkLogger => sdkLogger.LogInformationSummary(expectedMessage), expectedMessage, MessageImportance.Low, isWarning: false, isError: false);
+            VerifyLog(sdkLogger => sdkLogger.LogInformationSummary(expectedMessage), expectedMessage, MessageImportance.Normal, isWarning: false, isError: false);
         }
 
         [Theory]
         [InlineData(LogLevel.Debug, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Information, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Minimal, MessageImportance.Low, false, false)]
+        [InlineData(LogLevel.Information, MessageImportance.Normal, false, false)]
+        [InlineData(LogLevel.Minimal, MessageImportance.High, false, false)]
         [InlineData(LogLevel.Verbose, MessageImportance.Low, false, false)]
         [InlineData(LogLevel.Error, null, false, true)]
         [InlineData(LogLevel.Warning, null, true, false)]
@@ -65,8 +65,8 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
         [Theory]
         [InlineData(LogLevel.Debug, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Information, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Minimal, MessageImportance.Low, false, false)]
+        [InlineData(LogLevel.Information, MessageImportance.Normal, false, false)]
+        [InlineData(LogLevel.Minimal, MessageImportance.High, false, false)]
         [InlineData(LogLevel.Verbose, MessageImportance.Low, false, false)]
         [InlineData(LogLevel.Error, null, false, true)]
         [InlineData(LogLevel.Warning, null, true, false)]
@@ -80,8 +80,8 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
         [Theory]
         [InlineData(LogLevel.Debug, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Information, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Minimal, MessageImportance.Low, false, false)]
+        [InlineData(LogLevel.Information, MessageImportance.Normal, false, false)]
+        [InlineData(LogLevel.Minimal, MessageImportance.High, false, false)]
         [InlineData(LogLevel.Verbose, MessageImportance.Low, false, false)]
         [InlineData(LogLevel.Error, null, false, true)]
         [InlineData(LogLevel.Warning, null, true, false)]
@@ -97,8 +97,8 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
         [Theory]
         [InlineData(LogLevel.Debug, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Information, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Minimal, MessageImportance.Low, false, false)]
+        [InlineData(LogLevel.Information, MessageImportance.Normal, false, false)]
+        [InlineData(LogLevel.Minimal, MessageImportance.High, false, false)]
         [InlineData(LogLevel.Verbose, MessageImportance.Low, false, false)]
         [InlineData(LogLevel.Error, null, false, true)]
         [InlineData(LogLevel.Warning, null, true, false)]
@@ -117,7 +117,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         {
             const string expectedMessage = "D6412F6087CE41C4803AD940E26E221B";
 
-            VerifyLog(sdkLogger => sdkLogger.LogMinimal(expectedMessage), expectedMessage, MessageImportance.Low, isWarning: false, isError: false);
+            VerifyLog(sdkLogger => sdkLogger.LogMinimal(expectedMessage), expectedMessage, MessageImportance.High, isWarning: false, isError: false);
         }
 
         [Fact]
