@@ -5,7 +5,7 @@
 
   <PropertyGroup>
     <Description>NuGet.Indexing Class Library</Description>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net45</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
@@ -13,7 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Protocol\NuGet.Protocol.csproj" />
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/NuGetQuery.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierKeywordAnalyzer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierAnalyzer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/DescriptionAnalyzer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/DotTokenizer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TokenizingHelper.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/OwnerAnalyzer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/VersionAnalyzer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/CamelCaseFilter.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TagsAnalyzer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/SemanticVersionFilter.cs"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.csproj" />
+    <ProjectReference Include="..\NuGet.Versioning\NuGet.Versioning.csproj" />
   </ItemGroup>
 
   <ItemGroup>
