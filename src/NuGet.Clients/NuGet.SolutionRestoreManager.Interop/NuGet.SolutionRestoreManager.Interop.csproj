@@ -1,57 +1,29 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\Build\Common.props" />
+﻿<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <ProjectGuid>{4003E1AB-70DE-4B9C-8999-96160EE91D84}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NuGet.SolutionRestoreManager</RootNamespace>
-    <AssemblyName>NuGet.SolutionRestoreManager.Interop</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>7013ed3d</NuGetPackageImportStamp>
-    <CodeAnalysisRuleSet>..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
-    <ResolveNuGetPackages>true</ResolveNuGetPackages>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <PackageId>NuGet.SolutionRestoreManager.Interop</PackageId>
+    <TargetFramework>net46</TargetFramework>
+    <Shipping>true</Shipping>
+    <PackProject>true</PackProject>
+    <IncludeInVsix>true</IncludeInVsix>
+    <authors>Microsoft</authors>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl	>https://github.com/NuGet/NuGet.Client</PackageProjectUrl	>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <AssemblyDescription>APIs for invoking NuGet Restore Manager in Visual Studio.</AssemblyDescription>
+    <Description>APIs for invoking NuGet Restore Manager in Visual Studio.</Description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
   </PropertyGroup>
-  <PropertyGroup>
-    <DocumentationFile>$(OutputPath)\NuGet.SolutionRestoreManager.Interop.XML</DocumentationFile>
-  </PropertyGroup>
+
   <ItemGroup>
-    <None Include="install.ps1" />
-    <None Include="NuGet.SolutionRestoreManager.Interop.nuspec" />
+    <Content Include="NuGet.SolutionRestoreManager.Interop.targets">
+      <PackagePath>build</PackagePath>
+      <Pack>true</Pack>
+    </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="IVsProjectProperties.cs" />
-    <Compile Include="IVsProjectProperty.cs" />
-    <Compile Include="IVsProjectRestoreInfo.cs" />
-    <Compile Include="IVsReferenceItem.cs" />
-    <Compile Include="IVsReferenceProperties.cs" />
-    <Compile Include="IVsReferenceProperty.cs" />
-    <Compile Include="IVsReferenceItems.cs" />
-    <Compile Include="IVsSolutionRestoreService.cs" />
-    <Compile Include="IVsTargetFrameworkInfo.cs" />
-    <Compile Include="IVsTargetFrameworks.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(EnlistmentRoot)\build\common.targets" />
-  <Import Project="$(EnlistmentRoot)\build\sign.targets" />
-  <Target Name="Publish" AfterTargets="Build">
-    <PropertyGroup>
-      <NuGetExe>$(EnlistmentRoot)\.nuget\nuget.exe</NuGetExe>
-      <PackageVersion>$(SemanticVersion)$(PreReleaseInformationVersion)</PackageVersion>
-      <PublishDestination>$(EnlistmentRoot)\Nupkgs</PublishDestination>
-    </PropertyGroup>
-    <ItemGroup>
-      <Nuspec Include="*.nuspec" />
-      <PackageInclude Include="install.ps1" />
-    </ItemGroup>
-    <Copy SourceFiles="%(PackageInclude.Identity)" DestinationFolder="$(TargetDir)" />
-    <Exec Command="$(NuGetExe) pack %(Nuspec.Identity) -Version $(PackageVersion) -BasePath $(TargetDir) -OutputDirectory $(PublishDestination) -Verbosity detailed" />
-  </Target>
+
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

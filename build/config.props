@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0">
+  <!-- Version -->
+  <PropertyGroup>
+    <IsEscrowMode>false</IsEscrowMode>
+    <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">5</MajorNuGetVersion>
+    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">0</MinorNuGetVersion>
+    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
+    <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
+    <VsTargetBranch>lab/d16.$(MinorNuGetVersion)stg</VsTargetBranch>
+    <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d16.$(MinorNuGetVersion)</VsTargetBranch>
+    <SdkTargetBranch>release/2.1.4xx</SdkTargetBranch>
+    <CliTargetBranch>release/2.1.4xx</CliTargetBranch>
+    <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
+    changes we might have made-->
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
+  </PropertyGroup>
+
+  <!-- Dependency versions -->
+  <PropertyGroup>
+    <NewtonsoftJsonVersionCore>9.0.1</NewtonsoftJsonVersionCore>
+    <NewtonsoftJsonVersionDeskop>6.0.4</NewtonsoftJsonVersionDeskop>
+    <XunitVersion>2.3.1</XunitVersion>
+    <TestSDKVersion>15.5.0</TestSDKVersion>
+    <MoqVersion>4.7.145</MoqVersion>
+    <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
+    <MicrosoftBuildPackageVersion>15.1.1012</MicrosoftBuildPackageVersion>
+  </PropertyGroup>
+
+  <!-- Config -->
+  <PropertyGroup>
+    <RepositoryName>NuGet</RepositoryName>
+  </PropertyGroup>
+
+  <!-- Nuspec defaults -->
+  <PropertyGroup>
+    <Authors>Microsoft</Authors>
+    <ProjectUrl>https://aka.ms/nugetprj</ProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/NuGet/NuGet.Client</RepositoryUrl>
+    <PackageTags>nuget</PackageTags>
+    <Description>NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundations holds the copyright to the source.</Description>
+    <Copyright>&#169; Microsoft Corporation. All rights reserved.</Copyright>
+    <Serviceable>true</Serviceable>
+    <PackageIconUrl>https://raw.githubusercontent.com/NuGet/Media/master/Images/MainLogo/256x256/nuget_256.png</PackageIconUrl>
+  </PropertyGroup>
+
+  <Target Name="GetSemanticVersion">
+    <Message Text="$(SemanticVersion)" Importance="High"/>
+  </Target>
+  <Target Name="GetVsTargetBranch">
+    <Message Text="$(VsTargetBranch)" Importance="High"/>
+  </Target>
+  <Target Name="GetCliTargetBranch">
+    <Message Text="$(CliTargetBranch)" Importance="High"/>
+  </Target>
+  <Target Name="GetSdkTargetBranch">
+    <Message Text="$(SdkTargetBranch)" Importance="High"/>
+  </Target>
+</Project>

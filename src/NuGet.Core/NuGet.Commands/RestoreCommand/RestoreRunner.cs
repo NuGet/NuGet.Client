@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,13 +34,10 @@ namespace NuGet.Commands
         /// <summary>
         /// Create requests, execute requests, and commit restore results.
         /// </summary>
-        public static async Task<IReadOnlyList<RestoreSummary>> Run(RestoreArgs restoreContext)
+        public static async Task<IReadOnlyList<RestoreSummary>> RunAsync(RestoreArgs restoreContext)
         {
-            // Create requests
-            var requests = await GetRequests(restoreContext);
-
             // Run requests
-            return await RunAsync(requests, restoreContext, CancellationToken.None);
+            return await RunAsync(restoreContext, CancellationToken.None);
         }
 
         /// <summary>
@@ -51,7 +48,7 @@ namespace NuGet.Commands
             RestoreArgs restoreContext,
             CancellationToken token)
         {
-            int maxTasks = GetMaxTaskCount(restoreContext);
+            var maxTasks = GetMaxTaskCount(restoreContext);
 
             var log = restoreContext.Log;
 
@@ -106,7 +103,7 @@ namespace NuGet.Commands
             IEnumerable<RestoreSummaryRequest> restoreRequests,
             RestoreArgs restoreContext)
         {
-            int maxTasks = GetMaxTaskCount(restoreContext);
+            var maxTasks = GetMaxTaskCount(restoreContext);
 
             var log = restoreContext.Log;
 
@@ -197,10 +194,12 @@ namespace NuGet.Commands
                 {
                     // No need to throw here - the situation is harmless, and we want to report all possible
                     // inputs that don't resolve to a project.
-                    restoreContext.Log.LogWarning(string.Format(
+                    var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Error_UnableToLocateRestoreTarget,
-                            Path.GetFullPath(input)));
+                            Path.GetFullPath(input));
+
+                    await restoreContext.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1501, message));
                 }
                 foreach (var request in inputRequests)
                 {
@@ -293,13 +292,16 @@ namespace NuGet.Commands
                     summaryRequest.InputPath));
             }
 
+            // Remote the summary messages from the assets file. This will be removed later.
+            var messages = restoreResult.Result.LockFile.LogMessages.Select(e => new RestoreLogMessage(e.Level, e.Code, e.Message));
+
             // Build the summary
             return new RestoreSummary(
                 result,
                 summaryRequest.InputPath,
-                summaryRequest.Settings,
+                summaryRequest.ConfigFiles,
                 summaryRequest.Sources,
-                summaryRequest.CollectorLogger.Errors);
+                messages);
         }
 
         private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)

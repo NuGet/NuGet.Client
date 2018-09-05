@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -44,11 +47,12 @@ namespace NuGet.Commands.Test
                 spec.RestoreMetadata.OutputPath = Path.Combine(pathContext.SolutionRoot, "x");
                 spec.RestoreMetadata.ProjectUniqueName = "x";
                 spec.RestoreMetadata.ProjectName = "x";
+                spec.RestoreMetadata.ProjectPath = Path.Combine(pathContext.SolutionRoot, "x.csproj");
 
                 dgFile.AddProject(spec);
                 dgFile.AddRestore("x");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
 
                 // Act
                 var result = await CommandsTestUtility.RunSingleRestore(dgFile, pathContext, logger);

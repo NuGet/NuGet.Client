@@ -19,7 +19,7 @@ namespace NuGet.ProjectModel
 {
     public class LockFileFormat
     {
-        public static readonly int Version = 2;
+        public static readonly int Version = 3;
         public static readonly string LockFileName = "project.lock.json";
         public static readonly string AssetsFileName = "project.assets.json";
 
@@ -32,6 +32,7 @@ namespace NuGet.ProjectModel
         private const string ServicableProperty = "servicable";
         private const string Sha512Property = "sha512";
         private const string FilesProperty = "files";
+        private const string HasToolsProperty = "hasTools";
         private const string DependenciesProperty = "dependencies";
         private const string FrameworkAssembliesProperty = "frameworkAssemblies";
         private const string RuntimeProperty = "runtime";
@@ -50,6 +51,7 @@ namespace NuGet.ProjectModel
         private const string ProjectFileToolGroupsProperty = "projectFileToolGroups";
         private const string PackageFoldersProperty = "packageFolders";
         private const string PackageSpecProperty = "project";
+        private const string LogsProperty = "logs";
 
         // Legacy property names
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";
@@ -103,20 +105,10 @@ namespace NuGet.ProjectModel
         {
             try
             {
-                using (var jsonReader = new JsonTextReader(reader))
-                {
-                    while (jsonReader.TokenType != JsonToken.StartObject)
-                    {
-                        if (!jsonReader.Read())
-                        {
-                            throw new InvalidDataException();
-                        }
-                    }
-                    var token = JToken.Load(jsonReader);
-                    var lockFile = ReadLockFile(token as JObject);
-                    lockFile.Path = path;
-                    return lockFile;
-                }
+                var json = JsonUtility.LoadJson(reader);
+                var lockFile = ReadLockFile(json);
+                lockFile.Path = path;
+                return lockFile;
             }
             catch (Exception ex)
             {
@@ -175,24 +167,31 @@ namespace NuGet.ProjectModel
 
         private static LockFile ReadLockFile(JObject cursor)
         {
-            var lockFile = new LockFile();
-            lockFile.Version = ReadInt(cursor, VersionProperty, defaultValue: int.MinValue);
-            lockFile.Libraries = ReadObject(cursor[LibrariesProperty] as JObject, ReadLibrary);
-            lockFile.Targets = ReadObject(cursor[TargetsProperty] as JObject, ReadTarget);
-            lockFile.ProjectFileDependencyGroups = ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup);
-            lockFile.PackageFolders = ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem);
-            lockFile.PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject);
+            var lockFile = new LockFile()
+            {
+                Version = ReadInt(cursor, VersionProperty, defaultValue: int.MinValue),
+                Libraries = ReadObject(cursor[LibrariesProperty] as JObject, ReadLibrary),
+                Targets = ReadObject(cursor[TargetsProperty] as JObject, ReadTarget),
+                ProjectFileDependencyGroups = ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup),
+                PackageFolders = ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem),
+                PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject)
+            };
+
+            lockFile.LogMessages = ReadLogMessageArray(cursor[LogsProperty] as JArray,
+                lockFile?.PackageSpec?.RestoreMetadata?.ProjectPath);
+
             return lockFile;
         }
 
         private static JObject WriteLockFile(LockFile lockFile)
         {
-            var json = new JObject();
-            json[VersionProperty] = new JValue(lockFile.Version);
-            json[TargetsProperty] = WriteObject(lockFile.Targets, WriteTarget);
-            json[LibrariesProperty] = WriteObject(lockFile.Libraries, WriteLibrary);
-            json[ProjectFileDependencyGroupsProperty] = WriteObject(lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup);
-            
+            var json = new JObject
+            {
+                [VersionProperty] = new JValue(lockFile.Version),
+                [TargetsProperty] = WriteObject(lockFile.Targets, WriteTarget),
+                [LibrariesProperty] = WriteObject(lockFile.Libraries, WriteLibrary),
+                [ProjectFileDependencyGroupsProperty] = WriteObject(lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup)
+            };
             if (lockFile.PackageFolders?.Any() == true)
             {
                 json[PackageFoldersProperty] = WriteObject(lockFile.PackageFolders, WriteFileItem);
@@ -206,6 +205,15 @@ namespace NuGet.ProjectModel
                     PackageSpecWriter.Write(lockFile.PackageSpec, writer);
                     var packageSpec = writer.GetJObject();
                     json[PackageSpecProperty] = packageSpec;
+                }
+            }
+
+            if(lockFile.Version >= 3)
+            {
+                if(lockFile.LogMessages.Count > 0)
+                {
+                    var projectPath = lockFile.PackageSpec?.RestoreMetadata?.ProjectPath;
+                    json[LogsProperty] = WriteLogMessages(lockFile.LogMessages, projectPath);
                 }
             }
 
@@ -233,6 +241,7 @@ namespace NuGet.ProjectModel
             library.IsServiceable = ReadBool(json, ServicableProperty, defaultValue: false);
             library.Files = ReadPathArray(json[FilesProperty] as JArray, ReadString);
 
+            library.HasTools = ReadBool(json, HasToolsProperty, defaultValue: false);
             return library;
         }
 
@@ -259,6 +268,11 @@ namespace NuGet.ProjectModel
             if (library.MSBuildProject != null)
             {
                 json[MSBuildProjectProperty] = WriteString(library.MSBuildProject);
+            }
+
+            if (library.HasTools)
+            {
+                WriteBool(json, HasToolsProperty, library.HasTools);
             }
 
             WritePathArray(json, FilesProperty, library.Files, WriteString);
@@ -291,6 +305,161 @@ namespace NuGet.ProjectModel
             return target;
         }
 
+        /// <summary>
+        /// Converts the <code>IAssetsLogMessage</code> object into a <code>JObject</code> that can be written into the assets file.
+        /// </summary>
+        /// <param name="logMessage"><code>IAssetsLogMessage</code> representing the log message.</param>
+        /// <returns><code>JObject</code> containg the json representation of the log message.</returns>
+        private static JObject WriteLogMessage(IAssetsLogMessage logMessage, string projectPath)
+        {
+            var logJObject = new JObject()
+            {
+                [LogMessageProperties.CODE] = Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
+                [LogMessageProperties.LEVEL] = Enum.GetName(typeof(LogLevel), logMessage.Level)
+            };
+
+            if (logMessage.Level == LogLevel.Warning)
+            {
+                logJObject[LogMessageProperties.WARNING_LEVEL] = (int)logMessage.WarningLevel;
+            }
+
+            if (logMessage.FilePath != null && 
+               (projectPath == null || !PathUtility.GetStringComparerBasedOnOS().Equals(logMessage.FilePath, projectPath)))
+            {
+                // Do not write the file path if it is the same as the project path.
+                // This prevents duplicate information in the lock file.
+                logJObject[LogMessageProperties.FILE_PATH] = logMessage.FilePath;
+            }
+
+            if (logMessage.StartLineNumber > 0)
+            {
+                logJObject[LogMessageProperties.START_LINE_NUMBER] = logMessage.StartLineNumber;
+            }
+
+            if (logMessage.StartColumnNumber > 0)
+            {
+                logJObject[LogMessageProperties.START_COLUMN_NUMBER] = logMessage.StartColumnNumber;
+            }
+
+            if (logMessage.EndLineNumber > 0)
+            {
+                logJObject[LogMessageProperties.END_LINE_NUMBER] = logMessage.EndLineNumber;
+            }
+
+            if (logMessage.EndColumnNumber > 0)
+            {
+                logJObject[LogMessageProperties.END_COLUMN_NUMBER] = logMessage.EndColumnNumber;
+            }
+
+            if (logMessage.Message != null)
+            {
+                logJObject[LogMessageProperties.MESSAGE] = logMessage.Message;
+            }
+
+            if (logMessage.LibraryId != null)
+            {
+                logJObject[LogMessageProperties.LIBRARY_ID] = logMessage.LibraryId;
+            }
+
+            if (logMessage.TargetGraphs != null && 
+                logMessage.TargetGraphs.Any() && 
+                logMessage.TargetGraphs.All(l => !string.IsNullOrEmpty(l)))
+            {
+                logJObject[LogMessageProperties.TARGET_GRAPHS] = new JArray(logMessage.TargetGraphs);
+            }
+
+            return logJObject;
+        }
+
+        /// <summary>
+        /// Converts an <code>JObject</code> into an <code>IAssetsLogMessage</code>.
+        /// </summary>
+        /// <param name="json"><code>JObject</code> containg the json representation of the log message.</param>
+        /// <returns><code>IAssetsLogMessage</code> representing the log message.</returns>
+        private static IAssetsLogMessage ReadLogMessage(JObject json, string projectPath)
+        {
+            AssetsLogMessage assetsLogMessage = null;
+
+            if (json != null)
+            {
+
+                var levelJson = json[LogMessageProperties.LEVEL];
+                var codeJson = json[LogMessageProperties.CODE];
+                var warningLevelJson = json[LogMessageProperties.WARNING_LEVEL];
+                var filePathJson = json[LogMessageProperties.FILE_PATH];
+                var startLineNumberJson = json[LogMessageProperties.START_LINE_NUMBER];
+                var startColumnNumberJson = json[LogMessageProperties.START_COLUMN_NUMBER];
+                var endLineNumberJson = json[LogMessageProperties.END_LINE_NUMBER];
+                var endColumnNumberJson = json[LogMessageProperties.END_COLUMN_NUMBER];
+                var messageJson = json[LogMessageProperties.MESSAGE];
+                var libraryIdJson = json[LogMessageProperties.LIBRARY_ID];
+
+                var isValid = true;
+
+                isValid &= Enum.TryParse(levelJson.Value<string>(), out LogLevel level);
+                isValid &= Enum.TryParse(codeJson.Value<string>(), out NuGetLogCode code);
+
+                if (isValid)
+                {
+                    assetsLogMessage = new AssetsLogMessage(level, code, messageJson.Value<string>())
+                    {
+                        TargetGraphs = (IReadOnlyList<string>)ReadArray(json[LogMessageProperties.TARGET_GRAPHS] as JArray, ReadString)
+                    };
+
+                    if (level == LogLevel.Warning && warningLevelJson != null)
+                    {
+                        assetsLogMessage.WarningLevel = (WarningLevel)Enum.ToObject(typeof(WarningLevel), warningLevelJson.Value<int>());
+                    }
+
+                    if (filePathJson != null)
+                    {
+                        assetsLogMessage.FilePath = filePathJson.Value<string>();
+                    }
+                    else
+                    {
+                        assetsLogMessage.FilePath = projectPath;
+                    }
+
+                    if (startLineNumberJson != null)
+                    {
+                        assetsLogMessage.StartLineNumber = startLineNumberJson.Value<int>();
+                    }
+
+                    if (startColumnNumberJson != null)
+                    {
+                        assetsLogMessage.StartColumnNumber = startColumnNumberJson.Value<int>();
+                    }
+
+                    if (endLineNumberJson != null)
+                    {
+                        assetsLogMessage.EndLineNumber = endLineNumberJson.Value<int>();
+                    }
+
+                    if (endColumnNumberJson != null)
+                    {
+                        assetsLogMessage.EndColumnNumber = endColumnNumberJson.Value<int>();
+                    }
+
+                    if (libraryIdJson != null)
+                    {
+                        assetsLogMessage.LibraryId = libraryIdJson.Value<string>();
+                    }
+                }
+            }
+
+            return assetsLogMessage;
+        }
+
+        private static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages, string projectPath)
+        {
+            var logMessageArray = new JArray();
+            foreach(var logMessage in logMessages)
+            {
+                logMessageArray.Add(WriteLogMessage(logMessage, projectPath));
+            }
+            return logMessageArray;
+        }
+
         private static LockFileTargetLibrary ReadTargetLibrary(string property, JToken json)
         {
             var library = new LockFileTargetLibrary();
@@ -316,6 +485,7 @@ namespace NuGet.ProjectModel
             library.BuildMultiTargeting = ReadObject(json[BuildMultiTargetingProperty] as JObject, ReadFileItem);
             library.ContentFiles = ReadObject(json[ContentFilesProperty] as JObject, ReadContentFile);
             library.RuntimeTargets = ReadObject(json[RuntimeTargetsProperty] as JObject, ReadRuntimeTarget);
+            library.ToolsAssemblies = ReadObject(json[ToolsProperty] as JObject, ReadFileItem);
 
             return library;
         }
@@ -402,6 +572,13 @@ namespace NuGet.ProjectModel
                 var ordered = library.RuntimeTargets.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
                 json[RuntimeTargetsProperty] = WriteObject(ordered, WriteFileItem);
+            }
+
+            if (library.ToolsAssemblies.Count > 0)
+            {
+                var ordered = library.ToolsAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
+
+                json[ToolsProperty] = WriteObject(ordered, WriteFileItem);
             }
 
             return new JProperty(library.Name + "/" + library.Version.ToNormalizedString(), json);
@@ -496,11 +673,11 @@ namespace NuGet.ProjectModel
                 item.Path,
                 new JObject(item.Properties.OrderBy(prop => prop.Key, StringComparer.Ordinal).Select(x =>
                 {
-                    if (Boolean.TrueString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
+                    if (bool.TrueString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
                     {
                         return new JProperty(x.Key, true);
                     }
-                    else if (Boolean.FalseString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
+                    else if (bool.FalseString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
                     {
                         return new JProperty(x.Key, false);
                     }
@@ -520,7 +697,30 @@ namespace NuGet.ProjectModel
             var items = new List<TItem>();
             foreach (var child in json)
             {
-                items.Add(readItem(child));
+                var item = readItem(child);
+                if(item != null)
+                {
+                    items.Add(item);
+                }
+            }
+            return items;
+        }
+
+        private static IList<IAssetsLogMessage> ReadLogMessageArray(JArray json, string projectPath)
+        {
+            if (json == null)
+            {
+                return new List<IAssetsLogMessage>();
+            }
+
+            var items = new List<IAssetsLogMessage>();
+            foreach (var child in json)
+            {
+                var logMessage = ReadLogMessage(child as JObject, projectPath);
+                if (logMessage != null)
+                {
+                    items.Add(logMessage);
+                }
             }
             return items;
         }

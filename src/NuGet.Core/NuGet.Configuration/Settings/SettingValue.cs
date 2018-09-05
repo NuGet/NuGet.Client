@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -52,9 +52,7 @@ namespace NuGet.Configuration
             Priority = priority;
             OriginalValue = originalValue;
             AdditionalData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        
+        }        
 
         /// <summary>
         /// Represents the key of the setting
@@ -67,22 +65,26 @@ namespace NuGet.Configuration
         public string Value { get; set; }
 
         /// <summary>
-        /// original value of the source as in NuGet.Config
+        /// Original value of the source as in NuGet.Config.
+        /// Should be used only if the SettingValue is read from a config file.
         /// </summary>
         public string OriginalValue { get; set; }
 
         /// <summary>
-        /// IsMachineWide tells if the setting is machine-wide or not
+        /// IsMachineWide tells if the setting is machine-wide or not.
+        /// Should be used only if the SettingValue is read from a config file.
         /// </summary>
         public bool IsMachineWide { get; set; }
 
         /// <summary>
-        /// The priority of this setting in the nuget.config hierarchy. Bigger number means higher priority
+        /// The priority of this setting in the nuget.config hierarchy. Bigger number means higher priority.
+        /// Should be used only if the SettingValue is read from a config file.
         /// </summary>
         public int Priority { get; set; }
 
         /// <summary>
         /// Gets the <see cref="ISettings"/> that provided this value.
+        /// Should be used only if the SettingValue is read from a config file.
         /// </summary>
         public ISettings Origin { get; }
 

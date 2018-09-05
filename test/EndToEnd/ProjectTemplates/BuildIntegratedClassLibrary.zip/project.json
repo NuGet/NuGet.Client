@@ -1,8 +1,10 @@
 ﻿{
   "frameworks": {
-    "net45": {}
+    "net46": {}
   },
   "runtimes": {
-    "win-anycpu": {}
+    "win-anycpu": {},
+    "win": {},
+    "win-x86": {}
   }
 }

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -333,7 +333,7 @@ nuget pack foo.nuspec -Version 2.1.0</value>
   <data name="PushCommandUsageExamples" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -497,7 +497,7 @@ nuget update -Self</value>
     <value>If a solution is specified, this command restores NuGet packages that are installed in the solution and in projects contained in the solution. Otherwise, the command restores packages listed in the specified packages.config file, Microsoft Build project, or project.json file.</value>
   </data>
   <data name="RestoreCommandUsageSummary" xml:space="preserve">
-    <value>[&lt;solution&gt; | &lt;packages.config file&gt; | &lt;project.json&gt; | &lt;Microsoft Build project&gt;] [options]</value>
+    <value>[&lt;solution&gt; | &lt;packages.config file&gt; | &lt;Microsoft Build project&gt;] [options]</value>
     <comment>Please don't localize "packages.config"</comment>
   </data>
   <data name="ConfigCommandDesc_csy" xml:space="preserve">
@@ -2986,7 +2986,7 @@ nuget pack foo.nuspec -Version 2.1.0</value>
   <data name="PushCommandUsageExamples_csy" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -2997,7 +2997,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_deu" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3008,7 +3008,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_esp" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3019,7 +3019,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_fra" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3041,7 +3041,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_jpn" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3052,7 +3052,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_kor" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3063,7 +3063,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_plk" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3074,7 +3074,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_ptb" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3085,7 +3085,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_rus" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3096,7 +3096,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_trk" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3107,7 +3107,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_chs" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3118,7 +3118,7 @@ nuget push foo.nupkg -Timeout 360</value>
   <data name="PushCommandUsageExamples_cht" xml:space="preserve">
     <value>nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
 
-nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
+nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
 
 nuget push foo.nupkg
 
@@ -3871,7 +3871,7 @@ nuget spec -a MyAssembly.dll</value>
     <value>Aktualizuje balíčky na nejnovější dostupné verze. Tento příkaz rovněž aktualizuje vlastní soubor NuGet.exe.</value>
   </data>
   <data name="UpdateCommandDescription_deu" xml:space="preserve">
-    <value>Pakete auf die aktuellsten verfügbaren Versionen aktualisieren. Dieser Befehl aktualisiert auch sie Datei "NuGet.exe" selbst.</value>
+    <value>Pakete auf die aktuellsten verfügbaren Versionen aktualisieren. Dieser Befehl aktualisiert auch die Datei "NuGet.exe" selbst.</value>
   </data>
   <data name="UpdateCommandDescription_esp" xml:space="preserve">
     <value>Actualizar paquetes a las últimas versiones disponibles. Este comando también actualiza NuGet.exe.</value>
@@ -5305,7 +5305,7 @@ nuget locals global-packages -list</value>
     <comment>Please don't localize this string</comment>
   </data>
   <data name="LocalsCommandSummary" xml:space="preserve">
-    <value>&lt;all | http-cache | global-packages | temp&gt; [-clear | -list]</value>
+    <value>&lt;all | http-cache | global-packages | temp | plugins-cache&gt; [-clear | -list]</value>
     <comment>Please don't localize this string</comment>
   </data>
   <data name="LocalsCommandClearDescription" xml:space="preserve">
@@ -5324,7 +5324,7 @@ nuget locals global-packages -list</value>
     <value>Forces the application to run using an invariant, English-based culture.</value>
   </data>
   <data name="RestoreCommandUsageExamples" xml:space="preserve">
-    <value>nuget restore MySoluion.sln</value>
+    <value>nuget restore MySolution.sln</value>
     <comment>command line example, do not localize</comment>
   </data>
   <data name="CommandDirectDownload" xml:space="preserve">
@@ -5335,5 +5335,153 @@ nuget locals global-packages -list</value>
   </data>
   <data name="RestoreCommandRecursive" xml:space="preserve">
     <value>Restore all referenced projects for UWP and NETCore projects. This does not include packages.config projects.</value>
+  </data>
+  <data name="ForceRestoreCommand" xml:space="preserve">
+    <value>Forces all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json. (Does not apply to packages.config)</value>
+  </data>
+  <data name="InstallCommandDependencyVersion" xml:space="preserve">
+    <value>Overrides the default dependency resolution behavior.</value>
+  </data>
+  <data name="InstallCommandFrameworkDescription" xml:space="preserve">
+    <value>Target framework used for selecting dependencies. Defaults to 'Any' if not specified.</value>
+  </data>
+  <data name="PackageCommandInstallPackageToOutputPath" xml:space="preserve">
+    <value>Specify if the command should prepare the package output directory to support share as feed.</value>
+  </data>
+  <data name="PackageCommandOutputFileNamesWithoutVersion" xml:space="preserve">
+    <value>Specify if the command should prepare the package output name without the version.</value>
+  </data>
+  <data name="PackageCommandConfigFile" xml:space="preserve">
+    <value>Specify the configuration file for the pack command.</value>
+  </data>
+  <data name="VerifyCommandDescription" xml:space="preserve">
+    <value>Verifies a signed NuGet package.</value>
+  </data>
+  <data name="VerifyCommandCertificateFingerprintDescription" xml:space="preserve">
+    <value>Verify that the signer certificate matches with one of the specified SHA256 fingerprints. A certificate SHA256 fingerprint is a SHA256 hash of the certificate used to identify the certificate. Multiple inputs should be semicolon separated.</value>
+  </data>
+  <data name="VerifyCommandUsageExamples" xml:space="preserve">
+    <value>nuget verify -Signatures .\..\MyPackage.nupkg -CertificateFingerprint "CE40881FF5F0AD3E58965DA20A9F571EF1651A56933748E1BF1C99E537C4E039;5F874AAF47BCB268A19357364E7FBB09D6BF9E8A93E1229909AC5CAC865802E2" -Verbosity detailed
+
+nuget verify -Signatures C:\packages\MyPackage.nupkg -CertificateFingerprint CE40881FF5F0AD3E58965DA20A9F571EF1651A56933748E1BF1C99E537C4E039
+
+nuget verify -Signatures MyPackage.nupkg -Verbosity quiet
+
+nuget verify -Signatures .\*.nupkg</value>
+    <comment>Please don't localize this string</comment>
+  </data>
+  <data name="VerifyCommandUsageSummary" xml:space="preserve">
+    <value>&lt;verification_type&gt; &lt;package_path&gt;  [options]</value>
+    <comment>Please don't localize this string</comment>
+  </data>
+  <data name="VerifyCommandSignaturesDescription" xml:space="preserve">
+    <value>Specifies that package signature verification should be performed.</value>
+  </data>
+  <data name="SignCommandCertificatePasswordDescription" xml:space="preserve">
+    <value>Password for the certificate, if needed.
+This option can be used to specify the password for the certificate. If no password is provided, the command will prompt for a password at run time, unless the -NonInteractive option is passed.</value>
+  </data>
+  <data name="SignCommandCertificatePathDescription" xml:space="preserve">
+    <value>File path to the certificate to be used while signing the package.</value>
+  </data>
+  <data name="SignCommandCertificateFingerprintDescription" xml:space="preserve">
+    <value>SHA-1 fingerprint of the certificate used to search a local certificate store for the certificate.
+The certificate store can be specified by -CertificateStoreName and -CertificateStoreLocation options.</value>
+  </data>
+  <data name="SignCommandCertificateSubjectNameDescription" xml:space="preserve">
+    <value>Subject name of the certificate used to search a local certificate store for the certificate. 
+The search is a case-insensitive string comparison using the supplied value, which will find all certificates with the subject name containing that string, regardless of other subject values.
+The certificate store can be specified by -CertificateStoreName and -CertificateStoreLocation options.</value>
+  </data>
+  <data name="SignCommandDescription" xml:space="preserve">
+    <value>Signs a NuGet package with the specified certificate.</value>
+  </data>
+  <data name="SignCommandExamples" xml:space="preserve">
+    <value>nuget sign MyPackage.nupkg -CertificatePath C:\certificate.pfx
+nuget sign MyPackage.nupkg -CertificatePath \\path\to\certificate.pfx
+nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -OutputDirectory .\signed\</value>
+    <comment>Please don't localize this string</comment>
+  </data>
+  <data name="SignCommandOverwriteDescription" xml:space="preserve">
+    <value>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</value>
+  </data>
+  <data name="SignCommandHashAlgorithmDescription" xml:space="preserve">
+    <value>Hash algorithm to be used to sign the package. Defaults to SHA256.</value>
+  </data>
+  <data name="SignCommandOutputDirectoryDescription" xml:space="preserve">
+    <value>Directory where the signed package should be saved. By default the original package is overwritten by the signed package.</value>
+  </data>
+  <data name="SignCommandSummary" xml:space="preserve">
+    <value>Signs a NuGet package.</value>
+  </data>
+  <data name="SignCommandTimestampHashAlgorithmDescription" xml:space="preserve">
+    <value>Hash algorithm to be used by the RFC 3161 timestamp server. Defaults to SHA256.</value>
+  </data>
+  <data name="SignCommandUsageDescription" xml:space="preserve">
+    <value>Signs a NuGet package.</value>
+  </data>
+  <data name="SignCommandUsageExamples" xml:space="preserve">
+    <value>nuget sign MyPackage.nupkg -Timestamper https://foo.bar
+
+nuget sign .\..\MyPackage.nupkg -Timestamper https://foo.bar -OutputDirectory .\..\Signed
+</value>
+    <comment>Please don't localize this string</comment>
+  </data>
+  <data name="SignCommandUsageSummary" xml:space="preserve">
+    <value>&lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; [-CertificatePath &lt;certificate_path&gt; | [ -CertificateStoreName &lt;certificate_store_name&gt; -CertificateStoreLocation &lt;certificate_store_location&gt; [-CertificateSubjectName &lt;certificate_subject_name&gt; | -CertificateFingerprint &lt;certificate_fingerprint&gt;]]] [options]</value>
+    <comment>Please don't localize this string</comment>
+  </data>
+  <data name="SignCommandCertificateStoreLocationDescription" xml:space="preserve">
+    <value>Name of the X.509 certificate store use to search for the certificate. Defaults to "CurrentUser", the X.509 certificate store used by the current user.
+This option should be used when specifying the certificate via -CertificateSubjectName or -CertificateFingerprint options.</value>
+  </data>
+  <data name="SignCommandCertificateStoreNameDescription" xml:space="preserve">
+    <value>Name of the X.509 certificate store to use to search for the certificate. Defaults to "My", the X.509 certificate store for personal certificates.
+This option should be used when specifying the certificate via -CertificateSubjectName or -CertificateFingerprint options.</value>
+  </data>
+  <data name="SignCommandTimestamperDescription" xml:space="preserve">
+    <value>URL to an RFC 3161 timestamping server.</value>
+  </data>
+  <data name="CommandInvalidArgumentException" xml:space="preserve">
+    <value>Invalid value provided for '{0}'. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <comment>{0} - argument name</comment>
+  </data>
+  <data name="SignCommandMultipleCertificateException" xml:space="preserve">
+    <value>Multiple options were used to specify a certificate. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+  </data>
+  <data name="SignCommandNoArgumentException" xml:space="preserve">
+    <value>No value provided for '{0}'. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <comment>{0} - argument name</comment>
+  </data>
+  <data name="SignCommandNoCertificateException" xml:space="preserve">
+    <value>No certificate was provided. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+  </data>
+  <data name="SignCommandNoPackageException" xml:space="preserve">
+    <value>No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+  </data>
+  <data name="SignCommandMissingArgumentException" xml:space="preserve">
+    <value>No value provided for '{0}', which is needed when using the '{1}' option. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <comment>0 - primary param name
+1 - other param name</comment>
+  </data>
+  <data name="SignCommandNoTimestamperWarning" xml:space="preserve">
+    <value>The '-Timestamper' option was not provided. The signed package will not be timestamped. To learn more about this option, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+  </data>
+  <data name="VerifyCommandAllDescription" xml:space="preserve">
+    <value>Specifies that all verifications possible should be performed to the package(s).</value>
+  </data>
+  <data name="SourcesCommandTrustDescription" xml:space="preserve">
+    <value>Make a source a trusted repository for repository signature verification.</value>
+  </data>
+  <data name="CommandNoServiceEndpointDescription" xml:space="preserve">
+    <value>Does not append "api/v2/packages" to the source URL.</value>
+  </data>
+  <data name="SourcesCommandValidAuthenticationTypesDescription" xml:space="preserve">
+    <value>Comma-separated list of valid authentication types for this source. By default, all authentication types are valid. Example: basic,negotiate</value>
+    <comment>Please don't localize "basic,negotiate"</comment>
+  </data>
+  <data name="PackageCommandSymbolPackageFormat" xml:space="preserve">
+    <value>When creating a symbols package, allows to choose between the 'snupkg' and 'symbols.nupkg' format.</value>
+    <comment>Do not localize snupkg and symbols.nupkg</comment>
   </data>
 </root>

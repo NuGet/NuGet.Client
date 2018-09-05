@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace NuGet.Versioning.Test
@@ -14,6 +15,56 @@ namespace NuGet.Versioning.Test
             var range = VersionRange.Parse("1.0.0-*");
 
             Assert.True(range.MinVersion.IsPrerelease);
+        }
+
+        [Theory]
+        [InlineData("1.0.0-*", "1.0.0-0")]
+        [InlineData("1.0.0-0*", "1.0.0-0")]
+        [InlineData("1.0.0--*", "1.0.0--")]
+        [InlineData("1.0.0-a-*", "1.0.0-a-")]
+        [InlineData("1.0.0-a.*", "1.0.0-a.0")]
+        public void VersionRangeFloatParsing_PrereleaseWithNumericOnlyLabelVerifyMinVersion(string rangeString, string expected)
+        {
+            var range = VersionRange.Parse(rangeString);
+
+            Assert.Equal(expected, range.MinVersion.ToNormalizedString());
+        }
+
+        [Theory]
+        [InlineData("1.0.0-0")]
+        [InlineData("1.0.0-100")]
+        [InlineData("1.0.0-0.0.0.0")]
+        [InlineData("1.0.0-0+0-0")]
+        public void VersionRangeFloatParsing_PrereleaseWithNumericOnlyLabelVerifySatisfies(string version)
+        {
+            var range = VersionRange.Parse("1.0.0-*");
+
+            Assert.True(range.Satisfies(NuGetVersion.Parse(version)));
+        }
+
+        [Theory]
+        [InlineData("1.0.0-a*", "1.0.0-a.0")]
+        [InlineData("1.0.0-a*", "1.0.0-a-0")]
+        [InlineData("1.0.0-a*", "1.0.0-a")]
+        public void VersionRangeFloatParsing_VerifySatisfiesForFloatingRange(string rangeString, string version)
+        {
+            var range = VersionRange.Parse(rangeString);
+
+            Assert.True(range.Satisfies(NuGetVersion.Parse(version)));
+        }
+
+        [Theory]
+        [InlineData("1.0.0-*", "0", "")]
+        [InlineData("1.0.0-a*", "a", "a")]
+        [InlineData("1.0.0-a-*", "a-", "a-")]
+        [InlineData("1.0.0-a.*", "a.0", "a.")]
+        [InlineData("1.0.0-0*", "0", "0")]
+        public void VersionRangeFloatParsing_VerifyReleaseLabels(string rangeString, string versionLabel, string originalLabel)
+        {
+            var range = VersionRange.Parse(rangeString);
+
+            Assert.Equal(versionLabel, range.Float.MinVersion.Release);
+            Assert.Equal(originalLabel, range.Float.OriginalReleasePrefix);
         }
 
         [Theory]

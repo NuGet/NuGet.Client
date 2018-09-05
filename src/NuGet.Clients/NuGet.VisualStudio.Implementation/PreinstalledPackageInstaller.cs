@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,9 +9,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.Win32;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -32,12 +32,11 @@ namespace NuGet.VisualStudio
     internal class PreinstalledPackageInstaller
     {
         private const string RegistryKeyRoot = @"SOFTWARE\NuGet\Repository";
-        //private readonly IVsWebsiteHandler _websiteHandler;
         private readonly IVsPackageInstallerServices _packageServices;
-        //private readonly IVsCommonOperations _vsCommonOperations;
         private readonly IVsSolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly VsPackageInstaller _installer;
+        private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
 
         public Action<string> InfoHandler { get; set; }
 
@@ -46,13 +45,13 @@ namespace NuGet.VisualStudio
             IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
             ISourceRepositoryProvider sourceProvider,
-            VsPackageInstaller installer)
+            VsPackageInstaller installer,
+            IVsProjectAdapterProvider vsProjectAdapterProvider)
         {
-            //_websiteHandler = websiteHandler;
             _packageServices = packageServices;
-            //_vsCommonOperations = vsCommonOperations;
             _solutionManager = solutionManager;
             _sourceProvider = sourceProvider;
+            _vsProjectAdapterProvider = vsProjectAdapterProvider;
             _installer = installer;
         }
 
@@ -150,6 +149,7 @@ namespace NuGet.VisualStudio
         /// their installation.
         /// </param>
         /// <param name="repositorySettings">The repository settings for the packages being installed.</param>
+        /// <param name="preferPackageReferenceFormat">Install packages to the project as PackageReference if the project type supports it</param>
         /// <param name="warningHandler">
         /// An action that accepts a warning message and presents it to the user, allowing
         /// execution to continue.
@@ -160,20 +160,25 @@ namespace NuGet.VisualStudio
         /// </param>
         internal async Task PerformPackageInstallAsync(
             IVsPackageInstaller packageInstaller,
-            Project project,
+            EnvDTE.Project project,
             PreinstalledPackageConfiguration configuration,
+            bool preferPackageReferenceFormat,
             Action<string> warningHandler,
             Action<string> errorHandler)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string repositoryPath = configuration.RepositoryPath;
+            var repositoryPath = configuration.RepositoryPath;
             var repositorySource = new Configuration.PackageSource(repositoryPath);
             var failedPackageErrors = new List<string>();
 
             // find the project
             var defaultProjectContext = new VSAPIProjectContext();
             var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, defaultProjectContext);
+            if (preferPackageReferenceFormat && await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject, project, needsAPackagesConfig: false))
+            {
+                nuGetProject = await _solutionManager.UpgradeProjectToPackageReferenceAsync(nuGetProject);
+            }
 
             // For BuildIntegratedNuGetProject, nuget will ignore preunzipped configuration.
             var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
@@ -206,7 +211,7 @@ namespace NuGet.VisualStudio
                         if (!_packageServices.IsPackageInstalledEx(project, package.Id, package.Version.ToNormalizedString()))
                         {
                             // No? Raise a warning (likely written to the Output window) and ignore this package.
-                            warningHandler(String.Format(VsResources.PreinstalledPackages_VersionConflict, package.Id, package.Version));
+                            warningHandler(string.Format(VsResources.PreinstalledPackages_VersionConflict, package.Id, package.Version));
                         }
                         // Yes? Just silently ignore this package!
                     }
@@ -216,16 +221,13 @@ namespace NuGet.VisualStudio
                         {
                             if (InfoHandler != null)
                             {
-                                InfoHandler(String.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_PackageInstallStatus, package.Id, package.Version));
+                                InfoHandler(string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_PackageInstallStatus, package.Id, package.Version));
                             }
 
                             // Skip assembly references and disable binding redirections should be done together
-                            bool disableBindingRedirects = package.SkipAssemblyReferences;
+                            var disableBindingRedirects = package.SkipAssemblyReferences;
 
                             var projectContext = new VSAPIProjectContext(package.SkipAssemblyReferences, disableBindingRedirects);
-
-                            // Old templates have hardcoded non-normalized paths
-                            projectContext.PackageExtractionContext.UseLegacyPackageInstallPath = true;
 
                             // This runs from the UI thread
                             await _installer.InstallInternalCoreAsync(
@@ -270,7 +272,7 @@ namespace NuGet.VisualStudio
                 }
 
                 // RepositorySettings = null in unit tests
-                if (EnvDTEProjectUtility.IsWebSite(project))
+                if (EnvDTEProjectInfoUtility.IsWebSite(project))
                 {
                     CreateRefreshFilesInBin(
                         project,
@@ -293,7 +295,7 @@ namespace NuGet.VisualStudio
         /// <param name="project">The target Website project.</param>
         /// <param name="repositoryPath">The local repository path.</param>
         /// <param name="packageInfos">The packages that were installed.</param>
-        private void CreateRefreshFilesInBin(Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
+        private void CreateRefreshFilesInBin(EnvDTE.Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
         {
             IEnumerable<PackageIdentity> packageNames = packageInfos.Select(pi => new PackageIdentity(pi.Id, pi.Version));
             AddRefreshFilesForReferences(project, repositoryPath, packageNames);
@@ -306,7 +308,7 @@ namespace NuGet.VisualStudio
         /// <param name="project">The project.</param>
         /// <param name="repositoryPath">The file system pointing to 'packages' folder under the solution.</param>
         /// <param name="packageNames">The package names.</param>
-        private void AddRefreshFilesForReferences(Project project, string repositoryPath, IEnumerable<PackageIdentity> packageNames)
+        private void AddRefreshFilesForReferences(EnvDTE.Project project, string repositoryPath, IEnumerable<PackageIdentity> packageNames)
         {
             if (project == null)
             {
@@ -324,7 +326,7 @@ namespace NuGet.VisualStudio
             }
 
             VSAPIProjectContext context = new VSAPIProjectContext(skipAssemblyReferences: true, bindingRedirectsDisabled: true);
-            WebSiteProjectSystem projectSystem = new WebSiteProjectSystem(project, context);
+            WebSiteProjectSystem projectSystem = new WebSiteProjectSystem(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(project), context);
 
             foreach (var packageName in packageNames)
             {
@@ -365,21 +367,21 @@ namespace NuGet.VisualStudio
         /// <param name="project">The target Website project.</param>
         /// <param name="repositoryPath">The local repository path.</param>
         /// <param name="packageInfos">The packages that were installed.</param>
-        private void CopyNativeBinariesToBin(Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
+        private void CopyNativeBinariesToBin(EnvDTE.Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
         {
-            VSAPIProjectContext context = new VSAPIProjectContext();
-            VSMSBuildNuGetProjectSystem projectSystem = new VSMSBuildNuGetProjectSystem(project, context);
+            var context = new VSAPIProjectContext();
+            var projectSystem = new VsMSBuildProjectSystem(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(project), context);
 
             foreach (var packageInfo in packageInfos)
             {
-                string packagePath = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageInfo.Id, packageInfo.Version);
+                var packagePath = string.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageInfo.Id, packageInfo.Version);
 
                 CopyNativeBinaries(projectSystem, repositoryPath,
                     Path.Combine(repositoryPath, packagePath));
             }
         }
 
-        private void CopyNativeBinaries(VSMSBuildNuGetProjectSystem projectSystem, string repositoryPath, string packagePath)
+        private void CopyNativeBinaries(VsMSBuildProjectSystem projectSystem, string repositoryPath, string packagePath)
         {
             const string nativeBinariesFolder = "NativeBinaries";
             const string binFolder = "bin";

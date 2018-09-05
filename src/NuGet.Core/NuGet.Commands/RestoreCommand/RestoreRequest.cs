@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 
@@ -23,44 +24,24 @@ namespace NuGet.Commands
             SourceCacheContext cacheContext,
             ILogger log)
         {
-            if (project == null)
-            {
-                throw new ArgumentNullException(nameof(project));
-            }
 
-            if (dependencyProviders == null)
-            {
-                throw new ArgumentNullException(nameof(dependencyProviders));
-            }
-
-            if (cacheContext == null)
-            {
-                throw new ArgumentNullException(nameof(cacheContext));
-            }
-
-            if (log == null)
-            {
-                throw new ArgumentNullException(nameof(log));
-            }
-
-            Project = project;
+            CacheContext = cacheContext ?? throw new ArgumentNullException(nameof(cacheContext));
+            Log = log ?? throw new ArgumentNullException(nameof(log));
+            Project = project ?? throw new ArgumentNullException(nameof(project));
+            DependencyProviders = dependencyProviders ?? throw new ArgumentNullException(nameof(dependencyProviders));
 
             ExternalProjects = new List<ExternalProjectReference>();
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
-
             PackagesDirectory = dependencyProviders.GlobalPackages.RepositoryRoot;
             IsLowercasePackagesDirectory = true;
-
-            CacheContext = cacheContext;
-            Log = log;
-
-            DependencyProviders = dependencyProviders;
-
-            // Default to the project folder
 
             // Default to the project folder
             RestoreOutputPath = Path.GetDirectoryName(Project.FilePath);
         }
+
+        public DependencyGraphSpec DependencyGraphSpec { get; set; }
+
+        public bool AllowNoOp { get; set; }
 
         public SourceCacheContext CacheContext { get; set; }
 
@@ -156,8 +137,31 @@ namespace NuGet.Commands
         public string RestoreOutputPath { get; set; }
 
         /// <summary>
+        /// MSBuildProjectExtensionsPath
+        /// </summary>
+        public string MSBuildProjectExtensionsPath { get; set; }
+
+        
+        /// <summary>
         /// Compatibility options
         /// </summary>
         public bool ValidateRuntimeAssets { get; set; } = true;
+
+        /// <summary>
+        /// Display Errors and warnings as they occur
+        /// </summary>
+        public bool HideWarningsAndErrors { get; set; } = false;
+
+        /// <summary>
+        /// Package Signature verifier
+        /// </summary>
+        public IPackageSignatureVerifier PackageSignatureVerifier { get; set; } = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+        /// <summary>
+        /// SignedPackageVerifierSettings to be used when verifying signed packages.
+        /// </summary>
+        public SignedPackageVerifierSettings SignedPackageVerifierSettings { get; set; } = SignedPackageVerifierSettings.GetDefault();
+
+        public Guid ParentId { get; set;}
     }
 }

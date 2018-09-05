@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Threading.Tasks;
 using NuGet.Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
@@ -6,6 +9,8 @@ namespace NuGet.CommandLine.Test.Caching
     public class AllowsMissingPackageOnSourceTest : ICachingTest
     {
         public string Description => "Allows the requested package to be missing package on the source";
+
+        public int IterationCount => 1;
 
         public async Task<string> PrepareTestAsync(CachingTestContext context, ICachingCommand command)
         {

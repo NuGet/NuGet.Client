@@ -1,17 +1,21 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -75,9 +79,10 @@ namespace NuGet.Test
 
             try
             {
+                using (var settingsDirectory = TestDirectory.Create())
                 using (var testSolutionManager = new TestSolutionManager(true))
                 {
-                    var testSettings = new Configuration.NullSettings();
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, settingsDirectory);
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
                         sourceRepositoryProvider,
@@ -95,7 +100,7 @@ namespace NuGet.Test
                     var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
 
                     // Create projects
-                    for (int i = 0; i < 4; i++)
+                    for (var i = 0; i < 4; i++)
                     {
                         var folder = TestDirectory.Create();
                         projectFolderPaths.Add(folder);
@@ -104,7 +109,7 @@ namespace NuGet.Test
 
                         configs.Add(config);
 
-                        CreateConfigJsonNet452(config);
+                        BasicConfigNet46(config);
 
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
@@ -145,7 +150,7 @@ namespace NuGet.Test
                         {
                             RestoreMetadata = new ProjectRestoreMetadata()
                             {
-                                ProjectName = "myproj",
+                                ProjectName = myProjPath,
                                 ProjectUniqueName = myProjPath,
                                 ProjectStyle = ProjectStyle.Unknown,
                                 ProjectPath = myProjPath
@@ -171,7 +176,7 @@ namespace NuGet.Test
                     buildIntegratedProjects[2].ProjectReferences.Add(reference3);
                     buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
 
-                    string message = string.Empty;
+                    var message = string.Empty;
 
                     var format = new LockFileFormat();
 
@@ -181,7 +186,7 @@ namespace NuGet.Test
 
                     var parsedLockFiles = new List<LockFile>();
 
-                    for (int i = 0; i < 3; i++)
+                    for (var i = 0; i < 3; i++)
                     {
                         var lockFile = format.Read(lockFiles[i]);
                         parsedLockFiles.Add(lockFile);
@@ -216,9 +221,10 @@ namespace NuGet.Test
 
             try
             {
+                using (var settingsDirectory = TestDirectory.Create())
                 using (var testSolutionManager = new TestSolutionManager(true))
                 {
-                    var testSettings = new Configuration.NullSettings();
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, settingsDirectory);
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
                         sourceRepositoryProvider,
@@ -236,7 +242,7 @@ namespace NuGet.Test
                     var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
 
                     // Create projects
-                    for (int i = 0; i < 4; i++)
+                    for (var i = 0; i < 4; i++)
                     {
                         var folder = TestDirectory.Create();
                         projectFolderPaths.Add(folder);
@@ -245,7 +251,7 @@ namespace NuGet.Test
 
                         configs.Add(config);
 
-                        CreateConfigJsonNet452(config);
+                        BasicConfigNet46(config);
 
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
@@ -287,7 +293,7 @@ namespace NuGet.Test
                         {
                             RestoreMetadata = new ProjectRestoreMetadata()
                             {
-                                ProjectName = "myproj",
+                                ProjectName = myProjPath,
                                 ProjectUniqueName = myProjPath,
                                 ProjectStyle = ProjectStyle.Unknown,
                                 ProjectPath = myProjPath
@@ -313,12 +319,12 @@ namespace NuGet.Test
                     buildIntegratedProjects[2].ProjectReferences.Add(reference3);
                     buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
 
-                    string message = string.Empty;
+                    var message = string.Empty;
 
                     var format = new LockFileFormat();
 
                     // Restore and build cache
-                    var restoreContext = new DependencyGraphCacheContext(logger);
+                    var restoreContext = new DependencyGraphCacheContext(logger, testSettings);
 
                     // Act
                     await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[2], packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
@@ -330,7 +336,7 @@ namespace NuGet.Test
 
                     var parsedLockFiles = new List<LockFile>();
 
-                    for (int i = 0; i < 3; i++)
+                    for (var i = 0; i < 3; i++)
                     {
                         var lockFile = format.Read(lockFiles[i]);
                         parsedLockFiles.Add(lockFile);
@@ -361,7 +367,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -372,16 +378,16 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net452");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 testNuGetProjectContext.TestExecutionContext = new TestExecutionContext(packageIdentity);
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 // Act
                 // Set the direct install on the execution context of INuGetProjectContext before installing a package
@@ -408,7 +414,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -428,9 +434,9 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
@@ -466,7 +472,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -477,7 +483,7 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -487,7 +493,7 @@ namespace NuGet.Test
                     randomProjectFolderPath);
 
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 var message = string.Empty;
 
@@ -522,6 +528,69 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task TestPacManBuildIntegratedInstallAndRollbackPackageVerifyAdditionalMessages()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("91.0.0"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+
+            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var randomProjectFolderPath = TestDirectory.Create())
+            {
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+                var token = CancellationToken.None;
+
+                BasicConfigNet46(randomConfig);
+
+                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPath);
+
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
+
+                var message = string.Empty;
+
+                // Act
+                var messages = new List<ILogMessage>();
+
+                try
+                {
+                    await nuGetPackageManager.InstallPackageAsync(
+                        buildIntegratedProject,
+                        packageIdentity,
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
+                }
+                catch (PackageReferenceRollbackException ex)
+                {
+                    messages.AddRange(ex.LogMessages);
+                }
+
+                var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+
+                // Assert
+                messages.Count.Should().Be(1);
+                messages[0].Message.Should().Contain("Unable to find package nuget.core with version (>= 91.0.0)");
+            }
+        }
+
+        [Fact]
         public async Task TestPacManBuildIntegratedUpdateAndRollbackPackage()
         {
             // Arrange
@@ -534,7 +603,8 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -545,7 +615,7 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -555,7 +625,7 @@ namespace NuGet.Test
                     randomProjectFolderPath);
 
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 var message = string.Empty;
 
@@ -608,7 +678,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -625,9 +695,9 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
@@ -661,7 +731,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -678,9 +748,9 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, versioning105, new ResolutionContext(), new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
@@ -703,12 +773,13 @@ namespace NuGet.Test
         public async Task TestPacManBuildIntegratedUpdatePackageToHighest()
         {
             // Arrange
-            var oldJson = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.4"));
+            var nugetVersioningId = "Nuget.Versioning";
+            var oldJson = new PackageIdentity(nugetVersioningId, NuGetVersion.Parse("3.5.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -719,22 +790,22 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJson(randomConfig);
+                BasicConfigNet46(randomConfig);
 
-                var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                var projectTargetFramework = NuGetFramework.Parse("net46");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, oldJson, new ResolutionContext(), new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
                 // Act
                 var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    "Newtonsoft.Json",
+                    nugetVersioningId,
                     new List<NuGetProject> { buildIntegratedProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
@@ -746,6 +817,7 @@ namespace NuGet.Test
                     buildIntegratedProject,
                     actions,
                     new TestNuGetProjectContext(),
+                    NullSourceCacheContext.Instance,
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -775,9 +847,11 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
-                    Configuration.NullSettings.Instance,
+                    testSettings,
                     testSolutionManager,
                     new TestDeleteOnRestartManager());
 
@@ -788,7 +862,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(projectJson, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(projectJson, projectFilePath);
 
                 await nuGetPackageManager.InstallPackageAsync(
                     buildIntegratedProject,
@@ -819,11 +893,12 @@ namespace NuGet.Test
                 var originalProjectJson = File.ReadAllText(projectJson);
 
                 // Act & Assert
-                var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                var exception = await Assert.ThrowsAsync<PackageReferenceRollbackException>(
                     () => nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
                         buildIntegratedProject,
                         actions,
                         new TestNuGetProjectContext(),
+                        NullSourceCacheContext.Instance,
                         CancellationToken.None));
 
                 var rollbackProjectJson = File.ReadAllText(projectJson);
@@ -846,14 +921,16 @@ namespace NuGet.Test
         public async Task TestPacManBuildIntegratedUpdatePackageAll()
         {
             // Arrange
-            var oldMvvm = new PackageIdentity("MvvmLight", NuGetVersion.Parse("4.2.32.7"));
-            var oldJson = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
+            var nugetVersioningId = "NuGet.Versioning";
+            var mvvmLightId = "MvvmLight";
+            var oldMvvm = new PackageIdentity(mvvmLightId, NuGetVersion.Parse("4.2.32.7"));
+            var oldJson = new PackageIdentity(nugetVersioningId, NuGetVersion.Parse("3.5.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -864,15 +941,15 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJson(randomConfig);
+                BasicConfigNet46(randomConfig);
 
-                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var projectTargetFramework = NuGetFramework.Parse("net46");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 using (var cacheContext = new SourceCacheContext())
                 {
@@ -911,6 +988,7 @@ namespace NuGet.Test
                         buildIntegratedProject,
                         actions,
                         new TestNuGetProjectContext(),
+                        cacheContext,
                         CancellationToken.None);
 
                     var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -922,11 +1000,11 @@ namespace NuGet.Test
                     Assert.Equal(NuGetProjectActionType.Install, actions.First().NuGetProjectActionType);
                     Assert.Equal(2, installedPackages.Count());
 
-                    var newMvvm = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "MvvmLight");
+                    var newMvvm = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == mvvmLightId);
                     Assert.NotNull(newMvvm);
                     Assert.True(newMvvm.PackageIdentity.Version > oldMvvm.Version);
 
-                    var newJson = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "Newtonsoft.Json");
+                    var newJson = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == nugetVersioningId);
                     Assert.NotNull(newJson);
                     Assert.True(newJson.PackageIdentity.Version > oldJson.Version);
 
@@ -939,13 +1017,14 @@ namespace NuGet.Test
         public async Task TestPacManBuildIntegratedUpdatePackageAllNoop()
         {
             // Arrange
-            var oldJson = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
+            var oldJson = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("3.5.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
+            using (var settingsDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, settingsDirectory);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -956,15 +1035,15 @@ namespace NuGet.Test
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJson(randomConfig);
+                BasicConfigNet46(randomConfig);
 
-                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var projectTargetFramework = NuGetFramework.Parse("net46");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
-                string message = string.Empty;
+                var message = string.Empty;
                 using (var cacheContext = new SourceCacheContext())
                 {
                     var downloadContext = new PackageDownloadContext(cacheContext);
@@ -992,6 +1071,7 @@ namespace NuGet.Test
                         buildIntegratedProject,
                         actions,
                         new TestNuGetProjectContext(),
+                        cacheContext,
                         CancellationToken.None);
 
                     // Act
@@ -1007,6 +1087,7 @@ namespace NuGet.Test
                         buildIntegratedProject,
                         actions,
                         new TestNuGetProjectContext(),
+                        cacheContext,
                         CancellationToken.None);
 
                     var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -1016,6 +1097,15 @@ namespace NuGet.Test
                     Assert.Equal(0, actions.Count());
                 }
             }
+        }
+
+        private ISettings PopulateSettingsWithSources(SourceRepositoryProvider sourceRepositoryProvider, TestDirectory settingsDirectory)
+        {
+            var Settings = new Settings(settingsDirectory);
+            foreach (var source in sourceRepositoryProvider.GetRepositories())
+                Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+
+            return Settings;
         }
 
         [Fact]
@@ -1029,7 +1119,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1046,9 +1136,9 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, versioning105, new ResolutionContext(), new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
@@ -1067,6 +1157,7 @@ namespace NuGet.Test
                     buildIntegratedProject,
                     actions,
                     new TestNuGetProjectContext(),
+                    NullSourceCacheContext.Instance,
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -1096,7 +1187,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
 
                 var nuGetPackageManager = new NuGetPackageManager(
@@ -1114,9 +1205,9 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 await nuGetPackageManager.InstallPackageAsync(
                     buildIntegratedProject,
@@ -1161,6 +1252,7 @@ namespace NuGet.Test
                     buildIntegratedProject,
                     actions,
                     new TestNuGetProjectContext(),
+                    NullSourceCacheContext.Instance,
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -1203,7 +1295,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1220,9 +1312,9 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, versioning105, new ResolutionContext(), new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
@@ -1241,6 +1333,7 @@ namespace NuGet.Test
                     buildIntegratedProject,
                     actions,
                     new TestNuGetProjectContext(),
+                    NullSourceCacheContext.Instance,
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -1264,7 +1357,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1281,9 +1374,9 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 // Act
                 try
@@ -1313,7 +1406,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1338,7 +1431,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 // Check that there are no packages returned by PackagesConfigProject
                 var installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
@@ -1369,7 +1462,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1386,7 +1479,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 await buildIntegratedProject.InstallPackageAsync(
                     "dotnetrdf",
@@ -1429,20 +1522,20 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, deleteOnRestartManager);
 
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net452");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
 
                 await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject,
                     packageIdentityA,
@@ -1500,21 +1593,21 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, deleteManager);
 
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net452");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
@@ -1539,21 +1632,21 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var testDeleteManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, testDeleteManager);
 
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net452");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
@@ -1581,21 +1674,21 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = new Configuration.NullSettings();
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, deleteOnRestartManager);
 
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJsonNet452(randomConfig);
+                BasicConfigNet46(randomConfig);
 
                 var projectTargetFramework = NuGetFramework.Parse("net452");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
 
-                string message = string.Empty;
+                var message = string.Empty;
 
                 await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
@@ -1627,7 +1720,7 @@ namespace NuGet.Test
                 using (var testSolutionManager = new TestSolutionManager(true))
                 using (var randomProjectFolderPath = TestDirectory.Create())
                 {
-                    var testSettings = new Configuration.NullSettings();
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                     var token = CancellationToken.None;
                     var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1642,7 +1735,7 @@ namespace NuGet.Test
 
                     var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
 
-                    CreateConfigJsonNet452(randomConfig);
+                    BasicConfigNet46(randomConfig);
 
                     var projectTargetFramework = NuGetFramework.Parse("net452");
                     var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
@@ -1676,6 +1769,91 @@ namespace NuGet.Test
             }
         }
 
+        [Fact]
+        public async void TestPacMan_BuildIntegrated_PreviewUpdatesAsync_WithStrictVersionRange()
+        {
+            // Set up Package Source
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo("packageA", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("packageA", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
+            };
+
+            // Arrange
+            var sourceRepositoryProvider = CreateSource(packages);
+
+            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var randomProjectFolderPath = TestDirectory.Create())
+            {
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                var token = CancellationToken.None;
+                var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+                var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+                var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+
+                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+
+                BasicConfigWithPackage(randomConfig);
+
+                var projectTargetFramework = NuGetFramework.Parse("net46");
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+                var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+                var packageIdentity = new PackageIdentity("packageA", new NuGetVersion(1, 0, 0));
+                var testLogger = new TestLogger();
+                var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+                var providersCache = new RestoreCommandProvidersCache();
+                var dgSpec1 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+
+                await DependencyGraphRestoreUtility.RestoreAsync(
+                    testSolutionManager,
+                    restoreContext,
+                    providersCache,
+                    (c) => { },
+                    sourceRepositoryProvider.GetRepositories(),
+                    Guid.Empty,
+                    false,
+                    dgSpec1,
+                    testLogger,
+                    CancellationToken.None);
+
+                var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+                Assert.Equal(packageIdentity, installedPackages.First().PackageIdentity);
+
+                // Main Act
+                var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                    "packageA",
+                    new List<NuGetProject> { buildIntegratedProject },
+                    new ResolutionContext(),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                // Assert
+                Assert.False(actions.Any());
+            }
+        }
+
+        private SourceRepositoryProvider CreateSource(List<SourcePackageDependencyInfo> packages)
+        {
+            var resourceProviders = new List<Lazy<INuGetResourceProvider>>();
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages)));
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestMetadataProvider(packages)));
+
+            var packageSource = new Configuration.PackageSource("http://temp");
+            var packageSourceProvider = new TestPackageSourceProvider(new[] { packageSource });
+
+            return new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
+        }
+
         private static void CreateConfigJson(string path)
         {
             using (var writer = new StreamWriter(path))
@@ -1703,22 +1881,30 @@ namespace NuGet.Test
             }
         }
 
-        private static void CreateConfigJsonNet452(string path)
+        private static void BasicConfigNet46(string path)
         {
             using (var writer = new StreamWriter(path))
             {
-                writer.Write(BasicConfigNet452.ToString());
+                writer.Write(BasicConfigNet460.ToString());
             }
         }
 
-        private static JObject BasicConfigNet452
+        private static void BasicConfigWithPackage(string path)
+        {
+            using (var writer = new StreamWriter(path))
+            {
+                writer.Write(ConfigWithPackage.ToString());
+            }
+        }
+
+        private static JObject BasicConfigNet460
         {
             get
             {
                 var json = new JObject();
 
                 var frameworks = new JObject();
-                frameworks["net452"] = new JObject();
+                frameworks["net46"] = new JObject();
 
                 json["dependencies"] = new JObject();
 
@@ -1728,63 +1914,104 @@ namespace NuGet.Test
             }
         }
 
-        private class TestProjectJsonBuildIntegratedNuGetProject : ProjectJsonBuildIntegratedNuGetProject
+        private static JObject ConfigWithPackage
+        {
+            get
+            {
+                var json = new JObject();
+
+                var frameworks = new JObject();
+                frameworks["net46"] = new JObject();
+
+                var deps = new JObject();
+                var prop = new JProperty("packageA", "[1.0.0]");
+                deps.Add(prop);
+
+                json["dependencies"] = deps;
+
+                json["frameworks"] = frameworks;
+
+                return json;
+            }
+        }
+
+        private class TestProjectJsonBuildIntegratedNuGetProject
+            : ProjectJsonNuGetProject
+            , INuGetProjectServices
+            , IProjectScriptHostService
+            , IProjectSystemReferencesReader
         {
             public HashSet<PackageIdentity> ExecuteInitScriptAsyncCalls { get; }
                 = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+
             public List<TestExternalProjectReference> ProjectReferences { get; }
                 = new List<TestExternalProjectReference>();
 
             public bool IsCacheEnabled { get; set; }
 
+            public IProjectBuildProperties BuildProperties => throw new NotImplementedException();
+
+            public IProjectSystemCapabilities Capabilities => throw new NotImplementedException();
+
+            public IProjectSystemReferencesReader ReferencesReader => this;
+
+            public IProjectSystemReferencesService References => throw new NotImplementedException();
+
+            public IProjectSystemService ProjectSystem => throw new NotImplementedException();
+
+            public IProjectScriptHostService ScriptService => this;
+
             public TestProjectJsonBuildIntegratedNuGetProject(
                 string jsonConfig,
-                IMSBuildNuGetProjectSystem msbuildProjectSystem)
-                : base(jsonConfig, msbuildProjectSystem.ProjectFileFullPath, msbuildProjectSystem)
+                IMSBuildProjectSystem msbuildProjectSystem)
+                : base(jsonConfig, msbuildProjectSystem.ProjectFileFullPath)
             {
-            }
-
-            public override Task<bool> ExecuteInitScriptAsync(
-                PackageIdentity identity,
-                string packageInstallPath,
-                INuGetProjectContext projectContext,
-                bool throwOnFailure)
-            {
-                ExecuteInitScriptAsyncCalls.Add(identity);
-
-                return base.ExecuteInitScriptAsync(identity, packageInstallPath, projectContext, throwOnFailure);
+                ProjectServices = this;
             }
 
             public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
             {
-                if (IsCacheEnabled )
+                if (IsCacheEnabled)
                 {
-                    PackageSpec cachedResult;
-                    if (context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out cachedResult))
+                    if (context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out var cachedResult))
                     {
                         return new[] { cachedResult };
                     }
                 }
 
-                var specs = await base.GetPackageSpecsAsync(context);
+                return await base.GetPackageSpecsAsync(context);
+            }
 
+            public T GetGlobalService<T>() where T : class
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ExecutePackageScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, string scriptRelativePath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> ExecutePackageInitScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
+            {
+                ExecuteInitScriptAsyncCalls.Add(packageIdentity);
+                return Task.FromResult(true);
+            }
+
+            public Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(NuGetFramework targetFramework, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(ILogger logger, CancellationToken token)
+            {
                 var projectRefs = ProjectReferences.Select(e => new ProjectRestoreReference()
                 {
                     ProjectUniqueName = e.MSBuildProjectPath,
                     ProjectPath = e.MSBuildProjectPath,
                 });
 
-                var spec = specs.Single();
-
-                spec.RestoreMetadata.TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>()
-                {
-                    new ProjectRestoreMetadataFrameworkInfo(spec.TargetFrameworks.First().FrameworkName)
-                    {
-                        ProjectReferences = projectRefs.ToList()
-                    }
-                };
-
-                return specs;
+                return Task.FromResult(projectRefs);
             }
         }
 

@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Moq;
@@ -30,19 +31,70 @@ namespace NuGet.PackageManagement.Test
     public class InstallationCompatibilityTests
     {
         [Fact]
-        public void InstallationCompatibility_WithLowerMinClientVersion_Fails()
+        public async Task EnsurePackageCompatibilityAsync_ThrowsForNullNuGetProject()
+        {
+            var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                () => InstallationCompatibility.Instance.EnsurePackageCompatibilityAsync(
+                    nuGetProject: null,
+                    packageIdentity: new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0")),
+                    resourceResult: new DownloadResourceResult(DownloadResourceResultStatus.NotFound),
+                    cancellationToken: CancellationToken.None));
+
+            Assert.Equal("nuGetProject", exception.ParamName);
+        }
+
+        [Fact]
+        public async Task EnsurePackageCompatibilityAsync_ThrowsForNullPackageIdentity()
+        {
+            var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                () => InstallationCompatibility.Instance.EnsurePackageCompatibilityAsync(
+                    Mock.Of<NuGetProject>(),
+                    packageIdentity: null,
+                    resourceResult: new DownloadResourceResult(DownloadResourceResultStatus.NotFound),
+                    cancellationToken: CancellationToken.None));
+
+            Assert.Equal("packageIdentity", exception.ParamName);
+        }
+
+        [Fact]
+        public async Task EnsurePackageCompatibilityAsync_ThrowsForNullResourceResult()
+        {
+            var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                () => InstallationCompatibility.Instance.EnsurePackageCompatibilityAsync(
+                    Mock.Of<NuGetProject>(),
+                    new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0")),
+                    resourceResult: null,
+                    cancellationToken: CancellationToken.None));
+
+            Assert.Equal("resourceResult", exception.ParamName);
+        }
+
+        [Fact]
+        public async Task EnsurePackageCompatibilityAsync_ThrowsIfCancelled()
+        {
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                () => InstallationCompatibility.Instance.EnsurePackageCompatibilityAsync(
+                    Mock.Of<NuGetProject>(),
+                    new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0")),
+                    new DownloadResourceResult(DownloadResourceResultStatus.NotFound),
+                    new CancellationToken(canceled: true)));
+        }
+
+        [Fact]
+        public async Task EnsurePackageCompatibilityAsync_WithLowerMinClientVersion_Fails()
         {
             // Arrange
             var tc = new TestContext();
             tc.MinClientVersion = new NuGetVersion("10.0.0");
-            var result = new DownloadResourceResult(Stream.Null, tc.PackageReader.Object);
+            var result = new DownloadResourceResult(Stream.Null, tc.PackageReader.Object, string.Empty);
 
             // Act & Assert
-            var ex = Assert.Throws<MinClientVersionException>(() =>
-                 tc.Target.EnsurePackageCompatibility(
+            var ex = await Assert.ThrowsAsync<MinClientVersionException>(() =>
+                 tc.Target.EnsurePackageCompatibilityAsync(
                     tc.NuGetProject,
                     tc.PackageIdentityA,
-                    result));
+                    result,
+                    CancellationToken.None));
 
             Assert.Equal(
                 "The 'PackageA 1.0.0' package requires NuGet client version '10.0.0' or above, " +
@@ -57,14 +109,14 @@ namespace NuGet.PackageManagement.Test
         }
 
         [Fact]
-        public async Task InstallationCompatibility_WithValidProjectActions_Succeeds()
+        public async Task EnsurePackageCompatibility_WithValidProjectActions_Succeeds()
         {
             // Arrange
             using (var userPackageFolder = TestDirectory.Create())
             {
                 var tc = new TestContext(userPackageFolder);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     userPackageFolder,
                     PackageSaveMode.Defaultv3,
                     new[]
@@ -104,14 +156,14 @@ namespace NuGet.PackageManagement.Test
         }
 
         [Fact]
-        public async Task InstallationCompatibility_WithInvalidProjectActions_Fails()
+        public async Task EnsurePackageCompatibility_WithInvalidProjectActions_Fails()
         {
             // Arrange
             using (var userPackageFolder = TestDirectory.Create())
             {
                 var tc = new TestContext(userPackageFolder);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     userPackageFolder,
                     PackageSaveMode.Defaultv3,
                     new[]
@@ -140,33 +192,33 @@ namespace NuGet.PackageManagement.Test
         }
 
         [Fact]
-        public void InstallationCompatibility_WithNuGetProject_WithInvalidType_Fails()
+        public async Task EnsurePackageCompatibilityAsync_WithNuGetProject_WithInvalidType_Fails()
         {
             // Arrange
             var tc = new TestContext();
             tc.PackageTypes.Add(tc.InvalidPackageType);
 
             // Act & Assert
-            tc.VerifyFailure(
+            await tc.VerifyFailureAsync(
                 tc.NuGetProject,
                 "Package 'PackageA 1.0.0' has a package type 'Invalid 1.2' that is not supported by project 'TestNuGetProject'.");
         }
 
         [Fact]
-        public void InstallationCompatibility_WithNuGetProject_WithInvalidTypeAndEmptyVersion_Fails()
+        public async Task EnsurePackageCompatibilityAsync_WithNuGetProject_WithInvalidTypeAndEmptyVersion_Fails()
         {
             // Arrange
             var tc = new TestContext();
             tc.PackageTypes.Add(new PackageType("Invalid", PackageType.EmptyVersion));
 
             // Act & Assert
-            tc.VerifyFailure(
+            await tc.VerifyFailureAsync(
                 tc.NuGetProject,
                 "Package 'PackageA 1.0.0' has a package type 'Invalid' that is not supported by project 'TestNuGetProject'.");
         }
 
         [Fact]
-        public void InstallationCompatibility_WithNuGetProject_WitMultipleTypes_Fails()
+        public async Task EnsurePackageCompatibilityAsync_WithNuGetProject_WitMultipleTypes_Fails()
         {
             // Arrange
             var tc = new TestContext();
@@ -174,61 +226,61 @@ namespace NuGet.PackageManagement.Test
             tc.PackageTypes.Add(PackageType.Dependency);
 
             // Act & Assert
-            tc.VerifyFailure(
+            await tc.VerifyFailureAsync(
                 tc.NuGetProject,
                 "Package 'PackageA 1.0.0' has multiple package types, which is not supported.");
         }
 
         [Fact]
-        public void InstallationCompatibility_WithNuGetProject_WithDotnetCliToolType_Fails()
+        public async Task EnsurePackageCompatibilityAsync_WithNuGetProject_WithDotnetCliToolType_Fails()
         {
             // Arrange
             var tc = new TestContext();
             tc.PackageTypes.Add(PackageType.DotnetCliTool);
 
             // Act & Assert
-            tc.VerifyFailure(
+            await tc.VerifyFailureAsync(
                 tc.NuGetProject,
                 "Package 'PackageA 1.0.0' has a package type 'DotnetCliTool' that is not supported by project 'TestNuGetProject'.");
         }
 
         [Fact]
-        public void InstallationCompatibility_WithNuGetProject_WithLegacyType_Succeeds()
+        public async Task EnsurePackageCompatibilityAsync_WithNuGetProject_WithLegacyType_Succeeds()
         {
             // Arrange
             var tc = new TestContext();
             tc.PackageTypes.Add(PackageType.Legacy);
 
             // Act & Assert
-            tc.VerifySuccess(tc.NuGetProject);
+            await tc.VerifySuccessAsync(tc.NuGetProject);
         }
 
         [Fact]
-        public void InstallationCompatibility_WithNuGetProject_WithDependency_Succeeds()
+        public async Task EnsurePackageCompatibilityAsync_WithNuGetProject_WithDependency_Succeeds()
         {
             // Arrange
             var tc = new TestContext();
             tc.PackageTypes.Add(PackageType.Dependency);
 
             // Act & Assert
-            tc.VerifySuccess(tc.NuGetProject);
+            await tc.VerifySuccessAsync(tc.NuGetProject);
         }
 
         [Fact]
-        public void InstallationCompatibility_WithProjectKProject_WithInvalidType_Fails()
+        public async Task EnsurePackageCompatibilityAsync_WithProjectKProject_WithInvalidType_Fails()
         {
             // Arrange
             var tc = new TestContext();
             tc.PackageTypes.Add(tc.InvalidPackageType);
 
             // Act & Assert
-            tc.VerifyFailure(
+            await tc.VerifyFailureAsync(
                 tc.ProjectKProject,
                 "Package 'PackageA 1.0.0' has a package type 'Invalid 1.2' that is not supported by project 'TestProjectKNuGetProject'.");
         }
 
         [Fact]
-        public void InstallationCompatibility_WithProjectKProject_WithMultipleTypes_Fails()
+        public async Task EnsurePackageCompatibilityAsync_WithProjectKProject_WithMultipleTypes_Fails()
         {
             // Arrange
             var tc = new TestContext();
@@ -236,42 +288,42 @@ namespace NuGet.PackageManagement.Test
             tc.PackageTypes.Add(PackageType.Dependency);
 
             // Act & Assert
-            tc.VerifyFailure(
+            await tc.VerifyFailureAsync(
                 tc.ProjectKProject,
                 "Package 'PackageA 1.0.0' has multiple package types, which is not supported.");
         }
 
         [Fact]
-        public void InstallationCompatibility_WithProjectKProject_WithDotnetCliToolType_Succeeds()
+        public async Task EnsurePackageCompatibilityAsync_WithProjectKProject_WithDotnetCliToolType_Succeeds()
         {
             // Arrange
             var tc = new TestContext();
             tc.PackageTypes.Add(PackageType.DotnetCliTool);
 
             // Act & Assert
-            tc.VerifySuccess(tc.ProjectKProject);
+            await tc.VerifySuccessAsync(tc.ProjectKProject);
         }
 
         [Fact]
-        public void InstallationCompatibility_WithProjectKProject_WithLegacyType_Succeeds()
+        public async Task EnsurePackageCompatibilityAsync_WithProjectKProject_WithLegacyType_Succeeds()
         {
             // Arrange
             var tc = new TestContext();
             tc.PackageTypes.Add(PackageType.Legacy);
 
             // Act & Assert
-            tc.VerifySuccess(tc.ProjectKProject);
+            await tc.VerifySuccessAsync(tc.ProjectKProject);
         }
 
         [Fact]
-        public void InstallationCompatibility_WithProjectKProject_WithDependency_Succeeds()
+        public async Task EnsurePackageCompatibilityAsync_WithProjectKProject_WithDependency_Succeeds()
         {
             // Arrange
             var tc = new TestContext();
             tc.PackageTypes.Add(PackageType.Dependency);
 
             // Act & Assert
-            tc.VerifySuccess(tc.ProjectKProject);
+            await tc.VerifySuccessAsync(tc.ProjectKProject);
         }
 
         private class TestContext
@@ -309,7 +361,7 @@ namespace NuGet.PackageManagement.Test
                     .Returns(userPackageFolder);
                 NuGetPathContext
                     .Setup(x => x.FallbackPackageFolders)
-                    .Returns(new string[0]);
+                    .Returns(Array.Empty<string>());
 
                 NuspecReader
                     .Setup(p => p.GetIdentity())
@@ -352,19 +404,20 @@ namespace NuGet.PackageManagement.Test
             public InstallationCompatibility Target { get; }
             public PackageType InvalidPackageType { get; }
 
-            public void VerifyFailure(
+            public async Task VerifyFailureAsync(
                 NuGetProject nugetProject,
                 string expected)
             {
                 // Arrange
-                var result = new DownloadResourceResult(Stream.Null, PackageReader.Object);
+                var result = new DownloadResourceResult(Stream.Null, PackageReader.Object, string.Empty);
 
                 // Act & Assert
-                var ex = Assert.Throws<PackagingException>(() =>
-                     Target.EnsurePackageCompatibility(
+                var ex = await Assert.ThrowsAsync<PackagingException>(() =>
+                     Target.EnsurePackageCompatibilityAsync(
                         nugetProject,
                         PackageIdentityA,
-                        result));
+                        result,
+                        CancellationToken.None));
 
                 Assert.Equal(expected, ex.Message);
                 PackageReader.Verify(x => x.GetMinClientVersion(), Times.Never);
@@ -373,16 +426,17 @@ namespace NuGet.PackageManagement.Test
                 NuspecReader.Verify(x => x.GetPackageTypes(), Times.Once);
             }
 
-            public void VerifySuccess(NuGetProject nugetProject)
+            public async Task VerifySuccessAsync(NuGetProject nugetProject)
             {
                 // Arrange
-                var result = new DownloadResourceResult(Stream.Null, PackageReader.Object);
+                var result = new DownloadResourceResult(Stream.Null, PackageReader.Object, string.Empty);
 
                 // Act & Assert
-                Target.EnsurePackageCompatibility(
+                await Target.EnsurePackageCompatibilityAsync(
                     nugetProject,
                     PackageIdentityA,
-                    result);
+                    result,
+                    CancellationToken.None);
 
                 PackageReader.Verify(x => x.GetMinClientVersion(), Times.Never);
                 PackageReader.Verify(x => x.GetPackageTypes(), Times.Never);
@@ -447,6 +501,8 @@ namespace NuGet.PackageManagement.Test
                 return new RestoreResult(
                     true,
                     new[] { graph },
+                    null,
+                    null,
                     null,
                     null,
                     null,

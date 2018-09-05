@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
@@ -51,7 +51,7 @@ namespace NuGet.CommandLine.Test.Caching
 
         public string GetFindPackagesByIdPath(string id)
         {
-            return $"/nuget/FindPackagesById()?id='{id}'";
+            return $"/nuget/FindPackagesById()?id='{id}'&semVerLevel=2.0.0";
         }
 
         public string GetODataUrl(PackageIdentity identity)

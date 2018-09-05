@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -64,6 +64,8 @@ namespace NuGet.CommandLine
                 return _parsedToolsVersion;
             }
         }
+
+        public bool IsValid => Path != null;
 
         public string Version { get; private set; }
 
@@ -148,6 +150,11 @@ namespace NuGet.CommandLine
             }
 
             return FileVersionInfo.GetVersionInfo(msBuildPath)?.FileVersion;
+        }
+
+        public override string ToString()
+        {
+            return $"Version: {Version} Path: {Path}";
         }
     }
 }

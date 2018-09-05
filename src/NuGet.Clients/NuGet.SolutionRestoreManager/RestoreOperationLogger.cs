@@ -1,18 +1,23 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
-using NuGet.PackageManagement.UI;
+using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
-using NuGetConsole;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using MSBuildVerbosityLevel = NuGet.SolutionRestoreManager.VerbosityLevel;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
@@ -22,20 +27,26 @@ namespace NuGet.SolutionRestoreManager
     /// </summary>
     [Export]
     [PartCreationPolicy(CreationPolicy.NonShared)]
-    internal sealed class RestoreOperationLogger : ILogger
+    internal sealed class RestoreOperationLogger : LoggerBase, ILogger, IDisposable
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IAsyncServiceProvider _asyncServiceProvider;
         private readonly IOutputConsoleProvider _outputConsoleProvider;
 
+        // Queue of (bool reportProgress, bool showAsOutputMessage, ILogMessage logMessage)
+        private readonly ConcurrentQueue<Tuple<bool, bool, ILogMessage>> _loggedMessages = new ConcurrentQueue<Tuple<bool, bool, ILogMessage>>();
+
+        private Lazy<ErrorListTableDataSource> _errorListDataSource;
         private RestoreOperationSource _operationSource;
-        private ErrorListProvider _errorListProvider;
         private JoinableTaskFactory _taskFactory;
+        private JoinableTaskCollection _jtc;
+
         private CancellationTokenSource _externalCts;
         private Func<CancellationToken, Task<RestoreOperationProgressUI>> _progressFactory;
         private IOutputConsole _outputConsole;
 
         private bool _cancelled;
         private bool _hasHeaderBeenShown;
+        private bool _showErrorList;
 
         // The value of the "MSBuild project build output verbosity" setting
         // of VS. From 0 (quiet) to 4 (Diagnostic).
@@ -43,62 +54,54 @@ namespace NuGet.SolutionRestoreManager
 
         [ImportingConstructor]
         public RestoreOperationLogger(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
             IOutputConsoleProvider outputConsoleProvider)
+            : this(AsyncServiceProvider.GlobalProvider, outputConsoleProvider)
+        { }
+
+        // Set the base logger to debug level, all filter will be done here.
+
+        public RestoreOperationLogger(
+            IAsyncServiceProvider asyncServiceProvider,
+            IOutputConsoleProvider outputConsoleProvider)
+            : base(LogLevel.Debug)
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
+            Assumes.Present(asyncServiceProvider);
+            Assumes.Present(outputConsoleProvider);
 
-            if (outputConsoleProvider == null)
-            {
-                throw new ArgumentNullException(nameof(outputConsoleProvider));
-            }
-
-            _serviceProvider = serviceProvider;
+            _asyncServiceProvider = asyncServiceProvider;
             _outputConsoleProvider = outputConsoleProvider;
         }
 
         public async Task StartAsync(
             RestoreOperationSource operationSource,
-            ErrorListProvider errorListProvider,
+            Lazy<ErrorListTableDataSource> errorListDataSource,
             JoinableTaskFactory jtf,
             CancellationTokenSource cts)
         {
-            if (errorListProvider == null)
-            {
-                throw new ArgumentNullException(nameof(errorListProvider));
-            }
-
-            if (jtf == null)
-            {
-                throw new ArgumentNullException(nameof(jtf));
-            }
-
-            if (cts == null)
-            {
-                throw new ArgumentNullException(nameof(cts));
-            }
+            Assumes.Present(errorListDataSource);
+            Assumes.Present(jtf);
+            Assumes.Present(cts);
 
             _operationSource = operationSource;
-            _errorListProvider = errorListProvider;
-            _taskFactory = jtf;
+            _errorListDataSource = errorListDataSource;
+
+            _jtc = jtf.Context.CreateCollection();
+            _taskFactory = jtf.Context.CreateFactory(_jtc);
+
             _externalCts = cts;
             _externalCts.Token.Register(() => _cancelled = true);
 
 #if VS14
-            _progressFactory = t => WaitDialogProgress.StartAsync(_serviceProvider, _taskFactory, t);
+            _progressFactory = t => WaitDialogProgress.StartAsync(_asyncServiceProvider, _taskFactory, t);
 #else
-            _progressFactory = t => StatusBarProgress.StartAsync(_serviceProvider, _taskFactory, t);
+            _progressFactory = t => StatusBarProgress.StartAsync(_asyncServiceProvider, _taskFactory, t);
 #endif
 
             await _taskFactory.RunAsync(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await _taskFactory.SwitchToMainThreadAsync();
 
-                OutputVerbosity = GetMSBuildOutputVerbositySetting();
+                OutputVerbosity = await GetMSBuildOutputVerbositySettingAsync();
 
                 switch (_operationSource)
                 {
@@ -115,101 +118,125 @@ namespace NuGet.SolutionRestoreManager
                         _outputConsole.Clear();
                         break;
                 }
-
-                errorListProvider.Tasks.Clear();
             });
+
+            if (_errorListDataSource.IsValueCreated)
+            {
+                // Clear old entries
+                _errorListDataSource.Value.ClearNuGetEntries();
+            }
         }
 
-        public void LogDebug(string data)
+        public async Task StopAsync()
         {
-            LogToVS(VerbosityLevel.Diagnostic, data);
+            await _jtc.JoinTillEmptyAsync();
+
+            if (_showErrorList)
+            {
+                // Give the error list focus
+                _errorListDataSource.Value.BringToFront();
+            }
         }
 
-        public void LogVerbose(string data)
-        {
-            LogToVS(VerbosityLevel.Detailed, data);
-        }
-
-        public void LogInformation(string data)
-        {
-            LogToVS(VerbosityLevel.Normal, data);
-        }
-
-        public void LogMinimal(string data)
-        {
-            LogInformation(data);
-        }
-
-        public void LogWarning(string data)
-        {
-            LogToVS(VerbosityLevel.Minimal, data);
-        }
-
-        public void LogError(string data)
-        {
-            LogToVS(VerbosityLevel.Quiet, data);
-        }
-
-        public void LogInformationSummary(string data)
+        public override void LogInformationSummary(string data)
         {
             // Treat Summary as Debug
-            LogDebug(data);
+            Log(LogLevel.Debug, data);
         }
 
-        public void LogErrorSummary(string data)
+        /// <summary>
+        /// Same as LogAsync but uses Do instead of DoAsync.
+        /// </summary>
+        public sealed override void Log(ILogMessage logMessage)
         {
-            // Treat Summary as Debug
-            LogDebug(data);
+            HandleErrorsAndWarnings(logMessage);
+
+            if (DisplayMessage(logMessage.Level))
+            {
+                var verbosityLevel = GetMSBuildLevel(logMessage.Level);
+                var reportProgress = ShouldReportProgress(logMessage);
+
+                // Write to the output window if the verbosity level is high enough.
+                var showAsOutputMessage = ShouldShowMessageAsOutput(verbosityLevel);
+
+                // Avoid moving to the UI thread unless there is work to do
+                if (reportProgress || showAsOutputMessage)
+                {
+                    // Make sure the message is queued in order of calls to LogAsync, but don't wait for the UI thread
+                    // to actually show it.
+                    _loggedMessages.Enqueue(Tuple.Create(reportProgress, showAsOutputMessage, logMessage));
+
+                    // Run on the UI thread
+                    var _ = _taskFactory.RunAsync(async () =>
+                    {
+                        // capture current progress from the current execution context
+                        var progress = RestoreOperationProgressUI.Current;
+
+                        await _taskFactory.SwitchToMainThreadAsync();
+
+                        // This might be a different message than the one enqueued above, but overall the printing order
+                        // will match the order of calls to LogAsync.
+                        if (_loggedMessages.TryDequeue(out var message))
+                        {
+                            LogToVS(reportProgress: message.Item1, showAsOutputMessage: message.Item2, logMessage: message.Item3, progress: progress);
+                        }
+                    });
+                }
+            }
         }
 
-        private void LogToVS(VerbosityLevel verbosityLevel, string message)
+        /// <summary>
+        /// Log messages to VS. This is optimized to determine
+        /// if the message needs to be logged before moving to the
+        /// UI thread.
+        /// </summary>
+        public sealed override Task LogAsync(ILogMessage logMessage)
         {
-            if (_cancelled)
+            Log(logMessage);
+            return Task.CompletedTask;
+        }
+
+        private void LogToVS(bool reportProgress, bool showAsOutputMessage, ILogMessage logMessage, RestoreOperationProgressUI progress)
+        {
+            var verbosityLevel = GetMSBuildLevel(logMessage.Level);
+
+            // Progress dialog
+            if (reportProgress)
             {
-                // If an operation is canceled, don't log anything, simply return
-                // And, show a single message gets shown in the summary that package restore has been canceled
-                // Do not report it as separate errors
-                return;
+                progress?.ReportProgress(logMessage.Message);
             }
 
-            // If the verbosity level of message is worse than VerbosityLevel.Normal, that is,
-            // VerbosityLevel.Detailed or VerbosityLevel.Diagnostic, AND,
-            // _msBuildOutputVerbosity is lesser than verbosityLevel; do nothing
-            if (verbosityLevel > VerbosityLevel.Normal && OutputVerbosity < (int)verbosityLevel)
+            // Output console
+            if (showAsOutputMessage)
             {
-                return;
+                WriteLine(verbosityLevel, logMessage.FormatWithCode());
             }
+        }
 
-            Do((_, progress) =>
+        private void HandleErrorsAndWarnings(ILogMessage logMessage)
+        {
+            // Display only errors/warnings
+            if (logMessage.Level >= LogLevel.Warning)
             {
-                // Only show messages with VerbosityLevel.Normal. That is, info messages only.
-                // Do not show errors, warnings, verbose or debug messages on the progress dialog
-                // Avoid showing indented messages, these are typically not useful for the progress dialog since
-                // they are missing the context of the parent text above it
-                if (verbosityLevel == VerbosityLevel.Normal &&
-                    message.Length == message.TrimStart().Length)
-                {
-                    progress?.ReportProgress(message);
-                }
+                var errorListEntry = new ErrorListTableEntry(logMessage);
 
-                // Write to the output window. Based on _msBuildOutputVerbosity, the message may or may not
-                // get shown on the output window. Default is VerbosityLevel.Minimal
-                WriteLine(verbosityLevel, message);
+                // Add the entry to the list
+                _errorListDataSource.Value.AddNuGetEntries(errorListEntry);
 
-                // VerbosityLevel.Quiet corresponds to ILogger.LogError, and,
-                // VerbosityLevel.Minimal corresponds to ILogger.LogWarning
-                // In these 2 cases, we add an error or warning to the error list window
-                if (verbosityLevel == VerbosityLevel.Quiet ||
-                    verbosityLevel == VerbosityLevel.Minimal)
-                {
-                    MessageHelper.ShowError(
-                        _errorListProvider,
-                        verbosityLevel == VerbosityLevel.Quiet ? TaskErrorCategory.Error : TaskErrorCategory.Warning,
-                        TaskPriority.High,
-                        message,
-                        hierarchyItem: null);
-                }
-            });
+                // Display the error list after restore completes
+                _showErrorList = true;
+            }
+        }
+
+        private static bool ShouldReportProgress(ILogMessage logMessage)
+        {
+            // Only show messages with VerbosityLevel.Normal. That is, info messages only.
+            // Do not show errors, warnings, verbose or debug messages on the progress dialog
+            // Avoid showing indented messages, these are typically not useful for the progress dialog since
+            // they are missing the context of the parent text above it
+            return RestoreOperationProgressUI.Current != null
+                && GetMSBuildLevel(logMessage.Level) == MSBuildVerbosityLevel.Normal
+                && logMessage.Message.Length == logMessage.Message.TrimStart().Length;
         }
 
         /// <summary>
@@ -224,10 +251,44 @@ namespace NuGet.SolutionRestoreManager
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (OutputVerbosity >= (int)verbosity && _outputConsole != null)
+            if (ShouldShowMessageAsOutput(verbosity))
             {
                 _outputConsole.WriteLine(format, args);
             }
+        }
+
+        /// <summary>
+        /// True if the message has a high enough verbosity level.
+        /// </summary>
+        protected override bool DisplayMessage(LogLevel messageLevel)
+        {
+            var verbosityLevel = GetMSBuildLevel(messageLevel);
+
+            if (_cancelled)
+            {
+                // If an operation is canceled, don't log anything, simply return
+                // And, show a single message gets shown in the summary that package restore has been canceled
+                // Do not report it as separate errors
+                return false;
+            }
+
+            // If the verbosity level of message is worse than VerbosityLevel.Normal, that is,
+            // VerbosityLevel.Detailed or VerbosityLevel.Diagnostic, AND,
+            // _msBuildOutputVerbosity is lesser than verbosityLevel; do nothing
+            if (verbosityLevel > MSBuildVerbosityLevel.Normal && OutputVerbosity < (int)verbosityLevel)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// True if this message will be written out.
+        /// </summary>
+        public bool ShouldShowMessageAsOutput(VerbosityLevel verbosity)
+        {
+            return _outputConsole != null && OutputVerbosity >= (int)verbosity;
         }
 
         public Task LogExceptionAsync(Exception ex)
@@ -250,28 +311,24 @@ namespace NuGet.SolutionRestoreManager
                 if (_operationSource == RestoreOperationSource.Explicit)
                 {
                     // Write to the error window and console
-                    LogError(message);
+                    Log(LogMessage.Create(LogLevel.Error, message));
                 }
                 else
                 {
                     // Write to console
-                    WriteLine(VerbosityLevel.Quiet, message);
+                    WriteLine(MSBuildVerbosityLevel.Quiet, message);
                 }
 
-                ExceptionHelper.WriteToActivityLog(ex);
+                ExceptionHelper.WriteErrorToActivityLog(ex);
             });
         }
 
         public void ShowError(string errorText)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            var entry = new ErrorListTableEntry(errorText, LogLevel.Error);
 
-            MessageHelper.ShowError(
-                _errorListProvider,
-                TaskErrorCategory.Error,
-                TaskPriority.High,
-                errorText,
-                hierarchyItem: null);
+            _errorListDataSource.Value.AddNuGetEntries(entry);
+            _errorListDataSource.Value.BringToFront();
         }
 
         public Task WriteHeaderAsync()
@@ -285,13 +342,13 @@ namespace NuGet.SolutionRestoreManager
                     switch (_operationSource)
                     {
                         case RestoreOperationSource.Implicit:
-                            WriteLine(VerbosityLevel.Quiet, Resources.RestoringPackages);
+                            WriteLine(MSBuildVerbosityLevel.Normal, Resources.RestoringPackages);
                             break;
                         case RestoreOperationSource.OnBuild:
-                            WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
+                            WriteLine(MSBuildVerbosityLevel.Normal, Resources.PackageRestoreOptOutMessage);
                             break;
                         case RestoreOperationSource.Explicit:
-                            WriteLine(VerbosityLevel.Quiet, Resources.RestoringPackages);
+                            WriteLine(MSBuildVerbosityLevel.Normal, Resources.RestoringPackages);
                             break;
                     }
                 });
@@ -305,9 +362,9 @@ namespace NuGet.SolutionRestoreManager
         public Task WriteSummaryAsync(NuGetOperationStatus operationStatus, TimeSpan duration)
         {
             var forceStatusWrite = _operationSource == RestoreOperationSource.Explicit;
-            var quietOrMinimal = forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Minimal;
-            var quietOrNormal = forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Normal;
-            var quietOrDetailed = forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Detailed;
+            var quietOrMinimal = forceStatusWrite ? MSBuildVerbosityLevel.Quiet : MSBuildVerbosityLevel.Minimal;
+            var quietOrNormal = forceStatusWrite ? MSBuildVerbosityLevel.Quiet : MSBuildVerbosityLevel.Normal;
+            var quietOrDetailed = forceStatusWrite ? MSBuildVerbosityLevel.Quiet : MSBuildVerbosityLevel.Detailed;
 
             return DoAsync((_, __) =>
             {
@@ -317,7 +374,7 @@ namespace NuGet.SolutionRestoreManager
                         WriteLine(
                             quietOrMinimal,
                             Resources.PackageRestoreCanceled);
-                            break;
+                        break;
                     case NuGetOperationStatus.NoOp:
                         if (forceStatusWrite)
                         {
@@ -330,7 +387,7 @@ namespace NuGet.SolutionRestoreManager
                         WriteLine(
                             quietOrMinimal,
                             Resources.PackageRestoreFinishedWithError);
-                            break;
+                        break;
                     case NuGetOperationStatus.Succeeded:
                         WriteLine(
                             quietOrNormal,
@@ -360,11 +417,8 @@ namespace NuGet.SolutionRestoreManager
             // capture current progress from the current execution context
             var progress = RestoreOperationProgressUI.Current;
 
-            await _taskFactory.RunAsync(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                action(this, progress);
-            });
+            await _taskFactory.SwitchToMainThreadAsync();
+            action(this, progress);
         }
 
         /// <summary>
@@ -378,7 +432,7 @@ namespace NuGet.SolutionRestoreManager
 
             _taskFactory.Run(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await _taskFactory.SwitchToMainThreadAsync();
                 action(this, progress);
             });
         }
@@ -413,11 +467,11 @@ namespace NuGet.SolutionRestoreManager
         /// <remarks>
         /// 0 is Quiet, while 4 is diagnostic.
         /// </remarks>
-        private int GetMSBuildOutputVerbositySetting()
+        private async Task<int> GetMSBuildOutputVerbositySettingAsync()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var dte = _serviceProvider.GetDTE();
+            var dte = await _asyncServiceProvider.GetDTEAsync();
 
             var properties = dte.get_Properties("Environment", "ProjectsAndSolution");
             var value = properties.Item("MSBuildOutputVerbosity").Value;
@@ -426,6 +480,50 @@ namespace NuGet.SolutionRestoreManager
                 return (int)value;
             }
             return 0;
+        }
+
+        public void Dispose()
+        {
+            _externalCts?.Dispose();
+        }
+
+        /// <summary>
+        /// NuGet LogLevel -> MSBuild verbosity
+        /// </summary>
+        private static MSBuildVerbosityLevel GetMSBuildLevel(LogLevel level)
+        {
+            switch (level)
+            {
+                case LogLevel.Error:
+                case LogLevel.Warning:
+                    return MSBuildVerbosityLevel.Quiet;
+                case LogLevel.Minimal:
+                case LogLevel.Information:
+                    return MSBuildVerbosityLevel.Normal;
+                case LogLevel.Verbose:
+                    return MSBuildVerbosityLevel.Detailed;
+                default:
+                    return MSBuildVerbosityLevel.Diagnostic;
+            }
+        }
+
+        /// <summary>
+        /// MSBuild verbosity -> NuGet LogLevel
+        /// </summary>
+        private static LogLevel GetLogLevel(MSBuildVerbosityLevel level)
+        {
+            switch (level)
+            {
+                case MSBuildVerbosityLevel.Quiet:
+                    return LogLevel.Warning;
+                case MSBuildVerbosityLevel.Minimal:
+                case MSBuildVerbosityLevel.Normal:
+                    return LogLevel.Information;
+                case MSBuildVerbosityLevel.Detailed:
+                    return LogLevel.Verbose;
+                default:
+                    return LogLevel.Debug;
+            }
         }
 
         private class WaitDialogProgress : RestoreOperationProgressUI
@@ -443,36 +541,33 @@ namespace NuGet.SolutionRestoreManager
             }
 
             public static async Task<RestoreOperationProgressUI> StartAsync(
-                IServiceProvider serviceProvider,
+                IAsyncServiceProvider asyncServiceProvider,
                 JoinableTaskFactory jtf,
                 CancellationToken token)
             {
-                return await jtf.RunAsync(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await jtf.SwitchToMainThreadAsync();
 
-                    var waitDialogFactory = serviceProvider.GetService<
-                        SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
+                var waitDialogFactory = await asyncServiceProvider.GetServiceAsync<
+                    SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
 
-                    var session = waitDialogFactory.StartWaitDialog(
-                        waitCaption: Resources.DialogTitle,
-                        initialProgress: new ThreadedWaitDialogProgressData(
-                            Resources.RestoringPackages,
-                            progressText: string.Empty,
-                            statusBarText: string.Empty,
-                            isCancelable: true,
-                            currentStep: 0,
-                            totalSteps: 0));
+                var session = waitDialogFactory.StartWaitDialog(
+                    waitCaption: Resources.DialogTitle,
+                    initialProgress: new ThreadedWaitDialogProgressData(
+                        Resources.RestoringPackages,
+                        progressText: string.Empty,
+                        statusBarText: string.Empty,
+                        isCancelable: true,
+                        currentStep: 0,
+                        totalSteps: 0));
 
-                    return new WaitDialogProgress(session, jtf);
-                });
+                return new WaitDialogProgress(session, jtf);
             }
 
             public override void Dispose()
             {
                 _taskFactory.Run(async () =>
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await _taskFactory.SwitchToMainThreadAsync();
                     _session.Dispose();
                 });
             }
@@ -499,58 +594,55 @@ namespace NuGet.SolutionRestoreManager
 
         private class StatusBarProgress : RestoreOperationProgressUI
         {
-            private static object icon = (short)Constants.SBAI_General;
+            private static object Icon = (short)Constants.SBAI_General;
             private readonly JoinableTaskFactory _taskFactory;
-            private readonly IVsStatusbar StatusBar;
-            private uint cookie = 0;
+            private readonly IVsStatusbar _statusBar;
+            private uint _cookie = 0;
 
             private StatusBarProgress(
                 IVsStatusbar statusBar,
                 JoinableTaskFactory taskFactory)
             {
-                StatusBar = statusBar;
+                _statusBar = statusBar;
                 _taskFactory = taskFactory;
             }
 
             public static async Task<RestoreOperationProgressUI> StartAsync(
-                IServiceProvider serviceProvider,
+                IAsyncServiceProvider asyncServiceProvider,
                 JoinableTaskFactory jtf,
                 CancellationToken token)
             {
-                return await jtf.RunAsync(async () =>
+                await jtf.SwitchToMainThreadAsync();
+
+                var statusBar = await asyncServiceProvider.GetServiceAsync<SVsStatusbar, IVsStatusbar>();
+
+                // Make sure the status bar is not frozen
+                int frozen;
+                statusBar.IsFrozen(out frozen);
+
+                if (frozen != 0)
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    statusBar.FreezeOutput(0);
+                }
 
-                    var statusBar = serviceProvider.GetService<SVsStatusbar, IVsStatusbar>();
+                statusBar.Animation(1, ref Icon);
 
-                    // Make sure the status bar is not frozen
-                    int frozen;
-                    statusBar.IsFrozen(out frozen);
+                RestoreOperationProgressUI progress = new StatusBarProgress(statusBar, jtf);
+                progress.ReportProgress(Resources.RestoringPackages);
 
-                    if (frozen != 0)
-                    {
-                        statusBar.FreezeOutput(0);
-                    }
-
-                    statusBar.Animation(1, ref icon);
-
-                    RestoreOperationProgressUI progress = new StatusBarProgress(statusBar, jtf);
-                    progress.ReportProgress(Resources.RestoringPackages);
-
-                    return progress;
-                });
+                return progress;
             }
 
             public override void Dispose()
             {
                 _taskFactory.Run(async () =>
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await _taskFactory.SwitchToMainThreadAsync();
 
-                    StatusBar.Animation(0, ref icon);
-                    StatusBar.Progress(ref cookie, 0, "", 0, 0);
-                    StatusBar.FreezeOutput(0);
-                    StatusBar.Clear();
+                    _statusBar.Animation(0, ref Icon);
+                    _statusBar.Progress(ref _cookie, 0, "", 0, 0);
+                    _statusBar.FreezeOutput(0);
+                    _statusBar.Clear();
                 });
             }
 
@@ -563,18 +655,18 @@ namespace NuGet.SolutionRestoreManager
 
                 // Make sure the status bar is not frozen
                 int frozen;
-                StatusBar.IsFrozen(out frozen);
+                _statusBar.IsFrozen(out frozen);
 
                 if (frozen != 0)
                 {
-                    StatusBar.FreezeOutput(0);
+                    _statusBar.FreezeOutput(0);
                 }
 
-                StatusBar.SetText(progressMessage);
+                _statusBar.SetText(progressMessage);
 
                 if (totalSteps != 0)
                 {
-                    StatusBar.Progress(ref cookie, 1, "", currentStep, totalSteps);
+                    _statusBar.Progress(ref _cookie, 1, "", currentStep, totalSteps);
                 }
             }
         }

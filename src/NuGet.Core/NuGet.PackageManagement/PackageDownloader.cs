@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,9 +22,28 @@ namespace NuGet.PackageManagement
     public static class PackageDownloader
     {
         /// <summary>
-        /// Returns the <see cref="DownloadResourceResult"/> for a given <paramref name="packageIdentity" />
-        /// from the given <paramref name="sources" />.
+        /// Asynchronously returns a <see cref="DownloadResourceResult" /> for a given package identity
+        /// and enumerable of source repositories.
         /// </summary>
+        /// <param name="sources">An enumerable of source repositories.</param>
+        /// <param name="packageIdentity">A package identity.</param>
+        /// <param name="downloadContext">A package download context.</param>
+        /// <param name="globalPackagesFolder">A global packages folder path.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="token">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="DownloadResourceResult" />
+        /// instance.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="sources" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="downloadContext" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="token" />
+        /// is cancelled.</exception>
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             IEnumerable<SourceRepository> sources,
             PackageIdentity packageIdentity,
@@ -161,7 +180,16 @@ namespace NuGet.PackageManagement
 
                 foreach (var task in failedTasks)
                 {
-                    var message = ExceptionUtilities.DisplayMessage(task.Exception);
+                    string message;
+
+                    if (task.Exception == null)
+                    {
+                        message = task.Status.ToString();
+                    }
+                    else
+                    {
+                        message = ExceptionUtilities.DisplayMessage(task.Exception);
+                    }
 
                     errors.AppendLine($"  {tasksLookup[task].PackageSource.Source}: {message}");
                 }
@@ -176,9 +204,28 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Returns the <see cref="DownloadResourceResult"/> for a given <paramref name="packageIdentity" /> from the given
-        /// <paramref name="sourceRepository" />.
+        /// Asynchronously returns a <see cref="DownloadResourceResult" /> for a given package identity
+        /// and source repository.
         /// </summary>
+        /// <param name="sourceRepository">A source repository.</param>
+        /// <param name="packageIdentity">A package identity.</param>
+        /// <param name="downloadContext">A package download context.</param>
+        /// <param name="globalPackagesFolder">A global packages folder path.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="token">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="DownloadResourceResult" />
+        /// instance.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="sourceRepository" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="downloadContext" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
+        /// is either <c>null</c> or empty.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="token" />
+        /// is cancelled.</exception>
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             SourceRepository sourceRepository,
             PackageIdentity packageIdentity,
@@ -211,7 +258,11 @@ namespace NuGet.PackageManagement
 
             if (downloadResource == null)
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadResourceNotFound, sourceRepository.PackageSource.Source));
+                throw new InvalidOperationException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.DownloadResourceNotFound,
+                        sourceRepository.PackageSource.Source));
             }
 
             token.ThrowIfCancellationRequested();
@@ -263,12 +314,18 @@ namespace NuGet.PackageManagement
                 result.PackageStream.Seek(0, SeekOrigin.Begin);
                 var packageReader = new PackageArchiveReader(result.PackageStream);
                 result.PackageStream.Seek(0, SeekOrigin.Begin);
-                result = new DownloadResourceResult(result.PackageStream, packageReader, sourceRepository.PackageSource.Source);
+                result = new DownloadResourceResult(result.PackageStream, packageReader, sourceRepository.PackageSource.Source)
+                {
+                    SignatureVerified = result.SignatureVerified
+                };
             }
-            else
+            else if (result.Status != DownloadResourceResultStatus.AvailableWithoutStream)
             {
                 // bind the source
-                result = new DownloadResourceResult(result.PackageStream, result.PackageReader, sourceRepository.PackageSource.Source);
+                result = new DownloadResourceResult(result.PackageStream, result.PackageReader, sourceRepository.PackageSource.Source)
+                {
+                    SignatureVerified = result.SignatureVerified
+                };
             }
 
             return result;

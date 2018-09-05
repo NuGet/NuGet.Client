@@ -24,15 +24,20 @@ function ReplaceTextInFiles {
         [string]$OldText,
         [Parameter(Mandatory=$True)]
         [Alias('new')]
-        [string]$NewText
+        [string]$NewText,
+        [Alias('ef')]
+        [string]$ExcludeFilter
     )
     Process {
         $Files |
             ?{ (Get-Content $_ | Out-String) -match $OldText } |
             ?{ $pscmdlet.ShouldProcess($_, 'replace text') } |
             %{
-                $updated = (Get-Content $_) | %{
-                    $_.Replace($OldText, $NewText)
+                $lines = Get-Content $_
+
+                $updated = switch ($lines) {
+                    { -not $ExcludeFilter -or $_ -notlike $ExcludeFilter } { $_.Replace($OldText, $NewText) }
+                    Default { $_ }
                 }
 
                 Set-Content $_ $updated | Out-Null

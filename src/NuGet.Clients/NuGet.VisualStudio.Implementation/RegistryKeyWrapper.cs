@@ -32,7 +32,7 @@ namespace NuGet.VisualStudio
             catch (SecurityException ex)
             {
                 // If the user doesn't have access to the registry, then we'll return null
-                ExceptionHelper.WriteToActivityLog(ex);
+                ExceptionHelper.WriteErrorToActivityLog(ex);
             }
 
             return null;
@@ -47,7 +47,7 @@ namespace NuGet.VisualStudio
             catch (SecurityException ex)
             {
                 // If the user doesn't have access to the registry, then we'll return null
-                ExceptionHelper.WriteToActivityLog(ex);
+                ExceptionHelper.WriteErrorToActivityLog(ex);
                 return null;
             }
         }

@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Shared;
@@ -22,6 +23,11 @@ namespace NuGet.ProjectModel
         public IList<NuGetFramework> Imports { get; set; } = new List<NuGetFramework>();
 
         /// <summary>
+        /// If True AssetTargetFallback behavior will be used for Imports.
+        /// </summary>
+        public bool AssetTargetFallback { get; set; }
+
+        /// <summary>
         /// Display warnings when the Imports framework is used.
         /// </summary>
         public bool Warn { get; set; }
@@ -36,6 +42,7 @@ namespace NuGet.ProjectModel
             var hashCode = new HashCodeCombiner();
 
             hashCode.AddObject(FrameworkName);
+            hashCode.AddObject(AssetTargetFallback);
             hashCode.AddSequence(Dependencies);
             hashCode.AddSequence(Imports);
 
@@ -60,8 +67,20 @@ namespace NuGet.ProjectModel
             }
 
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
-                   Dependencies.SequenceEqualWithNullCheck(other.Dependencies) &&
-                   Imports.SequenceEqualWithNullCheck(other.Imports);
+                   Dependencies.OrderedEquals(other.Dependencies, dependency => dependency.Name, StringComparer.OrdinalIgnoreCase) &&
+                   Imports.SequenceEqualWithNullCheck(other.Imports) &&
+                   AssetTargetFallback == other.AssetTargetFallback;
+        }
+
+        public TargetFrameworkInformation Clone()
+        {
+            var clonedObject = new TargetFrameworkInformation();
+            clonedObject.FrameworkName = FrameworkName;
+            clonedObject.Dependencies = Dependencies.Select(item => (LibraryDependency)item.Clone()).ToList();
+            clonedObject.Imports = new List<NuGetFramework>(Imports);
+            clonedObject.AssetTargetFallback = AssetTargetFallback;
+            clonedObject.Warn = Warn;
+            return clonedObject;
         }
     }
 }

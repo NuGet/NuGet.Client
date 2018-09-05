@@ -1,13 +1,20 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using FluentAssertions;
+using NuGet.Common;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -15,11 +22,331 @@ namespace NuGet.CommandLine.Test
     public class NuGetInstallCommandTest
     {
         [Fact]
+        public async Task InstallCommand_PackageIdInstalledWithSxSAndExcludeVersionAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var packageA1 = new SimpleTestPackageContext("a", "1.0.0");
+
+                var packageB1 = new SimpleTestPackageContext("b", "1.0.0");
+                var packageB15 = new SimpleTestPackageContext("b", "1.5.0");
+                var packageB2 = new SimpleTestPackageContext("b", "2.0.0");
+
+                packageA1.Dependencies.Add(packageB2);
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageB1, packageB2, packageB15);
+
+                RunInstall(pathContext, "b", 0, "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
+                RunInstall(pathContext, "b", 0, "-Version", "1.5.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
+                RunInstall(pathContext, "a", 0, "-ExcludeVersion", "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
+
+                Directory.GetDirectories(pathContext.SolutionRoot)
+                    .Select(e => Path.GetFileName(e).ToLowerInvariant())
+                    .OrderBy(e => e, StringComparer.OrdinalIgnoreCase)
+                    .Should()
+                    .BeEquivalentTo(new[]
+                    {
+                        "a",
+                        "b",
+                        "b.1.0.0",
+                        "b.1.5.0"
+                    });
+            }
+        }
+
+        [Fact]
+        public async Task InstallCommand_PackageInstalledSxSWithOverlapOnDependencyAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var packageA1 = new SimpleTestPackageContext("a", "1.0.0");
+
+                var packageB1 = new SimpleTestPackageContext("b", "1.0.0");
+                var packageB2 = new SimpleTestPackageContext("b", "2.0.0");
+
+                packageA1.Dependencies.Add(packageB2);
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageB1, packageB2);
+
+                RunInstall(pathContext, "b", 0, "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
+                RunInstall(pathContext, "b", 0, "-Version", "2.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
+                RunInstall(pathContext, "a", 0, "-ExcludeVersion", "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot).Success.Should().BeTrue();
+
+                Directory.GetDirectories(pathContext.SolutionRoot)
+                    .Select(e => Path.GetFileName(e).ToLowerInvariant())
+                    .OrderBy(e => e, StringComparer.OrdinalIgnoreCase)
+                    .Should()
+                    .BeEquivalentTo(new[]
+                    {
+                        "a",
+                        "b.1.0.0",
+                        "b.2.0.0"
+                    });
+            }
+        }
+
+        [Fact]
+        public async Task InstallCommand_UpdatePackageWithExcludeVersionVerifyPackageReplacedAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageA1 = new SimpleTestPackageContext("a", "1.0.0");
+                var packageA2 = new SimpleTestPackageContext("a", "2.0.0");
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageA2);
+
+                var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
+
+                var r1 = RunInstall(pathContext, "a", 0, "-ExcludeVersion", "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot);
+
+                // Act
+                var r2 = RunInstall(pathContext, "a", 0, "-ExcludeVersion", "-Version", "2.0.0", "-OutputDirectory", pathContext.SolutionRoot);
+
+                var nupkgPath = pathResolver.GetInstalledPackageFilePath(new PackageIdentity("a", NuGetVersion.Parse("2.0.0")));
+
+                // Assert
+                r1.Success.Should().BeTrue();
+                r2.Success.Should().BeTrue();
+                File.Exists(nupkgPath).Should().BeTrue();
+
+                using (var reader = new PackageArchiveReader(nupkgPath))
+                {
+                    reader.NuspecReader.GetVersion().ToNormalizedString().Should().Be("2.0.0");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallCommand_DependencyFailsToInstallVerifyFailureAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageA = new SimpleTestPackageContext("a", "1.0.0");
+                var packageB = new SimpleTestPackageContext("b", "1.0.0");
+                packageA.Dependencies.Add(packageB);
+
+                // Only create A
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA);
+
+                File.Delete(Directory.GetFiles(pathContext.PackageSource).Single(e => e.EndsWith("b.1.0.0.nupkg")));
+
+                var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
+
+                // Act
+                var r1 = RunInstall(pathContext, "a", 1, "-ExcludeVersion", "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot, "-Source", pathContext.PackageSource);
+
+                // Assert
+                r1.Success.Should().BeFalse();
+                r1.Errors.Should().Contain("Unable to resolve dependency");
+            }
+        }
+
+        [Fact]
+        public void InstallCommand_PackageFailsToInstallVerifyFailure()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Act
+                var r1 = RunInstall(pathContext, "a", 1, "-ExcludeVersion", "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot, "-Source", pathContext.PackageSource);
+
+                // Assert
+                r1.Success.Should().BeFalse();
+                r1.Errors.Should().Contain("Package 'a 1.0.0' is not found in the following");
+            }
+        }
+
+        [Fact]
+        public async Task InstallCommand_UpdatePackageWithExcludeVersionVerifyFilesRemovedAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageA1 = new SimpleTestPackageContext("a", "1.0.0");
+                packageA1.AddFile("data/1.txt");
+
+                var packageA2 = new SimpleTestPackageContext("a", "2.0.0");
+                packageA2.AddFile("data/2.txt");
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageA2);
+
+                var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
+
+                var r1 = RunInstall(pathContext, "a", 0, "-ExcludeVersion", "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot);
+
+                // Act
+                var r2 = RunInstall(pathContext, "a", 0, "-ExcludeVersion", "-Version", "2.0.0", "-OutputDirectory", pathContext.SolutionRoot);
+
+                var nupkgPath = pathResolver.GetInstalledPackageFilePath(new PackageIdentity("a", NuGetVersion.Parse("2.0.0")));
+                var installDir = Path.GetDirectoryName(nupkgPath);
+
+                // Assert
+                r1.Success.Should().BeTrue();
+                r2.Success.Should().BeTrue();
+                File.Exists(nupkgPath).Should().BeTrue();
+                File.Exists(Path.Combine(installDir, "data", "1.txt")).Should().BeFalse("this package was uninstalled");
+                File.Exists(Path.Combine(installDir, "data", "2.txt")).Should().BeTrue("this package was installed");
+
+                using (var reader = new PackageArchiveReader(nupkgPath))
+                {
+                    reader.NuspecReader.GetVersion().ToNormalizedString().Should().Be("2.0.0");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallCommand_DowngradePackageWithExcludeVersionVerifyPackageReplacedAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageA1 = new SimpleTestPackageContext("a", "1.0.0");
+                var packageA2 = new SimpleTestPackageContext("a", "2.0.0");
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageA2);
+
+                var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
+
+                var r1 = RunInstall(pathContext, "a", 0, "-ExcludeVersion", "-Version", "2.0.0", "-OutputDirectory", pathContext.SolutionRoot);
+
+                // Act
+                var r2 = RunInstall(pathContext, "a", 0, "-ExcludeVersion", "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot);
+
+                var nupkgPath = pathResolver.GetInstalledPackageFilePath(new PackageIdentity("a", NuGetVersion.Parse("2.0.0")));
+
+                // Assert
+                r1.Success.Should().BeTrue();
+                r2.Success.Should().BeTrue();
+                File.Exists(nupkgPath).Should().BeTrue();
+
+                using (var reader = new PackageArchiveReader(nupkgPath))
+                {
+                    reader.NuspecReader.GetVersion().ToNormalizedString().Should().Be("2.0.0");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallCommand_InstallTwoVersionsOfAPackageVerifySxSAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageA1 = new SimpleTestPackageContext("a", "1.0.0");
+                var packageA2 = new SimpleTestPackageContext("a", "2.0.0");
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageA2);
+
+                var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
+
+                // Act
+                var r2 = RunInstall(pathContext, "a", 0, "-Version", "2.0.0", "-OutputDirectory", pathContext.SolutionRoot);
+                var r1 = RunInstall(pathContext, "a", 0, "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot);
+
+                var nupkgPath2 = pathResolver.GetInstalledPackageFilePath(new PackageIdentity("a", NuGetVersion.Parse("2.0.0")));
+                var nupkgPath1 = pathResolver.GetInstalledPackageFilePath(new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+
+                // Assert
+                r1.Success.Should().BeTrue();
+                r2.Success.Should().BeTrue();
+                File.Exists(nupkgPath1).Should().BeTrue();
+                File.Exists(nupkgPath2).Should().BeTrue();
+            }
+        }
+
+        [Theory]
+        [InlineData("net461", "c")]
+        [InlineData("sl7", "b")]
+        [InlineData("any", "b")]
+        [InlineData("net451", "f")]
+        [InlineData("native", "e")]
+        [InlineData("netcoreapp2.0", "d")]
+        public async Task InstallCommand_InstallWithFrameworkFlagVerifyDependenciesAsync(string tfm, string expectedId)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageA = new SimpleTestPackageContext("a", "1.0.0")
+                {
+                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>a</id>
+                            <version>1.0.0</version>
+                            <title />
+                            <dependencies>
+                                <group>
+                                    <dependency id=""b"" version=""1.0.0"" />
+                                </group>
+                                <group targetFramework=""net46"">
+                                    <dependency id=""c"" version=""1.0.0"" />
+                                </group>
+                                <group targetFramework=""netstandard1.0"">
+                                    <dependency id=""d"" version=""1.0.0"" />
+                                </group>
+                                <group targetFramework=""native"">
+                                    <dependency id=""e"" version=""1.0.0"" />
+                                </group>
+                                <group targetFramework=""net45"">
+                                    <dependency id=""f"" version=""1.0.0"" />
+                                </group>
+                            </dependencies>
+                        </metadata>
+                        </package>")
+                };
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource,
+                    packageA,
+                    new SimpleTestPackageContext("b"),
+                    new SimpleTestPackageContext("c"),
+                    new SimpleTestPackageContext("d"),
+                    new SimpleTestPackageContext("e"),
+                    new SimpleTestPackageContext("f"));
+
+                var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
+
+                // Act
+                var r = RunInstall(pathContext, "a", 0, "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot, "-Framework", tfm);
+
+                var nupkgPath = pathResolver.GetInstalledPackageFilePath(new PackageIdentity(expectedId, NuGetVersion.Parse("1.0.0")));
+
+                // Assert
+                r.Success.Should().BeTrue();
+                File.Exists(nupkgPath).Should().BeTrue();
+                Directory.GetDirectories(pathContext.SolutionRoot).Length.Should().Be(2, "No other packages should be included");
+            }
+        }
+
+        [Fact]
+        public async Task InstallCommand_InstallWithUnsupportedFrameworkVerifyFailureAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageA = new SimpleTestPackageContext("a", "1.0.0");
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA);
+
+                var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
+
+                // Act
+                var r = RunInstall(pathContext, "a", 1, "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot, "-Framework", "blaah999");
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("'blaah999' is not a valid target framework.");
+            }
+        }
+
+        [Fact]
         public void InstallCommand_FromPackagesConfigFileWithExcludeVersion()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
@@ -37,11 +364,7 @@ namespace NuGet.CommandLine.Test
 </packages>");
 
                 // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    $"install -OutputDirectory outputDir -Source {repositoryPath} -ExcludeVersion",
-                    waitForExit: true);
+                var r = RunInstall(pathContext, string.Empty, 0, $"-OutputDirectory outputDir -Source {repositoryPath} -ExcludeVersion");
 
                 // Assert
                 Assert.Equal(0, r.Item1);
@@ -53,29 +376,27 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task InstallCommand_WithExcludeVersion()
+        public void InstallCommand_WithExcludeVersion()
         {
-            using (var source = TestDirectory.Create())
-            using (var outputDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
-                    "testPackage1", "1.1.0", source);
+                    "testPackage1", "1.1.0", pathContext.PackageSource);
 
                 // Act
-                string[] args = new string[] {
-                    "install", "testPackage1",
-                    "-OutputDirectory", outputDirectory,
-                    "-Source", source,
+                var args = new string[] {
+                    "-OutputDirectory", pathContext.SolutionRoot,
+                    "-Source", pathContext.PackageSource,
                     "-ExcludeVersion" };
 
-                int r = await Task.Run(() => Program.Main(args));
+                var r = RunInstall(pathContext, "testPackage1", 0, args);
 
                 // Assert
-                Assert.Equal(0, r);
-
                 var packageDir = Path.Combine(
-                    outputDirectory,
+                    pathContext.SolutionRoot,
                     @"testPackage1");
 
                 Assert.True(Directory.Exists(packageDir));
@@ -86,10 +407,10 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_FromPackagesConfigFile()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+
                 var repositoryPath = Path.Combine(workingPath, "Repository");
 
                 // Add a nuget.config to clear out sources and set the global packages folder
@@ -104,9 +425,8 @@ namespace NuGet.CommandLine.Test
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                string[] args = new string[]
+                var args = new string[]
                 {
-                    "install",
                     "-OutputDirectory",
                     "outputDir",
                     "-Source",
@@ -114,11 +434,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                var r = RunInstall(pathContext, "", 0, args);
 
                 // Assert
                 Assert.Equal(0, r.Item1);
@@ -130,13 +446,95 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void InstallCommand_FromPackagesConfigFileFailsVerifyCode()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                Directory.CreateDirectory(repositoryPath);
+
+                // Incorrect versions
+                Util.CreateTestPackage("packageA", "1.0.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.0.0", repositoryPath);
+
+                Util.CreateFile(workingPath, "packages.config",
+    @"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                var args = new string[]
+                {
+                    "-OutputDirectory",
+                    "outputDir",
+                    "-Source",
+                    repositoryPath
+                };
+
+                // Act
+                var r = RunInstall(pathContext, "", 1, args);
+
+                // Assert
+                Assert.Equal(1, r.Item1);
+                r.AllOutput.Should().NotContain("NU1000");
+                r.Errors.Should().Contain("Unable to find version");
+            }
+        }
+
+        [Fact]
+        public void InstallCommand_FromPackagesConfigFile_VerifyNoopRestoreExitCode()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                Directory.CreateDirectory(repositoryPath);
+                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+                Util.CreateFile(workingPath, "packages.config",
+    @"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                var args = new string[]
+                {
+                    "-OutputDirectory",
+                    "outputDir",
+                    "-Source",
+                    repositoryPath
+                };
+
+                // Restore 1st time
+                var r = RunInstall(pathContext, "", 0, args);
+                r.ExitCode.Should().Be(0);
+
+                // Restore 2nd time
+                r = RunInstall(pathContext, "", 0, args);
+                r.ExitCode.Should().Be(0);
+            }
+        }
+
+        [Fact]
         public void InstallCommand_ShowsAlreadyInstalledMessageWhenAllPackagesArePresent()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var packagesConfig = Path.Combine(workingPath, "packages.config");
 
@@ -149,10 +547,8 @@ namespace NuGet.CommandLine.Test
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                string[] args = new string[]
+                var args = new string[]
                 {
-                    "install",
-                    packagesConfig,
                     "-OutputDirectory",
                     "outputDir",
                     "-Source",
@@ -160,11 +556,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                var r = RunInstall(pathContext, packagesConfig, 0, args);
 
                 // Assert
                 Assert.Equal(0, r.Item1);
@@ -174,26 +566,21 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(packageFileB));
 
                 //Act (Install a second time)
-                string[] args2 = new string[]
+                var args2 = new string[]
                 {
-                    "install",
-                    packagesConfig,
                     "-OutputDirectory",
                     "outputDir",
                     "-Source",
                     repositoryPath
                 };
 
-                var r1 = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args2),
-                    waitForExit: true);
+                var r1 = RunInstall(pathContext, packagesConfig, 0, args2);
 
-                //Assert
+                // Assert
                 var message = r1.Item2;
-                string alreadyInstalledMessage = String.Format("All packages listed in {0} are already installed.", packagesConfig);
+                var alreadyInstalledMessage = string.Format("All packages listed in {0} are already installed.", packagesConfig);
                 Assert.Contains(alreadyInstalledMessage, message, StringComparison.OrdinalIgnoreCase);
+                r1.ExitCode.Should().Be(0);
             }
         }
 
@@ -204,8 +591,9 @@ namespace NuGet.CommandLine.Test
             var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
@@ -221,9 +609,8 @@ namespace NuGet.CommandLine.Test
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                string[] args = new string[]
+                var args = new string[]
                 {
-                    "install",
                     "-SolutionDir",
                     $"\"{workingPath}\"",
                     "-OutputDirectory",
@@ -233,11 +620,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                var r = RunInstall(pathContext, "", 0, args);
 
                 // Assert
                 Assert.True(0 == r.Item1, $"{r.Item2} {r.Item3}");
@@ -255,12 +638,13 @@ namespace NuGet.CommandLine.Test
             var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
-                string folderName = Path.GetFileName(workingPath);
+                var folderName = Path.GetFileName(workingPath);
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var relativeFolderPath = $"..\\{folderName}";
@@ -274,7 +658,7 @@ namespace NuGet.CommandLine.Test
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                string[] args = new string[]
+                var args = new string[]
                 {
                     "install",
                     "-SolutionDir",
@@ -292,6 +676,7 @@ namespace NuGet.CommandLine.Test
                     workingPath,
                     string.Join(" ", args),
                     waitForExit: true);
+
                 Environment.SetEnvironmentVariable("PATH", path);
 
                 // Assert
@@ -305,24 +690,25 @@ namespace NuGet.CommandLine.Test
 
         public void InstallCommand_PackageSaveModeNuspec()
         {
-            using (var source = TestDirectory.Create())
-            using (var outputDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var source = pathContext.PackageSource;
+                var outputDirectory = pathContext.SolutionRoot;
+
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 // Act
-                string[] args = new string[] {
-                    "install", "testPackage1",
+                var args = new string[] {
                     "-OutputDirectory", outputDirectory,
                     "-Source", source,
                     "-PackageSaveMode", "nuspec" };
-                int r = Program.Main(args);
+
+                var r = RunInstall(pathContext, "testPackage1", 0, args);
 
                 // Assert
-                Assert.Equal(0, r);
-
                 var nuspecFile = Path.Combine(
                     outputDirectory,
                     "testPackage1.1.1.0", "testPackage1.1.1.0.nuspec");
@@ -335,24 +721,24 @@ namespace NuGet.CommandLine.Test
 
         public void InstallCommand_PackageSaveModeNupkg()
         {
-            using (var source = TestDirectory.Create())
-            using (var outputDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var source = pathContext.PackageSource;
+                var outputDirectory = pathContext.SolutionRoot;
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 // Act
-                string[] args = new string[] {
-                    "install", "testPackage1",
+                var args = new string[] {
                     "-OutputDirectory", outputDirectory,
                     "-Source", source,
                     "-PackageSaveMode", "nupkg" };
-                int r = Program.Main(args);
+
+                var r = RunInstall(pathContext, "testPackage1", 0, args);
 
                 // Assert
-                Assert.Equal(0, r);
-
                 var nupkgFile = Path.Combine(
                     outputDirectory,
                     "testPackage1.1.1.0", "testPackage1.1.1.0.nuspec");
@@ -365,24 +751,24 @@ namespace NuGet.CommandLine.Test
 
         public void InstallCommand_PackageSaveModeNuspecNupkg()
         {
-            using (var source = TestDirectory.Create())
-            using (var outputDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var source = pathContext.PackageSource;
+                var outputDirectory = pathContext.SolutionRoot;
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 // Act
-                string[] args = new string[] {
-                    "install", "testPackage1",
+                var args = new string[] {
                     "-OutputDirectory", outputDirectory,
                     "-Source", source,
                     "-PackageSaveMode", "nupkg;nuspec" };
-                int r = Program.Main(args);
+
+                var r = RunInstall(pathContext, "testPackage1", 0, args);
 
                 // Assert
-                Assert.Equal(0, r);
-
                 var nupkgFile = Path.Combine(
                     outputDirectory,
                     "testPackage1.1.1.0", "testPackage1.1.1.0.nuspec");
@@ -398,29 +784,24 @@ namespace NuGet.CommandLine.Test
         // package.
         public void InstallCommand_PackageSaveModeNuspecReinstall()
         {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var source = TestDirectory.Create())
-            using (var outputDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var source = pathContext.PackageSource;
+                var outputDirectory = pathContext.SolutionRoot;
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
-                string[] args = new string[] {
-                    "install", "testPackage1",
+                var args = new string[] {
                     "-OutputDirectory", outputDirectory,
                     "-Source", source,
                     "-PackageSaveMode", "nuspec" };
-                int r = Program.Main(args);
+                var r = Program.Main(args);
                 Assert.Equal(0, r);
 
                 // Act
-                var result = CommandRunner.Run(
-                    nugetexe,
-                    Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    waitForExit: true);
+                var result = RunInstall(pathContext, "testPackage1", 0, args);
 
                 var output = result.Item2;
 
@@ -434,19 +815,21 @@ namespace NuGet.CommandLine.Test
         // Test that PackageSaveMode specified in nuget.config file is used.
         public void InstallCommand_PackageSaveModeInConfigFile()
         {
-            using (var source = TestDirectory.Create())
-            using (var outputDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var source = pathContext.PackageSource;
+                var outputDirectory = pathContext.SolutionRoot;
                 // Arrange
                 var packageFileName = Util.CreateTestPackage(
                     "testPackage1", "1.1.0", source);
 
                 var configFile = Path.Combine(source, "nuget.config");
                 Util.CreateFile(Path.GetDirectoryName(configFile), Path.GetFileName(configFile), "<configuration/>");
-                string[] args = new string[] {
+                var args = new string[] {
                     "config", "-Set", "PackageSaveMode=nuspec",
                     "-ConfigFile", configFile };
-                int r = Program.Main(args);
+                var r = Program.Main(args);
                 Assert.Equal(0, r);
 
                 // Act
@@ -478,10 +861,10 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_OptOutMessage(string configFileName)
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
@@ -519,15 +902,11 @@ namespace NuGet.CommandLine.Test
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
 </packages>");
                 // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    proj1Directory,
-                    "install " + configFileName + " -Source " + repositoryPath + $@" -ConfigFile ..{Path.DirectorySeparatorChar}my.config -RequireConsent -Verbosity detailed",
-                    waitForExit: true);
+                var r = RunInstall(pathContext, configFileName, 0, " -Source " + repositoryPath + $@" -ConfigFile my.config -RequireConsent");
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                string optOutMessage = String.Format(
+                var optOutMessage = string.Format(
                     CultureInfo.CurrentCulture,
                     NuGet.CommandLine.NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
@@ -543,10 +922,10 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_NoOptOutMessage(string configFileName)
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
@@ -584,15 +963,11 @@ namespace NuGet.CommandLine.Test
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
 </packages>");
                 // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    proj1Directory,
-                    "install " + configFileName + " -Source " + repositoryPath + $@" -ConfigFile ..{Path.DirectorySeparatorChar}my.config",
-                    waitForExit: true);
+                var r = RunInstall(pathContext, configFileName, 0, " -Source " + repositoryPath + $@" -ConfigFile my.config");
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                string optOutMessage = String.Format(
+                var optOutMessage = string.Format(
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
@@ -605,11 +980,11 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_GetLastestReleaseVersion()
         {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
-            using (var packageDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
+
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
@@ -624,6 +999,7 @@ namespace NuGet.CommandLine.Test
                 var package1 = new ZipPackage(packageFileName);
                 packageFileName = Util.CreateTestPackage("testPackage1", "1.2.0", packageDirectory);
                 var package2 = new ZipPackage(packageFileName);
+                var nugetexe = Util.GetNuGetExePath();
 
                 using (var server = Util.CreateMockServer(new[] { package1, package2 }))
                 {
@@ -651,11 +1027,12 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_GetLastestPrereleaseVersion()
         {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
-            using (var packageDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
+                var nugetexe = Util.GetNuGetExePath();
+
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
@@ -690,11 +1067,12 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_WithPrereleaseVersionSpecified()
         {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
-            using (var packageDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
+                var nugetexe = Util.GetNuGetExePath();
+
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
@@ -730,11 +1108,10 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_WithVersionSpecified()
         {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
-            using (var packageDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
@@ -747,11 +1124,11 @@ namespace NuGet.CommandLine.Test
 
                 using (var server = new MockServer())
                 {
-                    bool getPackageByVersionIsCalled = false;
-                    bool packageDownloadIsCalled = false;
+                    var getPackageByVersionIsCalled = false;
+                    var packageDownloadIsCalled = false;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                       MockServerResource.NuGetV2APIMetadata);
+                       Util.GetMockServerResource());
                     server.Get.Add("/nuget/Packages(Id='testPackage1',Version='1.1.0')", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -776,6 +1153,7 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
+                    var nugetexe = Util.GetNuGetExePath();
 
                     // Act
                     var args = "install testPackage1 -Version 1.1.0 -Source " + server.Uri + "nuget";
@@ -793,59 +1171,110 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        // Tests that when -Version is specified, if the specified version cannot be found,
-        // nuget will retry with new version numbers by appending 0's to the specified version.
-        [Fact(Skip = "Exact packages are no longer requested")]
-        public void InstallCommand_WillTryNewVersionsByAppendingZeros()
+        [Fact]
+        public void InstallCommand_RunTwiceWithVersionSpecifiedVerifyExitCode()
         {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
                 // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                var package = new ZipPackage(packageFileName);
+
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
                 using (var server = new MockServer())
                 {
-                    List<string> requests = new List<string>();
                     server.Get.Add("/nuget/$metadata", r =>
-                       MockServerResource.NuGetV2APIMetadata);
-                    server.Get.Add("/nuget/Packages", r =>
-                    {
-                        requests.Add(r.Url.ToString());
-                        return HttpStatusCode.NotFound;
-                    });
+                       Util.GetMockServerResource());
+                    server.Get.Add("/nuget/Packages(Id='testPackage1',Version='1.1.0')", r =>
+                        new Action<HttpListenerResponse>(response =>
+                        {
+                            response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
+                            var p1 = server.ToOData(package);
+                            MockServer.SetResponseContent(response, p1);
+                        }));
+
+                    server.Get.Add("/package/testPackage1", r =>
+                        new Action<HttpListenerResponse>(response =>
+                        {
+                            response.ContentType = "application/zip";
+                            using (var stream = package.GetStream())
+                            {
+                                var content = stream.ReadAllBytes();
+                                MockServer.SetResponseContent(response, content);
+                            }
+                        }));
+
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
+                    var nugetexe = Util.GetNuGetExePath();
 
                     // Act
-                    var args = "install testPackage1 -Version 1.1 -Source " + server.Uri + "nuget";
+                    var args = "install testPackage1 -Version 1.1.0 -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         workingPath,
                         args,
                         waitForExit: true);
 
-                    // Assert
-                    Assert.True(1 == r1.Item1, r1.Item2 + " " + r1.Item3);
+                    var r2 = CommandRunner.Run(
+                        nugetexe,
+                        workingPath,
+                        args,
+                        waitForExit: true);
 
-                    Assert.Equal(3, requests.Count);
-                    Assert.True(requests[0].EndsWith("Packages(Id='testPackage1',Version='1.1')"));
-                    Assert.True(requests[1].EndsWith("Packages(Id='testPackage1',Version='1.1.0')"));
-                    Assert.True(requests[2].EndsWith("Packages(Id='testPackage1',Version='1.1.0.0')"));
+                    // Assert
+                    r1.ExitCode.Should().Be(0);
+                    r2.ExitCode.Should().Be(0);
                 }
+            }
+        }
+
+        [Fact]
+        public void InstallCommand_WithVersionNotFoundVerifyExitCode()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                // Arrange
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                var nugetexe = Util.GetNuGetExePath();
+
+                // Act
+                var args = "install packageDoesNotExistInFolderABCX -Version 2.1.0 -Source " + pathContext.PackageSource;
+                var r1 = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    args,
+                    waitForExit: true);
+
+                // Assert
+                r1.ExitCode.Should().Be(1);
             }
         }
 
         // Tests that nuget will NOT download package from http source if the package on the server
         // has the same hash value as the cached version.
-        [Fact(Skip = "Failing on CI Build need to investigate the reason")]
-        public void InstallCommand_WillUseCachedFile()
+        [Fact]
+        public async Task InstallCommand_WillUseCachedFileAsync()
         {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
-            using (var packageDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var proj1Directory = Path.Combine(workingPath, "proj1");
 
@@ -854,22 +1283,21 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
 
-                // add the package to machine cache
-                MachineCache.Default.AddPackage(package);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.UserPackagesFolder, PackageSaveMode.Defaultv3, new PackageIdentity("testPackage1", NuGetVersion.Parse("1.1.0")));
 
                 using (var server = new MockServer())
                 {
-                    string findPackagesByIdRequest = string.Empty;
-                    bool packageDownloadIsCalled = false;
+                    var findPackagesByIdRequest = string.Empty;
+                    var packageDownloadIsCalled = false;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                       MockServerResource.NuGetV2APIMetadata);
+                       Util.GetMockServerResource());
                     server.Get.Add("/nuget/FindPackagesById()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
                             findPackagesByIdRequest = r.Url.ToString();
                             response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
-                            string feed = server.ToODataFeed(new[] { package }, "FindPackagesById");
+                            var feed = server.ToODataFeed(new[] { package }, "FindPackagesById");
                             MockServer.SetResponseContent(response, feed);
                         }));
 
@@ -898,103 +1326,14 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    var args = "install testPackage1 -Source " + server.Uri + "nuget";
-                    var r1 = CommandRunner.Run(
-                        nugetexe,
-                        workingPath,
-                        args,
-                        waitForExit: true);
+                    var args = "-Source " + server.Uri + "nuget";
+
+                    var r1 = RunInstall(pathContext, "testPackage1", 0, args);
 
                     // Assert
-                    Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
-
                     // verifies that package is NOT downloaded from server since nuget uses
                     // the file in machine cache.
                     Assert.False(packageDownloadIsCalled);
-                }
-            }
-        }
-
-        // Tests that nuget will download package from http source if the package on the server
-        // has a different hash value from the cached version.
-        [Fact(Skip = "Hashes are no longer checked on download")]
-        public void InstallCommand_DownloadPackageWhenHashChanges()
-        {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
-            using (var packageDirectory = TestDirectory.Create())
-            {
-                // Arrange
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-
-                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var package = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package);
-
-                // add the package to machine cache
-                MachineCache.Default.AddPackage(package);
-
-                // create a new package. Now this package has different hash value from the package in
-                // the machine cache.
-                packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                package = new ZipPackage(packageFileName);
-
-                using (var server = new MockServer())
-                {
-                    string findPackagesByIdRequest = string.Empty;
-                    bool packageDownloadIsCalled = false;
-
-                    server.Get.Add("/nuget/$metadata", r =>
-                       MockServerResource.NuGetV2APIMetadata);
-                    server.Get.Add("/nuget/FindPackagesById()", r =>
-                        new Action<HttpListenerResponse>(response =>
-                        {
-                            findPackagesByIdRequest = r.Url.ToString();
-                            response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
-                            string feed = server.ToODataFeed(new[] { package }, "FindPackagesById");
-                            MockServer.SetResponseContent(response, feed);
-                        }));
-
-                    server.Get.Add("/nuget/Packages(Id='testPackage1',Version='1.1.0')", r =>
-                        new Action<HttpListenerResponse>(response =>
-                        {
-                            response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
-                            var p1 = server.ToOData(package);
-                            MockServer.SetResponseContent(response, p1);
-                        }));
-
-                    server.Get.Add("/package/testPackage1", r =>
-                        new Action<HttpListenerResponse>(response =>
-                        {
-                            packageDownloadIsCalled = true;
-                            response.ContentType = "application/zip";
-                            using (var stream = package.GetStream())
-                            {
-                                var content = stream.ReadAllBytes();
-                                MockServer.SetResponseContent(response, content);
-                            }
-                        }));
-
-                    server.Get.Add("/nuget", r => "OK");
-
-                    server.Start();
-
-                    // Act
-                    var args = "install testPackage1 -Source " + server.Uri + "nuget";
-                    var r1 = CommandRunner.Run(
-                        nugetexe,
-                        workingPath,
-                        args,
-                        waitForExit: true);
-
-                    // Assert
-                    Assert.Equal(0, r1.Item1);
-
-                    // verifies that package is downloaded from server since the cached version has
-                    // a different hash from the package on the server.
-                    Assert.True(packageDownloadIsCalled);
                 }
             }
         }
@@ -1004,19 +1343,22 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_PreferNonSymbolPackage()
         {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var source = TestDirectory.Create())
-            using (var outputDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var source = pathContext.PackageSource;
+                var outputDirectory = pathContext.SolutionRoot;
+
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source);
                 var symbolPackageFileName = PackageCreater.CreateSymbolPackage(
                     "testPackage1", "1.1.0", source);
 
+                var nugetexe = Util.GetNuGetExePath();
+
                 // Act
-                string[] args = new string[] {
+                var args = new string[] {
                     "install", "testPackage1",
                     "-OutputDirectory", outputDirectory,
                     "-Source", source };
@@ -1024,7 +1366,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    String.Join(" ", args),
+                    string.Join(" ", args),
                     waitForExit: true);
 
                 // Assert
@@ -1044,11 +1386,12 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_DependencyResolutionFailure()
         {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var source = TestDirectory.Create())
-            using (var outputDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var source = pathContext.PackageSource;
+                var outputDirectory = pathContext.SolutionRoot;
+
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source,
@@ -1063,8 +1406,10 @@ namespace NuGet.CommandLine.Test
                         builder.DependencySets.Add(dependencySet);
                     });
 
+                var nugetexe = Util.GetNuGetExePath();
+
                 // Act
-                var args = String.Format(
+                var args = string.Format(
                     CultureInfo.InvariantCulture,
                     "install testPackage1 -OutputDirectory {0} -Source {1}", outputDirectory, source);
                 var r = CommandRunner.Run(
@@ -1079,6 +1424,80 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData(null, null, "1.1.0")]
+        [InlineData("Lowest", "1.2", "1.2.0")]
+        [InlineData("Highest", null, "2.0.0")]
+        [InlineData("HighestMinor", "1.1", "1.2.0")]
+        [InlineData("HighestPatch", "1.1", "1.1.1")]
+        public void InstallCommand_DependencyResolution(string dependencyType, string requestedVersion, string expectedVersion)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            using (var source = TestDirectory.Create())
+            using (var outputDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateTestPackage("depPackage", "1.1.0", source);
+                Util.CreateTestPackage("depPackage", "1.1.1", source);
+                Util.CreateTestPackage("depPackage", "1.2.0", source);
+                Util.CreateTestPackage("depPackage", "2.0.0", source);
+
+                var packageFileName = PackageCreater.CreatePackage(
+                    "testPackage", "1.1.0", source,
+                    (builder) =>
+                    {
+                        if (requestedVersion == null)
+                        {
+                            var dependencySet = new PackageDependencySet(null,
+                                new[] { new PackageDependency("depPackage") });
+                            builder.DependencySets.Add(dependencySet);
+                        }
+                        else
+                        {
+                            var dependencySet = new PackageDependencySet(null,
+                                new[] { new PackageDependency("depPackage",
+                                    VersionUtility.ParseVersionSpec(requestedVersion)) });
+                            builder.DependencySets.Add(dependencySet);
+                        }
+                    });
+
+                var pathSeparator = @"\";
+                // verify nuget grabs the earliest by default
+                var depPackageFile = outputDirectory + $@"{pathSeparator}depPackage." + expectedVersion + $@"{pathSeparator}depPackage." + expectedVersion + ".nupkg";
+
+                // change the path separator for mono
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    depPackageFile = NuGet.Common.PathUtility.GetPathWithForwardSlashes(depPackageFile);
+                }
+
+                // Act
+                string cmd;
+                if (dependencyType == null)
+                {
+                    cmd = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "install testPackage -OutputDirectory {0} -Source {1}", outputDirectory, source);
+                }
+                else
+                {
+                    cmd = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "install testPackage -OutputDirectory {0} -Source {1} -DependencyVersion {2}", outputDirectory, source, dependencyType);
+                }
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    cmd,
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.ExitCode);
+                Assert.True(File.Exists(depPackageFile), $"File '{depPackageFile}' not found.");
+            }
+        }
+
+
         // Tests that when credential is saved in the config file, it will be passed
         // correctly to both the index.json endpoint and registration endpoint, even
         // though one uri does not start with the other uri.
@@ -1087,9 +1506,11 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var randomTestFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                bool credentialsPassedToRegistrationEndPoint = false;
+                var randomTestFolder = pathContext.WorkingDirectory;
+
+                var credentialsPassedToRegistrationEndPoint = false;
 
                 // Server setup
                 using (var serverV3 = new MockServer())
@@ -1101,7 +1522,7 @@ namespace NuGet.CommandLine.Test
                     serverV3.Get.Add("/a/b/c/index.json", r =>
                     {
                         var h = r.Headers["Authorization"];
-                        var credential = String.IsNullOrEmpty(h) ?
+                        var credential = string.IsNullOrEmpty(h) ?
                             null :
                             System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
 
@@ -1127,7 +1548,7 @@ namespace NuGet.CommandLine.Test
                     serverV3.Get.Add("/reg/test_package/index.json", r =>
                     {
                         var h = r.Headers["Authorization"];
-                        var credential = String.IsNullOrEmpty(h) ?
+                        var credential = string.IsNullOrEmpty(h) ?
                             null :
                             System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
 
@@ -1173,7 +1594,7 @@ namespace NuGet.CommandLine.Test
                     File.WriteAllText(configFileName, config);
 
                     // Act
-                    string[] args = new string[]
+                    var args = new string[]
                     {
                         "install test_package",
                         "-Source ",
@@ -1197,9 +1618,10 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void TestInstallWhenNoFeedAvailable()
         {
-            var nugetexe = Util.GetNuGetExePath();
-            using (var randomTestFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var randomTestFolder = pathContext.SolutionRoot;
+
                 // Create an empty config file and pass it as -ConfigFile switch.
                 // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%
                 // In this case, nuget will not create default nuget.config for user.
@@ -1210,7 +1632,8 @@ namespace NuGet.CommandLine.Test
                 var configFileName = Path.Combine(randomTestFolder, "nuget.config");
                 File.WriteAllText(configFileName, config);
 
-                string[] args = new string[]
+                var nugetexe = Util.GetNuGetExePath();
+                var args = new string[]
                 {
                         "install Newtonsoft.Json",
                         "-version",
@@ -1232,6 +1655,64 @@ namespace NuGet.CommandLine.Test
 
                 Assert.False(File.Exists(expectedPath), "nuget.exe installed Newtonsoft.Json.7.0.1");
             }
+        }
+
+        [Fact]
+        public async Task InstallCommand_LongPathPackage()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageA = new SimpleTestPackageContext("a", "1.0.0");
+                packageA.AddFile(@"content/2.5.6/core/store/x64/netcoreapp2.0/microsoft.extensions.configuration.environmentvariables/2.0.0/lib/netstandard2.0/Microsoft.Extensions.Configuration.EnvironmentVariables.dll ");
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA);
+
+                var pathResolver = new PackagePathResolver(pathContext.SolutionRoot, useSideBySidePaths: false);
+
+
+                // Act
+                var r1 = RunInstall(pathContext, "a", 0, "-Version", "1.0.0", "-OutputDirectory", pathContext.SolutionRoot);
+
+                var nupkgPath = pathResolver.GetInstalledPackageFilePath(new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+
+                // Assert
+                r1.Success.Should().BeTrue();
+                File.Exists(nupkgPath).Should().BeTrue();
+            }
+        }
+
+        public static CommandRunnerResult RunInstall(SimpleTestPathContext pathContext, string input, int expectedExitCode = 0, params string[] additionalArgs)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Store the dg file for debugging
+            var envVars = new Dictionary<string, string>()
+            {
+                { "NUGET_HTTP_CACHE_PATH", pathContext.HttpCacheFolder }
+            };
+
+            var args = new string[] {
+                    "install",
+                    input,
+                    "-Verbosity",
+                    "detailed"
+                };
+
+            args = args.Concat(additionalArgs).ToArray();
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                pathContext.WorkingDirectory,
+                string.Join(" ", args),
+                waitForExit: true,
+                environmentVariables: envVars);
+
+            // Assert
+            Assert.True(expectedExitCode == r.Item1, r.Item3 + "\n\n" + r.Item2);
+
+            return r;
         }
     }
 }

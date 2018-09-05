@@ -1,14 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization.Formatters.Binary;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
-using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio;
 using IStream = Microsoft.VisualStudio.OLE.Interop.IStream;
 
 namespace NuGetVSExtension
@@ -81,6 +82,8 @@ namespace NuGetVSExtension
 
         public bool LoadSettings()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
             if (solutionPersistence.LoadPackageUserOpts(this, NuGetOptionsStreamKey) != VSConstants.S_OK)
             {
@@ -92,6 +95,8 @@ namespace NuGetVSExtension
 
         public bool PersistSettings()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
             if (solutionPersistence.SavePackageUserOpts(this, NuGetOptionsStreamKey) != VSConstants.S_OK)
             {
@@ -106,6 +111,8 @@ namespace NuGetVSExtension
         // Called by the shell when a solution is opened and the SUO file is read.
         public int LoadUserOptions(IVsSolutionPersistence pPersistence, uint grfLoadOpts)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             pPersistence.LoadPackageUserOpts(this, NuGetOptionsStreamKey);
             return VSConstants.S_OK;
         }
@@ -139,6 +146,8 @@ namespace NuGetVSExtension
         // know which options keys it will use in the suo file.
         public int SaveUserOptions(IVsSolutionPersistence pPersistence)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             pPersistence.SavePackageUserOpts(this, NuGetOptionsStreamKey);
             return VSConstants.S_OK;
         }

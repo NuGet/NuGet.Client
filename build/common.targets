@@ -1,13 +1,309 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(EnlistmentRoot)\packages\NuGet.MsBuild.Integration.3.1.0-beta-001\build\Microsoft.NuGet.targets"
-  Condition="!Exists('$(MSBuildBinPath)\..\Imports\Microsoft.Common.Props\ImportBefore\Microsoft.NuGet.ImportBefore.props')"  />
-  <Target Name="MakeNuGetReferencesPrivate"
-    AfterTargets="ResolveNuGetPackageAssets"
-    Condition="Exists('$(MSBuildBinPath)\..\Imports\Microsoft.Common.Props\ImportBefore\Microsoft.NuGet.ImportBefore.props')">
-    <ItemGroup>
-    <Reference Include="@(_ReferencesFromNuGetPackages)">
-      <Private>True</Private>
-    </Reference>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0">
+  <!-- Compiler flags -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'net46' ">
+    <DefineConstants>$(DefineConstants);IS_DESKTOP</DefineConstants>
+    <IsDesktop>true</IsDesktop>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' OR '$(TargetFramework)' == 'netcoreapp1.1' OR'$(TargetFramework)' == 'netstandard1.0' OR '$(TargetFramework)' == 'netstandard1.3' OR '$(TargetFramework)' == 'netstandard1.4' OR '$(TargetFramework)' == 'netstandard1.5' OR '$(TargetFramework)' == 'netstandard1.6' ">
+    <DefineConstants>$(DefineConstants);IS_CORECLR</DefineConstants>
+    <IsCore>true</IsCore>
+  </PropertyGroup>
+
+  <!-- Include shared files for netcore projects -->
+  <ItemGroup Condition=" ('$(IsNetCoreProject)' == 'true' AND '$(SkipShared)' != 'true' AND '$(TestProject)' != 'true') OR '$(IncludeNuGetSharedFiles)' == 'true'">
+    <Compile Include="$(SharedDirectory)\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
+  </ItemGroup>
+
+  <!-- Include shared files for test netcore projects -->
+  <ItemGroup Condition=" '$(IsNetCoreProject)' == 'true' AND '$(SkipShared)' != 'true' AND '$(TestProject)' == 'true' ">
+    <Compile Include="$(BuildCommonDirectory)TestShared\*.cs" />
+  </ItemGroup>
+
+  <ImportGroup Condition=" '$(SkipSigning)' != 'true' ">
+    <Import Project="sign.targets" />
+  </ImportGroup>
+  
+  <PropertyGroup Condition="'$(Shipping)' == 'true'">
+    <SignTargetsForRealSigning>GetBuildOutputWithSigningMetadata</SignTargetsForRealSigning>
+    <SymbolTargetsToGetPdbs>GetDebugSymbolsProjectOutput</SymbolTargetsToGetPdbs>
+    <LocTargets>GetBuildOutputWithLocMetadata</LocTargets>
+  </PropertyGroup>
+
+  <!-- Write out .XML files for projects that will be packed. -->
+  <PropertyGroup Condition=" '$(PackProject)' == 'true' ">
+    <GenerateDocumentationFile Condition=" '$(GenerateDocumentationFile)' == '' ">true</GenerateDocumentationFile>
+    <DocumentationFile Condition=" '$(DocumentationFile)' == '' AND '$(GenerateDocumentationFile)' == 'true' AND '$(IsNetCoreProject)' != 'true' ">$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
+
+  <!-- Test Projects -->
+  <ImportGroup Condition=" '$(TestProject)' == 'true' ">
+    <Import Project="test.targets" />
+  </ImportGroup>
+
+  <!-- Allow WPF projects to run under NETCore SDK -->
+  <!-- Errors occur if the output ptah is not set correctly -->
+  <PropertyGroup Condition=" '$(NETCoreWPFProject)' == 'true' ">
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <BaseOutputPath>bin\</BaseOutputPath>
+    <OutputPath>bin\$(VisualStudioVersion)\$(Configuration)</OutputPath>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath> 
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <!-- These are needed because currently a VSIX project cannot reference a net core project that multi targets.
+  This is a hack for building VS14 VSIX. It's because all these targets are available in the inner build, while the VSIX project 
+  is non netcore, and isn't aware of inner/outer builds. -->
+  <Target Name="BuiltProjectOutputGroupDependencies" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0' " />
+  <Target Name="BuiltProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
+  <Target Name="GetCopyToOutputDirectoryItems" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
+  <Target Name="SatelliteDllsProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
+  <Target Name="DebugSymbolsProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
+
+  <!--
+    ============================================================
+    TestProject
+    Runs tests on the current project if it is a test project.
+    ============================================================
+  -->
+  <Target Name="TestProject" Condition=" '$(TestProject)' == 'true' " DependsOnTargets="VSTest">
+    <Message Text="Tested project $(MSBuildProjectName)" Importance="high"  />
+  </Target>
+
+  <!--
+    ============================================================
+    PackProjects
+    This must be called after building. The dependency on build does
+    not exist to improve perf.
+    ============================================================
+  -->
+  <Target Name="PackProjects" Condition=" '$(PackProject)' == 'true' ">
+    <Message Text="Packing $(ProjectName)" Importance="high" />
+
+    <!-- Run pack on the project -->
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="Pack"
+      Properties="Configuration=$(Configuration);
+                  VisualStudioVersion=$(VisualStudioVersion);
+                  PackageOutputPath=$(NupkgOutputDirectory);
+                  NoPackageAnalysis=true;
+                  IncludeSymbols=true;
+                  NoBuild=true;">
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    GetSymbolsToIndex - gets the list of DLLs,EXEs and PDBs that 
+    need to be indexed on the symbol server
+    ============================================================
+  -->
+  <Target Name="GetSymbolsToIndex" DependsOnTargets="GetTargetFrameworkSet" Returns="@(SymbolFilesToIndex)" Condition=" '$(Shipping)' == 'true' ">
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="$(SignTargetsForRealSigning);$(SymbolTargetsToGetPdbs)"
+      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
+                  BuildProjectReferences=false;">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="SymbolFilesToIndex" />
+    </MSBuild>
+  </Target>
+  
+  <!--
+    ============================================================
+    GetSigningInputs - gets the list of DLLs that need to
+    be signed from each project
+    ============================================================
+  -->
+  <Target Name="GetSigningInputs" DependsOnTargets="GetTargetFrameworkSet" Returns="@(DllsToSign)" Condition=" '$(Shipping)' == 'true' ">
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="$(SignTargetsForRealSigning)"
+      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
+                  BuildProjectReferences=false;">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="DllsToSign" />
+    </MSBuild>
+    <MsBuild Condition="'$(BuildRTM)' != 'true'"
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GetLocalizedDllsForSigning"
+      Properties="BuildProjectReferences=false;">
+      <Output
+        TaskParameter="TargetOutputs"
+        ItemName="DllsToSign"/>
+    </MsBuild>
+  </Target>
+
+  <Target Name="GetXPLATProject" Returns="@(XPLATProjects)">
+    <ItemGroup Condition="'$(XPLATProject)' == 'true'">
+      <XPLATProjects Include="$(MSBuildProjectFullPath)">
+      </XPLATProjects>
     </ItemGroup>
   </Target>
+
+
+  <Target Name="_GetLocalizedDllsForSigning" Returns="@(LocalizedDllsToSign)">
+    <ItemGroup>
+      <LocalizedDllsToSign Include="$(OutputPath)**\$(AssemblyName).resources.dll">
+        <StrongName>$(StrongNameCert)</StrongName>
+        <Authenticode>Microsoft</Authenticode>
+      </LocalizedDllsToSign>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetBuildOutputWithSigningMetadata" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup" Returns="@(DllsToSignWithMetadata)">
+    <ItemGroup>
+      <DllsToSignWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' == '.dll' OR '%(Extension)' == '.exe'" KeepDuplicates="false">
+        <StrongName>$(StrongNameCert)</StrongName>
+        <Authenticode>Microsoft</Authenticode>
+      </DllsToSignWithMetadata>
+      <DllsToSignWithMetadata Include="@(DocumentationProjectOutputGroupOutput->'%(FinalOutputPath)')" KeepDuplicates="false">
+        <Authenticode>XML94</Authenticode>
+      </DllsToSignWithMetadata>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetDebugSymbolsProjectOutput" DependsOnTargets="DebugSymbolsProjectOutputGroup" Returns="@(PdbsToIndex)">
+    <ItemGroup>
+      <PdbsToIndex Include="@(DebugSymbolsProjectOutputGroupOutput->'%(FinalOutputPath)')"/>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    GatherLocalizationInputs - gathers the list of DLLs that need to
+    be localized from each project
+    ============================================================
+  -->
+  <Target Name="GetLocalizationInputs" DependsOnTargets="GetTargetFrameworkSet" Returns="@(DllsToLocalize)" Condition="'$(Shipping)' == 'true'">
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="$(LocTargets)"
+      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
+                  BuildProjectReferences=false;">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="DllsToLocalize" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="GetBuildOutputWithLocMetadata" DependsOnTargets="BuiltProjectOutputGroup" Returns="@(DllsToLocalizeWithMetadata)">
+    <ItemGroup>
+      <DllsToLocalizeWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' == '.dll' OR '%(Filename)' == 'NuGet.CommandLine.XPlat'" KeepDuplicates="false">
+        <TranslationFile>$(LocalizationRootDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
+	      <LciCommentFile>$(LocalizationRootDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
+      </DllsToLocalizeWithMetadata>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    GetLocalizedFiles - gathers the list of files that have been
+    localized from each project
+    ============================================================
+  -->
+  <!--Target is invoked by build\build.proj\MoveLocalizedFilesToLocalizedArtifacts to get all the localized files from all projects-->
+  <Target Name="GetNetCoreLocalizedFilesInProjectOutputPath" Returns="@(_LocalizedNetCoreDllsWithRelativeTargetPath)" Condition=" '$(PackProject)' == 'true' ">
+    <ItemGroup>
+      <_LocalizedDllsNetCoreApp Include="$(OutputPath)netcoreapp1.0\**\$(AssemblyName).resources.dll"/>
+      <_LocalizedDllsNetStandard16 Include="$(OutputPath)netstandard1.6\**\$(AssemblyName).resources.dll"/>
+      <_LocalizedDllsNetStandard10 Include="$(OutputPath)netstandard1.0\**\$(AssemblyName).resources.dll"/>
+
+      <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetCoreApp)" Condition=" '@(_LocalizedDllsNetCoreApp)' != '' ">
+        <RelativeTargetPath>netstandard1.6\%(_LocalizedDllsNetCoreApp.RecursiveDir)%(_LocalizedDllsNetCoreApp.FileName)%(_LocalizedDllsNetCoreApp.Extension)</RelativeTargetPath>
+      </_LocalizedNetCoreDllsWithRelativeTargetPath>
+
+      <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetStandard10)" Condition=" '@(_LocalizedDllsNetStandard10)' != '' ">
+        <RelativeTargetPath>netstandard1.6\%(_LocalizedDllsNetStandard10.RecursiveDir)%(_LocalizedDllsNetStandard10.FileName)%(_LocalizedDllsNetStandard10.Extension)</RelativeTargetPath>
+      </_LocalizedNetCoreDllsWithRelativeTargetPath>
+
+      <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetStandard16)" Condition=" '@(_LocalizedDllsNetStandard16)' != '' ">
+        <RelativeTargetPath>netstandard1.6\%(_LocalizedDllsNetStandard16.RecursiveDir)%(_LocalizedDllsNetStandard16.FileName)%(_LocalizedDllsNetStandard16.Extension)</RelativeTargetPath>
+      </_LocalizedNetCoreDllsWithRelativeTargetPath>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    GetLocalizedFilesForVsix - gathers the list of localized DLLs 
+    from each project
+    ============================================================
+  -->
+  <Target Name="GetLocalizedFilesForVsix" DependsOnTargets="$(GetLocalizedFilesForVsixDependsOn)" Returns="@(LocalizedFilesForVsix)" Condition=" '$(IncludeInVsix)' == 'true' ">
+    <ItemGroup>
+      <_AllResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll"/>
+      <LocalizedFilesForVsix Include="@(_AllResourceDlls)">
+        <TargetPath>$([MSBuild]::MakeRelative($(OutputPath), %(_AllResourceDlls.Identity)))</TargetPath>
+      </LocalizedFilesForVsix>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    GetTestAssemblies
+    ============================================================
+  -->
+  <Target Name="GetTestAssemblies"
+          DependsOnTargets="Build;GetTargetFrameworkSet"
+          Condition=" '$(TestProject)' == 'true' AND '$(SkipTests)' != 'true' "
+          Returns="@(TestAssemblyPath)">
+    <Message Text="Discovering test assemblies for $(AssemblyName)" Importance="high" />
+
+    <!-- Execute find for all frameworks -->
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="GetTestAssembliesInner"
+      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
+                  Configuration=$(Configuration);
+                  VisualStudioVersion=$(VisualStudioVersion);">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    GetTestAssembliesInner
+    ============================================================
+  -->
+  <Target Name="GetTestAssembliesInner"
+          Returns="@(TestAssemblyPath)">
+
+    <PropertyGroup>
+      <TestAssemblyRelativePath>$(OutputPath)$(AssemblyName).dll</TestAssemblyRelativePath>
+    </PropertyGroup>
+
+    <ConvertToAbsolutePath Paths="$(TestAssemblyRelativePath)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="AbsoluteTestAssemblyPath"/>
+    </ConvertToAbsolutePath>
+
+    <ItemGroup>
+      <TestAssemblyPath Include="$(AbsoluteTestAssemblyPath)">
+        <IsDesktop Condition=" '$(IsDesktop)' == 'true' ">true</IsDesktop>
+        <IsCore Condition=" '$(IsDesktop)' != 'true' ">true</IsCore>
+      </TestAssemblyPath>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    GetTargetFrameworkSet get all target frameworks
+    ============================================================
+  -->
+  <Target Name="GetTargetFrameworkSet" Returns="@(ProjectTargetFrameworkEntries)">
+    <!-- Find all frameworks to run on -->
+    <ItemGroup>
+      <ProjectTargetFrameworkEntries Include="$(TargetFramework);$(TargetFrameworks)" />
+    </ItemGroup>
+  </Target>
+
 </Project>

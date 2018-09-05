@@ -123,8 +123,17 @@
   <data name="ArgumentNullOrEmpty" xml:space="preserve">
     <value>Argument cannot be null or empty</value>
   </data>
+  <data name="Argument_Must_Be_GreaterThanOrEqualTo" xml:space="preserve">
+    <value>Value must be greater than or equal to {0}</value>
+  </data>
   <data name="Error_FailedToCreateRandomFile" xml:space="preserve">
     <value>Failed to create random file for dotnet add pkg command.</value>
+  </data>
+  <data name="MissingRequiredEnvVar" xml:space="preserve">
+    <value>Required environment variable '{0}' is not set. Try setting '{0}' and running the operation again.</value>
+  </data>
+  <data name="MissingRequiredEnvVarsDotnet" xml:space="preserve">
+    <value>Required environment variable '{0}' is not set. Try setting '{1}' or '{0}' and running the operation</value>
   </data>
   <data name="NoPackageFoldersFound" xml:space="preserve">
     <value>At least one package folder path must be provided.</value>
@@ -141,5 +150,14 @@
   </data>
   <data name="UnsupportedHashAlgorithm" xml:space="preserve">
     <value>Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.</value>
+    <comment>{0} is an algorithm identifier</comment>
+  </data>
+  <data name="UnsupportedHashAlgorithmName" xml:space="preserve">
+    <value>Hash algorithm '{0}' is unsupported.</value>
+    <comment>{0} is an algorithm identifier</comment>
+  </data>
+  <data name="UnsupportedSignatureAlgorithmName" xml:space="preserve">
+    <value>Signature algorithm '{0}' is unsupported.</value>
+    <comment>{0} is an algorithm identifier</comment>
   </data>
 </root>

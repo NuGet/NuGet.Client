@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using Microsoft.Win32;
 using NuGet.Common;
 using NuGet.PackageManagement;
 
@@ -20,6 +21,11 @@ namespace NuGet.CommandLine
         private const string Utf8Option = "-utf8";
         private const string ForceEnglishOutputOption = "-forceEnglishOutput";
         private const string DebugOption = "--debug";
+        private const string OSVersionRegistryKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
+        private const string FilesystemRegistryKey = @"SYSTEM\CurrentControlSet\Control\FileSystem";
+        private const string DotNetSetupRegistryKey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
+        private const int Net462ReleasedVersion = 394802;
+
 
         private static readonly string ThisExecutableName = typeof(Program).Assembly.GetName().Name;
 
@@ -39,6 +45,9 @@ namespace NuGet.CommandLine
 
         public static int Main(string[] args)
         {
+            AppContext.SetSwitch("Switch.System.IO.UseLegacyPathHandling", false);
+            AppContext.SetSwitch("Switch.System.IO.BlockLongPaths", false);
+
 #if DEBUG
             if (args.Contains(DebugOption, StringComparer.OrdinalIgnoreCase))
             {
@@ -46,7 +55,14 @@ namespace NuGet.CommandLine
                 System.Diagnostics.Debugger.Launch();
             }
 #endif
-           
+
+#if IS_DESKTOP
+            // Find any response files and resolve the args
+            if (!RuntimeEnvironmentHelper.IsMono)
+            {
+                args = CommandLineResponseFile.ParseArgsResponseFiles(args);
+            }
+#endif
             return MainCore(Directory.GetCurrentDirectory(), args);
         }
 
@@ -81,8 +97,7 @@ namespace NuGet.CommandLine
 
             var console = new Console();
             var fileSystem = new CoreV2.NuGet.PhysicalFileSystem(workingDirectory);
-
-            Func<Exception, string> getErrorMessage = ExceptionUtilities.DisplayMessage;
+            var logStackAsError = console.Verbosity == Verbosity.Detailed;
 
             try
             {
@@ -94,22 +109,22 @@ namespace NuGet.CommandLine
                 p.Initialize(fileSystem, console);
 
                 // Add commands to the manager
-                foreach (ICommand cmd in p.Commands)
+                foreach (var cmd in p.Commands)
                 {
                     p.Manager.RegisterCommand(cmd);
                 }
 
-                CommandLineParser parser = new CommandLineParser(p.Manager);
+                var parser = new CommandLineParser(p.Manager);
 
                 // Parse the command
-                ICommand command = parser.ParseCommandLine(args) ?? p.HelpCommand;
+                var command = parser.ParseCommandLine(args) ?? p.HelpCommand;
                 command.CurrentDirectory = workingDirectory;
                 
                 // Fallback on the help command if we failed to parse a valid command
                 if (!ArgumentCountValid(command))
                 {
                     // Get the command name and add it to the argument list of the help command
-                    string commandName = command.CommandAttribute.CommandName;
+                    var commandName = command.CommandAttribute.CommandName;
 
                     // Print invalid command then show help
                     console.WriteLine(LocalizedResourceManager.GetString("InvalidArguments"), commandName);
@@ -119,33 +134,43 @@ namespace NuGet.CommandLine
                 else
                 {
                     SetConsoleInteractivity(console, command as Command);
-
-                    // When we're detailed, get the whole exception including the stack
-                    // This is useful for debugging errors.
-                    if (console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
-                    {
-                        getErrorMessage = e => e.ToString();
-                    }
-
                     command.Execute();
                 }
             }
             catch (AggregateException exception)
             {
-                Exception unwrappedEx = ExceptionUtility.Unwrap(exception);
+                var unwrappedEx = ExceptionUtility.Unwrap(exception);
+                var rootException = ExceptionUtility.GetRootException(exception);
+
                 if (unwrappedEx is ExitCodeException)
                 {
                     // Return the exit code without writing out the exception type
                     var exitCodeEx = unwrappedEx as ExitCodeException;
                     return exitCodeEx.ExitCode;
                 }
-                
-                console.WriteError(getErrorMessage(exception));
+                if (rootException is PathTooLongException)
+                {
+                    LogHelperMessageForPathTooLongException(console);
+                }
+
+                // Log the exception and stack trace.
+                ExceptionUtilities.LogException(unwrappedEx, console, logStackAsError);
+                return 1;
+            }
+            catch (ExitCodeException e)
+            {
+                return e.ExitCode;
+            }
+            catch (PathTooLongException e)
+            {
+                // Log the exception and stack trace.
+                ExceptionUtilities.LogException(e, console, logStackAsError);
+                LogHelperMessageForPathTooLongException(console);
                 return 1;
             }
             catch (Exception exception)
             {
-                console.WriteError(getErrorMessage(exception));
+                ExceptionUtilities.LogException(exception, console, logStackAsError);
                 return 1;
             }
             finally
@@ -155,17 +180,6 @@ namespace NuGet.CommandLine
             }
 
             return 0;
-        }
-
-        private static void SetConsoleOutputEncoding(System.Text.Encoding encoding)
-        {
-            try
-            {
-                System.Console.OutputEncoding = encoding;
-            }
-            catch (IOException)
-            {
-            }
         }
 
         private void Initialize(CoreV2.NuGet.IFileSystem fileSystem, IConsole console)
@@ -212,7 +226,7 @@ namespace NuGet.CommandLine
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to block the exe from usage if anything failed")]
         internal static void RemoveOldFile(CoreV2.NuGet.IFileSystem fileSystem)
         {
-            string oldFile = typeof(Program).Assembly.Location + ".old";
+            var oldFile = typeof(Program).Assembly.Location + ".old";
             try
             {
                 if (fileSystem.FileExists(oldFile))
@@ -228,7 +242,7 @@ namespace NuGet.CommandLine
 
         public static bool ArgumentCountValid(ICommand command)
         {
-            CommandAttribute attribute = command.CommandAttribute;
+            var attribute = command.CommandAttribute;
             return command.Arguments.Count >= attribute.MinArgs &&
                    command.Arguments.Count <= attribute.MaxArgs;
         }
@@ -278,7 +292,7 @@ namespace NuGet.CommandLine
                     }
 
                     var message =
-                        String.Format(LocalizedResourceManager.GetString(nameof(NuGetResources.FailedToLoadExtension)),
+                        string.Format(LocalizedResourceManager.GetString(nameof(NuGetResources.FailedToLoadExtension)),
                                       item);
 
                     console.WriteWarning(message);
@@ -318,21 +332,18 @@ namespace NuGet.CommandLine
 
         private static void SetConsoleInteractivity(IConsole console, Command command)
         {
+            // Apply command setting
+            console.IsNonInteractive = command.NonInteractive;
+
             // Global environment variable to prevent the exe for prompting for credentials
-            string globalSwitch = Environment.GetEnvironmentVariable("NUGET_EXE_NO_PROMPT");
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_EXE_NO_PROMPT")))
+            {
+                console.IsNonInteractive = true;
+            }
 
-            // When running from inside VS, no input is available to our executable locking up VS.
-            // VS sets up a couple of environment variables one of which is named VisualStudioVersion.
-            // Every time this is setup, we will just fail.
-            // TODO: Remove this in next iteration. This is meant for short-term backwards compat.
-            string vsSwitch = Environment.GetEnvironmentVariable("VisualStudioVersion");
-
-            console.IsNonInteractive = !String.IsNullOrEmpty(globalSwitch) ||
-                                       !String.IsNullOrEmpty(vsSwitch) ||
-                                       (command != null && command.NonInteractive);
-
-            string forceInteractive = Environment.GetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE");
-            if (!String.IsNullOrEmpty(forceInteractive))
+            // Disable non-interactive if force is set.
+            var forceInteractive = Environment.GetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE");
+            if (!string.IsNullOrEmpty(forceInteractive))
             {
                 console.IsNonInteractive = false;
             }
@@ -341,6 +352,54 @@ namespace NuGet.CommandLine
             {
                 console.Verbosity = command.Verbosity;
             }
+        }
+
+        private static void SetConsoleOutputEncoding(System.Text.Encoding encoding)
+        {
+            try
+            {
+                System.Console.OutputEncoding = encoding;
+            }
+            catch (IOException)
+            {
+            }
+        }
+
+        private static void LogHelperMessageForPathTooLongException(Console logger)
+        {
+            if (!IsWindows10(logger))
+            {
+                logger.WriteWarning(LocalizedResourceManager.GetString(nameof(NuGetResources.Warning_LongPath_UnsupportedOS)));
+            }
+            else if (!IsSupportLongPathEnabled(logger))
+            {
+                logger.WriteWarning(LocalizedResourceManager.GetString(nameof(NuGetResources.Warning_LongPath_DisabledPolicy)));
+            }
+            else if (!IsRuntimeGreaterThanNet462(logger))
+            {
+                logger.WriteWarning(LocalizedResourceManager.GetString(nameof(NuGetResources.Warning_LongPath_UnsupportedNetFramework)));
+            }
+        }
+
+        private static bool IsWindows10(ILogger logger)
+        {
+            var productName = (string)RegistryKeyUtility.GetValueFromRegistryKey("ProductName", OSVersionRegistryKey, Registry.LocalMachine, logger);
+
+            return productName != null && productName.StartsWith("Windows 10");
+        }
+
+        private static bool IsSupportLongPathEnabled(ILogger logger)
+        {
+            var longPathsEnabled = RegistryKeyUtility.GetValueFromRegistryKey("LongPathsEnabled", FilesystemRegistryKey, Registry.LocalMachine, logger);
+
+            return longPathsEnabled != null && (int)longPathsEnabled > 0;
+        }
+
+        private static bool IsRuntimeGreaterThanNet462(ILogger logger)
+        {
+            var release = RegistryKeyUtility.GetValueFromRegistryKey("Release", DotNetSetupRegistryKey, Registry.LocalMachine, logger);
+
+            return release != null && (int)release >= Net462ReleasedVersion;
         }
     }
 }

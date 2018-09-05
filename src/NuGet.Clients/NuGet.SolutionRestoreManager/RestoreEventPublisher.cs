@@ -5,8 +5,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.PackageManagement.UI;
-using NuGet.VisualStudio.Facade;
+using NuGet.VisualStudio;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -21,7 +20,7 @@ namespace NuGet.SolutionRestoreManager
         
         [ImportingConstructor]
         public RestoreEventPublisher(
-            [Import(typeof(VisualStudioActivityLogger))]
+            [Import("VisualStudioActivityLogger")]
             Lazy<ILogger> logger)
         {
             if (logger == null)

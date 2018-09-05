@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NuGet.DependencyResolver
 {
@@ -40,10 +39,25 @@ namespace NuGet.DependencyResolver
         {
             var entry = GetEntry(item);
 
-            return entry.List.All(known => item.Key.Version >= known.Key.Version);
+            var version = item.Key.Version;
+
+            foreach (var known in entry.List)
+            {
+                if (version < known.Key.Version)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public IEnumerable<GraphItem<TItem>> GetDisputes(GraphItem<TItem> item) => GetEntry(item).List;
+
+        internal void Clear()
+        {
+            _entries.Clear();
+        }
 
         private Entry GetEntry(GraphItem<TItem> item)
         {

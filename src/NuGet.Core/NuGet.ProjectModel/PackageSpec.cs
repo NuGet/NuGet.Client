@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Shared;
@@ -32,10 +33,7 @@ namespace NuGet.ProjectModel
 
         public string FilePath { get; set; }
 
-        public string BaseDirectory
-        {
-            get { return Path.GetDirectoryName(FilePath); }
-        }
+        public string BaseDirectory => Path.GetDirectoryName(FilePath);
 
         public string Name { get; set; }
 
@@ -44,14 +42,11 @@ namespace NuGet.ProjectModel
         private NuGetVersion _version = DefaultVersion;
         public NuGetVersion Version
         {
-            get
-            {
-                return _version;
-            }
+            get => _version;
             set
             {
                 _version = value;
-                this.IsDefaultVersion = false;
+                IsDefaultVersion = false;
             }
         }
         public bool IsDefaultVersion { get; set; } = true;
@@ -64,9 +59,9 @@ namespace NuGet.ProjectModel
 
         public string ReleaseNotes { get; set; }
 
-        public string[] Authors { get; set; } = new string[0];
+        public string[] Authors { get; set; } = Array.Empty<string>();
 
-        public string[] Owners { get; set; } = new string[0];
+        public string[] Owners { get; set; } = Array.Empty<string>();
 
         public string ProjectUrl { get; set; }
 
@@ -82,7 +77,7 @@ namespace NuGet.ProjectModel
 
         public BuildOptions BuildOptions { get; set; }
 
-        public string[] Tags { get; set; } = new string[0];
+        public string[] Tags { get; set; } = Array.Empty<string>();
 
         public IList<string> ContentFiles { get; set; } = new List<string>();
 
@@ -97,6 +92,14 @@ namespace NuGet.ProjectModel
         public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; } = new List<TargetFrameworkInformation>();
 
         public RuntimeGraph RuntimeGraph { get; set; } = new RuntimeGraph();
+
+        /// <summary>
+        /// Project Settings is used to pass settings like HideWarningsAndErrors down to lower levels.
+        /// Currently they do not include any settings that affect the final result of restore.
+        /// This should not be part of the Equals and GetHashCode.
+        /// Don't write this to the package spec
+        /// </summary>
+        public ProjectRestoreSettings RestoreSettings { get; set; } = new ProjectRestoreSettings();
 
         /// <summary>
         /// Additional MSBuild properties.
@@ -184,19 +187,54 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// Clone a PackageSpec and underlying JObject.
+        /// Clone a PackageSpec
         /// </summary>
         public PackageSpec Clone()
         {
-            var writer = new JsonObjectWriter();
-            PackageSpecWriter.Write(this, writer);
-            var json = writer.GetJObject();
-
-            var spec = JsonPackageSpecReader.GetPackageSpec(json);
+            var spec = new PackageSpec();
             spec.Name = Name;
             spec.FilePath = FilePath;
-
+            spec.Title = Title;
+            spec.IsDefaultVersion = IsDefaultVersion;
+            spec.HasVersionSnapshot = HasVersionSnapshot;
+            spec.Description = Description;
+            spec.Summary = Summary;
+            spec.ReleaseNotes = ReleaseNotes;
+            spec.Authors = (string[]) Authors?.Clone();
+            spec.Owners = (string[]) Owners?.Clone();
+            spec.ProjectUrl = ProjectUrl;
+            spec.IconUrl = IconUrl;
+            spec.LicenseUrl = LicenseUrl;
+            spec.RequireLicenseAcceptance = RequireLicenseAcceptance;
+            spec.Language = Language;
+            spec.Copyright = Copyright;
+            spec.Version = Version; 
+            spec.BuildOptions = BuildOptions?.Clone();
+            spec.Tags = (string[]) Tags?.Clone();    
+            spec.ContentFiles = ContentFiles != null ? new List<string>(ContentFiles) : null;
+            spec.Dependencies = Dependencies?.Select(item => item.Clone()).ToList();
+            spec.Scripts = CloneScripts(Scripts);
+            spec.PackInclude = PackInclude != null ? new Dictionary<string, string>(PackInclude) : null;
+            spec.PackOptions = PackOptions?.Clone();
+            spec.TargetFrameworks = TargetFrameworks?.Select(item => item.Clone()).ToList();
+            spec.RuntimeGraph = RuntimeGraph?.Clone();
+            spec.RestoreSettings = RestoreSettings?.Clone();
+            spec.RestoreMetadata = RestoreMetadata?.Clone();
             return spec;
+        }
+
+        private IDictionary<string, IEnumerable<string>> CloneScripts(IDictionary<string, IEnumerable<string>> toBeCloned)
+        {
+            if (toBeCloned != null)
+            {
+                var clone = new Dictionary<string, IEnumerable<string>>();
+                foreach (var kvp in toBeCloned)
+                {
+                    clone.Add(kvp.Key, new List<string>(kvp.Value));
+                }
+                return clone;
+            }
+            return null;
         }
     }
 }

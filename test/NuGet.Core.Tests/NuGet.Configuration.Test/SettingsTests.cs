@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FluentAssertions;
 using Moq;
 using NuGet.Common;
 using NuGet.Test.Utility;
@@ -34,13 +35,13 @@ namespace NuGet.Configuration.Test
             }
         }
 
-        [Fact, Platform(Platform.Windows)]
+        [PlatformFact(Platform.Windows)]
         public void TestNuGetEnviromentPath_OnWindows()
         {
             // Arrange
 #if IS_CORECLR
             var programFilesX86Data = Environment.GetEnvironmentVariable("PROGRAMFILES(X86)");
-            
+
             if (string.IsNullOrEmpty(programFilesX86Data))
             {
                 programFilesX86Data = Environment.GetEnvironmentVariable("PROGRAMFILES");
@@ -69,7 +70,7 @@ namespace NuGet.Configuration.Test
             Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
         }
 
-        [Fact, Platform(Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public void TestNuGetEnviromentPath_OnMac()
         {
             // Arrange
@@ -94,7 +95,7 @@ namespace NuGet.Configuration.Test
             Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
         }
 
-        [Fact, Platform(Platform.Linux)]
+        [PlatformFact(Platform.Linux)]
         public void TestNuGetEnviromentPath_OnLinux()
         {
             // Arrange
@@ -421,6 +422,481 @@ namespace NuGet.Configuration.Test
                 // Assert
                 Assert.Equal("value1", result1);
                 Assert.Equal("value2", result2);
+            }
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void CallingGetNestedValuesWithoutSectionThrowsException(string section)
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key1' value='value1' />
+        </SubSection>
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Action action = () => settings.GetNestedValues(section, "SubSection");
+                action.ShouldThrow<ArgumentException>();
+            }
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void CallingGetNestedValuesWithoutSubSectionThrowsException(string subSection)
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key1' value='value1' />
+        </SubSection>
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Action action = () => settings.GetNestedValues("Section", subSection);
+                action.ShouldThrow<ArgumentException>();
+            }
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void CallingGetNestedSettingValuesWithoutSectionThrowsException(string section)
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key1' value='value1' />
+        </SubSection>
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Action action = () => settings.GetNestedSettingValues(section, "SubSection");
+                action.ShouldThrow<ArgumentException>();
+            }
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void CallingGetNestedSettingValuesWithoutSubSectionThrowsException(string subSection)
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key1' value='value1' />
+        </SubSection>
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Action action = () => settings.GetNestedSettingValues("Section", subSection);
+                action.ShouldThrow<ArgumentException>();
+            }
+        }
+
+        [Fact]
+        public void CallingGetNestedSettingValuesGetsValue()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key1' value='value1' />
+        </SubSection>
+    </Section>
+</configuration>";
+            var expectedValues = new List<SettingValue>()
+            {
+                new SettingValue("key1", "value1", false)
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var values = settings.GetNestedSettingValues("Section", "SubSection");
+
+                // Assert
+                values.Should().NotBeNull();
+                values.Should().BeEquivalentTo(expectedValues);
+            }
+        }
+
+        [Fact]
+        public void CallingGetNestedSettingValuesGetsMultipleValues()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key0' value='value0' />
+            <add key='key1' value='value1' />
+            <add key='key2' value='value2' />
+        </SubSection>
+    </Section>
+</configuration>";
+            var expectedValues = new List<SettingValue>()
+            {
+                new SettingValue("key1", "value1", false),
+                new SettingValue("key2", "value2", false),
+                new SettingValue("key0", "value0", false)
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var values = settings.GetNestedSettingValues("Section", "SubSection");
+
+                // Assert
+                values.Should().NotBeNull();
+                values.Should().BeEquivalentTo(expectedValues);
+            }
+        }
+
+        [Fact]
+        public void CallingGetNestedSettingValuesGetsValueWithMetadata()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key1' value='value1' meta1='data1' meta2='data2'/>
+        </SubSection>
+    </Section>
+</configuration>";
+
+            var expectedSetting = new SettingValue("key1", "value1", false);
+            expectedSetting.AdditionalData.Add("meta1", "data1");
+            expectedSetting.AdditionalData.Add("meta2", "data2");
+            var expectedValues = new List<SettingValue>()
+            {
+                expectedSetting
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var values = settings.GetNestedSettingValues("Section", "SubSection");
+
+                // Assert
+                values.Should().NotBeNull();
+                values.Should().BeEquivalentTo(expectedValues);
+            }
+        }
+
+        [Fact]
+        public void CallingGetNestedSettingValuesGetsMultipleValuesWithMetadata()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key0' value='value0' />
+            <add key='key1' value='value1' meta1='data1' meta2='data2'/>
+            <add key='key2' value='value2' meta3='data3'/>
+        </SubSection>
+    </Section>
+</configuration>";
+            var expectedSetting1 = new SettingValue("key0", "value0", false);
+            var expectedSetting2 = new SettingValue("key1", "value1", false);
+            expectedSetting2.AdditionalData.Add("meta1", "data1");
+            expectedSetting2.AdditionalData.Add("meta2", "data2");
+            var expectedSetting3 = new SettingValue("key2", "value2", false);
+            expectedSetting3.AdditionalData.Add("meta3", "data3");
+            var expectedValues = new List<SettingValue>()
+            {
+                expectedSetting1,
+                expectedSetting2,
+                expectedSetting3
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var values = settings.GetNestedSettingValues("Section", "SubSection");
+
+                // Assert
+                values.Should().NotBeNull();
+                values.Should().BeEquivalentTo(expectedValues);
+            }
+        }
+
+        [Fact]
+        public void CallingGetNestedSettingValuesGetsMultipleValuesWithMetadataIgnoresDuplicates()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key0' value='value0' />
+            <add key='key1' value='value1' meta1='data1' meta2='data2'/>
+            <add key='key2' value='value2' meta3='data3'/>
+        </SubSection>
+        <SubSection>
+            <add key='key3' value='value3' />
+        </SubSection>
+    </Section>
+</configuration>";
+            var expectedSetting1 = new SettingValue("key0", "value0", false);
+            var expectedSetting2 = new SettingValue("key1", "value1", false);
+            expectedSetting2.AdditionalData.Add("meta1", "data1");
+            expectedSetting2.AdditionalData.Add("meta2", "data2");
+            var expectedSetting3 = new SettingValue("key2", "value2", false);
+            expectedSetting3.AdditionalData.Add("meta3", "data3");
+            var expectedValues = new List<SettingValue>()
+            {
+                expectedSetting1,
+                expectedSetting2,
+                expectedSetting3
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var values = settings.GetNestedSettingValues("Section", "SubSection");
+
+                // Assert
+                values.Should().NotBeNull();
+                values.Should().BeEquivalentTo(expectedValues);
+            }
+        }
+
+        [Fact]
+        public void CallingGetNestedValuesGetsValue()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key1' value='value1' />
+        </SubSection>
+    </Section>
+</configuration>";
+            var expectedValues = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("key1","value1")
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var values = settings.GetNestedValues("Section", "SubSection");
+
+                // Assert
+                values.Should().NotBeNull();
+                values.Should().BeEquivalentTo(expectedValues);
+            }
+        }
+
+        [Fact]
+        public void CallingGetNestedValuesGetsMultipleValues()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key0' value='value0' />
+            <add key='key1' value='value1' />
+            <add key='key2' value='value2' />
+        </SubSection>
+    </Section>
+</configuration>";
+            var expectedValues = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("key0","value0"),
+                new KeyValuePair<string, string>("key1","value1"),
+                new KeyValuePair<string, string>("key2","value2"),
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var values = settings.GetNestedValues("Section", "SubSection");
+
+                // Assert
+                values.Should().NotBeNull();
+                values.Should().BeEquivalentTo(expectedValues);
+            }
+        }
+
+        [Fact]
+        public void CallingGetNestedValuesGetsValueWithMetadata()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key1' value='value1' meta1='data1' meta2='data2'/>
+        </SubSection>
+    </Section>
+</configuration>";
+            var expectedValues = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("key1","value1")
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var values = settings.GetNestedValues("Section", "SubSection");
+
+                // Assert
+                values.Should().NotBeNull();
+                values.Should().BeEquivalentTo(expectedValues);
+            }
+        }
+
+        [Fact]
+        public void CallingGetNestedValuesGetsMultipleValuesWithMetadata()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key0' value='value0' />
+            <add key='key1' value='value1' meta1='data1' meta2='data2'/>
+            <add key='key2' value='value2' meta3='data3'/>
+        </SubSection>
+    </Section>
+</configuration>";
+            var expectedValues = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("key0","value0"),
+                new KeyValuePair<string, string>("key1","value1"),
+                new KeyValuePair<string, string>("key2","value2"),
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var values = settings.GetNestedValues("Section", "SubSection");
+
+                // Assert
+                values.Should().NotBeNull();
+                values.Should().BeEquivalentTo(expectedValues);
+            }
+        }
+
+
+        [Fact]
+        public void CallingGetNestedValuesGetsMultipleValuesWithMetadataIgnoresDuplicates()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <SubSection>
+            <add key='key0' value='value0' />
+            <add key='key1' value='value1' meta1='data1' meta2='data2'/>
+            <add key='key2' value='value2' meta3='data3'/>
+        </SubSection>
+        <SubSection>
+            <add key='key3' value='value3' />
+        </SubSection>
+    </Section>
+</configuration>";
+            var expectedValues = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("key0","value0"),
+                new KeyValuePair<string, string>("key1","value1"),
+                new KeyValuePair<string, string>("key2","value2"),
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var values = settings.GetNestedValues("Section", "SubSection");
+
+                // Assert
+                values.Should().NotBeNull();
+                values.Should().BeEquivalentTo(expectedValues);
             }
         }
 
@@ -888,6 +1364,1121 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void CallingSetNestedSettingValuesAddsSingleSettingValueInNestedElement()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+            var settingvalue = new SettingValue("key1", "value1", false);
+            settingvalue.AdditionalData.Add("meta1", "data1");
+            settingvalue.AdditionalData.Add("meta2", "data2");
+            var values = new List<SettingValue>()
+            {
+                settingvalue
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.SetNestedSettingValues("section", "subsection", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection>
+  </section>
+</configuration>";
+                Assert.Equal(result.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void CallingSetNestedSettingValuesAddsMultipleSettingValueInNestedElement()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+            var settingvalue1 = new SettingValue("key1", "value1", false);
+            settingvalue1.AdditionalData.Add("meta1", "data1");
+            settingvalue1.AdditionalData.Add("meta2", "data2");
+
+            var settingvalue2 = new SettingValue("key2", "value2", false);
+            settingvalue2.AdditionalData.Add("meta3", "data3");
+
+            var settingvalue3 = new SettingValue("key3", "value3", false);
+            settingvalue3.AdditionalData.Add("meta1", "data1");
+
+            var values = new List<SettingValue>()
+            {
+                settingvalue1,
+                settingvalue2,
+                settingvalue3
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.SetNestedSettingValues("section", "subsection", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+      <add key=""key2"" value=""value2"" meta3=""data3"" />
+      <add key=""key3"" value=""value3"" meta1=""data1"" />
+    </subsection>
+  </section>
+</configuration>";
+                Assert.Equal(result.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void CallingSetNestedSettingValuesAfterSetNestedSettingValuesReadsValues()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+            var settingvalue1 = new SettingValue("key1", "value1", false);
+            settingvalue1.AdditionalData.Add("meta1", "data1");
+            settingvalue1.AdditionalData.Add("meta2", "data2");
+
+            var settingvalue2 = new SettingValue("key2", "value2", false);
+            settingvalue2.AdditionalData.Add("meta3", "data3");
+
+            var settingvalue3 = new SettingValue("key3", "value3", false);
+            settingvalue3.AdditionalData.Add("meta1", "data1");
+
+            var values = new List<SettingValue>()
+            {
+                settingvalue1,
+                settingvalue2,
+                settingvalue3
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.SetNestedSettingValues("section", "subsection", values);
+                var actualValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                actualValues.Should().BeEquivalentTo(values);
+            }
+        }
+
+        public void CallingSetNestedSettingValuesPreservesOtherSections()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section1>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+      <add key=""key2"" value=""value2"" />
+    </subsection>
+  </section1>
+</configuration>";
+            var settingvalue = new SettingValue("key1", "value1", false);
+            settingvalue.AdditionalData.Add("meta1", "data1");
+            settingvalue.AdditionalData.Add("meta2", "data2");
+            var values = new List<SettingValue>()
+            {
+                settingvalue
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.SetNestedSettingValues("section", "subsection2", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section1>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+      <add key=""key2"" value=""value2"" />
+    </subsection>
+  </section1>
+  <section2>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection>
+  </sectio2>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        public void CallingSetNestedSettingValuesPreservesOtherSubsections()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection1>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+      <add key=""key2"" value=""value2"" />
+    </subsection1>
+  </section>
+</configuration>";
+            var settingvalue = new SettingValue("key1", "value1", false);
+            settingvalue.AdditionalData.Add("meta1", "data1");
+            settingvalue.AdditionalData.Add("meta2", "data2");
+            var values = new List<SettingValue>()
+            {
+                settingvalue
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.SetNestedSettingValues("section", "subsection2", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection1>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+      <add key=""key2"" value=""value2"" />
+    </subsection1>
+    <subsection2>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection2>
+  </section>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void CallingSetNestedSettingAppendsValuesToExistingSubsection()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+      <add key=""key2"" value=""value2"" />
+    </subsection>
+  </section>
+</configuration>";
+            var settingvalue = new SettingValue("key3", "value3", false);
+            settingvalue.AdditionalData.Add("meta1", "data1");
+            settingvalue.AdditionalData.Add("meta2", "data2");
+            var values = new List<SettingValue>()
+            {
+                settingvalue
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.SetNestedSettingValues("section", "subsection", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+      <add key=""key2"" value=""value2"" />
+      <add key=""key3"" value=""value3"" meta1=""data1"" meta2=""data2"" />
+    </subsection>
+  </section>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void CallingGetAllSubsectionsReturnsSubsections()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection>
+    <subsection1>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection1>
+    <subsection2>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection2>
+    <subsection3>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection3>
+  </section>
+</configuration>";
+            var expectedValues = new List<string>()
+            {
+                "subsection",
+                "subsection1",
+                "subsection2",
+                "subsection3",
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var subsections = settings.GetAllSubsections("section");
+
+                // Assert
+                subsections.Should().NotBeNull();
+                subsections.ShouldBeEquivalentTo(expectedValues);
+            }
+        }
+
+        [Fact]
+        public void CallingGetAllSubsectionsWithNonePresentReturnsEmptyList()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var subsections = settings.GetAllSubsections("section");
+
+                // Assert
+                subsections.Should().NotBeNull();
+                subsections.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public void CallingGetAllSubsectionsReturnsSubsectionsFromNestedSettings()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection>
+    <subsection1>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection1>
+    <subsection2>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection2>
+    <subsection3>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection3>
+  </section>
+</configuration>";
+
+            var config2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection4>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection4>
+    <subsection5>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection5>
+  </section>
+</configuration>";
+            var expectedValues = new List<string>()
+            {
+                "subsection",
+                "subsection1",
+                "subsection2",
+                "subsection3",
+                "subsection4",
+                "subsection5",
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+
+                // Act
+                var subsections = settings.GetAllSubsections("section");
+
+                // Assert
+                subsections.Should().NotBeNull();
+                subsections.ShouldBeEquivalentTo(expectedValues);
+            }
+        }
+
+        [Fact]
+        public void CallingGetAllSubsectionsReturnsSubsectionsFromNestedSettingsWhenPresent()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection>
+    <subsection1>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection1>
+    <subsection2>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection2>
+    <subsection3>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection3>
+  </section>
+</configuration>";
+
+            var config2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section2>
+    <subsection4>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection4>
+  </section2>
+</configuration>";
+            var expectedValues = new List<string>()
+            {
+                "subsection",
+                "subsection1",
+                "subsection2",
+                "subsection3"
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+
+                // Act
+                var subsections = settings.GetAllSubsections("section");
+
+                // Assert
+                subsections.Should().NotBeNull();
+                subsections.ShouldBeEquivalentTo(expectedValues);
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsUpdatesSubsectionIfPresent()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection>
+  </section>
+</configuration>";
+            var valueLookUp = new Dictionary<string, SettingValue>()
+            {
+                { "key1", new SettingValue("key1", "value1", isMachineWide: false) },
+                { "key2", new SettingValue("key2", "value2", isMachineWide: false) },
+                { "key3", new SettingValue("key3", "value3", isMachineWide: false) }
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                settingValues.Should().NotBeNull();
+                settingValues.Count.Should().Be(valueLookUp.Count);
+                foreach (var settingValue in settingValues)
+                {
+                    var matchingValue = valueLookUp[settingValue.Key];
+                    matchingValue.Should().NotBeNull();
+                    settingValue.Value.ShouldBeEquivalentTo(matchingValue.Value);
+                    settingValue.AdditionalData.ShouldBeEquivalentTo(matchingValue.AdditionalData);
+                }
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsUpdatesSubsectionSettingMetadata()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection>
+  </section>
+</configuration>";
+
+            var settingValue = new SettingValue("key2", "value2", isMachineWide: false);
+            settingValue.AdditionalData.Add("meta1", "data1");
+            settingValue.AdditionalData.Add("meta2", "data2");
+
+            var valueLookUp = new Dictionary<string, SettingValue>()
+            {
+                { "key2",  settingValue}
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                settingValues.Should().NotBeNull();
+                settingValues.Count.Should().Be(valueLookUp.Count);
+                foreach (var value in settingValues)
+                {
+                    var matchingValue = valueLookUp[value.Key];
+                    matchingValue.Should().NotBeNull();
+                    value.Value.ShouldBeEquivalentTo(matchingValue.Value);
+                    value.AdditionalData.ShouldBeEquivalentTo(matchingValue.AdditionalData);
+                }
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsRemovesSubsectionSettingMetadata()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection>
+  </section>
+</configuration>";
+
+            var settingValue = new SettingValue("key2", "value2", isMachineWide: false);
+
+            var valueLookUp = new Dictionary<string, SettingValue>()
+            {
+                { "key2",  settingValue}
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                settingValues.Should().NotBeNull();
+                settingValues.Count.Should().Be(valueLookUp.Count);
+                foreach (var value in settingValues)
+                {
+                    var matchingValue = valueLookUp[value.Key];
+                    matchingValue.Should().NotBeNull();
+                    value.Value.ShouldBeEquivalentTo(matchingValue.Value);
+                    value.AdditionalData.ShouldBeEquivalentTo(matchingValue.AdditionalData);
+                }
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsRemovesSubsectionAndSectionIfEmpty()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection>
+  </section>
+</configuration>";
+            var valueLookUp = new Dictionary<string, SettingValue>();
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                settingValues.Should().NotBeNull();
+                settingValues.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsRemovesSubsectionButLeavesOtherSubsections()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection>
+    <subsection2>
+      <add key=""key2"" value=""value2"" meta1=""data1"" />
+    </subsection2>
+  </section>
+</configuration>";
+
+            var settingValue = new SettingValue("key2", "value2", isMachineWide: false);
+            settingValue.AdditionalData.Add("meta1", "data1");
+
+            var valueLookUp = new Dictionary<string, SettingValue>()
+            {
+                { "key2",  settingValue}
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection2");
+
+                // Assert
+                settingValues.Should().NotBeNull();
+                settingValues.Count.Should().Be(valueLookUp.Count);
+                foreach (var value in settingValues)
+                {
+                    var matchingValue = valueLookUp[value.Key];
+                    matchingValue.Should().NotBeNull();
+                    value.Value.ShouldBeEquivalentTo(matchingValue.Value);
+                    value.AdditionalData.ShouldBeEquivalentTo(matchingValue.AdditionalData);
+                }
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsRemovesSubsectionButLeavesOtherSections()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection>
+  </section>
+  <section2>
+    <subsection2>
+      <add key=""key2"" value=""value2"" meta1=""data1"" />
+    </subsection2>
+  </section2>
+</configuration>";
+
+            var settingValue = new SettingValue("key2", "value2", isMachineWide: false);
+            settingValue.AdditionalData.Add("meta1", "data1");
+
+            var valueLookUp = new Dictionary<string, SettingValue>()
+            {
+                { "key2",  settingValue}
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section2", "subsection2");
+
+                // Assert
+                settingValues.Should().NotBeNull();
+                settingValues.Count.Should().Be(valueLookUp.Count);
+                foreach (var value in settingValues)
+                {
+                    var matchingValue = valueLookUp[value.Key];
+                    matchingValue.Should().NotBeNull();
+                    value.Value.ShouldBeEquivalentTo(matchingValue.Value);
+                    value.AdditionalData.ShouldBeEquivalentTo(matchingValue.AdditionalData);
+                }
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsRemovesSubsectionAndSectionInConfigFileIfEmpty()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection>
+  </section>
+</configuration>";
+            var valueLookUp = new Dictionary<string, SettingValue>();
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsRemovesSubsectionAndSectionInConfigFileButLeavesOtherSections()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection>
+  </section>
+  <section2>
+    <subsection2>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection2>
+  </section2>
+</configuration>";
+            var valueLookUp = new Dictionary<string, SettingValue>();
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section2>
+    <subsection2>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection2>
+  </section2>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsRemovesSubsectionAndSectionInConfigFileButLeavesOtherSubsections()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection>
+    <subsection2>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection2>
+  </section>
+</configuration>";
+            var valueLookUp = new Dictionary<string, SettingValue>();
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection2>
+      <add key=""key1"" value=""value1"" meta1=""data1"" />
+    </subsection2>
+  </section>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsUpdatesSubsectionsIntoNestedSettingsWhenPresent()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection>
+  </section>
+</configuration>";
+
+            var config2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key2"" value=""value2"" meta1=""data1"" />
+    </subsection>
+  </section>
+</configuration>";
+
+            var settingValue1 = new SettingValue("key1", "value1", isMachineWide: false);
+            settingValue1.AdditionalData.Add("meta1", "data1");
+            settingValue1.AdditionalData.Add("meta2", "data2");
+
+            var settingValue2 = new SettingValue("key2", "value2", isMachineWide: false);
+            settingValue2.AdditionalData.Add("meta1", "data1");
+
+            var valueLookUp = new Dictionary<string, SettingValue>()
+            {
+                { "key1",  settingValue1},
+                { "key2",  settingValue2}
+            };
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                settingValues.Should().NotBeNull();
+                settingValues.Count.Should().Be(valueLookUp.Count);
+                foreach (var settingValue in settingValues)
+                {
+                    var matchingValue = valueLookUp[settingValue.Key];
+                    matchingValue.Should().NotBeNull();
+                    settingValue.Value.ShouldBeEquivalentTo(matchingValue.Value);
+                    settingValue.AdditionalData.ShouldBeEquivalentTo(matchingValue.AdditionalData);
+                }
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsRemovesSubsectionsFromNestedSettingsWhenEmpty()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection>
+  </section>
+</configuration>";
+
+            var config2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key2"" value=""value2"" meta1=""data1"" />
+    </subsection>
+  </section>
+</configuration>";
+
+            var valueLookUp = new Dictionary<string, SettingValue>();
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                settingValues.Should().NotBeNull();
+                settingValues.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsRemovesSubsectionsFromNestedSettingsInConfigFileWhenEmpty()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection>
+  </section>
+</configuration>";
+
+            var config2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key2"" value=""value2"" meta1=""data1"" />
+    </subsection>
+  </section>
+</configuration>";
+
+            var valueLookUp = new Dictionary<string, SettingValue>();
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                var result1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+                var result2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+                Assert.Equal(result1.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result2.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsRemovesSubsectionsFromNestedSettingsInConfigFileButLeavesOtherSubsections()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection>
+    <subsection1>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection1>
+  </section>
+</configuration>";
+
+            var config2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key2"" value=""value2"" meta1=""data1"" />
+    </subsection>
+  </section>
+</configuration>";
+
+            var valueLookUp = new Dictionary<string, SettingValue>();
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                var result1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection1>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection1>
+  </section>
+</configuration>";
+
+                var result2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+                Assert.Equal(result1.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result2.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockChildDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void CallingUpdateSubsectionsRemovesSubsectionsFromNestedSettingsInConfigFileButLeavesOtherSections()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection>
+  </section>
+  <section3>
+    <subsection4>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection4>
+  </section3>
+</configuration>";
+
+            var config2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section>
+    <subsection>
+      <add key=""key2"" value=""value2"" meta1=""data1"" />
+    </subsection>
+  </section>
+  <section2>
+    <subsection3>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection3>
+  </section2>
+</configuration>";
+
+            var valueLookUp = new Dictionary<string, SettingValue>();
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockChildDirectory, config2);
+
+                var configPaths = new List<string> { Path.Combine(mockChildDirectory, nugetConfigPath), Path.Combine(mockBaseDirectory, nugetConfigPath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+
+                // Act
+                settings.UpdateSubsections("section", "subsection", valueLookUp.Values.ToList());
+                var settingValues = settings.GetNestedSettingValues("section", "subsection");
+
+                // Assert
+                var result1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section3>
+    <subsection4>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection4>
+  </section3>
+</configuration>";
+
+                var result2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <section2>
+    <subsection3>
+      <add key=""key1"" value=""value1"" meta1=""data1"" meta2=""data2"" />
+    </subsection3>
+  </section2>
+</configuration>";
+
+                Assert.Equal(result1.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result2.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockChildDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
         public void CallingDeleteValueWithEmptyKeyThrowsException()
         {
             // Arrange
@@ -1300,7 +2891,7 @@ namespace NuGet.Configuration.Test
   </SectionName>
 </configuration>";
             }
-                using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 Settings settings = new Settings(mockBaseDirectory);
@@ -2226,7 +3817,7 @@ namespace NuGet.Configuration.Test
             var expectedPath = Path.Combine(userProfile, ".nuget", SettingsUtility.DefaultGlobalPackagesFolderPath);
 
             // Act
-            var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(new NullSettings());
+            var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
 
             // Assert
             Assert.Equal(expectedPath, globalPackagesFolderPath);

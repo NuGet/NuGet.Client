@@ -1,27 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Shared test project template -->
   <PropertyGroup>
-    <TestTargetDir Condition="'$(TestTargetDir)' == ''">$(TargetDir)</TestTargetDir>
+    <RuntimeIdentifier Condition=" '$(IsXPlat)' != 'true' ">win7-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <WarningsAsErrors>False</WarningsAsErrors>
+    <NoWarn>$(NoWarn);NU1608;CS1701;xUnit2013;xUnit2000;xUnit2017;xUnit2006;xUnit2009;xUnit2013;xUnit2014;xUnit2003;xUnit2010;xUnit2015;xUnit2007;xUnit1013;xUnit1014;xUnit2002;xUnit2012;xUnit2004</NoWarn>
   </PropertyGroup>
   
-  <UsingTask
-    AssemblyFile="$(MsBuildThisFileDirectory)..\packages\xunit.runner.msbuild.2.1.0\build\portable-net45+win8+wp8+wpa81\xunit.runner.msbuild.dll"
-    TaskName="Xunit.Runner.MSBuild.xunit" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSDKVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
+    <PackageReference Include="Moq" Version="$(MoqVersion)" />
+    <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
+  </ItemGroup>
 
-  <Target Name="RunTests" DependsOnTargets="Build" Condition="'$(RunTests)' == 'true'">
-    <ItemGroup>
-      <Line Include="&lt;configuration&gt;
-  &lt;appSettings&gt;
-    &lt;add key=&quot;TestTargetDir&quot; value=&quot;$(TestTargetDir)&quot; /&gt;
-  &lt;/appSettings&gt;
-&lt;/configuration&gt;" />
-    </ItemGroup>
-    <WriteLinesToFile
-      File="$(TargetDir)$(AssemblyName).dll.config"
-      Lines="@(Line)"
-      Overwrite="true" />
-    <Message Text="Running tests for $(TargetDir)$(AssemblyName).dll" Importance="high" />
-    <Message Text="Configuration file written to $(TargetDir)$(AssemblyName).dll.config" Importance="high" />
-    <Message Text="@(Line)" Importance="normal" />
-    <xunit Assemblies="$(TargetDir)$(AssemblyName).dll" DiagnosticMessages="true" Reporter="verbose" />
-  </Target>
+  <PropertyGroup>
+    <TestResultsDirectory>$(BuildCommonDirectory)TestResults\</TestResultsDirectory>
+  </PropertyGroup>
+
+  <!-- Workaround for test projects not automatically creating binding redirects -->
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(UseParallelXunit)' == 'true' ">
+    <None Include="$(BuildCommonDirectory)TestShared\xunit.runner.json">
+      <Link>xunit.runner.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

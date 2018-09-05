@@ -37,12 +37,7 @@ namespace NuGet.DependencyResolver
 
         public override int GetHashCode()
         {
-            var combiner = new HashCodeCombiner();
-
-            combiner.AddObject(LibraryRange);
-            combiner.AddObject(Framework);
-
-            return combiner.CombinedHash;
+            return HashCodeCombiner.GetHashCode(LibraryRange, Framework);
         }
 
         public bool Equals(LibraryRangeCacheKey other)

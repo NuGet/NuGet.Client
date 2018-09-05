@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,11 +19,16 @@ using System.Text.RegularExpressions;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol;
 using NuGet.Common;
+using Test.Utility;
+using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.Test
 {
     public class NuGetRestoreCommandTest
     {
+        private const int _failureCode = 1;
+        private const int _successCode = 0;
+
         [Fact]
         public void RestoreCommand_BadInputPath()
         {
@@ -49,7 +54,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.NotEqual(0, r.Item1);
+                Assert.NotEqual(_successCode, r.Item1);
                 var error = r.Item3;
                 Assert.Contains("Input file does not exist: bad/pat.h/myfile.blah", r.Item3, StringComparison.OrdinalIgnoreCase);
             }
@@ -80,7 +85,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.NotEqual(0, r.Item1);
+                Assert.NotEqual(_successCode, r.Item1);
                 var error = r.Item3;
                 Assert.Contains("Input file does not exist:", r.Item3, StringComparison.OrdinalIgnoreCase);
             }
@@ -113,7 +118,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.NotEqual(0, r.Item1);
+                Assert.NotEqual(_successCode, r.Item1);
                 var error = r.Item3;
                 Assert.Contains("Input file does not exist:", r.Item3, StringComparison.OrdinalIgnoreCase);
             }
@@ -144,7 +149,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.NotEqual(0, r.Item1);
+                Assert.NotEqual(_successCode, r.Item1);
                 var error = r.Item3;
                 Assert.Contains("input file does not exist", r.Item3, StringComparison.OrdinalIgnoreCase);
             }
@@ -178,7 +183,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 var packageFileA = Path.Combine(workingPath, @"outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -248,7 +253,7 @@ namespace NuGet.CommandLine.Test
                     Assert.True(result.Item2 != string.Empty, $"There should be some STDOUT.");
                     Assert.DoesNotContain("cancel", result.Item2, StringComparison.OrdinalIgnoreCase);
                     Assert.DoesNotContain("not found", result.Item2, StringComparison.OrdinalIgnoreCase);
-                    Assert.Equal(0, result.Item1);
+                    Assert.Equal(_successCode, result.Item1);
                     Assert.True(File.Exists(Path.Combine(packagesPath, @"PackageA.1.1.0", "PackageA.1.1.0.nupkg")));
                 }
             }
@@ -274,7 +279,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -338,7 +343,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -401,7 +406,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + "" + r.Item3);
+                Assert.True(_successCode == r.Item1, r.Item2 + "" + r.Item3);
                 Assert.True(string.IsNullOrEmpty(r.Item3)); // No error
 
                 if (string.IsNullOrEmpty(proj1ConfigFileName) && string.IsNullOrEmpty(proj2ConfigFileName))
@@ -416,7 +421,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData("packages.config")]
         [InlineData("packages.proj2.config")]
         public void RestoreCommand_FromSolutionFileWithMsbuild12(string configFileName)
@@ -436,7 +441,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -444,7 +449,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData("packages.config")]
         [InlineData("packages.proj2.config")]
         public void RestoreCommand_FromSolutionFileWithMsbuild14(string configFileName)
@@ -464,7 +469,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.True(_successCode == r.Item1, r.Item2);
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -480,7 +485,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
 
             var msbuildPath = Util.GetMsbuildPathOnWindows();
-            if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
+            if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
             {
                 msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
             }
@@ -497,7 +502,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.True(_successCode == r.Item1, r.Item2);
                 Assert.True(r.Item2.Contains($"Using Msbuild from '{msbuildPath}'."));
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
@@ -525,7 +530,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                     waitForExit: true);
 
                 // Assert
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(_failureCode == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.True(r.Item3.Contains($"MSBuildPath : {msbuildPath}  doesn't not exist."));
             }
         }
@@ -538,7 +543,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
 
             var msbuildPath = Util.GetMsbuildPathOnWindows();
-            if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
+            if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
             {
                 msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
             }
@@ -555,7 +560,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 Assert.True(r.Item2.Contains($"Using Msbuild from '{msbuildPath}'."));
                 Assert.True(r.Item2.Contains($"MsbuildPath : {msbuildPath} is using, ignore MsBuildVersion: 12."));
 
@@ -617,7 +622,7 @@ EndProject");
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
             }
@@ -664,7 +669,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
                 var packageFileA = Path.Combine(workingPath, @"Packages2", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"Packages2", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -674,8 +679,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
         // Tests that when package restore is enabled and -RequireConsent is specified,
         // the opt out message is displayed.
-        // TODO: renable the test once this is implemented
-        // [Theory]
+        [Theory]
         [InlineData("packages.config")]
         [InlineData("packages.proj1.config")]
         public void RestoreCommand_OptOutMessage(string configFileName)
@@ -686,8 +690,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             using (var workingPath = TestDirectory.Create())
             {
                 Util.CreateFile(workingPath, "my.config",
-                    @"
-<?xml version=""1.0"" encoding=""utf-8""?>
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageRestore>
     <add key=""enabled"" value=""True"" />
@@ -704,12 +707,12 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 string optOutMessage = String.Format(
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
-                Assert.Contains(optOutMessage, r.Item2);
+                Assert.Contains(optOutMessage.Replace("\r\n", "\n"), r.Item2.Replace("\r\n", "\n"));
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -744,7 +747,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 string optOutMessage = String.Format(
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
@@ -780,7 +783,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -791,7 +794,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         // Test that when a directory is passed to nuget.exe restore, and the directory contains
         // multiple solution files, nuget.exe will generate an error.
         [Fact]
-        public void RestoreCommand_MutipleSolutionFilesInDirectory()
+        public void RestoreCommand_MultipleSolutionFilesInDirectory()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -869,7 +872,7 @@ EndProject");
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(1, r.Item1);
+                Assert.Equal(_failureCode, r.Item1);
                 Assert.Contains("This folder contains more than one solution file.", r.Item3);
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
@@ -942,7 +945,7 @@ EndProject");
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(1, r.Item1);
+                Assert.Equal(_failureCode, r.Item1);
                 Assert.Contains("does not contain an msbuild solution", r.Item3);
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
@@ -1010,7 +1013,7 @@ EndProject");
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
             }
@@ -1097,7 +1100,7 @@ EndProject");
                     "restore -Source " + repositoryPath + packageSaveMode1,
                     waitForExit: true);
 
-                Assert.Equal(0, r1.Item1);
+                Assert.Equal(_successCode, r1.Item1);
                 Assert.Equal(expectedPackageFileAExists, File.Exists(packageFileA));
                 Assert.Equal(expectedNuspecFileAExists, File.Exists(nuspecFileA));
                 Assert.Equal(expectedContentAExists, File.Exists(contentFileA));
@@ -1131,7 +1134,7 @@ EndProject");
                     "restore -Source " + repositoryPath + packageSaveMode2,
                     waitForExit: true);
 
-                Assert.Equal(0, r2.Item1);
+                Assert.Equal(_successCode, r2.Item1);
                 Assert.Equal(expectedPackageFileAExists, File.Exists(packageFileA));
                 Assert.Equal(expectedNuspecFileAExists, File.Exists(nuspecFileA));
                 Assert.Equal(expectedContentAExists, File.Exists(contentFileA));
@@ -1168,7 +1171,7 @@ EndProject");
                     bool packageDownloadIsCalled = false;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                       MockServerResource.NuGetV2APIMetadata);
+                       Util.GetMockServerResource());
                     server.Get.Add("/nuget/Packages(Id='testPackage1',Version='1.1.0')", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -1206,7 +1209,7 @@ EndProject");
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.Equal(_successCode, r1.Item1);
                     Assert.True(getPackageByVersionIsCalled, "getPackageByVersionIsCalled");
                     Assert.True(packageDownloadIsCalled, "getPackageByVersionIsCalled");
                 }
@@ -1276,7 +1279,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
                 var packageFileA = Path.Combine(
                     nugetConfigDir,
                     @"..", "..", "GlobalPackages2", "packageA", "1.1.0", "packageA.1.1.0.nupkg");
@@ -1320,7 +1323,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     waitForExit: true);
 
                 // Assert
-                Assert.NotEqual(0, r.Item1);
+                Assert.NotEqual(_successCode, r.Item1);
                 var error = r.Item3;
                 Assert.True(error.Contains("Error parsing packages.config file"));
             }
@@ -1360,9 +1363,10 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.NotEqual(0, r.Item1);
+                Assert.NotEqual(_successCode, r.Item1);
                 var error = r.Item3;
                 Assert.True(error.Contains("Error parsing solution file"));
+                Assert.True(error.Contains("Error parsing a project section"));
             }
         }
 
@@ -1384,7 +1388,7 @@ EndProject";
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath, "-nocache" };
+                var args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath, "-nocache" };
 
                 // Act
                 var path = Environment.GetEnvironmentVariable("PATH");
@@ -1395,17 +1399,18 @@ EndProject";
                     string.Join(" ", args),
                     waitForExit: true);
                 Environment.SetEnvironmentVariable("PATH", path);
+                var output = r.Item2 + " " + r.Item3;
 
                 // Assert
-                Assert.Equal(1, r.Item1);
-                Assert.False(r.Item2.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
-                Assert.False(r.Item3.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
+                Assert.Equal(_failureCode, r.Item1);
+                Assert.False(output.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
+                Assert.False(output.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
 
-                var firstIndex = r.Item2.IndexOf(
+                var firstIndex = output.IndexOf(
                     "Unable to find version '1.1.0' of package 'packageA'.",
                     StringComparison.OrdinalIgnoreCase);
                 Assert.True(firstIndex > -1);
-                var secondIndex = r.Item3.IndexOf(
+                var secondIndex = output.IndexOf(
                     "Unable to find version '1.1.0' of package 'packageA'.",
                     StringComparison.OrdinalIgnoreCase);
                 Assert.True(secondIndex > -1);
@@ -1530,7 +1535,7 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
                 var packageFileA = Path.Combine(randomSolutionFolder, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(randomSolutionFolder, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -1602,7 +1607,7 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
                 var packageFileA = Path.Combine(randomSolutionFolder, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(randomSolutionFolder, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -1675,7 +1680,7 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
                 var packageFileA = Path.Combine(randomSolutionFolder, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(randomSolutionFolder, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -1757,7 +1762,7 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
 
                 Assert.True(File.Exists(Path.Combine(randomSolutionFolder,
                     @"packages", "packageA.1.0.0", "packageA.1.0.0.nupkg")));
@@ -1851,7 +1856,7 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.False(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.False(_successCode == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.Contains("There are duplicate packages: packageA.1.0.0, packageA.3.0.0", r.Item3);
             }
         }
@@ -1889,7 +1894,7 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 var dllPath = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "lib", "net45", "A.dll");
                 var dllFileInfo = new FileInfo(dllPath);
                 Assert.True(File.Exists(dllFileInfo.FullName));
@@ -2005,7 +2010,7 @@ EndProject");
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
                 var bProjectLockJsonFile = Path.Combine(basePath, "B", "project.lock.json");
                 Assert.True(File.Exists(bProjectLockJsonFile));
                 var bProjectLockJson = new LockFileFormat().Read(bProjectLockJsonFile);
@@ -2043,7 +2048,7 @@ EndProject");
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 var target = new PackagePathResolver(Path.Combine(workingPath, @"outputDir"), true);
                 var packageFilePath = target.GetInstalledPackageFilePath(identity);
 
@@ -2083,7 +2088,7 @@ EndProject");
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 var target = new PackagePathResolver(Path.Combine(workingPath, @"outputDir"), true);
                 var packageFilePath = target.GetInstalledPackageFilePath(identity);
                 Assert.True(File.Exists(packageFilePath));
@@ -2137,7 +2142,7 @@ EndProject");
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(_successCode, r.Item1);
                 var target = new PackagePathResolver(Path.Combine(workingPath, @"outputDir"), true);
                 var packageFilePath = target.GetInstalledPackageFilePath(identity);
                 Assert.True(File.Exists(packageFilePath));
@@ -2148,6 +2153,196 @@ EndProject");
                 Assert.True(match.Success);
                 Assert.Contains(globalPackagesFolder, match.Groups[1].Value);
             }
+        }
+
+        [Fact]
+        public void RestoreCommand_ProjectContainsSolutionDirs()
+        {
+            using (var randomRepositoryPath = TestDirectory.Create())
+            using (var randomSolutionFolder = TestDirectory.Create())
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                Util.CreateTestPackage("packageA", "1.1.0", randomRepositoryPath);
+
+                Util.CreateFile(randomSolutionFolder, "nuget.config",
+$@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""GlobalPackages"" />
+  </config>
+</configuration>");
+
+                var solutionFile = Path.Combine(randomSolutionFolder, "A.sln");
+                var targetFile = Path.Combine(randomSolutionFolder, "MSBuild.Community.Tasks.Targets");
+                var solutionFileContents
+                    = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") " +
+@"= ""proj"", ""proj\proj.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
+EndProject";
+                var targetFileContents
+                    = @"
+<Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+<Target Name=""test"">  
+    <Message Text = ""test"" />
+</Target>
+</Project>";
+
+                File.WriteAllText(solutionFile, solutionFileContents);
+                File.WriteAllText(targetFile, targetFileContents);
+
+                var projectDirectory = Path.Combine(randomSolutionFolder, "proj");
+                Directory.CreateDirectory(projectDirectory);
+
+                File.WriteAllText(
+                    Path.Combine(projectDirectory, "proj.csproj"),
+@"<Project ToolsVersion='15.0' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+<Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props""
+ Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
+  <PropertyGroup>
+    <ProjectGuid>{AA9CA553-8E25-477C-824F-0E5DFE3703DC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+  </PropertyGroup>
+   <ItemGroup>
+    <PackageReference Include=""packageA"">
+      <Version>1.1.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project=""$(SolutionDir)\MSBuild.Community.Tasks.Targets"" />
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    randomSolutionFolder,
+                    "restore  -Source " + randomRepositoryPath,
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
+                var packageFileA = Path.Combine(randomSolutionFolder, "GlobalPackages", "packagea","1.1.0", "packageA.1.1.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_WithAuthorSignedPackage_Succeeds()
+        {
+            using (var packageSourceFolder = TestDirectory.Create())
+            using (var packageDestinationFolder = TestDirectory.Create())
+            using (var projectFolder = TestDirectory.Create())
+            {
+                var packageFile = new FileInfo(Path.Combine(packageSourceFolder.Path, "TestPackage.AuthorSigned.1.0.0.nupkg"));
+                var package = GetResource(packageFile.Name);
+
+                File.WriteAllBytes(packageFile.FullName, package);
+
+                var projectFile = new FileInfo(Path.Combine(projectFolder, "ClassLibrary1.csproj"));
+                File.WriteAllText(
+                    projectFile.FullName,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Project ToolsVersion=""4.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+  <PropertyGroup>
+    <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
+    <Platform Condition="" '$(Platform)' == '' "">AnyCPU</Platform>
+    <ProjectGuid>{8586D895-886A-41C9-AAE0-B5510BFA50FC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ClassLibrary1</RootNamespace>
+    <AssemblyName>ClassLibrary1</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include=""System"" />
+    <Reference Include=""System.Core"" />
+    <Reference Include=""Microsoft.CSharp"" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include=""TestPackage.AuthorSigned"">
+      <Version>1.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>
+                    ");
+
+                var expectedFilePath = Path.Combine(packageDestinationFolder.Path, "testpackage.authorsigned", "1.0.0", packageFile.Name);
+                var nugetExe = Util.GetNuGetExePath();
+
+                var args = new string[]
+                    {
+                        "restore",
+                        projectFile.Name,
+                        "-Source",
+                        packageSourceFolder.Path,
+                        "-PackagesDirectory",
+                        packageDestinationFolder.Path
+                    };
+
+                Assert.False(File.Exists(expectedFilePath));
+
+                var result = CommandRunner.Run(
+                    nugetExe,
+                    projectFolder.Path,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                Assert.True(_successCode == result.ExitCode, result.AllOutput);
+                Assert.True(result.Success);
+                Assert.True(File.Exists(expectedFilePath));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_LongPathPackage()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                Directory.CreateDirectory(repositoryPath);
+                var aPackage = Util.CreateTestPackage(
+                    "packageA",
+                    "1.0.0",
+                    repositoryPath,
+                    new List<NuGetFramework> { NuGetFramework.Parse("net45") },
+                    @"2.5.6/core/store/x64/netcoreapp2.0/microsoft.extensions.configuration.environmentvariables/2.0.0/lib/netstandard2.0/Microsoft.Extensions.Configuration.EnvironmentVariables.dll"
+                    );
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""packageA"" version=""1.0.0"" targetFramework=""net45"" />
+</packages>");
+
+                var args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_successCode, r.Item1);
+                var packageFileA = Path.Combine(workingPath, @"outputDir", "packageA.1.0.0", "packageA.1.0.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+            }
+        }
+
+        private static byte[] GetResource(string name)
+        {
+            return ResourceTestUtility.GetResourceBytes(
+                $"NuGet.CommandLine.Test.compiler.resources.{name}",
+                typeof(NuGetRestoreCommandTest));
         }
     }
 }

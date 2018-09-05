@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -201,7 +201,6 @@ namespace NuGet.Test
         [InlineData("net20", ".NETFramework,Version=v2.0")]
         [InlineData("net40", ".NETFramework,Version=v4.0")]
         [InlineData("net35", ".NETFramework,Version=v3.5")]
-        [InlineData("net40", ".NETFramework,Version=v4.0")]
         [InlineData("net40-client", ".NETFramework,Version=v4.0,Profile=Client")]
         [InlineData("net", ".NETFramework,Version=v0.0")]
         [InlineData("net10.1.2.3", ".NETFramework,Version=v10.1.2.3")]
@@ -221,7 +220,6 @@ namespace NuGet.Test
         [InlineData("netstandard1.0", ".NETStandard,Version=v1.0")]
         [InlineData("netstandard1.0", ".NETStandard,Version=v1.0.0")]
         [InlineData("netstandard0.9", ".NETStandard,Version=v0.9")]
-        [InlineData("netstandard1.0", ".NETStandard,Version=v1.0")]
         [InlineData("netstandard1.1", ".NETStandard,Version=v1.1")]
         [InlineData("netstandard1.2", ".NETStandard,Version=v1.2")]
         [InlineData("netstandard1.3", ".NETStandard,Version=v1.3")]
@@ -321,7 +319,6 @@ namespace NuGet.Test
         [InlineData("portable-net45+wp8+win+wpa+netcore+netcore45")]
         [InlineData("portable-net450+net4.5+net45+wp8+wpa+win8+wpa81")]
         [InlineData("portable-win8+net45+wp8+wpa81+win8+win8")]
-        [InlineData("portable-net45+wp8+win+wpa+win8")]
         [InlineData("portable-net45+wp8+win+wpa+win8+net4.5")]
         public void NuGetFramework_ParsePCLNormalizeTest(string framework)
         {
@@ -340,6 +337,95 @@ namespace NuGet.Test
             Assert.Equal(
                 $"Invalid portable frameworks '{portableFrameworks}'. A hyphen may not be in any of the portable framework names.",
                 ex.Message);
+        }
+
+        [Theory]
+        [InlineData("dotnet", "dotnet")]
+        [InlineData("dotnet", "dotnet50")]
+        [InlineData("dotnet", "dotnet5.0")]
+        [InlineData("dotnet50", "dotnet")]
+        [InlineData("dotnet50", "dotnet50")]
+        [InlineData("dotnet50", "dotnet5.0")]
+        [InlineData("dotnet5.0", "dotnet")]
+        [InlineData("dotnet5.0", "dotnet50")]
+        [InlineData("dotnet5.0", "dotnet5.0")]
+        [InlineData("dotnet5.1", "dotnet5.1")]
+        [InlineData("dotnet5.2", "dotnet5.2")]
+        [InlineData("dotnet5.3", "dotnet5.3")]
+        [InlineData("dotnet5.4", "dotnet5.4")]
+        [InlineData("dotnet5.5", "dotnet5.5")]
+        [InlineData("dotnet5.6", "dotnet5.6")]
+        [InlineData("dnx451", "dnx451")]
+        [InlineData("dnxcore50", "dnxcore50")]
+        [InlineData("dnxcore50", "dnxcore")]
+        [InlineData("dnxcore", "dnxcore50")]
+        [InlineData("dnxcore", "dnxcore")]
+        [InlineData("net40", "net4")]
+        [InlineData("net40", "net40")]
+        [InlineData("net4", "net40")]
+        [InlineData("net4", "net4")]
+        [InlineData("net45", "net45")]
+        [InlineData("net451", "net451")]
+        [InlineData("net461", "net461")]
+        [InlineData("net462", "net462")]
+        [InlineData("win8", "win8")]
+        [InlineData("win81", "win81")]
+        [InlineData("netstandard", "netstandard")]
+        [InlineData("netstandard1.0", "netstandard1.0")]
+        [InlineData("netstandard1.0", "netstandard10")]
+        [InlineData("netstandard10", "netstandard1.0")]
+        [InlineData("netstandard10", "netstandard10")]
+        [InlineData("netstandard1.1", "netstandard1.1")]
+        [InlineData("netstandard1.1", "netstandard11")]
+        [InlineData("netstandard11", "netstandard1.1")]
+        [InlineData("netstandard11", "netstandard11")]
+        [InlineData("netstandard1.2", "netstandard1.2")]
+        [InlineData("netstandard1.2", "netstandard12")]
+        [InlineData("netstandard12", "netstandard1.2")]
+        [InlineData("netstandard12", "netstandard12")]
+        [InlineData("netstandard1.3", "netstandard1.3")]
+        [InlineData("netstandard1.3", "netstandard13")]
+        [InlineData("netstandard13", "netstandard1.3")]
+        [InlineData("netstandard13", "netstandard13")]
+        [InlineData("netstandard1.4", "netstandard1.4")]
+        [InlineData("netstandard1.4", "netstandard14")]
+        [InlineData("netstandard14", "netstandard1.4")]
+        [InlineData("netstandard14", "netstandard14")]
+        [InlineData("netstandard1.5", "netstandard1.5")]
+        [InlineData("netstandard1.5", "netstandard15")]
+        [InlineData("netstandard15", "netstandard1.5")]
+        [InlineData("netstandard15", "netstandard15")]
+        [InlineData("netstandard1.6", "netstandard1.6")]
+        [InlineData("netstandard1.6", "netstandard16")]
+        [InlineData("netstandard16", "netstandard1.6")]
+        [InlineData("netstandard16", "netstandard16")]
+        [InlineData("netstandard1.7", "netstandard1.7")]
+        [InlineData("netstandard1.7", "netstandard17")]
+        [InlineData("netstandard17", "netstandard1.7")]
+        [InlineData("netstandard17", "netstandard17")]
+        [InlineData("netstandard2.0", "netstandard2.0")]
+        [InlineData("netstandard2.0", "netstandard20")]
+        [InlineData("netstandard20", "netstandard2.0")]
+        [InlineData("netstandard20", "netstandard20")]
+        [InlineData("netstandardapp1.5", "netstandardapp1.5")]
+        [InlineData("netstandardapp1.5", "netstandardapp15")]
+        [InlineData("netstandardapp15", "netstandardapp1.5")]
+        [InlineData("netstandardapp15", "netstandardapp15")]
+        [InlineData("netcoreapp1.0", "netcoreapp1.0")]
+        [InlineData("netcoreapp1.0", "netcoreapp10")]
+        [InlineData("netcoreapp10", "netcoreapp1.0")]
+        [InlineData("netcoreapp10", "netcoreapp10")]
+        [InlineData("netcoreapp2.0", "netcoreapp2.0")]
+        [InlineData("netcoreapp2.0", "netcoreapp20")]
+        [InlineData("netcoreapp20", "netcoreapp2.0")]
+        [InlineData("netcoreapp20", "netcoreapp20")]
+        public void NuGetFramework_TryParseCommonFramework_ParsesCommonFrameworks(string frameworkString1, string frameworkString2)
+        {
+            var framework1 = NuGetFramework.Parse(frameworkString1);
+            var framework2 = NuGetFramework.Parse(frameworkString2);
+
+            // Compare the object references
+            Assert.Same(framework1, framework2);
         }
     }
 }

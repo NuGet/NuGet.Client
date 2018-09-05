@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,13 +6,11 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Threading;
 using EnvDTE;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.PackageManagement.UI;
 
 namespace NuGet.VisualStudio
 {
@@ -37,7 +35,7 @@ namespace NuGet.VisualStudio
             _settings = settings;
             _solutionManager = solutionManager;
 
-            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
+            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
             _deleteOnRestartManager = deleteOnRestartManager;
         }
 

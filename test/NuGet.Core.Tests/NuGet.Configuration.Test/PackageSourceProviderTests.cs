@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using NuGet.Common;
 using NuGet.Test.Utility;
@@ -21,7 +22,7 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            using (var nugetConfigFileFolder = TestDirectory.Create())
+            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
 
@@ -45,7 +46,7 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            using (var nugetConfigFileFolder = TestDirectory.Create())
+            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
 
@@ -67,7 +68,7 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            using (var nugetConfigFileFolder = TestDirectory.Create())
+            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
 
@@ -92,7 +93,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             //Create nuget.config that has active package source defined
-            using (var nugetConfigFileFolder = TestDirectory.Create())
+            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
 
@@ -160,6 +161,189 @@ namespace NuGet.Configuration.Test
                 Assert.Equal(6, sources.Count);
                 AssertCredentials(sources[1].Credentials, "CompanyFeedUnstable", "myusername", "removed");
                 AssertCredentials(sources[5].Credentials, "CompanyFeed", "myusername", "removed");
+            }
+        }
+
+        [Fact]
+        public void LoadPackageSources_LoadsTrustedSource()
+        {
+            // Arrange
+            var nugetConfigFilePath = "NuGet.Config";
+            var configContent = @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <packageSources>
+    <add key='NuGet.org' value='https://nuget.org/api/v2/' />
+    <add key='temp.org' value='https://temp.org/api/v2/' />
+  </packageSources>
+  <trustedSources>
+    <NuGet.org>
+      <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA512' />
+    </NuGet.org>
+  </trustedSources>
+</configuration>";
+
+            var expectedValue = new TrustedSource("NuGet.org");
+            expectedValue.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512, priority: 0));
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
+                var settings = new Settings(mockBaseDirectory);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Assert
+                sources.Count.Should().Be(2);
+                sources.First().TrustedSource.Should().NotBeNull();
+                sources.First().TrustedSource.ShouldBeEquivalentTo(expectedValue);
+            }
+        }
+
+        [Fact]
+        public void LoadPackageSources_LoadsTrustedSourceFromMultipleSettings()
+        {
+            // Arrange
+            var nugetConfigFilePath = "NuGet.Config";
+            var configContent1 = @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <packageSources>
+    <add key='NuGet.org' value='https://nuget.org/api/v2/' />
+    <add key='temp.org' value='https://temp.org/api/v2/' />
+  </packageSources>
+  <trustedSources>
+    <NuGet.org>
+      <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA512' />
+    </NuGet.org>
+  </trustedSources>
+</configuration>";
+
+            var configContent2 = @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <packageSources>
+    <add key='NuGet.org' value='https://nuget.org/api/v2/' />
+    <add key='temp.org' value='https://temp.org/api/v2/' />
+  </packageSources>
+  <trustedSources>
+    <NuGet.org>
+      <add key='HASH2' value='SUBJECT_NAME2' fingerprintAlgorithm='SHA512' />
+    </NuGet.org>
+  </trustedSources>
+</configuration>";
+
+            var expectedValue = new TrustedSource("NuGet.org");
+            expectedValue.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512, 2));
+            expectedValue.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512, 1));
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockChildDirectory = TestDirectory.Create(mockBaseDirectory))
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent1);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigFilePath, mockChildDirectory, configContent2);
+
+                var configPaths = new List<string> { Path.Combine(mockBaseDirectory, nugetConfigFilePath), Path.Combine(mockChildDirectory, nugetConfigFilePath) };
+                var settings = Settings.LoadSettingsGivenConfigPaths(configPaths);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Assert
+                sources.Count.Should().Be(2);
+                var trustedSource = sources.First().TrustedSource;
+                trustedSource.ShouldBeEquivalentTo(expectedValue);
+            }
+        }
+
+        [Fact]
+        public void LoadPackageSources_LoadsTrustedSourceAndCredentials()
+        {
+            // Arrange
+            var nugetConfigFilePath = "NuGet.Config";
+            var configContent = @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <apikeys>
+    <add key='https://www.nuget.org' value='removed' />
+    <add key='https://www.myget.org/F/somecompanyfeed-unstable/' value='removed' />
+    <add key='https://www.myget.org/F/somecompanyfeed/' value='removed' />
+    <add key='https://www.myget.org/F/somecompanyfeed-unstable/api/v2/package' value='removed' />
+    <add key='https://www.myget.org/F/somecompanyfeed/api/v2/package' value='removed' />
+    <add key='https://www.myget.org/F/somecompanyfeed-unstable/api/v2/' value='removed' />
+    <add key='https://nuget.smbsrc.net/' value='removed' />
+  </apikeys>
+  <packageRestore>
+    <add key='enabled' value='True' />
+    <add key='automatic' value='True' />
+  </packageRestore>
+  <activePackageSource>
+    <add key='NuGet.org' value='https://nuget.org/api/v2/' />
+  </activePackageSource>
+  <packageSources>
+    <add key='CodeCrackerUnstable' value='https://www.myget.org/F/codecrackerbuild/api/v2' />
+    <add key='CompanyFeedUnstable' value='https://www.myget.org/F/somecompanyfeed-unstable/api/v2/' />
+    <add key='NuGet.org' value='https://nuget.org/api/v2/' />
+    <add key='AspNetVNextStable' value='https://www.myget.org/F/aspnetmaster/api/v2' />
+    <add key='AspNetVNextUnstable' value='https://www.myget.org/F/aspnetvnext/api/v2' />
+    <add key='CompanyFeed' value='https://www.myget.org/F/somecompanyfeed/api/v2/' />
+  </packageSources>
+  <packageSourceCredentials>
+    <CodeCrackerUnstable>
+      <add key='Username' value='myusername' />
+    </CodeCrackerUnstable>
+    <AspNetVNextUnstable>
+      <add key='Username' value='myusername' />
+    </AspNetVNextUnstable>
+    <AspNetVNextStable>
+      <add key='Username' value='myusername' />
+    </AspNetVNextStable>
+    <NuGet.org>
+      <add key='Username' value='myusername' />
+    </NuGet.org>
+    <CompanyFeedUnstable>
+      <add key='Username' value='myusername' />
+      <add key='ClearTextPassword' value='removed' />
+    </CompanyFeedUnstable>
+    <CompanyFeed>
+      <add key='Username' value='myusername' />
+      <add key='ClearTextPassword' value='removed' />
+    </CompanyFeed>
+  </packageSourceCredentials>
+  <trustedSources>
+    <NuGet.org>
+      <add key='HASH' value='SUBJECT_NAME' fingerprintAlgorithm='SHA512' />
+      <add key='HASH2' value='SUBJECT_NAME2' fingerprintAlgorithm='SHA256' />
+    </NuGet.org>
+    <CompanyFeed>
+      <add key='HASH2' value='SUBJECT_NAME2' fingerprintAlgorithm='SHA384' />
+    </CompanyFeed>
+  </trustedSources>
+</configuration>";
+
+            var expectedValue1 = new TrustedSource("NuGet.org");
+            expectedValue1.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512, priority: 0));
+            expectedValue1.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA256, priority: 0));
+
+            var expectedValue2 = new TrustedSource("CompanyFeed");
+            expectedValue2.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA384, priority: 0));
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
+                var settings = new Settings(mockBaseDirectory);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Assert
+                sources.Count.Should().Be(6);
+                AssertCredentials(sources[1].Credentials, "CompanyFeedUnstable", "myusername", "removed");
+                AssertCredentials(sources[5].Credentials, "CompanyFeed", "myusername", "removed");
+                sources[2].TrustedSource.Should().NotBeNull();
+                sources[2].TrustedSource.ShouldBeEquivalentTo(expectedValue1);
+                sources[5].TrustedSource.Should().NotBeNull();
+                sources[5].TrustedSource.ShouldBeEquivalentTo(expectedValue2);
             }
         }
 
@@ -296,7 +480,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithRelativePath()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -340,7 +524,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithRelativePathAndAddNewSource()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -386,7 +570,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithOneClear()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -436,9 +620,9 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SavePackageSourcesWithMoreCLear()
+        public void SavePackageSourcesWithMoreClear()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -492,7 +676,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithOnlyClear()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -542,7 +726,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithHierarchyClear()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // assert
                 var nugetConfigPath = "NuGet.Config";
@@ -606,7 +790,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_RetainUnavailableDisabledSources()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -659,7 +843,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_EnablesDisabledSources()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -796,7 +980,12 @@ namespace NuGet.Configuration.Test
 
             settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(
                 new SettingValue[0]);
-            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>())).Returns(new KeyValuePair<string, string>[0]);
+            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>()))
+                .Returns(new KeyValuePair<string, string>[0]);
+            settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetValue("config", "maxHttpRequestsPerSource", false))
+               .Returns(() => null);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -825,9 +1014,14 @@ namespace NuGet.Configuration.Test
                     })
                 .Verifiable();
 
-            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(
-                new SettingValue[0]);
-            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>())).Returns(new KeyValuePair<string, string>[0]);
+            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false))
+                .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>()))
+                .Returns(new KeyValuePair<string, string>[0]);
+            settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetValue("config", "maxHttpRequestsPerSource", false))
+               .Returns(() => null);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -854,9 +1048,14 @@ namespace NuGet.Configuration.Test
                         new SettingValue("three", "threesource", false)
                     });
 
-            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(
-                new[] { new SettingValue("two", "true", false) });
-            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>())).Returns(new KeyValuePair<string, string>[0]);
+            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false))
+                .Returns(new[] { new SettingValue("two", "true", false) });
+            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>()))
+                .Returns(new KeyValuePair<string, string>[0]);
+            settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetValue("config", "maxHttpRequestsPerSource", false))
+               .Returns(() => null);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -881,8 +1080,12 @@ namespace NuGet.Configuration.Test
                         new SettingValue("NuGet official package source", "https://nuget.org/api/v2", false),
                         new SettingValue("nuget.org", "https://www.nuget.org/api/v2", false)
                     });
-            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>())).Returns(new KeyValuePair<string, string>[0]);
-            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>()))
+                .Returns(new KeyValuePair<string, string>[0]);
+            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false))
+                .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(new SettingValue[0]);
 
             var provider = CreatePackageSourceProvider(settings.Object,
                 migratePackageSources: new Dictionary<PackageSource, PackageSource>
@@ -1074,9 +1277,12 @@ namespace NuGet.Configuration.Test
                         new SettingValue("NuGet official package source", "https://nuget.org/api/v2", false),
                         new SettingValue("nuget.org", "https://www.nuget.org/api/v2", false)
                     });
-            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>())).Returns(new KeyValuePair<string, string>[0]);
-            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(new SettingValue[0]);
-
+            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>()))
+                .Returns(new KeyValuePair<string, string>[0]);
+            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false))
+                .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(new SettingValue[0]);
             settings.Setup(s => s.UpdateSections("packageSources", It.IsAny<IReadOnlyList<SettingValue>>()))
                 .Callback((string section, IReadOnlyList<SettingValue> valuePairs) =>
                     {
@@ -1130,7 +1336,7 @@ namespace NuGet.Configuration.Test
             var provider = CreatePackageSourceProvider(settings.Object);
 
             // Act
-            bool isEnabled = provider.IsPackageSourceEnabled(new PackageSource("source", "A"));
+            var isEnabled = provider.IsPackageSourceEnabled(new PackageSource("source", "A"));
 
             // Assert
             Assert.False(isEnabled);
@@ -1147,7 +1353,7 @@ namespace NuGet.Configuration.Test
             var provider = CreatePackageSourceProvider(settings.Object);
 
             // Act
-            bool isEnabled = provider.IsPackageSourceEnabled(new PackageSource("source", "A"));
+            var isEnabled = provider.IsPackageSourceEnabled(new PackageSource("source", "A"));
 
             // Assert
             Assert.True(isEnabled);
@@ -1446,7 +1652,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var encryptedPassword = Guid.NewGuid().ToString();
-            var credentials = new PackageSourceCredential("twoname", "User", encryptedPassword, isPasswordClearText: false);
+            var credentials = new PackageSourceCredential("twoname", "User", encryptedPassword, isPasswordClearText: false, validAuthenticationTypesText: null);
             var sources = new[]
                 {
                     new PackageSource("one"),
@@ -1480,10 +1686,155 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void SavePackageSources_MakesTrustedSource()
+        {
+            // Arrange
+            var nugetConfigFilePath = "NuGet.Config";
+            var configContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""NuGet.org"" value=""https://nuget.org/api/v2/"" />
+    <add key=""temp.org"" value=""https://temp.org/api/v2/"" />
+  </packageSources>
+</configuration>";
+
+            var expectedValue = new TrustedSource("NuGet.org");
+            expectedValue.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512));
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
+                var settings = new Settings(mockBaseDirectory);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                sources[0].TrustedSource = new TrustedSource(sources[0].Name);
+                sources[0].TrustedSource.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512));
+
+                // Act
+                packageSourceProvider.SavePackageSources(sources);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""NuGet.org"" value=""https://nuget.org/api/v2/"" />
+    <add key=""temp.org"" value=""https://temp.org/api/v2/"" />
+  </packageSources>
+  <trustedSources>
+    <NuGet.org>
+      <add key=""HASH"" value=""SUBJECT_NAME"" fingerprintAlgorithm=""SHA512"" />
+    </NuGet.org>
+  </trustedSources>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigFilePath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void SavePackageSources_UpdatesTrustedSource()
+        {
+            // Arrange
+            var nugetConfigFilePath = "NuGet.Config";
+            var configContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""NuGet.org"" value=""https://nuget.org/api/v2/"" />
+    <add key=""temp.org"" value=""https://temp.org/api/v2/"" />
+  </packageSources>
+</configuration>";
+
+            var expectedValue = new TrustedSource("NuGet.org");
+            expectedValue.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512));
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
+                var settings = new Settings(mockBaseDirectory);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                sources[0].TrustedSource = new TrustedSource(sources[0].Name);
+                sources[0].TrustedSource.Certificates.Add(new CertificateTrustEntry("HASH2", "SUBJECT_NAME2", HashAlgorithmName.SHA512));
+
+                // Act
+                packageSourceProvider.SavePackageSources(sources);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""NuGet.org"" value=""https://nuget.org/api/v2/"" />
+    <add key=""temp.org"" value=""https://temp.org/api/v2/"" />
+  </packageSources>
+  <trustedSources>
+    <NuGet.org>
+      <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA512"" />
+    </NuGet.org>
+  </trustedSources>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigFilePath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void SavePackageSources_DoesNotRemoveTrustedSource()
+        {
+            // Arrange
+            var nugetConfigFilePath = "NuGet.Config";
+            var configContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""NuGet.org"" value=""https://nuget.org/api/v2/"" />
+    <add key=""temp.org"" value=""https://temp.org/api/v2/"" />
+  </packageSources>
+  <trustedSources>
+    <NuGet.org>
+      <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA512"" />
+    </NuGet.org>
+  </trustedSources>
+</configuration>";
+
+            var expectedValue = new TrustedSource("NuGet.org");
+            expectedValue.Certificates.Add(new CertificateTrustEntry("HASH", "SUBJECT_NAME", HashAlgorithmName.SHA512));
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
+                var settings = new Settings(mockBaseDirectory);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                sources[0].TrustedSource = null;
+
+                // Act
+                packageSourceProvider.SavePackageSources(sources);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""NuGet.org"" value=""https://nuget.org/api/v2/"" />
+    <add key=""temp.org"" value=""https://temp.org/api/v2/"" />
+  </packageSources>
+  <trustedSources>
+    <NuGet.org>
+      <add key=""HASH2"" value=""SUBJECT_NAME2"" fingerprintAlgorithm=""SHA512"" />
+    </NuGet.org>
+  </trustedSources>
+</configuration>";
+
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigFilePath)).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
         public void SavePackageSources_SavesClearTextCredentials()
         {
             // Arrange
-            var credentials = new PackageSourceCredential("twoname", "User", "password", isPasswordClearText: true);
+            var credentials = new PackageSourceCredential("twoname", "User", "password", isPasswordClearText: true, validAuthenticationTypesText: null);
             var sources = new[]
                 {
                     new PackageSource("one"),
@@ -1530,7 +1881,12 @@ namespace NuGet.Configuration.Test
                     });
             settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(
                 new[] { new SettingValue("TWO", "true", false) });
-            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>())).Returns(new KeyValuePair<string, string>[0]);
+            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>()))
+                .Returns(new KeyValuePair<string, string>[0]);
+            settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetValue("config", "maxHttpRequestsPerSource", false))
+                .Returns(() => null);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1550,7 +1906,7 @@ namespace NuGet.Configuration.Test
         public void HighPrioritySourceDisabled()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 var configContent1 = @"<configuration>
     <disabledPackageSources>
@@ -1590,7 +1946,7 @@ namespace NuGet.Configuration.Test
         public void LowPrioritySourceDisabled()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 var configContent1 = @"<configuration>
     <disabledPackageSources>
@@ -1629,7 +1985,7 @@ namespace NuGet.Configuration.Test
         public void V2NotDisabled()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 var configContent = @"<configuration>
     <packageSources>
@@ -1659,7 +2015,7 @@ namespace NuGet.Configuration.Test
         public void AddPackageSourcesWithConfigFile()
         {
 
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -1701,7 +2057,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_AddDisabledSourceToTheConfigContainingSource()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var config1Contents =
@@ -1760,7 +2116,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_WritesToTheSettingsFileWithTheNearestPriority()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var config1Contents =
@@ -1835,7 +2191,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_UpdatesSourceInAllConfigs()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var config1Contents =
@@ -1913,7 +2269,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_AddsNewSourcesToTheSettingWithLowestPriority()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var config1Contents =
@@ -1992,7 +2348,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_AddsOrderingForCollapsedFeeds()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2069,7 +2425,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void DisabledMachineWideSourceByDefault()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2122,7 +2478,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_DisabledOneMachineWideSource()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2168,7 +2524,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void DisabledMachineWideSourceByDefaultWithNull()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
@@ -2189,7 +2545,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSourceEmptyConfigFileOnUserMachine()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2219,7 +2575,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSourceLocalConfigFileOnUserMachine()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2253,7 +2609,7 @@ namespace NuGet.Configuration.Test
 
         public void SavePackageSource_IgnoreSettingBeforeClear()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2293,7 +2649,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_ThrowWhenConfigReadOnly()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents =
@@ -2332,7 +2688,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void DefaultPushSourceInNuGetConfig()
         {
-            using (TestDirectory mockBaseDirectory = TestDirectory.Create())
+            using (TestDirectory mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 string configContentsWithDefault =
@@ -2378,7 +2734,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSources_DoesNotDecryptPassword()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -2417,7 +2773,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSources_DoesNotLoadClearedSource()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 // Arrange
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -2462,6 +2818,75 @@ namespace NuGet.Configuration.Test
                 Assert.Equal("test2", sources[0].Name);
                 Assert.Equal("https://nuget/test2", sources[0].Source);
                 Assert.Null(sources[0].Credentials);
+            }
+        }
+
+        [Fact]
+        public void LoadPackageSources_SetMaxHttpRequest()
+        {
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var configContents =
+@"<?xml version='1.0'?>
+<configuration>
+    <config>
+        <add key='maxHttpRequestsPerSource' value='2' />
+    </config>
+    <packageSources>
+        <add key='NuGet.org' value='https://NuGet.org' />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
+
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                   configFileName: null,
+                   machineWideSettings: null,
+                   loadAppDataSettings: true,
+                   useTestingGlobalPath: false);
+
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act
+                var packageSources = packageSourceProvider.LoadPackageSources();
+
+                // Assert
+                Assert.True(packageSources.All(p => p.MaxHttpRequestsPerSource == 2));
+            }
+        }
+
+        [Fact]
+        public void LoadPackageSources_NoMaxHttpRequest()
+        {
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var configContents =
+@"<?xml version='1.0'?>
+<configuration>
+    <packageSources>
+        <add key='NuGet.org' value='https://NuGet.org' />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
+
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                   configFileName: "NuGet.Config",
+                   machineWideSettings: null,
+                   loadAppDataSettings: true,
+                   useTestingGlobalPath: false);
+
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act
+                var packageSources = packageSourceProvider.LoadPackageSources();
+
+                // Assert
+                Assert.True(packageSources.All(p => p.MaxHttpRequestsPerSource == 0));
             }
         }
 
@@ -2542,5 +2967,6 @@ namespace NuGet.Configuration.Test
             Assert.Equal(passwordText, actual.PasswordText);
             Assert.Equal(isPasswordClearText, actual.IsPasswordClearText);
         }
+
     }
 }

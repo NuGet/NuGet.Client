@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using NuGet.Shared;
 
 namespace NuGet.Versioning
@@ -36,6 +36,32 @@ namespace NuGet.Versioning
         /// </summary>
         public bool Equals(SemanticVersion x, SemanticVersion y)
         {
+            if (ReferenceEquals(x, y))
+            {
+                return true;
+            }
+
+            if (ReferenceEquals(y, null))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(x, null))
+            {
+                return false;
+            }
+
+            if (_mode == VersionComparison.Default || _mode == VersionComparison.VersionRelease)
+            {
+                // Compare the version and release labels
+                return (x.Major == y.Major
+                    && x.Minor == y.Minor
+                    && x.Patch == y.Patch
+                    && GetRevisionOrZero(x) == GetRevisionOrZero(y)
+                    && AreReleaseLabelsEqual(x, y));
+            }
+
+            // Use the full comparer for non-default scenarios
             return Compare(x, y) == 0;
         }
 
@@ -75,18 +101,21 @@ namespace NuGet.Versioning
                 || _mode == VersionComparison.VersionRelease
                 || _mode == VersionComparison.VersionReleaseMetadata)
             {
-                if (version.IsPrerelease)
+                var labels = GetReleaseLabelsOrNull(version);
+
+                if (labels != null)
                 {
-                    combiner.AddObject(version.Release.ToUpperInvariant());
+                    var comparer = StringComparer.OrdinalIgnoreCase;
+                    foreach (var label in labels)
+                    {
+                        combiner.AddObject(label, comparer);
+                    }
                 }
             }
 
-            if (_mode == VersionComparison.VersionReleaseMetadata)
+            if (_mode == VersionComparison.VersionReleaseMetadata && version.HasMetadata)
             {
-                if (version.HasMetadata)
-                {
-                    combiner.AddObject(version.Metadata);
-                }
+                combiner.AddObject(version.Metadata, StringComparer.OrdinalIgnoreCase);
             }
 
             return combiner.CombinedHash;
@@ -143,22 +172,25 @@ namespace NuGet.Versioning
             if (_mode != VersionComparison.Version)
             {
                 // compare release labels
-                if (x.IsPrerelease
-                    && !y.IsPrerelease)
+                var xLabels = GetReleaseLabelsOrNull(x);
+                var yLabels = GetReleaseLabelsOrNull(y);
+
+                if (xLabels != null
+                    && yLabels == null)
                 {
                     return -1;
                 }
 
-                if (!x.IsPrerelease
-                    && y.IsPrerelease)
+                if (xLabels == null
+                    && yLabels != null)
                 {
                     return 1;
                 }
 
-                if (x.IsPrerelease
-                    && y.IsPrerelease)
+                if (xLabels != null
+                    && yLabels != null)
                 {
-                    result = CompareReleaseLabels(x.ReleaseLabels, y.ReleaseLabels);
+                    result = CompareReleaseLabels(xLabels, yLabels);
                     if (result != 0)
                     {
                         return result;
@@ -229,18 +261,17 @@ namespace NuGet.Versioning
         /// <summary>
         /// Compares sets of release labels.
         /// </summary>
-        private static int CompareReleaseLabels(IEnumerable<string> version1, IEnumerable<string> version2)
+        private static int CompareReleaseLabels(string[] version1, string[] version2)
         {
             var result = 0;
 
-            var a = version1.GetEnumerator();
-            var b = version2.GetEnumerator();
+            var count = Math.Max(version1.Length, version2.Length);
 
-            var aExists = a.MoveNext();
-            var bExists = b.MoveNext();
-
-            while (aExists || bExists)
+            for (var i=0; i < count; i++)
             {
+                var aExists = i < version1.Length;
+                var bExists = i < version2.Length;
+
                 if (!aExists && bExists)
                 {
                     return -1;
@@ -252,15 +283,12 @@ namespace NuGet.Versioning
                 }
 
                 // compare the labels
-                result = CompareRelease(a.Current, b.Current);
+                result = CompareRelease(version1[i], version2[i]);
 
                 if (result != 0)
                 {
                     return result;
                 }
-
-                aExists = a.MoveNext();
-                bExists = b.MoveNext();
             }
 
             return result;
@@ -277,8 +305,8 @@ namespace NuGet.Versioning
             var result = 0;
 
             // check if the identifiers are numeric
-            var v1IsNumeric = Int32.TryParse(version1, out version1Num);
-            var v2IsNumeric = Int32.TryParse(version2, out version2Num);
+            var v1IsNumeric = int.TryParse(version1, out version1Num);
+            var v2IsNumeric = int.TryParse(version2, out version2Num);
 
             // if both are numeric compare them as numbers
             if (v1IsNumeric && v2IsNumeric)
@@ -304,6 +332,79 @@ namespace NuGet.Versioning
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Returns an array of release labels from the version, or null.
+        /// </summary>
+        private static string[] GetReleaseLabelsOrNull(SemanticVersion version)
+        {
+            string[] labels = null;
+
+            // Check if labels exist
+            if (version.IsPrerelease)
+            {
+                // Try to use string[] which is how labels are normally stored.
+                var enumerable = version.ReleaseLabels;
+                labels = enumerable as string[];
+
+                if (labels != null && enumerable != null)
+                {
+                    // This is not the expected type, enumerate and convert to an array.
+                    labels = enumerable.ToArray();
+                }
+            }
+
+            return labels;
+        }
+
+        /// <summary>
+        /// Compare release labels
+        /// </summary>
+        private static bool AreReleaseLabelsEqual(SemanticVersion x, SemanticVersion y)
+        {
+            var xLabels = GetReleaseLabelsOrNull(x);
+            var yLabels = GetReleaseLabelsOrNull(y);
+
+            if (xLabels == null && yLabels != null)
+            {
+                return false;
+            }
+
+            if (xLabels != null && yLabels == null)
+            {
+                return false;
+            }
+
+            if (xLabels != null && yLabels != null)
+            {
+                // Both versions must have the same number of labels to be equal
+                if (xLabels.Length != yLabels.Length)
+                {
+                    return false;
+                }
+
+                // Check if the labels are the same
+                for (var i = 0; i < xLabels.Length; i++)
+                {
+                    if (!StringComparer.OrdinalIgnoreCase.Equals(xLabels[i], yLabels[i]))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            // labels are equal
+            return true;
+        }
+
+        /// <summary>
+        /// Returns the fourth version number or zero.
+        /// </summary>
+        private static int GetRevisionOrZero(SemanticVersion version)
+        {
+            var nugetVersion = version as NuGetVersion;
+            return nugetVersion?.Revision ?? 0;
         }
     }
 }

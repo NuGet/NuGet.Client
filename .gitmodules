@@ -1,12 +1,11 @@
 [submodule "submodules/FileSystem"]
 	path = submodules/FileSystem
-	url = https://github.com/aspnet/FileSystem.git
+	url = https://github.com/NuGet/FileSystem.git
 	branch = NuGet/SubModuleIntegration
 [submodule "submodules/Common"]
 	path = submodules/Common
 	url = https://github.com/aspnet/Common.git
 	branch = NuGet/SubModuleIntegration
-[submodule "submodules/NuGet.Services.Metadata"]
-	path = submodules/NuGet.Services.Metadata
-	url = https://github.com/NuGet/NuGet.Services.Metadata.git
-	branch = searchcloud
+[submodule "submodules/NuGet.Build.Localization"]
+	path = submodules/NuGet.Build.Localization
+	url = https://github.com/NuGet/NuGet.Build.Localization.git

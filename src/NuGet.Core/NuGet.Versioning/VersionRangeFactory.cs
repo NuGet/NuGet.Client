@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,6 +59,11 @@ namespace NuGet.Versioning
         /// </summary>
         public static VersionRange Parse(string value, bool allowFloating)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             VersionRange versionInfo;
             if (!TryParse(value, allowFloating, out versionInfo))
             {
@@ -83,12 +88,12 @@ namespace NuGet.Versioning
         /// </summary>
         public static bool TryParse(string value, bool allowFloating, out VersionRange versionRange)
         {
+            versionRange = null;
+
             if (value == null)
             {
-                throw new ArgumentNullException(nameof(value));
+                return false;
             }
-
-            versionRange = null;
 
             var trimmedValue = value.Trim();
 

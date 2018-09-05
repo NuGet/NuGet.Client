@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -21,6 +22,8 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetUpdateCommandTests
     {
+        private const int _successCode = 0;
+
         [Fact]
         public async Task UpdateCommand_Success_Update_DeletedFile()
         {
@@ -82,13 +85,13 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
 
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -98,7 +101,7 @@ namespace NuGet.CommandLine.Test
 
                 using (var stream = File.OpenRead(b1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         b1,
                         downloadResult,
@@ -175,12 +178,12 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -278,7 +281,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile1, testNuGetProjectContext);
                 var projectSystem2 = new MSBuildProjectSystem(msbuildDirectory, projectFile2, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory1);
@@ -286,7 +289,7 @@ namespace NuGet.CommandLine.Test
 
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject1.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -296,7 +299,7 @@ namespace NuGet.CommandLine.Test
 
                 using (var stream = File.OpenRead(b1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject2.InstallPackageAsync(
                         b1,
                         downloadResult,
@@ -382,13 +385,13 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile1, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
 
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject1.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -479,12 +482,12 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -512,6 +515,7 @@ namespace NuGet.CommandLine.Test
                 Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0-beta", "lib", "net45", "file.dll"))));
             }
         }
+
 
         [Fact]
         public async Task UpdateCommand_Success_Prerelease()
@@ -557,12 +561,12 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -592,6 +596,94 @@ namespace NuGet.CommandLine.Test
                 Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0-BETA", "lib", "net45", "file.dll"))));
             }
         }
+
+        [Theory]
+        [InlineData("1.0.0", "2.0.0-BETA")]
+        [InlineData("1.0.0-BETA", "2.0.0-BETA")]
+        [InlineData("2.0.0-BETA", "2.0.0")]
+        [InlineData("2.0.0-BETA", "2.0.0-BETA2")]
+        [InlineData("2.0.0-BETA", "2.0.1")]
+        public async Task UpdateCommand_Success_Prerelease_With_Id(string oldVersion, string newVersion)
+        {
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
+            {
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+
+                var a1 = new PackageIdentity("A", new NuGetVersion(oldVersion));
+                var a2 = new PackageIdentity("A", new NuGetVersion(newVersion));
+
+                var a1Package = Util.CreateTestPackage(
+                    a1.Id,
+                    a1.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+
+                var a2Package = Util.CreateTestPackage(
+                    a2.Id,
+                    a2.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+                var packagesFolder = PathUtility.GetRelativePath(projectDirectory, packagesDirectory);
+
+                Directory.CreateDirectory(projectDirectory);
+                // create project 1
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj1.csproj",
+                    Util.CreateProjFileContent());
+
+                Util.CreateFile(solutionDirectory, "a.sln",
+                    Util.CreateSolutionFileContent());
+
+                var projectFile = Path.Combine(projectDirectory, "proj1.csproj");
+                var solutionFile = Path.Combine(solutionDirectory, "a.sln");
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
+                var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
+                var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
+                using (var stream = File.OpenRead(a1Package))
+                {
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
+                    await msBuildProject.InstallPackageAsync(
+                        a1,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
+                }
+
+                var args = new[]
+                {
+                    "update",
+                    solutionFile,
+                    "-Id",
+                    "A",
+                    "-Source",
+                    packagesSourceDirectory,
+                    "-Prerelease",
+                };
+
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+
+                var content = File.ReadAllText(projectFile);
+                Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A."+oldVersion.ToString(), "lib", "net45", "file.dll"))));
+                Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A."+newVersion.ToString(), "lib", "net45", "file.dll"))));
+            }
+        }
+
 
         [Fact]
         public async Task UpdateCommand_Success_Version_Upgrade()
@@ -644,12 +736,12 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -735,12 +827,12 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a2Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a2,
                         downloadResult,
@@ -819,12 +911,12 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -899,12 +991,12 @@ namespace NuGet.CommandLine.Test
                 var packagesConfigFile = Path.Combine(projectDirectory, "packages.config");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -934,6 +1026,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0", "lib", "net45", "file.dll"))));
             }
         }
+
 
         [Fact]
         public async Task UpdateCommand_Success_ContentFiles()
@@ -979,12 +1072,12 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -1048,6 +1141,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+
         [Fact]
         public async Task UpdateCommand_Success_CustomPackagesFolder_RelativePath()
         {
@@ -1095,13 +1189,13 @@ namespace NuGet.CommandLine.Test
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
 
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
 
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject1.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -1140,6 +1234,101 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData("packages.config")]
+        [InlineData("packages.proj1.config")]
+        public void UpdateCommand_FromProjectConfig(string configFileName)
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            {
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+
+                var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
+
+                var a1Package = Util.CreateTestPackage(
+                    a1.Id,
+                    a1.Version.ToString(),
+                    packagesSourceDirectory,
+                    licenseUrl: null,
+                    contentFiles: "test1.txt");
+
+                var a2Package = Util.CreateTestPackage(
+                    a2.Id,
+                    a2.Version.ToString(),
+                    packagesSourceDirectory,
+                    licenseUrl: null,
+                    contentFiles: "test2.txt");
+
+                //Create solution file
+                Directory.CreateDirectory(projectDirectory);
+                Util.CreateFile(solutionDirectory, "a.sln",
+                    Util.CreateSolutionFileContent());
+
+                //Create project file
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj1.csproj",
+                    string.Format(CultureInfo.InvariantCulture,
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='{0}' />
+  </ItemGroup>
+</Project>", configFileName));
+
+                //Create packages config file
+                Util.CreateFile(
+                    projectDirectory,
+                    configFileName,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net45"" />
+</packages>");
+
+                var restoreArgs = new[]
+                {
+                    "restore",
+                    Path.Combine(projectDirectory, "proj1.csproj"),
+                    "-Source",
+                    packagesSourceDirectory,
+                    "-SolutionDirectory",
+                    solutionDirectory
+                };
+
+                var restoreResult = CommandRunner.Run(
+                    nugetexe,
+                    solutionDirectory,
+                    string.Join(" ", restoreArgs),
+                    waitForExit: true);
+
+                // Act
+                var args = new[]
+                {
+                    "update",
+                    Path.Combine(projectDirectory, configFileName),
+                    "-Source",
+                    packagesSourceDirectory
+                };
+
+                var r = CommandRunner.Run(
+                nugetexe,
+                solutionDirectory,
+                string.Join(" ", args),
+                waitForExit: true);
+
+                // Assert
+                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
+            }
+        }
 
         [Fact]
         public async Task UpdateCommand_Success_CustomPackagesFolder_AbsolutePath()
@@ -1185,12 +1374,12 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject1.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -1225,14 +1414,15 @@ namespace NuGet.CommandLine.Test
                 // Check the custom package folder is used in the assembly reference
                 var content1 = File.ReadAllText(projectFile);
                 var customPackageFolderName = new DirectoryInfo(packagesDirectory.Path).Name;
-                var a1Path = @".." + Path.DirectorySeparatorChar + customPackageFolderName + Path.DirectorySeparatorChar +
+                var a1Path = Path.DirectorySeparatorChar + customPackageFolderName + Path.DirectorySeparatorChar +
                     Path.Combine("A.1.0.0", "lib", "net45", "file.dll");
-                var a2Path = @".." + Path.DirectorySeparatorChar + customPackageFolderName + Path.DirectorySeparatorChar +
+                var a2Path = Path.DirectorySeparatorChar + customPackageFolderName + Path.DirectorySeparatorChar +
                     Path.Combine("A.2.0.0", "lib", "net45", "file.dll");
-                Assert.False(content1.Contains(Util.GetHintPath(a1Path)));
-                Assert.True(content1.Contains(Util.GetHintPath(a2Path)));
+                Assert.DoesNotContain(a1Path, content1);
+                Assert.Contains(a2Path, content1);
             }
         }
+
 
         [Fact]
         public async Task UpdateCommand_Native_JS_Projects_Success()
@@ -1301,7 +1491,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile1, testNuGetProjectContext);
                 var projectSystem2 = new MSBuildProjectSystem(msbuildDirectory, projectFile2, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory1);
@@ -1309,7 +1499,7 @@ namespace NuGet.CommandLine.Test
 
                 using (var stream = File.OpenRead(a1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject1.InstallPackageAsync(
                         a1,
                         downloadResult,
@@ -1319,7 +1509,7 @@ namespace NuGet.CommandLine.Test
 
                 using (var stream = File.OpenRead(b1Package))
                 {
-                    var downloadResult = new DownloadResourceResult(stream);
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject2.InstallPackageAsync(
                         b1,
                         downloadResult,

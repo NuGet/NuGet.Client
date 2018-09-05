@@ -1,16 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Newtonsoft.Json;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Credentials;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -20,8 +22,16 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// .NET Core compatible restore task for PackageReference and UWP project.json projects.
     /// </summary>
-    public class RestoreTask : Microsoft.Build.Utilities.Task
+    public class RestoreTask : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
     {
+#if IS_DESKTOP
+        private const string HttpUserAgent = "NuGet Desktop MSBuild Task";
+#else
+        private const string HttpUserAgent = "NuGet .NET Core MSBuild Task";
+#endif
+
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+
         /// <summary>
         /// DG file entries
         /// </summary>
@@ -29,29 +39,9 @@ namespace NuGet.Build.Tasks
         public ITaskItem[] RestoreGraphItems { get; set; }
 
         /// <summary>
-        /// NuGet sources, ; delimited
-        /// </summary>
-        public string RestoreSources { get; set; }
-
-        /// <summary>
-        /// NuGet fallback folders
-        /// </summary>
-        public string RestoreFallbackFolders { get; set; }
-
-        /// <summary>
-        /// User packages folder
-        /// </summary>
-        public string RestorePackagesPath { get; set; }
-
-        /// <summary>
         /// Disable parallel project restores and downloads
         /// </summary>
         public bool RestoreDisableParallel { get; set; }
-
-        /// <summary>
-        /// NuGet.Config path
-        /// </summary>
-        public string RestoreConfigFile { get; set; }
 
         /// <summary>
         /// Disable the web cache
@@ -68,40 +58,48 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public bool RestoreRecursive { get; set; }
 
+        /// <summary>
+        /// Force restore, skip no op
+        /// </summary>
+        public bool RestoreForce { get; set; }
+
+        /// <summary>
+        /// Do not display Errors and Warnings to the user. 
+        /// The Warnings and Errors are written into the assets file and will be read by an sdk target.
+        /// </summary>
+        public bool HideWarningsAndErrors { get; set; }
+
+        /// <summary>
+        /// Set this property if you want to get an interactive restore
+        /// </summary>
+        public bool Interactive { get; set; }
+
         public override bool Execute()
         {
             var log = new MSBuildLogger(Log);
 
             // Log inputs
             log.LogDebug($"(in) RestoreGraphItems Count '{RestoreGraphItems?.Count() ?? 0}'");
-            log.LogDebug($"(in) RestoreSources '{RestoreSources}'");
-            log.LogDebug($"(in) RestorePackagesPath '{RestorePackagesPath}'");
-            log.LogDebug($"(in) RestoreFallbackFolders '{RestoreFallbackFolders}'");
             log.LogDebug($"(in) RestoreDisableParallel '{RestoreDisableParallel}'");
-            log.LogDebug($"(in) RestoreConfigFile '{RestoreConfigFile}'");
             log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache}'");
             log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
             log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
+            log.LogDebug($"(in) RestoreForce '{RestoreForce}'");
+            log.LogDebug($"(in) HideWarningsAndErrors '{HideWarningsAndErrors}'");
 
             try
             {
                 return ExecuteAsync(log).Result;
             }
+            catch (AggregateException ex) when (_cts.Token.IsCancellationRequested && ex.InnerException is TaskCanceledException)
+            {
+                // Canceled by user
+                log.LogError(Strings.RestoreCanceled);
+                return false;
+            }
             catch (Exception e)
             {
-                // Log the error
-                if (ExceptionLogger.Instance.ShowStack)
-                {
-                    log.LogError(e.ToString());
-                }
-                else
-                {
-                    log.LogError(ExceptionUtilities.DisplayMessage(e));
-                }
-
-                // Log the stack trace as verbose output.
-                log.LogVerbose(e.ToString());
-
+                ExceptionUtilities.LogException(e, log);
                 return false;
             }
         }
@@ -155,27 +153,25 @@ namespace NuGet.Build.Tasks
                 {
                     CacheContext = cacheContext,
                     LockFileVersion = LockFileFormat.Version,
-                    ConfigFile = MSBuildStringUtility.TrimAndGetNullForEmpty(RestoreConfigFile),
                     DisableParallel = RestoreDisableParallel,
-                    GlobalPackagesFolder = RestorePackagesPath,
                     Log = log,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     PreLoadedRequestProviders = providers,
-                    CachingSourceProvider = sourceProvider
+                    CachingSourceProvider = sourceProvider,
+                    AllowNoOp = !RestoreForce,
+                    HideWarningsAndErrors = HideWarningsAndErrors
                 };
-
-                if (!string.IsNullOrEmpty(RestoreSources))
-                {
-                    var sources = MSBuildStringUtility.Split(RestoreSources);
-                    restoreContext.Sources.AddRange(sources);
-                }
 
                 if (restoreContext.DisableParallel)
                 {
                     HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
                 }
 
-                var restoreSummaries = await RestoreRunner.Run(restoreContext);
+                DefaultCredentialServiceUtility.SetupDefaultCredentialService(log, !Interactive);
+
+                _cts.Token.ThrowIfCancellationRequested();
+
+                var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, _cts.Token);
 
                 // Summary
                 RestoreSummary.Log(log, restoreSummaries);
@@ -183,7 +179,6 @@ namespace NuGet.Build.Tasks
                 return restoreSummaries.All(x => x.Success);
             }
         }
-
         private static void ConfigureProtocol()
         {
             // Set connection limit
@@ -198,15 +193,23 @@ namespace NuGet.Build.Tasks
 
         private static void SetUserAgent()
         {
-            var agent = "NuGet MSBuild Task";
-
 #if IS_CORECLR
-            UserAgent.SetUserAgentString(new UserAgentStringBuilder(agent)
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder(HttpUserAgent)
                 .WithOSDescription(RuntimeInformation.OSDescription));
 #else
             // OS description is set by default on Desktop
-            UserAgent.SetUserAgentString(new UserAgentStringBuilder(agent));
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder(HttpUserAgent));
 #endif
+        }
+
+        public void Cancel()
+        {
+            _cts.Cancel();
+        }
+
+        public void Dispose()
+        {
+            _cts.Dispose();
         }
     }
 }

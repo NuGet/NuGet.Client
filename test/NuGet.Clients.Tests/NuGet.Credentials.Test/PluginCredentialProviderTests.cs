@@ -572,5 +572,63 @@ namespace NuGet.Credentials.Test
 
             Assert.StartsWith("PluginCredentialProvider_provider.exe_", provider.Id);
         }
+
+        [Fact]
+        public async Task EncodesSpacesWhenUriWithSpaces()
+        {
+            // Arrange
+            var mockProvider = CreateMockProvider(verbosity: "Normal");
+            var uri = new Uri("http://host/path with spaces/index.json");
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
+            var isRetry = false;
+            var nonInteractive = false;
+
+            // Act
+            var result = await mockProvider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None);
+
+            // Assert
+            mockProvider.Verify(x => x.Execute(
+                It.Is<ProcessStartInfo>(p => p.Arguments == "-uri http://host/path%20with%20spaces/index.json"),
+                It.IsAny<CancellationToken>(),
+                out _testStdOut));
+        }
+
+        [Fact]
+        public async Task EncodesSpacesWhenUriWithEncodedSpaces()
+        {
+            // Arrange
+            var mockProvider = CreateMockProvider(verbosity: "Normal");
+            var uri = new Uri("http://host/path%20with%20spaces/index.json");
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
+            var isRetry = false;
+            var nonInteractive = false;
+
+            // Act
+            var result = await mockProvider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None);
+
+            // Assert
+            mockProvider.Verify(x => x.Execute(
+                It.Is<ProcessStartInfo>(p => p.Arguments == "-uri http://host/path%20with%20spaces/index.json"),
+                It.IsAny<CancellationToken>(),
+                out _testStdOut));
+        }
     }
 }

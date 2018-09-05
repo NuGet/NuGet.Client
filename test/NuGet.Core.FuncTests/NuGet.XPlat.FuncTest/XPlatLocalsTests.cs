@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,6 +32,10 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals global-packages -l")]
         [InlineData("locals --list global-packages")]
         [InlineData("locals -l global-packages")]
+        [InlineData("locals plugins-cache --list")]
+        [InlineData("locals plugins-cache -l")]
+        [InlineData("locals --list plugins-cache")]
+        [InlineData("locals -l plugins-cache")]
         public static void Locals_List_Succeeds(string args)
         {
             Assert.NotNull(DotnetCli);
@@ -43,10 +47,12 @@ namespace NuGet.XPlat.FuncTest
                 var mockGlobalPackagesDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"global-packages"));
                 var mockHttpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"http-cache"));
                 var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"temp"));
+                var mockPluginsCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"plugins-cache"));
 
                 DotnetCliUtil.CreateTestFiles(mockGlobalPackagesDirectory.FullName);
                 DotnetCliUtil.CreateTestFiles(mockHttpCacheDirectory.FullName);
                 DotnetCliUtil.CreateTestFiles(mockTmpCacheDirectory.FullName);
+                DotnetCliUtil.CreateTestFiles(mockPluginsCacheDirectory.FullName);
 
                 // Act
                 var result = CommandRunner.Run(
@@ -58,6 +64,7 @@ namespace NuGet.XPlat.FuncTest
                     {
                         { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
                         { "NUGET_HTTP_CACHE_PATH", mockHttpCacheDirectory.FullName },
+                        { "NUGET_PLUGINS_CACHE_PATH", mockPluginsCacheDirectory.FullName },
                         { RuntimeEnvironmentHelper.IsWindows ? "TMP" : "TMPDIR", mockTmpCacheDirectory.FullName }
                     });
                 // Unix uses TMPDIR as environment variable as opposed to TMP on windows
@@ -82,6 +89,10 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals global-packages -c")]
         [InlineData("locals --clear global-packages")]
         [InlineData("locals -c global-packages")]
+        [InlineData("locals -c plugins-cache")]
+        [InlineData("locals --clear plugins-cache")]
+        [InlineData("locals plugins-cache --clear")]
+        [InlineData("locals plugins-cache -c")]
         public static void Locals_Clear_Succeeds(string args)
         {
             Assert.NotNull(DotnetCli);
@@ -93,11 +104,13 @@ namespace NuGet.XPlat.FuncTest
                 var mockGlobalPackagesDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"global-packages"));
                 var mockHttpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"http-cache"));
                 var mockTmpDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"temp"));
+                var mockPluginsCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"plugins-cache"));
                 var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockTmpDirectory.FullName, @"NuGetScratch"));
 
                 DotnetCliUtil.CreateTestFiles(mockGlobalPackagesDirectory.FullName);
                 DotnetCliUtil.CreateTestFiles(mockHttpCacheDirectory.FullName);
                 DotnetCliUtil.CreateTestFiles(mockTmpCacheDirectory.FullName);
+                DotnetCliUtil.CreateTestFiles(mockPluginsCacheDirectory.FullName);
 
                 var cacheType = args.Split(null)[1].StartsWith("-") ? args.Split(null)[2] : args.Split(null)[1];
 
@@ -111,7 +124,8 @@ namespace NuGet.XPlat.FuncTest
                     {
                         { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
                         { "NUGET_HTTP_CACHE_PATH", mockHttpCacheDirectory.FullName },
-                        { RuntimeEnvironmentHelper.IsWindows ? "TMP" : "TMPDIR", mockTmpDirectory.FullName }
+                        { RuntimeEnvironmentHelper.IsWindows ? "TMP" : "TMPDIR", mockTmpDirectory.FullName },
+                        { "NUGET_PLUGINS_CACHE_PATH", mockPluginsCacheDirectory.FullName }
                     });
                 // Unix uses TMPDIR as environment variable as opposed to TMP on windows
 
@@ -121,11 +135,13 @@ namespace NuGet.XPlat.FuncTest
                     DotnetCliUtil.VerifyClearSuccess(mockGlobalPackagesDirectory.FullName);
                     DotnetCliUtil.VerifyClearSuccess(mockHttpCacheDirectory.FullName);
                     DotnetCliUtil.VerifyClearSuccess(mockTmpCacheDirectory.FullName);
+                    DotnetCliUtil.VerifyClearSuccess(mockPluginsCacheDirectory.FullName);
 
                     // Assert clear message
-                    DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet global packages cache:");
+                    DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet global packages folder:");
                     DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet HTTP cache:");
                     DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet Temp cache:");
+                    DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet plugins cache:");
                     DotnetCliUtil.VerifyResultSuccess(result, "Local resources cleared.");
                 }
                 else if (cacheType == "global-packages")
@@ -136,9 +152,10 @@ namespace NuGet.XPlat.FuncTest
                     // Http cache and Temp cahce should be untouched
                     DotnetCliUtil.VerifyNoClear(mockHttpCacheDirectory.FullName);
                     DotnetCliUtil.VerifyNoClear(mockTmpCacheDirectory.FullName);
+                    DotnetCliUtil.VerifyNoClear(mockPluginsCacheDirectory.FullName);                    
 
                     // Assert clear message
-                    DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet global packages cache:");
+                    DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet global packages folder:");
                     DotnetCliUtil.VerifyResultSuccess(result, "Local resources cleared.");
                 }
                 else if (cacheType == "http-cache")
@@ -149,6 +166,7 @@ namespace NuGet.XPlat.FuncTest
                     // Global packages cache and temp cache should be untouched
                     DotnetCliUtil.VerifyNoClear(mockGlobalPackagesDirectory.FullName);
                     DotnetCliUtil.VerifyNoClear(mockTmpCacheDirectory.FullName);
+                    DotnetCliUtil.VerifyNoClear(mockPluginsCacheDirectory.FullName);
 
                     // Assert clear message
                     DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet HTTP cache:");
@@ -162,9 +180,23 @@ namespace NuGet.XPlat.FuncTest
                     // Global packages cache and Http cache should be un touched
                     DotnetCliUtil.VerifyNoClear(mockGlobalPackagesDirectory.FullName);
                     DotnetCliUtil.VerifyNoClear(mockHttpCacheDirectory.FullName);
+                    DotnetCliUtil.VerifyNoClear(mockPluginsCacheDirectory.FullName);
 
                     // Assert clear message
                     DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet Temp cache:");
+                    DotnetCliUtil.VerifyResultSuccess(result, "Local resources cleared.");
+                }
+                else if (cacheType == "plugins-cache")
+                {
+                    DotnetCliUtil.VerifyClearSuccess(mockPluginsCacheDirectory.FullName);
+
+                    // Global packages cache and Http cache should be un touched
+                    DotnetCliUtil.VerifyNoClear(mockGlobalPackagesDirectory.FullName);
+                    DotnetCliUtil.VerifyNoClear(mockHttpCacheDirectory.FullName);
+                    DotnetCliUtil.VerifyNoClear(mockTmpCacheDirectory.FullName);
+
+                    // Assert clear message
+                    DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet plugins cache:");
                     DotnetCliUtil.VerifyResultSuccess(result, "Local resources cleared.");
                 }
             }
@@ -183,7 +215,7 @@ namespace NuGet.XPlat.FuncTest
             // Arrange
             var expectedResult = string.Concat("error: No Cache Type was specified.",
                                                Environment.NewLine,
-                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]",
+                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp | plugins-cache> [--clear | -c | --list | -l]",
                                                Environment.NewLine,
                                                "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
 
@@ -253,6 +285,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals http-cache")]
         [InlineData("locals global-packages")]
         [InlineData("locals temp")]
+        [InlineData("locals plugins-cache")]
         public static void Locals_Success_NoFlags_HelpMessage(string args)
         {
             Assert.NotNull(DotnetCli);
@@ -261,7 +294,7 @@ namespace NuGet.XPlat.FuncTest
             // Arrange
             var expectedResult = string.Concat("error: Please specify an operation i.e. --list or --clear.",
                                                Environment.NewLine,
-                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]",
+                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp | plugins-cache> [--clear | -c | --list | -l]",
                                                Environment.NewLine,
                                                "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
 
@@ -281,10 +314,13 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals -c -l global-packages")]
         [InlineData("locals -c -l http-cache")]
         [InlineData("locals -c -l temp")]
+        [InlineData("locals -c -l plugins-cache")]
         [InlineData("locals --clear --list all")]
         [InlineData("locals --clear --list global-packages")]
         [InlineData("locals --clear --list http-cache")]
         [InlineData("locals --clear --list temp")]
+        [InlineData("locals --clear --list plugins-cache")]
+
         public static void Locals_Success_BothFlags_HelpMessage(string args)
         {
             Assert.NotNull(DotnetCli);
@@ -293,7 +329,7 @@ namespace NuGet.XPlat.FuncTest
             // Arrange
             var expectedResult = string.Concat("error: Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.",
                                                Environment.NewLine,
-                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]",
+                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp | plugins-cache> [--clear | -c | --list | -l]",
                                                Environment.NewLine,
                                                "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
 

@@ -11,6 +11,6 @@ namespace NuGet.Common
         /// Fetch all of the errors logged so far. This method is useful when error log messages
         /// should be redisplayed after the initial log message is emitted.
         /// </summary>
-        IEnumerable<string> Errors { get; }
+        IEnumerable<IRestoreLogMessage> Errors { get; }
     }
 }

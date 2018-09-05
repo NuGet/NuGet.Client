@@ -1,7 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
@@ -10,9 +12,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -33,6 +38,12 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "InstallCommandVersionDescription")]
         public string Version { get; set; }
 
+        [Option(typeof(NuGetCommand), "InstallCommandDependencyVersion")]
+        public string DependencyVersion { get; set; }
+
+        [Option(typeof(NuGetCommand), "InstallCommandFrameworkDescription")]
+        public string Framework { get; set; }
+
         [Option(typeof(NuGetCommand), "InstallCommandExcludeVersionDescription", AltName = "x")]
         public bool ExcludeVersion { get; set; }
 
@@ -48,13 +59,14 @@ namespace NuGet.CommandLine
         [ImportingConstructor]
         protected internal InstallCommand()
         {
-            // On mono, parallel builds are broken for some reason. See https://gist.github.com/4201936 for the errors
-            // That are thrown.
-            DisableParallelProcessing = RuntimeEnvironmentHelper.IsMono;
         }
 
         public override Task ExecuteCommandAsync()
         {
+            // On mono, parallel builds are broken for some reason. See https://gist.github.com/4201936 for the errors
+            // That are thrown.
+            DisableParallelProcessing |= RuntimeEnvironmentHelper.IsMono;
+
             if (DisableParallelProcessing)
             {
                 HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
@@ -62,10 +74,10 @@ namespace NuGet.CommandLine
 
             CalculateEffectivePackageSaveMode();
             CalculateEffectiveSettings();
-            string installPath = ResolveInstallPath();
+            var installPath = ResolveInstallPath();
 
-            string configFilePath = Path.GetFullPath(Arguments.Count == 0 ? Constants.PackageReferenceFile : Arguments[0]);
-            string configFileName = Path.GetFileName(configFilePath);
+            var configFilePath = Path.GetFullPath(Arguments.Count == 0 ? Constants.PackageReferenceFile : Arguments[0]);
+            var configFileName = Path.GetFileName(configFilePath);
 
             // If the first argument is a packages.xxx.config file, install everything it lists
             // Otherwise, treat the first argument as a package Id
@@ -77,27 +89,27 @@ namespace NuGet.CommandLine
                 if (Console != null && RequireConsent &&
                     new PackageRestoreConsent(Settings).IsGranted)
                 {
-                    string message = String.Format(
+                    var message = string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage"),
                         NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
                     Console.WriteLine(message);
                 }
 
-                return PerformV2Restore(configFilePath, installPath);
+                return PerformV2RestoreAsync(configFilePath, installPath);
             }
             else
             {
                 var packageId = Arguments[0];
                 var version = Version != null ? new NuGetVersion(Version) : null;
-                return InstallPackage(packageId, version, installPath);
+                return InstallPackageAsync(packageId, version, installPath);
             }
         }
 
         private void CalculateEffectiveSettings()
         {
             // If the SolutionDir is specified, use the .nuget directory under it to determine the solution-level settings
-            if (!String.IsNullOrEmpty(SolutionDirectory))
+            if (!string.IsNullOrEmpty(SolutionDirectory))
             {
                 var path = Path.Combine(SolutionDirectory.TrimEnd(Path.DirectorySeparatorChar), NuGetConstants.NuGetSolutionSettingsFolder);
 
@@ -116,20 +128,20 @@ namespace NuGet.CommandLine
 
         internal string ResolveInstallPath()
         {
-            if (!String.IsNullOrEmpty(OutputDirectory))
+            if (!string.IsNullOrEmpty(OutputDirectory))
             {
                 // Use the OutputDirectory if specified.
                 return OutputDirectory;
             }
 
-            string installPath = SettingsUtility.GetRepositoryPath(Settings);
-            if (!String.IsNullOrEmpty(installPath))
+            var installPath = SettingsUtility.GetRepositoryPath(Settings);
+            if (!string.IsNullOrEmpty(installPath))
             {
                 // If a value is specified in config, use that.
                 return installPath;
             }
 
-            if (!String.IsNullOrEmpty(SolutionDirectory))
+            if (!string.IsNullOrEmpty(SolutionDirectory))
             {
                 // For package restore scenarios, deduce the path of the packages directory from the solution directory.
                 return Path.Combine(SolutionDirectory, CommandLineConstants.PackagesDirectoryName);
@@ -139,7 +151,7 @@ namespace NuGet.CommandLine
             return CurrentDirectory;
         }
 
-        private async Task PerformV2Restore(string packagesConfigFilePath, string installPath)
+        private async Task PerformV2RestoreAsync(string packagesConfigFilePath, string installPath)
         {
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath, ExcludeVersion);
@@ -155,17 +167,20 @@ namespace NuGet.CommandLine
                     isMissing: true));
 
             var packageSources = GetPackageSources(Settings);
-            
+
             Console.PrintPackageSources(packageSources);
+
+            var failedEvents = new ConcurrentQueue<PackageRestoreFailedEventArgs>();
 
             var packageRestoreContext = new PackageRestoreContext(
                 nuGetPackageManager,
                 packageRestoreData,
                 CancellationToken.None,
                 packageRestoredEvent: null,
-                packageRestoreFailedEvent: null,
+                packageRestoreFailedEvent: (sender, args) => { failedEvents.Enqueue(args); },
                 sourceRepositories: packageSources.Select(sourceRepositoryProvider.CreateRepository),
-                maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
+                maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
+                logger: Console);
 
             var missingPackageReferences = installedPackageReferences.Where(reference =>
                 !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity)).Any();
@@ -186,7 +201,7 @@ namespace NuGet.CommandLine
 
                 var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload);
 
-                await PackageRestoreManager.RestoreMissingPackagesAsync(
+                var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,
                     new ConsoleProjectContext(Console),
                     downloadContext);
@@ -194,6 +209,18 @@ namespace NuGet.CommandLine
                 if (downloadContext.DirectDownload)
                 {
                     GetDownloadResultUtility.CleanUpDirectDownloads(downloadContext);
+                }
+
+                // Use failure count to determine errors. result.Restored will be false for noop restores.
+                if (failedEvents.Count > 0)
+                {
+                    // Log errors if they exist
+                    foreach (var message in failedEvents.Select(e => new RestoreLogMessage(LogLevel.Error, NuGetLogCode.Undefined, e.Exception.Message)))
+                    {
+                        await Console.LogAsync(message);
+                    }
+
+                    throw new ExitCodeException(1);
                 }
             }
         }
@@ -203,93 +230,160 @@ namespace NuGet.CommandLine
             return new CommandLineSourceRepositoryProvider(SourceProvider);
         }
 
-        private async Task InstallPackage(
+        private DependencyBehavior TryGetDependencyBehavior(string behaviorStr)
+        {
+            DependencyBehavior dependencyBehavior;
+
+            if (!Enum.TryParse<DependencyBehavior>(behaviorStr, ignoreCase: true, result: out dependencyBehavior) || !Enum.IsDefined(typeof(DependencyBehavior), dependencyBehavior))
+            {
+                throw new CommandLineException(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InstallCommandUnknownDependencyVersion"), behaviorStr));
+            }
+
+            return dependencyBehavior;
+        }
+
+        private DependencyBehavior GetDependencyBehavior()
+        {
+            // If dependencyVersion is not set by either the config or commandline, default dependency behavior is 'Lowest'.
+            var dependencyBehavior = DependencyBehavior.Lowest;
+
+            var settingsDependencyVersion = SettingsUtility.GetConfigValue(Settings, "dependencyVersion");
+
+            // Check to see if commandline flag is set. Else check for dependencyVersion in .config.
+            if (!string.IsNullOrEmpty(DependencyVersion))
+            {
+                dependencyBehavior = TryGetDependencyBehavior(DependencyVersion);
+            }
+            else if (!string.IsNullOrEmpty(settingsDependencyVersion))
+            {
+                dependencyBehavior = TryGetDependencyBehavior(settingsDependencyVersion);
+            }
+
+            return dependencyBehavior;
+        }
+
+        private async Task InstallPackageAsync(
             string packageId,
             NuGetVersion version,
             string installPath)
         {
             if (version == null)
             {
-                NoCache = true;
+                // Avoid searching for the highest version in the global packages folder,
+                // it needs to come from the feeds instead. Once found it may come from
+                // the global packages folder unless NoCache is true.
+                ExcludeCacheAsSource = true;
             }
 
-            var folderProject = new FolderNuGetProject(
-                installPath,
-                new PackagePathResolver(installPath, !ExcludeVersion));
+            var framework = GetTargetFramework();
+
+            // Create the project and set the framework if available.
+            var project = new InstallCommandProject(
+                root: installPath,
+                packagePathResolver: new PackagePathResolver(installPath, !ExcludeVersion),
+                targetFramework: framework);
 
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath);
 
             var packageSources = GetPackageSources(Settings);
-
-            Console.PrintPackageSources(packageSources);
-
             var primaryRepositories = packageSources.Select(sourceRepositoryProvider.CreateRepository);
+            Console.PrintPackageSources(packageSources);
 
             var allowPrerelease = Prerelease || (version != null && version.IsPrerelease);
 
-            var resolutionContext = new ResolutionContext(
-                DependencyBehavior.Lowest,
+            var dependencyBehavior = GetDependencyBehavior();
+
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var resolutionContext = new ResolutionContext(
+                dependencyBehavior,
                 includePrelease: allowPrerelease,
                 includeUnlisted: true,
-                versionConstraints: VersionConstraints.None);
+                versionConstraints: VersionConstraints.None,
+                gatherCache: new GatherCache(),
+                sourceCacheContext: sourceCacheContext);
 
-            if (version == null)
-            {
-                // Find the latest version using NuGetPackageManager
-                var resolvePackage = await NuGetPackageManager.GetLatestVersionAsync(
-                    packageId,
-                    folderProject,
-                    resolutionContext,
-                    primaryRepositories,
-                    Console,
-                    CancellationToken.None);
+                if (version == null)
+                {
+                    // Write out a helpful message before the http messages are shown
+                    Console.Log(LogLevel.Minimal, string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("InstallPackageMessage"), packageId, installPath));
 
-                if (resolvePackage == null || resolvePackage.LatestVersion == null)
+                    // Find the latest version using NuGetPackageManager
+                    var resolvePackage = await NuGetPackageManager.GetLatestVersionAsync(
+                        packageId,
+                        project,
+                        resolutionContext,
+                        primaryRepositories,
+                        Console,
+                        CancellationToken.None);
+
+                    if (resolvePackage == null || resolvePackage.LatestVersion == null)
+                    {
+                        var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            LocalizedResourceManager.GetString("InstallCommandUnableToFindPackage"),
+                            packageId);
+
+                        throw new CommandLineException(message);
+                    }
+
+                    version = resolvePackage.LatestVersion;
+                }
+
+                // Get a list of packages already in the folder.
+                var installedPackages = await project.GetFolderPackagesAsync(CancellationToken.None);
+
+                // Find existing versions of the package
+                var alreadyInstalledVersions = new HashSet<NuGetVersion>(installedPackages
+                    .Where(e => StringComparer.OrdinalIgnoreCase.Equals(packageId, e.PackageIdentity.Id))
+                    .Select(e => e.PackageIdentity.Version));
+
+                var packageIdentity = new PackageIdentity(packageId, version);
+
+                // Check if the package already exists or a higher version exists already.
+                var skipInstall = project.PackageExists(packageIdentity);
+
+                // For SxS allow other versions to install. For non-SxS skip if a higher version exists.
+                skipInstall |= (ExcludeVersion && alreadyInstalledVersions.Any(e => e >= version));
+
+                if (skipInstall)
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
-                        LocalizedResourceManager.GetString("InstallCommandUnableToFindPackage"),
-                        packageId);
+                        LocalizedResourceManager.GetString("InstallCommandPackageAlreadyExists"),
+                        packageIdentity);
 
-                    throw new CommandLineException(message);
+                    Console.LogMinimal(message);
                 }
-
-                version = resolvePackage.LatestVersion;
-            }
-
-            var packageIdentity = new PackageIdentity(packageId, version);
-
-            if (folderProject.PackageExists(packageIdentity))
-            {
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    LocalizedResourceManager.GetString("InstallCommandPackageAlreadyExists"),
-                    packageIdentity);
-
-                Console.LogMinimal(message);
-            }
-            else
-            {
-                var projectContext = new ConsoleProjectContext(Console)
+                else
                 {
-                    PackageExtractionContext = new PackageExtractionContext(Console)
-                };
+                    var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
-                if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
-                {
-                    projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
-                }
+                    var projectContext = new ConsoleProjectContext(Console)
+                    {
+                        PackageExtractionContext = new PackageExtractionContext(
+                            Packaging.PackageSaveMode.Defaultv2,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
+                            Console,
+                            signedPackageVerifier,
+                            SignedPackageVerifierSettings.GetDefault())
+                    };
 
-                using(var cacheContext = new SourceCacheContext())
-                {
-                    cacheContext.NoCache = NoCache;
-                    cacheContext.DirectDownload = DirectDownload;
+                    if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+                    {
+                        projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
+                    }
 
-                    var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload);
+                    resolutionContext.SourceCacheContext.NoCache = NoCache;
+                    resolutionContext.SourceCacheContext.DirectDownload = DirectDownload;
+
+                    var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload);
 
                     await packageManager.InstallPackageAsync(
-                        folderProject,
+                        project,
                         packageIdentity,
                         resolutionContext,
                         projectContext,
@@ -304,6 +398,31 @@ namespace NuGet.CommandLine
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Parse the Framework parameter or use Any as the default framework.
+        /// </summary>
+        private NuGetFramework GetTargetFramework()
+        {
+            var targetFramework = NuGetFramework.AnyFramework;
+
+            if (!string.IsNullOrEmpty(Framework))
+            {
+                targetFramework = NuGetFramework.Parse(Framework);
+            }
+
+            if (targetFramework.IsUnsupported)
+            {
+                // Fail with a helpful message if the user provided an invalid framework.
+                var message = string.Format(CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString("UnsupportedFramework"),
+                    Framework);
+
+                throw new ArgumentException(message);
+            }
+
+            return targetFramework;
         }
     }
 }

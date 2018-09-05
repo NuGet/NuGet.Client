@@ -1,12 +1,17 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Xunit;
@@ -148,6 +153,36 @@ namespace NuGet.DependencyResolver.Tests
             provider.Package("E", "2.0");
 
             context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "A");
+
+            var result = node.Analyze();
+
+            Assert.Equal(0, result.VersionConflicts.Count);
+        }
+
+        [Fact]
+        public async Task AllowProjectOverridePackageNoConflict()
+        {
+            var context = new TestRemoteWalkContext();
+            var packageProvider = new DependencyProvider();
+            var projectProvider = new DependencyProvider();
+            projectProvider.Package("A", "1.0", LibraryType.Project)
+                    .DependsOn("B", "2.0", LibraryDependencyTarget.Project)
+                    .DependsOn("C", "2.0");
+
+            projectProvider.Package("B", "2.0", LibraryType.Project)
+                    .DependsOn("D", "[2.0]", LibraryDependencyTarget.Project);
+
+            packageProvider.Package("C", "2.0")
+                    .DependsOn("D", "[1.0]");
+
+            packageProvider.Package("D", "1.0");
+            projectProvider.Package("D", "2.0", LibraryType.Project);
+
+            context.LocalLibraryProviders.Add(packageProvider);
+            context.ProjectLibraryProviders.Add(projectProvider);
+
             var walker = new RemoteDependencyWalker(context);
             var node = await DoWalkAsync(walker, "A");
 
@@ -813,7 +848,7 @@ namespace NuGet.DependencyResolver.Tests
 
         }
 
-        private class DependencyProvider : IRemoteDependencyProvider
+        private class DependencyProvider : IRemoteDependencyProvider, IDependencyProvider
         {
             private readonly Dictionary<LibraryIdentity, List<LibraryDependency>> _graph = new Dictionary<LibraryIdentity, List<LibraryDependency>>();
 
@@ -825,9 +860,10 @@ namespace NuGet.DependencyResolver.Tests
                 }
             }
 
-            public Task CopyToAsync(
-                LibraryIdentity match,
-                Stream stream,
+            public PackageSource Source => new PackageSource("Test");
+
+            public Task<IPackageDownloader> GetPackageDownloaderAsync(
+                PackageIdentity packageIdentity,
                 SourceCacheContext cacheContext,
                 ILogger logger,
                 CancellationToken cancellationToken)
@@ -847,7 +883,12 @@ namespace NuGet.DependencyResolver.Tests
                 return Task.FromResult(packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version));
             }
 
-            public Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(
+            public Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, SourceCacheContext cacheContext, ILogger logger, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<LibraryDependencyInfo> GetDependenciesAsync(
                 LibraryIdentity match,
                 NuGetFramework targetFramework,
                 SourceCacheContext cacheContext,
@@ -857,19 +898,30 @@ namespace NuGet.DependencyResolver.Tests
                 List<LibraryDependency> dependencies;
                 if (_graph.TryGetValue(match, out dependencies))
                 {
-                    return Task.FromResult<IEnumerable<LibraryDependency>>(dependencies);
+                    return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, dependencies));
                 }
-                return Task.FromResult(Enumerable.Empty<LibraryDependency>());
+
+                return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, Enumerable.Empty<LibraryDependency>()));
+            }
+
+            public bool SupportsType(LibraryDependencyTarget libraryType)
+            {
+                return (libraryType & (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)) != LibraryDependencyTarget.None;
             }
 
             public TestPackage Package(string id, string version)
             {
-                return Package(id, NuGetVersion.Parse(version));
+                return Package(id, NuGetVersion.Parse(version), LibraryType.Package);
             }
 
-            public TestPackage Package(string id, NuGetVersion version)
+            public TestPackage Package(string id, string version, LibraryType type)
             {
-                var libraryIdentity = new LibraryIdentity { Name = id, Version = version, Type = LibraryType.Package };
+                return Package(id, NuGetVersion.Parse(version), type);
+            }
+
+            public TestPackage Package(string id, NuGetVersion version, LibraryType type)
+            {
+                var libraryIdentity = new LibraryIdentity { Name = id, Version = version, Type = type };
 
                 List<LibraryDependency> dependencies;
                 if (!_graph.TryGetValue(libraryIdentity, out dependencies))
@@ -879,6 +931,28 @@ namespace NuGet.DependencyResolver.Tests
                 }
 
                 return new TestPackage(dependencies);
+            }
+
+            public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
+            {
+                var packages = _graph.Keys.Where(p => p.Name == libraryRange.Name);
+                var identity = packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version);
+
+                if (identity != null)
+                {
+                    var dependency = _graph.TryGetValue(identity, out var dependencies) ? dependencies : Enumerable.Empty<LibraryDependency>();
+
+                    return new Library
+                    {
+                        LibraryRange = libraryRange,
+                        Identity = identity,
+                        Path = null,
+                        Dependencies = dependency,
+                        Resolved = true
+                    };
+                }
+
+                return null;
             }
 
             public class TestPackage

@@ -10,18 +10,17 @@ using NuGet.ProjectModel;
 
 namespace NuGet.PackageManagement.Test
 {
-    public class TestBuildIntegratedNuGetProject : ProjectJsonBuildIntegratedNuGetProject
+    public class TestBuildIntegratedNuGetProject : ProjectJsonNuGetProject
     {
         public IReadOnlyList<ExternalProjectReference> ProjectClosure { get; set; }
 
         public TestBuildIntegratedNuGetProject(
             string jsonConfig,
-            IMSBuildNuGetProjectSystem msbuildProjectSystem) : base(
+            IMSBuildProjectSystem msbuildProjectSystem) : base(
                 jsonConfig,
                 Path.Combine(
                     msbuildProjectSystem.ProjectFullPath,
-                    $"{msbuildProjectSystem.ProjectName}.csproj"),
-                msbuildProjectSystem)
+                    $"{msbuildProjectSystem.ProjectName}.csproj"))
         {
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, msbuildProjectSystem.ProjectName);
             ProjectClosure = new List<ExternalProjectReference>();

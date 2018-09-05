@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
@@ -42,7 +43,8 @@ namespace NuGet.CommandLine.XPlat
                 locals.OnExecute(() =>
                 {
                     var logger = getLogger();
-                    var setting = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
+                    var setting = XPlatUtility.CreateDefaultSettings();
+
                     // Using both -clear and -list command options, or neither one of them, is not supported.
                     // We use MinArgs = 0 even though the first argument is required,
                     // to avoid throwing a command argument validation exception and
@@ -61,7 +63,13 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else
                     {
-                        var localsArgs = new LocalsArgs(arguments.Values, setting, logger.LogInformation, logger.LogError, clear.HasValue(), list.HasValue());
+                        var localsArgs = new LocalsArgs(arguments.Values, 
+                            setting, 
+                            logger.LogInformation, 
+                            logger.LogError, 
+                            clear.HasValue(), 
+                            list.HasValue());
+
                         var localsCommandRunner = new LocalsCommandRunner();
                         localsCommandRunner.ExecuteCommand(localsArgs);
                     }

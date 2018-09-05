@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1285,7 +1285,7 @@ namespace NuGet.Packaging.Test
             builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\Foo.dll" });
             builder.PackageAssemblyReferences = new[] { new PackageReferenceSet(NuGetFramework.AnyFramework, new string[] { "Bar.dll" }) };
 
-            ExceptionAssert.Throws<InvalidDataException>(() => builder.Save(new MemoryStream()),
+            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()),
                 "Invalid assembly reference 'Bar.dll'. Ensure that a file named 'Bar.dll' exists in the lib directory.");
         }
 
@@ -1338,7 +1338,7 @@ Description is required.");
             builder.Description = "Description";
 
             // Act & Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => builder.Save(new MemoryStream()), "Cannot create a package that has no dependencies nor content.");
+            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()), "Cannot create a package that has no dependencies nor content.");
         }
 
         [Fact]
@@ -2029,7 +2029,7 @@ Description is required.");
             var packageAssemblyReferences = new PackageReferenceSet(NuGetFramework.Parse("Silverlight, Version=1.0"), new string[] { "foo.dll", "bar", "baz" });
 
             // Act and Assert
-            ExceptionAssert.Throws<InvalidDataException>(() => PackageBuilder.ValidateReferenceAssemblies(files, new[] { packageAssemblyReferences }),
+            ExceptionAssert.Throws<PackagingException>(() => PackageBuilder.ValidateReferenceAssemblies(files, new[] { packageAssemblyReferences }),
                 "Invalid assembly reference 'baz'. Ensure that a file named 'baz' exists in the lib directory.");
         }
 
@@ -2377,7 +2377,8 @@ Enabling license acceptance requires a license url.");
 
                 using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
                 {
-                    var files = archive.GetFiles().OrderBy(s => s).ToArray();
+                    // Get raw filenames without un-escaping.
+                    var files = archive.Entries.Select(e => e.FullName).OrderBy(s => s).ToArray();
 
                     // Linux sorts the first two in different order than Windows
                     Assert.Contains<string>(@"[Content_Types].xml", files);
@@ -2445,7 +2446,6 @@ Enabling license acceptance requires a license url.");
         [InlineData(@".\test1.txt", "test1.txt")]
         [InlineData(@".\test\..\test1.txt", "test1.txt")]
         [InlineData(@"./test/../test1.txt", "test1.txt")]
-        [InlineData("./test/../test1.txt", "test1.txt")]
         [InlineData(@"..\test1.txt", "test1.txt")]
         [InlineData(@"test1\.\.\test2\..\test1.txt", "test1/test1.txt")]
         public void PackageBuilderWorksWithFilesHavingCurrentDirectoryAsTarget(string inputFile, string outputFile)
@@ -2474,11 +2474,44 @@ Enabling license acceptance requires a license url.");
             }
         }
 
+        [Fact]
+        public void PackageBuilderPreserveFileLastWriteTime()
+        {
+            // Act
+            var lastWriteTime = new DateTimeOffset(2017, 1, 15, 23, 59, 0, new TimeSpan(0, 0, 0));
+            using (var directory = new TestLastWriteTimeDirectory(lastWriteTime))
+            {
+                var builder = new PackageBuilder { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
+                builder.Authors.Add("test");
+                builder.AddFiles(directory.Path, "**", "Content");
+
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    builder.Save(stream);
+
+                    // Assert
+                    using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
+                    {
+                        foreach(var entry in archive.Entries)
+                        {
+                            var path = directory.Path + Path.DirectorySeparatorChar + entry.Name;
+                            // Only checks the entries that originated from files in test directory
+                            if(File.Exists(path))
+                            {
+                                Assert.Equal(entry.LastWriteTime.DateTime, File.GetLastWriteTimeUtc(path));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private static IPackageFile CreatePackageFile(string name)
         {
             var file = new Mock<IPackageFile>();
             file.SetupGet(f => f.Path).Returns(name);
             file.Setup(f => f.GetStream()).Returns(new MemoryStream());
+            file.Setup(f => f.LastWriteTime).Returns(DateTimeOffset.UtcNow);
 
             string effectivePath;
             var fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
@@ -2577,6 +2610,47 @@ Enabling license acceptance requires a license url.");
             {
                 File.WriteAllText(System.IO.Path.Combine(directory.FullName, "file1.txt"), string.Empty);
                 File.WriteAllText(System.IO.Path.Combine(directory.FullName, "file2.txt"), string.Empty);
+            }
+        }
+
+        public sealed class TestLastWriteTimeDirectory : IDisposable
+        {
+            private TestDirectory _testDirectory;
+            private DateTimeOffset _lastWriteTime;
+
+            public string Path
+            {
+                get { return _testDirectory.Path; }
+            }
+
+            public TestLastWriteTimeDirectory(DateTimeOffset lastWriteTime)
+            {
+                _testDirectory = TestDirectory.Create();
+                _lastWriteTime = lastWriteTime;
+
+                PopulateTestDirectory();
+            }
+
+            public void Dispose()
+            {
+                _testDirectory.Dispose();
+            }
+
+            private void PopulateTestDirectory()
+            {
+                var rootDirectory = new DirectoryInfo(_testDirectory.Path);
+                var directory1 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir1"));
+                var directory2 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir2"));
+
+                CreateTestFiles(rootDirectory);
+                CreateTestFiles(directory1);
+                CreateTestFiles(directory2);
+            }
+
+            private void CreateTestFiles(DirectoryInfo directory)
+            {
+                File.WriteAllText(System.IO.Path.Combine(directory.FullName, "file1.txt"), string.Empty);
+                File.SetLastWriteTime(System.IO.Path.Combine(directory.FullName, "file1.txt"), _lastWriteTime.DateTime);
             }
         }
     }

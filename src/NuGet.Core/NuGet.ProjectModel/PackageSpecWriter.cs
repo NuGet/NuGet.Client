@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
@@ -81,7 +82,7 @@ namespace NuGet.ProjectModel
                 throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(filePath));
             }
 
-            var writer = new RuntimeModel.JsonObjectWriter();
+            var writer = new JsonObjectWriter();
 
             Write(packageSpec, writer);
 
@@ -94,17 +95,31 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void SetMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
+        private static bool IsMetadataValid(ProjectRestoreMetadata msbuildMetadata)
         {
-            var msbuildMetadata = packageSpec.RestoreMetadata;
             if (msbuildMetadata == null)
             {
-                return;
+                return false;
             }
 
             if (msbuildMetadata.ProjectUniqueName == null && msbuildMetadata.ProjectName == null
                 && msbuildMetadata.ProjectPath == null && msbuildMetadata.ProjectJsonPath == null
                 && msbuildMetadata.PackagesPath == null && msbuildMetadata.OutputPath == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// This method sets the msbuild metadata that's important for restore. Ensures that frameworks regardless of which way they're stores in the metadata(full name or short tfm name) are written out the same.
+        /// </summary>
+        private static void SetMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
+        {
+            var msbuildMetadata = packageSpec.RestoreMetadata;
+
+            if (!IsMetadataValid(msbuildMetadata))
             {
                 return;
             }
@@ -123,59 +138,44 @@ namespace NuGet.ProjectModel
                 SetValue(writer, "projectStyle", msbuildMetadata.ProjectStyle.ToString());
             }
 
-            SetValueIfTrue(writer, "crossTargeting", msbuildMetadata.CrossTargeting);
-
-            SetValueIfTrue(
-                    writer,
-                    "legacyPackagesDirectory",
-                    msbuildMetadata.LegacyPackagesDirectory);
-
-            SetValueIfTrue(
-                    writer,
-                    "validateRuntimeAssets",
-                    msbuildMetadata.ValidateRuntimeAssets);
-
-            SetValueIfTrue(
-                    writer,
-                    "skipContentFileWrite",
-                    msbuildMetadata.SkipContentFileWrite);
+            WriteMetadataBooleans(writer, msbuildMetadata);
 
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
-            SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks);
-
-            if (msbuildMetadata.Sources?.Count > 0)
+            SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
+            if (msbuildMetadata.CrossTargeting)
             {
-                writer.WriteObjectStart("sources");
-
-                foreach (var source in msbuildMetadata.Sources)
-                {
-                    // "source": {}
-                    writer.WriteObjectStart(source.Source);
-                    writer.WriteObjectEnd();
-                }
-
-                writer.WriteObjectEnd();
+                SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.OrderBy( c => c, StringComparer.Ordinal)); // This need to stay the original strings because the nuget.g.targets have conditional imports based on the original framework name
+            }
+            else
+            {
+                SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.Select(e => NuGetFramework.Parse(e).GetShortFolderName()).OrderBy(c => c, StringComparer.Ordinal));
             }
 
-            if (msbuildMetadata.Files?.Count > 0)
-            {
-                writer.WriteObjectStart("files");
+            WriteMetadataSources(writer, msbuildMetadata);
+            WriteMetadataFiles(writer, msbuildMetadata);
+            WriteMetadataTargetFrameworks(writer, msbuildMetadata);
+            SetWarningProperties(writer, msbuildMetadata);
 
-                foreach (var file in msbuildMetadata.Files)
-                {
-                    SetValue(writer, file.PackagePath, file.AbsolutePath);
-                }
+            writer.WriteObjectEnd();
+        }
 
-                writer.WriteObjectEnd();
-            }
+        private static void WriteMetadataBooleans(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            SetValueIfTrue(writer, "crossTargeting", msbuildMetadata.CrossTargeting);
+            SetValueIfTrue(writer, "legacyPackagesDirectory", msbuildMetadata.LegacyPackagesDirectory);
+            SetValueIfTrue(writer, "validateRuntimeAssets", msbuildMetadata.ValidateRuntimeAssets);
+            SetValueIfTrue(writer, "skipContentFileWrite", msbuildMetadata.SkipContentFileWrite);
+        }
 
+        private static void WriteMetadataTargetFrameworks(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
             if (msbuildMetadata.TargetFrameworks?.Count > 0)
             {
                 writer.WriteObjectStart("frameworks");
 
                 var frameworkNames = new HashSet<string>();
-
-                foreach (var framework in msbuildMetadata.TargetFrameworks)
+                var frameworkSorter = new NuGetFrameworkSorter();
+                foreach (var framework in msbuildMetadata.TargetFrameworks.OrderBy(c => c.FrameworkName, frameworkSorter))
                 {
                     var frameworkName = framework.FrameworkName.GetShortFolderName();
 
@@ -187,7 +187,7 @@ namespace NuGet.ProjectModel
 
                         writer.WriteObjectStart("projectReferences");
 
-                        foreach (var project in framework.ProjectReferences)
+                        foreach (var project in framework.ProjectReferences.OrderBy(e => e.ProjectPath, PathUtility.GetStringComparerBasedOnOS()))
                         {
                             writer.WriteObjectStart(project.ProjectUniqueName);
 
@@ -218,8 +218,75 @@ namespace NuGet.ProjectModel
 
                 writer.WriteObjectEnd();
             }
+        }
 
-            writer.WriteObjectEnd();
+        private static void WriteMetadataFiles(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            if (msbuildMetadata.Files?.Count > 0)
+            {
+                writer.WriteObjectStart("files");
+
+                foreach (var file in msbuildMetadata.Files)
+                {
+                    SetValue(writer, file.PackagePath, file.AbsolutePath);
+                }
+
+                writer.WriteObjectEnd();
+            }
+        }
+
+        private static void WriteMetadataSources(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            if (msbuildMetadata.Sources?.Count > 0)
+            {
+                writer.WriteObjectStart("sources");
+
+                foreach (var source in msbuildMetadata.Sources.OrderBy(e => e.Source, StringComparer.Ordinal))
+                {
+                    writer.WriteObjectStart(source.Source);
+                    writer.WriteObjectEnd();
+                }
+
+                writer.WriteObjectEnd();
+            }
+        }
+
+        private static void SetWarningProperties(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            if (msbuildMetadata.ProjectWideWarningProperties != null &&
+                (msbuildMetadata.ProjectWideWarningProperties.AllWarningsAsErrors ||
+                 msbuildMetadata.ProjectWideWarningProperties.NoWarn.Count > 0 ||
+                 msbuildMetadata.ProjectWideWarningProperties.WarningsAsErrors.Count > 0))
+            {
+                writer.WriteObjectStart("warningProperties");
+
+                SetValueIfTrue(writer, "allWarningsAsErrors", msbuildMetadata.ProjectWideWarningProperties.AllWarningsAsErrors);
+
+                if (msbuildMetadata.ProjectWideWarningProperties.NoWarn.Count > 0)
+                {
+                    SetArrayValue(writer, "noWarn", msbuildMetadata
+                       .ProjectWideWarningProperties
+                       .NoWarn
+                       .ToArray()
+                       .OrderBy(c => c)
+                       .Select(c => c.GetName())
+                       .Where(c => !string.IsNullOrEmpty(c)));
+                }
+
+                if (msbuildMetadata.ProjectWideWarningProperties.WarningsAsErrors.Count > 0)
+                {
+                    SetArrayValue(writer, "warnAsError", msbuildMetadata
+                        .ProjectWideWarningProperties
+                        .WarningsAsErrors
+                        .ToArray()
+                        .OrderBy(c => c)
+                        .Select(c => c.GetName())
+                        .Where(c => !string.IsNullOrEmpty(c)));
+
+                }
+
+                writer.WriteObjectEnd();
+            }
         }
 
         private static void SetPackOptions(IObjectWriter writer, PackageSpec packageSpec)
@@ -274,6 +341,10 @@ namespace NuGet.ProjectModel
             SetDependencies(writer, "frameworkAssemblies", libraryDependencies.Where(dependency => dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference));
         }
 
+        /// <summary>
+        /// This method sorts the libraries based on the name
+        /// This method also writes out the normalized versions to avoid cases where original string is set because it was gotten through project system vs being installed from PM UI
+        /// </summary>
         private static void SetDependencies(IObjectWriter writer, string name, IEnumerable<LibraryDependency> libraryDependencies)
         {
             if (!libraryDependencies.Any())
@@ -283,7 +354,7 @@ namespace NuGet.ProjectModel
 
             writer.WriteObjectStart(name);
 
-            foreach (var dependency in libraryDependencies)
+            foreach (var dependency in libraryDependencies.OrderBy(e => e.Name, StringComparer.Ordinal))
             {
                 var expandedMode = dependency.IncludeType != LibraryIncludeFlags.All
                     || dependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent
@@ -293,12 +364,7 @@ namespace NuGet.ProjectModel
                         && dependency.LibraryRange.TypeConstraint != (LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference));
 
                 var versionRange = dependency.LibraryRange.VersionRange ?? VersionRange.All;
-                var versionString = versionRange.OriginalString;
-
-                if (string.IsNullOrEmpty(versionString))
-                {
-                    versionString = versionRange.ToNormalizedString();
-                }
+                var versionString = versionRange.ToNormalizedString();
 
                 if (expandedMode)
                 {
@@ -339,6 +405,18 @@ namespace NuGet.ProjectModel
 
                     SetValueIfTrue(writer, "autoReferenced", dependency.AutoReferenced);
 
+                    if (dependency.NoWarn.Count > 0)
+                    {
+                        SetArrayValue(writer, "noWarn", dependency
+                            .NoWarn
+                            .OrderBy(c => c)
+                            .Distinct()
+                            .Select(code => code.GetName())
+                            .Where(s => !string.IsNullOrEmpty(s)));
+                    }
+
+                    SetValueIfTrue(writer, "generatePathProperty", dependency.GeneratePathProperty);
+
                     writer.WriteObjectEnd();
                 }
                 else
@@ -366,12 +444,15 @@ namespace NuGet.ProjectModel
             {
                 writer.WriteObjectStart("frameworks");
 
-                foreach (var framework in frameworks)
+                var frameworkSorter = new NuGetFrameworkSorter();
+                foreach (var framework in frameworks.OrderBy(c => c.FrameworkName, frameworkSorter))
                 {
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
 
                     SetDependencies(writer, framework.Dependencies);
                     SetImports(writer, framework.Imports);
+                    SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
+                    SetValueIfTrue(writer, "warn", framework.Warn);
 
                     writer.WriteObjectEnd();
                 }

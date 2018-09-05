@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,6 +13,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
+using NuGet.Protocol;
+using Test.Utility;
 
 namespace NuGet.CommandLine.Test
 {
@@ -32,6 +34,11 @@ namespace NuGet.CommandLine.Test
         public RouteTable Put { get; }
         public RouteTable Delete { get; }
         public string Uri { get { return PortReserver.BaseUri; } }
+
+        /// <summary>
+        /// Observe requests without handling them directly.
+        /// </summary>
+        public Action<HttpListenerContext> RequestObserver { get; set; } = (x) => { };
 
         /// <summary>
         /// Initializes an instance of MockServer.
@@ -54,6 +61,8 @@ namespace NuGet.CommandLine.Test
             Put = new RouteTable(BasePath);
             Delete = new RouteTable(BasePath);
         }
+
+        private List<string> ServerWarnings { get; } = new List<string>();
 
         /// <summary>
         /// Starts the mock server.
@@ -303,6 +312,11 @@ namespace NuGet.CommandLine.Test
                         {
                             response.StatusCode = (int)r;
                         }
+
+                        foreach (var warning in ServerWarnings)
+                        {
+                            response.Headers.Add(ProtocolConstants.ServerWarningHeader, warning);
+                        }
                     }
                     else
                     {
@@ -318,17 +332,15 @@ namespace NuGet.CommandLine.Test
 
         private void HandleRequest()
         {
-            const int ERROR_OPERATION_ABORTED = 995;
-            const int ERROR_INVALID_HANDLE = 6;
-            const int ERROR_INVALID_FUNCTION = 1;
-            const int ERROR_OPERATION_ABORTED_MONO = 500;
-
             while (true)
             {
                 try
                 {
                     var context = Listener.GetContext();
+
                     GenerateResponse(context);
+
+                    RequestObserver(context);
                 }
                 catch (ObjectDisposedException)
                 {
@@ -336,10 +348,10 @@ namespace NuGet.CommandLine.Test
                 }
                 catch (HttpListenerException ex)
                 {
-                    if (ex.ErrorCode == ERROR_OPERATION_ABORTED ||
-                        ex.ErrorCode == ERROR_INVALID_HANDLE ||
-                        ex.ErrorCode == ERROR_INVALID_FUNCTION ||
-                        RuntimeEnvironmentHelper.IsMono && ex.ErrorCode == ERROR_OPERATION_ABORTED_MONO)
+                    if (ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED ||
+                        ex.ErrorCode == ErrorConstants.ERROR_INVALID_HANDLE ||
+                        ex.ErrorCode == ErrorConstants.ERROR_INVALID_FUNCTION ||
+                        RuntimeEnvironmentHelper.IsMono && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_MONO)
                     {
                         return;
                     }
@@ -415,6 +427,22 @@ namespace NuGet.CommandLine.Test
         {
             XDocument doc = new XDocument(ToODataEntryXElement(package));
             return doc.ToString();
+        }
+
+        public void AddServerWarnings(string[] messages)
+        {
+            if (messages == null)
+            {
+                return;
+            }
+
+            foreach (var message in messages)
+            {
+                if (!string.IsNullOrEmpty(message))
+                {
+                    ServerWarnings.Add(message);
+                }
+            }
         }
 
         public void Dispose()

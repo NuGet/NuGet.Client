@@ -1,11 +1,16 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
+using NuGet.Commands;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 
 namespace NuGet.Build.Tasks
 {
@@ -30,19 +35,24 @@ namespace NuGet.Build.Tasks
         public string ToolFramework { get; set; }
 
         /// <summary>
-        /// NuGet sources, ; delimited
+        /// NuGet sources
         /// </summary>
-        public string RestoreSources { get; set; }
+        public string[] RestoreSources { get; set; }
 
         /// <summary>
         /// NuGet fallback folders
         /// </summary>
-        public string RestoreFallbackFolders { get; set; }
+        public string[] RestoreFallbackFolders { get; set; }
 
         /// <summary>
         /// User packages folder
         /// </summary>
         public string RestorePackagesPath { get; set; }
+
+        /// <summary>
+        /// Config File Paths used
+        /// </summary>
+        public string[] RestoreConfigFilePaths { get; set; }
 
         [Required]
         public ITaskItem[] DotnetCliToolReferences { get; set; }
@@ -52,6 +62,22 @@ namespace NuGet.Build.Tasks
             var log = new MSBuildLogger(Log);
             log.LogDebug($"(in) ProjectPath '{ProjectPath}'");
             log.LogDebug($"(in) DotnetCliToolReferences '{string.Join(";", DotnetCliToolReferences.Select(p => p.ItemSpec))}'");
+            if (RestoreSources != null)
+            {
+                log.LogDebug($"(in) RestoreSources '{string.Join(";", RestoreSources.Select(p => p))}'");
+            }
+            if (RestorePackagesPath != null)
+            {
+                log.LogDebug($"(in) RestorePackagesPath '{RestorePackagesPath}'");
+            }
+            if (RestoreFallbackFolders != null)
+            {
+                log.LogDebug($"(in) RestoreFallbackFolders '{string.Join(";", RestoreFallbackFolders.Select(p => p))}'");
+            }
+            if (RestoreConfigFilePaths != null)
+            {
+                log.LogDebug($"(in) RestoreConfigFilePaths '{string.Join(";", RestoreConfigFilePaths.Select(p => p))}'");
+            }
 
             var entries = new List<ITaskItem>();
 
@@ -62,20 +88,23 @@ namespace NuGet.Build.Tasks
                     throw new InvalidDataException($"Invalid DotnetCliToolReference in {ProjectPath}");
                 }
 
-                var uniqueName = $"{msbuildItem.ItemSpec}-{Guid.NewGuid().ToString()}";
 
                 // Create top level project
                 var properties = new Dictionary<string, string>();
-                properties.Add("ProjectUniqueName", uniqueName);
                 properties.Add("Type", "ProjectSpec");
                 properties.Add("ProjectPath", ProjectPath);
-                properties.Add("ProjectName", $"DotnetCliToolReference-{msbuildItem.ItemSpec}");
+                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version");
+                properties.TryGetValue("Version", out string value);
+                var uniqueName = ToolRestoreUtility.GetUniqueName(msbuildItem.ItemSpec, ToolFramework, value != null ? VersionRange.Parse(value) : VersionRange.All);
+                properties.Add("ProjectUniqueName", uniqueName);
+                properties.Add("ProjectName", uniqueName);
+
                 BuildTasksUtility.AddPropertyIfExists(properties, "Sources", RestoreSources);
                 BuildTasksUtility.AddPropertyIfExists(properties, "FallbackFolders", RestoreFallbackFolders);
+                BuildTasksUtility.AddPropertyIfExists(properties, "ConfigFilePaths", RestoreConfigFilePaths);
                 BuildTasksUtility.AddPropertyIfExists(properties, "PackagesPath", RestorePackagesPath);
                 properties.Add("TargetFrameworks", ToolFramework);
                 properties.Add("ProjectStyle", ProjectStyle.DotnetCliTool.ToString());
-                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version");
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -48,6 +48,16 @@ namespace NuGet.Configuration
             return new List<KeyValuePair<string, string>>().AsReadOnly();
         }
 
+        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
+        {
+            return new List<SettingValue>().AsReadOnly();
+        }
+
+        public IReadOnlyList<string> GetAllSubsections(string section)
+        {
+            return new List<string>().AsReadOnly();
+        }
+
         public void SetValue(string section, string key, string value)
         {
             throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetValue)));
@@ -68,6 +78,11 @@ namespace NuGet.Configuration
             throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetNestedValues)));
         }
 
+        public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
+        {
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(SetNestedSettingValues)));
+        }
+
         public bool DeleteValue(string section, string key)
         {
             throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(DeleteValue)));
@@ -76,6 +91,11 @@ namespace NuGet.Configuration
         public bool DeleteSection(string section)
         {
             throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(DeleteSection)));
+        }
+
+        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
+        {
+            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(UpdateSubsections)));
         }
     }
 }

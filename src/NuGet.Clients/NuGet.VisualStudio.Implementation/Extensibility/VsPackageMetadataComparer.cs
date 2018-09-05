@@ -32,8 +32,8 @@ namespace NuGet.VisualStudio
                 return 0;
             }
 
-            return obj.Id.ToUpperInvariant().GetHashCode() * 397
-                   ^ obj.VersionString.ToUpperInvariant().GetHashCode();
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Id) * 397
+                   ^ StringComparer.OrdinalIgnoreCase.GetHashCode(obj.VersionString);
         }
     }
 }

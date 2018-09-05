@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 
 namespace NuGet.Common
@@ -76,6 +79,58 @@ namespace NuGet.Common
 
             // Return the same path
             return localOrUriPath;
+        }
+
+        /// <summary>
+        /// Calls GetAbsolutePath with the directory of <paramref name="sourceFile"/>.
+        /// </summary>
+        public static string GetAbsolutePathFromFile(string sourceFile, string path)
+        {
+            if (string.IsNullOrEmpty(sourceFile))
+            {
+                return path;
+            }
+
+            return GetAbsolutePath(Path.GetDirectoryName(sourceFile), path);
+        }
+
+        /// <summary>
+        /// Convert a relative local folder path to an absolute path.
+        /// For http sources and UNC shares this will return
+        /// the same path.
+        /// </summary>
+        /// <param name="rootDirectory">Directory to make the source relative to.</param>
+        /// <param name="path">Source path.</param>
+        /// <returns>The absolute source path or the original source. Noops for non-file paths.</returns>
+        public static string GetAbsolutePath(string rootDirectory, string path)
+        {
+            // return invalid data as-is.
+            if (string.IsNullOrEmpty(rootDirectory) || string.IsNullOrEmpty(path))
+            {
+                return path;
+            }
+
+            // Convert file:// to a path
+            var local = GetLocalPath(path);
+
+            // Check if the result is relative, in which case combine it.
+            var relativeUri = TryCreateSourceUri(local, UriKind.Relative);
+
+            if (relativeUri != null)
+            {
+                // Combine with the root dir
+                return Path.GetFullPath(Path.Combine(rootDirectory, local));
+            }
+
+            var absoluteUri = TryCreateSourceUri(local, UriKind.Absolute);
+
+            if (absoluteUri?.IsFile == true)
+            {
+                return Path.GetFullPath(local);
+            }
+
+            // Absolute path or non-http url.
+            return local;
         }
     }
 }

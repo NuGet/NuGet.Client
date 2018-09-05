@@ -1,23 +1,20 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
-using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement
 {
@@ -30,7 +27,8 @@ namespace NuGet.PackageManagement
             BuildIntegratedNuGetProject project,
             IEnumerable<PackageIdentity> packages,
             FallbackPackagePathResolver pathResolver,
-            INuGetProjectContext projectContext)
+            INuGetProjectContext projectContext,
+            CancellationToken token)
         {
             // Find all dependencies in sorted order
             var sortedPackages = await BuildIntegratedProjectUtility.GetOrderedProjectPackageDependencies(project);
@@ -50,43 +48,17 @@ namespace NuGet.PackageManagement
                         continue;
                     }
 
-                    await project.ExecuteInitScriptAsync(
-                        package,
-                        packageInstallPath,
-                        projectContext,
-                        throwOnFailure: false);
+                    await project
+                        .ProjectServices
+                        .ScriptService
+                        .ExecutePackageInitScriptAsync(
+                            package,
+                            packageInstallPath,
+                            projectContext,
+                            throwOnFailure: false,
+                            token: token);
                 }
             }
-        }
-
-        /// <summary>
-        /// Determine what packages need to have their init.ps1 scripts executed based on the provided restore result.
-        /// When a restore happens, new packages can be introduced (because the project.json was updated since the last
-        /// restore) or existing packages can be installed (because the global packages folder was cleared or a restore
-        /// has never been run on an existing project.json). In both of these cases, the init.ps1 scripts should be
-        /// executed. Also, the init.ps1 scripts should be executed in dependency order, however it is the
-        /// resposibility of <see cref="ExecuteInitPs1ScriptsAsync(BuildIntegratedNuGetProject, IEnumerable{PackageIdentity}, FallbackPackagePathResolver, INuGetProjectContext)"/>
-        /// to do this.
-        /// </summary>
-        /// <param name="restoreResult">The restore result to examine.</param>
-        /// <returns>The packages to execute init.ps1 scripts.</returns>
-        public static IReadOnlyList<PackageIdentity> GetPackagesToExecuteInitPs1(RestoreResult restoreResult)
-        {
-            Debug.Assert(restoreResult.Success, "We should not be executing init.ps1 scripts after a failed restore.");
-
-            // Packages added from the previous restore.
-            var addedPackages = GetAddedPackages(restoreResult.PreviousLockFile, restoreResult.LockFile);
-            
-            // Packages that were not installed before.
-            var installedPackages = restoreResult
-                .GetAllInstalled()
-                .Where(library => library.Type == LibraryType.Package)
-                .Select(library => new PackageIdentity(library.Name, library.Version));
-
-            // Get unique package identities.
-            var newPackages = new HashSet<PackageIdentity>(addedPackages.Concat(installedPackages));
-            
-            return newPackages.ToList();
         }
 
         /// <summary>
@@ -172,6 +144,34 @@ namespace NuGet.PackageManagement
             return parentNuGetprojects
                 .OrderBy(parent => parent.MSBuildProjectPath, StringComparer.Ordinal)
                 .ToList();
+        }
+
+        public static void UpdatePackageReferenceMetadata(
+            PackageSpec packageSpec,
+            FallbackPackagePathResolver pathResolver,
+            PackageIdentity package)
+        {
+            var info = pathResolver.GetPackageInfo(package.Id, package.Version);
+            var nuspecFilePath = info?.PathResolver.GetManifestFilePath(package.Id, package.Version);
+            var nuspecReader = new NuspecReader(nuspecFilePath);
+            var developmentDependency = nuspecReader.GetDevelopmentDependency();
+
+            if (developmentDependency)
+            {
+                foreach (var frameworkInfo in packageSpec.TargetFrameworks
+                    .OrderBy(framework => framework.FrameworkName.ToString(),
+                        StringComparer.Ordinal))
+                {
+                    var dependency = frameworkInfo.Dependencies.First(dep => dep.Name.Equals(package.Id, StringComparison.OrdinalIgnoreCase));
+
+                    if (dependency?.SuppressParent == LibraryIncludeFlagUtils.DefaultSuppressParent &&
+                        dependency?.IncludeType == LibraryIncludeFlags.All)
+                    {
+                        dependency.SuppressParent = LibraryIncludeFlags.All;
+                        dependency.IncludeType = LibraryIncludeFlags.All & ~LibraryIncludeFlags.Compile;
+                    }
+                }
+            }
         }
     }
 }

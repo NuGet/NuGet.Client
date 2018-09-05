@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 extern alias CoreV2;
 
@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Credentials;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -77,6 +78,20 @@ namespace NuGet.CommandLine
 
         protected internal CoreV2.NuGet.IPackageRepositoryFactory RepositoryFactory { get; set; }
 
+        private Lazy<MsBuildToolset> MsBuildToolset {
+            get
+            {
+                if (_defaultMsBuildToolset == null)
+                {
+                    _defaultMsBuildToolset = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(null, null, Console);
+
+                }
+                return _defaultMsBuildToolset;
+            }
+        }
+
+        private Lazy<MsBuildToolset> _defaultMsBuildToolset;
+
         public CommandAttribute CommandAttribute
         {
             get
@@ -102,11 +117,19 @@ namespace NuGet.CommandLine
             }
             else
             {
-                if (String.IsNullOrEmpty(ConfigFile))
+                if (string.IsNullOrEmpty(ConfigFile))
                 {
+                    string configFileName = null;
+
+                    var packCommand = this as PackCommand;
+                    if (packCommand != null && !string.IsNullOrEmpty(packCommand.ConfigFile))
+                    {
+                        configFileName = packCommand.ConfigFile;
+                    }
+
                     Settings = Configuration.Settings.LoadDefaultSettings(
                         CurrentDirectory,
-                        configFileName: null,
+                        configFileName: configFileName,
                         machineWideSettings: MachineWideSettings);
                 }
                 else
@@ -121,6 +144,7 @@ namespace NuGet.CommandLine
                 }
 
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
+
                 SetDefaultCredentialProvider();
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
 
@@ -139,11 +163,13 @@ namespace NuGet.CommandLine
             if (ShouldOutputNuGetVersion)
             {
                 var assemblyName = Assembly.GetExecutingAssembly().GetName();
+                var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+                var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(assemblyLocation).FileVersion;
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
                     LocalizedResourceManager.GetString("OutputNuGetVersion"),
                     assemblyName.Name,
-                    assemblyName.Version);
+                    version);
                 Console.WriteLine(message);
             }
         }
@@ -153,17 +179,23 @@ namespace NuGet.CommandLine
             get { return Console.Verbosity == Verbosity.Detailed; }
         }
 
+        protected virtual void SetDefaultCredentialProvider()
+        {
+            SetDefaultCredentialProvider(MsBuildToolset);
+        }
+
         /// <summary>
         /// Set default credential provider for the HttpClient, which is used by V2 sources.
         /// Also set up authenticated proxy handling for V3 sources.
         /// </summary>
-        protected void SetDefaultCredentialProvider()
+        protected void SetDefaultCredentialProvider(Lazy<MsBuildToolset> msbuildDirectory)
         {
-            CredentialService = new CredentialService(GetCredentialProviders(), NonInteractive);
+            Protocol.Plugins.PluginDiscoveryUtility.InternalPluginDiscoveryRoot = new Lazy<string>(() => Protocol.Plugins.PluginDiscoveryUtility.GetInternalPluginRelativeToMSBuildExe(msbuildDirectory.Value.Path));
+            CredentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => GetCredentialProvidersAsync()), NonInteractive, handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
 
             CoreV2.NuGet.HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
 
-            HttpHandlerResourceV3.CredentialService = CredentialService;
+            HttpHandlerResourceV3.CredentialService = new Lazy<Configuration.ICredentialService>(() => CredentialService);
 
             HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
@@ -172,18 +204,21 @@ namespace NuGet.CommandLine
             };
         }
 
-        private IEnumerable<NuGet.Credentials.ICredentialProvider> GetCredentialProviders()
+        private async Task<IEnumerable<ICredentialProvider>> GetCredentialProvidersAsync()
         {
             var extensionLocator = new ExtensionLocator();
-            var providers = new List<Credentials.ICredentialProvider>();
+            var providers = new List<ICredentialProvider>();
             var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings, Console)
                 .BuildAll(Verbosity.ToString())
                 .ToList();
+            var securePluginProviders =  await (new SecurePluginCredentialProviderBuilder(pluginManager: PluginManager.Instance, canShowDialog: true, logger: Console)).BuildAllAsync();
 
-            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console))); 
-            if (pluginProviders.Any())
+            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
+            providers.AddRange(securePluginProviders);
+            providers.AddRange(pluginProviders);
+
+            if (pluginProviders.Any() || securePluginProviders.Any())
             {
-                providers.AddRange(pluginProviders);
                 if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
                 {
                     providers.Add(new DefaultCredentialsCredentialProvider());
@@ -214,13 +249,13 @@ namespace NuGet.CommandLine
             }
 
             // Use the command name minus the suffix if present and default description
-            string name = GetType().Name;
-            int idx = name.LastIndexOf(CommandSuffix, StringComparison.OrdinalIgnoreCase);
+            var name = GetType().Name;
+            var idx = name.LastIndexOf(CommandSuffix, StringComparison.OrdinalIgnoreCase);
             if (idx >= 0)
             {
                 name = name.Substring(0, idx);
             }
-            if (!String.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(name))
             {
                 return new CommandAttribute(name, LocalizedResourceManager.GetString("DefaultCommandDescription"));
             }

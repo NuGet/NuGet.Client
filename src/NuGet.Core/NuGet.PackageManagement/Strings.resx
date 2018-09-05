@@ -275,6 +275,8 @@
   </data>
   <data name="Warning_ErrorFindingRepository" xml:space="preserve">
     <value>Error finding repository for '{0}': {1}</value>
+    <comment>0 - package source
+1 - exception message</comment>
   </data>
   <data name="PackageCancelledFromSource" xml:space="preserve">
     <value>Getting package '{0}' from source '{1}' was cancelled.</value>
@@ -334,5 +336,159 @@
   </data>
   <data name="NoPackageUpdates" xml:space="preserve">
     <value>No package updates are available from the current package source for project '{0}'.</value>
+  </data>
+  <data name="AddedPackageToFolder" xml:space="preserve">
+    <value>Added package '{0}' to folder '{1}'</value>
+  </data>
+  <data name="AddedPackageToFolderFromSource" xml:space="preserve">
+    <value>Added package '{0}' to folder '{1}' from source '{2}'</value>
+  </data>
+  <data name="AddedPackageToMSBuildProject" xml:space="preserve">
+    <value>Added package '{0}' to project '{1}'</value>
+  </data>
+  <data name="AddedPackageToPackagesConfig" xml:space="preserve">
+    <value>Added package '{0}' to '{1}'</value>
+  </data>
+  <data name="AddingPackageToFolder" xml:space="preserve">
+    <value>Adding package '{0}' to folder '{1}'</value>
+  </data>
+  <data name="AddingPackageToMSBuildProject" xml:space="preserve">
+    <value>Adding package '{0}' to project '{1}'</value>
+  </data>
+  <data name="AddingPackageWithOnlyDependencies" xml:space="preserve">
+    <value>Adding package '{0}', which only has dependencies, to project '{1}'.</value>
+  </data>
+  <data name="AddingPackageWithOnlyToolsGroup" xml:space="preserve">
+    <value>Adding package '{0}', which only has tools group, to project '{1}'</value>
+  </data>
+  <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
+    <value>Argument cannot be null or empty</value>
+  </data>
+  <data name="Argument_Must_Be_GreaterThanOrEqualTo" xml:space="preserve">
+    <value>Value must be greater than or equal to {0}</value>
+  </data>
+  <data name="ContentFilesShouldNotBeTargetFrameworkSpecific" xml:space="preserve">
+    <value>Content files should not be target framework specific, whereas, '{0}' is</value>
+  </data>
+  <data name="Debug_AddedFile" xml:space="preserve">
+    <value>Added file '{0}'.</value>
+  </data>
+  <data name="Debug_AddedFileToFolder" xml:space="preserve">
+    <value>Added file '{0}' to folder '{1}'.</value>
+  </data>
+  <data name="Debug_RemovedFile" xml:space="preserve">
+    <value>Removed file '{0}'.</value>
+  </data>
+  <data name="Debug_RemovedFileFromFolder" xml:space="preserve">
+    <value>Removed file '{0}' from folder '{1}'.</value>
+  </data>
+  <data name="Debug_RemovedFolder" xml:space="preserve">
+    <value>Removed folder '{0}'.</value>
+  </data>
+  <data name="Debug_TargetFrameworkInfo" xml:space="preserve">
+    <value>&gt;&gt; {0} are being added from '{1}'{2}</value>
+  </data>
+  <data name="Debug_TargetFrameworkInfoPrefix" xml:space="preserve">
+    <value>For adding package '{0}' to project '{1}' that targets '{2}'.</value>
+  </data>
+  <data name="Debug_TargetFrameworkInfo_AssemblyReferences" xml:space="preserve">
+    <value>Assembly references</value>
+  </data>
+  <data name="Debug_TargetFrameworkInfo_BuildFiles" xml:space="preserve">
+    <value>Build files</value>
+  </data>
+  <data name="Debug_TargetFrameworkInfo_ContentFiles" xml:space="preserve">
+    <value>Content files</value>
+  </data>
+  <data name="Debug_TargetFrameworkInfo_NotFrameworkSpecific" xml:space="preserve">
+    <value>(not framework-specific)</value>
+  </data>
+  <data name="Debug_TargetFrameworkInfo_PowershellScripts" xml:space="preserve">
+    <value>&gt;&gt; PowerShell scripts are being executed from '{0}'{1}</value>
+  </data>
+  <data name="DependencyDoesNotHaveValidVersion" xml:space="preserve">
+    <value>Dependency '{0}' has invalid version specification.</value>
+  </data>
+  <data name="ErrorLoadingPackagesConfig" xml:space="preserve">
+    <value>An error occurred while reading file '{0}': {1}</value>
+  </data>
+  <data name="ErrorWritingPackagesConfig" xml:space="preserve">
+    <value>An error occurred while writing file '{0}': {1}</value>
+  </data>
+  <data name="FileConflictMessage" xml:space="preserve">
+    <value>File '{0}' already exists in project '{1}'. Do you want to overwrite it?</value>
+  </data>
+  <data name="Info_OverwritingExistingFile" xml:space="preserve">
+    <value>Overwriting existing file '{0}'..</value>
+  </data>
+  <data name="InvalidProjectName" xml:space="preserve">
+    <value>Unable to determine the project name for '{0}'.</value>
+  </data>
+  <data name="NoFolderSpecificToTargetFxFound" xml:space="preserve">
+    <value>Invalid!! Could not find a folder under artifact type '{0}', so cannot request for artifacts specific to target framework '{1}'</value>
+  </data>
+  <data name="PackageAlreadyExistsInFolder" xml:space="preserve">
+    <value>Package '{0}' already exists in folder '{1}'</value>
+  </data>
+  <data name="PackageAlreadyExistsInPackagesConfig" xml:space="preserve">
+    <value>Package '{0}' already exists in '{1}'</value>
+  </data>
+  <data name="PackageAlreadyExistsInProject" xml:space="preserve">
+    <value>Package '{0}' already exists in project '{1}'</value>
+  </data>
+  <data name="PackageDoesNotExistInFolder" xml:space="preserve">
+    <value>Package '{0}' does not exist in folder '{1}'</value>
+  </data>
+  <data name="PackageDoesNotExistInProject" xml:space="preserve">
+    <value>Package '{0}' does not exist in project '{1}'</value>
+  </data>
+  <data name="PackageDoesNotExisttInPackagesConfig" xml:space="preserve">
+    <value>Package '{0}' does not exists in '{1}'</value>
+  </data>
+  <data name="PackageStreamShouldBeSeekable" xml:space="preserve">
+    <value>Package stream should be seekable</value>
+  </data>
+  <data name="ProjectNotLoaded_RestoreFailed" xml:space="preserve">
+    <value>The operation failed as details for project {0} could not be loaded.</value>
+  </data>
+  <data name="RemovedPackageFromFolder" xml:space="preserve">
+    <value>Removed package '{0}' from folder '{1}'</value>
+  </data>
+  <data name="RemovedPackageFromMSBuildProject" xml:space="preserve">
+    <value>Removed package '{0}' from project '{1}'</value>
+  </data>
+  <data name="RemovedPackageFromPackagesConfig" xml:space="preserve">
+    <value>Removed package '{0}' from '{1}'</value>
+  </data>
+  <data name="RemovingPackageFromFolder" xml:space="preserve">
+    <value>Removing package '{0}' from folder '{1}'</value>
+  </data>
+  <data name="RemovingPackageFromMSBuildProject" xml:space="preserve">
+    <value>Removing package '{0}' from project '{1}'</value>
+  </data>
+  <data name="SolutionDirectoryMustBeRooted" xml:space="preserve">
+    <value>Solution directory '{0}' must be a rooted path.</value>
+  </data>
+  <data name="TokenHasNoValue" xml:space="preserve">
+    <value>The replacement token '{0}' has no value</value>
+  </data>
+  <data name="UnableToFindCompatibleItems" xml:space="preserve">
+    <value>Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author.</value>
+  </data>
+  <data name="Warning_DirectoryNotEmpty" xml:space="preserve">
+    <value>Directory '{0}' is not empty. Skipping...</value>
+  </data>
+  <data name="Warning_FileAlreadyExists" xml:space="preserve">
+    <value>'{0}' already exists. Skipping...</value>
+  </data>
+  <data name="Warning_FileModified" xml:space="preserve">
+    <value>Skipping '{0}' because it was modified.</value>
+  </data>
+  <data name="XdtError" xml:space="preserve">
+    <value>An error occurred while applying transformation to '{0}' in project '{1}'</value>
+  </data>
+  <data name="SignatureVerificationMultiple" xml:space="preserve">
+    <value>Signed package validation failed with multiple errors:{0}</value>
+    <comment>0 - new line separated list of errors</comment>
   </data>
 </root>

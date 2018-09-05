@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 
 namespace NuGet.PackageManagement
@@ -19,7 +20,8 @@ namespace NuGet.PackageManagement
                   includePrelease: false,
                   includeUnlisted: true,
                   versionConstraints: VersionConstraints.None,
-                  gatherCache: new GatherCache())
+                  gatherCache: new GatherCache(),
+                  sourceCacheContext: NullSourceCacheContext.Instance)
         {
         }
 
@@ -35,7 +37,8 @@ namespace NuGet.PackageManagement
                   includePrelease,
                   includeUnlisted,
                   versionConstraints,
-                  new GatherCache())
+                  new GatherCache(),
+                  NullSourceCacheContext.Instance)
         {
         }
 
@@ -47,7 +50,8 @@ namespace NuGet.PackageManagement
             bool includePrelease,
             bool includeUnlisted,
             VersionConstraints versionConstraints,
-            GatherCache gatherCache)
+            GatherCache gatherCache,
+            SourceCacheContext sourceCacheContext)
         {
             if (gatherCache == null)
             {
@@ -59,6 +63,7 @@ namespace NuGet.PackageManagement
             IncludeUnlisted = includeUnlisted;
             VersionConstraints = versionConstraints;
             GatherCache = gatherCache;
+            SourceCacheContext = sourceCacheContext;
         }
 
         /// <summary>
@@ -87,5 +92,10 @@ namespace NuGet.PackageManagement
         /// the gathered packages and re-uses them across all sub operations.
         /// </summary>
         public GatherCache GatherCache { get; }
+
+        /// <summary>
+        /// Http source cache context which will be shared across operations.
+        /// </summary>
+        public SourceCacheContext SourceCacheContext { get; }
     }
 }

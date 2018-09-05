@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,13 +10,13 @@ using System.Reflection;
 using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Frameworks;
-using NuGet.PackageManagement;
-using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 
 namespace NuGet.Common
 {
-    public class MSBuildProjectSystem : MSBuildUser, IMSBuildNuGetProjectSystem
+    public sealed class MSBuildProjectSystem 
+        : MSBuildUser
+        , IMSBuildProjectSystem
     {
         private const string TargetName = "EnsureNuGetPackageBuildImports";
         
@@ -30,12 +30,12 @@ namespace NuGet.Common
             ProjectFileFullPath = projectFullPath;
             ProjectFullPath = Path.GetDirectoryName(projectFullPath);
             Project = GetProject(projectFullPath);
-            ProjectName = Path.GetFileName(projectFullPath);
+            ProjectName = Path.GetFileNameWithoutExtension(projectFullPath);
             ProjectUniqueName = projectFullPath;
             NuGetProjectContext = projectContext;
         }
 
-        public INuGetProjectContext NuGetProjectContext { get; private set; }
+        public INuGetProjectContext NuGetProjectContext { get; set; }
 
         /// <summary>
         /// This does not contain the filename, just the path to the directory where the project file exists
@@ -64,7 +64,8 @@ namespace NuGet.Common
                         targetFramework: GetPropertyValue("TargetFramework"),
                         targetFrameworkMoniker: GetPropertyValue("TargetFrameworkMoniker"),
                         targetPlatformIdentifier: GetPropertyValue("TargetPlatformIdentifier"),
-                        targetPlatformVersion: GetPropertyValue("TargetPlatformVersion"));
+                        targetPlatformVersion: GetPropertyValue("TargetPlatformVersion"),
+                        targetPlatformMinVersion: GetPropertyValue("TargetPlatformMinVersion"));
 
                     // Parse the framework of the project or return unsupported.
                     var frameworks = MSBuildProjectFrameworkUtility.GetProjectFrameworks(frameworkStrings).ToArray();
@@ -100,9 +101,10 @@ namespace NuGet.Common
             FileSystemUtility.AddFile(ProjectFullPath, path, stream, NuGetProjectContext);
         }
 
-        public void AddFrameworkReference(string name, string packageId)
+        public Task AddFrameworkReferenceAsync(string name, string packageId)
         {
             // No-op
+            return Task.FromResult(0);
         }
 
         public void AddImport(string targetFullPath, ImportLocation location)
@@ -112,12 +114,12 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = NuGet.Commands.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
+            var targetRelativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
             var imports = Project.Xml.Imports;
-            bool notImported = true;
+            var notImported = true;
             if (imports != null)
             {
-                foreach (dynamic import in imports)
+                foreach (var import in imports)
                 {
                     if (targetRelativePath.Equals(import.Project, StringComparison.OrdinalIgnoreCase))
                     {
@@ -150,11 +152,11 @@ namespace NuGet.Common
             Project.Save();
         }
 
-        public void AddReference(string referencePath)
+        public Task AddReferenceAsync(string referencePath)
         {
-            string fullPath = NuGet.Commands.PathUtility.GetAbsolutePath(ProjectFullPath, referencePath);
-            string relativePath = NuGet.Commands.PathUtility.GetRelativePath(Project.FullPath, fullPath);
-            string assemblyFileName = Path.GetFileNameWithoutExtension(fullPath);
+            var fullPath = PathUtility.GetAbsolutePath(ProjectFullPath, referencePath);
+            var relativePath = PathUtility.GetRelativePath(Project.FullPath, fullPath);
+            var assemblyFileName = Path.GetFileNameWithoutExtension(fullPath);
 
             try
             {
@@ -172,11 +174,14 @@ namespace NuGet.Common
                 assemblyFileName,
                 new[] { new KeyValuePair<string, string>("HintPath", relativePath),
                         new KeyValuePair<string, string>("Private", "True")});
+
+            return Task.FromResult(0);
         }
 
-        public void BeginProcessing()
+        public Task BeginProcessingAsync()
         {
             // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
+            return Task.FromResult(0);
         }
 
         public void RegisterProcessedFiles(IEnumerable<string> files)
@@ -184,9 +189,10 @@ namespace NuGet.Common
             // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
         }
 
-        public void EndProcessing()
+        public Task EndProcessingAsync()
         {
             // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
+            return Task.FromResult(0);
         }
 
         public void DeleteDirectory(string path, bool recursive)
@@ -194,25 +200,19 @@ namespace NuGet.Common
             FileSystemUtility.DeleteDirectory(path, recursive, NuGetProjectContext);
         }
 
-        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, bool throwOnFailure)
-        {
-            // No-op
-            return Task.FromResult(0);
-        }
-
         public bool FileExistsInProject(string path)
         {
             // some ItemTypes which starts with _ are added by various MSBuild tasks for their own purposes
             // and they do not represent content files of the projects. Therefore, we exclude them when checking for file existence.
-            foreach (dynamic item in Project.Items)
+            foreach (var item in Project.Items)
             {
                 // even though the type of Project.Items is ICollection<ProjectItem>, when dynamic is used
                 // the type of item is Dictionary.KeyValuePair, instead of ProjectItem. So another foreach
                 // is needed to iterate through all project items.
-                foreach (dynamic i in item.Value)
+                foreach (var i in item.Value)
                 {
                     if (i.EvaluatedInclude.Equals(path, StringComparison.OrdinalIgnoreCase) &&
-                         (String.IsNullOrEmpty(i.ItemType) || i.ItemType[0] != '_'))
+                         (string.IsNullOrEmpty(i.ItemType) || i.ItemType[0] != '_'))
                     {
                         return true;
                     }
@@ -236,7 +236,7 @@ namespace NuGet.Common
 
         public IEnumerable<string> GetFullPaths(string fileName)
         {
-            foreach (dynamic projectItem in Project.Items)
+            foreach (var projectItem in Project.Items)
             {
                 var itemFileName = Path.GetFileName(projectItem.EvaluatedInclude);
                 if (string.Equals(fileName, itemFileName, StringComparison.OrdinalIgnoreCase))
@@ -256,9 +256,9 @@ namespace NuGet.Common
             return true;
         }
 
-        public bool ReferenceExists(string name)
+        public Task<bool> ReferenceExistsAsync(string name)
         {
-            return GetReference(name) != null;
+            return Task.FromResult(GetReference(name) != null);
         }
 
         public void RemoveFile(string path)
@@ -274,14 +274,19 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = NuGet.Commands.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
+            var targetRelativePath = PathUtility.GetPathWithForwardSlashes(
+                PathUtility.GetRelativePath(
+                    PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath));
+
             if (Project.Xml.Imports != null)
             {
                 // search for this import statement and remove it
                 dynamic importElement = null;
-                foreach (dynamic import in Project.Xml.Imports)
+                foreach (var import in Project.Xml.Imports)
                 {
-                    if (targetRelativePath.Equals(import.Project, StringComparison.OrdinalIgnoreCase))
+                    var currentPath = PathUtility.GetPathWithForwardSlashes(import.Project);
+
+                    if (StringComparer.OrdinalIgnoreCase.Equals(targetRelativePath, currentPath))
                     {
                         importElement = import;
                         break;
@@ -299,23 +304,20 @@ namespace NuGet.Common
             Project.Save();
         }
 
-        public void RemoveReference(string name)
+        public Task RemoveReferenceAsync(string name)
         {
             dynamic assemblyReference = GetReference(name);
             if (assemblyReference != null)
             {
                 Project.RemoveItem(assemblyReference);
             }
+
+            return Task.FromResult(0);
         }
 
         public string ResolvePath(string path)
         {
             return path;
-        }
-
-        public void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
-        {
-            NuGetProjectContext = nuGetProjectContext;
         }
 
         public void Save()
@@ -325,7 +327,7 @@ namespace NuGet.Common
 
         private IEnumerable<dynamic> GetItems(string itemType, string name)
         {
-            foreach (dynamic i in Project.GetItems(itemType))
+            foreach (var i in Project.GetItems(itemType))
             {
                 if (i.EvaluatedInclude.StartsWith(name, StringComparison.OrdinalIgnoreCase))
                 {
@@ -347,7 +349,7 @@ namespace NuGet.Common
         {
             // get the target
             dynamic targetElement = null;
-            foreach (dynamic target in Project.Xml.Targets)
+            foreach (var target in Project.Xml.Targets)
             {
                 if (target.Name.Equals(TargetName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -383,9 +385,9 @@ namespace NuGet.Common
         private void RemoveEnsureImportedTarget(string targetsPath)
         {
             dynamic targetElement = null;
-            foreach (dynamic target in Project.Xml.Targets)
+            foreach (var target in Project.Xml.Targets)
             {
-                if (string.Equals(target.Name, targetsPath, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(target.Name, TargetName, StringComparison.OrdinalIgnoreCase))
                 {
                     targetElement = target;
                     break;
@@ -396,11 +398,14 @@ namespace NuGet.Common
                 return;
             }
 
-            string errorCondition = "!Exists('" + targetsPath + "')";
+            var errorCondition = "!Exists('" + PathUtility.GetPathWithForwardSlashes(targetsPath) + "')";
             dynamic taskElement = null;
-            foreach (dynamic task in targetElement.Tasks)
+            foreach (var task in targetElement.Tasks)
             {
-                if (string.Equals(task.Condition, errorCondition, StringComparison.OrdinalIgnoreCase))
+                // Compare using / for both paths for mono compat.
+                var currentCondition = PathUtility.GetPathWithForwardSlashes(task.Condition);
+
+                if (string.Equals(currentCondition, errorCondition, StringComparison.OrdinalIgnoreCase))
                 {
                     taskElement = task;
                     break;
@@ -412,7 +417,7 @@ namespace NuGet.Common
             }
 
             taskElement.Parent.RemoveChild(taskElement);
-            if (targetElement.Tasks.Count == 0)
+            if (((System.Collections.ICollection)targetElement.Tasks).Count == 0)
             {
                 targetElement.Parent.RemoveChild(targetElement);
             }
@@ -421,20 +426,27 @@ namespace NuGet.Common
         private dynamic GetProject(string projectFile)
         {
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
-            dynamic globalProjectCollection = _projectCollectionType
-                .GetProperty("GlobalProjectCollection")
-                .GetMethod
-                .Invoke(null, new object[] { });
-            var loadedProjects = globalProjectCollection.GetLoadedProjects(projectFile);
-            if (loadedProjects.Count > 0)
+            try
             {
-                return loadedProjects[0];
-            }
+                dynamic globalProjectCollection = _projectCollectionType
+                    .GetProperty("GlobalProjectCollection")
+                    .GetMethod
+                    .Invoke(null, new object[] { });
+                var loadedProjects = globalProjectCollection.GetLoadedProjects(projectFile);
+                if (loadedProjects.Count > 0)
+                {
+                    return loadedProjects[0];
+                }
 
-            var project = Activator.CreateInstance(
-                _projectType,
-                new object[] { projectFile });
-            return project;
+                var project = Activator.CreateInstance(
+                    _projectType,
+                    new object[] { projectFile });
+                return project;
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(AssemblyResolve);
+            }
         }
     }
 }

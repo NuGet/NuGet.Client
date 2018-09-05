@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Common;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Commands
 {
@@ -24,6 +25,7 @@ namespace NuGet.Commands
             int timeoutSeconds,
             bool disableBuffering,
             bool noSymbols,
+            bool noServiceEndpoint,
             ILogger logger)
         {
             source = CommandRunnerUtility.ResolveSource(sourceProvider, source);
@@ -35,24 +37,20 @@ namespace NuGet.Commands
             }
 
             var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, source);
+            SymbolPackageUpdateResourceV3 symbolPackageUpdateResource = null;
 
-            // only push to SymbolSource when the actual package is being pushed to the official NuGet.org
+            // figure out from index.json if pushing snupkg is supported
             var sourceUri = packageUpdateResource.SourceUri;
             if (string.IsNullOrEmpty(symbolSource)
                 && !noSymbols
                 && !sourceUri.IsFile
                 && sourceUri.IsAbsoluteUri)
             {
-                if (sourceUri.Host.Equals(NuGetConstants.NuGetHostName, StringComparison.OrdinalIgnoreCase) // e.g. nuget.org
-                    || sourceUri.Host.EndsWith("." + NuGetConstants.NuGetHostName, StringComparison.OrdinalIgnoreCase)) // *.nuget.org, e.g. www.nuget.org
+                symbolPackageUpdateResource = await CommandRunnerUtility.GetSymbolPackageUpdateResource(sourceProvider, source);
+                if (symbolPackageUpdateResource != null)
                 {
-                    symbolSource = NuGetConstants.DefaultSymbolServerUrl;
-
-                    if (string.IsNullOrEmpty(symbolApiKey))
-                    {
-                        // Use the nuget.org API key if it was given
-                        symbolApiKey = apiKey;
-                    }
+                    symbolSource = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
+                    symbolApiKey = apiKey;
                 }
             }
 
@@ -63,6 +61,8 @@ namespace NuGet.Commands
                 disableBuffering,
                 endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source, defaultApiKey: null, isSymbolApiKey: false),
                 symbolsEndpoint => symbolApiKey ?? CommandRunnerUtility.GetApiKey(settings, symbolsEndpoint, symbolSource, apiKey, isSymbolApiKey: true),
+                noServiceEndpoint,
+                symbolPackageUpdateResource,
                 logger);
         }
     }

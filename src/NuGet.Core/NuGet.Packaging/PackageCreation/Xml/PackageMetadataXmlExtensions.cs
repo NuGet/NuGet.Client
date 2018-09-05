@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,8 +35,12 @@ namespace NuGet.Packaging.Xml
             elem.Add(new XElement(ns + "id", metadata.Id));
             AddElementIfNotNull(elem, ns, "version", metadata.Version?.ToFullString());
             AddElementIfNotNull(elem, ns, "title", metadata.Title);
-            AddElementIfNotNull(elem, ns, "authors", metadata.Authors, authors => string.Join(",", authors));
-            AddElementIfNotNull(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
+            if(!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
+            {
+                AddElementIfNotNull(elem, ns, "authors", metadata.Authors, authors => string.Join(",", authors));
+                AddElementIfNotNull(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
+            }
+            
             elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
             if (metadata.DevelopmentDependency)
             {
@@ -242,7 +246,18 @@ namespace NuGet.Packaging.Xml
             {
                 attributeList.Add(new XAttribute(NuspecUtility.RepositoryUrl, repository.Url));
             }
-            if (attributeList.Any())
+
+            if (!string.IsNullOrEmpty(repository?.Branch))
+            {
+                attributeList.Add(new XAttribute(NuspecUtility.RepositoryBranch, repository.Branch));
+            }
+
+            if (!string.IsNullOrEmpty(repository?.Commit))
+            {
+                attributeList.Add(new XAttribute(NuspecUtility.RepositoryCommit, repository.Commit));
+            }
+
+            if (attributeList.Count > 0)
             {
                 return new XElement(ns + NuspecUtility.Repository, attributeList);
             }

@@ -1,13 +1,18 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.DependencyResolver.Tests;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Xunit;
@@ -113,15 +118,7 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             public bool IsHttp => true;
 
-            public Task CopyToAsync(
-                LibraryIdentity match,
-                Stream stream,
-                SourceCacheContext cacheContext,
-                ILogger logger,
-                CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
-            }
+            public PackageSource Source => new PackageSource("Test");
 
             public async Task<LibraryIdentity> FindLibraryAsync(
                 LibraryRange libraryRange,
@@ -138,14 +135,32 @@ namespace NuGet.DependencyResolver.Core.Tests
                 return _libraries.FindBestMatch(libraryRange.VersionRange, l => l?.Version);
             }
 
-            public Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(
+            public Task<LibraryDependencyInfo> GetDependenciesAsync(
                 LibraryIdentity match,
                 NuGetFramework targetFramework,
                 SourceCacheContext cacheContext,
                 ILogger logger,
                 CancellationToken cancellationToken)
             {
-                return Task.FromResult(Enumerable.Empty<LibraryDependency>());
+                return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, Enumerable.Empty<LibraryDependency>()));
+            }
+
+            public Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+                string id,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken token)
+            {
+                return Task.FromResult(_libraries.Select(e => e.Version));
+            }
+
+            public Task<IPackageDownloader> GetPackageDownloaderAsync(
+                PackageIdentity packageIdentity,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
             }
         }
     }

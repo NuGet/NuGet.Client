@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,10 +9,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
+using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.PackageManagement;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -34,8 +35,14 @@ namespace NuGet.VisualStudio
         private readonly IVsPackageInstallerServices _packageServices;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
         private readonly Lazy<INuGetProjectContext> _projectContext;
+        private bool _isCPSJTFLoaded;
 
-        private JoinableTaskFactory PumpingJTF { get; }
+        // Reason it's lazy<object> is because we don't want to load any CPS assemblies until
+        // we're really going to use any of CPS api. Which is why we also don't use nameof or typeof apis.
+        [Import("Microsoft.VisualStudio.ProjectSystem.IProjectServiceAccessor")]
+        private Lazy<object> ProjectServiceAccessor { get; set; }
+
+        private JoinableTaskFactory PumpingJTF { get; set; }
 
         [ImportingConstructor]
         public VsPackageInstaller(
@@ -50,10 +57,35 @@ namespace NuGet.VisualStudio
             _solutionManager = solutionManager;
             _packageServices = packageServices;
             _deleteOnRestartManager = deleteOnRestartManager;
+            _isCPSJTFLoaded = false;
 
             _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext());
 
-            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
+            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
+        }
+
+        private void RunJTFWithCorrectContext(Project project, Func<Task> asyncTask)
+        {
+            if (!_isCPSJTFLoaded)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    var vsHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                    if (vsHierarchy != null &&
+                        VsHierarchyUtility.IsCPSCapabilityComplaint(vsHierarchy))
+                    {
+                        // Lazy load the CPS enabled JoinableTaskFactory for the UI.
+                        NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
+
+                        PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
+                        _isCPSJTFLoaded = true;
+                    }
+                });
+            }
+
+            PumpingJTF.Run(asyncTask);
         }
 
         public void InstallLatestPackage(
@@ -63,7 +95,7 @@ namespace NuGet.VisualStudio
             bool includePrerelease,
             bool ignoreDependencies)
         {
-            PumpingJTF.Run(() => InstallPackageAsync(
+            RunJTFWithCorrectContext(project, () => InstallPackageAsync(
                 source,
                 project,
                 packageId,
@@ -81,7 +113,7 @@ namespace NuGet.VisualStudio
                 semVer = new NuGetVersion(version);
             }
 
-            PumpingJTF.Run(() => InstallPackageAsync(
+            RunJTFWithCorrectContext(project, () => InstallPackageAsync(
                 source,
                 project,
                 packageId,
@@ -94,12 +126,12 @@ namespace NuGet.VisualStudio
         {
             NuGetVersion semVer = null;
 
-            if (!String.IsNullOrEmpty(version))
+            if (!string.IsNullOrEmpty(version))
             {
                 NuGetVersion.TryParse(version, out semVer);
             }
 
-            PumpingJTF.Run(() => InstallPackageAsync(
+            RunJTFWithCorrectContext(project, () => InstallPackageAsync(
                 source,
                 project,
                 packageId,
@@ -112,23 +144,25 @@ namespace NuGet.VisualStudio
         {
             IEnumerable<string> sources = null;
 
-            if (!String.IsNullOrEmpty(source) &&
+            if (!string.IsNullOrEmpty(source) &&
                 !StringComparer.OrdinalIgnoreCase.Equals("All", source)) // "All" was supported in V2
             {
                 sources = new[] { source };
             }
 
-            VersionRange versionRange = VersionRange.All;
+            var versionRange = VersionRange.All;
 
             if (version != null)
             {
                 versionRange = new VersionRange(version, true, version, true);
             }
 
-            List<PackageIdentity> toInstall = new List<PackageIdentity>();
-            toInstall.Add(new PackageIdentity(packageId, version));
+            var toInstall = new List<PackageIdentity>
+            {
+                new PackageIdentity(packageId, version)
+            };
 
-            VSAPIProjectContext projectContext = new VSAPIProjectContext();
+            var projectContext = new VSAPIProjectContext();
 
             return InstallInternalAsync(project, toInstall, GetSources(sources), projectContext, includePrerelease, ignoreDependencies, CancellationToken.None);
         }
@@ -146,7 +180,7 @@ namespace NuGet.VisualStudio
 
         public void InstallPackagesFromRegistryRepository(string keyName, bool isPreUnzipped, bool skipAssemblyReferences, bool ignoreDependencies, Project project, IDictionary<string, string> packageVersions)
         {
-            if (String.IsNullOrEmpty(keyName))
+            if (string.IsNullOrEmpty(keyName))
             {
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(keyName));
             }
@@ -162,7 +196,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageVersions));
             }
 
-            PumpingJTF.Run(async () =>
+            RunJTFWithCorrectContext(project, async () =>
                 {
                     // HACK !!! : This is a hack for PCL projects which send isPreUnzipped = true, but their package source 
                     // (located at C:\Program Files (x86)\Microsoft SDKs\NuGetPackages) follows the V3
@@ -174,15 +208,15 @@ namespace NuGet.VisualStudio
                     }
 
                     // create a repository provider with only the registry repository
-                    PreinstalledRepositoryProvider repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
+                    var repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
                     repoProvider.AddFromRegistry(keyName, isPreUnzipped);
 
-                    List<PackageIdentity> toInstall = GetIdentitiesFromDict(packageVersions);
+                    var toInstall = GetIdentitiesFromDict(packageVersions);
 
                     // Skip assembly references and disable binding redirections should be done together
-                    bool disableBindingRedirects = skipAssemblyReferences;
+                    var disableBindingRedirects = skipAssemblyReferences;
 
-                    VSAPIProjectContext projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
+                    var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
 
                     await InstallInternalAsync(
                         project,
@@ -208,7 +242,7 @@ namespace NuGet.VisualStudio
 
         public void InstallPackagesFromVSExtensionRepository(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, bool ignoreDependencies, Project project, IDictionary<string, string> packageVersions)
         {
-            if (String.IsNullOrEmpty(extensionId))
+            if (string.IsNullOrEmpty(extensionId))
             {
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(extensionId));
             }
@@ -223,17 +257,17 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageVersions));
             }
 
-            PumpingJTF.Run(() =>
+            RunJTFWithCorrectContext(project, () =>
                 {
-                    PreinstalledRepositoryProvider repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
+                    var repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
                     repoProvider.AddFromExtension(_sourceRepositoryProvider, extensionId);
 
-                    List<PackageIdentity> toInstall = GetIdentitiesFromDict(packageVersions);
+                    var toInstall = GetIdentitiesFromDict(packageVersions);
 
                     // Skip assembly references and disable binding redirections should be done together
-                    bool disableBindingRedirects = skipAssemblyReferences;
+                    var disableBindingRedirects = skipAssemblyReferences;
 
-                    VSAPIProjectContext projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
+                    var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
 
                     return InstallInternalAsync(
                         project,
@@ -248,7 +282,7 @@ namespace NuGet.VisualStudio
 
         private static List<PackageIdentity> GetIdentitiesFromDict(IDictionary<string, string> packageVersions)
         {
-            List<PackageIdentity> toInstall = new List<PackageIdentity>();
+            var toInstall = new List<PackageIdentity>();
 
             // create identities
             foreach (var pair in packageVersions)
@@ -256,7 +290,7 @@ namespace NuGet.VisualStudio
                 // TODO: versions can be null today, should this continue?
                 NuGetVersion version = null;
 
-                if (!String.IsNullOrEmpty(pair.Value))
+                if (!string.IsNullOrEmpty(pair.Value))
                 {
                     NuGetVersion.TryParse(pair.Value, out version);
                 }
@@ -267,16 +301,10 @@ namespace NuGet.VisualStudio
             return toInstall;
         }
 
-        private Action<string> ErrorHandler
+        private Action<string> ErrorHandler => msg =>
         {
-            get
-            {
-                return msg =>
-                    {
-                        _projectContext.Value.Log(ProjectManagement.MessageLevel.Error, msg);
-                    };
-            }
-        }
+            _projectContext.Value.Log(ProjectManagement.MessageLevel.Error, msg);
+        };
 
         /// <summary>
         /// Creates a repo provider for the given sources. If null is passed all sources will be returned.
@@ -297,7 +325,7 @@ namespace NuGet.VisualStudio
                 var customProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
 
                 // Create sources using the given set of sources
-                foreach (string source in sources)
+                foreach (var source in sources)
                 {
                     customProvider.AddFromSource(GetSource(source));
                 }
@@ -313,7 +341,7 @@ namespace NuGet.VisualStudio
         /// </summary>
         private SourceRepository GetSource(string source)
         {
-            SourceRepository repo = _sourceRepositoryProvider.GetRepositories()
+            var repo = _sourceRepositoryProvider.GetRepositories()
                 .Where(e => StringComparer.OrdinalIgnoreCase.Equals(e.PackageSource.Source, source)).FirstOrDefault();
 
             if (repo == null)
@@ -322,7 +350,7 @@ namespace NuGet.VisualStudio
                 if (!Uri.TryCreate(source, UriKind.Absolute, out result))
                 {
                     throw new ArgumentException(
-                        String.Format(VsResources.InvalidSource, source),
+                        string.Format(VsResources.InvalidSource, source),
                         nameof(source));
                 }
 
@@ -352,12 +380,12 @@ namespace NuGet.VisualStudio
             }
 
             // find the latest package
-            List<MetadataResource> metadataResources = new List<MetadataResource>();
+            var metadataResources = new List<MetadataResource>();
 
             // create the resources for looking up the latest version
             foreach (var repo in repoProvider.GetRepositories())
             {
-                MetadataResource resource = await repo.GetResourceAsync<MetadataResource>();
+                var resource = await repo.GetResourceAsync<MetadataResource>();
                 if (resource != null)
                 {
                     metadataResources.Add(resource);
@@ -367,46 +395,49 @@ namespace NuGet.VisualStudio
             // find the highest version within the ranges
             var idToIdentity = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var dep in packages)
+            using (var sourceCacheContext = new SourceCacheContext())
             {
-                NuGetVersion highestVersion = null;
-
-                if (dep.VersionRange != null
-                    && VersionComparer.Default.Equals(dep.VersionRange.MinVersion, dep.VersionRange.MaxVersion)
-                    && dep.VersionRange.MinVersion != null)
+                foreach (var dep in packages)
                 {
-                    // this is a single version, not a range
-                    highestVersion = dep.VersionRange.MinVersion;
-                }
-                else
-                {
-                    var tasks = new List<Task<IEnumerable<NuGetVersion>>>();
+                    NuGetVersion highestVersion = null;
 
-                    foreach (var resource in metadataResources)
+                    if (dep.VersionRange != null
+                        && VersionComparer.Default.Equals(dep.VersionRange.MinVersion, dep.VersionRange.MaxVersion)
+                        && dep.VersionRange.MinVersion != null)
                     {
-                        tasks.Add(resource.GetVersions(dep.Id, Common.NullLogger.Instance, token));
+                        // this is a single version, not a range
+                        highestVersion = dep.VersionRange.MinVersion;
+                    }
+                    else
+                    {
+                        var tasks = new List<Task<IEnumerable<NuGetVersion>>>();
+
+                        foreach (var resource in metadataResources)
+                        {
+                            tasks.Add(resource.GetVersions(dep.Id, sourceCacheContext, NullLogger.Instance, token));
+                        }
+
+                        var versions = await Task.WhenAll(tasks.ToArray());
+
+                        highestVersion = versions.SelectMany(v => v).Where(v => dep.VersionRange.Satisfies(v)).Max();
                     }
 
-                    var versions = await Task.WhenAll(tasks.ToArray());
+                    if (highestVersion == null)
+                    {
+                        throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, VsResources.UnknownPackage, dep.Id));
+                    }
 
-                    highestVersion = versions.SelectMany(v => v).Where(v => dep.VersionRange.Satisfies(v)).Max();
-                }
-
-                if (highestVersion == null)
-                {
-                    throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, VsResources.UnknownPackage, dep.Id));
-                }
-
-                if (!idToIdentity.ContainsKey(dep.Id))
-                {
-                    idToIdentity.Add(dep.Id, new PackageIdentity(dep.Id, highestVersion));
+                    if (!idToIdentity.ContainsKey(dep.Id))
+                    {
+                        idToIdentity.Add(dep.Id, new PackageIdentity(dep.Id, highestVersion));
+                    }
                 }
             }
 
             // Skip assembly references and disable binding redirections should be done together
-            bool disableBindingRedirects = skipAssemblyReferences;
+            var disableBindingRedirects = skipAssemblyReferences;
 
-            VSAPIProjectContext projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
+            var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
 
             await InstallInternalAsync(
                 project,
@@ -439,17 +470,11 @@ namespace NuGet.VisualStudio
             var sources = repoProvider.GetRepositories().ToList();
 
             // store expanded node state
-            IDictionary<string, ISet<VsHierarchyItem>> expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync(_solutionManager);
+            var expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync(_solutionManager);
 
             try
             {
-                DependencyBehavior depBehavior = ignoreDependencies ? DependencyBehavior.Ignore : DependencyBehavior.Lowest;
-
-                ResolutionContext resolution = new ResolutionContext(
-                    depBehavior,
-                    includePrerelease,
-                    includeUnlisted: false,
-                    versionConstraints: VersionConstraints.None);
+                var depBehavior = ignoreDependencies ? DependencyBehavior.Ignore : DependencyBehavior.Lowest;
 
                 var packageManager = CreatePackageManager(repoProvider);
 
@@ -457,7 +482,7 @@ namespace NuGet.VisualStudio
                 var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);
 
                 // install the package
-                foreach (PackageIdentity package in packages)
+                foreach (var package in packages)
                 {
                     // Check if the package is already installed
                     if (package.Version == null)
@@ -512,23 +537,27 @@ namespace NuGet.VisualStudio
         {
             await TaskScheduler.Default;
 
-            DependencyBehavior depBehavior = ignoreDependencies ? DependencyBehavior.Ignore : DependencyBehavior.Lowest;
+            var depBehavior = ignoreDependencies ? DependencyBehavior.Ignore : DependencyBehavior.Lowest;
 
-            ResolutionContext resolution = new ResolutionContext(
-                depBehavior,
-                includePrerelease,
-                includeUnlisted: false,
-                versionConstraints: VersionConstraints.None,
-                gatherCache: gatherCache);
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                ResolutionContext resolution = new ResolutionContext(
+                    depBehavior,
+                    includePrerelease,
+                    includeUnlisted: false,
+                    versionConstraints: VersionConstraints.None,
+                    gatherCache: gatherCache,
+                    sourceCacheContext: sourceCacheContext);
 
-            // install the package
-            if (package.Version == null)
-            {
-                await packageManager.InstallPackageAsync(nuGetProject, package.Id, resolution, projectContext, sources, Enumerable.Empty<SourceRepository>(), token);
-            }
-            else
-            {
-                await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, sources, Enumerable.Empty<SourceRepository>(), token);
+                // install the package
+                if (package.Version == null)
+                {
+                    await packageManager.InstallPackageAsync(nuGetProject, package.Id, resolution, projectContext, sources, Enumerable.Empty<SourceRepository>(), token);
+                }
+                else
+                {
+                    await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, sources, Enumerable.Empty<SourceRepository>(), token);
+                }
             }
         }
 

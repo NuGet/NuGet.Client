@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Frameworks;
@@ -29,8 +32,8 @@ namespace NuGet.ProjectModel
         {
             var combiner = new HashCodeCombiner();
 
-            combiner.AddInt32(StringComparer.Ordinal.GetHashCode(ProjectPath));
-            combiner.AddInt32(StringComparer.OrdinalIgnoreCase.GetHashCode(ProjectUniqueName));
+            combiner.AddObject(StringComparer.Ordinal.GetHashCode(ProjectPath));
+            combiner.AddObject(StringComparer.OrdinalIgnoreCase.GetHashCode(ProjectUniqueName));
             combiner.AddObject(IncludeAssets);
             combiner.AddObject(ExcludeAssets);
             combiner.AddObject(PrivateAssets);
@@ -65,6 +68,17 @@ namespace NuGet.ProjectModel
                 && IncludeAssets == other.IncludeAssets
                 && ExcludeAssets == other.ExcludeAssets
                 && PrivateAssets == other.PrivateAssets;
+        }
+
+        public ProjectRestoreReference Clone()
+        {
+            var clonedObject = new ProjectRestoreReference();
+            clonedObject.ProjectPath = ProjectPath;
+            clonedObject.ProjectUniqueName = ProjectUniqueName;
+            clonedObject.ExcludeAssets = ExcludeAssets;
+            clonedObject.IncludeAssets = IncludeAssets;
+            clonedObject.PrivateAssets = PrivateAssets;
+            return clonedObject;
         }
     }
 }

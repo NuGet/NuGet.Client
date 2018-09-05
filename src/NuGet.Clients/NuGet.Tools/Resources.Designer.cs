@@ -19,7 +19,7 @@ namespace NuGetVSExtension {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -97,15 +97,6 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet Package restore failed for project {0} for &apos;{1}&apos;..
-        /// </summary>
-        internal static string BuildIntegratedPackageRestoreFailedForProject {
-            get {
-                return ResourceManager.GetString("BuildIntegratedPackageRestoreFailedForProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Can not create tool window..
         /// </summary>
         internal static string CanNotCreateWindow {
@@ -165,6 +156,15 @@ namespace NuGetVSExtension {
         internal static string DialogTitle {
             get {
                 return ResourceManager.GetString("DialogTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; is unsupported.
+        /// </summary>
+        internal static string DTE_ProjectUnsupported {
+            get {
+                return ResourceManager.GetString("DTE_ProjectUnsupported", resourceCulture);
             }
         }
         
@@ -264,6 +264,15 @@ namespace NuGetVSExtension {
         internal static string ProjectHasAnInvalidNuGetConfiguration {
             get {
                 return ResourceManager.GetString("ProjectHasAnInvalidNuGetConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project is not eligible for migration. Either the project is not packages.config based or doesn&apos;t support PackageReference yet. Visit https://docs.microsoft.com/en-us/nuget/reference/migrate-packages-config-to-package-reference for more information..
+        /// </summary>
+        internal static string ProjectMigrateErrorMessage {
+            get {
+                return ResourceManager.GetString("ProjectMigrateErrorMessage", resourceCulture);
             }
         }
         

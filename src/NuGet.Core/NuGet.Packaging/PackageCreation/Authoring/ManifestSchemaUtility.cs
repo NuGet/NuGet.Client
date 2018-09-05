@@ -48,7 +48,7 @@ namespace NuGet.Packaging
         /// Allows XDT transformation
         /// </summary>
         internal const string SchemaVersionV6 = "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd";
-        
+
         private static readonly string[] VersionToSchemaMappings = new[] {
             SchemaVersionV1,
             SchemaVersionV2,
@@ -90,7 +90,16 @@ namespace NuGet.Packaging
 
                     // Update the xsd with the right schema namespace
                     var assembly = typeof(Manifest).Assembly;
-                    using (var reader = new StreamReader(assembly.GetManifestResourceStream(schemaResourceName)))
+                    
+                    var names = assembly.GetManifestResourceNames();
+
+                    foreach (var s in names)
+                    {
+                        
+                    }
+
+                    var stream = assembly.GetManifestResourceStream(schemaResourceName);
+                    using (var reader = new StreamReader(stream))
                     {
                         string content = reader.ReadToEnd();
                         formattedContent = String.Format(CultureInfo.InvariantCulture, content, schema);
@@ -100,7 +109,7 @@ namespace NuGet.Packaging
                     {
                         var schemaSet = new XmlSchemaSet();
 
-                        var settings = new XmlReaderSettings 
+                        var settings = new XmlReaderSettings
                         {
                             DtdProcessing = DtdProcessing.Prohibit,
                             XmlResolver = null

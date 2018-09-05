@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,61 @@ namespace NuGet.Versioning.Test
 {
     public class VersionRangeTests
     {
+        [Theory]
+        [InlineData("1.0.0", "(>= 1.0.0)")]
+        [InlineData("[1.0.0]", "(= 1.0.0)")]
+        [InlineData("[1.0.0, ]", "(>= 1.0.0)")]
+        [InlineData("[1.0.0, )", "(>= 1.0.0)")]
+        [InlineData("(1.0.0, )", "(> 1.0.0)")]
+        [InlineData("(1.0.0, ]", "(> 1.0.0)")]
+        [InlineData("(1.0.0, 2.0.0)", "(> 1.0.0 && < 2.0.0)")]
+        [InlineData("[1.0.0, 2.0.0]", "(>= 1.0.0 && <= 2.0.0)")]
+        [InlineData("[1.0.0, 2.0.0)", "(>= 1.0.0 && < 2.0.0)")]
+        [InlineData("(1.0.0, 2.0.0]", "(> 1.0.0 && <= 2.0.0)")]
+        [InlineData("(, 2.0.0]", "(<= 2.0.0)")]
+        [InlineData("(, 2.0.0)", "(< 2.0.0)")]
+        [InlineData("[, 2.0.0)", "(< 2.0.0)")]
+        [InlineData("[, 2.0.0]", "(<= 2.0.0)")]
+        [InlineData("1.0.0-beta*", "(>= 1.0.0-beta)")]
+        [InlineData("[1.0.0-beta*, 2.0.0)", "(>= 1.0.0-beta && < 2.0.0)")]
+        [InlineData("[1.0.0-beta.1, 2.0.0-alpha.2]", "(>= 1.0.0-beta.1 && <= 2.0.0-alpha.2)")]
+        [InlineData("[1.0.0+beta.1, 2.0.0+alpha.2]", "(>= 1.0.0 && <= 2.0.0)")]
+        [InlineData("[1.0, 2.0]", "(>= 1.0.0 && <= 2.0.0)")]
+        public void VersionRange_PrettyPrintTests(string versionString, string expected)
+        {
+            // Arrange
+            var formatter = new VersionRangeFormatter();
+            var range = VersionRange.Parse(versionString);
+
+            // Act
+            var s = string.Format(formatter, "{0:P}", range);
+            var s2 = range.ToString("P", formatter);
+            var s3 = range.PrettyPrint();
+
+            // Assert
+            Assert.Equal(expected, s);
+            Assert.Equal(expected, s2);
+            Assert.Equal(expected, s3);
+        }
+
+        [Fact]
+        public void VersionRange_PrettyPrintAllRange()
+        {
+            // Arrange
+            var formatter = new VersionRangeFormatter();
+            var range = VersionRange.All;
+
+            // Act
+            var s = string.Format(formatter, "{0:P}", range);
+            var s2 = range.ToString("P", formatter);
+            var s3 = range.PrettyPrint();
+
+            // Assert
+            Assert.Equal("", s);
+            Assert.Equal("", s2);
+            Assert.Equal("", s3);
+        }
+
         [Theory]
         [InlineData("1.0.0", "1.0.1-beta", false)]
         [InlineData("1.0.0", "1.0.1", true)]
@@ -117,7 +172,7 @@ namespace NuGet.Versioning.Test
         [InlineData("1.0.0-*", "1.0.0")]
         [InlineData("2.0.0-*", "2.0.0")]
         [InlineData("1.0.0-rc1-*", "1.0.0-rc1")]
-        [InlineData("1.0.0-5.1.*", "1.0.0-5.1.0")]
+        [InlineData("1.0.0-5.1.*", "1.0.0-5.1")]
         [InlineData("1.0.0-5.1.0-*", "1.0.0-5.1.0")]
         [InlineData("1.0.*", "1.0.0")]
         [InlineData("1.*", "1.0.0")]
@@ -136,7 +191,6 @@ namespace NuGet.Versioning.Test
 
         [Theory]
         [InlineData("[1.0.0]")]
-        [InlineData("[1.0.0, 2.0.0]")]
         [InlineData("[1.0.0, 2.0.0]")]
         [InlineData("1.0.0")]
         [InlineData("1.0.0-beta")]
@@ -478,15 +532,6 @@ namespace NuGet.Versioning.Test
             Assert.Equal(range, versionInfo.OriginalString);
         }
 
-        public void NonParsedVersionRangeHasNullOriginalString(string range)
-        {
-            // Act
-            var versionInfo = new VersionRange(NuGetVersion.Parse("1.0.0"));
-
-            // Assert
-            Assert.Null(versionInfo.OriginalString);
-        }
-
         [Fact]
         public void ParseVersionRangeIntegerRanges()
         {
@@ -504,6 +549,20 @@ namespace NuGet.Versioning.Test
 
             Assert.False(parsed);
             Assert.Null(versionInfo);
+        }
+
+        [Fact]
+        public void TryParseNullVersionRange()
+        {
+            // Arrange
+            VersionRange output;
+
+            // Act
+            var parsed = VersionRange.TryParse(null, out output);
+
+            // Assert
+            Assert.False(parsed);
+            Assert.Null(output);
         }
 
         [Fact]

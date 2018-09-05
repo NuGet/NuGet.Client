@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.InteropServices;
 using NuGet.Common;
 
 namespace NuGet.Packaging
@@ -57,6 +58,7 @@ namespace NuGet.Packaging
             }
 
             entry.UpdateFileTimeFromEntry(fileFullPath, logger);
+            entry.UpdateFilePermissionsFromEntry(fileFullPath, logger);
 
             return fileFullPath;
         }
@@ -85,5 +87,23 @@ namespace NuGet.Packaging
                 }
             }
         }
+
+        public static void UpdateFilePermissionsFromEntry(this ZipArchiveEntry entry, string fileFullPath, ILogger logger)
+        {
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                return;
+            }
+            // Entry permissions are not restored to maintain backwards compatibility with .NET Core 1.x.
+            // (https://github.com/NuGet/Home/issues/4424)
+            // On .NET Core 1.x, all extracted files had default permissions of 766.
+            // The default on .NET Core 2.x has changed to 666.
+            // To avoid breaking executable files in existing packages (which don't have the x-bit set)
+            // we force the .NET Core 1.x default permissions.
+            chmod(fileFullPath, 0x1f6); // 0766
+        }
+
+        [DllImport("libc", SetLastError = true)]
+        private static extern int chmod(string pathname, int mode);
     }
 }

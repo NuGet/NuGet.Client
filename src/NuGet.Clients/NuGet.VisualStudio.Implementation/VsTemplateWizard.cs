@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -14,15 +15,14 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TemplateWizard;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
-using NuGetConsole;
 using Task = System.Threading.Tasks.Task;
-using NuGet.PackageManagement.UI;
 
 namespace NuGet.VisualStudio
 {
@@ -44,6 +44,7 @@ namespace NuGet.VisualStudio
         private readonly PreinstalledPackageInstaller _preinstalledPackageInstaller;
         private readonly Configuration.ISettings _settings;
         private readonly ISourceRepositoryProvider _sourceProvider;
+        private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
 
         private JoinableTaskFactory PumpingJTF { get; }
 
@@ -54,7 +55,8 @@ namespace NuGet.VisualStudio
             IOutputConsoleProvider consoleProvider,
             IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
-            ISourceRepositoryProvider sourceProvider
+            ISourceRepositoryProvider sourceProvider,
+            IVsProjectAdapterProvider vsProjectAdapterProvider
             )
         {
             _installer = installer;
@@ -63,10 +65,11 @@ namespace NuGet.VisualStudio
             _solutionManager = solutionManager;
             _settings = settings;
             _sourceProvider = sourceProvider;
+            _vsProjectAdapterProvider = vsProjectAdapterProvider;
 
-            _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer);
+            _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer, _vsProjectAdapterProvider);
 
-            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory.Context);
+            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         private IEnumerable<PreinstalledPackageConfiguration> GetConfigurationsFromVsTemplateFile(string vsTemplatePath)
@@ -263,9 +266,13 @@ namespace NuGet.VisualStudio
             {
                 if (configuration.Packages.Any())
                 {
+                    var packageManagementFormat = new PackageManagementFormat(_settings);
+                    // 1 means PackageReference
+                    var preferPackageReference = packageManagementFormat.SelectedPackageManagementFormat == 1;
                     await _preinstalledPackageInstaller.PerformPackageInstallAsync(_installer,
                         project,
                         configuration,
+                        preferPackageReference,
                         ShowWarningMessage,
                         ShowErrorMessage);
                 }
@@ -284,6 +291,8 @@ namespace NuGet.VisualStudio
 
         private void RunDesignTimeBuild(Project project)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var solution = ServiceProvider.GlobalProvider.GetService(typeof(SVsSolution)) as IVsSolution;
 
             if (solution != null)

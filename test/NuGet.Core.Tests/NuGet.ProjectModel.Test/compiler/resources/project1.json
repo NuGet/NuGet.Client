@@ -32,6 +32,10 @@
       "c:\\fallback1",
       "c:\\fallback2"
     ],
+    "configFilePaths": [
+      "c:\\nuget.config",
+      "d:\\nuget.config"
+    ],
     "frameworks": {
       "netcoreapp1.0": {
         "projectReferences": {

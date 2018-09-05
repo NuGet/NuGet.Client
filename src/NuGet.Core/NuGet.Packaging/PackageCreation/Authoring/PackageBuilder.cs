@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,6 +34,13 @@ namespace NuGet.Packaging
         public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(includeEmptyDirectories)
         {
+            if (!File.Exists(path))
+            {
+                throw new PackagingException(
+                    NuGetLogCode.NU5008,
+                    string.Format(CultureInfo.CurrentCulture, Strings.ErrorManifestFileNotFound, path ?? "null"));
+            }
+
             using (Stream stream = File.OpenRead(path))
             {
                 ReadManifest(stream, basePath, propertyProvider);
@@ -322,7 +329,7 @@ namespace NuGet.Packaging
             // Throw if the package doesn't contain any dependencies nor content
             if (!Files.Any() && !DependencyGroups.SelectMany(d => d.Packages).Any() && !FrameworkReferences.Any())
             {
-                throw new InvalidOperationException(NuGetResources.CannotCreateEmptyPackage);
+                throw new PackagingException(NuGetLogCode.NU5017, NuGetResources.CannotCreateEmptyPackage);
             }
 
             ValidateDependencies(Version, DependencyGroups);
@@ -464,7 +471,7 @@ namespace NuGet.Packaging
                     !libFiles.Contains(reference + ".exe") &&
                     !libFiles.Contains(reference + ".winmd"))
                 {
-                    throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReference, reference));
+                    throw new PackagingException(NuGetLogCode.NU5018, String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReference, reference));
                 }
             }
         }
@@ -566,7 +573,7 @@ namespace NuGet.Packaging
                 {
                     try
                     {
-                        CreatePart(package, file.Path, stream);
+                        CreatePart(package, file.Path, stream, file.LastWriteTime); 
                         var fileExtension = Path.GetExtension(file.Path);
 
                         // We have files without extension (e.g. the executables for Nix)
@@ -608,7 +615,7 @@ namespace NuGet.Packaging
             // project.json ends up calling this one file at a time where some may be filtered out.
             if (!PathResolver.IsWildcardSearch(source) && !PathResolver.IsDirectoryPath(source) && !searchFiles.Any() && string.IsNullOrEmpty(exclude))
             {
-                throw new FileNotFoundException(
+                throw new PackagingException(NuGetLogCode.NU5019,
                     String.Format(CultureInfo.CurrentCulture, NuGetResources.PackageAuthoring_FileNotFound, source));
             }
 
@@ -708,7 +715,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private static void CreatePart(ZipArchive package, string path, Stream sourceStream)
+        private static void CreatePart(ZipArchive package, string path, Stream sourceStream, DateTimeOffset lastWriteTime)
         {
             if (PackageHelper.IsNuspec(path))
             {
@@ -716,8 +723,8 @@ namespace NuGet.Packaging
             }
 
             string entryName = CreatePartEntryName(path);
-
             var entry = package.CreateEntry(entryName, CompressionLevel.Optimal);
+            entry.LastWriteTime = lastWriteTime;
             using (var stream = entry.Open())
             {
                 sourceStream.CopyTo(stream);
@@ -728,7 +735,7 @@ namespace NuGet.Packaging
         {
             // Only the segments between the path separators should be escaped
             var segments = path.Split(new[] { '/', '\\', Path.DirectorySeparatorChar }, StringSplitOptions.None)
-                               .Select(Uri.EscapeDataString);
+                .Select(Uri.EscapeDataString);
 
             var escapedPath = String.Join("/", segments);
 
@@ -744,8 +751,7 @@ namespace NuGet.Packaging
             // Get the safe-unescaped form of the URI first. This will unescape all the characters
             Uri safeUnescapedUri = new Uri(partUri.GetComponents(UriComponents.Path, UriFormat.SafeUnescaped), UriKind.Relative);
 
-            //Get the escaped string for the part name as part names should have only ascii characters
-            return safeUnescapedUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            return safeUnescapedUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.Unescaped);
         }
 
         /// <summary>

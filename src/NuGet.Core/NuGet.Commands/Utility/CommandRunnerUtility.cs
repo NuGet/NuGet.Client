@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -89,6 +89,24 @@ namespace NuGet.Commands
             var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
 
             return await sourceRepository.GetResourceAsync<PackageUpdateResource>();
+        }
+
+        public static async Task<SymbolPackageUpdateResourceV3> GetSymbolPackageUpdateResource(IPackageSourceProvider sourceProvider, string source)
+        {
+            // Use a loaded PackageSource if possible since it contains credential info
+            var packageSource = sourceProvider.LoadPackageSources()
+                .Where(e => e.IsEnabled && string.Equals(source, e.Source, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+
+            if (packageSource == null)
+            {
+                packageSource = new PackageSource(source);
+            }
+
+            var sourceRepositoryProvider = new CachingSourceProvider(sourceProvider);
+            var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
+
+            return await sourceRepository.GetResourceAsync<SymbolPackageUpdateResourceV3>();
         }
     }
 }

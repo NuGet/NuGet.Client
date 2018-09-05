@@ -75,7 +75,7 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
 
     # Act
     
-    & $context.NuGetExe pack $p.FullName -build -o $output
+    & $context.NuGetExe pack $p.FullName -build -OutputDirectory $output
 
     # Assert
     $packageFile = Get-ChildItem $output -Filter *.nupkg

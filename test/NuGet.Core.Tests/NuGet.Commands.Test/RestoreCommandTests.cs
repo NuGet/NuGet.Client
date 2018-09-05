@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,26 +7,243 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Commands.Test
 {
     public class RestoreCommandTests
     {
+        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault();
+
+        [Fact]
+        public async Task RestoreCommand_VerifyRuntimeSpecificAssetsAreNotIncludedForCompile_RuntimeOnlyAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""netstandard1.5"": {
+                    ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                    }
+                }
+              },
+              ""runtimes"": {
+                ""win7-x64"": {}
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
+
+                var packageAContext = new SimpleTestPackageContext("packageA");
+                packageAContext.AddFile("runtimes/win7-x64/lib/netstandard1.5/a.dll");
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                var targetLib = lockFile.GetTarget(NuGetFramework.Parse("netstandard1.5"), "win7-x64")
+                    .Libraries
+                    .Single(library => library.Name == "packageA");
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal(0, targetLib.CompileTimeAssemblies.Count);
+                Assert.Equal("runtimes/win7-x64/lib/netstandard1.5/a.dll", targetLib.RuntimeAssemblies.Single());
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_VerifyRuntimeSpecificAssetsAreNotIncludedForCompile_RuntimeAndRefAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""netstandard1.5"": {
+                    ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                    }
+                }
+              },
+              ""runtimes"": {
+                ""win7-x64"": {}
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
+
+                var packageAContext = new SimpleTestPackageContext("packageA");
+                packageAContext.AddFile("ref/netstandard1.5/a.dll");
+                packageAContext.AddFile("runtimes/win7-x64/lib/netstandard1.5/a.dll");
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                var targetLib = lockFile.GetTarget(NuGetFramework.Parse("netstandard1.5"), "win7-x64")
+                    .Libraries
+                    .Single(library => library.Name == "packageA");
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal("ref/netstandard1.5/a.dll", targetLib.CompileTimeAssemblies.Single());
+                Assert.Equal("runtimes/win7-x64/lib/netstandard1.5/a.dll", targetLib.RuntimeAssemblies.Single());
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_CompileAssetsWithBothRefAndLib_VerifyRefWinsAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""netstandard1.5"": {
+                    ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                    }
+                }
+              },
+              ""runtimes"": {
+                ""win7-x64"": {}
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
+
+                var packageAContext = new SimpleTestPackageContext("packageA");
+                packageAContext.AddFile("ref/netstandard1.5/a.dll");
+                packageAContext.AddFile("lib/netstandard1.5/a.dll");
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                var targetLib = lockFile.GetTarget(NuGetFramework.Parse("netstandard1.5"), "win7-x64")
+                    .Libraries
+                    .Single(library => library.Name == "packageA");
+
+                var compile = targetLib.CompileTimeAssemblies.OrderBy(s => s).ToArray();
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal(1, compile.Length);
+                Assert.Equal("ref/netstandard1.5/a.dll", compile[0]);
+                Assert.Equal("lib/netstandard1.5/a.dll", targetLib.RuntimeAssemblies.Single());
+            }
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task RestoreCommand_ObservesLowercaseFlag(bool isLowercase)
+        public async Task RestoreCommand_ObservesLowercaseFlagAsync(bool isLowercase)
         {
             // Arrange
             using (var workingDir = TestDirectory.Create())
@@ -40,8 +257,10 @@ namespace NuGet.Commands.Test
 
                 var resolver = new VersionFolderPathResolver(packagesDir.FullName, isLowercase);
 
-                var sources = new List<string>();
-                sources.Add(sourceDir.FullName);
+                var sources = new List<string>
+                {
+                    sourceDir.FullName
+                };
 
                 var projectJson = @"
                 {
@@ -76,7 +295,7 @@ namespace NuGet.Commands.Test
                 var packageAContext = new SimpleTestPackageContext(packageId, packageVersion);
                 packageAContext.AddFile("lib/netstandard1.0/a.dll");
 
-                SimpleTestPackageUtility.CreateFullPackage(sourceDir.FullName, packageAContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir.FullName, packageAContext);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -101,7 +320,7 @@ namespace NuGet.Commands.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task RestoreCommand_WhenSwitchingBetweenLowercaseSettings_LockFileAlwaysRespectsLatestSetting(bool isLowercase)
+        public async Task RestoreCommand_WhenSwitchingBetweenLowercaseSettings_LockFileAlwaysRespectsLatestSettingAsync(bool isLowercase)
         {
             // Arrange
             using (var workingDir = TestDirectory.Create())
@@ -116,8 +335,10 @@ namespace NuGet.Commands.Test
                 var resolverA = new VersionFolderPathResolver(packagesDir.FullName, !isLowercase);
                 var resolverB = new VersionFolderPathResolver(packagesDir.FullName, isLowercase);
 
-                var sources = new List<string>();
-                sources.Add(sourceDir.FullName);
+                var sources = new List<string>
+                {
+                    sourceDir.FullName
+                };
 
                 var projectJson = @"
                 {
@@ -144,7 +365,7 @@ namespace NuGet.Commands.Test
                 var packageAContext = new SimpleTestPackageContext(packageId, packageVersion);
                 packageAContext.AddFile("lib/netstandard1.0/a.dll");
 
-                SimpleTestPackageUtility.CreateFullPackage(sourceDir.FullName, packageAContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir.FullName, packageAContext);
 
                 // Act
                 // Execute the first restore with the opposite lowercase setting.
@@ -218,7 +439,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_FileUriV3Folder()
+        public async Task RestoreCommand_FileUriV3FolderAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -258,11 +479,12 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource.FullName, 
                     new PackageIdentity("packageA", NuGetVersion.Parse("4.0.0")));
 
@@ -279,7 +501,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_FileUriV2Folder()
+        public async Task RestoreCommand_FileUriV2FolderAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -319,11 +541,12 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
-
-                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, "packageA", "4.0.0");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "4.0.0");
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -338,7 +561,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_FindInV2FolderWithDifferentCasing()
+        public async Task RestoreCommand_FindInV2FolderWithDifferentCasingAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -378,11 +601,12 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
-
-                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, "packageA", "4.0.0");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "4.0.0");
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -397,7 +621,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_ReferenceWithSameNameDifferentCasing()
+        public async Task RestoreCommand_ReferenceWithSameNameDifferentCasingAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -437,9 +661,10 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "PROJECT1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
                 var aContext = new SimpleTestPackageContext()
                 {
@@ -449,7 +674,7 @@ namespace NuGet.Commands.Test
 
                 aContext.Dependencies.Add(new SimpleTestPackageContext("proJect1"));
 
-                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, "projeCt1", "4.0.0");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "projeCt1", "4.0.0");
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -464,7 +689,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_ImportsWithHigherVersion_NoFallback()
+        public async Task RestoreCommand_ImportsWithHigherVersion_NoFallbackAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -503,16 +728,17 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
                 var packageAContext = new SimpleTestPackageContext("packageA");
                 packageAContext.AddFile("lib/netstandard1.0/a.dll");
                 packageAContext.AddFile("lib/netstandard1.5/a.dll");
                 packageAContext.AddFile("lib/net46/a.dll");
 
-                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -533,7 +759,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_ImportsWithHigherVersion_Fallback()
+        public async Task RestoreCommand_ImportsWithHigherVersion_FallbackAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -572,16 +798,17 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
                 var packageAContext = new SimpleTestPackageContext("packageA");
                 packageAContext.AddFile("lib/netstandard1.5/a.dll");
                 packageAContext.AddFile("lib/netstandard1.6/a.dll");
                 packageAContext.AddFile("lib/net46/a.dll");
 
-                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -602,7 +829,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_ImportsWithHigherVersion_MultiFallback()
+        public async Task RestoreCommand_ImportsWithHigherVersion_MultiFallbackAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -641,16 +868,17 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
                 var packageAContext = new SimpleTestPackageContext("packageA");
                 packageAContext.AddFile("lib/netstandard1.2/a.dll");
                 packageAContext.AddFile("lib/netstandard1.5/a.dll");
                 packageAContext.AddFile("lib/net46/a.dll");
 
-                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -671,7 +899,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_ImportsNoMatch()
+        public async Task RestoreCommand_ImportsNoMatchAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -710,16 +938,17 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
                 var packageAContext = new SimpleTestPackageContext("packageA");
                 packageAContext.AddFile("lib/netstandard1.5/a.dll");
                 packageAContext.AddFile("lib/netstandard1.6/a.dll");
                 packageAContext.AddFile("lib/net46/a.dll");
 
-                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -740,7 +969,145 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_PathInPackageLibrary()
+        public async Task RestoreCommand_InvalidSignedPackageAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""net46"": {
+                    ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+
+                var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
+                    It.IsAny<ISignedPackageReader>(),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, _defaultSettings)),
+                    It.IsAny<CancellationToken>(),
+                    It.IsAny<Guid>())).
+                    ReturnsAsync(new VerifySignaturesResult(valid: false, signed: true));
+
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json"),
+                    PackageSignatureVerifier = signedPackageVerifier.Object
+                };
+
+                var packageAContext = new SimpleTestPackageContext("packageA");
+                packageAContext.AddFile("lib/net46/a.dll");
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+               
+                // Assert
+                Assert.False(result.Success);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_SignedPackageAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""net46"": {
+                    ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+
+                var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
+                    It.IsAny<ISignedPackageReader>(),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, _defaultSettings)),
+                    It.IsAny<CancellationToken>(),
+                    It.IsAny<Guid>())).
+                    ReturnsAsync(new VerifySignaturesResult(valid: true, signed: true));
+
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json"),
+                    PackageSignatureVerifier = signedPackageVerifier.Object
+                };
+
+                var packageAContext = new SimpleTestPackageContext("packageA");
+                packageAContext.AddFile("lib/net46/a.dll");
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+
+                // Assert
+                Assert.True(result.Success);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_PathInPackageLibraryAsync()
         {
             // Arrange
             using (var workingDir = TestDirectory.Create())
@@ -752,8 +1119,10 @@ namespace NuGet.Commands.Test
                 packageSource.Create();
                 project1.Create();
 
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(packageSource.FullName));
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(packageSource.FullName)
+                };
 
                 var project1Json = @"
                 {
@@ -772,13 +1141,15 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
                 var packageAContext = new SimpleTestPackageContext("packageA");
                 packageAContext.AddFile("lib/netstandard1.0/a.dll");
 
-                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -794,7 +1165,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_PackageWithSameName()
+        public async Task RestoreCommand_PackageWithSameNameAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -827,15 +1198,16 @@ namespace NuGet.Commands.Test
 
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
-                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, "project1", "1.0.0");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "project1", "1.0.0");
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -845,13 +1217,12 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.False(result.Success);
-                Assert.Equal(1, result.GetAllUnresolved().Count);
-                Assert.True(logger.ErrorMessages.Contains("Unable to resolve 'project1 (>= 1.0.0)' for '.NETFramework,Version=v4.5'."));
+                Assert.True(logger.ErrorMessages.Any(s => s.Contains("Cycle detected")));
             }
         }
 
         [Fact]
-        public async Task RestoreCommand_PackageAndReferenceWithSameNameAndVersion()
+        public async Task RestoreCommand_PackageAndReferenceWithSameNameAndVersionAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -896,11 +1267,12 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
-
-                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, "packageA", "4.0.0");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "4.0.0");
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -915,7 +1287,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_RestoreProjectWithNoDependencies()
+        public async Task RestoreCommand_RestoreProjectWithNoDependenciesAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -950,9 +1322,10 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
                 // Act
                 var command = new RestoreCommand(request);

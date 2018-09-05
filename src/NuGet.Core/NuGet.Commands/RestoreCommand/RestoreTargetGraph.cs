@@ -13,7 +13,7 @@ using NuGet.RuntimeModel;
 
 namespace NuGet.Commands
 {
-    public class RestoreTargetGraph
+    public class RestoreTargetGraph : IRestoreTargetGraph
     {
         /// <summary>
         /// Gets the runtime identifier used during the restore operation on this graph
@@ -47,10 +47,14 @@ namespace NuGet.Commands
 
         public string Name { get; }
 
+        public string TargetGraphName { get; }
+
         // TODO: Move conflicts to AnalyzeResult
         public IEnumerable<ResolverConflict> Conflicts { get; internal set; }
 
         public AnalyzeResult<RemoteResolveResult> AnalyzeResult { get; private set; }
+
+        public ISet<ResolvedDependencyKey> ResolvedDependencies { get; }
 
         private RestoreTargetGraph(IEnumerable<ResolverConflict> conflicts,
                                    NuGetFramework framework,
@@ -60,14 +64,17 @@ namespace NuGet.Commands
                                    ISet<RemoteMatch> install,
                                    ISet<GraphItem<RemoteResolveResult>> flattened,
                                    ISet<LibraryRange> unresolved,
-                                   AnalyzeResult<RemoteResolveResult> analyzeResult)
+                                   AnalyzeResult<RemoteResolveResult> analyzeResult,
+                                   ISet<ResolvedDependencyKey> resolvedDependencies)
         {
-            Conflicts = conflicts;
+            Conflicts = conflicts.ToArray();
             RuntimeIdentifier = runtimeIdentifier;
             RuntimeGraph = runtimeGraph;
             Framework = framework;
             Graphs = graphs;
             Name = FrameworkRuntimePair.GetName(Framework, RuntimeIdentifier);
+            TargetGraphName = FrameworkRuntimePair.GetTargetGraphName(Framework, RuntimeIdentifier);
+
 
             Conventions = new ManagedCodeConventions(runtimeGraph);
 
@@ -75,6 +82,7 @@ namespace NuGet.Commands
             Flattened = flattened;
             AnalyzeResult = analyzeResult;
             Unresolved = unresolved;
+            ResolvedDependencies = resolvedDependencies;
         }
 
         public static RestoreTargetGraph Create(IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, ILogger logger, NuGetFramework framework)
@@ -96,6 +104,7 @@ namespace NuGet.Commands
 
             var conflicts = new Dictionary<string, HashSet<ResolverRequest>>();
             var analyzeResult = new AnalyzeResult<RemoteResolveResult>();
+            var resolvedDependencies = new HashSet<ResolvedDependencyKey>();
 
             foreach (var graph in graphs)
             {
@@ -129,7 +138,7 @@ namespace NuGet.Commands
                             ranges.Add(new ResolverRequest(requestor, node.Key));
                         }
 
-                        if (string.Equals(node?.Item?.Key?.Type, LibraryType.Unresolved))
+                        if (node?.Item?.Key?.Type == LibraryType.Unresolved)
                         {
                             if (node.Key.VersionRange != null)
                             {
@@ -142,6 +151,16 @@ namespace NuGet.Commands
                         // Don't add rejected nodes since we only want to write reduced nodes
                         // to the lock file
                         flattened.Add(node.Item);
+                    }
+
+                    if (node?.OuterNode != null && node.Item.Key.Type != LibraryType.Unresolved)
+                    {
+                        var dependencyKey = new ResolvedDependencyKey(
+                            parent: node.OuterNode.Item.Key,
+                            range: node.Key.VersionRange,
+                            child: node.Item.Key);
+
+                        resolvedDependencies.Add(dependencyKey);
                     }
 
                     // If the package came from a remote library provider, it needs to be installed locally
@@ -163,7 +182,8 @@ namespace NuGet.Commands
                 install,
                 flattened,
                 unresolved,
-                analyzeResult);
+                analyzeResult,
+                resolvedDependencies);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace NuGet.Commands.Test
     {
         // Root project is favored over package in global folder
         [Fact]
-        public async Task DependencyTypeConstraint_RootProjectIsUsedOverPackage()
+        public async Task DependencyTypeConstraint_RootProjectIsUsedOverPackageAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -55,7 +55,7 @@ namespace NuGet.Commands.Test
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
-                var project1PackagePath = SimpleTestPackageUtility.CreateFullPackage(
+                var project1PackagePath = await SimpleTestPackageUtility.CreateFullPackageAsync(
                     packageSource.FullName,
                     "project1",
                     "1.0.0");
@@ -63,9 +63,10 @@ namespace NuGet.Commands.Test
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(project1PackagePath, packagesDir);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -80,7 +81,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task DependencyTypeConstraint_PackagesDependOnProject()
+        public async Task DependencyTypeConstraint_PackagesDependOnProjectAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -136,7 +137,7 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
                 var spec2 = JsonPackageSpecReader.GetPackageSpec(packageBProjectJson, "packageB", specPath2);
 
-                var packageAPath = SimpleTestPackageUtility.CreateFullPackage(
+                var packageAPath = await SimpleTestPackageUtility.CreateFullPackageAsync(
                     packageSource.FullName,
                     "packageA",
                     "1.0.0",
@@ -181,7 +182,7 @@ namespace NuGet.Commands.Test
 
         // Default behavior takes external project for csproj
         [Fact]
-        public async Task DependencyTypeConstraint_DefaultBehaviorWithNoTarget()
+        public async Task DependencyTypeConstraint_DefaultBehaviorWithNoTargetAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -251,7 +252,7 @@ namespace NuGet.Commands.Test
                 var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2);
                 var spec3 = JsonPackageSpecReader.GetPackageSpec(packageAExternalProjectJson, "packageA", specPath3);
 
-                var packageAPath = SimpleTestPackageUtility.CreateFullPackage(
+                var packageAPath = await SimpleTestPackageUtility.CreateFullPackageAsync(
                     packageSource.FullName,
                     "packageA",
                     "1.0.0");
@@ -292,7 +293,7 @@ namespace NuGet.Commands.Test
 
         // Target takes package over project
         [Fact]
-        public async Task DependencyTypeConstraint_TargetPackage()
+        public async Task DependencyTypeConstraint_TargetPackageAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -357,7 +358,7 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
                 var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2);
 
-                var packageAPath = SimpleTestPackageUtility.CreateFullPackage(
+                var packageAPath = await SimpleTestPackageUtility.CreateFullPackageAsync(
                     packageSource.FullName,
                     "packageA",
                     "1.0.0");
@@ -365,9 +366,10 @@ namespace NuGet.Commands.Test
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
+                };
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -393,7 +395,7 @@ namespace NuGet.Commands.Test
 
         // Target takes project over package
         [Fact]
-        public async Task DependencyTypeConstraint_TargetProject()
+        public async Task DependencyTypeConstraint_TargetProjectAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -452,7 +454,7 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
                 var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2);
 
-                var packageAPath = SimpleTestPackageUtility.CreateFullPackage(
+                var packageAPath = await SimpleTestPackageUtility.CreateFullPackageAsync(
                     packageSource.FullName,
                     "packageA",
                     "1.0.0");

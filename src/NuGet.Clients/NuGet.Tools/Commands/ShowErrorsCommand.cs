@@ -1,10 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.VisualStudio;
 
 namespace NuGetVSExtension
 {
@@ -14,8 +17,8 @@ namespace NuGetVSExtension
     /// </summary>
     internal sealed class ShowErrorsCommand : ICommand
     {
-        private readonly IVsOutputWindow _vsOutputWindow;
-        private readonly IVsUIShell _vsUiShell;
+        private readonly Lazy<IVsOutputWindow> _vsOutputWindow;
+        private readonly Lazy<IVsUIShell> _vsUiShell;
 
         public ShowErrorsCommand(IServiceProvider serviceProvider)
         {
@@ -23,9 +26,24 @@ namespace NuGetVSExtension
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
-            // get all services we need for displaytion and activation of the NuGet output pane
-            _vsOutputWindow = (IVsOutputWindow)serviceProvider.GetService(typeof(SVsOutputWindow));
-            _vsUiShell = (IVsUIShell)serviceProvider.GetService(typeof(SVsUIShell));
+            // get all services we need for display and activation of the NuGet output pane
+            _vsOutputWindow = new Lazy<IVsOutputWindow>(() =>
+            {
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return (IVsOutputWindow)serviceProvider.GetService(typeof(SVsOutputWindow));
+                });
+            });
+
+            _vsUiShell = new Lazy<IVsUIShell>(() =>
+            {
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return (IVsUIShell)serviceProvider.GetService(typeof(SVsUIShell));
+                });
+            });
         }
 
         // Actually never raised
@@ -38,20 +56,25 @@ namespace NuGetVSExtension
         // False if services were unavailable during instantiation. Never change.
         public bool CanExecute(object parameter)
         {
-            return _vsUiShell != null && _vsOutputWindow != null;
+            return _vsUiShell?.Value != null && _vsOutputWindow?.Value != null;
         }
 
         public void Execute(object parameter)
         {
-            IVsWindowFrame toolWindow = null;
-            _vsUiShell.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
-            toolWindow?.Show();
-
-            IVsOutputWindowPane pane;
-            if (_vsOutputWindow.GetPane(ref NuGetConsole.GuidList.guidNuGetOutputWindowPaneGuid, out pane) == VSConstants.S_OK)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                pane.Activate();
-            }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                IVsWindowFrame toolWindow = null;
+                _vsUiShell.Value.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
+                toolWindow?.Show();
+
+                IVsOutputWindowPane pane;
+                if (_vsOutputWindow.Value.GetPane(ref NuGetConsole.GuidList.guidNuGetOutputWindowPaneGuid, out pane) == VSConstants.S_OK)
+                {
+                    pane.Activate();
+                }
+            });
         }
     }
 }

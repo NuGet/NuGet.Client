@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,47 +14,6 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetListCommandTest
     {
-        [SkipMonoTheory]
-        [InlineData("https://www.ssllabs.com:10200/index.json", false)] // SSLv2.0
-        [InlineData("https://www.ssllabs.com:10300/index.json", false)] // SSLv3.0
-        [InlineData("https://www.ssllabs.com:10301/index.json", true)]  // TLSv1.0
-        [InlineData("https://www.ssllabs.com:10302/index.json", true)]  // TLSv1.1
-        [InlineData("https://www.ssllabs.com:10303/index.json", true)]  // TLSv1.2
-        public void ListCommand_SupportsServersWithAcceptableSsl(string source, bool supported)
-        {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            // The following URLs for this test are not valid NuGet sources but are HTTP servers
-            // known to support only a single SSL protocol (they are test servers for this specific
-            // purpose). Since they are not a valid NuGet servers, the command should always fails,
-            // but the error indicates whether a successful HTTP session was made. In this case, a
-            // 404 Not Found is returned if nuget.exe can talk to the source.
-            //
-            // http://stackoverflow.com/a/29221439/52749
-            var args = new[] { "list", Guid.NewGuid().ToString(), "-Source", source };
-            var supportedIndicator = "Response status code does not indicate success: 404 (Not Found).";
-
-            // Act
-            var result = CommandRunner.Run(
-                nugetexe,
-                Directory.GetCurrentDirectory(),
-                string.Join(" ", args),
-                waitForExit: true);
-
-            // Assert
-            Assert.Equal(1, result.Item1);
-            Assert.Contains($"Unable to load the service index for source {source}.", result.Item3);
-            if (supported)
-            {
-                Assert.Contains(supportedIndicator, result.Item3);
-            }
-            else
-            {
-                Assert.DoesNotContain(supportedIndicator, result.Item3);
-            }
-        }
-
         [Fact]
         public void ListCommand_WithNugetShowStack_ShowsStack()
         {
@@ -62,8 +21,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var hostName = Guid.NewGuid().ToString();
             var fullHostName = "https://" + hostName + "/";
-            var expected = "System.AggregateException: One or more errors occurred. ---> " +
-                           "NuGet.Protocol.Core.Types.FatalProtocolException: Unable to load the service index for source " +
+            var expected = "NuGet.Protocol.Core.Types.FatalProtocolException: Unable to load the service index for source " +
                            $"{fullHostName}";
 
             var args = new[] { "list", "-Source", fullHostName };
@@ -80,7 +38,7 @@ namespace NuGet.CommandLine.Test
                 });
 
             // Assert
-            Assert.Contains(expected, result.Item3);
+            Assert.Contains(expected, result.Item2 + " " + result.Item3);
             Assert.NotEqual(0, result.Item1);
         }
 
@@ -110,7 +68,7 @@ namespace NuGet.CommandLine.Test
                 });
 
             // Assert
-            Assert.Contains(expected, result.Item3);
+            Assert.Contains(expected, result.Item2 + " " + result.Item3);
             Assert.NotEqual(0, result.Item1);
         }
 
@@ -238,7 +196,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -297,7 +255,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -359,7 +317,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -417,7 +375,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -474,7 +432,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -532,7 +490,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -590,7 +548,7 @@ namespace NuGet.CommandLine.Test
                     string searchRequest = string.Empty;
 
                     server.Get.Add("/nuget/$metadata", r =>
-                        MockServerResource.NuGetV2APIMetadata);
+                        Util.GetMockServerResource());
                     server.Get.Add("/nuget/Search()", r =>
                         new Action<HttpListenerResponse>(response =>
                         {
@@ -680,7 +638,7 @@ namespace NuGet.CommandLine.Test
 
                             if (path == "/$metadata")
                             {
-                                return MockServerResource.NuGetV2APIMetadata;
+                                return Util.GetMockServerResource();
                             }
 
                             if (path == "/Search()")
@@ -1041,7 +999,7 @@ namespace NuGet.CommandLine.Test
 
                         if (path == $"/{listEndpoint}/$metadata")
                         {
-                            return MockServerResource.NuGetV2APIMetadata;
+                            return Util.GetMockServerResource();
                         }
 
                         if (path == $"/{listEndpoint}/Search()")
@@ -1144,7 +1102,7 @@ namespace NuGet.CommandLine.Test
 
                         if (path == $"/{listEndpoint}/$metadata")
                         {
-                            return MockServerResource.NuGetV2APIMetadata;
+                            return Util.GetMockServerResource();
                         }
 
                         if (path == $"/{listEndpoint}/Search()")

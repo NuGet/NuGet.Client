@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -194,7 +194,16 @@ namespace NuGet.Versioning
             {
                 if (_releaseLabels != null)
                 {
-                    return string.Join(".", _releaseLabels);
+                    if (_releaseLabels.Length == 1)
+                    {
+                        // There is exactly 1 label
+                        return _releaseLabels[0];
+                    }
+                    else
+                    {
+                        // Join all labels
+                        return string.Join(".", _releaseLabels);
+                    }
                 }
 
                 return string.Empty;

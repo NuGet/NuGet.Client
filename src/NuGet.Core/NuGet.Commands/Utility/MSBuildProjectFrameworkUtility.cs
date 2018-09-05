@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Common;
 using NuGet.Frameworks;
 
 namespace NuGet.Commands
@@ -18,7 +19,8 @@ namespace NuGet.Commands
             string targetFramework,
             string targetFrameworkMoniker,
             string targetPlatformIdentifier,
-            string targetPlatformVersion)
+            string targetPlatformVersion,
+            string targetPlatformMinVersion)
         {
             return GetProjectFrameworkStrings(
                 projectFilePath,
@@ -27,6 +29,7 @@ namespace NuGet.Commands
                 targetFrameworkMoniker,
                 targetPlatformIdentifier,
                 targetPlatformVersion,
+                targetPlatformMinVersion,
                 isManagementPackProject: false,
                 isXnaWindowsPhoneProject: false);
         }
@@ -41,6 +44,7 @@ namespace NuGet.Commands
             string targetFrameworkMoniker,
             string targetPlatformIdentifier,
             string targetPlatformVersion,
+            string targetPlatformMinVersion,
             bool isXnaWindowsPhoneProject,
             bool isManagementPackProject)
         {
@@ -85,13 +89,19 @@ namespace NuGet.Commands
 
             // UAP/Windows store projects
             var platformIdentifier = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformIdentifier);
-            var platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformVersion);
+            var platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformMinVersion);
+
+            // if targetPlatformMinVersion isn't defined then fallback to targetPlatformVersion
+            if (string.IsNullOrEmpty(platformVersion))
+            {
+                platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformVersion);
+            }
 
             // Check for JS project
             if (projectFilePath?.EndsWith(".jsproj", StringComparison.OrdinalIgnoreCase) == true)
             {
                 // JavaScript apps do not have a TargetFrameworkMoniker property set.
-                // We read the TargetPlatformIdentifier and TargetPlatformVersion instead
+                // We read the TargetPlatformIdentifier and targetPlatformMinVersion instead
                 // use the default values for JS if they were not given
                 if (string.IsNullOrEmpty(platformVersion))
                 {

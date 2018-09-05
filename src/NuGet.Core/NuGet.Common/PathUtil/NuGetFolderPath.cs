@@ -11,6 +11,7 @@ namespace NuGet.Common
         HttpCacheDirectory,
         NuGetHome,
         DefaultMsBuildPath,
-        Temp
+        Temp,
+        NuGetPluginsCacheDirectory
     }
 }

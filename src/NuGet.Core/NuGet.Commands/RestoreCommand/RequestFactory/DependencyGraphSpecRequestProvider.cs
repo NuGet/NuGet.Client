@@ -1,14 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -21,31 +24,20 @@ namespace NuGet.Commands
 
         private readonly DependencyGraphSpec _dgFile;
         private readonly RestoreCommandProvidersCache _providerCache;
-        private readonly Dictionary<string, PackageSpec> _projectJsonCache = new Dictionary<string, PackageSpec>(StringComparer.Ordinal);
-        private readonly ISettings _providerSettingsOverride;
 
         public DependencyGraphSpecRequestProvider(
             RestoreCommandProvidersCache providerCache,
             DependencyGraphSpec dgFile)
-            : this(providerCache, dgFile, settingsOverride: null)
-        {
-        }
-
-        public DependencyGraphSpecRequestProvider(
-            RestoreCommandProvidersCache providerCache,
-            DependencyGraphSpec dgFile,
-            ISettings settingsOverride)
         {
             _dgFile = dgFile;
             _providerCache = providerCache;
-            _providerSettingsOverride = settingsOverride;
         }
 
         public Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(RestoreArgs restoreContext)
         {
             var requests = GetRequestsFromItems(restoreContext, _dgFile);
 
-            return Task.FromResult<IReadOnlyList<RestoreSummaryRequest>>(requests);
+            return Task.FromResult(requests);
         }
 
         private IReadOnlyList<RestoreSummaryRequest> GetRequestsFromItems(RestoreArgs restoreContext, DependencyGraphSpec dgFile)
@@ -74,12 +66,14 @@ namespace NuGet.Commands
             {
                 var closure = dgFile.GetClosure(projectNameToRestore);
 
+                var projectDependencyGraphSpec = dgFile.WithProjectClosure(projectNameToRestore);
+
                 var externalClosure = new HashSet<ExternalProjectReference>(closure.Select(GetExternalProject));
 
                 var rootProject = externalClosure.Single(p =>
                     StringComparer.Ordinal.Equals(projectNameToRestore, p.UniqueName));
 
-                var request = Create(rootProject, externalClosure, restoreContext, settingsOverride: _providerSettingsOverride);
+                var request = Create(projectNameToRestore, rootProject, externalClosure, restoreContext, projectDgSpec: projectDependencyGraphSpec);
 
                 if (request.Request.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {
@@ -126,49 +120,50 @@ namespace NuGet.Commands
         }
 
         private RestoreSummaryRequest Create(
+            string projectNameToRestore,
             ExternalProjectReference project,
             HashSet<ExternalProjectReference> projectReferenceClosure,
-            RestoreArgs restoreContext,
-            ISettings settingsOverride)
+            RestoreArgs restoreArgs,
+            DependencyGraphSpec projectDgSpec)
         {
-            // Get settings relative to the input file
-            var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
-
-            var settings = settingsOverride;
-
-            if (settings == null)
-            {
-                settings = restoreContext.GetSettings(rootPath);
-            }
-
-            var globalPath = restoreContext.GetEffectiveGlobalPackagesFolder(rootPath, settings);
-            var fallbackPaths = restoreContext.GetEffectiveFallbackPackageFolders(settings);
-
-            var sources = restoreContext.GetEffectiveSources(settings);
+            var projectPackageSpec = projectDgSpec.GetProjectSpec(projectNameToRestore);
+            //fallback paths, global packages path and sources need to all be passed in the dg spec
+            var fallbackPaths = projectPackageSpec.RestoreMetadata.FallbackFolders;
+            var globalPath = GetPackagesPath(restoreArgs, projectPackageSpec);
+            var settings = Settings.LoadSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths);
+            var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
-                fallbackPaths,
+                fallbackPaths.AsList(),
                 sources,
-                restoreContext.CacheContext,
-                restoreContext.Log);
+                restoreArgs.CacheContext,
+                restoreArgs.Log);
+            
+            var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
 
             // Create request
             var request = new RestoreRequest(
                 project.PackageSpec,
                 sharedCache,
-                restoreContext.CacheContext,
-                restoreContext.Log);
-
-            // Set properties from the restore metadata
-            request.ProjectStyle = project.PackageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
-            request.RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath;
+                restoreArgs.CacheContext,
+                restoreArgs.Log)
+            {
+                // Set properties from the restore metadata
+                ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle,
+                //  Project.json is special cased to put assets file and generated .props and targets in the project folder
+                RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
+                DependencyGraphSpec = projectDgSpec,
+                MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath,
+                ParentId = restoreArgs.ParentId
+            };
+            
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
                 ?? DefaultRestoreLegacyPackagesDirectory;
             request.IsLowercasePackagesDirectory = !restoreLegacyPackagesDirectory;
 
             // Standard properties
-            restoreContext.ApplyStandardProperties(request);
+            restoreArgs.ApplyStandardProperties(request);
 
             // Add project references
             request.ExternalProjects = projectReferenceClosure.ToList();
@@ -177,12 +172,29 @@ namespace NuGet.Commands
             var summaryRequest = new RestoreSummaryRequest(
                 request,
                 project.MSBuildProjectPath,
-                settings,
+                SettingsUtility.GetConfigFilePaths(settings),
                 sources);
 
             return summaryRequest;
         }
 
+        private string GetPackagesPath(RestoreArgs restoreArgs, PackageSpec project)
+        {
+            if (!string.IsNullOrEmpty(restoreArgs.GlobalPackagesFolder))
+            {
+                project.RestoreMetadata.PackagesPath = restoreArgs.GlobalPackagesFolder;
+            }
+            return project.RestoreMetadata.PackagesPath;
+        }
+
+        private void UpdateSources(ProjectRestoreMetadata project, List<SourceRepository> sources)
+        {
+            project.Sources.Clear();
+            foreach (var source in sources)
+            {
+                project.Sources.Add(source.PackageSource);
+            }
+        }
         /// <summary>
         /// Return all references for a given project path.
         /// References is modified by this method.

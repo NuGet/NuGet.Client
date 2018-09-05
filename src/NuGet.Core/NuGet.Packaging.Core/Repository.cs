@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,15 +12,21 @@ namespace NuGet.Packaging.Core
         {
             
         }
-        public RepositoryMetadata(string type, string url)
+        public RepositoryMetadata(string type, string url, string branch, string commit)
         {
             Type = type;
             Url = url;
+            Branch = branch;
+            Commit = commit;
         }
 
-        public string Type { get; set; }
+        public string Type { get; set; } = string.Empty;
 
-        public string Url { get; set; }
+        public string Url { get; set; } = string.Empty;
+
+        public string Branch { get; set; } = string.Empty;
+
+        public string Commit { get; set; } = string.Empty;
 
         public override bool Equals(object obj)
         {

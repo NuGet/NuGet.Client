@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,18 +19,20 @@ namespace NuGet.Commands.Test
     public class PushCommandTests
     {
         [Fact]
-        public async Task PushCommand_AbsolutePathSource()
+        public async Task PushCommand_AbsolutePathSourceAsync()
         {
-            using (TestDirectory workingDir = TestDirectory.Create())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange (create a test package)
-                DirectoryInfo packagePushDest = new DirectoryInfo(Path.Combine(workingDir, "packagePushDest"));
+                var packagePushDest = new DirectoryInfo(Path.Combine(workingDir, "packagePushDest"));
                 packagePushDest.Create();
 
-                List<PackageSource> packageSources = new List<PackageSource>();
-                packageSources.Add(new PackageSource(packagePushDest.FullName));
+                var packageSources = new List<PackageSource>
+                {
+                    new PackageSource(packagePushDest.FullName)
+                };
 
-                FileInfo packageInfo = SimpleTestPackageUtility.CreateFullPackage(workingDir, "test", "1.0.0");
+                var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
 
                 // Act
                 await PushRunner.Run(
@@ -43,11 +45,12 @@ namespace NuGet.Commands.Test
                     null, // symbols api key
                     0, // timeout
                     false, // disable buffering
-                    false, // no symbols
+                    false, // no symbols,
+                    false, // enable server endpoint
                     new TestLogger());
 
                 // Assert
-                string destFile = Path.Combine(packagePushDest.FullName, packageInfo.Name);
+                var destFile = Path.Combine(packagePushDest.FullName, packageInfo.Name);
                 Assert.Equal(true, File.Exists(destFile));
             }
         }

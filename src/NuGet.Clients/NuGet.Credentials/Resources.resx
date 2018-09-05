@@ -150,4 +150,11 @@
   <data name="ProviderException_MalformedResponse" xml:space="preserve">
     <value>Credential provider gave an invalid response.</value>
   </data>
+  <data name="SecurePluginNotice_UsingPluginAsProvider" xml:space="preserve">
+    <value>Using {0} as a credential provider plugin.</value>
+    <comment>{0} - plugin path</comment>
+  </data>
+  <data name="SecurePluginWarning_UseInteractiveOption" xml:space="preserve">
+    <value>The plugin credential provider could not acquire credentials. Authentication may require manual action. Consider re-running the command with --interactive for `dotnet`, /p:NuGetInteractive="true" for MSBuild or removing the -NonInteractive switch for `NuGet`</value>
+  </data>
 </root>

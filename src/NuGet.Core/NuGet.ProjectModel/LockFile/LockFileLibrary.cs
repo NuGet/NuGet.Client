@@ -33,6 +33,8 @@ namespace NuGet.ProjectModel
         /// </summary>
         public string MSBuildProject { get; set; }
 
+        public bool HasTools { get; set; }
+
         public bool Equals(LockFileLibrary other)
         {
             if (other == null)
@@ -50,6 +52,7 @@ namespace NuGet.ProjectModel
                 && string.Equals(Path, other.Path, StringComparison.Ordinal)
                 && string.Equals(MSBuildProject, other.MSBuildProject, StringComparison.Ordinal)
                 && IsServiceable == other.IsServiceable
+                && HasTools == other.HasTools
                 && string.Equals(Sha512, other.Sha512, StringComparison.Ordinal)
                 && Version == other.Version)
             {
@@ -72,6 +75,7 @@ namespace NuGet.ProjectModel
             combiner.AddStringIgnoreCase(Type);
             combiner.AddObject(Sha512);
             combiner.AddObject(IsServiceable);
+            combiner.AddObject(HasTools);
             combiner.AddObject(Version);
             combiner.AddObject(Path);
             combiner.AddObject(MSBuildProject);
@@ -96,6 +100,7 @@ namespace NuGet.ProjectModel
                 Type = Type,
                 Version = Version,
                 IsServiceable = IsServiceable,
+                HasTools = HasTools,
                 Sha512 = Sha512,
                 Files = Files != null ? new List<string>(Files) : null,
                 Path = Path,

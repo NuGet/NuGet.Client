@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -14,7 +14,7 @@ namespace NuGet.CommandLine.Test
     public class NuGetLocalsCommandTest
     {
         private const string LocalsHelpStringFragment =
-            "usage: NuGet locals <all | http-cache | global-packages | temp> [-clear | -list]";
+            "usage: NuGet locals <all | http-cache | global-packages | temp | plugins-cache> [-clear | -list]";
 
         [Theory]
         [InlineData("locals")]

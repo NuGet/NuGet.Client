@@ -1,55 +1,41 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\..\Build\Common.props" />
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <ProjectGuid>{61EC099A-8AC0-4CCC-AFA8-DF9806CBAFD1}</ProjectGuid>
+    <TargetFramework>net46</TargetFramework>
     <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GenerateTestPackages</RootNamespace>
-    <AssemblyName>GenerateTestPackages</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>ToolTestKey.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>false</DelaySign>
   </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="AssemblySourceFileGenerator.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AssemblySourceFileGenerator.tt</DependentUpon>
-    </Compile>
-    <Compile Include="AssemblySourceFileGenerator_Partial.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <PackageReference Include="NuGet.Core" Version="2.14.0-rtm-832" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="AssemblySourceFileGenerator.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>AssemblySourceFileGenerator.cs</LastGenOutput>
     </None>
-    <None Include="project.json" />
     <None Include="Test.dgml">
       <SubType>Designer</SubType>
     </None>
     <EmbeddedResource Include="TestPackageKey.snk" />
   </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(EnlistmentRoot)\build\common.targets" />
-  <Target Name="AfterBuild">
+
+  <Import Project="$(BuildCommonDirectory)common.targets" />
+
+  <Target Name="DeployToArtifacts" AfterTargets="Build;Rebuild">
   <!--
     Publish test extension artifacts to a well-known location so that
     Import-Module NuGet.Tests.psm1 is able to locate it.
@@ -58,10 +44,9 @@
       <PublishDestination>$(ArtifactRoot)\TestExtensions</PublishDestination>
     </PropertyGroup>
     <Message Text="Publishing test extension artifacts..." Importance="high" />
-    <Message Text="$(TargetPath) -> $(PublishDestination)" Importance="high" />
-    <Copy
-      SourceFiles="$(TargetPath)"
-      DestinationFolder="$(PublishDestination)"
-      OverwriteReadOnlyFiles="true" />
+    <Message Text="$(TargetPath) -&gt; $(PublishDestination)" Importance="high" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
   </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

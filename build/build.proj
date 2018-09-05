@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Test" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+
+  <!-- Configuration/global properties -->
+  <PropertyGroup>
+    <CommonMSBuildProperties>
+      Configuration=$(Configuration);
+      ReleaseLabel=$(ReleaseLabel);
+      BuildNumber=$(BuildNumber);
+      BuildRTM=$(BuildRTM);
+    </CommonMSBuildProperties>
+  </PropertyGroup>
+
+  <!--
+    ============================================================
+    Get XPLAT projects
+    ============================================================
+  -->
+  <Target Name="GetXPLATProjects">
+      <MsBuild
+      Projects="@(AllSolutionProjects)"
+      Targets="GetXPLATProject">
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="XPLATProjects" />
+    </MsBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Run core functional tests (non-VS specific)
+    ============================================================
+  -->
+  <Target Name="CoreFuncTests" DependsOnTargets="BuildVS15;Pack">
+    <!-- Test inputs -->
+    <PropertyGroup>
+      <TestProjectPaths>@(CoreFuncTestProjects)</TestProjectPaths>
+      <TestResultsFileName>CoreFuncTests</TestResultsFileName>
+      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
+    </PropertyGroup>
+
+    <!-- Run tests as a batch -->
+    <MSBuild
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="RunTestsOnProjects"
+        Properties="$(CommonMSBuildProperties);
+                    VisualStudioVersion=$(TestVisualStudioVersion);
+                    TestResultsFileName=$(TestResultsFileName);
+                    TestProjectPaths=$(TestProjectPaths)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Run core unit tests (non-VS specific)
+    ============================================================
+  -->
+  <Target Name="CoreUnitTests">
+    <!-- Test inputs -->
+    <PropertyGroup>
+      <TestProjectPaths>@(CoreUnitTestProjects)</TestProjectPaths>
+      <TestResultsFileName>CoreUnitTests</TestResultsFileName>
+      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
+    </PropertyGroup>
+
+    <!-- Run tests as a batch -->
+    <MSBuild
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="RunTestsOnProjects"
+        Properties="$(CommonMSBuildProperties);
+                    VisualStudioVersion=$(TestVisualStudioVersion);
+                    TestResultsFileName=$(TestResultsFileName);
+                    TestProjectPaths=$(TestProjectPaths)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Run VS15 unit tests
+    ============================================================
+  -->
+  <Target Name="UnitTestsVS15">
+    <!-- Test inputs -->
+    <PropertyGroup>
+      <TestProjectPaths>@(VSUnitTestProjects)</TestProjectPaths>
+      <TestResultsFileName>UnitTestsVS15</TestResultsFileName>
+      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
+    </PropertyGroup>
+
+    <!-- Run tests as a batch -->
+    <MSBuild
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="RunTestsOnProjects"
+        Properties="$(CommonMSBuildProperties);
+                    VisualStudioVersion=$(TestVisualStudioVersion);
+                    TestResultsFileName=$(TestResultsFileName);
+                    TestProjectPaths=$(TestProjectPaths)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Run VS15 apex tests
+    ============================================================
+  -->
+  <Target Name="ApexTestsStandalone">
+
+    <!-- Test inputs -->
+    <PropertyGroup>
+      <TestProjectPaths>$(RepositoryRootDirectory)test\NuGet.Tests.Apex\NuGet.Tests.Apex\NuGet.Tests.Apex.csproj</TestProjectPaths>
+      <TestResultsFileName>ApexTestsVS15</TestResultsFileName>
+      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
+    </PropertyGroup>
+
+    <!-- Run tests as a batch -->
+    <MSBuild
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="RunTestsOnProjects"
+        Properties="$(CommonMSBuildProperties);
+                    VisualStudioVersion=$(TestVisualStudioVersion);
+                    TestResultsFileName=$(TestResultsFileName);
+                    TestProjectPaths=$(TestProjectPaths);
+                    Verbosity=-verbose">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Build, Pack, Core Tests, Unit tests for VS 15
+    ============================================================
+  -->
+  <Target Name="RunVS15"  DependsOnTargets="BuildVS15;Pack;CoreUnitTests;UnitTestsVS15">
+    <Message Text="Running NuGet Build for VS 15" Importance="high" />
+  </Target>
+
+  <!--
+    ============================================================
+    Build for VS15 
+    ============================================================
+  -->
+  <Target Name="BuildVS15"  Condition=" '$(IsXPlat)' != 'true' " >
+    <Message Text="Building for VS15" Importance="high" />
+  </Target>
+
+    <!--
+    ============================================================
+    Build for XPLAT 
+    ============================================================
+  -->
+  <Target Name="BuildXPLAT" DependsOnTargets="GetXPLATProjects">
+    <Message Text="Building XPLAT" Importance="high" />
+  </Target>
+
+  <!--
+    ============================================================
+    Build for VS15
+    ============================================================
+  -->
+  <Target Name="BuildVS15NoVSIX" AfterTargets="BuildVS15" Condition=" '$(IsXPlat)' != 'true' ">
+    <Message Text="Building for VS15" Importance="high" />
+
+    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
+             Targets="Build"
+             Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=15.0;" />
+  </Target>
+
+  <!--
+    ============================================================
+    Build XPLAT
+    ============================================================
+  -->
+  <Target Name="BuildXPLATProjects" AfterTargets="BuildXPLAT">
+    <Message Text="Building XPLAT" Importance="high" />
+
+    <MSBuild Projects="@(XPLATProjects)"
+             Targets="Build"
+             Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=15.0;" />
+  </Target>
+
+  <!--
+    ============================================================
+    Build the VS15 VSIX
+    This target always needs to be below BuildVS15NoVSIX so that
+    BuildVS15 runs the NoVSIX targets before this one.
+    ============================================================
+  -->
+  <Target Name="BuildVS15VSIX" AfterTargets= "BuildVS15" Condition=" '$(IsXPlat)' != 'true' AND '$(BuildRTM)' != 'true'">
+    <Message Text="Building the VSIX for VS15" Importance="high" />
+
+    <MSBuild Projects="$(VSIXProject)"
+             Targets="Build"
+             Properties="$(CommonMSBuildProperties);
+                         BuildProjectReferences=false;
+                         IsVsixBuild=true;
+                         VisualStudioVersion=15.0;" />
+  </Target>
+
+  <!--
+    ============================================================
+    Clean all
+    ============================================================
+  -->
+  <Target Name="Clean">
+    <Message Text="Cleaning" Importance="high" />
+
+    <!-- Clean 15 -->
+    <MSBuild BuildInParallel="true"
+             Projects="@(SolutionProjects)"
+             Targets="Clean"
+             Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=15.0;" />
+
+    <!-- Clean 14 -->
+    <MSBuild BuildInParallel="true"
+             Projects="@(SolutionProjects)"
+             Targets="Clean"
+             Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=14.0;" />
+  </Target>
+
+  <!--
+    ============================================================
+    Pack for VS15
+    ============================================================
+  -->
+  <Target Name="Pack">
+    <Message Text="Packing for VS15" Importance="high" />
+
+    <MSBuild BuildInParallel="false"
+             Projects="@(SolutionProjects)"
+             Targets="PackProjects"
+             Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=15.0;" />
+  </Target>
+
+  <!--
+    ============================================================
+    Pack for XPLAT
+    ============================================================
+  -->
+  <Target Name="PackXPLAT" DependsOnTargets="GetXPLATProjects">
+    <Message Text="Packing for XPLAT" Importance="high" />
+
+    <MSBuild BuildInParallel="false"
+             Projects="@(XPLATProjects)"
+             Targets="PackProjects"
+             Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=$(VisualStudioVersion);" />
+  </Target>
+
+  <!--
+    ============================================================
+    Restore all projects for the current platform.
+    ============================================================
+  -->
+  <Target Name="Restore">
+    <Message Text="Restoring for Visual Studio $(VisualStudioVersion)" Importance="high" />
+
+    <!-- Convert list of projects to a property -->
+    <PropertyGroup>
+      <ProjectListValue>@(SolutionProjects)</ProjectListValue>
+    </PropertyGroup>
+
+    <MSBuild
+      Projects="restorehelper.targets"
+      Targets="Restore"
+      Properties="RestoreGraphProjectInput=$(ProjectListValue);
+                  $(CommonMSBuildProperties);
+                  VisualStudioVersion=$(VisualStudioVersion)">
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Restore for VS15
+    ============================================================
+  -->
+  <Target Name="RestoreVS15">
+    <Message Text="Restoring for Visual Studio 15.0" Importance="high" />
+
+    <MSBuild
+      Projects="$(MSBuildThisFileFullPath)"
+      Targets="Restore"
+      Properties="$(CommonMSBuildProperties);
+                  VisualStudioVersion=15.0">
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Restore for XPLAT
+    ============================================================
+  -->
+  <Target Name="RestoreXPLAT" DependsOnTargets="GetXPLATProjects">
+    <Message Text="Restoring for XPLAT" Importance="high" />
+    
+    <PropertyGroup>
+      <ProjectListValue>@(XPLATProjects)</ProjectListValue>
+    </PropertyGroup>
+
+    <MSBuild
+      Projects="restorehelper.targets"
+      Targets="Restore"
+      Properties="RestoreGraphProjectInput=$(ProjectListValue);
+                  $(CommonMSBuildProperties);
+                  VisualStudioVersion=$(VisualStudioVersion)">
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Restore Apex 
+    ============================================================
+  -->
+  <Target Name="RestoreApex">
+    <Message Text="Restoring Apex projects" Importance="high" />
+
+    <PropertyGroup>
+      <ProjectListValue>@(ApexProjects)</ProjectListValue>
+    </PropertyGroup>
+
+    <MSBuild
+      Projects="restorehelper.targets"
+      Targets="Restore"
+      Properties="RestoreGraphProjectInput=$(ProjectListValue);
+                  $(CommonMSBuildProperties);
+                  VisualStudioVersion=15.0">
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    RunTestsOnProjects
+    Finds all test assemblies and allows Xunit to run them as 
+    efficiently as the xunit.runner.json settings allow.
+    ============================================================
+  -->
+  <Target Name="RunTestsOnProjects">
+    <Message Text="Running $(TestResultsFileName)" Importance="high" />
+
+    <ItemGroup>
+      <TestProjectToSearch Include="$(TestProjectPaths)" />
+    </ItemGroup>
+
+    <MSBuild
+            Projects="@(TestProjectToSearch)"
+            Targets="GetTestAssemblies"
+            Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=$(VisualStudioVersion);"
+            Condition=" '$(TestProjectPaths)' != '' ">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <TestResultsDirectory>$(BuildCommonDirectory)TestResults</TestResultsDirectory>
+    </PropertyGroup>
+
+    <!-- Ensure the test results dir exists -->
+    <MakeDir Directories="$(TestResultsDirectory)" />
+
+    <PropertyGroup>
+      <!-- Sort assemblies -->
+      <DesktopInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsDesktop", "true"))</DesktopInputTestAssemblies>
+      <DesktopInputTestAssembliesSpaced>$(DesktopInputTestAssemblies.Replace(';', ' '))</DesktopInputTestAssembliesSpaced>
+      <CoreInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsCore", "true"))</CoreInputTestAssemblies>
+      <CoreInputTestAssembliesSpaced>$(CoreInputTestAssemblies.Replace(';', ' '))</CoreInputTestAssembliesSpaced>
+      
+      <TestResultOutputFormat Condition="'$(TestResultOutputFormat)' == ''">xml</TestResultOutputFormat>
+      <!-- Build exe commands -->
+      <TestResultsXunit Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)\$(TestResultsFileName)-xunit.$(TestResultOutputFormat)</TestResultsXunit>
+      <TestResultsVsts Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)\$(TestResultsFileName)-vsts.$(TestResultOutputFormat)</TestResultsVsts>
+      <VsTestLogger>--TestAdapterPath:$(XunitXmlLoggerDirectory) --logger:xunit;LogFileName=$(TestResultsFileName)-vsts.$(TestResultOutputFormat)</VsTestLogger>
+      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) $(VsTestLogger)</VSTestCommand>
+      <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
+      <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit) $(Verbosity)</DesktopTestCommand>
+    </PropertyGroup>
+
+    <!-- Desktop -->
+    <Exec Command="$(DesktopTestCommand)"
+          ContinueOnError="true"
+          Condition=" '$(DesktopInputTestAssemblies)' != '' AND '$(SkipDesktopTests)' != 'true' ">
+      <Output TaskParameter="ExitCode" PropertyName="DesktopTestErrorCode"/>
+    </Exec>
+
+    <!-- VSTest/NETCore -->
+    <Exec Command="$(VSTestCommand)"
+          ContinueOnError="true"
+          Condition=" '$(CoreInputTestAssemblies)' != '' AND '$(SkipCoreTests)' != 'true' ">
+      <Output TaskParameter="ExitCode" PropertyName="VSTestErrorCode"/>
+    </Exec>
+
+    <Error Text="Desktop $(TestResultsFileName) tests failed! Results: $(TestResultsXunit)" Condition=" '$(DesktopTestErrorCode)' != '0' AND '$(DesktopTestErrorCode)' != '' " />
+    <Error Text="NETCore $(TestResultsFileName) tests failed! Results: $(TestResultsVsts)" Condition=" '$(VSTestErrorCode)' != '0' AND '$(VSTestErrorCode)' != '' " />
+
+    <Message Text="Desktop $(TestResultsFileName) tests passed! Results: $(TestResultsXunit)" Condition=" '$(DesktopTestErrorCode)' == '0' " Importance="High" />
+    <Message Text="NETCore $(TestResultsFileName) tests passed! Results: $(TestResultsVsts)" Condition=" '$(VSTestErrorCode)' == '0' " Importance="High" />
+  </Target>
+</Project>

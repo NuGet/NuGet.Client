@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using NuGet.LibraryModel;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -16,9 +17,16 @@ namespace NuGet.CommandLine.XPlat
                 packageReferenceArgs.PackageDependency.Id,
                 packageReferenceArgs.ProjectPath));
 
+            var libraryDependency = new LibraryDependency
+            {
+                LibraryRange = new LibraryRange(
+                    name: packageReferenceArgs.PackageDependency.Id,
+                    versionRange: packageReferenceArgs.PackageDependency.VersionRange,
+                    typeConstraint: LibraryDependencyTarget.Package)
+            };
+
             // Remove reference from the project
-            var result = msBuild.RemovePackageReference(packageReferenceArgs.ProjectPath,
-                packageReferenceArgs.PackageDependency);
+            var result = msBuild.RemovePackageReference(packageReferenceArgs.ProjectPath, libraryDependency);
 
             return Task.FromResult(result);
         }

@@ -1,7 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
@@ -47,14 +49,14 @@ namespace NuGet.ProjectModel.Test
             // Act
             var dg = DependencyGraphSpec.Load(json);
 
-            var xClosure = dg.GetClosure("A55205E7-4D08-4672-8011-0925467CC45F").ToList();
-            var yClosure = dg.GetClosure("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F").ToList();
-            var zClosure = dg.GetClosure("44B29B8D-8413-42D2-8DF4-72225659619B").ToList();
+            var xClosure = dg.GetClosure("A55205E7-4D08-4672-8011-0925467CC45F").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
+            var yClosure = dg.GetClosure("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
+            var zClosure = dg.GetClosure("44B29B8D-8413-42D2-8DF4-72225659619B").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
 
             // Assert
             Assert.Equal(3, xClosure.Count);
-            Assert.Equal("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F", xClosure[0].RestoreMetadata.ProjectUniqueName);
-            Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B", xClosure[1].RestoreMetadata.ProjectUniqueName);
+            Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B", xClosure[0].RestoreMetadata.ProjectUniqueName);
+            Assert.Equal("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F", xClosure[1].RestoreMetadata.ProjectUniqueName);
             Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", xClosure[2].RestoreMetadata.ProjectUniqueName);
 
             Assert.Equal(1, yClosure.Count);
@@ -62,6 +64,56 @@ namespace NuGet.ProjectModel.Test
 
             Assert.Equal(1, zClosure.Count);
             Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B", zClosure.Single().RestoreMetadata.ProjectUniqueName);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void DependencyGraphSpec_ReadFileWithProjects_CaseInsensitive_GetClosures()
+        {
+            // Arrange
+            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test3.dg", typeof(DependencyGraphSpecTests)));
+
+            // Act
+            var dg = DependencyGraphSpec.Load(json);
+
+            var xClosure = dg.GetClosure("A55205E7-4D08-4672-8011-0925467CC45F").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.OrdinalIgnoreCase).ToList();
+            var yClosure = dg.GetClosure("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.OrdinalIgnoreCase).ToList();
+
+            // Assert
+            Assert.Equal(3, xClosure.Count);
+            Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B", xClosure[0].RestoreMetadata.ProjectUniqueName);
+            Assert.Equal("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F", xClosure[1].RestoreMetadata.ProjectUniqueName);
+            Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", xClosure[2].RestoreMetadata.ProjectUniqueName);
+
+            Assert.Equal(1, yClosure.Count);
+            Assert.Equal("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F", yClosure.Single().RestoreMetadata.ProjectUniqueName);
+        }
+
+        [Fact]
+        public void DependencyGraphSpec_ProjectsWithToolReferences_GetClosures()
+        {
+            // Arrange
+            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test2.dg", typeof(DependencyGraphSpecTests)));
+            var childProject = @"f:\validation\test\dg\Project.Core\Project.Core\Project.Core.csproj";
+            var parentProject = @"f:\validation\test\dg\Project.Core\Project\Project.csproj";
+            var tool = @"atool-netcoreapp2.0-[1.0.0, )";
+
+            // Act
+            var dg = DependencyGraphSpec.Load(json);
+
+            var childClosure = dg.GetClosure(childProject).OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
+            var parentClosure = dg.GetClosure(parentProject).OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
+            var toolClosure = dg.GetClosure(tool).OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
+
+            // Assert
+            Assert.Equal(2, parentClosure.Count);
+            Assert.Equal(childProject, parentClosure[0].RestoreMetadata.ProjectUniqueName);
+            Assert.Equal(parentProject, parentClosure[1].RestoreMetadata.ProjectUniqueName);
+
+            Assert.Equal(1, childClosure.Count);
+            Assert.Equal(childProject, childClosure.Single().RestoreMetadata.ProjectUniqueName);
+
+            Assert.Equal(1, toolClosure.Count);
+            Assert.Equal(tool, toolClosure.Single().RestoreMetadata.ProjectUniqueName);
         }
 
         [Fact]
@@ -111,6 +163,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("c:\\packages", msbuildMetadata.PackagesPath);
             Assert.Equal("https://api.nuget.org/v3/index.json", string.Join("|", msbuildMetadata.Sources.Select(s => s.Source)));
             Assert.Equal("c:\\fallback1|c:\\fallback2", string.Join("|", msbuildMetadata.FallbackFolders));
+            Assert.Equal("c:\\nuget.config|d:\\nuget.config", string.Join("|", msbuildMetadata.ConfigFilePaths));
             Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B|c:\\a\\a.csproj|78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F|c:\\b\\b.csproj", string.Join("|", msbuildMetadata.TargetFrameworks.Single().ProjectReferences.Select(e => $"{e.ProjectUniqueName}|{e.ProjectPath}")));
             Assert.True(msbuildMetadata.CrossTargeting);
             Assert.True(msbuildMetadata.LegacyPackagesDirectory);
@@ -136,6 +189,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("c:\\packages", msbuildMetadata.PackagesPath);
             Assert.Equal("https://api.nuget.org/v3/index.json", string.Join("|", msbuildMetadata.Sources.Select(s => s.Source)));
             Assert.Equal("c:\\fallback1|c:\\fallback2", string.Join("|", msbuildMetadata.FallbackFolders));
+            Assert.Equal("c:\\nuget.config|e:\\nuget.config", string.Join("|", msbuildMetadata.ConfigFilePaths));
             Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B|c:\\a\\a.csproj|78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F|c:\\b\\b.csproj", string.Join("|", msbuildMetadata.TargetFrameworks.Single().ProjectReferences.Select(e => $"{e.ProjectUniqueName}|{e.ProjectPath}")));
             Assert.False(msbuildMetadata.CrossTargeting);
             Assert.False(msbuildMetadata.LegacyPackagesDirectory);
@@ -174,6 +228,10 @@ namespace NuGet.ProjectModel.Test
             msbuildMetadata.FallbackFolders.Add("c:\\fallback1");
             msbuildMetadata.FallbackFolders.Add("c:\\fallback2");
 
+            msbuildMetadata.ConfigFilePaths.Add("c:\\nuget.config");
+            msbuildMetadata.ConfigFilePaths.Add("d:\\nuget.config");
+
+
             // Assert
             Assert.NotNull(msbuildMetadata);
             Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", msbuildMetadata.ProjectUniqueName);
@@ -184,6 +242,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("c:\\packages", msbuildMetadata.PackagesPath);
             Assert.Equal("https://api.nuget.org/v3/index.json", string.Join("|", msbuildMetadata.Sources.Select(s => s.Source)));
             Assert.Equal("c:\\fallback1|c:\\fallback2", string.Join("|", msbuildMetadata.FallbackFolders));
+            Assert.Equal("c:\\nuget.config|d:\\nuget.config", string.Join("|", msbuildMetadata.ConfigFilePaths));
             Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B|c:\\a\\a.csproj|78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F|c:\\b\\b.csproj", string.Join("|", msbuildMetadata.TargetFrameworks.Single().ProjectReferences.Select(e => $"{e.ProjectUniqueName}|{e.ProjectPath}")));
         }
 
@@ -228,6 +287,10 @@ namespace NuGet.ProjectModel.Test
             msbuildMetadata.FallbackFolders.Add("c:\\fallback1");
             msbuildMetadata.FallbackFolders.Add("c:\\fallback2");
 
+
+            msbuildMetadata.ConfigFilePaths.Add("c:\\nuget.config");
+            msbuildMetadata.ConfigFilePaths.Add("d:\\nuget.config");
+
             msbuildMetadata.CrossTargeting = true;
             msbuildMetadata.LegacyPackagesDirectory = true;
 
@@ -248,6 +311,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("c:\\packages", msbuildMetadata2.PackagesPath);
             Assert.Equal("https://api.nuget.org/v3/index.json", string.Join("|", msbuildMetadata.Sources.Select(s => s.Source)));
             Assert.Equal("c:\\fallback1|c:\\fallback2", string.Join("|", msbuildMetadata2.FallbackFolders));
+            Assert.Equal("c:\\nuget.config|d:\\nuget.config", string.Join("|", msbuildMetadata.ConfigFilePaths));
             Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B|c:\\a\\a.csproj|78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F|c:\\b\\b.csproj", string.Join("|", msbuildMetadata2.TargetFrameworks.Single().ProjectReferences.Select(e => $"{e.ProjectUniqueName}|{e.ProjectPath}")));
             Assert.True(msbuildMetadata.CrossTargeting);
             Assert.True(msbuildMetadata.LegacyPackagesDirectory);

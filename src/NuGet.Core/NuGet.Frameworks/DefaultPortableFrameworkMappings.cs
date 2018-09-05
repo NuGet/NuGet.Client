@@ -109,7 +109,7 @@ namespace NuGet.Frameworks
         // profiles that also support monotouch1+monoandroid1
         private static int[] _profilesWithOptionalFrameworks = new int[]
             {
-                5, 6, 7, 14, 19, 24, 37, 42, 47, 49, 78, 92, 102, 111, 136, 147, 158, 225, 255, 259, 328, 336, 344
+                5, 6, 7, 14, 19, 24, 37, 42, 44, 47, 49, 78, 92, 102, 111, 136, 147, 151, 158, 225, 255, 259, 328, 336, 344
             };
 
         private List<KeyValuePair<int, NuGetFramework[]>> _profileOptionalFrameworks;
@@ -125,9 +125,10 @@ namespace NuGet.Frameworks
                     var monoandroid = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, new Version(0, 0));
                     var monotouch = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.MonoTouch, new Version(0, 0));
                     var xamarinIOs = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.XamarinIOs, new Version(0, 0));
+                    var xamarinMac = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.XamarinMac, new Version(0, 0));
                     var xamarinTVOS = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.XamarinTVOS, new Version(0, 0));
                     var xamarinWatchOS = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.XamarinWatchOS, new Version(0, 0));
-                    var monoFrameworks = new NuGetFramework[] { monoandroid, monotouch, xamarinIOs, xamarinWatchOS, xamarinTVOS };
+                    var monoFrameworks = new NuGetFramework[] { monoandroid, monotouch, xamarinIOs, xamarinMac, xamarinWatchOS, xamarinTVOS };
 
                     profileOptionalFrameworks = new List<KeyValuePair<int, NuGetFramework[]>>();
 

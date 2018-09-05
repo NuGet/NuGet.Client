@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 
 namespace NuGet.CommandLine
 {
@@ -28,6 +29,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "SourcesCommandStorePasswordInClearTextDescription")]
         public bool StorePasswordInClearText { get; set; }
+
+        [Option(typeof(NuGetCommand), "SourcesCommandValidAuthenticationTypesDescription")]
+        public string ValidAuthenticationTypes { get; set; }
 
         [Option(typeof(NuGetCommand), "SourcesCommandFormatDescription")]
         public SourcesListFormat Format { get; set; }
@@ -160,7 +164,12 @@ namespace NuGet.CommandLine
 
             if (!string.IsNullOrEmpty(UserName))
             {
-                var credentials = Configuration.PackageSourceCredential.FromUserInput(Name, UserName, Password, StorePasswordInClearText);
+                var credentials = Configuration.PackageSourceCredential.FromUserInput(
+                    Name,
+                    UserName,
+                    Password,
+                    StorePasswordInClearText,
+                    ValidAuthenticationTypes);
                 newPackageSource.Credentials = credentials;
             }
 
@@ -206,10 +215,21 @@ namespace NuGet.CommandLine
 
             if (!string.IsNullOrEmpty(UserName))
             {
-                var credentials = Configuration.PackageSourceCredential.FromUserInput(Name, UserName, Password,
-                    storePasswordInClearText: StorePasswordInClearText);
+                var hasExistingAuthTypes = existingSource.Credentials?.ValidAuthenticationTypes.Any() ?? false;
+                if (hasExistingAuthTypes && string.IsNullOrEmpty(ValidAuthenticationTypes))
+                {
+                    Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandClearingExistingAuthTypes"), Name);
+                }
+
+                var credentials = Configuration.PackageSourceCredential.FromUserInput(
+                    Name,
+                    UserName,
+                    Password,
+                    StorePasswordInClearText,
+                    ValidAuthenticationTypes);
                 existingSource.Credentials = credentials;
             }
+
 
             sourceList.Insert(existingSourceIndex, existingSource);
             SourceProvider.SavePackageSources(sourceList);
@@ -220,12 +240,21 @@ namespace NuGet.CommandLine
         {
             bool userNameEmpty = String.IsNullOrEmpty(UserName);
             bool passwordEmpty = String.IsNullOrEmpty(Password);
+            bool authTypesEmpty = String.IsNullOrEmpty(ValidAuthenticationTypes);
 
             if (userNameEmpty ^ passwordEmpty)
             {
                 // If only one of them is set, throw.
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandCredentialsRequired"));
             }
+
+            if (passwordEmpty && !authTypesEmpty)
+            {
+                // can't specify auth types without credentials
+                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandCredentialsRequiredWithAuthTypes"));
+            }
+
+
         }
 
         private void PrintRegisteredSourcesShort()

@@ -1,10 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -17,6 +20,9 @@ namespace NuGet.PackageManagement
         private readonly string _nupkgPath;
         private DownloadResourceResult _result;
         private ExceptionDispatchInfo _exception;
+        private readonly DateTimeOffset _downloadStartTime;
+        private DateTimeOffset _packageFetchTime;
+        private DateTimeOffset _taskReturnTime;
 
         /// <summary>
         /// True if the result came from the packages folder.
@@ -38,6 +44,8 @@ namespace NuGet.PackageManagement
         /// True if the download is complete.
         /// </summary>
         public bool IsComplete { get; private set; }
+
+        public const string PackagePreFetcherInformation = nameof(PackagePreFetcherInformation);
 
         /// <summary>
         /// Create a PreFetcher result for a downloaded package.
@@ -66,6 +74,7 @@ namespace NuGet.PackageManagement
             Package = package;
             InPackagesFolder = false;
             Source = source;
+            _downloadStartTime = DateTimeOffset.Now;
         }
 
         /// <summary>
@@ -99,6 +108,7 @@ namespace NuGet.PackageManagement
             // This is a noop if this has been called before, or if the result is in the packages folder.
             if (!InPackagesFolder && _result == null)
             {
+                _packageFetchTime = DateTimeOffset.Now;
                 try
                 {
                     _result = await _downloadTask;
@@ -107,6 +117,8 @@ namespace NuGet.PackageManagement
                 {
                     _exception = ExceptionDispatchInfo.Capture(ex);
                 }
+
+                _taskReturnTime = DateTimeOffset.Now;
 
                 IsComplete = true;
             }
@@ -151,12 +163,33 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private static DownloadResourceResult GetPackagesFolderResult(string nupkgPath)
+        public void EmitTelemetryEvent(Guid parentId)
+        {
+            var telemetryEvent = new TelemetryEvent(PackagePreFetcherInformation);
+
+            telemetryEvent["DownloadStartTime"] = _downloadStartTime;
+            telemetryEvent["PackageFetchTime"] = _packageFetchTime;
+            telemetryEvent["TaskReturnTime"] = _taskReturnTime;
+
+            var packageId = CryptoHashUtility.GenerateUniqueToken(Package.ToString());
+            telemetryEvent.AddPiiData("PackageId", Package.ToString());
+
+            if (parentId != Guid.Empty)
+            {
+                telemetryEvent["ParentId"] = parentId.ToString();
+            }
+
+            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+        }
+
+        private DownloadResourceResult GetPackagesFolderResult(string nupkgPath)
         {
             // Create a download result for the package that already exists
             return new DownloadResourceResult(
                 File.OpenRead(nupkgPath),
-                new PackageArchiveReader(nupkgPath));
+                new PackageArchiveReader(nupkgPath),
+                Source?.Source)
+            { SignatureVerified = true };
         }
     }
 }

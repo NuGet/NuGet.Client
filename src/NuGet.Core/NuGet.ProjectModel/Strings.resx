@@ -139,6 +139,10 @@
   <data name="Log_InvalidImportFramework" xml:space="preserve">
     <value>Imports contains an invalid framework: '{0}' in '{1}'.</value>
   </data>
+  <data name="Log_ProblemReadingCacheFile" xml:space="preserve">
+    <value>Problem reading the cache file {0} : {1}</value>
+    <comment>{0} is the file path, {1} is the exception message</comment>
+  </data>
   <data name="MissingToolName" xml:space="preserve">
     <value>Unable to resolve tool ''.</value>
   </data>

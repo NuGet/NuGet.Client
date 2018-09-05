@@ -1,0 +1,25 @@
+﻿
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <Description>NuGet.Indexing Class Library</Description>
+    <TargetFramework>net46</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <PackProject>true</PackProject>
+    <Shipping>true</Shipping>
+    <IncludeInVsix>true</IncludeInVsix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Protocol\NuGet.Protocol.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Lucene.Net" Version="3.0.3" />
+  </ItemGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

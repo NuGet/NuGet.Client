@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.Packaging
 {
@@ -100,41 +101,59 @@ namespace NuGet.Packaging
 
         public override IEnumerable<string> GetFiles()
         {
+            // Read all files starting at the root.
+            return GetFiles(folder: null);
+        }
+
+        public override IEnumerable<string> GetFiles(string folder)
+        {
+            // Default to retrieve files and throwing if the root
+            // directory is not found.
+            var getFiles = true;
             var searchFolder = new DirectoryInfo(_root.FullName);
 
-            // Enumerate root folder filtering out nupkg files
-            foreach (var file in searchFolder.GetFiles("*", SearchOption.TopDirectoryOnly).
-                Where(p => !p.FullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)))
+            if (!string.IsNullOrEmpty(folder))
             {
-                yield return GetRelativePath(_root, file);
+                // Search in the sub folder if one was specified
+                searchFolder = new DirectoryInfo(Path.Combine(_root.FullName, folder));
+
+                // For sub folders verify it exists
+                // The root is expected to exist and should throw if it does not
+                getFiles = searchFolder.Exists;
             }
 
-            // Enumerate all sub folders without filtering
-            foreach (var directory in searchFolder.GetDirectories("*", SearchOption.TopDirectoryOnly))
+            if (getFiles)
             {
-                foreach (var file in directory.GetFiles("*", SearchOption.AllDirectories))
+                // Enumerate root folder filtering out nupkg files
+                foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories))
                 {
-                    yield return GetRelativePath(_root, file);
+                    var path = GetRelativePath(_root, file);
+
+                    // disallow nupkgs in the root
+                    if (!IsFileInRoot(path) || !IsNupkg(path))
+                    {
+                        yield return path;
+                    }
                 }
             }
 
             yield break;
         }
 
-        public override IEnumerable<string> GetFiles(string folder)
+        /// <summary>
+        /// True if the path does not contain /
+        /// </summary>
+        private static bool IsFileInRoot(string path)
         {
-            var searchFolder = new DirectoryInfo(Path.Combine(_root.FullName, folder));
+            return path.IndexOf('/') == -1;
+        }
 
-            if (searchFolder.Exists)
-            {
-                foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories).
-                    Where(p => !p.FullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)))
-                {
-                    yield return GetRelativePath(_root, file);
-                }
-            }
-
-            yield break;
+        /// <summary>
+        /// True if the path ends with .nupkg
+        /// </summary>
+        private static bool IsNupkg(string path)
+        {
+            return path.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase) == true;
         }
 
         /// <summary>
@@ -161,7 +180,7 @@ namespace NuGet.Packaging
 
             var parts = parents.Select(d => d.Name).Concat(new string[] { file.Name });
 
-            return String.Join("/", parts);
+            return string.Join("/", parts);
         }
 
         public override IEnumerable<string> CopyFiles(
@@ -199,6 +218,26 @@ namespace NuGet.Packaging
         protected override void Dispose(bool disposing)
         {
             // do nothing here
+        }
+
+        public override Task<PrimarySignature> GetPrimarySignatureAsync(CancellationToken token)
+        {
+            return Task.FromResult<PrimarySignature>(null);
+        }
+
+        public override Task<bool> IsSignedAsync(CancellationToken token)
+        {
+            return Task.FromResult(false);
+        }
+
+        public override Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithm, CancellationToken token)
+        {
+            throw new NotImplementedException();
         }
     }
 }

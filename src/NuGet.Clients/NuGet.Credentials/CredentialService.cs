@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.Credentials
@@ -40,18 +41,16 @@ namespace NuGet.Credentials
         /// </summary>
         /// <param name="providers">All available credential providers.</param>
         /// <param name="nonInteractive">If true, the nonInteractive flag will be passed to providers.
+        /// <param name="handlesDefaultCredentials"> If true, specifies that this credential service handles default credentials as well.
+        /// That means that DefaultCredentialsCredentialProvider instance is in the list of providers. It's set explicitly as a perfomance optimization.</param>
         /// NonInteractive requests must not promt the user for credentials.</param>
-        public CredentialService(IEnumerable<ICredentialProvider> providers, bool nonInteractive)
+        public CredentialService(AsyncLazy<IEnumerable<ICredentialProvider>> providers, bool nonInteractive, bool handlesDefaultCredentials)
         {
-            if (providers == null)
-            {
-                throw new ArgumentNullException(nameof(providers));
-            }
-            
+            _providers = providers ?? throw new ArgumentNullException(nameof(providers));
             _nonInteractive = nonInteractive;
-            Providers = new List<ICredentialProvider>(providers);
-            HandlesDefaultCredentials = Providers.Any(provider => provider is DefaultCredentialsCredentialProvider);
+            HandlesDefaultCredentials = handlesDefaultCredentials;
         }
+
 
         /// <summary>
         /// Provides credentials for http requests.
@@ -86,7 +85,7 @@ namespace NuGet.Credentials
 
             ICredentials creds = null;
 
-            foreach (var provider in Providers)
+            foreach (var provider in await _providers)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -146,9 +145,51 @@ namespace NuGet.Credentials
         }
 
         /// <summary>
+        /// Attempts to retrieve last known good credentials for a URI from a credentials cache.
+        /// </summary>
+        /// <remarks>
+        /// When the return value is <c>true</c>, <paramref name="credentials" /> will have last known
+        /// good credentials from the credentials cache.  These credentials may have become invalid
+        /// since their last use, so there is no guarantee that the credentials are currently valid.
+        /// </remarks>
+        /// <param name="uri">The URI for which cached credentials should be retrieved.</param>
+        /// <param name="isProxy"><c>true</c> for proxy credentials; otherwise, <c>false</c>.</param>
+        /// <param name="credentials">Cached credentials or <c>null</c>.</param>
+        /// <returns><c>true</c> if a result is returned from the cache; otherwise, false.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="uri" /> is <c>null</c>.</exception>
+        public bool TryGetLastKnownGoodCredentialsFromCache(
+            Uri uri,
+            bool isProxy,
+            out ICredentials credentials)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
+            credentials = null;
+
+            var rootUri = GetRootUri(uri);
+            var ending = $"_{isProxy}_{rootUri}";
+
+            foreach (var entry in _providerCredentialCache)
+            {
+                if (entry.Value.Status == CredentialStatus.Success && entry.Key.EndsWith(ending))
+                {
+                    credentials = entry.Value.Credentials;
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Gets the currently configured providers.
         /// </summary>
-        private IEnumerable<ICredentialProvider> Providers { get; }
+        private AsyncLazy<IEnumerable<ICredentialProvider>> _providers { get; }
+
 
         private bool TryFromCredentialCache(Uri uri, CredentialRequestType type, bool isRetry, ICredentialProvider provider,
             out CredentialResponse credentials)
@@ -179,8 +220,13 @@ namespace NuGet.Credentials
 
         private static string CredentialCacheKey(Uri uri, CredentialRequestType type, ICredentialProvider provider)
         {
-            var rootUri =new Uri(uri.GetComponents(UriComponents.SchemeAndServer, UriFormat.SafeUnescaped));
+            var rootUri = GetRootUri(uri);
             return GetUriKey(rootUri, type, provider);
+        }
+
+        private static Uri GetRootUri(Uri uri)
+        {
+            return new Uri(uri.GetComponents(UriComponents.SchemeAndServer, UriFormat.SafeUnescaped));
         }
 
         private static string GetUriKey(Uri uri, CredentialRequestType type, ICredentialProvider provider)

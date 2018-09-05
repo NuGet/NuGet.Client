@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,15 +22,17 @@ namespace NuGet.Commands.Test
     public class RestoreBuildTargetsAndPropsTests
     {
         [Fact]
-        public async Task RestoreBuildTargetsAndProps_VerifyPropsAndTargetsGenerated()
+        public async Task RestoreBuildTargetsAndProps_VerifyPropsAndTargetsGeneratedAsync()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var logger = new TestLogger();
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(pathContext.PackageSource));
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
 
                 var spec = GetProject("projectA", "net462", "netstandard1.6");
 
@@ -56,12 +61,12 @@ namespace NuGet.Commands.Test
                 packageX.AddFile("build/x.props");
                 packageX.AddFile("contentFiles/any/any/_._");
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX);
 
                 var project = projects[0];
 
                 // Act
-                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var summaries = await RunRestoreAsync(pathContext, logger, sources, dgFile, cacheContext);
                 var success = summaries.All(s => s.Success);
 
                 // Assert
@@ -82,15 +87,17 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreBuildTargetsAndProps_VerifyPropsAndTargetsGeneratedWithNoTFMConditions()
+        public async Task RestoreBuildTargetsAndProps_VerifyPropsAndTargetsGeneratedWithNoTFMConditionsAsync()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var logger = new TestLogger();
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(pathContext.PackageSource));
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
 
                 var spec = GetProject("projectA", "net462");
 
@@ -119,12 +126,12 @@ namespace NuGet.Commands.Test
                 packageX.AddFile("build/x.props");
                 packageX.AddFile("contentFiles/any/any/_._");
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX);
 
                 var project = projects[0];
 
                 // Act
-                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var summaries = await RunRestoreAsync(pathContext, logger, sources, dgFile, cacheContext);
                 var success = summaries.All(s => s.Success);
 
                 // Assert
@@ -142,15 +149,17 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreBuildTargetsAndProps_VerifyPropsAndTargetsGenerated_SingleTFMWithConditions()
+        public async Task RestoreBuildTargetsAndProps_VerifyPropsAndTargetsGenerated_SingleTFMWithConditionsAsync()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var logger = new TestLogger();
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(pathContext.PackageSource));
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
 
                 var spec = GetProject("projectA", "net462");
 
@@ -179,12 +188,12 @@ namespace NuGet.Commands.Test
                 packageX.AddFile("build/x.props");
                 packageX.AddFile("contentFiles/any/any/_._");
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX);
 
                 var project = projects[0];
 
                 // Act
-                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var summaries = await RunRestoreAsync(pathContext, logger, sources, dgFile, cacheContext);
                 var success = summaries.All(s => s.Success);
 
                 // Assert
@@ -202,15 +211,17 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreBuildTargetsAndProps_VerifyPropsAndTargetsCrossTargeting()
+        public async Task RestoreBuildTargetsAndProps_VerifyPropsAndTargetsCrossTargetingAsync()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var logger = new TestLogger();
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(pathContext.PackageSource));
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
 
                 var spec = GetProject("projectA", "net462", "netstandard1.6");
 
@@ -239,12 +250,12 @@ namespace NuGet.Commands.Test
                 packageX.AddFile("buildCrossTargeting/x.props");
                 packageX.AddFile("contentFiles/any/any/_._");
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX);
 
                 var project = projects[0];
 
                 // Act
-                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var summaries = await RunRestoreAsync(pathContext, logger, sources, dgFile, cacheContext);
                 var success = summaries.All(s => s.Success);
 
                 // Assert
@@ -262,15 +273,17 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreBuildTargetsAndProps_VerifyRestoreNoop()
+        public async Task RestoreBuildTargetsAndProps_VerifyRestoreNoopAsync()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var logger = new TestLogger();
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(pathContext.PackageSource));
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
 
                 var spec = GetProject("projectA", "net462", "netstandard1.6");
 
@@ -299,18 +312,18 @@ namespace NuGet.Commands.Test
                 packageX.AddFile("build/x.props");
                 packageX.AddFile("contentFiles/any/any/_._");
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX);
 
                 var project = projects[0];
 
                 // First restore
-                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var summaries = await RunRestoreAsync(pathContext, logger, sources, dgFile, cacheContext);
                 var success = summaries.All(s => s.Success);
                 Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
 
                 // Act
                 var secondLogger = new TestLogger();
-                summaries = await RunRestore(pathContext, secondLogger, sources, dgFile, cacheContext);
+                summaries = await RunRestoreAsync(pathContext, secondLogger, sources, dgFile, cacheContext);
                 success = summaries.All(s => s.Success);
                 var messages = string.Join(Environment.NewLine, secondLogger.Messages);
                 Assert.True(success, "Failed: " + messages);
@@ -321,15 +334,17 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreBuildTargetsAndProps_VerifyRestoreChange()
+        public async Task RestoreBuildTargetsAndProps_VerifyRestoreChangeAsync()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var logger = new TestLogger();
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(pathContext.PackageSource));
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
 
                 var spec = GetProject("projectA", "net462", "netstandard1.6");
 
@@ -368,12 +383,12 @@ namespace NuGet.Commands.Test
                 packageY.AddFile("build/y.props");
                 packageY.AddFile("contentFiles/any/any/_._");
 
-                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageX, packageY);
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX, packageY);
 
                 var project = projects[0];
 
                 // First restore
-                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var summaries = await RunRestoreAsync(pathContext, logger, sources, dgFile, cacheContext);
                 var success = summaries.All(s => s.Success);
                 Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
 
@@ -384,7 +399,7 @@ namespace NuGet.Commands.Test
                 });
 
                 // Act
-                summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                summaries = await RunRestoreAsync(pathContext, logger, sources, dgFile, cacheContext);
                 success = summaries.All(s => s.Success);
                 Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
 
@@ -416,7 +431,7 @@ namespace NuGet.Commands.Test
             return projects;
         }
 
-        private static async Task<IReadOnlyList<RestoreSummary>> RunRestore(
+        private static async Task<IReadOnlyList<RestoreSummary>> RunRestoreAsync(
             SimpleTestPathContext pathContext,
             TestLogger logger,
             List<PackageSource> sources,
@@ -437,7 +452,7 @@ namespace NuGet.Commands.Test
                 }
             };
 
-            return await RestoreRunner.Run(restoreContext);
+            return await RestoreRunner.RunAsync(restoreContext);
         }
 
         private static PackageSpec GetProject(string projectName, params string[] frameworks)
@@ -450,12 +465,16 @@ namespace NuGet.Commands.Test
                 .ToList();
 
             // Create two net45 projects
-            var spec = new PackageSpec(frameworkGroups);
-            spec.RestoreMetadata = new ProjectRestoreMetadata();
-            spec.RestoreMetadata.ProjectUniqueName = $"{projectName}-UNIQUENAME";
-            spec.RestoreMetadata.ProjectName = projectName;
-            spec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
-            spec.Name = projectName;
+            var spec = new PackageSpec(frameworkGroups)
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectUniqueName = $"{projectName}-UNIQUENAME",
+                    ProjectName = projectName,
+                    ProjectStyle = ProjectStyle.PackageReference
+                },
+                Name = projectName
+            };
 
             foreach (var framework in frameworks)
             {

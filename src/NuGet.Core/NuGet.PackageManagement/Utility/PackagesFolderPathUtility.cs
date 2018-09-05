@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement
         {
             if (string.IsNullOrEmpty(solutionDirectory))
             {
-                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(solutionDirectory));
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(solutionDirectory));
             }
 
             if (settings == null)

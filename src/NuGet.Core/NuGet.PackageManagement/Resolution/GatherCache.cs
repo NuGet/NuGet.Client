@@ -9,6 +9,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.PackageManagement
 {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,8 @@ namespace NuGet.SolutionRestoreManager.Test
     {
         public string BaseIntermediatePath { get; }
 
+        public string MSBuildProjectExtensionsPath { get; }
+
         public string OriginalTargetFrameworks { get; set; }
 
         public IVsTargetFrameworks TargetFrameworks { get; }
@@ -26,7 +28,7 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             if (string.IsNullOrEmpty(baseIntermediatePath))
             {
-                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(baseIntermediatePath));
+                throw new ArgumentException("Argument cannot be null or empty", nameof(baseIntermediatePath));
             }
 
             if (targetFrameworks == null)

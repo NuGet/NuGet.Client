@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace NuGet.Configuration
         public void CreateConfigurationDefaultsReturnsNonNullConfigurationDefaults()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(@"<configuration></configuration>", mockBaseDirectory);
 
@@ -35,7 +35,7 @@ namespace NuGet.Configuration
             var feed1 = "http://contoso.com/packages/";
             var feed2 = "http://wwww.somerandomURL.com/";
 
-            using (var nugetConfigFileFolder = TestDirectory.Create())
+            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
             {
                 var nugetConfigFile = "NuGetDefaults.config";
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
@@ -69,7 +69,7 @@ namespace NuGet.Configuration
             var feed1 = "http://contoso.com/packages/";
             var feed2 = "http://wwww.somerandomURL.com/";
 
-            using (var nugetConfigFileFolder = TestDirectory.Create())
+            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
             {
                 var nugetConfigFile = "NuGetDefaults.config";
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
@@ -92,7 +92,7 @@ namespace NuGet.Configuration
         public void GetDefaultPushSourceReturnsNull()
         {
             //Arrange
-            using (var nugetConfigFileFolder = TestDirectory.Create())
+            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
             {
                 var nugetConfigFile = "NuGetDefaults.config";
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
@@ -109,7 +109,7 @@ namespace NuGet.Configuration
         public void GetDefaultPushSourceReadsTheCorrectValue()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 var configurationDefaultsContent = @"
 <configuration>
@@ -129,7 +129,7 @@ namespace NuGet.Configuration
         public void GetDefaultPackageSourcesReturnsValidPackageSources()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 var configurationDefaultsContent = @"
 <configuration>
@@ -164,7 +164,7 @@ namespace NuGet.Configuration
         public void GetDefaultPackageSourcesReturnsEmptyList()
         {
             //Arrange
-            using (var nugetConfigFileFolder = TestDirectory.Create())
+            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
             {
                 var nugetConfigFile = "NuGetDefaults.config";
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
@@ -181,7 +181,7 @@ namespace NuGet.Configuration
         public void GetDefaultPackageSourcesFromSourceProvider()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 var configurationDefaultsContent = @"
 <configuration>
@@ -223,7 +223,7 @@ namespace NuGet.Configuration
         public void GetDefaultSameNamePackageSourcesFromSourceProvider()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 var configurationDefaultsContent = @"
 <configuration>
@@ -261,7 +261,7 @@ namespace NuGet.Configuration
         public void GetDefaultSameSourcePackageSourcesFromSourceProvider()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
             {
                 var configurationDefaultsContent = @"
 <configuration>

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Versioning;
 using Xunit;
 
@@ -81,6 +82,29 @@ namespace NuGet.Packaging.Test
             // Act & Assert
             Assert.Throws(typeof(MinClientVersionException),
                 () => MinClientVersionUtility.VerifyMinClientVersion(nuspec));
+        }
+
+        [Fact]
+        public void MinClientVersionUtility_ReadFromNuspecInCompatThrowsVerifyLogMessage()
+        {
+            // Arrange
+            var nuspec = GetNuspec("99.0.0");
+            ILogMessage logMessage = null;
+
+            // Act
+            try
+            {
+                MinClientVersionUtility.VerifyMinClientVersion(nuspec);
+            }
+            catch (MinClientVersionException ex)
+            {
+                logMessage = ex.AsLogMessage();
+            }
+
+            // Assert
+            Assert.Equal(NuGetLogCode.NU1401, logMessage.Code);
+            Assert.Contains("requires NuGet client version", logMessage.Message);
+            Assert.Equal(LogLevel.Error, logMessage.Level);
         }
 
         [Fact]
