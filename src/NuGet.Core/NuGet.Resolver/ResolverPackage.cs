@@ -9,7 +9,6 @@ using System.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.Protocol.Core.Types;
-using NuGet.Shared;
 
 namespace NuGet.Resolver
 {
