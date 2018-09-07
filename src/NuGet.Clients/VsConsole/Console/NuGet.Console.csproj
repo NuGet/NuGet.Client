@@ -139,6 +139,7 @@
       <Project>{6FD11460-39A3-4A10-BA63-7541B0A7D053}</Project>
       <Name>NuGet.Console.Types</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\NuGet.Core\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.csproj"/>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Xamls\ConsoleContainer.xaml">

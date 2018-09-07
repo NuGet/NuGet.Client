@@ -78,7 +78,7 @@
       <Project>{538ADEFD-2170-40A9-A2C5-EC8369CFE490}</Project>
       <Name>NuGet.PackageManagement.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
+    <ProjectReference Include="..\NuGet.VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>

@@ -149,10 +149,6 @@
       <Project>{f013e43f-b6d5-4f59-acf0-eecec2c794f5}</Project>
       <Name>NuGet.ProjectModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj">
-      <Project>{020f4c88-3a5c-4b89-9868-089e867cc223}</Project>
-      <Name>NuGet.Protocol</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj">
       <Project>{51aa27a9-b8b4-458f-9211-e6889b441573}</Project>
       <Name>NuGet.Resolver</Name>
@@ -221,7 +217,7 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
+    <ProjectReference Include="..\NuGet.VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
