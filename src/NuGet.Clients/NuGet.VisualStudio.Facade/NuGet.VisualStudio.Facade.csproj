@@ -40,10 +40,6 @@
     <Compile Include="Telemetry\TelemetrySession.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include=".\VisualStudio15.Packages\NuGet.VisualStudio15.Packages.csproj">
-      <Project>{868ACCBA-B981-440D-9C98-2A235E1E861A}</Project>
-      <Name>NuGet.VisualStudio15.Packages</Name>
-    </ProjectReference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem">
       <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
     </Reference>

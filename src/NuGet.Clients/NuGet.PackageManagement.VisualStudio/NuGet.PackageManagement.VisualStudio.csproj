@@ -307,10 +307,7 @@
       <Project>{f013e43f-b6d5-4f59-acf0-eecec2c794f5}</Project>
       <Name>NuGet.ProjectModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.VisualStudio.csproj">
-      <Project>{020f4c88-3a5c-4b89-9868-089e867cc223}</Project>
-      <Name>NuGet.Protocol.VisualStudio</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.VisualStudio.csproj"/>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj">
       <Project>{24e62ab7-64e4-4975-9417-883559d1bc19}</Project>
       <Name>NuGet.Versioning</Name>
