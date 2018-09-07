@@ -18,6 +18,7 @@
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS8073</NoWarn>
   </PropertyGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -69,10 +70,14 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime">
+      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime.14.3.25407\lib\Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
@@ -249,10 +254,6 @@
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
-      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
-      <Name>NuGet.VisualStudio.Common</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.Build.Tasks.csproj">
       <Project>{e09441b8-8d74-4a96-8431-480e2065f844}</Project>
       <Name>NuGet.Build.Tasks</Name>
@@ -261,7 +262,7 @@
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>NuGet.VisualStudio</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
+    <ProjectReference Include="..\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
       <Name>NuGet.PackageManagement.UI</Name>
     </ProjectReference>
@@ -273,6 +274,10 @@
       <Project>{567e8582-0e73-4a34-a7d3-ed9486415523}</Project>
       <Name>NuGet.Commands</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.ProjectManagement\NuGet.ProjectManagement.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.RuntimeModel\NuGet.RuntimeModel.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.csproj"/>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj">
       <Project>{98bee375-a5a0-4fc2-9b7a-25db41c8045d}</Project>
       <Name>NuGet.Common</Name>
@@ -305,7 +310,8 @@
       <Project>{f013e43f-b6d5-4f59-acf0-eecec2c794f5}</Project>
       <Name>NuGet.ProjectModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.VisualStudio.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol.VisualStudio\NuGet.Protocol.VisualStudio.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol.Core.v3\NuGet.Protocol.Core.v3.csproj"/>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj">
       <Project>{24e62ab7-64e4-4975-9417-883559d1bc19}</Project>
       <Name>NuGet.Versioning</Name>
