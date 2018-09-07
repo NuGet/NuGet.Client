@@ -1,10 +1,9 @@
-extern alias CoreV2;
+﻿extern alias CoreV2;
 
 using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
-using NuGet.Common;
 
 namespace NuGet.CommandLine
 {
@@ -31,20 +30,21 @@ namespace NuGet.CommandLine
 
         public ICredentials GetCredentials(Uri uri, IWebProxy proxy, CoreV2.NuGet.CredentialType credentialType, bool retrying)
         {
+            NetworkCredential credentials;
             // If we are retrying, the stored credentials must be invalid.
-            if (!retrying && (credentialType == CoreV2.NuGet.CredentialType.RequestCredentials) && TryGetCredentials(uri, out var credentials, out var username))
+            if (!retrying && (credentialType == CoreV2.NuGet.CredentialType.RequestCredentials) && TryGetCredentials(uri, out credentials))
             {
                 _logger.LogMinimal(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString(nameof(NuGetResources.SettingsCredentials_UsingSavedCredentials)),
-                        username));
+                        credentials.UserName));
                 return credentials;
             }
             return null;
         }
 
-        private bool TryGetCredentials(Uri uri, out ICredentials configurationCredentials, out string username)
+        private bool TryGetCredentials(Uri uri, out NetworkCredential configurationCredentials)
         {
             var source = _packageSourceProvider.LoadPackageSources().FirstOrDefault(p =>
             {
@@ -58,12 +58,9 @@ namespace NuGet.CommandLine
             {
                 // The source is not in the config file
                 configurationCredentials = null;
-                username = null;
                 return false;
             }
-
-            configurationCredentials = source.Credentials.ToICredentials();
-            username = source.Credentials.Username;
+            configurationCredentials = new NetworkCredential(source.Credentials.Username, source.Credentials.Password);
             return true;
         }
 

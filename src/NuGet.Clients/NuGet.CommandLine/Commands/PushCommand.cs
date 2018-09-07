@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,9 +35,6 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PushCommandNoSymbolsDescription")]
         public bool NoSymbols { get; set; }
 
-        [Option(typeof(NuGetCommand), "CommandNoServiceEndpointDescription")]
-        public bool NoServiceEndpoint { get; set; }
-
         public override async Task ExecuteCommandAsync()
         {
             string packagePath = Arguments[0];
@@ -65,7 +62,6 @@ namespace NuGet.CommandLine
                     Timeout,
                     DisableBuffering,
                     NoSymbols,
-                    NoServiceEndpoint,
                     Console);
             }
             catch (TaskCanceledException ex)

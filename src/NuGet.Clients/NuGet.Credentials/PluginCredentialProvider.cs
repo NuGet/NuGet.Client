@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.Credentials
@@ -82,7 +81,7 @@ namespace NuGet.Credentials
         /// <param name="message">A message provided by NuGet to show to the user when prompting.</param>
         /// <param name="nonInteractive">If true, the plugin must not prompt for credentials.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A credential object.</returns>
+        /// <returns>A credential object.  If </returns>
         public Task<CredentialResponse> GetAsync(
             Uri uri,
             IWebProxy proxy,
@@ -103,7 +102,7 @@ namespace NuGet.Credentials
             {
                 var request = new PluginCredentialRequest
                 {
-                    Uri = uri.AbsoluteUri,
+                    Uri = uri.ToString(),
                     IsRetry = isRetry,
                     NonInteractive = nonInteractive,
                     Verbosity = _verbosity
@@ -125,9 +124,11 @@ namespace NuGet.Credentials
 
                 if (response.IsValid)
                 {
-                    var result = new AuthTypeFilteredCredentials(
-                        new NetworkCredential(response.Username, response.Password),
-                        response.AuthTypes ?? Enumerable.Empty<string>());
+                    ICredentials result = new NetworkCredential(response.Username, response.Password);
+                    if (response.AuthTypes != null)
+                    {
+                        result = new AuthTypeFilteredCredentials(result, response.AuthTypes);
+                    }
 
                     taskResponse = new CredentialResponse(result);
                 }
@@ -181,21 +182,19 @@ namespace NuGet.Credentials
             {
                 FileName = Path,
                 Arguments = argumentString,
-#if IS_DESKTOP                
                 WindowStyle = ProcessWindowStyle.Hidden,
-                ErrorDialog = false,
-#endif
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 StandardOutputEncoding = Encoding.UTF8,
                 StandardErrorEncoding = Encoding.UTF8,
+                ErrorDialog = false
             };
 
             string stdOut = null;
             var exitCode = Execute(startInfo, cancellationToken, out stdOut);
 
-            var status = (PluginCredentialResponseExitCode)exitCode;
+            PluginCredentialResponseExitCode status = (PluginCredentialResponseExitCode)exitCode;
 
             PluginCredentialResponse credentialResponse;
             try

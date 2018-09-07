@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Packaging.Core;
 
 namespace NuGet.CommandLine
@@ -74,32 +73,24 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandMinClientVersion")]
         public string MinClientVersion { get; set; }
 
-        [Option(typeof(NuGetCommand), "PackageCommandSymbolPackageFormat")]
-        public string SymbolPackageFormat { get; set; }
-
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
         public string MSBuildVersion { get; set; }
 
         [Option(typeof(NuGetCommand), "CommandMSBuildPath")]
         public string MSBuildPath { get; set; }
 
-        [Option(typeof(NuGetCommand), "PackageCommandInstallPackageToOutputPath")]
-        public bool InstallPackageToOutputPath { get; set; }
-
-        [Option(typeof(NuGetCommand), "PackageCommandOutputFileNamesWithoutVersion")]
-        public bool OutputFileNamesWithoutVersion { get; set; }
-
-        [Option(typeof(NuGetCommand), "PackageCommandConfigFile")]
+        // TODO: Temporarily hide the real ConfigFile parameter from the help text.
+        // When we fix #3230, we should remove this property.
         public new string ConfigFile { get; set; }
 
         public override void ExecuteCommand()
         {
-            var packArgs = new PackArgs();
+            PackArgs packArgs = new PackArgs();
             packArgs.Logger = Console;
             packArgs.Arguments = Arguments;
             packArgs.OutputDirectory = OutputDirectory;
             packArgs.BasePath = BasePath;
-            packArgs.MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console).Value.Path);
+            packArgs.MsBuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console);
 
             // Get the input file
             packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
@@ -109,17 +100,12 @@ namespace NuGet.CommandLine
 
             Console.WriteLine(LocalizedResourceManager.GetString("PackageCommandAttemptingToBuildPackage"), Path.GetFileName(packArgs.Path));
 
-            if (!string.IsNullOrEmpty(MinClientVersion))
+            if (!String.IsNullOrEmpty(MinClientVersion))
             {
                 if (!System.Version.TryParse(MinClientVersion, out _minClientVersionValue))
                 {
                     throw new CommandLineException(LocalizedResourceManager.GetString("PackageCommandInvalidMinClientVersion"));
                 }
-            }
-
-            if(!string.IsNullOrEmpty(SymbolPackageFormat))
-            {
-                packArgs.SymbolPackageFormat = PackArgs.GetSymbolPackageFormat(SymbolPackageFormat);
             }
 
             packArgs.Build = Build;
@@ -130,17 +116,17 @@ namespace NuGet.CommandLine
             {
                 case Verbosity.Detailed:
                 {
-                    packArgs.LogLevel = LogLevel.Verbose;
+                    packArgs.LogLevel = Common.LogLevel.Verbose;
                     break;
                 }
                 case Verbosity.Normal:
                 {
-                    packArgs.LogLevel = LogLevel.Information;
+                    packArgs.LogLevel = Common.LogLevel.Information;
                     break;
                 }
                 case Verbosity.Quiet:
                 {
-                    packArgs.LogLevel = LogLevel.Minimal;
+                    packArgs.LogLevel = Common.LogLevel.Minimal;
                     break;
                 }
             }
@@ -154,20 +140,18 @@ namespace NuGet.CommandLine
             packArgs.Suffix = Suffix;
             packArgs.Symbols = Symbols;
             packArgs.Tool = Tool;
-            packArgs.InstallPackageToOutputPath = InstallPackageToOutputPath;
-            packArgs.OutputFileNamesWithoutVersion = OutputFileNamesWithoutVersion;
 
             if (!string.IsNullOrEmpty(Version))
             {
                 NuGetVersion version;
                 if (!NuGetVersion.TryParse(Version, out version))
                 {
-                    throw new PackagingException(NuGetLogCode.NU5010, string.Format(CultureInfo.CurrentCulture, NuGetResources.InstallCommandPackageReferenceInvalidVersion, Version));
+                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, NuGetResources.InstallCommandPackageReferenceInvalidVersion, Version));
                 }
-                packArgs.Version = version.ToFullString();
+                packArgs.Version = version.ToNormalizedString();
             }
 
-            var packCommandRunner = new PackCommandRunner(packArgs, ProjectFactory.ProjectCreator);
+            PackCommandRunner packCommandRunner = new PackCommandRunner(packArgs, ProjectFactory.ProjectCreator);
             packCommandRunner.BuildPackage();
         }
    }

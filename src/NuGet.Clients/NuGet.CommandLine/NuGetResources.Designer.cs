@@ -19,7 +19,7 @@ namespace NuGet.CommandLine {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class NuGetResources {
@@ -1092,24 +1092,6 @@ namespace NuGet.CommandLine {
         public static string ConsoleConfirmMessageAccept_trk {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Please provide password for: {0}.
-        /// </summary>
-        public static string ConsolePasswordProvider_DisplayFile {
-            get {
-                return ResourceManager.GetString("ConsolePasswordProvider_DisplayFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Password: .
-        /// </summary>
-        public static string ConsolePasswordProvider_PromptForPassword {
-            get {
-                return ResourceManager.GetString("ConsolePasswordProvider_PromptForPassword", resourceCulture);
             }
         }
         
@@ -2347,15 +2329,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error.
-        /// </summary>
-        public static string Error {
-            get {
-                return ResourceManager.GetString("Error", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid AssemblyInformationalVersion {0} on assembly {1}..
         /// </summary>
         public static string Error_AssemblyInformationalVersion {
@@ -3108,51 +3081,6 @@ namespace NuGet.CommandLine {
         public static string Error_ProjectJsonNotAllowed {
             get {
                 return ResourceManager.GetString("Error_ProjectJsonNotAllowed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Response file &apos;{0}&apos; does not exist.
-        /// </summary>
-        public static string Error_ResponseFileDoesNotExist {
-            get {
-                return ResourceManager.GetString("Error_ResponseFileDoesNotExist", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid response file, &apos;@&apos; does not exist.
-        /// </summary>
-        public static string Error_ResponseFileInvalid {
-            get {
-                return ResourceManager.GetString("Error_ResponseFileInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No more than {0} nested response files are allowed.
-        /// </summary>
-        public static string Error_ResponseFileMaxRecursionDepth {
-            get {
-                return ResourceManager.GetString("Error_ResponseFileMaxRecursionDepth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Response file &apos;{0}&apos; cannot be empty.
-        /// </summary>
-        public static string Error_ResponseFileNullOrEmpty {
-            get {
-                return ResourceManager.GetString("Error_ResponseFileNullOrEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Response file &apos;{0}&apos; cannot be larger than {1}mb.
-        /// </summary>
-        public static string Error_ResponseFileTooLarge {
-            get {
-                return ResourceManager.GetString("Error_ResponseFileTooLarge", resourceCulture);
             }
         }
         
@@ -4872,24 +4800,6 @@ namespace NuGet.CommandLine {
         public static string InstallCommandUnableToFindPackage {
             get {
                 return ResourceManager.GetString("InstallCommandUnableToFindPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid value given for &apos;DependencyVersion&apos;: &quot;{0}&quot;..
-        /// </summary>
-        public static string InstallCommandUnknownDependencyVersion {
-            get {
-                return ResourceManager.GetString("InstallCommandUnknownDependencyVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Installing package &apos;{0}&apos; to &apos;{1}&apos;..
-        /// </summary>
-        public static string InstallPackageMessage {
-            get {
-                return ResourceManager.GetString("InstallPackageMessage", resourceCulture);
             }
         }
         
@@ -10142,7 +10052,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to Restoring NuGet packages...
-        ///To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck &apos;{0}&apos;..
+        ///To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck &apos;{0}&apos;..
         /// </summary>
         public static string RestoreCommandPackageRestoreOptOutMessage {
             get {
@@ -11315,15 +11225,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clearing existing authentication types settings for package source &apos;{0}&apos;..
-        /// </summary>
-        public static string SourcesCommandClearingExistingAuthTypes {
-            get {
-                return ResourceManager.GetString("SourcesCommandClearingExistingAuthTypes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Both UserName and Password must be specified..
         /// </summary>
         public static string SourcesCommandCredentialsRequired {
@@ -11446,15 +11347,6 @@ namespace NuGet.CommandLine {
         public static string SourcesCommandCredentialsRequired_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Both UserName and Password must be specified if ValidAuthenticationTypes is specified.
-        /// </summary>
-        public static string SourcesCommandCredentialsRequiredWithAuthTypes {
-            get {
-                return ResourceManager.GetString("SourcesCommandCredentialsRequiredWithAuthTypes", resourceCulture);
             }
         }
         
@@ -12341,7 +12233,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source with Name: {0} added successfully..
+        ///   Looks up a localized string similar to Package Source with Name: {0} added successfully..
         /// </summary>
         public static string SourcesCommandSourceAddedSuccessfully {
             get {
@@ -13475,7 +13367,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; already exists, use -Force to overwrite it..
+        ///   Looks up a localized string similar to &apos;{0}&apos; already exists, use -f to overwrite it..
         /// </summary>
         public static string SpecCommandFileExists {
             get {
@@ -13484,7 +13376,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to “{0}”已存在，请使用 -Force 覆盖它。.
+        ///   Looks up a localized string similar to “{0}”已存在，请使用 -f 覆盖它。.
         /// </summary>
         public static string SpecCommandFileExists_chs {
             get {
@@ -13493,7 +13385,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0}&apos; 己存在，使用 -Force 加以覆寫。.
+        ///   Looks up a localized string similar to {0}&apos; 己存在，使用 -f 加以覆寫。.
         /// </summary>
         public static string SpecCommandFileExists_cht {
             get {
@@ -13502,7 +13394,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} již existuje, k přepsání použijte -Force..
+        ///   Looks up a localized string similar to {0} již existuje, k přepsání použijte -f..
         /// </summary>
         public static string SpecCommandFileExists_csy {
             get {
@@ -13511,7 +13403,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;{0}&quot; ist bereits vorhanden. Verwenden Sie &quot;-Force&quot; zum Überschreiben..
+        ///   Looks up a localized string similar to &quot;{0}&quot; ist bereits vorhanden. Verwenden Sie &quot;-f&quot; zum Überschreiben..
         /// </summary>
         public static string SpecCommandFileExists_deu {
             get {
@@ -13520,7 +13412,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0}&apos; ya existe, use -Force para sobrescribirlo..
+        ///   Looks up a localized string similar to {0}&apos; ya existe, use -f para sobrescribirlo..
         /// </summary>
         public static string SpecCommandFileExists_esp {
             get {
@@ -13529,7 +13421,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; existe déjà. Utilisez -Force pour le remplacer..
+        ///   Looks up a localized string similar to &apos;{0}&apos; existe déjà. Utilisez -f pour le remplacer..
         /// </summary>
         public static string SpecCommandFileExists_fra {
             get {
@@ -13538,7 +13430,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0}&apos; già esistente, usere  -Force per sostituire..
+        ///   Looks up a localized string similar to {0}&apos; già esistente, usere  -f per sostituire..
         /// </summary>
         public static string SpecCommandFileExists_ita {
             get {
@@ -13547,7 +13439,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; は既に存在します。上書きするには、-Force を使用してください。.
+        ///   Looks up a localized string similar to &apos;{0}&apos; は既に存在します。上書きするには、-f を使用してください。.
         /// </summary>
         public static string SpecCommandFileExists_jpn {
             get {
@@ -13556,7 +13448,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos;이(가) 이미 있습니다. 덮어쓰려면 -Force를 사용하십시오..
+        ///   Looks up a localized string similar to &apos;{0}&apos;이(가) 이미 있습니다. 덮어쓰려면 -f를 사용하십시오..
         /// </summary>
         public static string SpecCommandFileExists_kor {
             get {
@@ -13565,7 +13457,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Plik „{0}” już istnieje, użyj argumentu -Force, aby go zastąpić..
+        ///   Looks up a localized string similar to Plik „{0}” już istnieje, użyj argumentu -f, aby go zastąpić..
         /// </summary>
         public static string SpecCommandFileExists_plk {
             get {
@@ -13574,7 +13466,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0}&apos; já existe, use -Force para substituí-lo..
+        ///   Looks up a localized string similar to {0}&apos; já existe, use -f para substituí-lo..
         /// </summary>
         public static string SpecCommandFileExists_ptb {
             get {
@@ -13583,7 +13475,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;{0}&quot; уже существует. Для перезаписи используйте параметр -Force..
+        ///   Looks up a localized string similar to &quot;{0}&quot; уже существует. Для перезаписи используйте параметр -f..
         /// </summary>
         public static string SpecCommandFileExists_rus {
             get {
@@ -13592,7 +13484,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0}&apos; zaten mevcut, geçersiz kılmak için -Force seçimini kullanın..
+        ///   Looks up a localized string similar to {0}&apos; zaten mevcut, geçersiz kılmak için -f seçimini kullanın..
         /// </summary>
         public static string SpecCommandFileExists_trk {
             get {
@@ -14974,15 +14866,6 @@ namespace NuGet.CommandLine {
         public static string UnknownOptionError_trk {
             get {
                 return ResourceManager.GetString("UnknownOptionError_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid target framework..
-        /// </summary>
-        public static string UnsupportedFramework {
-            get {
-                return ResourceManager.GetString("UnsupportedFramework", resourceCulture);
             }
         }
         
@@ -16999,33 +16882,6 @@ namespace NuGet.CommandLine {
         public static string Warning_InvalidPackageSaveMode_trk {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Please enbale long file path support in local group policy. Fore more details, please refer to https://aka.ms/nuget-long-path..
-        /// </summary>
-        public static string Warning_LongPath_DisabledPolicy {
-            get {
-                return ResourceManager.GetString("Warning_LongPath_DisabledPolicy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Please install .NET Framework 4.6.2 or above that supports long file paths. Fore more details, please refer to https://aka.ms/nuget-long-path..
-        /// </summary>
-        public static string Warning_LongPath_UnsupportedNetFramework {
-            get {
-                return ResourceManager.GetString("Warning_LongPath_UnsupportedNetFramework", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Long file path is currently only supported on Windows 10. Fore more details, please refer to https://aka.ms/nuget-long-path..
-        /// </summary>
-        public static string Warning_LongPath_UnsupportedOS {
-            get {
-                return ResourceManager.GetString("Warning_LongPath_UnsupportedOS", resourceCulture);
             }
         }
         

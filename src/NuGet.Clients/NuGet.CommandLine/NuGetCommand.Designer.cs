@@ -19,7 +19,7 @@ namespace NuGet.CommandLine {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class NuGetCommand {
@@ -378,15 +378,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value provided for &apos;{0}&apos;. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference.
-        /// </summary>
-        internal static string CommandInvalidArgumentException {
-            get {
-                return ResourceManager.GetString("CommandInvalidArgumentException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Specifies the path of MSBuild to be used with this command. This command will takes precedence over MSbuildVersion, nuget will always pick MSbuild from this specified path..
         /// </summary>
         internal static string CommandMSBuildPath {
@@ -527,15 +518,6 @@ namespace NuGet.CommandLine {
         internal static string CommandNoCache_trk {
             get {
                 return ResourceManager.GetString("CommandNoCache_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Does not append &quot;api/v2/packages&quot; to the source URL..
-        /// </summary>
-        internal static string CommandNoServiceEndpointDescription {
-            get {
-                return ResourceManager.GetString("CommandNoServiceEndpointDescription", resourceCulture);
             }
         }
         
@@ -2355,15 +2337,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Forces all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json. (Does not apply to packages.config).
-        /// </summary>
-        internal static string ForceRestoreCommand {
-            get {
-                return ResourceManager.GetString("ForceRestoreCommand", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Print detailed help for all available commands..
         /// </summary>
         internal static string HelpCommandAll {
@@ -3242,15 +3215,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Overrides the default dependency resolution behavior..
-        /// </summary>
-        internal static string InstallCommandDependencyVersion {
-            get {
-                return ResourceManager.GetString("InstallCommandDependencyVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Installs a package using the specified sources. If no sources are specified, all sources defined in the NuGet configuration file are used. If the configuration file specifies no sources, uses the default NuGet feed..
         /// </summary>
         internal static string InstallCommandDescription {
@@ -3616,15 +3580,6 @@ namespace NuGet.CommandLine {
         internal static string InstallCommandExcludeVersionDescription_trk {
             get {
                 return ResourceManager.GetString("InstallCommandExcludeVersionDescription_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Target framework used for selecting dependencies. Defaults to &apos;Any&apos; if not specified..
-        /// </summary>
-        internal static string InstallCommandFrameworkDescription {
-            get {
-                return ResourceManager.GetString("InstallCommandFrameworkDescription", resourceCulture);
             }
         }
         
@@ -6014,7 +5969,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [-clear | -list].
+        ///   Looks up a localized string similar to &lt;all | http-cache | global-packages | temp&gt; [-clear | -list].
         /// </summary>
         internal static string LocalsCommandSummary {
             get {
@@ -6662,15 +6617,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specify the configuration file for the pack command..
-        /// </summary>
-        internal static string PackageCommandConfigFile {
-            get {
-                return ResourceManager.GetString("PackageCommandConfigFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Creates a NuGet package based on the specified nuspec or project file..
         /// </summary>
         internal static string PackageCommandDescription {
@@ -7171,15 +7117,6 @@ namespace NuGet.CommandLine {
         internal static string PackageCommandIncludeReferencedProjects_trk {
             get {
                 return ResourceManager.GetString("PackageCommandIncludeReferencedProjects_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Specify if the command should prepare the package output directory to support share as feed..
-        /// </summary>
-        internal static string PackageCommandInstallPackageToOutputPath {
-            get {
-                return ResourceManager.GetString("PackageCommandInstallPackageToOutputPath", resourceCulture);
             }
         }
         
@@ -7688,15 +7625,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specify if the command should prepare the package output name without the version..
-        /// </summary>
-        internal static string PackageCommandOutputFileNamesWithoutVersion {
-            get {
-                return ResourceManager.GetString("PackageCommandOutputFileNamesWithoutVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Provides the ability to specify a semicolon &quot;;&quot; delimited list of properties when creating a package..
         /// </summary>
         internal static string PackageCommandPropertiesDescription {
@@ -7828,15 +7756,6 @@ namespace NuGet.CommandLine {
         internal static string PackageCommandSuffixDescription {
             get {
                 return ResourceManager.GetString("PackageCommandSuffixDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to When creating a symbols package, allows to choose between the &apos;snupkg&apos; and &apos;symbols.nupkg&apos; format..
-        /// </summary>
-        internal static string PackageCommandSymbolPackageFormat {
-            get {
-                return ResourceManager.GetString("PackageCommandSymbolPackageFormat", resourceCulture);
             }
         }
         
@@ -9368,7 +9287,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9385,7 +9304,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9402,7 +9321,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9419,7 +9338,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9436,7 +9355,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9453,7 +9372,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9470,7 +9389,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9504,7 +9423,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9521,7 +9440,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9538,7 +9457,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9555,7 +9474,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9572,7 +9491,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -9589,7 +9508,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
         ///
-        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -src http://customsource/
+        ///nuget push foo.nupkg 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -s http://customsource/
         ///
         ///nuget push foo.nupkg
         ///
@@ -10729,7 +10648,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget restore MySolution.sln.
+        ///   Looks up a localized string similar to nuget restore MySoluion.sln.
         /// </summary>
         internal static string RestoreCommandUsageExamples {
             get {
@@ -10738,7 +10657,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to [&lt;solution&gt; | &lt;packages.config file&gt; | &lt;Microsoft Build project&gt;] [options].
+        ///   Looks up a localized string similar to [&lt;solution&gt; | &lt;packages.config file&gt; | &lt;project.json&gt; | &lt;Microsoft Build project&gt;] [options].
         /// </summary>
         internal static string RestoreCommandUsageSummary {
             get {
@@ -11522,224 +11441,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SHA-1 fingerprint of the certificate used to search a local certificate store for the certificate.
-        ///The certificate store can be specified by -CertificateStoreName and -CertificateStoreLocation options..
-        /// </summary>
-        internal static string SignCommandCertificateFingerprintDescription {
-            get {
-                return ResourceManager.GetString("SignCommandCertificateFingerprintDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Password for the certificate, if needed.
-        ///This option can be used to specify the password for the certificate. If no password is provided, the command will prompt for a password at run time, unless the -NonInteractive option is passed..
-        /// </summary>
-        internal static string SignCommandCertificatePasswordDescription {
-            get {
-                return ResourceManager.GetString("SignCommandCertificatePasswordDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to File path to the certificate to be used while signing the package..
-        /// </summary>
-        internal static string SignCommandCertificatePathDescription {
-            get {
-                return ResourceManager.GetString("SignCommandCertificatePathDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Name of the X.509 certificate store use to search for the certificate. Defaults to &quot;CurrentUser&quot;, the X.509 certificate store used by the current user.
-        ///This option should be used when specifying the certificate via -CertificateSubjectName or -CertificateFingerprint options..
-        /// </summary>
-        internal static string SignCommandCertificateStoreLocationDescription {
-            get {
-                return ResourceManager.GetString("SignCommandCertificateStoreLocationDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Name of the X.509 certificate store to use to search for the certificate. Defaults to &quot;My&quot;, the X.509 certificate store for personal certificates.
-        ///This option should be used when specifying the certificate via -CertificateSubjectName or -CertificateFingerprint options..
-        /// </summary>
-        internal static string SignCommandCertificateStoreNameDescription {
-            get {
-                return ResourceManager.GetString("SignCommandCertificateStoreNameDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Subject name of the certificate used to search a local certificate store for the certificate. 
-        ///The search is a case-insensitive string comparison using the supplied value, which will find all certificates with the subject name containing that string, regardless of other subject values.
-        ///The certificate store can be specified by -CertificateStoreName and -CertificateStoreLocation options..
-        /// </summary>
-        internal static string SignCommandCertificateSubjectNameDescription {
-            get {
-                return ResourceManager.GetString("SignCommandCertificateSubjectNameDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Signs a NuGet package with the specified certificate..
-        /// </summary>
-        internal static string SignCommandDescription {
-            get {
-                return ResourceManager.GetString("SignCommandDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to nuget sign MyPackage.nupkg -CertificatePath C:\certificate.pfx
-        ///nuget sign MyPackage.nupkg -CertificatePath \\path\to\certificate.pfx
-        ///nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -OutputDirectory .\signed\.
-        /// </summary>
-        internal static string SignCommandExamples {
-            get {
-                return ResourceManager.GetString("SignCommandExamples", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hash algorithm to be used to sign the package. Defaults to SHA256..
-        /// </summary>
-        internal static string SignCommandHashAlgorithmDescription {
-            get {
-                return ResourceManager.GetString("SignCommandHashAlgorithmDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No value provided for &apos;{0}&apos;, which is needed when using the &apos;{1}&apos; option. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference.
-        /// </summary>
-        internal static string SignCommandMissingArgumentException {
-            get {
-                return ResourceManager.GetString("SignCommandMissingArgumentException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Multiple options were used to specify a certificate. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
-        /// </summary>
-        internal static string SignCommandMultipleCertificateException {
-            get {
-                return ResourceManager.GetString("SignCommandMultipleCertificateException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No value provided for &apos;{0}&apos;. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference.
-        /// </summary>
-        internal static string SignCommandNoArgumentException {
-            get {
-                return ResourceManager.GetString("SignCommandNoArgumentException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No certificate was provided. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
-        /// </summary>
-        internal static string SignCommandNoCertificateException {
-            get {
-                return ResourceManager.GetString("SignCommandNoCertificateException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference.
-        /// </summary>
-        internal static string SignCommandNoPackageException {
-            get {
-                return ResourceManager.GetString("SignCommandNoPackageException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The &apos;-Timestamper&apos; option was not provided. The signed package will not be timestamped. To learn more about this option, please visit https://docs.nuget.org/docs/reference/command-line-reference.
-        /// </summary>
-        internal static string SignCommandNoTimestamperWarning {
-            get {
-                return ResourceManager.GetString("SignCommandNoTimestamperWarning", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Directory where the signed package should be saved. By default the original package is overwritten by the signed package..
-        /// </summary>
-        internal static string SignCommandOutputDirectoryDescription {
-            get {
-                return ResourceManager.GetString("SignCommandOutputDirectoryDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature..
-        /// </summary>
-        internal static string SignCommandOverwriteDescription {
-            get {
-                return ResourceManager.GetString("SignCommandOverwriteDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Signs a NuGet package..
-        /// </summary>
-        internal static string SignCommandSummary {
-            get {
-                return ResourceManager.GetString("SignCommandSummary", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to URL to an RFC 3161 timestamping server..
-        /// </summary>
-        internal static string SignCommandTimestamperDescription {
-            get {
-                return ResourceManager.GetString("SignCommandTimestamperDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hash algorithm to be used by the RFC 3161 timestamp server. Defaults to SHA256..
-        /// </summary>
-        internal static string SignCommandTimestampHashAlgorithmDescription {
-            get {
-                return ResourceManager.GetString("SignCommandTimestampHashAlgorithmDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Signs a NuGet package..
-        /// </summary>
-        internal static string SignCommandUsageDescription {
-            get {
-                return ResourceManager.GetString("SignCommandUsageDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to nuget sign MyPackage.nupkg -Timestamper https://foo.bar
-        ///
-        ///nuget sign .\..\MyPackage.nupkg -Timestamper https://foo.bar -OutputDirectory .\..\Signed
-        ///.
-        /// </summary>
-        internal static string SignCommandUsageExamples {
-            get {
-                return ResourceManager.GetString("SignCommandUsageExamples", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; [-CertificatePath &lt;certificate_path&gt; | [ -CertificateStoreName &lt;certificate_store_name&gt; -CertificateStoreLocation &lt;certificate_store_location&gt; [-CertificateSubjectName &lt;certificate_subject_name&gt; | -CertificateFingerprint &lt;certificate_fingerprint&gt;]]] [options].
-        /// </summary>
-        internal static string SignCommandUsageSummary {
-            get {
-                return ResourceManager.GetString("SignCommandUsageSummary", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Provides the ability to manage list of sources located in %AppData%\NuGet\NuGet.config.
         /// </summary>
         internal static string SourcesCommandDescription {
@@ -12496,15 +12197,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Make a source a trusted repository for repository signature verification..
-        /// </summary>
-        internal static string SourcesCommandTrustDescription {
-            get {
-                return ResourceManager.GetString("SourcesCommandTrustDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &lt;List|Add|Remove|Enable|Disable|Update&gt; -Name [name] -Source [source].
         /// </summary>
         internal static string SourcesCommandUsageSummary {
@@ -12753,15 +12445,6 @@ namespace NuGet.CommandLine {
         internal static string SourcesCommandUserNameDescription_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandUserNameDescription_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Comma-separated list of valid authentication types for this source. By default, all authentication types are valid. Example: basic,negotiate.
-        /// </summary>
-        internal static string SourcesCommandValidAuthenticationTypesDescription {
-            get {
-                return ResourceManager.GetString("SourcesCommandValidAuthenticationTypesDescription", resourceCulture);
             }
         }
         
@@ -13497,7 +13180,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pakete auf die aktuellsten verfügbaren Versionen aktualisieren. Dieser Befehl aktualisiert auch die Datei &quot;NuGet.exe&quot; selbst..
+        ///   Looks up a localized string similar to Pakete auf die aktuellsten verfügbaren Versionen aktualisieren. Dieser Befehl aktualisiert auch sie Datei &quot;NuGet.exe&quot; selbst..
         /// </summary>
         internal static string UpdateCommandDescription_deu {
             get {
@@ -14782,66 +14465,6 @@ namespace NuGet.CommandLine {
         internal static string UpdateCommandVersionDescription {
             get {
                 return ResourceManager.GetString("UpdateCommandVersionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Specifies that all verifications possible should be performed to the package(s)..
-        /// </summary>
-        internal static string VerifyCommandAllDescription {
-            get {
-                return ResourceManager.GetString("VerifyCommandAllDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Verify that the signer certificate matches with one of the specified SHA256 fingerprints. A certificate SHA256 fingerprint is a SHA256 hash of the certificate used to identify the certificate. Multiple inputs should be semicolon separated..
-        /// </summary>
-        internal static string VerifyCommandCertificateFingerprintDescription {
-            get {
-                return ResourceManager.GetString("VerifyCommandCertificateFingerprintDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Verifies a signed NuGet package..
-        /// </summary>
-        internal static string VerifyCommandDescription {
-            get {
-                return ResourceManager.GetString("VerifyCommandDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Specifies that package signature verification should be performed..
-        /// </summary>
-        internal static string VerifyCommandSignaturesDescription {
-            get {
-                return ResourceManager.GetString("VerifyCommandSignaturesDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to nuget verify -Signatures .\..\MyPackage.nupkg -CertificateFingerprint &quot;CE40881FF5F0AD3E58965DA20A9F571EF1651A56933748E1BF1C99E537C4E039;5F874AAF47BCB268A19357364E7FBB09D6BF9E8A93E1229909AC5CAC865802E2&quot; -Verbosity detailed
-        ///
-        ///nuget verify -Signatures C:\packages\MyPackage.nupkg -CertificateFingerprint CE40881FF5F0AD3E58965DA20A9F571EF1651A56933748E1BF1C99E537C4E039
-        ///
-        ///nuget verify -Signatures MyPackage.nupkg -Verbosity quiet
-        ///
-        ///nuget verify -Signatures .\*.nupkg.
-        /// </summary>
-        internal static string VerifyCommandUsageExamples {
-            get {
-                return ResourceManager.GetString("VerifyCommandUsageExamples", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &lt;verification_type&gt; &lt;package_path&gt;  [options].
-        /// </summary>
-        internal static string VerifyCommandUsageSummary {
-            get {
-                return ResourceManager.GetString("VerifyCommandUsageSummary", resourceCulture);
             }
         }
     }

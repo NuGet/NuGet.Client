@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using NuGet.Commands;
 
 namespace NuGet.CommandLine
@@ -16,9 +16,6 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "CommandApiKey")]
         public string ApiKey { get; set; }
-
-        [Option(typeof(NuGetCommand), "CommandNoServiceEndpointDescription")]
-        public bool NoServiceEndpoint { get; set; }
 
         public override async Task ExecuteCommandAsync()
         {
@@ -49,7 +46,6 @@ namespace NuGet.CommandLine
                 Source,
                 apiKeyValue,
                 NonInteractive,
-                NoServiceEndpoint,
                 Console.Confirm,
                 Console);
         }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -129,7 +129,7 @@ namespace NuGet.CommandLine
                     return new AssemblyMetadata(GetProperties(attributes))
                     {
                         Name = assemblyName.Name,
-                        Version = version.ToFullString(),
+                        Version = version.ToString(),
                         Title = GetAttributeValueOrDefault<AssemblyTitleAttribute>(attributes),
                         Company = GetAttributeValueOrDefault<AssemblyCompanyAttribute>(attributes),
                         Description = GetAttributeValueOrDefault<AssemblyDescriptionAttribute>(attributes),

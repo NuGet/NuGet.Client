@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -11,7 +11,7 @@ namespace NuGet.Common
     /// Represents the solution loaded from a sln file. We use the internal class
     /// Microsoft.Build.Construction.SolutionParser to parse sln files.
     /// </summary>
-    internal class Solution : MSBuildUser
+    internal class Solution
     {
         public List<ProjectInSolution> Projects { get; private set; }
 
@@ -22,36 +22,25 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(msbuildPath));
             }
 
-            _msbuildDirectory = msbuildPath;
-
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
-
-            try
+            Assembly msbuildAssembly = Assembly.LoadFile(
+                Path.Combine(msbuildPath, "Microsoft.Build.dll"));
+            switch (msbuildAssembly.GetName().Version.Major)
             {
-                var msbuildAssembly = Assembly.LoadFile(
-                    Path.Combine(msbuildPath, "Microsoft.Build.dll"));
-                switch (msbuildAssembly.GetName().Version.Major)
-                {
-                    case 4:
-                    case 12:
-                        LoadSolutionWithMsbuild4or12(msbuildAssembly, solutionFileName);
-                        break;
+                case 4:
+                case 12:
+                    LoadSolutionWithMsbuild4or12(msbuildAssembly, solutionFileName);
+                    break;
 
-                    case 14:
-                    case 15:
-                        LoadSolutionWithMsbuild14(msbuildAssembly, solutionFileName);
-                        break;
+                case 14:
+                case 15:
+                    LoadSolutionWithMsbuild14(msbuildAssembly, solutionFileName);
+                    break;
 
-                    default:
-                        throw new InvalidOperationException(string.Format(
-                            CultureInfo.InvariantCulture,
-                            LocalizedResourceManager.GetString(nameof(NuGet.CommandLine.NuGetResources.Error_UnsupportedMsbuild)),
-                            msbuildAssembly.FullName));
-                }
-            }
-            finally
-            {
-                AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(AssemblyResolve);
+                default:
+                    throw new InvalidOperationException(string.Format(
+                        CultureInfo.InvariantCulture,
+                        LocalizedResourceManager.GetString(nameof(NuGet.CommandLine.NuGetResources.Error_UnsupportedMsbuild)),
+                        msbuildAssembly.FullName));
             }
         }
 
@@ -59,16 +48,16 @@ namespace NuGet.Common
         // the internal class SolutionParser is used to parse the solution file
         private void LoadSolutionWithMsbuild4or12(Assembly msbuildAssembly, string solutionFileName)
         {
-            var solutionParserType = msbuildAssembly.GetType(
+            Type solutionParserType = msbuildAssembly.GetType(
                 "Microsoft.Build.Construction.SolutionParser",
                 throwOnError: true);
-            var solutionReaderProperty = solutionParserType.GetProperty(
+            PropertyInfo solutionReaderProperty = solutionParserType.GetProperty(
                 "SolutionReader",
                 BindingFlags.NonPublic | BindingFlags.Instance);
-            var parseSolutionMethod = solutionParserType.GetMethod(
+            MethodInfo parseSolutionMethod = solutionParserType.GetMethod(
                 "ParseSolution",
                 BindingFlags.NonPublic | BindingFlags.Instance);
-            var projectsProperty = solutionParserType.GetProperty(
+            PropertyInfo projectsProperty = solutionParserType.GetProperty(
                 "Projects",
                 BindingFlags.NonPublic | BindingFlags.Instance);
             var solutionParser = solutionParserType.GetConstructor(
@@ -88,13 +77,13 @@ namespace NuGet.Common
             }
 
             // load projects
-            var projectInSolutionType = msbuildAssembly.GetType(
+            Type projectInSolutionType = msbuildAssembly.GetType(
                 "Microsoft.Build.Construction.ProjectInSolution",
                 throwOnError: true);
-            var relativePathProperty = projectInSolutionType.GetProperty(
+            PropertyInfo relativePathProperty = projectInSolutionType.GetProperty(
                 "RelativePath",
                 BindingFlags.NonPublic | BindingFlags.Instance);
-            var projectTypeProperty = projectInSolutionType.GetProperty(
+            PropertyInfo projectTypeProperty = projectInSolutionType.GetProperty(
                 "ProjectType",
                 BindingFlags.NonPublic | BindingFlags.Instance);
             var projects = new List<ProjectInSolution>();
@@ -105,7 +94,7 @@ namespace NuGet.Common
                 var relativePath = (string)relativePathProperty.GetValue(proj, index: null);
                 projects.Add(new ProjectInSolution(relativePath, isSolutionFolder));
             }
-            Projects = projects;
+            this.Projects = projects;
         }
 
         // Load the solution file using the public class SolutionFile in msbuild 14
@@ -117,14 +106,14 @@ namespace NuGet.Common
 
             // load projects
             var projects = new List<ProjectInSolution>();
-            foreach (var project in solutionFile.ProjectsInOrder)
+            foreach (dynamic project in solutionFile.ProjectsInOrder)
             {
                 var projectType = project.ProjectType.ToString();
                 var isSolutionFolder = projectType.Equals("SolutionFolder", StringComparison.OrdinalIgnoreCase);
                 var relativePath = project.RelativePath.Replace('\\', Path.DirectorySeparatorChar);
                 projects.Add(new ProjectInSolution(relativePath, isSolutionFolder));
             }
-            Projects = projects;
+            this.Projects = projects;
         }
     }
 }
