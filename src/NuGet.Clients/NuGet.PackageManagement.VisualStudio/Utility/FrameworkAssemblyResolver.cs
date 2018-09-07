@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -87,9 +87,8 @@ namespace NuGet.PackageManagement.VisualStudio
             // Find a frameworkAssembly with the same name as assemblyName.
             // If one exists, see if its version is greater than that of the available version.
             return frameworkAssembliesDictionary[dotNetFrameworkVersion].Any(p =>
-                !p.IsFacade
-                    && string.Equals(p.AssemblyName.Name, simpleAssemblyName, StringComparison.OrdinalIgnoreCase)
-                    && p.AssemblyName.Version > availableVersion);
+                string.Equals(p.AssemblyName.Name, simpleAssemblyName, StringComparison.OrdinalIgnoreCase)
+                && p.AssemblyName.Version >= availableVersion);
         }
 
         /// <summary>
