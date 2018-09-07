@@ -50,13 +50,21 @@ namespace Microsoft.Build.NuGetSdkResolver
             switch (level)
             {
                 case LogLevel.Debug:
-                case LogLevel.Minimal:
                 case LogLevel.Verbose:
-                case LogLevel.Information:
-                    // ReSharper disable once RedundantArgumentDefaultValue
+                    // Detailed and Diagnostic verbosity in MSBuild shows high, normal, and low importance messages
                     _sdkLogger.LogMessage(data, MessageImportance.Low);
                     break;
+                    
+                case LogLevel.Information:
+                    // Normal verbosity in MSBuild shows only high and normal importance messages
+                    _sdkLogger.LogMessage(data, MessageImportance.Normal);
+                    break;
 
+                case LogLevel.Minimal:
+                    // Minimal verbosity in MSBuild shows only high importance messages
+                    _sdkLogger.LogMessage(data, MessageImportance.High);
+                    break;
+                    
                 case LogLevel.Warning:
                     _warnings.Add(data);
                     break;
