@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,8 +44,7 @@ namespace NuGet.PackageManagement.UI
 
             _projectList.SizeChanged += ListView_SizeChanged;
 
-            _sortableColumns = new List<GridViewColumnHeader>
-            {
+            _sortableColumns = new List<GridViewColumnHeader> {
                 _projectColumnHeader,
                 _versionColumnHeader
             };
@@ -55,12 +54,18 @@ namespace NuGet.PackageManagement.UI
 
         private void UninstallButton_Clicked(object sender, RoutedEventArgs e)
         {
-            UninstallButtonClicked?.Invoke(this, EventArgs.Empty);
+            if (UninstallButtonClicked != null)
+            {
+                UninstallButtonClicked(this, EventArgs.Empty);
+            }
         }
 
         private void InstallButton_Clicked(object sender, RoutedEventArgs e)
         {
-            InstallButtonClicked?.Invoke(this, EventArgs.Empty);
+            if (InstallButtonClicked != null)
+            {
+                InstallButtonClicked(this, EventArgs.Empty);
+            }
         }
 
         private void ColumnHeader_Clicked(object sender, RoutedEventArgs e)
@@ -77,7 +82,7 @@ namespace NuGet.PackageManagement.UI
         public void SaveSettings(UserSettings settings)
         {
             var sortDescription = _projectList.Items.SortDescriptions.FirstOrDefault();
-            if (sortDescription != default(SortDescription))
+            if (sortDescription != null)
             {
                 settings.SortPropertyName = sortDescription.PropertyName;
                 settings.SortDirection = sortDescription.Direction;
@@ -90,11 +95,11 @@ namespace NuGet.PackageManagement.UI
             var sortColumn = _sortableColumns.FirstOrDefault(
                 column =>
                 {
+                    var header = column.Content as SortableColumnHeader;
                     return StringComparer.OrdinalIgnoreCase.Equals(
-                        SortableColumnHeaderAttachedProperties.GetSortPropertyName(obj: column),
+                        header?.SortPropertyName,
                         userSettings.SortPropertyName);
                 });
-
             if (sortColumn == null)
             {
                 return;
@@ -108,7 +113,8 @@ namespace NuGet.PackageManagement.UI
                     userSettings.SortDirection));
 
             // upate sortInfo
-            SortableColumnHeaderAttachedProperties.SetSortDirectionProperty(obj: sortColumn, value: userSettings.SortDirection);
+            var sortInfo = (SortableColumnHeader)sortColumn.Content;
+            sortInfo.SortDirection = userSettings.SortDirection;
 
             // clear sort direction of other columns
             foreach (var column in _sortableColumns)
@@ -118,29 +124,43 @@ namespace NuGet.PackageManagement.UI
                     continue;
                 }
 
-                SortableColumnHeaderAttachedProperties.RemoveSortDirectionProperty(obj: column);
+                sortInfo = (SortableColumnHeader)column.Content;
+                sortInfo.SortDirection = null;
             }
         }
-        
+
         private void SortByColumn(GridViewColumnHeader sortColumn)
         {
+            var sortInfo = sortColumn.Content as SortableColumnHeader;
+            if (sortInfo == null)
+            {
+                return;
+            }
+
             _projectList.Items.SortDescriptions.Clear();
 
+            // add new sort description
             var sortDescription = new SortDescription();
-
-            sortDescription.PropertyName = SortableColumnHeaderAttachedProperties.GetSortPropertyName(sortColumn);
-            var sortDir = SortableColumnHeaderAttachedProperties.GetSortDirectionProperty(sortColumn);
-
-            sortDescription.Direction = sortDir == null
-                ? ListSortDirection.Ascending
-                : sortDir == ListSortDirection.Ascending
-                    ? ListSortDirection.Descending
-                    : ListSortDirection.Ascending;
-
-            SortableColumnHeaderAttachedProperties.SetSortDirectionProperty(obj: sortColumn, value: sortDescription.Direction);
+            sortDescription.PropertyName = sortInfo.SortPropertyName;
+            if (sortInfo.SortDirection == null)
+            {
+                sortDescription.Direction = ListSortDirection.Ascending;
+            }
+            else if (sortInfo.SortDirection == ListSortDirection.Ascending)
+            {
+                sortDescription.Direction = ListSortDirection.Descending;
+            }
+            else
+            {
+                sortDescription.Direction = ListSortDirection.Ascending;
+            }
 
             _projectList.Items.SortDescriptions.Add(sortDescription);
 
+            // upate sortInfo
+            sortInfo.SortDirection = sortDescription.Direction;
+
+            // clear sort direction of other columns
             foreach (var column in _sortableColumns)
             {
                 if (column == sortColumn)
@@ -148,20 +168,31 @@ namespace NuGet.PackageManagement.UI
                     continue;
                 }
 
-                SortableColumnHeaderAttachedProperties.RemoveSortDirectionProperty(obj: column);
+                sortInfo = (SortableColumnHeader)column.Content;
+                sortInfo.SortDirection = null;
             }
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             var model = DataContext as PackageSolutionDetailControlModel;
-            model?.SelectAllProjects();
+            if (model == null)
+            {
+                return;
+            }
+
+            model.SelectAllProjects();
         }
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             var model = DataContext as PackageSolutionDetailControlModel;
-            model?.UnselectAllProjects();
+            if (model == null)
+            {
+                return;
+            }
+
+            model.UnselectAllProjects();
         }
 
         private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -183,35 +214,13 @@ namespace NuGet.PackageManagement.UI
             _projectList.SizeChanged -= ListView_SizeChanged;
         }
 
-        private void SortableColumnHeader_SizeChanged(object sender, SizeChangedEventArgs sizeChangedEventArgs)
+        private void ProjectList_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            // GridViewColumnHeader doesn't handle setting minwidth very well so we prevent it here.
-            if (sizeChangedEventArgs.NewSize.Width <= 60)
-            {
-                sizeChangedEventArgs.Handled = true;
-                ((GridViewColumnHeader)sender).Column.Width = 60;
-            }
-        }
-
-        private void ProjectList_PreviewKeyUp(object sender, KeyEventArgs e)
-        {
-            // toggle the selection state when user presses the space bar when focus is on the ListViewItem
+            // toggle the selection state when user presses the space bar
             var packageInstallationInfo = _projectList.SelectedItem as PackageInstallationInfo;
-            if (packageInstallationInfo != null
-                && e.Key == Key.Space
-                && ((ListViewItem)(_projectList.ItemContainerGenerator.ContainerFromItem(_projectList.SelectedItem))).IsFocused)
+            if (packageInstallationInfo != null && e.Key == Key.Space)
             {
                 packageInstallationInfo.IsSelected = !packageInstallationInfo.IsSelected;
-                e.Handled = true;
-            }
-        }
-
-        private void SortableColumnHeader_PreviewKeyUp(object sender, KeyEventArgs e)
-        {
-            var sortableColumnHeader = sender as GridViewColumnHeader;
-            if(sortableColumnHeader != null && (e.Key == Key.Space || e.Key == Key.Enter))
-            {
-                SortByColumn(sortableColumnHeader);
                 e.Handled = true;
             }
         }

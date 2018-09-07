@@ -1,18 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Windows.Threading;
 using System.Xml.Linq;
-using NuGet.Common;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
     public sealed class NuGetUIProjectContext : INuGetProjectContext
     {
+        private readonly Dispatcher _uiDispatcher;
         private readonly INuGetUILogger _logger;
 
         public FileConflictAction FileConflictAction { get; set; }
@@ -33,6 +32,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             _logger = logger;
+            _uiDispatcher = Dispatcher.CurrentDispatcher;
             SourceControlManagerProvider = sourceControlManagerProvider;
 
             if (commonOperations != null)
@@ -46,25 +46,26 @@ namespace NuGet.PackageManagement.UI
             _logger.Log(level, message, args);
         }
 
-
         public FileConflictAction ShowFileConflictResolution(string message)
         {
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            if (!_uiDispatcher.CheckAccess())
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var result = _uiDispatcher.Invoke(
+                    new Func<string, FileConflictAction>(ShowFileConflictResolution),
+                    message);
+                return (FileConflictAction)result;
+            }
 
-                var fileConflictDialog = new FileConflictDialog
+            var fileConflictDialog = new FileConflictDialog
                 {
                     Question = message
                 };
 
-                if (fileConflictDialog.ShowModal() == true)
-                {
-                    return fileConflictDialog.UserSelection;
-                }
-
-                return FileConflictAction.IgnoreAll;
-            });
+            if (fileConflictDialog.ShowModal() == true)
+            {
+                return fileConflictDialog.UserSelection;
+            }
+            return FileConflictAction.IgnoreAll;
         }
 
         public FileConflictAction ResolveFileConflict(string message)
@@ -98,18 +99,8 @@ namespace NuGet.PackageManagement.UI
             _logger.ReportError(message);
         }
 
-        public void Log(ILogMessage message)
-        {
-            _logger.Log(message);
-        }
-
-        public void ReportError(ILogMessage message)
-        {
-            _logger.ReportError(message);
-        }
-
         public NuGetActionType ActionType { get; set; }
 
-        public Guid OperationId { get; set; }
+        public TelemetryServiceHelper TelemetryService { get; set; }
     }
 }

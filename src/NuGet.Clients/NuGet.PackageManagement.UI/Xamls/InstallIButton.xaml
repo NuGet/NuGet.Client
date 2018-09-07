@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="NuGet.PackageManagement.UI.InstallButton"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
+        mc:Ignorable="d"
+        d:DesignHeight="300" 
+        d:DesignWidth="300">
+  <Rectangle>
+    <Rectangle.Fill>
+      <DrawingBrush>
+        <DrawingBrush.Drawing>
+          <DrawingGroup>
+            <DrawingGroup.Children>
+              <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+              <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M6.0003,-0.000199999999999534L6.0003,4.9998 2.9993,1.9998 2.9993,8.9998 6.0003,12.0008 2.9993,12.0008 2.9993,15.9998 12.9993,15.9998 12.9993,12.0008 10.0003,12.0008 12.9993,8.9998 12.9993,1.9998 10.0003,4.9998 10.0003,-0.000199999999999534z" />
+              <GeometryDrawing Brush="#FF414141" Geometry="F1M4,15L12,15 12,13 4,13z M9,8L9,1 7,1 7,8 4,5 4,8 8,12 12,8 12,5z" />
+            </DrawingGroup.Children>
+          </DrawingGroup>
+        </DrawingBrush.Drawing>
+      </DrawingBrush>
+    </Rectangle.Fill>
+  </Rectangle>
+</UserControl>

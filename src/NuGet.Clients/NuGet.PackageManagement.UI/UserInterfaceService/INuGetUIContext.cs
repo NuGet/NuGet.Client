@@ -1,9 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
@@ -14,7 +12,7 @@ namespace NuGet.PackageManagement.UI
     {
         ISourceRepositoryProvider SourceProvider { get; }
 
-        IVsSolutionManager SolutionManager { get; }
+        ISolutionManager SolutionManager { get; }
 
         NuGetPackageManager PackageManager { get; }
 
@@ -29,9 +27,5 @@ namespace NuGet.PackageManagement.UI
         IUserSettingsManager UserSettingsManager { get; }
 
         IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
-
-        Task<bool> IsNuGetProjectUpgradeable(NuGetProject project);
-
-        Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService);
     }
 }

@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            var displayVersion = new DisplayVersion(version, string.Empty, versionFormat: parameter as string);
+            var displayVersion = new DisplayVersion(version, string.Empty);
             return displayVersion.ToString();
         }
 

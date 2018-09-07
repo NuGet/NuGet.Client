@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,9 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
-using NuGet.VisualStudio;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
 
@@ -34,17 +32,13 @@ namespace NuGet.PackageManagement.UI
 
         public event SelectionChangedEventHandler SelectionChanged;
 
-        public delegate void UpdateButtonClickEventHandler(PackageItemListViewModel[] selectedPackages);
-        public event UpdateButtonClickEventHandler UpdateButtonClicked;
-
-        // This exists only to facilitate unit testing.
-        internal event EventHandler LoadItemsCompleted;
+        public delegate void UpdateButtonCllickEventHandler(PackageItemListViewModel[] selectedPackages);
+        public event UpdateButtonCllickEventHandler UpdateButtonClicked;
 
         private CancellationTokenSource _loadCts;
         private IPackageItemLoader _loader;
         private INuGetUILogger _logger;
         private Task<SearchResult<IPackageSearchMetadata>> _initialSearchResultTask;
-        private readonly Lazy<JoinableTaskFactory> _joinableTaskFactory;
 
         private const string LogEntrySource = "NuGet Package Manager";
 
@@ -52,27 +46,10 @@ namespace NuGet.PackageManagement.UI
         private int _selectedCount;
 
         public InfiniteScrollList()
-            : this(new Lazy<JoinableTaskFactory>(() => NuGetUIThreadHelper.JoinableTaskFactory))
         {
-        }
-
-        internal InfiniteScrollList(Lazy<JoinableTaskFactory> joinableTaskFactory)
-        {
-            if (joinableTaskFactory == null)
-            {
-                throw new ArgumentNullException(nameof(joinableTaskFactory));
-            }
-
-            _joinableTaskFactory = joinableTaskFactory;
-
             InitializeComponent();
 
-            _list.ItemsLock = ReentrantSemaphore.Create(
-                initialCount: 1,
-                joinableTaskContext: _joinableTaskFactory.Value.Context,
-                mode: ReentrantSemaphore.ReentrancyMode.Stack);
-
-            BindingOperations.EnableCollectionSynchronization(Items, _list.ItemsLock);
+            BindingOperations.EnableCollectionSynchronization(Items, _itemsLock);
 
             DataContext = Items;
             CheckBoxesEnabled = false;
@@ -102,37 +79,21 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsSolution { get; set; }
 
-        public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
+        private readonly SemaphoreSlim _itemsLock = new SemaphoreSlim(1, 1);
 
+        public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
         public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
 
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
 
         // Load items using the specified loader
-        internal async Task LoadItemsAsync(
+        internal void LoadItems(
             IPackageItemLoader loader,
             string loadingMessage,
             INuGetUILogger logger,
             Task<SearchResult<IPackageSearchMetadata>> searchResultTask,
             CancellationToken token)
         {
-            if (loader == null)
-            {
-                throw new ArgumentNullException(nameof(loader));
-            }
-
-            if (string.IsNullOrEmpty(loadingMessage))
-            {
-                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(loadingMessage));
-            }
-
-            if (searchResultTask == null)
-            {
-                throw new ArgumentNullException(nameof(searchResultTask));
-            }
-
-            token.ThrowIfCancellationRequested();
-
             _loader = loader;
             _logger = logger;
             _initialSearchResultTask = searchResultTask;
@@ -141,12 +102,17 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusBar.Reset(loadingMessage, loader.IsMultiSource);
 
             var selectedPackageItem = SelectedPackageItem;
+            _itemsLock.Wait();
 
-            await _list.ItemsLock.ExecuteAsync(() =>
+            try
             {
                 ClearPackageList();
-                return Task.CompletedTask;
-            });
+            }
+            finally
+            {
+                _itemsLock.Release();
+            }
+
 
             _selectedCount = 0;
 
@@ -154,7 +120,7 @@ namespace NuGet.PackageManagement.UI
             LoadItems(selectedPackageItem, token);
         }
 
-        internal void UpdateSelectedItem(PackageItemListViewModel selectedItem)
+        private void UpdateSelectedItem(PackageItemListViewModel selectedItem)
         {
             if (selectedItem != null)
             {
@@ -175,7 +141,7 @@ namespace NuGet.PackageManagement.UI
 
             var currentLoader = _loader;
 
-            _joinableTaskFactory.Value.RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await TaskScheduler.Default;
 
@@ -183,7 +149,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     await LoadItemsCoreAsync(currentLoader, loadCts.Token);
 
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     if (selectedPackageItem != null)
                     {
@@ -196,7 +162,7 @@ namespace NuGet.PackageManagement.UI
                     loadCts.Dispose();
                     currentLoader.Reset();
 
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     // The user cancelled the login, but treat as a load error in UI
                     // So the retry button and message is displayed
@@ -217,7 +183,7 @@ namespace NuGet.PackageManagement.UI
                     // Write stack to activity log
                     Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
 
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     var errorMessage = ExceptionUtilities.DisplayMessage(ex);
                     _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
@@ -229,8 +195,6 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 UpdateCheckBoxStatus();
-
-                LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
             });
         }
 
@@ -250,9 +214,9 @@ namespace NuGet.PackageManagement.UI
 
             token.ThrowIfCancellationRequested();
 
-            await _joinableTaskFactory.Value.RunAsync(async () =>
+            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _loadingStatusBar.ItemsLoaded = currentLoader.State.ItemsCount;
             });
@@ -302,9 +266,15 @@ namespace NuGet.PackageManagement.UI
             {
                 // trigger loading
                 await currentLoader.LoadNextAsync(progress, token);
-            }
 
-            await WaitForInitialResultsAsync(currentLoader, progress, token);
+                // run till first results are ready
+                while (currentLoader.State.LoadingStatus == LoadingStatus.Loading &&
+                    currentLoader.State.ItemsCount == 0)
+                {
+                    token.ThrowIfCancellationRequested();
+                    await currentLoader.UpdateStateAsync(progress, token);
+                }
+            }
 
             return currentLoader.GetCurrent();
         }
@@ -322,24 +292,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task WaitForInitialResultsAsync(
-            IItemLoader<PackageItemListViewModel> currentLoader,
-            IProgress<IItemLoaderState> progress,
-            CancellationToken token)
-        {
-            while (currentLoader.State.LoadingStatus == LoadingStatus.Loading &&
-                currentLoader.State.ItemsCount == 0)
-            {
-                token.ThrowIfCancellationRequested();
-                await currentLoader.UpdateStateAsync(progress, token);
-            }
-        }
-
         private void HandleItemLoaderStateChange(IItemLoader<PackageItemListViewModel> loader, IItemLoaderState state)
         {
-            _joinableTaskFactory.Value.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 if (loader == _loader)
                 {
@@ -358,11 +315,16 @@ namespace NuGet.PackageManagement.UI
 
                     if (!Items.Contains(_loadingStatusIndicator))
                     {
-                        await _list.ItemsLock.ExecuteAsync(() =>
+                        await _itemsLock.WaitAsync();
+
+                        try
                         {
                             Items.Add(_loadingStatusIndicator);
-                            return Task.CompletedTask;
-                        });
+                        }
+                        finally
+                        {
+                            _itemsLock.Release();
+                        }
                     }
                 }
             });
@@ -380,7 +342,7 @@ namespace NuGet.PackageManagement.UI
 
             if (loader.IsMultiSource)
             {
-                var hasMore = _loadingStatusBar.ItemsLoaded != 0 && state.ItemsCount > _loadingStatusBar.ItemsLoaded;
+                bool hasMore = _loadingStatusBar.ItemsLoaded != 0 && state.ItemsCount > _loadingStatusBar.ItemsLoaded;
                 if (hasMore)
                 {
                     statusBarVisibility = Visibility.Visible;
@@ -397,10 +359,12 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh)
         {
-            _joinableTaskFactory.Value.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 // Synchronize updating Items list
-                await _list.ItemsLock.ExecuteAsync(() =>
+                await _itemsLock.WaitAsync();
+
+                try
                 {
                     // remove the loading status indicator if it's in the list
                     Items.Remove(_loadingStatusIndicator);
@@ -419,9 +383,12 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     Items.Add(_loadingStatusIndicator);
+                }
 
-                    return Task.CompletedTask;
-                });
+                finally
+                {
+                    _itemsLock.Release();
+                }
             });
         }
 
@@ -514,17 +481,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public PackageItemListViewModel SelectedItem
-        {
-            get
-            {
-                return _list.SelectedItem as PackageItemListViewModel;
-            }
-            internal set
-            {
-                _list.SelectedItem = value;
-            }
-        }
+        public PackageItemListViewModel SelectedItem => _list.SelectedItem as PackageItemListViewModel;
 
         private void List_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

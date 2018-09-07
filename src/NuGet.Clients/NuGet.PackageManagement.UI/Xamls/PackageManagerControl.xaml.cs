@@ -1,10 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -14,13 +12,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.PackageManagement.VisualStudio;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
-using NuGet.Versioning;
-using NuGet.VisualStudio;
 using Resx = NuGet.PackageManagement.UI;
 using VSThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
@@ -44,25 +40,22 @@ namespace NuGet.PackageManagement.UI
 
         private RestartRequestBar _restartBar;
 
-        private PRMigratorBar _migratorBar;
-
         private readonly IVsWindowSearchHost _windowSearchHost;
         private readonly IVsWindowSearchHostFactory _windowSearchHostFactory;
 
-        internal readonly DetailControlModel _detailModel;
+        private readonly DetailControlModel _detailModel;
+
+        private readonly Dispatcher _uiDispatcher;
 
         private bool _missingPackageStatus;
+
         private readonly INuGetUILogger _uiLogger;
 
         public PackageManagerModel Model { get; }
 
         public Configuration.ISettings Settings { get; }
 
-        internal ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
-
-        internal InfiniteScrollList PackageList { get => _packageList; }
-
-        internal PackageSourceMoniker SelectedSource
+        private PackageSourceMoniker SelectedSource
         {
             get
             {
@@ -74,15 +67,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        internal IEnumerable<PackageSourceMoniker> PackageSources => _topPanel.SourceRepoList.Items.OfType<PackageSourceMoniker>();
+        private IEnumerable<PackageSourceMoniker> PackageSources => _topPanel.SourceRepoList.Items.OfType<PackageSourceMoniker>();
 
         internal IEnumerable<SourceRepository> ActiveSources => SelectedSource?.SourceRepositories ?? Enumerable.Empty<SourceRepository>();
 
-        internal event EventHandler _actionCompleted;
-
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
-
-
 
         public PackageManagerControl(
             PackageManagerModel model,
@@ -91,8 +80,7 @@ namespace NuGet.PackageManagement.UI
             IVsShell4 vsShell,
             INuGetUILogger uiLogger = null)
         {
-            VSThreadHelper.ThrowIfNotOnUIThread();
-
+            _uiDispatcher = Dispatcher.CurrentDispatcher;
             _uiLogger = uiLogger;
             Model = model;
             Settings = nugetSettings;
@@ -137,11 +125,11 @@ namespace NuGet.PackageManagement.UI
 
             // UI is initialized. Start the first search
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-            _packageList.IsSolution = Model.IsSolution;
+            _packageList.IsSolution = this.Model.IsSolution;
 
             Loaded += (_, __) =>
             {
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCache: false);
                 RefreshConsolidatablePackagesCount();
             };
 
@@ -162,19 +150,12 @@ namespace NuGet.PackageManagement.UI
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
 
-            Unloaded += PackageManagerUnloaded;
-
             if (IsUILegalDisclaimerSuppressed())
             {
                 _legalDisclaimer.Visibility = Visibility.Collapsed;
             }
 
             _missingPackageStatus = false;
-        }
-
-        private void PackagesErrorBar_RefreshUI(object sender, EventArgs e)
-        {
-            Refresh();
         }
 
         private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
@@ -278,11 +259,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
-        {
-            Unloaded -= PackageManagerUnloaded;
-        }
-
         private static bool IsUILegalDisclaimerSuppressed()
         {
             return RegistrySettingUtility.GetBooleanSetting(Constants.SuppressUIDisclaimerRegistryName);
@@ -370,7 +346,7 @@ namespace NuGet.PackageManagement.UI
                 if (prevSelectedItem != SelectedSource)
                 {
                     SaveSettings();
-                    SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                    SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCache: false);
                 }
             }
             finally
@@ -485,18 +461,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void AddMigratorBar()
-        {
-            _migratorBar = new PRMigratorBar(Model);
-
-            DockPanel.SetDock(_migratorBar, Dock.Top);
-
-            _root.Children.Insert(0, _migratorBar);
-        }
-
-#pragma warning disable IDE1006 // Naming Styles
         private void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
-#pragma warning restore IDE1006 // Naming Styles
         {
             // make sure update happens on the UI thread.
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
@@ -518,7 +483,8 @@ namespace NuGet.PackageManagement.UI
 
         // Refresh the UI after packages are restored.
         // Note that the PackagesMissingStatusChanged event can be fired from a non-UI thread in one case:
-        // the VsSolutionManager.Init() method, which is scheduled on the thread pool.
+        // the VsSolutionManager.Init() method, which is scheduled on the thread pool. So this
+        // method needs to use _uiDispatcher.
         private void UpdateAfterPackagesMissingStatusChanged()
         {
             VSThreadHelper.ThrowIfNotOnUIThread();
@@ -600,88 +566,67 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        private void SearchPackagesAndRefreshUpdateCount(bool useCacheForUpdates)
+        private void SearchPackagesAndRefreshUpdateCount(string searchText, bool useCache)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                await SearchPackagesAndRefreshUpdateCountAsync(
-                    searchText: _windowSearchHost.SearchQuery.SearchString,
-                    useCacheForUpdates: useCacheForUpdates,
-                    pSearchCallback: null,
-                    searchTask: null);
-            });
-        }
+                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
 
-        /// <summary>
-        /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
-        /// </summary>
-        internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCacheForUpdates, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
-        {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-
-            if (useCacheForUpdates)
-            {
-                loadContext.CachedPackages = Model.CachedUpdates;
-            };
-
-            var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
-
-            var loader = new PackageItemLoader(
-                loadContext, packageFeed, searchText, IncludePrerelease);
-            var loadingMessage = string.IsNullOrWhiteSpace(searchText)
-                ? Resx.Resources.Text_Loading
-                : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
-
-            // Set a new cancellation token source which will be used to cancel this task in case
-            // new loading task starts or manager ui is closed while loading packages.
-            _loadCts = new CancellationTokenSource();
-
-            // start SearchAsync task for initial loading of packages
-            var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
-            // this will wait for searchResultTask to complete instead of creating a new task
-            await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
-
-            if (pSearchCallback != null && searchTask != null)
-            {
-                var searchResult = await searchResultTask;
-                pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
-            }
-
-            // We only refresh update count, when we don't use cache so check it it's false
-            if (!useCacheForUpdates)
-            {
-                // clear existing caches
-                Model.CachedUpdates = null;
-
-                if (_topPanel.Filter.Equals(ItemFilter.UpdatesAvailable))
+                if (useCache)
                 {
-                    // it means selected tab is update itself, so just wait for searchAsyncTask to complete
-                    // without making another call to loader to get all packages.
-                    _topPanel._labelUpgradeAvailable.Count = 0;
+                    loadContext.CachedPackages = Model.CachedUpdates;
+                };
 
-                    var searchResult = await searchResultTask;
-                    Model.CachedUpdates = new PackageSearchMetadataCache
+                var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
+
+                var loader = new PackageItemLoader(
+                    loadContext, packageFeed, searchText, IncludePrerelease);
+                var loadingMessage = string.IsNullOrWhiteSpace(searchText)
+                    ? Resx.Resources.Text_Loading
+                    : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
+
+                // Set a new cancellation token source which will be used to cancel this task in case
+                // new loading task starts or manager ui is closed while loading packages.
+                _loadCts = new CancellationTokenSource();
+
+                // start SearchAsync task for initial loading of packages
+                var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
+
+                // this will wait for searchResultTask to complete instead of creating a new task
+                _packageList.LoadItems(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
+
+                // We only refresh update count, when we don't use cache so check it it's false
+                if (!useCache)
+                {
+                    // clear existing caches
+                    Model.CachedUpdates = null;
+
+                    if (_topPanel.Filter.Equals(ItemFilter.UpdatesAvailable))
                     {
-                        Packages = searchResult.Items,
-                        IncludePrerelease = IncludePrerelease
-                    };
+                        // it means selected tab is update itself, so just wait for searchAsyncTask to complete
+                        // without making another call to loader to get all packages.
+                        _topPanel._labelUpgradeAvailable.Count = 0;
 
-                    _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
-                        
+                        var searchResult = await searchResultTask;
+                        Model.CachedUpdates = new PackageSearchMetadataCache
+                        {
+                            Packages = searchResult.Items,
+                            IncludePrerelease = IncludePrerelease
+                        };
+
+                        _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
+                    }
+                    else
+                    {
+                        RefreshAvailableUpdatesCount();
+                    }
                 }
-                else
-                {
-                    RefreshAvailableUpdatesCount();
-                }
-            }
+            });
         }
 
         private void RefreshAvailableUpdatesCount()
@@ -739,19 +684,20 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Updates the detail pane based on the selected package
         /// </summary>
-        internal async Task UpdateDetailPaneAsync()
+        private async Task UpdateDetailPaneAsync()
         {
             var selectedPackage = _packageList.SelectedItem;
             if (selectedPackage == null)
             {
                 _packageDetail.Visibility = Visibility.Hidden;
+                _packageDetail.DataContext = null;
             }
             else
             {
                 _packageDetail.Visibility = Visibility.Visible;
                 _packageDetail.DataContext = _detailModel;
 
-                await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter, () => _packageList.SelectedItem);
+                await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter, ()=>_packageList.SelectedItem);
 
                 _packageDetail.ScrollToHome();
 
@@ -763,6 +709,9 @@ namespace NuGet.PackageManagement.UI
 
         private static async Task<IPackageFeed> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger)
         {
+            // Go off the UI thread to perform non-UI operations
+            await TaskScheduler.Default;
+
             var logger = new VisualStudioActivityLogger();
 
             if (filter == ItemFilter.All)
@@ -827,7 +776,7 @@ namespace NuGet.PackageManagement.UI
 
                 //Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(ActiveSource.PackageSource);
                 SaveSettings();
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCache: false);
             }
         }
 
@@ -836,7 +785,7 @@ namespace NuGet.PackageManagement.UI
             if (_initialized)
             {
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
+                SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCache: true);
 
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
             }
@@ -850,7 +799,7 @@ namespace NuGet.PackageManagement.UI
             if (_topPanel.Filter != ItemFilter.All)
             {
                 // refresh the whole package list
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCache: false);
             }
             else
             {
@@ -885,7 +834,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
+            SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCache: true);
         }
 
         private void CheckboxPrerelease_CheckChanged(object sender, EventArgs e)
@@ -898,7 +847,7 @@ namespace NuGet.PackageManagement.UI
             RegistrySettingUtility.SetBooleanSetting(
                 Constants.IncludePrereleaseRegistryName,
                 _topPanel.CheckboxPrerelease.IsChecked == true);
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+            SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCache: false);
         }
 
         internal class SearchQuery : IVsSearchQuery
@@ -923,13 +872,13 @@ namespace NuGet.PackageManagement.UI
 
         public void ClearSearch()
         {
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
+            SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCache: true);
         }
 
         public IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
         {
-            var searchTask = new NuGetPackageManagerControlSearchTask(this, dwCookie, pSearchQuery, pSearchCallback);
-            return searchTask;
+            SearchPackagesAndRefreshUpdateCount(pSearchQuery.SearchString, useCache: true);
+            return null;
         }
 
         public bool OnNavigationKeyDown(uint dwNavigationKey, uint dwModifiers)
@@ -976,12 +925,7 @@ namespace NuGet.PackageManagement.UI
 
         private void FocusOnSearchBox_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _windowSearchHost.Activate();
-            });
+            _windowSearchHost.Activate();
         }
 
         public void Search(string searchText)
@@ -991,31 +935,20 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _windowSearchHost.Activate();
-                _windowSearchHost.SearchAsync(new SearchQuery { SearchString = searchText });
-            });
+            _windowSearchHost.Activate();
+            _windowSearchHost.SearchAsync(new SearchQuery { SearchString = searchText });
         }
 
         public void CleanUp()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _windowSearchHost.TerminateSearch();
-            });
-
+            _windowSearchHost.TerminateSearch();
             RemoveRestoreBar();
             RemoveRestartBar();
 
             var solutionManager = Model.Context.SolutionManager;
             solutionManager.NuGetProjectAdded -= SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRemoved -= SolutionManager_ProjectsChanged;
-            solutionManager.NuGetProjectUpdated -= SolutionManager_ProjectsUpdated;
+            solutionManager.NuGetProjectUpdated -= SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRenamed -= SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted -= SolutionManager_ActionsExecuted;
             solutionManager.AfterNuGetCacheUpdated -= SolutionManager_CacheUpdated;
@@ -1051,7 +984,7 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                IsEnabled = false;
+                this.IsEnabled = false;
                 NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
                 try
                 {
@@ -1072,7 +1005,6 @@ namespace NuGet.PackageManagement.UI
                 }
                 finally
                 {
-                    _actionCompleted?.Invoke(this, EventArgs.Empty);
                     NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
                     IsEnabled = true;
                 }
@@ -1089,7 +1021,18 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            UninstallPackage(package.Id);
+            var action = UserAction.CreateUnInstallAction(package.Id);
+
+            ExecuteAction(
+                () =>
+                {
+                    return Model.Context.UIActionEngine.PerformActionAsync(
+                        Model.UIController,
+                        action,
+                        CancellationToken.None);
+                },
+
+                nugetUi => SetOptions(nugetUi, NuGetActionType.Uninstall));
         }
 
         private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType)
@@ -1116,27 +1059,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             var versionToInstall = package.LatestVersion ?? package.Version;
-            InstallPackage(package.Id, versionToInstall);
-        }
-
-        private void PackageList_UpdateButtonClicked(PackageItemListViewModel[] selectedPackages)
-        {
-            var packagesToUpdate = selectedPackages
-                .Select(package => new PackageIdentity(package.Id, package.Version))
-                .ToList();
-
-            UpdatePackage(packagesToUpdate);
-        }
-
-        private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
-        {
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
-            RefreshConsolidatablePackagesCount();
-        }
-
-        internal void InstallPackage(string packageId, NuGetVersion version)
-        {
-            var action = UserAction.CreateInstallAction(packageId, version);
+            var action = UserAction.CreateInstallAction(package.Id, versionToInstall);
 
             ExecuteAction(
                 () =>
@@ -1150,25 +1073,13 @@ namespace NuGet.PackageManagement.UI
                 nugetUi => SetOptions(nugetUi, NuGetActionType.Install));
         }
 
-        internal void UninstallPackage(string packageId)
+        private void PackageList_UpdateButtonClicked(PackageItemListViewModel[] selectedPackages)
         {
-            var action = UserAction.CreateUnInstallAction(packageId);
+            var packagesToUpdate = selectedPackages
+                .Select(package => new PackageIdentity(package.Id, package.Version))
+                .ToList();
 
-            ExecuteAction(
-                () =>
-                {
-                    return Model.Context.UIActionEngine.PerformActionAsync(
-                        Model.UIController,
-                        action,
-                        CancellationToken.None);
-                },
-
-                nugetUi => SetOptions(nugetUi, NuGetActionType.Uninstall));
-        }
-
-        internal void UpdatePackage(List<PackageIdentity> packages)
-        {
-            if (packages.Count == 0)
+            if (packagesToUpdate.Count == 0)
             {
                 return;
             }
@@ -1178,18 +1089,16 @@ namespace NuGet.PackageManagement.UI
                 {
                     return Model.Context.UIActionEngine.PerformUpdateAsync(
                         Model.UIController,
-                        packages,
+                        packagesToUpdate,
                         CancellationToken.None);
                 },
                nugetUi => SetOptions(nugetUi, NuGetActionType.Update));
         }
 
-        private async void UpgradeButton_Click(object sender, RoutedEventArgs e)
+        private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
-            var project = Model.Context.Projects.FirstOrDefault();
-            Debug.Assert(project != null);
-
-            await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, project);
+            SearchPackagesAndRefreshUpdateCount(_windowSearchHost.SearchQuery.SearchString, useCache: false);
+            RefreshConsolidatablePackagesCount();
         }
     }
 }

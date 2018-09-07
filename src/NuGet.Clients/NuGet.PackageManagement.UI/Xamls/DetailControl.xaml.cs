@@ -1,14 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -26,7 +27,14 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageSolutionDetailControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            _root.Visibility = DataContext is DetailControlModel ? Visibility.Visible : Visibility.Collapsed;
+            if (DataContext is DetailControlModel)
+            {
+                _root.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                _root.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void ExecuteOpenLicenseLink(object sender, ExecutedRoutedEventArgs e)
@@ -60,52 +68,50 @@ namespace NuGet.PackageManagement.UI
 
         private void ProjectInstallButtonClicked(object sender, EventArgs e)
         {
-            var model = (PackageDetailControlModel)DataContext;
+            var model = (DetailControlModel)DataContext;
 
-            if (model != null && model.SelectedVersion != null)
+            if (model.SelectedVersion == null)
             {
-                var userAction = UserAction.CreateInstallAction(
+                return;
+            }
+
+            var userAction = UserAction.CreateInstallAction(
                 model.Id,
                 model.SelectedVersion.Version);
-
-                ExecuteUserAction(userAction, NuGetActionType.Install);
-            }
+            ExecuteUserAction(userAction, NuGetActionType.Install);
         }
 
         private void ProjectUninstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageDetailControlModel)DataContext;
-
-            if (model != null)
-            {
-                var userAction = UserAction.CreateUnInstallAction(model.Id);
-                ExecuteUserAction(userAction, NuGetActionType.Uninstall);
-            }
+            var userAction = UserAction.CreateUnInstallAction(model.Id);
+            ExecuteUserAction(userAction, NuGetActionType.Uninstall);
         }
+
 
         private void SolutionInstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageSolutionDetailControlModel)DataContext;
 
-            if (model != null && model.SelectedVersion != null)
+            if (model.SelectedVersion == null)
             {
-                var userAction = UserAction.CreateInstallAction(
-                    model.Id,
-                    model.SelectedVersion.Version);
-
-                ExecuteUserAction(userAction, NuGetActionType.Install);
+                return;
             }
+
+            var userAction = UserAction.CreateInstallAction(
+                model.Id,
+                model.SelectedVersion.Version);
+
+            ExecuteUserAction(userAction, NuGetActionType.Install);
         }
 
         private void SolutionUninstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageSolutionDetailControlModel)DataContext;
 
-            if (model != null)
-            {
-                var userAction = UserAction.CreateUnInstallAction(model.Id);
-                ExecuteUserAction(userAction, NuGetActionType.Uninstall);
-            }
+            var userAction = UserAction.CreateUnInstallAction(model.Id);
+
+            ExecuteUserAction(userAction, NuGetActionType.Uninstall);
         }
 
         private void ExecuteUserAction(UserAction action, NuGetActionType actionType)
@@ -136,7 +142,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerControl Control
         {
-            get => _control;
+            get { return _control; }
 
             set
             {

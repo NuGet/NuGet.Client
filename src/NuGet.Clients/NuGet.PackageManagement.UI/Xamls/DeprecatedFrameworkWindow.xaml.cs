@@ -3,7 +3,6 @@
 
 using System.Windows;
 using System.Windows.Documents;
-using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {

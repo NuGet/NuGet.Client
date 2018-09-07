@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -57,96 +57,6 @@ namespace NuGet.PackageManagement.UI {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package icon.
-        /// </summary>
-        public static string Accessibility_PackageIcon {
-            get {
-                return ResourceManager.GetString("Accessibility_PackageIcon", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package manager.
-        /// </summary>
-        public static string Accessibility_PackageManager {
-            get {
-                return ResourceManager.GetString("Accessibility_PackageManager", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package metadata.
-        /// </summary>
-        public static string Accessibility_PackageMetadata {
-            get {
-                return ResourceManager.GetString("Accessibility_PackageMetadata", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package details.
-        /// </summary>
-        public static string Accessibility_PackagesDetails {
-            get {
-                return ResourceManager.GetString("Accessibility_PackagesDetails", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Packages list.
-        /// </summary>
-        public static string Accessibility_PackagesList {
-            get {
-                return ResourceManager.GetString("Accessibility_PackagesList", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Prefix reserved.
-        /// </summary>
-        public static string Accessibility_PrefixReserved {
-            get {
-                return ResourceManager.GetString("Accessibility_PrefixReserved", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Promote all to top level dependencies.
-        /// </summary>
-        public static string Accessibility_PromoteAllToTopLevel {
-            get {
-                return ResourceManager.GetString("Accessibility_PromoteAllToTopLevel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Promote to a top level dependency.
-        /// </summary>
-        public static string Accessibility_PromoteToTopLevel {
-            get {
-                return ResourceManager.GetString("Accessibility_PromoteToTopLevel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use arrow keys to change the size of the sections.
-        /// </summary>
-        public static string Accessibility_ThumbHelp {
-            get {
-                return ResourceManager.GetString("Accessibility_ThumbHelp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Thumb.
-        /// </summary>
-        public static string Accessibility_ThumbName {
-            get {
-                return ResourceManager.GetString("Accessibility_ThumbName", resourceCulture);
             }
         }
         
@@ -196,15 +106,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Consider migrating this project&apos;s NuGet package management format from &apos;packages.config&apos; to &apos;PackageReference&apos;..
-        /// </summary>
-        public static string AskForPRMigrator {
-            get {
-                return ResourceManager.GetString("AskForPRMigrator", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Some NuGet packages are missing from this solution. Click to restore from your online package sources..
         /// </summary>
         public static string AskForRestoreMessage {
@@ -219,33 +120,6 @@ namespace NuGet.PackageManagement.UI {
         public static string AskForUpdateMessage {
             get {
                 return ResourceManager.GetString("AskForUpdateMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs..
-        /// </summary>
-        public static string AutoReferenced {
-            get {
-                return ResourceManager.GetString("AutoReferenced", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Select a Package Source Folder.
-        /// </summary>
-        public static string BrowseFolderDialogDescription {
-            get {
-                return ResourceManager.GetString("BrowseFolderDialogDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Select.
-        /// </summary>
-        public static string BrowseFolderDialogSelectButton {
-            get {
-                return ResourceManager.GetString("BrowseFolderDialogSelectButton", resourceCulture);
             }
         }
         
@@ -376,15 +250,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Upgrade.
-        /// </summary>
-        public static string Button_Upgrade {
-            get {
-                return ResourceManager.GetString("Button_Upgrade", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Yes.
         /// </summary>
         public static string Button_Yes {
@@ -399,24 +264,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Button_YesToAll {
             get {
                 return ResourceManager.GetString("Button_YesToAll", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Check.
-        /// </summary>
-        public static string CheckBox_DefaultAction_Check {
-            get {
-                return ResourceManager.GetString("CheckBox_DefaultAction_Check", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Uncheck.
-        /// </summary>
-        public static string CheckBox_DefaultAction_Uncheck {
-            get {
-                return ResourceManager.GetString("CheckBox_DefaultAction_Uncheck", resourceCulture);
             }
         }
         
@@ -520,15 +367,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Selected.
-        /// </summary>
-        public static string ColumnHeader_Selected {
-            get {
-                return ResourceManager.GetString("ColumnHeader_Selected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Version.
         /// </summary>
         public static string ColumnHeader_Version {
@@ -583,15 +421,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Learn more.
-        /// </summary>
-        public static string Description_LearnMore {
-            get {
-                return ResourceManager.GetString("Description_LearnMore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Do not show this again.
         /// </summary>
         public static string DoNotShowThisAgain {
@@ -606,24 +435,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Error_NoActiveRepository {
             get {
                 return ResourceManager.GetString("Error_NoActiveRepository", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Project {0} does not exist in the project system cache..
-        /// </summary>
-        public static string Error_ProjectNotInCache {
-            get {
-                return ResourceManager.GetString("Error_ProjectNotInCache", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Operation failed.
-        /// </summary>
-        public static string ErrorDialogBoxTitle {
-            get {
-                return ResourceManager.GetString("ErrorDialogBoxTitle", resourceCulture);
             }
         }
         
@@ -678,15 +489,6 @@ namespace NuGet.PackageManagement.UI {
         public static string IgnoreUpgrade {
             get {
                 return ResourceManager.GetString("IgnoreUpgrade", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Help icon.
-        /// </summary>
-        public static string ImageCaption_HelpIcon {
-            get {
-                return ResourceManager.GetString("ImageCaption_HelpIcon", resourceCulture);
             }
         }
         
@@ -808,7 +610,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Versions - {0}.
+        ///   Looks up a localized string similar to Version(s) - {0}.
         /// </summary>
         public static string Label_InstalledVersionsCount {
             get {
@@ -1015,15 +817,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Don&apos;t show again.
-        /// </summary>
-        public static string Link_DoNotShowAgain {
-            get {
-                return ResourceManager.GetString("Link_DoNotShowAgain", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Learn about Install Options.
         /// </summary>
         public static string Link_LearnAboutInstallOptions {
@@ -1038,105 +831,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Link_LearnAboutUninstallOptions {
             get {
                 return ResourceManager.GetString("Link_LearnAboutUninstallOptions", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Why should I migrate?.
-        /// </summary>
-        public static string Link_MigratorHelp {
-            get {
-                return ResourceManager.GetString("Link_MigratorHelp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Reverting NuGet Project Upgrade.
-        /// </summary>
-        public static string Link_RevertNuGetProjectUpgrade {
-            get {
-                return ResourceManager.GetString("Link_RevertNuGetProjectUpgrade", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Migrate Now.
-        /// </summary>
-        public static string Link_UpgradeOption {
-            get {
-                return ResourceManager.GetString("Link_UpgradeOption", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package Id.
-        /// </summary>
-        public static string Migrator_PackageIdColumnHeader {
-            get {
-                return ResourceManager.GetString("Migrator_PackageIdColumnHeader", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Migration failed as packages {0} could not be uninstalled. These packages were not found in the solution packages folder. No changes were made to the project..
-        /// </summary>
-        public static string Migrator_PackageNotFound {
-            get {
-                return ResourceManager.GetString("Migrator_PackageNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Top-Level.
-        /// </summary>
-        public static string Migrator_TopLevelColumnHeader {
-            get {
-                return ResourceManager.GetString("Migrator_TopLevelColumnHeader", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Version.
-        /// </summary>
-        public static string Migrator_VersionColumnHeader {
-            get {
-                return ResourceManager.GetString("Migrator_VersionColumnHeader", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to (dependency of {0}).
-        /// </summary>
-        public static string NuGetUpgrade_PackageDependencyOf {
-            get {
-                return ResourceManager.GetString("NuGetUpgrade_PackageDependencyOf", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Installing required packages.
-        /// </summary>
-        public static string NuGetUpgrade_Progress_Installing {
-            get {
-                return ResourceManager.GetString("NuGetUpgrade_Progress_Installing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Uninstalling packages from packages.config.
-        /// </summary>
-        public static string NuGetUpgrade_Progress_Uninstalling {
-            get {
-                return ResourceManager.GetString("NuGetUpgrade_Progress_Uninstalling", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Upgrading Project to PackageReference.
-        /// </summary>
-        public static string NuGetUpgrade_WaitMessage {
-            get {
-                return ResourceManager.GetString("NuGetUpgrade_WaitMessage", resourceCulture);
             }
         }
         
@@ -1233,15 +927,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Refresh.
-        /// </summary>
-        public static string RefreshButtonLabel {
-            get {
-                return ResourceManager.GetString("RefreshButtonLabel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Multiple packages failed to uninstall. Restart Visual Studio to finish the process..
         /// </summary>
         public static string RequestRestartToCompleteUninstallMultiplePackages {
@@ -1287,143 +972,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to apply NuGet Package Manager settings. Please report a problem using Help &gt; Send Feedback &gt; Report a Problem..
-        /// </summary>
-        public static string ShowError_ApplySettingFailed {
-            get {
-                return ResourceManager.GetString("ShowError_ApplySettingFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Can not access NuGet.Config, Please check NuGet.Config.
-        /// </summary>
-        public static string ShowError_ConfigUnauthorizedAccess {
-            get {
-                return ResourceManager.GetString("ShowError_ConfigUnauthorizedAccess", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to initialize NuGet Package Manager Settings. Please report a problem using Help &gt; Send Feedback &gt; Report a Problem..
-        /// </summary>
-        public static string ShowError_SettingActivatedFailed {
-            get {
-                return ResourceManager.GetString("ShowError_SettingActivatedFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to All packages have been cleared from the cache..
-        /// </summary>
-        public static string ShowInfo_ClearPackageCache {
-            get {
-                return ResourceManager.GetString("ShowInfo_ClearPackageCache", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to NuGet cache(s) clear failed at {0}. 
-        ///Error: {1}
-        ///Please see https://aka.ms/troubleshoot_nuget_cache for more help..
-        /// </summary>
-        public static string ShowMessage_LocalsCommandFailure {
-            get {
-                return ResourceManager.GetString("ShowMessage_LocalsCommandFailure", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to NuGet cache(s) cleared at {0}.
-        /// </summary>
-        public static string ShowMessage_LocalsCommandSuccess {
-            get {
-                return ResourceManager.GetString("ShowMessage_LocalsCommandSuccess", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Clearing all NuGet cache(s). .
-        /// </summary>
-        public static string ShowMessage_LocalsCommandWorking {
-            get {
-                return ResourceManager.GetString("ShowMessage_LocalsCommandWorking", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The source specified is invalid. Please provide a valid source..
-        /// </summary>
-        public static string ShowWarning_InvalidSource {
-            get {
-                return ResourceManager.GetString("ShowWarning_InvalidSource", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The name and source specified cannot be empty. Please provide a valid name and source..
-        /// </summary>
-        public static string ShowWarning_NameAndSourceRequired {
-            get {
-                return ResourceManager.GetString("ShowWarning_NameAndSourceRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The name specified cannot be empty. Please provide a valid name..
-        /// </summary>
-        public static string ShowWarning_NameRequired {
-            get {
-                return ResourceManager.GetString("ShowWarning_NameRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The specified source&apos;s name is an official package source name, but there is already an official package source. Please provide a different name..
-        /// </summary>
-        public static string ShowWarning_OfficialSourceName {
-            get {
-                return ResourceManager.GetString("ShowWarning_OfficialSourceName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The source specified cannot be empty. Please provide a valid source..
-        /// </summary>
-        public static string ShowWarning_SourceRequried {
-            get {
-                return ResourceManager.GetString("ShowWarning_SourceRequried", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package Manager Options.
-        /// </summary>
-        public static string ShowWarning_Title {
-            get {
-                return ResourceManager.GetString("ShowWarning_Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The name specified has already been added to the list of available package sources. Please provide a unique name..
-        /// </summary>
-        public static string ShowWarning_UniqueName {
-            get {
-                return ResourceManager.GetString("ShowWarning_UniqueName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The source specified has already been added to the list of available package sources. Please provide a unique source..
-        /// </summary>
-        public static string ShowWarning_UniqueSource {
-            get {
-                return ResourceManager.GetString("ShowWarning_UniqueSource", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to by {0}.
         /// </summary>
         public static string Text_ByAuthor {
@@ -1442,20 +990,38 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Changes for {0}.
+        ///   Looks up a localized string similar to migration document.
         /// </summary>
-        public static string Text_ChangesForProject {
+        public static string Text_DeprecatedFramework_DocumentLink {
             get {
-                return ResourceManager.GetString("Text_ChangesForProject", resourceCulture);
+                return ResourceManager.GetString("Text_DeprecatedFramework_DocumentLink", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Top-level dependencies:.
+        ///   Looks up a localized string similar to ..
         /// </summary>
-        public static string Text_DirectDependencies {
+        public static string Text_DeprecatedFramework_DocumentLink_After {
             get {
-                return ResourceManager.GetString("Text_DirectDependencies", resourceCulture);
+                return ResourceManager.GetString("Text_DeprecatedFramework_DocumentLink_After", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The NuGet operation failed due to one or more packages being incompatible with your project. The &apos;{0}&apos; (&apos;{1}&apos;) project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the .
+        /// </summary>
+        public static string Text_DeprecatedFramework_DocumentLink_Before {
+            get {
+                return ResourceManager.GetString("Text_DeprecatedFramework_DocumentLink_Before", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following project(s) target the deprecated framework:.
+        /// </summary>
+        public static string Text_DeprecatedFramework_ProjectList {
+            get {
+                return ResourceManager.GetString("Text_DeprecatedFramework_ProjectList", resourceCulture);
             }
         }
         
@@ -1483,15 +1049,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_ErrorOccurred {
             get {
                 return ResourceManager.GetString("Text_ErrorOccurred", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Help me migrate to NuGet PackageReference.
-        /// </summary>
-        public static string Text_HelpMeMigrate {
-            get {
-                return ResourceManager.GetString("Text_HelpMeMigrate", resourceCulture);
             }
         }
         
@@ -1622,38 +1179,29 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package compatibility issues:.
-        /// </summary>
-        public static string Text_NuGetUpgradeIssues {
-            get {
-                return ResourceManager.GetString("Text_NuGetUpgradeIssues", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No issues were found..
-        /// </summary>
-        public static string Text_NuGetUpgradeNoIssuesFound {
-            get {
-                return ResourceManager.GetString("Text_NuGetUpgradeNoIssuesFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to You must resolve any errors before upgrading..
-        /// </summary>
-        public static string Text_NuGetUpgradeResolveErrorsBeforeUpgrading {
-            get {
-                return ResourceManager.GetString("Text_NuGetUpgradeResolveErrorsBeforeUpgrading", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The package manager format will apply to the following projects in this Solution.
         /// </summary>
         public static string Text_PackageFormatApply {
             get {
                 return ResourceManager.GetString("Text_PackageFormatApply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select the NuGet package manager format for {0}.
+        /// </summary>
+        public static string Text_PackageFormatSelection {
+            get {
+                return ResourceManager.GetString("Text_PackageFormatSelection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select the NuGet package manager format for this Solution.
+        /// </summary>
+        public static string Text_PackageFormatSelection_Solution {
+            get {
+                return ResourceManager.GetString("Text_PackageFormatSelection_Solution", resourceCulture);
             }
         }
         
@@ -1703,20 +1251,20 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project Analysis Results.
-        /// </summary>
-        public static string Text_ProjectAnalysisResults {
-            get {
-                return ResourceManager.GetString("Text_ProjectAnalysisResults", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Ready.
         /// </summary>
         public static string Text_Ready {
             get {
                 return ResourceManager.GetString("Text_Ready", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Review Changes.
+        /// </summary>
+        public static string Text_ReviewChanges {
+            get {
+                return ResourceManager.GetString("Text_ReviewChanges", resourceCulture);
             }
         }
         
@@ -1771,69 +1319,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_ShowAll {
             get {
                 return ResourceManager.GetString("Text_ShowAll", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Transitive dependencies:.
-        /// </summary>
-        public static string Text_TransitiveDependencies {
-            get {
-                return ResourceManager.GetString("Text_TransitiveDependencies", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Upgrade Complete.
-        /// </summary>
-        public static string Text_UpgradeComplete {
-            get {
-                return ResourceManager.GetString("Text_UpgradeComplete", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Please build and run your solution to verify that all packages are available..
-        /// </summary>
-        public static string Text_UpgradeCompletePleaseBuild {
-            get {
-                return ResourceManager.GetString("Text_UpgradeCompletePleaseBuild", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to If you run into any issues and would like to revert, we have backed up changed files to the following location:.
-        /// </summary>
-        public static string Text_UpgradeCompleteResolveProblemsBackup {
-            get {
-                return ResourceManager.GetString("Text_UpgradeCompleteResolveProblemsBackup", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Follow the directions described in the following document to revert changes:.
-        /// </summary>
-        public static string Text_UpgradeCompleteResolveProblemsDirections {
-            get {
-                return ResourceManager.GetString("Text_UpgradeCompleteResolveProblemsDirections", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Migrate this project from packages.config to PackageReference format..
-        /// </summary>
-        public static string Text_UpgradeNuGetProjectDescription {
-            get {
-                return ResourceManager.GetString("Text_UpgradeNuGetProjectDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Packages as PackageReference:.
-        /// </summary>
-        public static string Text_UpgraderHeader {
-            get {
-                return ResourceManager.GetString("Text_UpgraderHeader", resourceCulture);
             }
         }
         
@@ -1910,15 +1395,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The ID prefix of this package has been reserved for the owner of the package by the currently selected feed.
-        /// </summary>
-        public static string Tooltip_PrefixReserved {
-            get {
-                return ResourceManager.GetString("Tooltip_PrefixReserved", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Refresh.
         /// </summary>
         public static string ToolTip_Refresh {
@@ -1960,60 +1436,6 @@ namespace NuGet.PackageManagement.UI {
         public static string ToolTip_UpdateButton {
             get {
                 return ResourceManager.GetString("ToolTip_UpdateButton", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to NuGet migrate failed to install packages as PackageReference. Changed files are backed up at {0}.
-        /// </summary>
-        public static string Upgrade_InstallFailed {
-            get {
-                return ResourceManager.GetString("Upgrade_InstallFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Please follow simple instructions from {0} to go back to previous state..
-        /// </summary>
-        public static string Upgrade_RevertSteps {
-            get {
-                return ResourceManager.GetString("Upgrade_RevertSteps", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to NuGet upgrade failed to uninstall packages from packages.config so rolled back to previous state..
-        /// </summary>
-        public static string Upgrade_UninstallFailed {
-            get {
-                return ResourceManager.GetString("Upgrade_UninstallFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Must be a valid path..
-        /// </summary>
-        public static string UpgradeLogger_BackupPathMustBeValid {
-            get {
-                return ResourceManager.GetString("UpgradeLogger_BackupPathMustBeValid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The project cannot be upgraded as backing up the project file and packages.config ran into an issue..
-        /// </summary>
-        public static string Upgrader_BackupFailed {
-            get {
-                return ResourceManager.GetString("Upgrader_BackupFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to determine compatibility of package as {0}.nupkg was not found on disk. The project cannot be migrated..
-        /// </summary>
-        public static string Upgrader_PackageNotFound {
-            get {
-                return ResourceManager.GetString("Upgrader_PackageNotFound", resourceCulture);
             }
         }
         
@@ -2063,20 +1485,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to These options are not applicable to projects managing their dependencies through project.json or PackageReference.
+        ///   Looks up a localized string similar to These options are not applicable to projects managing their dependencies through project.json..
         /// </summary>
         public static string Warning_ProjectJson {
             get {
                 return ResourceManager.GetString("Warning_ProjectJson", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Convert.
-        /// </summary>
-        public static string WindowTitle_ConvertPackagesConfigIntro {
-            get {
-                return ResourceManager.GetString("WindowTitle_ConvertPackagesConfigIntro", resourceCulture);
             }
         }
         
@@ -2117,15 +1530,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Migrate NuGet format to PackageReference - {0}.
-        /// </summary>
-        public static string WindowTitle_NuGetMigrator {
-            get {
-                return ResourceManager.GetString("WindowTitle_NuGetMigrator", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Choose NuGet Package Manager Format.
         /// </summary>
         public static string WindowTitle_PackageFormatSelector {
@@ -2135,11 +1539,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Preview Changes.
+        ///   Looks up a localized string similar to Preview.
         /// </summary>
-        public static string WindowTitle_PreviewChanges {
+        public static string WindowTitle_Preview {
             get {
-                return ResourceManager.GetString("WindowTitle_PreviewChanges", resourceCulture);
+                return ResourceManager.GetString("WindowTitle_Preview", resourceCulture);
             }
         }
         

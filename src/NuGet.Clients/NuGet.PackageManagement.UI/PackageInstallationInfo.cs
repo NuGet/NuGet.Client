@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -117,11 +117,6 @@ namespace NuGet.PackageManagement.UI
         public override int GetHashCode()
         {
             return StringComparer.OrdinalIgnoreCase.GetHashCode(_projectName);
-        }
-
-        public override string ToString()
-        {
-            return $"{ProjectName} {InstalledVersion?.Version.ToString() ?? Resources.Text_NotInstalled}";
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

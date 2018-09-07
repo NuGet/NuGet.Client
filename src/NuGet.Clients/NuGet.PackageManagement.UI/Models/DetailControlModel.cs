@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,12 +7,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -76,7 +75,6 @@ namespace NuGet.PackageManagement.UI
             _filter = filter;
             OnPropertyChanged(nameof(Id));
             OnPropertyChanged(nameof(IconUrl));
-            OnPropertyChanged(nameof(PrefixReserved));
 
             var getVersionsTask = searchResultPackage.GetVersionsAsync();
 
@@ -154,11 +152,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            // Get the list of available versions, ignoring null versions
-            _allPackageVersions = versions
-                .Where(v => v?.Version != null)
-                .Select(v => v.Version)
-                .ToList();
+            _allPackageVersions = versions.Select(v => v.Version).ToList();
 
             // hook event handler for dependency behavior changed
             Options.SelectedChanged += DependencyBehavior_SelectedChanged;
@@ -279,11 +273,6 @@ namespace NuGet.PackageManagement.UI
             get { return _searchResultPackage?.IconUrl; }
         }
 
-        public bool PrefixReserved
-        {
-            get { return _searchResultPackage?.PrefixReserved ?? false; }
-        }
-
         private DetailedPackageMetadata _packageMetadata;
 
         public DetailedPackageMetadata PackageMetadata
@@ -317,7 +306,7 @@ namespace NuGet.PackageManagement.UI
             get { return _selectedVersion; }
             set
             {
-                if (_selectedVersion != value && (value == null || value.IsValidVersion))
+                if (_selectedVersion != value)
                 {
                     _selectedVersion = value;
 
@@ -459,24 +448,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private string _optionsBlockedUrlText;
-
-        public virtual string OptionsBlockedUrlText
-        {
-            get
-            {
-                return _optionsBlockedUrlText;
-            }
-
-            set
-            {
-                _optionsBlockedUrlText = value;
-                OnPropertyChanged(nameof(OptionsBlockedUrlText));
-                OnPropertyChanged(nameof(OptionsBlockedUrl));
-                OnPropertyChanged(nameof(OptionsBlockedMessage));
-            }
-        }
-
         private Options _options;
 
         public Options Options
@@ -538,8 +509,8 @@ namespace NuGet.PackageManagement.UI
             if (autoReferenced)
             {
                 OptionsBlockedUrl = new Uri("https://go.microsoft.com/fwlink/?linkid=841238");
-                OptionsBlockedMessage = Resources.AutoReferenced;
-                OptionsBlockedUrlText = Resources.Description_LearnMore;
+                OptionsBlockedMessage = "AutoReferenced";
+
                 if (_searchResultPackage != null)
                 {
                     _searchResultPackage.AutoReferenced = true;

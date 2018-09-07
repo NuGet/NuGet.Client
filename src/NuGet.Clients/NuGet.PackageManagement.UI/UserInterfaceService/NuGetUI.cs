@@ -1,24 +1,21 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -53,21 +50,7 @@ namespace NuGet.PackageManagement.UI
         {
             var result = false;
 
-            InvokeOnUIThread(() => { result = WarnAboutDotnetDeprecationImpl(projects); });
-
-            return result;
-        }
-
-        public bool ShowNuGetUpgradeWindow(NuGetProjectUpgradeWindowModel nuGetProjectUpgradeWindowModel)
-        {
-            var result = false;
-
-            InvokeOnUIThread(() =>
-            {
-                var upgradeInformationWindow = new NuGetProjectUpgradeWindow(nuGetProjectUpgradeWindowModel);
-
-                result = upgradeInformationWindow.ShowModal() == true;
-            });
+            UIDispatcher.Invoke(() => { result = WarnAboutDotnetDeprecationImpl(projects); });
 
             return result;
         }
@@ -87,7 +70,7 @@ namespace NuGet.PackageManagement.UI
         {
             var result = false;
 
-            InvokeOnUIThread(() => { result = PromptForLicenseAcceptanceImpl(packages); });
+            UIDispatcher.Invoke(() => { result = PromptForLicenseAcceptanceImpl(packages); });
 
             return result;
         }
@@ -113,7 +96,7 @@ namespace NuGet.PackageManagement.UI
         {
             var result = false;
 
-            InvokeOnUIThread(() => { result = PromptForPackageManagementFormatImpl(selectedFormat); });
+            UIDispatcher.Invoke(() => { result = PromptForPackageManagementFormatImpl(selectedFormat); });
 
             return result;
         }
@@ -132,7 +115,7 @@ namespace NuGet.PackageManagement.UI
 
             foreach (var project in msBuildProjects)
             {
-                var newProject = await UIContext.SolutionManager.UpgradeProjectToPackageReferenceAsync(project);
+                var newProject = await UIContext.SolutionManager.UpdateNuGetProjectToPackageRef(project);
 
                 if (newProject != null)
                 {
@@ -153,7 +136,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (UIContext?.OptionsPageActivator != null)
             {
-                InvokeOnUIThread(() => { UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
+                UIDispatcher.Invoke(() => { UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
             }
             else
             {
@@ -167,7 +150,7 @@ namespace NuGet.PackageManagement.UI
 
             if (actions.Any())
             {
-                InvokeOnUIThread(() =>
+                UIDispatcher.Invoke(() =>
                 {
                     var w = new PreviewWindow(UIContext);
                     w.DataContext = new PreviewWindowModel(actions);
@@ -248,7 +231,7 @@ namespace NuGet.PackageManagement.UI
 
         public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
         {
-            UIContext.SolutionManager.OnActionsExecuted(actions);
+            this.UIContext.SolutionManager.OnActionsExecuted(actions);
         }
 
         public IEnumerable<SourceRepository> ActiveSources
@@ -259,7 +242,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (PackageManagerControl != null)
                 {
-                    InvokeOnUIThread(() => { sources = PackageManagerControl.ActiveSources; });
+                    UIDispatcher.Invoke(() => { sources = PackageManagerControl.ActiveSources; });
                 }
 
                 return sources;
@@ -274,7 +257,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (PackageManagerControl != null)
                 {
-                    InvokeOnUIThread(() => { settings = PackageManagerControl.Settings; });
+                    UIDispatcher.Invoke(() => { settings = PackageManagerControl.Settings; });
                 }
 
                 return settings;
@@ -293,83 +276,49 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void InvokeOnUIThread(Action action)
+        private Dispatcher UIDispatcher
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            get
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                action();
-            });
+                if (_detailControl != null)
+                {
+                    return _detailControl.Dispatcher;
+                }
+
+                if (Application.Current != null)
+                {
+                    return Application.Current.Dispatcher;
+                }
+
+                // null for unit tests
+                return null;
+            }
         }
 
         public void ShowError(Exception ex)
         {
-            var signException = ex as SignatureException;
-
-            if (signException != null)
+            if (ex is NuGetResolverConstraintException ||
+                ex is PackageAlreadyInstalledException ||
+                ex is MinClientVersionException ||
+                ex is FrameworkException ||
+                ex is NuGetProtocolException ||
+                ex is PackagingException ||
+                ex is InvalidOperationException)
             {
-                ProcessSignatureIssues(signException);
+                // for exceptions that are known to be normal error cases, just
+                // display the message.
+                ProjectContext.Log(MessageLevel.Info, ExceptionUtilities.DisplayMessage(ex, indent: true));
+
+                // write to activity log
+                var activityLogMessage = string.Format(CultureInfo.CurrentCulture, ex.ToString());
+                ActivityLog.LogError(LogEntrySource, activityLogMessage);
             }
             else
             {
-                if (ex is NuGetResolverConstraintException ||
-                    ex is PackageAlreadyInstalledException ||
-                    ex is MinClientVersionException ||
-                    ex is FrameworkException ||
-                    ex is NuGetProtocolException ||
-                    ex is PackagingException ||
-                    ex is InvalidOperationException ||
-                    ex is PackageReferenceRollbackException)
-                {
-                    // for exceptions that are known to be normal error cases, just
-                    // display the message.
-                    ProjectContext.Log(MessageLevel.Info, ExceptionUtilities.DisplayMessage(ex, indent: true));
-
-                    // write to activity log
-                    var activityLogMessage = string.Format(CultureInfo.CurrentCulture, ex.ToString());
-                    ActivityLog.LogError(LogEntrySource, activityLogMessage);
-
-                    // Log additional messages to the error list to provide context on why the rollback failed
-                    var rollbackException = ex as PackageReferenceRollbackException;
-                    if (rollbackException != null)
-                    {
-                        foreach (var message in rollbackException.LogMessages)
-                        {
-                            if (message.Level == LogLevel.Error || message.Level == LogLevel.Warning)
-                            {
-                                UILogger.ReportError(message);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    ProjectContext.Log(MessageLevel.Error, ex.ToString());
-                }
-
-                UILogger.ReportError(ExceptionUtilities.DisplayMessage(ex, indent: false));
-            }
-        }
-
-        private void ProcessSignatureIssues(SignatureException ex)
-        {
-            if (!string.IsNullOrEmpty(ex.Message))
-            {
-                UILogger.ReportError(ex.AsLogMessage());
-                ProjectContext.Log(ex.AsLogMessage());
+                ProjectContext.Log(MessageLevel.Error, ex.ToString());
             }
 
-            foreach (var result in ex.Results)
-            {
-                var errorList = result.GetErrorIssues().ToList();
-                var warningList = result.GetWarningIssues().ToList();
-
-                errorList.ForEach(p => UILogger.ReportError(p));
-                warningList.ForEach(p => UILogger.ReportError(p));
-
-                errorList.ForEach(p => ProjectContext.Log(p));
-                warningList.ForEach(p => ProjectContext.Log(p));
-            }            
+            UILogger.ReportError(ExceptionUtilities.DisplayMessage(ex, indent: false));
         }
     }
 }

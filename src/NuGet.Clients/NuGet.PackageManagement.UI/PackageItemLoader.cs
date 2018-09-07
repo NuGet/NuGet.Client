@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -240,14 +239,6 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
-            // check if there is already a running initialization task for SolutionManager. If yes,
-            // search should wait until this is completed. This would usually happen when opening manager
-            //ui is the first nuget operation under LSL mode where it might take some time to initialize.
-            if (_context.SolutionManager.InitializationTask != null && !_context.SolutionManager.InitializationTask.IsCompleted)
-            {
-                await _context.SolutionManager.InitializationTask;
-            }
-
             if (continuationToken != null)
             {
                 return await _packageFeed.ContinueSearchAsync(continuationToken, cancellationToken);
@@ -314,8 +305,7 @@ namespace NuGet.PackageManagement.UI
                         DownloadCount = metadata.DownloadCount,
                         Summary = metadata.Summary,
                         Versions = AsyncLazy.New(() => metadata.GetVersionsAsync()),
-                        AllowedVersions = allowedVersions,
-                        PrefixReserved = metadata.PrefixReserved && !IsMultiSource
+                        AllowedVersions = allowedVersions
                     };
                     listItem.UpdatePackageStatus(_installedPackages);
 

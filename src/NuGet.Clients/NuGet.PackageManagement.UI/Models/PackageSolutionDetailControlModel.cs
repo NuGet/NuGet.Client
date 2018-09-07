@@ -1,12 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -68,29 +66,16 @@ namespace NuGet.PackageManagement.UI
 
             foreach (var project in _projects)
             {
-                try
+                var installedVersion = GetInstalledPackage(project.NuGetProject, Id);
+                if (installedVersion != null)
                 {
-                    var installedVersion = GetInstalledPackage(project.NuGetProject, Id);
-                    if (installedVersion != null)
-                    {
-                        project.InstalledVersion = installedVersion.PackageIdentity.Version;
-                        hash.Add(installedVersion.PackageIdentity.Version);
-                        project.AutoReferenced = (installedVersion as BuildIntegratedPackageReference)?.Dependency?.AutoReferenced == true;
-                    }
-                    else
-                    {
-                        project.InstalledVersion = null;
-                        project.AutoReferenced = false;
-                    }
+                    project.InstalledVersion = installedVersion.PackageIdentity.Version;
+                    hash.Add(installedVersion.PackageIdentity.Version);
+                    project.AutoReferenced = (installedVersion as BuildIntegratedPackageReference)?.Dependency?.AutoReferenced == true;
                 }
-                catch(Exception ex)
+                else
                 {
                     project.InstalledVersion = null;
-
-                    // we don't expect it to throw any exception here. But in some edge case when opening manager ui at solution is the
-                    // first NuGet operation, and packages.config file is not valid for any of the project, then it will throw here which
-                    // should be ignored since we already show a error bar on manager ui to show this exact error.
-                    ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
                 }
             }
 
@@ -147,10 +132,10 @@ namespace NuGet.PackageManagement.UI
         protected override void CreateVersions()
         {
             _versions = new List<DisplayVersion>();
-            var allVersions = _allPackageVersions?.Where(v => v != null).OrderByDescending(v => v);
+            var allVersions = _allPackageVersions?.OrderByDescending(v => v);
 
             // allVersions is null if server doesn't return any versions.
-            if (allVersions == null || !allVersions.Any())
+            if (allVersions == null)
             {
                 return;
             }
@@ -292,7 +277,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            _nugetProjects = NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await _solutionManager.GetNuGetProjectsAsync());
+            _nugetProjects = _solutionManager.GetNuGetProjects();
             Projects = _nugetProjects.Select(
                 nugetProject => new PackageInstallationInfo(nugetProject))
                 .ToList();
@@ -458,7 +443,6 @@ namespace NuGet.PackageManagement.UI
             return packageReference != null;
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD100", Justification = "NuGet/Home#4833 Baseline")]
         protected override async void OnCurrentPackageChanged()
         {
             if (_searchResultPackage == null)

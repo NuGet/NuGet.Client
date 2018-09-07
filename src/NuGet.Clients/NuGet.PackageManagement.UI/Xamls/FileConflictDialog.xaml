@@ -1,4 +1,4 @@
-<ui:VsDialogWindow
+﻿<ui:VsDialogWindow
   x:Class="NuGet.PackageManagement.UI.FileConflictDialog"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,7 +9,6 @@
   Background="{DynamicResource {x:Static resx:Brushes.BackgroundBrushKey}}"
   Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
   Title="{x:Static resx:Resources.WindowTitle_FileConflict}"
-  AutomationProperties.LabeledBy="{Binding ElementName=QuestionText}"
   ShowInTaskbar="False"
   WindowStartupLocation="CenterOwner"
   MinHeight="180"
@@ -72,7 +71,6 @@
       DockPanel.Dock="Top"
       Margin="0,3,0,3"
       TextWrapping="Wrap"
-      VerticalAlignment="Top"
-      AutomationProperties.Name="{Binding Text}"/>
+      VerticalAlignment="Top" />
   </DockPanel>
 </ui:VsDialogWindow>

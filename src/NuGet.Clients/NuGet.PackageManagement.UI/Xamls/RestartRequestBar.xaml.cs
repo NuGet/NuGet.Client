@@ -1,18 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using System.Xml.Linq;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
 using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
 
 namespace NuGet.PackageManagement.UI
@@ -36,7 +35,7 @@ namespace NuGet.PackageManagement.UI
 
         public NuGetActionType ActionType { get; set; }
 
-        public Guid OperationId { get; set; }
+        public TelemetryServiceHelper TelemetryService { get; set; }
 
         public RestartRequestBar(IDeleteOnRestartManager deleteOnRestartManager, IVsShell4 vsRestarter)
         {
@@ -102,12 +101,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteRestart(object sender, EventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _vsRestarter.Restart((uint)__VSRESTARTTYPE.RESTART_Normal);
-            });
+            _vsRestarter.Restart((uint)__VSRESTARTTYPE.RESTART_Normal);
         }
 
         public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
@@ -120,19 +114,9 @@ namespace NuGet.PackageManagement.UI
             ShowMessage(message);
         }
 
-        public void Log(ILogMessage message)
-        {
-            ShowMessage(message.FormatWithCode());
-        }
-
         public void ReportError(string message)
         {
             ShowMessage(message);
-        }
-
-        public void ReportError(ILogMessage message)
-        {
-            ShowMessage(message.FormatWithCode());
         }
 
         public void CleanUp()
@@ -155,6 +139,6 @@ namespace NuGet.PackageManagement.UI
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 RequestRestartMessage.Text = message;
             });
-        }
+        }       
     }
 }

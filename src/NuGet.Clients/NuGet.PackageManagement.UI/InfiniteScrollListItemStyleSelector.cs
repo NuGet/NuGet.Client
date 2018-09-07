@@ -20,8 +20,8 @@ namespace NuGet.PackageManagement.UI
 
                 if (PackageItemStyle.Setters.Count == 0)
                 {
-                    PackageItemStyle.Setters.Add(new Setter(InfiniteScrollList.FocusVisualStyleProperty, infiniteScrollList.FindResource("MarginFocusVisualStyle"))); 
-                    PackageItemStyle.Setters.Add(new Setter(InfiniteScrollList.TemplateProperty, infiniteScrollList.FindResource("ListBoxItemTemplate"))); 
+                    var setter = new Setter(InfiniteScrollList.TemplateProperty, infiniteScrollList.FindResource("ListBoxItemTemplate"));
+                    PackageItemStyle.Setters.Add(setter);
                 }
             }
         }

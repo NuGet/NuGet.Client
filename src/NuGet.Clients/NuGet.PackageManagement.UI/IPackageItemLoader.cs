@@ -4,7 +4,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.UI

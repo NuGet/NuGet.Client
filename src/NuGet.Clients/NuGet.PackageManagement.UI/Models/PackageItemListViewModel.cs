@@ -8,10 +8,8 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -241,19 +239,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool _prefixReserved;
-        public bool PrefixReserved
-        {
-            get { return _prefixReserved; }
-            set
-            {
-                if (_prefixReserved != value)
-                {
-                    _prefixReserved = value;
-                    OnPropertyChanged(nameof(PrefixReserved));
-                }
-            }
-        }
 
         public Uri IconUrl { get; set; }
 

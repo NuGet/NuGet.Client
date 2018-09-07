@@ -1,7 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
@@ -11,7 +10,7 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public class DisplayVersion
     {
-        public readonly string AdditionalInfo;
+        private readonly string _additionalInfo;
 
         private readonly string _toString;
 
@@ -20,9 +19,8 @@ namespace NuGet.PackageManagement.UI
             string additionalInfo,
             bool isValidVersion = true,
             bool isCurrentInstalled = false,
-            bool autoReferenced = false,
-            string versionFormat = "N")
-            : this(GetRange(version), additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced, versionFormat)
+            bool autoReferenced = false)
+            : this(GetRange(version), additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced)
         {
         }
 
@@ -31,17 +29,10 @@ namespace NuGet.PackageManagement.UI
             string additionalInfo,
             bool isValidVersion = true,
             bool isCurrentInstalled = false,
-            bool autoReferenced = false,
-            string versionFormat = "N")
+            bool autoReferenced = false)
         {
-            if (versionFormat == null)
-            {
-                // default to normalized version
-                versionFormat = "N";
-            }
-
             Range = range;
-            AdditionalInfo = additionalInfo;
+            _additionalInfo = additionalInfo;
 
             IsValidVersion = isValidVersion;
 
@@ -52,18 +43,16 @@ namespace NuGet.PackageManagement.UI
             // Display a single version if the range is locked
             if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
             {
-                var formattedVersionString = Version.ToString(versionFormat, VersionFormatter.Instance);
-
-                _toString = string.IsNullOrEmpty(AdditionalInfo) ?
-                    formattedVersionString :
-                    AdditionalInfo + " " + formattedVersionString;
+                _toString = string.IsNullOrEmpty(_additionalInfo) ?
+                    Version.ToNormalizedString() :
+                    _additionalInfo + " " + Version.ToNormalizedString();
             }
             else
             {
                 // Display the range, use the original value for floating ranges
-                _toString = string.IsNullOrEmpty(AdditionalInfo) ?
+                _toString = string.IsNullOrEmpty(_additionalInfo) ?
                     Range.OriginalString :
-                    AdditionalInfo + " " + Range.OriginalString;
+                    _additionalInfo + " " + Range.OriginalString;
             }
         }
 
@@ -85,7 +74,7 @@ namespace NuGet.PackageManagement.UI
         public override bool Equals(object obj)
         {
             var other = obj as DisplayVersion;
-            return other != null && other.Version == Version && string.Equals(other.AdditionalInfo, AdditionalInfo, StringComparison.Ordinal);
+            return other != null && other.Version == Version;
         }
 
         public override int GetHashCode()
