@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,38 +6,24 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.Credentials;
-using NuGet.VisualStudio;
+using NuGet.PackageManagement.UI;
 using WebProxy = System.Net.WebProxy;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public class VisualStudioCredentialProvider : ICredentialProvider
     {
-        private readonly Lazy<JoinableTaskFactory> _joinableTaskFactory;
         private readonly IVsWebProxy _webProxyService;
 
         public VisualStudioCredentialProvider(IVsWebProxy webProxyService)
-            : this(webProxyService, new Lazy<JoinableTaskFactory>(() => NuGetUIThreadHelper.JoinableTaskFactory))
-        {
-        }
-
-        internal VisualStudioCredentialProvider(IVsWebProxy webProxyService, Lazy<JoinableTaskFactory> joinableTaskFactory)
         {
             if (webProxyService == null)
             {
                 throw new ArgumentNullException(nameof(webProxyService));
             }
-
-            if (joinableTaskFactory == null)
-            {
-                throw new ArgumentNullException(nameof(joinableTaskFactory));
-            }
-
             _webProxyService = webProxyService;
-            _joinableTaskFactory = joinableTaskFactory;
             Id = $"{typeof(VisualStudioCredentialProvider).Name}_{Guid.NewGuid()}";
         }
 
@@ -119,18 +105,16 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         private async Task<CredentialResponse> PromptForCredentialsAsync(Uri uri, CancellationToken cancellationToken)
         {
-            // This value will cause the web proxy service to first attempt to retrieve
-            // credentials from its cache and fall back to prompting if necessary.
-            const __VsWebProxyState oldState = __VsWebProxyState.VsWebProxyState_DefaultCredentials;
+            const __VsWebProxyState oldState = __VsWebProxyState.VsWebProxyState_PromptForCredentials;
 
             var newState = (uint)__VsWebProxyState.VsWebProxyState_NoCredentials;
-            var result = 0;
+            int result = 0;
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _joinableTaskFactory.Value.RunAsync(async () =>
+            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await _joinableTaskFactory.Value.SwitchToMainThreadAsync(cancellationToken);
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
                 result = _webProxyService.PrepareWebProxy(uri.OriginalString,
                     (uint)oldState,

@@ -200,9 +200,9 @@
   <data name="ProjectNotLoaded_RestoreFailed" xml:space="preserve">
     <value>The operation failed as details for project {0} could not be loaded.</value>
   </data>
-  <data name="MSBuildPropertyNotFound" xml:space="preserve">
-    <value>The {0} MSBuild property could not be found for project '{1}'.</value>
-    <comment>{0} is the name of the property that was not set.  {1} is the full path to the project.</comment>
+  <data name="BaseIntermediateOutputPathNotFound" xml:space="preserve">
+    <value>The BaseIntermediateOutputPath MSBuild property could not be found for project '{0}'.</value>
+    <comment>{0} is the full path to the project.</comment>
   </data>
   <data name="ProjectCouldNotBeCastedToBuildPropertyStorage" xml:space="preserve">
     <value>The project '{0}' could not be cast to a build property storage interface, which is required to get MSBuild properties inside Visual Studio.</value>
@@ -235,58 +235,5 @@
   </data>
   <data name="CredentialProviderFailed_ImportedProvider" xml:space="preserve">
     <value>Failed to load credential provider from assembly {0}.</value>
-  </data>
-  <data name="Error_MultipleFrameworks" xml:space="preserve">
-    <value>Failed to migrate project '{0}'. The project may only contain one target framework.</value>
-    <comment>{0} is the full path to the project.</comment>
-  </data>
-  <data name="Error_InvalidJson" xml:space="preserve">
-    <value>'{0}' is an invalid json file.</value>
-  </data>
-  <data name="Error_FileNotExists" xml:space="preserve">
-    <value>File '{0}' does not exist on disk. </value>
-  </data>
-  <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
-    <value>Argument cannot be null or empty</value>
-  </data>
-  <data name="Debug_RemovedFolder" xml:space="preserve">
-    <value>Removed folder '{0}'.</value>
-  </data>
-  <data name="PackageStreamShouldBeSeekable" xml:space="preserve">
-    <value>Package stream should be seekable</value>
-  </data>
-  <data name="Warning_DirectoryNotEmpty" xml:space="preserve">
-    <value>Directory '{0}' is not empty. Skipping...</value>
-  </data>
-  <data name="Text_DeprecatedFramework_DocumentLink" xml:space="preserve">
-    <value>migration document</value>
-    <comment>The text has the document hyperlink applied to it.</comment>
-  </data>
-  <data name="Text_DeprecatedFramework_DocumentLink_After" xml:space="preserve">
-    <value>.</value>
-    <comment>This test goes immediately after the document link.</comment>
-  </data>
-  <data name="Text_DeprecatedFramework_DocumentLink_Before" xml:space="preserve">
-    <value>The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the</value>
-    <comment>This text goes immediately before the document link.
-{0} is the full name of the deprecated framework (e.g. ".NETFramework,Version=v4.5").
-{1} is the short folder representation of the framework (e.g. "net45").</comment>
-  </data>
-  <data name="Text_DeprecatedFramework_ProjectList" xml:space="preserve">
-    <value>The following project(s) target the deprecated framework:</value>
-  </data>
-  <data name="ProjectUpgradeAndRetargetErrorMessage" xml:space="preserve">
-    <value>Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}</value>
-  </data>
-  <data name="Debug_AddedReferenceToProject" xml:space="preserve">
-    <value>Added reference '{0}' to project:'{1}'. The Reference was Resolved To Package (resolvedToPackage):'{2}', where Reference Path from DTE(dteOriginalPath):'{3}' and Reference Path from package reference(assemblyFullPath):'{4}'.</value>
-    <comment>{0} is the reference name
-{1} is the project name
-{2} is boolean flag (true or false)
-{3} is the project full path
-{4} is the reference assembly full path</comment>
-  </data>
-  <data name="CredentialProviderFailed_PluginCredentialProvider" xml:space="preserve">
-    <value>The plugin credential providers could not be loaded.</value>
   </data>
 </root>

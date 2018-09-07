@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using Microsoft.VisualStudio.Shell;
-using NuGet.VisualStudio;
+using NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio

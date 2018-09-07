@@ -6,8 +6,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
 using Task = System.Threading.Tasks.Task;
@@ -16,8 +16,8 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public class JsProjectSystem : CpsProjectSystem
     {
-        public JsProjectSystem(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
-            : base(vsProjectAdapter, nuGetProjectContext)
+        public JsProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
+            : base(envDTEProject, nuGetProjectContext)
         {
         }
 
@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                            _projectName =VsProjectAdapter.ProjectName;
+                            _projectName = EnvDTEProjectUtility.GetName(EnvDTEProject);
                         });
                 }
                 return _projectName;
@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    await GetProjectItemsAsync(Path.GetDirectoryName(path), createIfNotExists: true);
+                    await EnvDTEProjectUtility.GetProjectItemsAsync(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
                     base.AddFile(path, stream);
                 });
         }
@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    await GetProjectItemsAsync(Path.GetDirectoryName(path), createIfNotExists: true);
+                    await EnvDTEProjectUtility.GetProjectItemsAsync(EnvDTEProject, Path.GetDirectoryName(path), createIfNotExists: true);
                     base.AddFile(path, writeToStream);
                 });
         }
@@ -83,21 +83,21 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            var folderPath = Path.GetDirectoryName(path);
-            var fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
+            string folderPath = Path.GetDirectoryName(path);
+            string fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
 
             // Add the file to project or folder
-            var container = await GetProjectItemsAsync(folderPath, createIfNotExists: true);
+            EnvDTEProjectItems container = await EnvDTEProjectUtility.GetProjectItemsAsync(EnvDTEProject, folderPath, createIfNotExists: true);
             if (container == null)
             {
                 throw new ArgumentException(
-                    string.Format(
+                    String.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Error_FailedToCreateParentFolder,
                         path,
                         ProjectName));
             }
-            container.AddFromFileCopy(fullPath);
+            AddFileToContainer(fullPath, folderPath, container);
 
             NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddedFileToProject, path, ProjectName);
         }

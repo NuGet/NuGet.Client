@@ -12,7 +12,9 @@ using Microsoft.VisualStudio.Services.Client;
 using Microsoft.VisualStudio.Services.Client.AccountManagement;
 using Microsoft.VisualStudio.Services.DelegatedAuthorization.Client;
 using Microsoft.VisualStudio.Services.WebApi;
-using NuGet.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

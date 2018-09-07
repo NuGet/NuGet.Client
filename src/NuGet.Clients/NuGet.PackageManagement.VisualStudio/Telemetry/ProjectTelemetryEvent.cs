@@ -1,49 +1,40 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System.Collections.Generic;
-using NuGet.Common;
 
 namespace NuGet.PackageManagement.Telemetry
 {
-    public class ProjectTelemetryEvent : TelemetryEvent
+    public class ProjectTelemetryEvent
     {
         public ProjectTelemetryEvent(
             string nuGetVersion,
             string projectId,
             NuGetProjectType nuGetProjectType,
-            bool isPRUpgradable) :
-            base(ProjectInformationEventName, new Dictionary<string, object>
-                {
-                    { nameof(NuGetProjectType), nuGetProjectType },
-                    { nameof(NuGetVersion), nuGetVersion },
-                    { nameof(ProjectId), projectId.ToString() },
-                    { IsPRUpgradable, isPRUpgradable }
-                })
+            int installedPackageCount)
         {
+            NuGetVersion = nuGetVersion;
+            ProjectId = projectId;
+            NuGetProjectType = nuGetProjectType;
+            InstalledPackageCount = installedPackageCount;
         }
-
-        public const string ProjectInformationEventName = "ProjectInformation";
-        public const string IsPRUpgradable = "IsPRUpgradable";
 
         /// <summary>
         /// The version of NuGet that emitted this event.
         /// </summary>
-        public string NuGetVersion => (string)base[nameof(NuGetVersion)];
+        public string NuGetVersion { get; }
 
         /// <summary>
         /// The project ID related to this event.
         /// </summary>
-        public string ProjectId => (string)base[nameof(ProjectId)];
+        public string ProjectId { get; }
 
         /// <summary>
         /// The type of NuGet project this project is.
         /// </summary>
-        public NuGetProjectType NuGetProjectType => (NuGetProjectType)base[nameof(NuGetProjectType)];
+        public NuGetProjectType NuGetProjectType { get; }
 
         /// <summary>
-        /// True, if project can be upgraded to PackageReference.
+        /// The number of NuGet packages installed to this project.
         /// </summary>
-        public bool IsProjectPRUpgradable => (bool)base[IsPRUpgradable];
+        public int InstalledPackageCount { get; }
     }
 }

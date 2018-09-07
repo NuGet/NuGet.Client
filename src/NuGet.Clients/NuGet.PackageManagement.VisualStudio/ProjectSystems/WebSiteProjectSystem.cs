@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,11 +9,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
-using NuGet.Common;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
 using VsWebSite;
-using Task = System.Threading.Tasks.Task;
+using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -27,62 +26,68 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static readonly string[] _sourceFileExtensions = { ".cs", ".vb" };
 
-        public WebSiteProjectSystem(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
-            : base(vsProjectAdapter, nuGetProjectContext)
+        public WebSiteProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
+            : base(envDTEProject, nuGetProjectContext)
         {
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch all exceptions")]
-        public override async Task AddReferenceAsync(string referencePath)
+        public override void AddReference(string referencePath)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var name = Path.GetFileNameWithoutExtension(referencePath);
-            try
-            {
-                EnvDTEProjectUtility.GetAssemblyReferences(VsProjectAdapter.Project).AddFromFile(PathUtility.GetAbsolutePath(ProjectFullPath, referencePath));
+                    string name = Path.GetFileNameWithoutExtension(referencePath);
+                    try
+                    {
+                        EnvDTEProjectUtility.GetAssemblyReferences(EnvDTEProject).AddFromFile(PathUtility.GetAbsolutePath(ProjectFullPath, referencePath));
 
-                // Always create a refresh file. Vs does this for us in most cases, however for GACed binaries, it resorts to adding a web.config entry instead.
-                // This may result in deployment issues. To work around ths, we'll always attempt to add a file to the bin.
-                RefreshFileUtility.CreateRefreshFile(ProjectFullPath, PathUtility.GetAbsolutePath(ProjectFullPath, referencePath), this);
+                        // Always create a refresh file. Vs does this for us in most cases, however for GACed binaries, it resorts to adding a web.config entry instead.
+                        // This may result in deployment issues. To work around ths, we'll always attempt to add a file to the bin.
+                        RefreshFileUtility.CreateRefreshFile(ProjectFullPath, PathUtility.GetAbsolutePath(ProjectFullPath, referencePath), this);
 
-                NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, $"Added reference '{name}' to project:'{ProjectName}' ");
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.FailedToAddReference, name), e);
-            }
+                        NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, $"Added reference '{name}' to project:'{ProjectName}' ");
+                    }
+                    catch (Exception e)
+                    {
+                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddReference, name), e);
+                    }
+                });
         }
 
-        public override void AddGacReference(string name)
+        protected override void AddGacReference(string name)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            Debug.Assert(ThreadHelper.CheckAccess());
 
-            EnvDTEProjectUtility.GetAssemblyReferences(VsProjectAdapter.Project).AddFromGAC(name);
+            EnvDTEProjectUtility.GetAssemblyReferences(EnvDTEProject).AddFromGAC(name);
         }
 
-        public override async Task RemoveReferenceAsync(string name)
+        public override void RemoveReference(string name)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            // Remove the reference via DTE.
-            RemoveDTEReference(name);
-
-            // For GACed binaries, VS would not clear the refresh files for us since it assumes the reference exists in web.config.
-            // We'll clean up any remaining .refresh files.
-            var refreshFilePath = Path.Combine("bin", Path.GetFileName(name) + ".refresh");
-            var refreshFileFullPath = FileSystemUtility.GetFullPath(ProjectFullPath, refreshFilePath);
-            if (File.Exists(refreshFileFullPath))
-            {
-                try
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    FileSystemUtility.DeleteFile(refreshFileFullPath, NuGetProjectContext);
-                }
-                catch (Exception e)
-                {
-                    NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, e.Message);
-                }
-            }
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    // Remove the reference via DTE.
+                    RemoveDTEReference(name);
+
+                    // For GACed binaries, VS would not clear the refresh files for us since it assumes the reference exists in web.config.
+                    // We'll clean up any remaining .refresh files.
+                    var refreshFilePath = Path.Combine("bin", Path.GetFileName(name) + ".refresh");
+                    var refreshFileFullPath = FileSystemUtility.GetFullPath(ProjectFullPath, refreshFilePath);
+                    if (File.Exists(refreshFileFullPath))
+                    {
+                        try
+                        {
+                            FileSystemUtility.DeleteFile(refreshFileFullPath, NuGetProjectContext);
+                        }
+                        catch (Exception e)
+                        {
+                            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, e.Message);
+                        }
+                    }
+                });
         }
 
         /// <summary>
@@ -94,13 +99,13 @@ namespace NuGet.PackageManagement.VisualStudio
             Debug.Assert(ThreadHelper.CheckAccess());
 
             // Get the reference name without extension
-            var referenceName = Path.GetFileNameWithoutExtension(name);
+            string referenceName = Path.GetFileNameWithoutExtension(name);
 
             // Remove the reference from the project
             AssemblyReference reference = null;
             try
             {
-                reference = EnvDTEProjectUtility.GetAssemblyReferences(VsProjectAdapter.Project).Item(referenceName);
+                reference = EnvDTEProjectUtility.GetAssemblyReferences(EnvDTEProject).Item(referenceName);
                 if (reference != null)
                 {
                     reference.Remove();
@@ -149,7 +154,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static bool IsSourceFile(string path)
         {
-            var extension = Path.GetExtension(path);
+            string extension = Path.GetExtension(path);
             return _sourceFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
 
@@ -189,9 +194,8 @@ namespace NuGet.PackageManagement.VisualStudio
             return base.GetDirectories(path);
         }
 
-        public override Task BeginProcessingAsync()
+        public override void BeginProcessing()
         {
-            return Task.FromResult(0);
         }
 
         public override void RegisterProcessedFiles(IEnumerable<string> files)
@@ -219,11 +223,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public override Task EndProcessingAsync()
+        public override void EndProcessing()
         {
             _excludedCodeFiles.Clear();
-
-            return Task.FromResult(0);
         }
     }
 }

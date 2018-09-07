@@ -4,20 +4,20 @@
 using System;
 using System.IO;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
+using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class WebProjectSystem : VsMSBuildProjectSystem
+    public class WebProjectSystem : VSMSBuildNuGetProjectSystem
     {
-        public WebProjectSystem(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
-            : base(vsProjectAdapter, nuGetProjectContext)
+        public WebProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
+            : base(envDTEProject, nuGetProjectContext)
         {
         }
 
         public override bool IsSupportedFile(string path)
         {
-            var fileName = Path.GetFileName(path);
+            string fileName = Path.GetFileName(path);
             return !(fileName.StartsWith("app.", StringComparison.OrdinalIgnoreCase) &&
                      fileName.EndsWith(".config", StringComparison.OrdinalIgnoreCase));
         }

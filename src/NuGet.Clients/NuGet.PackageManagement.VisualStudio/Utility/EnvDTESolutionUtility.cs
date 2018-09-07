@@ -1,11 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using NuGet.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -93,6 +94,26 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return resultantEnvDTEProjects;
+        }
+
+        public static Task<Dictionary<string, EnvDTE.Project>> GetPathToDTEProjectLookupAsync(EnvDTE.DTE dte)
+        {
+            var pathToProject = new Dictionary<string, EnvDTE.Project>(StringComparer.OrdinalIgnoreCase);
+
+            var supportedProjects = dte.Solution.Projects.Cast<EnvDTE.Project>();
+
+            foreach (var solutionProject in supportedProjects)
+            {
+                var solutionProjectPath = EnvDTEProjectUtility.GetFullProjectPath(solutionProject);
+
+                if (!string.IsNullOrEmpty(solutionProjectPath) &&
+                    !pathToProject.ContainsKey(solutionProjectPath))
+                {
+                    pathToProject.Add(solutionProjectPath, solutionProject);
+                }
+            }
+
+            return Task.FromResult(pathToProject);
         }
     }
 }

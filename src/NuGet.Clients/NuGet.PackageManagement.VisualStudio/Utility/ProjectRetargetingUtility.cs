@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -127,7 +127,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             catch (Exception ex)
             {
-                ExceptionHelper.WriteErrorToActivityLog(ex);
+                ExceptionHelper.WriteToActivityLog(ex);
             }
 
             // When all items are not compatible, the installed package should be retargeted.
@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Marks the packages to be reinstalled on the projects' packages.config
         /// </summary>
-        public static async Task MarkPackagesForReinstallation(NuGetProject project, IList<PackageIdentity> packagesToBeReinstalled)
+        public static async void MarkPackagesForReinstallation(NuGetProject project, IList<PackageIdentity> packagesToBeReinstalled)
         {
             Debug.Assert(project != null);
             Debug.Assert(packagesToBeReinstalled != null);
@@ -211,7 +211,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                     catch (Exception ex)
                     {
-                        ExceptionHelper.WriteErrorToActivityLog(ex);
+                        ExceptionHelper.WriteToActivityLog(ex);
                     }
                 }
             }
@@ -258,7 +258,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="project">The project which is checked to see if NuGet is used in it</param>
         public static bool IsNuGetInUse(Project project)
         {
-            return EnvDTEProjectUtility.IsSupported(project) && File.Exists(EnvDTEProjectInfoUtility.GetPackagesConfigFullPath(project));
+            return EnvDTEProjectUtility.IsSupported(project) && File.Exists(EnvDTEProjectUtility.GetPackagesConfigFullPath(project));
         }
     }
 }

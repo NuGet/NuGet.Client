@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using NuGet.ProjectManagement;
-using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -22,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <remarks>Adds the file to the DTE project system</remarks>
         /// <param name="projectSystem">the web site project system where this will be added</param>
         /// <param name="assemblyPath">The path to the assembly being added</param>
-        public static void CreateRefreshFile(VsMSBuildProjectSystem projectSystem, string assemblyPath)
+        public static void CreateRefreshFile(VSMSBuildNuGetProjectSystem projectSystem, string assemblyPath)
         {
             if (projectSystem == null)
             {
@@ -49,7 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 catch (UnauthorizedAccessException exception)
                 {
                     // log IO permission error
-                    ExceptionHelper.WriteErrorToActivityLog(exception);
+                    ExceptionHelper.WriteToActivityLog(exception);
                 }
             }
         }
@@ -81,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <remarks>Adds the file to disk ONLY!</remarks>
         /// <param name="root">the root path is dte full path</param>
         /// <param name="assemblyPath">The relative path to the assembly being added</param>
-        public static void CreateRefreshFile(string root, string assemblyPath, IMSBuildProjectSystem msbuildNuGetProjectSystem)
+        public static void CreateRefreshFile(string root, string assemblyPath, IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem)
         {
             string refreshFilePath = CreateRefreshFilePath(assemblyPath);
 
@@ -97,7 +96,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 catch (UnauthorizedAccessException exception)
                 {
                     // log IO permission error
-                    ExceptionHelper.WriteErrorToActivityLog(exception);
+                    ExceptionHelper.WriteToActivityLog(exception);
                 }
             }
         }
@@ -109,7 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 let resolvedPath = SafeResolveRefreshPath(root, file)
                 where resolvedPath != null &&
                       FileSystemUtility.FileExists(root, resolvedPath) &&
-                      ProjectManagement.Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(resolvedPath))
+                      Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(resolvedPath))
                 select resolvedPath;
         }
 

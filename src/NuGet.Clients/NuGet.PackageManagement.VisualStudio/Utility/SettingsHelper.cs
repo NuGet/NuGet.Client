@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

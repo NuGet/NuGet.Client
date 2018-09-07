@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Strings {
@@ -97,20 +97,20 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Argument cannot be null or empty.
-        /// </summary>
-        public static string Argument_Cannot_Be_Null_Or_Empty {
-            get {
-                return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Value must be greater than or equal to {0}..
         /// </summary>
         public static string Argument_Must_Be_GreaterThanOrEqualTo {
             get {
                 return ResourceManager.GetString("Argument_Must_Be_GreaterThanOrEqualTo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The BaseIntermediateOutputPath MSBuild property could not be found for project &apos;{0}&apos;..
+        /// </summary>
+        public static string BaseIntermediateOutputPathNotFound {
+            get {
+                return ResourceManager.GetString("BaseIntermediateOutputPathNotFound", resourceCulture);
             }
         }
         
@@ -142,15 +142,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The plugin credential providers could not be loaded..
-        /// </summary>
-        public static string CredentialProviderFailed_PluginCredentialProvider {
-            get {
-                return ResourceManager.GetString("CredentialProviderFailed_PluginCredentialProvider", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The Visual Studio or VSTS account provider failed to load..
         /// </summary>
         public static string CredentialProviderFailed_VisualStudioAccountProvider {
@@ -174,15 +165,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string Debug_AddedFileToProject {
             get {
                 return ResourceManager.GetString("Debug_AddedFileToProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Added reference &apos;{0}&apos; to project:&apos;{1}&apos;. The Reference was Resolved To Package (resolvedToPackage):&apos;{2}&apos;, where Reference Path from DTE(dteOriginalPath):&apos;{3}&apos; and Reference Path from package reference(assemblyFullPath):&apos;{4}&apos;..
-        /// </summary>
-        public static string Debug_AddedReferenceToProject {
-            get {
-                return ResourceManager.GetString("Debug_AddedReferenceToProject", resourceCulture);
             }
         }
         
@@ -214,15 +196,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Removed folder &apos;{0}&apos;..
-        /// </summary>
-        public static string Debug_RemovedFolder {
-            get {
-                return ResourceManager.GetString("Debug_RemovedFolder", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Removed reference &apos;{0}&apos; from project &apos;{1}&apos;.
         /// </summary>
         public static string Debug_RemoveReference {
@@ -246,33 +219,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string Error_FailedToCreateParentFolder {
             get {
                 return ResourceManager.GetString("Error_FailedToCreateParentFolder", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to File &apos;{0}&apos; does not exist on disk. .
-        /// </summary>
-        public static string Error_FileNotExists {
-            get {
-                return ResourceManager.GetString("Error_FileNotExists", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is an invalid json file..
-        /// </summary>
-        public static string Error_InvalidJson {
-            get {
-                return ResourceManager.GetString("Error_InvalidJson", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to migrate project &apos;{0}&apos;. The project may only contain one target framework..
-        /// </summary>
-        public static string Error_MultipleFrameworks {
-            get {
-                return ResourceManager.GetString("Error_MultipleFrameworks", resourceCulture);
             }
         }
         
@@ -340,24 +286,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} MSBuild property could not be found for project &apos;{1}&apos;..
-        /// </summary>
-        public static string MSBuildPropertyNotFound {
-            get {
-                return ResourceManager.GetString("MSBuildPropertyNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package stream should be seekable.
-        /// </summary>
-        public static string PackageStreamShouldBeSeekable {
-            get {
-                return ResourceManager.GetString("PackageStreamShouldBeSeekable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Path &apos;{0}&apos; to existing file is not found on disk. Cannot add to project &apos;{1}&apos;.
         /// </summary>
         public static string PathToExistingFileNotPresent {
@@ -367,7 +295,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project &apos;{0}&apos; could not be cast to a build property storage interface, which is required to get MSBuild properties inside Visual Studio..
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; could not be casted to a build property storage interface, which is required to get MSBuild properties inside Visual Studio..
         /// </summary>
         public static string ProjectCouldNotBeCastedToBuildPropertyStorage {
             get {
@@ -385,56 +313,11 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}.
-        /// </summary>
-        public static string ProjectUpgradeAndRetargetErrorMessage {
-            get {
-                return ResourceManager.GetString("ProjectUpgradeAndRetargetErrorMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Solution is not saved. Please save your solution before managing NuGet packages..
         /// </summary>
         public static string SolutionIsNotSaved {
             get {
                 return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to migration document.
-        /// </summary>
-        public static string Text_DeprecatedFramework_DocumentLink {
-            get {
-                return ResourceManager.GetString("Text_DeprecatedFramework_DocumentLink", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ..
-        /// </summary>
-        public static string Text_DeprecatedFramework_DocumentLink_After {
-            get {
-                return ResourceManager.GetString("Text_DeprecatedFramework_DocumentLink_After", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The NuGet operation failed due to one or more packages being incompatible with your project. The &apos;{0}&apos; (&apos;{1}&apos;) project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the.
-        /// </summary>
-        public static string Text_DeprecatedFramework_DocumentLink_Before {
-            get {
-                return ResourceManager.GetString("Text_DeprecatedFramework_DocumentLink_Before", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The following project(s) target the deprecated framework:.
-        /// </summary>
-        public static string Text_DeprecatedFramework_ProjectList {
-            get {
-                return ResourceManager.GetString("Text_DeprecatedFramework_ProjectList", resourceCulture);
             }
         }
         
@@ -462,15 +345,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string UnresolvedItemDuringProjectClosureWalk {
             get {
                 return ResourceManager.GetString("UnresolvedItemDuringProjectClosureWalk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Directory &apos;{0}&apos; is not empty. Skipping....
-        /// </summary>
-        public static string Warning_DirectoryNotEmpty {
-            get {
-                return ResourceManager.GetString("Warning_DirectoryNotEmpty", resourceCulture);
             }
         }
         

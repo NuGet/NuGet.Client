@@ -6,19 +6,20 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
 using VSLangProj;
+using EnvDTEProject = EnvDTE.Project;
+using EnvDTEProjectItem = EnvDTE.ProjectItem;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class FSharpProjectSystem : VsMSBuildProjectSystem
+    public class FSharpProjectSystem : VSMSBuildNuGetProjectSystem
     {
-        public FSharpProjectSystem(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
-            : base(vsProjectAdapter, nuGetProjectContext)
+        public FSharpProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
+            : base(envDTEProject, nuGetProjectContext)
         {
         }
 
@@ -41,9 +42,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public override void AddGacReference(string name)
+        protected override void AddGacReference(string name)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            Debug.Assert(ThreadHelper.CheckAccess());
             // The F# project system expects assemblies that start with * to be framework assemblies.
             base.AddGacReference("*" + name);
         }
@@ -54,7 +55,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var projectItem = await GetProjectItemAsync(path);
+                    EnvDTEProjectItem projectItem = await EnvDTEProjectUtility.GetProjectItemAsync(EnvDTEProject, path);
                     return (projectItem != null);
                 });
         }
@@ -66,23 +67,33 @@ namespace NuGet.PackageManagement.VisualStudio
         /// And, this causes a mismatch. For more information, Refer to the RemoveReference of the base class
         /// </summary>
         /// <param name="name"></param>
-        public override async Task RemoveReferenceAsync(string name)
+        public override void RemoveReference(string name)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    RemoveReferenceCore(name, EnvDTEProjectUtility.GetReferences(EnvDTEProject));
+                });
+        }
+
+        private void RemoveReferenceCore(string name, References references)
+        {
+            Debug.Assert(ThreadHelper.CheckAccess());
 
             try
             {
                 var referenceName = Path.GetFileNameWithoutExtension(name);
 
-                var reference = References.Item(referenceName);
+                Reference reference = references.Item(referenceName);
 
                 if (reference == null)
                 {
                     // No exact match found for referenceName. Trying case-insensitive search
                     NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_NoExactMatchForReference, referenceName);
-                    foreach (var r in References.Cast<Reference>())
+                    foreach (Reference r in references)
                     {
-                        if (string.Equals(referenceName, r.Name, StringComparison.OrdinalIgnoreCase))
+                        if (String.Equals(referenceName, r.Name, StringComparison.OrdinalIgnoreCase))
                         {
                             if (reference == null)
                             {
@@ -90,7 +101,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             }
                             else
                             {
-                                var message = string.Format(CultureInfo.CurrentCulture, Strings.FailedToRemoveReference, referenceName);
+                                var message = String.Format(CultureInfo.CurrentCulture, Strings.FailedToRemoveReference, referenceName);
                                 NuGetProjectContext.Log(ProjectManagement.MessageLevel.Error, message);
                                 throw new InvalidOperationException(message);
                             }

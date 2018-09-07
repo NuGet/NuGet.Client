@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

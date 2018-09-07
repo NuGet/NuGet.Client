@@ -4,14 +4,14 @@
 using System;
 using System.IO;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
+using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class WindowsStoreProjectSystem : VsMSBuildProjectSystem
+    public class WindowsStoreProjectSystem : VSMSBuildNuGetProjectSystem
     {
-        public WindowsStoreProjectSystem(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
-            : base(vsProjectAdapter, nuGetProjectContext)
+        public WindowsStoreProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
+            : base(envDTEProject, nuGetProjectContext)
         {
         }
 

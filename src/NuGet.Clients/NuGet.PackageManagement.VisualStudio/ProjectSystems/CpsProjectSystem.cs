@@ -4,20 +4,21 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using NuGet.Common;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
+using EnvDTEProject = EnvDTE.Project;
+using ProjectSystem = NuGet.VisualStudio.Facade.ProjectSystem;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public abstract class CpsProjectSystem : VsMSBuildProjectSystem
+    public abstract class CpsProjectSystem : VSMSBuildNuGetProjectSystem
     {
-        protected CpsProjectSystem(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
-            : base(vsProjectAdapter, nuGetProjectContext)
+        protected CpsProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
+            : base(envDTEProject, nuGetProjectContext)
         {
         }
 
-        public override void AddGacReference(string name)
+        protected override void AddGacReference(string name)
         {
             // Native & JS projects don't know about GAC
         }
@@ -25,7 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public override void AddImport(string targetFullPath, ImportLocation location)
         {
             // For VS 2012 or above, the operation has to be done inside the Writer lock
-            if (string.IsNullOrEmpty(targetFullPath))
+            if (String.IsNullOrEmpty(targetFullPath))
             {
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
@@ -34,8 +35,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var root = VsProjectAdapter.ProjectDirectory;
-                    var relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
+                    var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
+                    string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
                     await AddImportStatementAsync(location, relativeTargetPath);
                 });
         }
@@ -45,18 +46,18 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            await ProjectHelper.DoWorkInWriterLockAsync(
-                VsProjectAdapter.Project,
-                VsProjectAdapter.VsHierarchy,
+            await ProjectSystem.ProjectHelper.DoWorkInWriterLockAsync(
+                EnvDTEProject,
+                VsHierarchyUtility.ToVsHierarchy(EnvDTEProject),
                 buildProject => MicrosoftBuildEvaluationProjectUtility.AddImportStatement(buildProject, relativeTargetPath, location));
 
             // notify the project system of the change
-            UpdateImportStamp(VsProjectAdapter);
+            UpdateImportStamp(EnvDTEProject);
         }
 
         public override void RemoveImport(string targetFullPath)
         {
-            if (string.IsNullOrEmpty(targetFullPath))
+            if (String.IsNullOrEmpty(targetFullPath))
             {
                 throw new ArgumentNullException(nameof(targetFullPath), CommonResources.Argument_Cannot_Be_Null_Or_Empty);
             }
@@ -65,9 +66,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var root = VsProjectAdapter.ProjectDirectory;
+                    var root = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
                     // For VS 2012 or above, the operation has to be done inside the Writer lock
-                    var relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
+                    string relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
                     await RemoveImportStatementAsync(relativeTargetPath);
                 });
         }
@@ -79,13 +80,13 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            await ProjectHelper.DoWorkInWriterLockAsync(
-                VsProjectAdapter.Project,
-                VsProjectAdapter.VsHierarchy,
+            await ProjectSystem.ProjectHelper.DoWorkInWriterLockAsync(
+                EnvDTEProject,
+                VsHierarchyUtility.ToVsHierarchy(EnvDTEProject),
                 buildProject => MicrosoftBuildEvaluationProjectUtility.RemoveImportStatement(buildProject, relativeTargetPath));
 
             // notify the project system of the change
-            UpdateImportStamp(VsProjectAdapter);
+            UpdateImportStamp(EnvDTEProject);
         }
     }
 }

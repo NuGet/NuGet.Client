@@ -1,18 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -110,16 +107,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                uint cookie;
-                if (ProjectTracker.AdviseTrackProjectDocumentsEvents(_projectDocumentListener, out cookie) == VSConstants.S_OK)
-                {
-                    _trackingCookie = cookie;
-                }
-            });
+            uint cookie;
+            ProjectTracker.AdviseTrackProjectDocumentsEvents(_projectDocumentListener, out cookie);
+            _trackingCookie = cookie;
         }
 
         private void StopTracking()
@@ -129,14 +119,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                var hr = ProjectTracker.UnadviseTrackProjectDocumentsEvents(_trackingCookie.Value);
-                ErrorHandler.ThrowOnFailure(hr);
-            });
-
+            ProjectTracker.UnadviseTrackProjectDocumentsEvents((uint)_trackingCookie);
             _trackingCookie = null;
         }
 
@@ -149,7 +132,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                var solutionRepositoryPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager, _vsSettings);
+                string solutionRepositoryPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager, _vsSettings);
                 if (Directory.Exists(solutionRepositoryPath)
                     && _sourceControlManagerProvider != null)
                 {
@@ -158,9 +141,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     // only proceed if the source-control is in use
                     if (sourceControlManager != null)
                     {
-                        var allFiles = Directory.EnumerateFiles(solutionRepositoryPath, "*.*",
+                        IEnumerable<string> allFiles = Directory.EnumerateFiles(solutionRepositoryPath, "*.*",
                             SearchOption.AllDirectories);
-                        var file = allFiles.FirstOrDefault();
+                        string file = allFiles.FirstOrDefault();
                         if (file != null)
                         {
                             // If there are any files under the packages directory and any given file (in this case the first one we come across) is not under
@@ -191,7 +174,7 @@ namespace NuGet.PackageManagement.VisualStudio
             public int OnAfterSccStatusChanged(int cProjects, int cFiles, IVsProject[] rgpProjects, int[] rgFirstIndices, string[] rgpszMkDocuments, uint[] rgdwSccStatus)
             {
                 // The value 0x1F is the AND of the following bits.
-                // We want to check if any of these 5 bits is on.
+                // We want to check if any of these 5 bits is on. 
 
                 // SCC_STATUS_CONTROLLED = 1,
                 // SCC_STATUS_CHECKEDOUT = 2,
@@ -214,69 +197,69 @@ namespace NuGet.PackageManagement.VisualStudio
                     _parent.OnSourceControlBound();
                 }
 
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             #region Irrelevant members
 
             public int OnAfterAddDirectoriesEx(int cProjects, int cDirectories, IVsProject[] rgpProjects, int[] rgFirstIndices, string[] rgpszMkDocuments, VSADDDIRECTORYFLAGS[] rgFlags)
             {
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             public int OnAfterAddFilesEx(int cProjects, int cFiles, IVsProject[] rgpProjects, int[] rgFirstIndices, string[] rgpszMkDocuments, VSADDFILEFLAGS[] rgFlags)
             {
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             public int OnAfterRemoveDirectories(int cProjects, int cDirectories, IVsProject[] rgpProjects, int[] rgFirstIndices, string[] rgpszMkDocuments, VSREMOVEDIRECTORYFLAGS[] rgFlags)
             {
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             public int OnAfterRemoveFiles(int cProjects, int cFiles, IVsProject[] rgpProjects, int[] rgFirstIndices, string[] rgpszMkDocuments, VSREMOVEFILEFLAGS[] rgFlags)
             {
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             public int OnAfterRenameDirectories(int cProjects, int cDirs, IVsProject[] rgpProjects, int[] rgFirstIndices, string[] rgszMkOldNames, string[] rgszMkNewNames, VSRENAMEDIRECTORYFLAGS[] rgFlags)
             {
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             public int OnAfterRenameFiles(int cProjects, int cFiles, IVsProject[] rgpProjects, int[] rgFirstIndices, string[] rgszMkOldNames, string[] rgszMkNewNames, VSRENAMEFILEFLAGS[] rgFlags)
             {
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             public int OnQueryAddDirectories(IVsProject pProject, int cDirectories, string[] rgpszMkDocuments, VSQUERYADDDIRECTORYFLAGS[] rgFlags, VSQUERYADDDIRECTORYRESULTS[] pSummaryResult, VSQUERYADDDIRECTORYRESULTS[] rgResults)
             {
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             public int OnQueryAddFiles(IVsProject pProject, int cFiles, string[] rgpszMkDocuments, VSQUERYADDFILEFLAGS[] rgFlags, VSQUERYADDFILERESULTS[] pSummaryResult, VSQUERYADDFILERESULTS[] rgResults)
             {
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             public int OnQueryRemoveDirectories(IVsProject pProject, int cDirectories, string[] rgpszMkDocuments, VSQUERYREMOVEDIRECTORYFLAGS[] rgFlags, VSQUERYREMOVEDIRECTORYRESULTS[] pSummaryResult, VSQUERYREMOVEDIRECTORYRESULTS[] rgResults)
             {
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             public int OnQueryRemoveFiles(IVsProject pProject, int cFiles, string[] rgpszMkDocuments, VSQUERYREMOVEFILEFLAGS[] rgFlags, VSQUERYREMOVEFILERESULTS[] pSummaryResult, VSQUERYREMOVEFILERESULTS[] rgResults)
             {
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             public int OnQueryRenameDirectories(IVsProject pProject, int cDirs, string[] rgszMkOldNames, string[] rgszMkNewNames, VSQUERYRENAMEDIRECTORYFLAGS[] rgFlags, VSQUERYRENAMEDIRECTORYRESULTS[] pSummaryResult, VSQUERYRENAMEDIRECTORYRESULTS[] rgResults)
             {
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             public int OnQueryRenameFiles(IVsProject pProject, int cFiles, string[] rgszMkOldNames, string[] rgszMkNewNames, VSQUERYRENAMEFILEFLAGS[] rgFlags, VSQUERYRENAMEFILERESULTS[] pSummaryResult, VSQUERYRENAMEFILERESULTS[] rgResults)
             {
-                return VSConstants.S_OK;
+                return NuGetVSConstants.S_OK;
             }
 
             #endregion

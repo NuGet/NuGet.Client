@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,21 +6,17 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    [Export(typeof(ISettings))]
+    [Export(typeof(Configuration.ISettings))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class VSSettings : ISettings
+    public class VSSettings : Configuration.ISettings
     {
-        private const string NuGetSolutionSettingsFolder = ".nuget";
-
         // to initialize SolutionSettings first time outside MEF constructor
-        private ISettings _solutionSettings;
+        private Configuration.ISettings _solutionSettings;
 
-        private ISettings SolutionSettings
+        private Configuration.ISettings SolutionSettings
         {
             get
             {
@@ -35,8 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         private ISolutionManager SolutionManager { get; set; }
-
-        private IMachineWideSettings MachineWideSettings { get; set; }
+        private Configuration.IMachineWideSettings MachineWideSettings { get; set; }
 
         public event EventHandler SettingsChanged;
 
@@ -46,9 +41,14 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         [ImportingConstructor]
-        public VSSettings(ISolutionManager solutionManager, IMachineWideSettings machineWideSettings)
+        public VSSettings(ISolutionManager solutionManager, Configuration.IMachineWideSettings machineWideSettings)
         {
-            SolutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
+            if (solutionManager == null)
+            {
+                throw new ArgumentNullException(nameof(solutionManager));
+            }
+
+            SolutionManager = solutionManager;
             MachineWideSettings = machineWideSettings;
             SolutionManager.SolutionOpening += OnSolutionOpenedOrClosed;
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
@@ -65,21 +65,21 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                root = Path.Combine(SolutionManager.SolutionDirectory, NuGetSolutionSettingsFolder);
+                root = Path.Combine(SolutionManager.SolutionDirectory, EnvDTEProjectUtility.NuGetSolutionSettingsFolder);
             }
 
             try
             {
-                _solutionSettings = Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
+                _solutionSettings = Configuration.Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
             }
-            catch (NuGetConfigurationException ex)
+            catch (Configuration.NuGetConfigurationException ex)
             {
                 MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
             }
 
             if (_solutionSettings == null)
             {
-                _solutionSettings = NullSettings.Instance;
+                _solutionSettings = Configuration.NullSettings.Instance;
             }
         }
 
@@ -88,7 +88,10 @@ namespace NuGet.PackageManagement.VisualStudio
             ResetSolutionSettings();
 
             // raises event SettingsChanged
-            SettingsChanged?.Invoke(this, EventArgs.Empty);
+            if (SettingsChanged != null)
+            {
+                SettingsChanged(this, EventArgs.Empty);
+            }
         }
 
         public bool DeleteSection(string section)
@@ -106,12 +109,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return SolutionSettings.GetNestedValues(section, subSection);
         }
 
-        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
-        {
-            return SolutionSettings.GetNestedSettingValues(section, subSection);
-        }
-
-        public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
+        public IList<Configuration.SettingValue> GetSettingValues(string section, bool isPath = false)
         {
             return SolutionSettings.GetSettingValues(section, isPath);
         }
@@ -121,30 +119,26 @@ namespace NuGet.PackageManagement.VisualStudio
             return SolutionSettings.GetValue(section, key, isPath);
         }
 
-        public IReadOnlyList<string> GetAllSubsections(string section)
+        public string Root
         {
-            return SolutionSettings.GetAllSubsections(section);
+            get { return SolutionSettings.Root; }
         }
 
-        public string Root => SolutionSettings.Root;
+        public string FileName
+        {
+            get { return SolutionSettings.FileName; }
+        }
 
-        public string FileName => SolutionSettings.FileName;
+        public IEnumerable<Configuration.ISettings> Priority
+        {
+            get { return SolutionSettings.Priority; }
+        }
 
-        public IEnumerable<ISettings> Priority => SolutionSettings.Priority;
-
-        public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values)
+        public void SetNestedValues(string section, string subSection, IList<KeyValuePair<string, string>> values)
         {
             if (CanChangeSettings)
             {
-                SolutionSettings.SetNestedValues(section, subsection, values);
-            }
-        }
-
-        public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
-        {
-            if (CanChangeSettings)
-            {
-                SolutionSettings.SetNestedSettingValues(section, subsection, values);
+                SolutionSettings.SetNestedValues(section, subSection, values);
             }
         }
 
@@ -156,7 +150,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public void SetValues(string section, IReadOnlyList<SettingValue> values)
+        public void SetValues(string section, IReadOnlyList<Configuration.SettingValue> values)
         {
             if (CanChangeSettings)
             {
@@ -164,7 +158,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
+        public void UpdateSections(string section, IReadOnlyList<Configuration.SettingValue> values)
         {
             if (CanChangeSettings)
             {
@@ -172,15 +166,13 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
+        private bool CanChangeSettings
         {
-            if (CanChangeSettings)
+            get
             {
-                SolutionSettings.UpdateSubsections(section, subsection, values);
+                // The value for SolutionSettings can't possibly be null, but it could be a read-only instance
+                return !object.ReferenceEquals(SolutionSettings, Configuration.NullSettings.Instance);
             }
         }
-
-        // The value for SolutionSettings can't possibly be null, but it could be a read-only instance
-        private bool CanChangeSettings => !ReferenceEquals(SolutionSettings, NullSettings.Instance);
     }
 }

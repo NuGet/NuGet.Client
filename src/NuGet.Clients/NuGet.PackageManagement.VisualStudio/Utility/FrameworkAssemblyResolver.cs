@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (string.IsNullOrEmpty(simpleAssemblyName))
             {
-                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(simpleAssemblyName));
+                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(simpleAssemblyName));
             }
 
             if (availableVersion == null)
@@ -121,7 +121,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (string.IsNullOrEmpty(simpleAssemblyName))
             {
-                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(simpleAssemblyName));
+                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(simpleAssemblyName));
             }
 
             if (targetFrameworkName == null)

@@ -29,50 +29,72 @@
     </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-    <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Composition">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Composition.15.0.30-pre\lib\net45\Microsoft.VisualStudio.Composition.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="VSLangProj140">
-      <HintPath>$(SolutionPackagesFolder)VSLangProj140.14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="VSLangProj150">
-      <HintPath>$(SolutionPackagesFolder)VSLangProj150.1.0.0\lib\net46\VSLangProj150.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.15.0.26201\lib\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
+    <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+        <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.Composition">
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.Composition.15.0.30-pre\lib\net45\Microsoft.VisualStudio.Composition.dll</HintPath>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.ProjectSystem">
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
+        <Reference Include="VSLangProj140, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <HintPath>$(MSBuildToolsPath)\..\..\..\Common7\IDE\PublicAssemblies\VSLangProj140.dll</HintPath>
+          <SpecificVersion>False</SpecificVersion>
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
+        <Reference Include="VSLangProj150">
+          <HintPath>$(EnlistmentRoot)\packages\VSLangProj150.1.0.0\lib\net46\VSLangProj150.dll</HintPath>
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime">
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.15.0.0\lib\\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.dll</HintPath>
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
+      </ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="envdte80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime.14.3.25407\lib\Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime.dll</HintPath>
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
-    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Xml.Linq" />
+    <Reference Include="VSLangProj, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="VSLangProj110, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="VSLangProj2, Version=7.0.5000.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="VSLangProj80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
     <Reference Include="VsWebSite.Interop, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="WindowsBase" />
-    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <Reference Include="Microsoft.Build">
@@ -87,85 +109,73 @@
     </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-    <Compile Include="Projects\LegacyPackageReferenceProject.cs" />
-    <Compile Include="Projects\LegacyPackageReferenceProjectProvider.cs" />
-    <Compile Include="Migrate\ProjectJsonToPackageRefMigrator.cs" />
+    <Compile Include="EnvDTEProjectAdapter.cs" />
+    <Compile Include="IEnvDTEProjectAdapter.cs" />
+    <Compile Include="LegacyCSProjProjectReference.cs" />
+    <Compile Include="LegacyCSProjPackageReference.cs" />
+    <Compile Include="ProjectSystems\LegacyCSProjPackageReferenceProject.cs" />
+    <Compile Include="ProjectSystems\LegacyCSProjPackageReferenceProjectProvider.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BindingRedirectBehavior.cs" />
     <Compile Include="CommonResources.cs" />
-    <Compile Include="Common\AsyncLockAwaiter.cs" />
-    <Compile Include="Common\AsyncLockReleaser.cs" />
-    <Compile Include="Common\IAsyncLockAwaitable.cs" />
-    <Compile Include="Common\PackageCollection.cs" />
-    <Compile Include="Common\PackageCollectionExtensions.cs" />
-    <Compile Include="Common\PackageCollectionItem.cs" />
-    <Compile Include="Common\PackageCollectionItemExtensions.cs" />
-    <Compile Include="ProjectServices\DeferredProjectCapabilities.cs" />
-    <Compile Include="ProjectServices\GlobalProjectServiceProvider.cs" />
-    <Compile Include="ProjectServices\NetCoreProjectSystemServices.cs" />
-    <Compile Include="ProjectServices\VsCoreProjectSystemReferenceReader.cs" />
-    <Compile Include="ProjectSystems\VsCoreProjectSystem.cs" />
-    <Compile Include="Projects\VsMSBuildProjectSystemServices.cs" />
-    <Compile Include="Common\VersionCollectionExtensions.cs" />
     <Compile Include="DefaultVSCredentialServiceProvider.cs" />
-    <Compile Include="Handlers\ProjectRetargetingHandler.cs" />
-    <Compile Include="Handlers\ProjectUpgradeHandler.cs" />
-    <Compile Include="IPSNuGetProjectContext.cs" />
-    <Compile Include="PackageFeeds\ConsolidatePackageFeed.cs" />
-    <Compile Include="PackageFeeds\ContinuationToken.cs" />
-    <Compile Include="PackageFeeds\IAutoCompleteProvider.cs" />
-    <Compile Include="PackageFeeds\InstalledPackageFeed.cs" />
-    <Compile Include="PackageFeeds\IPackageFeed.cs" />
-    <Compile Include="PackageFeeds\IPackageMetadataProvider.cs" />
-    <Compile Include="PackageFeeds\LoadingStatus.cs" />
-    <Compile Include="PackageFeeds\MultiSourceAutoCompleteProvider.cs" />
-    <Compile Include="PackageFeeds\MultiSourcePackageFeed.cs" />
-    <Compile Include="PackageFeeds\MultiSourcePackageMetadataProvider.cs" />
-    <Compile Include="PackageFeeds\PackageFeedEnumerator.cs" />
-    <Compile Include="PackageFeeds\PackageSearchMetadataCache.cs" />
-    <Compile Include="PackageFeeds\PlainPackageFeedBase.cs" />
-    <Compile Include="PackageFeeds\RefreshToken.cs" />
-    <Compile Include="PackageFeeds\SearchResult.cs" />
-    <Compile Include="PackageFeeds\SourceRepositoryExtensions.cs" />
-    <Compile Include="PackageFeeds\UpdatePackageFeed.cs" />
-    <Compile Include="Services\DeferredProjectWorkspaceService.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
-    <Compile Include="IDE\ExtensibleSourceRepositoryProvider.cs" />
+    <Compile Include="IDE\DeferredProjectWorkspaceService.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
+    <Compile Include="IDE\IDeferredProjectWorkspaceService.cs" />
+    <Compile Include="IDE\IVsSolutionManager.cs" />
     <Compile Include="IInteractiveLoginProvider.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />
-    <Compile Include="Projects\NetCorePackageReferenceProject.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
-    <Compile Include="Projects\INuGetProjectProvider.cs" />
-    <Compile Include="Projects\MSBuildNuGetProjectProvider.cs" />
-    <Compile Include="Projects\ProjectJsonProjectProvider.cs" />
-    <Compile Include="Projects\ProjectKNuGetProjectProvider.cs" />
-    <Compile Include="Projects\ProjectSystemCache.cs" />
-    <Compile Include="Projects\NetCorePackageReferenceProjectProvider.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
-    <Compile Include="Projects\ProjectProviderContext.cs" />
-    <Compile Include="ProjectServices\VsProjectScriptHostService.cs" />
-    <Compile Include="Prompts\DeprecatedFrameworkModel.cs" />
-    <Compile Include="Prompts\DotnetDeprecatedPrompt.cs" />
-    <Compile Include="Services\NuGetLockService.cs" />
-    <Compile Include="Projects\VsMSBuildNuGetProject.cs" />
+    <Compile Include="ProjectSystems\CpsPackageReferenceProject.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
+    <Compile Include="ProjectSystems\IProjectSystemProvider.cs" />
+    <Compile Include="ProjectSystems\MSBuildNuGetProjectProvider.cs" />
+    <Compile Include="ProjectSystems\ProjectKNuGetProjectProvider.cs" />
+    <Compile Include="ProjectSystems\ProjectSystemCache.cs" />
+    <Compile Include="ProjectSystems\ProjectNames.cs" />
+    <Compile Include="IDE\IScriptExecutor.cs" />
+    <Compile Include="ProjectSystems\IProjectSystemCache.cs" />
+    <Compile Include="ProjectSystems\CpsPackageReferenceProjectProvider.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
+    <Compile Include="ProjectSystems\ProjectSystemProviderContext.cs" />
+    <Compile Include="SolutionEventsListener.cs" />
+    <Compile Include="SolutionRestore\DeferredProjectRestoreData.cs" />
+    <Compile Include="SolutionRestore\SolutionRestoreRequest.cs" />
+    <Compile Include="ScriptExecutionRequest.cs" />
+    <Compile Include="ProjectSystems\VSMSBuildNuGetProject.cs" />
+    <Compile Include="SolutionRestore\ISolutionRestoreWorker.cs" />
     <Compile Include="ICredentialServiceProvider.cs" />
+    <Compile Include="IDE\PackageInitPS1State.cs" />
     <Compile Include="IDE\VsCommonOperations.cs" />
+    <Compile Include="IDE\VsHierarchyItem.cs" />
     <Compile Include="IDE\VSDeleteOnRestartManager.cs" />
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
-    <Compile Include="Projects\VsProjectJsonNuGetProject.cs" />
-    <Compile Include="SourceControl\DefaultTFSSourceControlManager.cs" />
-    <Compile Include="SourceControl\VsSourceControlManagerProvider.cs" />
+    <Compile Include="IPackageAssemblyReference.cs" />
+    <Compile Include="IScriptPackage.cs" />
+    <Compile Include="IScriptPackageFile.cs" />
+    <Compile Include="PackageAssemblyReference.cs" />
+    <Compile Include="ProjectSystems\ProjectJsonBuildIntegratedProjectSystem.cs" />
+    <Compile Include="ScriptPackage.cs" />
+    <Compile Include="ScriptPackageFile.cs" />
+    <Compile Include="SourceControl\ITFSSourceControlManagerProvider.cs" />
+    <Compile Include="SourceControl\IVsSourceControlTracker.cs" />
+    <Compile Include="SourceControl\TFSSourceControlManagerProviderPicker.cs" />
+    <Compile Include="SourceControl\VSSourceControlManagerProvider.cs" />
     <Compile Include="OptionsPageActivator.cs" />
     <Compile Include="ProjectSystems\CpsProjectSystem.cs" />
     <Compile Include="ProjectSystems\FSharpProjectSystem.cs" />
     <Compile Include="ProjectSystems\JsProjectSystem.cs" />
     <Compile Include="ProjectSystems\MSBuildNuGetProjectSystemFactory.cs" />
     <Compile Include="ProjectSystems\NativeProjectSystem.cs" />
-    <Compile Include="Projects\ProjectKNuGetProject.cs" />
+    <Compile Include="ProjectSystems\ProjectKNuGetProject.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ProjectSystems\WebProjectSystem.cs" />
     <Compile Include="ProjectSystems\WebSiteProjectSystem.cs" />
     <Compile Include="ProjectSystems\WindowsStoreProjectSystem.cs" />
     <Compile Include="ProjectSystems\WixProjectSystem.cs" />
+    <Compile Include="Runtime\AssemblyBinding.cs" />
     <Compile Include="Runtime\BindingRedirectManager.cs" />
     <Compile Include="Runtime\BindingRedirectResolver.cs" />
+    <Compile Include="Runtime\IAssembly.cs" />
     <Compile Include="Runtime\RemoteAssembly.cs" />
     <Compile Include="Setting\ISettingsManager.cs" />
     <Compile Include="Setting\ISettingsStore.cs" />
@@ -178,48 +188,45 @@
     <Compile Include="SourceControl\VsSourceControlTracker.cs" />
     <Compile Include="Telemetry\NuGetProjectType.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
-    <Compile Include="Telemetry\VSTelemetryServiceUtility.cs" />
-    <Compile Include="Utility\EnvDTEProjectUtility.cs" />
+    <Compile Include="Telemetry\NuGetProjectTelemetryService.cs" />
+    <Compile Include="Utility\EnvDTEExtensions.cs" />
+    <Compile Include="Utility\DeferredProjectRestoreUtility.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\FrameworkAssembly.cs" />
     <Compile Include="Utility\FrameworkAssemblyResolver.cs" />
+    <Compile Include="Utility\MessageHelper.cs" />
     <Compile Include="Utility\NativeMethods.cs" />
-    <Compile Include="Utility\NuGetProjectUpgradeUtility.cs" />
+    <Compile Include="Utility\PathHelper.cs" />
+    <Compile Include="Utility\PathValidator.cs" />
     <Compile Include="Utility\ProjectRetargetingUtility.cs" />
     <Compile Include="Utility\RefreshFileUtility.cs" />
-    <Compile Include="Utility\RegistrySettingUtility.cs" />
     <Compile Include="Utility\RuntimeHelpers.cs" />
+    <Compile Include="Utility\ScriptExecutorUtil.cs" />
+    <Compile Include="Utility\ServiceProviderExtensions.cs" />
     <Compile Include="Utility\SettingsHelper.cs" />
-    <Compile Include="Utility\TaskCombinators.cs" />
     <Compile Include="Utility\VCProjectHelper.cs" />
-    <Compile Include="Utility\VSRestoreSettingsUtilities.cs" />
+    <Compile Include="Utility\VSProjectRestoreReferenceUtility.cs" />
     <Compile Include="VisualStudioAccountProvider.cs" />
-    <Compile Include="VisualStudioActivityLogger.cs" />
     <Compile Include="VisualStudioCredentialProvider.cs" />
     <Compile Include="VsCredentialProviderAdapter.cs" />
     <Compile Include="VsCredentialProviderImporter.cs" />
     <Compile Include="VSMachineWideSettings.cs" />
-    <Compile Include="Projects\NuGetProjectFactory.cs" />
-    <Compile Include="ProjectSystems\VsMSBuildProjectSystem.cs" />
+    <Compile Include="ProjectSystems\NuGetProjectFactory.cs" />
+    <Compile Include="ProjectSystems\VSMSBuildNuGetProjectSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utility\ExceptionHelper.cs" />
     <Compile Include="Utility\MicrosoftBuildEvaluationProjectUtility.cs" />
+    <Compile Include="Utility\ServiceLocator.cs" />
+    <Compile Include="Utility\NuGetVSConstants.cs" />
+    <Compile Include="Utility\EnvDTEProjectUtility.cs" />
+    <Compile Include="Utility\VsHierarchyUtility.cs" />
+    <Compile Include="VS.ProjectSystems\VcxProject.cs" />
     <Compile Include="IDE\VSSolutionManager.cs" />
-    <Compile Include="Services\DefaultProjectThreadingService.cs" />
-    <Compile Include="ProjectServices\DeferredProjectServicesProxy.cs" />
-    <Compile Include="Projects\IVsProjectAdapterProvider.cs" />
-    <Compile Include="Services\IVsProjectThreadingService.cs" />
-    <Compile Include="ProjectServices\VsProjectBuildProperties.cs" />
-    <Compile Include="ProjectServices\VsManagedLanguagesProjectSystemServices.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
-    <Compile Include="Projects\VsProjectAdapter.cs" />
-    <Compile Include="Projects\VsProjectAdapterProvider.cs" />
-    <Compile Include="ProjectServices\VsCoreProjectSystemServices.cs" />
-    <Compile Include="ProjectServices\WorkspaceProjectBuildProperties.cs" />
-    <Compile Include="ProjectServices\WorkspaceProjectServices.cs" />
     <Compile Include="VSSettings.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -231,6 +238,9 @@
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj">
@@ -245,12 +255,22 @@
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.Build.Tasks.csproj">
+      <Project>{e09441b8-8d74-4a96-8431-480e2065f844}</Project>
+      <Name>NuGet.Build.Tasks</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>NuGet.VisualStudio</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
+      <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
+      <Name>NuGet.PackageManagement.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
+      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
+      <Name>NuGet.VisualStudio.Facade</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Commands\NuGet.Commands.csproj">
       <Project>{567e8582-0e73-4a34-a7d3-ed9486415523}</Project>
       <Name>NuGet.Commands</Name>
@@ -287,9 +307,9 @@
       <Project>{f013e43f-b6d5-4f59-acf0-eecec2c794f5}</Project>
       <Name>NuGet.ProjectModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj">
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.VisualStudio.csproj">
       <Project>{020f4c88-3a5c-4b89-9868-089e867cc223}</Project>
-      <Name>NuGet.Protocol</Name>
+      <Name>NuGet.Protocol.VisualStudio</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj">
       <Project>{24e62ab7-64e4-4975-9417-883559d1bc19}</Project>
@@ -297,22 +317,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs">
-      <Link>HashCodeCombiner.cs</Link>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration">
-      <Version>15.0.198-pre</Version>
-    </PackageReference>
-    <PackageReference Include="VSLangProj110">
-      <Version>11.0.61030</Version>
-    </PackageReference>
-    <PackageReference Include="VSLangProj2">
-      <Version>7.0.5000</Version>
-    </PackageReference>
-    <PackageReference Include="VSLangProj157">
-      <Version>15.7.0</Version>
+      <Version>15.0.171-pre</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

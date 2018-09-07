@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -21,14 +20,14 @@ namespace NuGet.PackageManagement.VisualStudio
         private static readonly XName BindingRedirectName = AssemblyBinding.GetQualifiedName("bindingRedirect");
 
         private string ConfigurationFile { get; set; }
-        private IMSBuildProjectSystem MSBuildNuGetProjectSystem { get; set; }
+        private IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; set; }
 
-        public BindingRedirectManager(string configurationFile, IMSBuildProjectSystem msBuildNuGetProjectSystem)
+        public BindingRedirectManager(string configurationFile, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
             if (String.IsNullOrEmpty(configurationFile))
             {
                 throw new ArgumentException(
-                    Strings.Argument_Cannot_Be_Null_Or_Empty,
+                    ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty,
                     nameof(configurationFile));
             }
             if (msBuildNuGetProjectSystem == null)
