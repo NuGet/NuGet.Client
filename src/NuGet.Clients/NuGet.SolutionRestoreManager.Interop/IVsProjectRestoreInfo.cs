@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,8 +14,7 @@ namespace NuGet.SolutionRestoreManager
     public interface IVsProjectRestoreInfo
     {
         /// <summary>
-        /// The MSBuildProjectExtensionsPath of the project (originally BaseIntermediateOutputPath was used,
-        /// but rather than create a new interface, we changed the meaning of this property).
+        /// Base intermediate path of the project.
         /// </summary>
         string BaseIntermediatePath { get; }
 

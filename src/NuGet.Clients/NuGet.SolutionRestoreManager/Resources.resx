@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
-    <value>Argument cannot be null or empty</value>
-  </data>
   <data name="DialogTitle" xml:space="preserve">
     <value>NuGet Package Manager</value>
   </data>
@@ -136,18 +133,15 @@
     <value>Time Elapsed: {0}</value>
   </data>
   <data name="PackageNotRestoredBecauseOfNoConsent" xml:space="preserve">
-    <value>One or more NuGet packages need to be restored but couldn't be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the NuGet Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also give consent by setting the environment variable 'EnableNuGetPackageRestore' to 'true'.
+    <value>One or more NuGet packages need to be restored but couldn't be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also give consent by setting the environment variable 'EnableNuGetPackageRestore' to 'true'.
 
 Missing packages: {0}</value>
-  </data>
-  <data name="PackageRefNotRestoredBecauseOfNoConsent" xml:space="preserve">
-    <value>NuGet restore is currently disabled. To enable it, open the Visual Studio Options dialog, click on the NuGet Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also enable it by setting the environment variable 'EnableNuGetPackageRestore' to 'true'.</value>
   </data>
   <data name="PackageRestoreCanceled" xml:space="preserve">
     <value>NuGet package restore canceled.</value>
   </data>
   <data name="PackageRestoreFailedForProject" xml:space="preserve">
-    <value>NuGet Package restore failed for project {0}: {1}. Please see Error List window for detailed warnings and errors.</value>
+    <value>NuGet Package restore failed for project {0}: {1}.</value>
   </data>
   <data name="PackageRestoreFinished" xml:space="preserve">
     <value>NuGet package restore finished.</value>
@@ -156,11 +150,11 @@ Missing packages: {0}</value>
     <value>NuGet Package restore finished for project '{0}'.</value>
   </data>
   <data name="PackageRestoreFinishedWithError" xml:space="preserve">
-    <value>NuGet package restore failed. Please see Error List window for detailed warnings and errors.</value>
+    <value>NuGet package restore failed.</value>
   </data>
   <data name="PackageRestoreOptOutMessage" xml:space="preserve">
     <value>Restoring NuGet packages...
-To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck 'Allow NuGet to download missing packages during build.'</value>
+To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck 'Allow NuGet to download missing packages during build.'</value>
   </data>
   <data name="RelativeGlobalPackagesFolder" xml:space="preserve">
     <value>'globalPackagesFolder' from nuget.config file or the environment variable is '{0}', a relative path and the solution is not saved. Please save your solution or configure a 'globalPackagesFolder' which is a full path.</value>
@@ -170,9 +164,6 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
   </data>
   <data name="RestoringPackages" xml:space="preserve">
     <value>Restoring NuGet packages...</value>
-  </data>
-  <data name="SolutionIsNotSaved" xml:space="preserve">
-    <value>Solution is not saved. Please save your solution before managing NuGet packages.</value>
   </data>
   <data name="SolutionRestoreFailed_RestoreWorkerIsBusy" xml:space="preserve">
     <value>Solution Restore cannot be started while an automatic restore is in progress.</value>
