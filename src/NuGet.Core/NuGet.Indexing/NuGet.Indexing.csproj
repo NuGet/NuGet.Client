@@ -6,14 +6,25 @@
   <PropertyGroup>
     <Description>NuGet.Indexing Class Library</Description>
     <TargetFramework>net45</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CS1584;CS1658</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
+    <IncludeNuGetSharedFiles>true</IncludeNuGetSharedFiles>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/NuGetQuery.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierKeywordAnalyzer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierAnalyzer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/DescriptionAnalyzer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/DotTokenizer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TokenizingHelper.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/OwnerAnalyzer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/VersionAnalyzer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/CamelCaseFilter.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TagsAnalyzer.cs;../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/SemanticVersionFilter.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/NuGetQuery.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierKeywordAnalyzer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierAnalyzer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/DescriptionAnalyzer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/DotTokenizer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TokenizingHelper.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/OwnerAnalyzer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/VersionAnalyzer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/CamelCaseFilter.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TagsAnalyzer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/SemanticVersionFilter.cs"/>
   </ItemGroup>
 
   <ItemGroup>
