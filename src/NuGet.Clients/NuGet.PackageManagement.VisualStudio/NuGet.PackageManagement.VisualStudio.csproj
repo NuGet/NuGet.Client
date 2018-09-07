@@ -152,7 +152,7 @@
     <Compile Include="IDE\VSProductUpdateService.cs" />
     <Compile Include="Projects\VsProjectJsonNuGetProject.cs" />
     <Compile Include="SourceControl\DefaultTFSSourceControlManager.cs" />
-    <Compile Include="SourceControl\VsSourceControlManagerProvider.cs" />
+    <Compile Include="SourceControl\VSSourceControlManagerProvider.cs" />
     <Compile Include="OptionsPageActivator.cs" />
     <Compile Include="ProjectSystems\CpsProjectSystem.cs" />
     <Compile Include="ProjectSystems\FSharpProjectSystem.cs" />
