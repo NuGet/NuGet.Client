@@ -153,7 +153,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Theory]
         [InlineData("system", "3.0.0.0", true)]
         [InlineData("System", "4.0.0", true)]
-        [InlineData("System", "4.0.0.0", false)]
+        [InlineData("System", "4.0.0.0", true)]
         [InlineData("System", "5.0.0.0", false)]
         public void FrameworkAssemblyResolver_IsHigherAssemblyVersionInFramework(string simpleAssemblyName, string version, bool expectedResult)
         {
