@@ -82,10 +82,6 @@
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NuGet.VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
-      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
-      <Name>NuGet.VisualStudio.Facade</Name>
-    </ProjectReference>
     <ProjectReference Include="..\VsConsole\Console.Types\NuGet.Console.Types.csproj">
       <Project>{6fd11460-39a3-4a10-ba63-7541b0a7d053}</Project>
       <Name>NuGet.Console.Types</Name>
@@ -140,6 +136,12 @@
       <Project>{24e62ab7-64e4-4975-9417-883559d1bc19}</Project>
       <Name>NuGet.Versioning</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.RuntimeModel\NuGet.RuntimeModel.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.ProjectManagement\NuGet.ProjectManagement.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Repositories\NuGet.Repositories.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol.VisualStudio\NuGet.Protocol.VisualStudio.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.csproj"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.15.3.DesignTime">
