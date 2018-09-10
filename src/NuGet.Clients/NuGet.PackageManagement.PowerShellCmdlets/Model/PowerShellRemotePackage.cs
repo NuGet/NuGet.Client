@@ -3,10 +3,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.UI;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {

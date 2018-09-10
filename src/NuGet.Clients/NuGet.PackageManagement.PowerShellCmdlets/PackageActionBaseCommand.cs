@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,14 +10,12 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Text;
 using System.Threading;
-using NuGet.Common;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.ProjectModel;
 using NuGet.Resolver;
-using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -73,7 +71,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 throw new PackageSourceException(string.Format(
                     CultureInfo.CurrentCulture,
-                    Resources.UnknownSourceWithId,
+                    Strings.UnknownSourceWithId,
                     Id,
                     result.Source));
             }
@@ -81,15 +79,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 throw new PackageSourceException(string.Format(
                     CultureInfo.CurrentCulture,
-                    Resources.UnknownSourceType,
+                    Strings.UnknownSourceType,
                     result.Source));
             }
 
-            UpdateActiveSourceRepository(result.SourceRepository);            
+            UpdateActiveSourceRepository(result.SourceRepository);
+            GetNuGetProject(ProjectName);
             DetermineFileConflictAction();
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await GetNuGetProjectAsync(ProjectName);
                 await CheckMissingPackagesAsync();
                 await CheckPackageManagementFormat();
             });
@@ -129,17 +127,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
 
                 // stop telemetry event timer to avoid UI interaction
-                TelemetryServiceUtility.StopTimer();
+                TelemetryUtility.StopTimer();
 
                 if (!ShouldContinueDueToDotnetDeprecation(actions, isPreview))
                 {
                     // resume telemetry event timer after ui confirmation
-                    TelemetryServiceUtility.StartOrResumeTimer();
+                    TelemetryUtility.StartorResumeTimer();
                     return;
                 }
 
                 // resume telemetry event timer after ui confirmation
-                TelemetryServiceUtility.StartOrResumeTimer();
+                TelemetryUtility.StartorResumeTimer();
 
                 if (isPreview)
                 {
@@ -148,11 +146,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 else
                 {
                     NuGetPackageManager.SetDirectInstall(identity, projectContext);
-                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, resolutionContext.SourceCacheContext, CancellationToken.None);
+                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
                     NuGetPackageManager.ClearDirectInstall(projectContext);
-
-                    // Refresh Manager UI if needed
-                    RefreshUI(actions);
                 }
             }
             catch (InvalidOperationException ex)
@@ -202,17 +197,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
 
                 // stop telemetry event timer to avoid UI interaction
-                TelemetryServiceUtility.StopTimer();
+                TelemetryUtility.StopTimer();
 
                 if (!ShouldContinueDueToDotnetDeprecation(actions, isPreview))
                 {
                     // resume telemetry event timer after ui confirmation
-                    TelemetryServiceUtility.StartOrResumeTimer();
+                    TelemetryUtility.StartorResumeTimer();
                     return;
                 }
 
                 // resume telemetry event timer after ui confirmation
-                TelemetryServiceUtility.StartOrResumeTimer();
+                TelemetryUtility.StartorResumeTimer();
 
                 if (isPreview)
                 {
@@ -222,11 +217,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     var identity = actions.Select(v => v.PackageIdentity).Where(p => p.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                     NuGetPackageManager.SetDirectInstall(identity, projectContext);
-                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, resolutionContext.SourceCacheContext, CancellationToken.None);
+                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, CancellationToken.None);
                     NuGetPackageManager.ClearDirectInstall(projectContext);
-
-                    // Refresh Manager UI if needed
-                    RefreshUI(actions);
                 }
             }
             catch (InvalidOperationException ex)
@@ -266,15 +258,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             Id = metadata.First().Identity.Id;
         }
 
-        protected virtual void WarnIfParametersAreNotSupported()
-        {
-            if (Source != null && Project is BuildIntegratedNuGetProject)
-            {
-                var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectType, nameof(Source), NuGetProject.GetUniqueNameOrName(Project));
-                Log(MessageLevel.Warning, warning);
-            }
-        }
-
         protected override void EndProcessing()
         {
             base.EndProcessing();
@@ -301,7 +284,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // if default format is PackageReference then update NuGet Project
                 if (packageManagementFormat.SelectedPackageManagementFormat == 1)
                 {
-                    var newProject = await VsSolutionManager.UpgradeProjectToPackageReferenceAsync(Project);
+                    var newProject = await VsSolutionManager.UpdateNuGetProjectToPackageRef(Project);
 
                     if (newProject != null)
                     {

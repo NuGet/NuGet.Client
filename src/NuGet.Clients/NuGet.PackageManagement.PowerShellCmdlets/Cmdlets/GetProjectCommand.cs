@@ -1,11 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Management.Automation;
-using System.Threading.Tasks;
-using NuGet.VisualStudio;
+using EnvDTE;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -14,7 +13,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// which is also used for tab expansion.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "Project", DefaultParameterSetName = ParameterSetByName)]
-    [OutputType(typeof(EnvDTE.Project))]
+    [OutputType(typeof(Project))]
     public class GetProjectCommand : NuGetPowerShellBaseCommand
     {
         private const string ParameterSetByName = "ByName";
@@ -31,12 +30,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// logging time disabled for tab command
         /// </summary>
-        protected override bool IsLoggingTimeDisabled => true;
+        protected override bool IsLoggingTimeDisabled
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         private void Preprocess()
         {
             CheckSolutionState();
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await GetNuGetProjectAsync());
+            GetNuGetProject();
         }
 
         protected override void ProcessRecordCore()
@@ -45,10 +50,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (All.IsPresent)
             {
-                VsSolutionManager.EnsureSolutionIsLoaded();
-                var projects = NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                    async() => (await VsSolutionManager.GetAllVsProjectAdaptersAsync()).Select(p => p.Project));
-
+                var projects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE);
                 WriteObject(projects, enumerateCollection: true);
             }
             else
@@ -56,18 +58,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // No name specified; return default project (if not null)
                 if (Name == null)
                 {
-                    var defaultProject = NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                        async () => await GetDefaultProjectAsync());
+                    Project defaultProject = GetDefaultProject();
                     if (defaultProject != null)
                     {
-                        WriteObject(defaultProject.Project);
+                        WriteObject(defaultProject);
                     }
                 }
                 else
                 {
                     // get all projects matching name(s) - handles wildcards
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                        async () => WriteObject((await GetProjectsByNameAsync(Name)).Select(p => p.Project), enumerateCollection: true));
+                    WriteObject(GetProjectsByName(Name), enumerateCollection: true);
                 }
             }
         }

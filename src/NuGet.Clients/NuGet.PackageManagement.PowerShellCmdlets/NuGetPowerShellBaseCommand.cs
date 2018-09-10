@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,13 +19,13 @@ using EnvDTE;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -40,12 +40,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         #region Members
 
         private readonly BlockingCollection<Message> _blockingCollection = new BlockingCollection<Message>();
-        private readonly Semaphore _scriptEndSemaphore = new Semaphore(0, int.MaxValue);
-        private readonly Semaphore _flushSemaphore = new Semaphore(0, int.MaxValue);
+        private readonly Semaphore _scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
+        private readonly Semaphore _flushSemaphore = new Semaphore(0, Int32.MaxValue);
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
-        private Guid _operationId;
 
         protected int _packageCount;
         protected NuGetOperationStatus _status = NuGetOperationStatus.Succeeded;
@@ -67,7 +66,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             ConfigSettings = ServiceLocator.GetInstance<Configuration.ISettings>();
-            VsSolutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
+            VsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             DTE = ServiceLocator.GetInstance<DTE>();
             SourceControlManagerProvider = ServiceLocator.GetInstance<ISourceControlManagerProvider>();
             _commonOperations = ServiceLocator.GetInstance<ICommonOperations>();
@@ -104,9 +103,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Vs Solution Manager for PowerShell Cmdlets
         /// </summary>
-        protected IVsSolutionManager VsSolutionManager { get; }
+        protected ISolutionManager VsSolutionManager { get; }
 
         protected IPackageRestoreManager PackageRestoreManager { get; private set; }
+
+        /// <summary>
+        /// Package Source Provider
+        /// </summary>
+        protected Configuration.PackageSourceProvider PackageSourceProvider
+        {
+            get { return new Configuration.PackageSourceProvider(ConfigSettings); }
+        }
 
         /// <summary>
         /// List of primary source repositories used for search operations
@@ -209,7 +216,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                ExceptionHelper.WriteErrorToActivityLog(ex);
+                ExceptionHelper.WriteToActivityLog(ex);
 
                 // unhandled exceptions should be terminating
                 ErrorHandler.HandleException(ex, terminating: true);
@@ -248,19 +255,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     using (var cacheContext = new SourceCacheContext())
                     {
-                        var downloadContext = new PackageDownloadContext(cacheContext)
-                        {
-                            ParentId = OperationId
-                        };
+                        var downloadContext = new PackageDownloadContext(cacheContext);
 
                         var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                             solutionDirectory,
                             packages,
                             this,
                             downloadContext,
-                            new LoggerAdapter(this),
                             Token);
-
                         if (result.Restored)
                         {
                             await PackageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
@@ -277,13 +279,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected void RefreshUI(IEnumerable<NuGetProjectAction> actions)
-        {
-            var resolvedActions = actions.Select(action => new ResolvedAction(action.Project, action));
-
-            VsSolutionManager.OnActionsExecuted(resolvedActions);
-        }
-
         #region Cmdlets base APIs
 
         protected SourceValidationResult ValidateSource(string source)
@@ -293,7 +288,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 source = (string)GetPropertyValueFromHost(ActivePackageSourceKey);
             }
-
+            
             // Look through all available sources (including those disabled) by matching source name and URL (or path).
             var matchingSource = GetMatchingSource(source);
             if (matchingSource != null)
@@ -325,14 +320,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 throw new PackageSourceException(string.Format(
                     CultureInfo.CurrentCulture,
-                    Resources.UnknownSource,
+                    Strings.UnknownSource,
                     result.Source));
             }
             else if (result.Validity == SourceValidity.UnknownSourceType)
             {
                 throw new PackageSourceException(string.Format(
                     CultureInfo.CurrentCulture,
-                    Resources.UnknownSourceType,
+                    Strings.UnknownSourceType,
                     result.Source));
             }
         }
@@ -417,7 +412,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // Throw and unknown source type error if the specified source is neither local nor http
                 return SourceValidationResult.UnknownSourceType(source);
             }
-
+            
             // Check if the source is a valid HTTP URI.
             if (packageSource.IsHttp && packageSource.TrySourceAsUri == null)
             {
@@ -439,29 +434,26 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 ErrorHandler.ThrowSolutionNotOpenTerminatingError();
             }
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            if (!VsSolutionManager.IsSolutionAvailable)
             {
-                if (!(await VsSolutionManager.IsSolutionAvailableAsync()))
-                {
-                    ErrorHandler.HandleException(
-                        new InvalidOperationException(VisualStudio.Strings.SolutionIsNotSaved),
-                        terminating: true,
-                        errorId: NuGetErrorId.UnsavedSolution,
-                        category: ErrorCategory.InvalidOperation);
-                }
-            });
+                ErrorHandler.HandleException(
+                    new InvalidOperationException(VisualStudio.Strings.SolutionIsNotSaved),
+                    terminating: true,
+                    errorId: NuGetErrorId.UnsavedSolution,
+                    category: ErrorCategory.InvalidOperation);
+            }
         }
 
         /// <summary>
         /// Get the default NuGet Project
         /// </summary>
         /// <param name="projectName"></param>
-        protected async Task GetNuGetProjectAsync(string projectName = null)
+        protected void GetNuGetProject(string projectName = null)
         {
             if (string.IsNullOrEmpty(projectName))
             {
-                Project = await VsSolutionManager.GetDefaultNuGetProjectAsync();
-                if ((await VsSolutionManager.IsSolutionAvailableAsync())
+                Project = VsSolutionManager.DefaultNuGetProject;
+                if (VsSolutionManager.IsSolutionAvailable
                     && Project == null)
                 {
                     ErrorHandler.WriteProjectNotFoundError("Default", terminating: true);
@@ -469,8 +461,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                Project = await VsSolutionManager.GetNuGetProjectAsync(projectName);
-                if ((await VsSolutionManager.IsSolutionAvailableAsync())
+                Project = VsSolutionManager.GetNuGetProject(projectName);
+                if (VsSolutionManager.IsSolutionAvailable
                     && Project == null)
                 {
                     ErrorHandler.WriteProjectNotFoundError(projectName, terminating: true);
@@ -479,19 +471,29 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Get default project in the type of <see cref="IVsProjectAdapter"/>, to keep PowerShell scripts backward-compatbility.
+        /// Get default project in the type of EnvDTE.Project, to keep PowerShell scripts backward-compatbility.
         /// </summary>
         /// <returns></returns>
-        protected async Task<IVsProjectAdapter> GetDefaultProjectAsync()
+        protected Project GetDefaultProject()
         {
-            var defaultNuGetProject = await VsSolutionManager.GetDefaultNuGetProjectAsync();
+            string customUniqueName = string.Empty;
+            Project defaultDTEProject = null;
+
+            NuGetProject defaultNuGetProject = VsSolutionManager.DefaultNuGetProject;
             // Solution may be open without a project in it. Then defaultNuGetProject is null.
             if (defaultNuGetProject != null)
             {
-                return await VsSolutionManager.GetVsProjectAdapterAsync(defaultNuGetProject);
+                customUniqueName = defaultNuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
             }
 
-            return null;
+            // Get all DTE projects in the solution and compare by CustomUnique names, especially for projects under solution folders.
+            IEnumerable<Project> allDTEProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE);
+            if (allDTEProjects != null)
+            {
+                defaultDTEProject = allDTEProjects.Where(p => StringComparer.OrdinalIgnoreCase.Equals(EnvDTEProjectUtility.GetCustomUniqueName(p), customUniqueName)).FirstOrDefault();
+            }
+
+            return defaultDTEProject;
         }
 
         /// <summary>
@@ -501,12 +503,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="projectNames">An array of project names that may or may not include wildcards.</param>
         /// <returns>Projects matching the project name(s) provided.</returns>
-        protected async Task<IEnumerable<IVsProjectAdapter>> GetProjectsByNameAsync(string[] projectNames)
+        protected IEnumerable<Project> GetProjectsByName(string[] projectNames)
         {
-            var result = new List<IVsProjectAdapter>();
-            var allValidProjectNames = await GetAllValidProjectNamesAsync();
+            var allValidProjectNames = GetAllValidProjectNames().ToList();
+            var allDteProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(DTE);
 
-            foreach (var projectName in projectNames)
+            foreach (string projectName in projectNames)
             {
                 // if ctrl+c hit, leave immediately
                 if (Stopping)
@@ -517,32 +519,33 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // Treat every name as a wildcard; results in simpler code
                 var pattern = new WildcardPattern(projectName, WildcardOptions.IgnoreCase);
 
-                var matches = allValidProjectNames
-                    .Where(s => pattern.IsMatch(s))
-                    .ToArray();
+                var matches = from s in allValidProjectNames
+                              where pattern.IsMatch(s)
+                              select VsSolutionManager.GetNuGetProject(s);
+
+                int count = 0;
+                foreach (var project in matches)
+                {
+                    if (project != null)
+                    {
+                        count++;
+                        string name = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+                        Project dteProject = allDteProjects
+                            .Where(p => StringComparer.OrdinalIgnoreCase.Equals(EnvDTEProjectUtility.GetCustomUniqueName(p), name))
+                            .FirstOrDefault();
+                        yield return dteProject;
+                    }
+                }
 
                 // We only emit non-terminating error record if a non-wildcarded name was not found.
                 // This is consistent with built-in cmdlets that support wildcarded search.
                 // A search with a wildcard that returns nothing should not be considered an error.
-                if ((matches.Length == 0)
+                if ((count == 0)
                     && !WildcardPattern.ContainsWildcardCharacters(projectName))
                 {
                     ErrorHandler.WriteProjectNotFoundError(projectName, terminating: false);
                 }
-
-                foreach (var match in matches)
-                {
-                    var matchedProject = await VsSolutionManager.GetNuGetProjectAsync(match);
-
-                    if (matchedProject != null)
-                    {
-                        var projectAdapter = await VsSolutionManager.GetVsProjectAdapterAsync(matchedProject);
-                        result.Add(projectAdapter);
-                    }
-                }
             }
-
-            return result;
         }
 
         /// <summary>
@@ -550,10 +553,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// unique names and safe names.
         /// </summary>
         /// <returns></returns>
-        private async Task<IEnumerable<string>> GetAllValidProjectNamesAsync()
+        private IEnumerable<string> GetAllValidProjectNames()
         {
-            var nugetProjects = await VsSolutionManager.GetNuGetProjectsAsync();
-            var safeNames = await Task.WhenAll(nugetProjects?.Select(p => VsSolutionManager.GetNuGetProjectSafeNameAsync(p)));
+            var nugetProjects = VsSolutionManager.GetNuGetProjects();
+            var safeNames = nugetProjects?.Select(p => VsSolutionManager.GetNuGetProjectSafeName(p));
             var uniqueNames = nugetProjects?.Select(p => NuGetProject.GetUniqueNameOrName(p));
             return uniqueNames.Concat(safeNames).Distinct();
         }
@@ -612,7 +615,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             var searchFilter = new SearchFilter(includePrerelease: includePrerelease);
             searchFilter.IncludeDelisted = false;
-            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, logger: null);
+            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, logger: null); 
             var searchTask = packageFeed.SearchAsync(searchString, searchFilter, Token);
 
             return PackageFeedEnumerator.Enumerate(
@@ -685,7 +688,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                foreach (var action in actions)
+                foreach (NuGetProjectAction action in actions)
                 {
                     Log(MessageLevel.Info, action.NuGetProjectActionType + " " + action.PackageIdentity);
                 }
@@ -739,7 +742,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected object GetPropertyValueFromHost(string propertyName)
         {
-            var privateData = Host.PrivateData;
+            PSObject privateData = Host.PrivateData;
             var propertyInfo = privateData.Properties[propertyName];
             if (propertyInfo != null)
             {
@@ -929,6 +932,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Implement INuGetProjectContext.Log(). Called by worker thread.
         /// </summary>
+        /// <param name="level"></param>
+        /// <param name="message"></param>
+        /// <param name="args"></param>
         public void Log(MessageLevel level, string message, params object[] args)
         {
             if (args.Length > 0)
@@ -937,14 +943,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             BlockingCollection.Add(new LogMessage(level, message));
-        }
-
-        /// <summary>
-        /// Implement INuGetProjectContext.Log(). Called by worker thread.
-        /// </summary>
-        public void Log(ILogMessage message)
-        {
-            BlockingCollection.Add(new LogMessage(LogUtility.LogLevelToMessageLevel(message.Level), message.FormatWithCode()));
         }
 
         /// <summary>
@@ -1027,7 +1025,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (path != null)
                 {
-                    string command = "& " + PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
+                    string command = "& " + ProjectManagement.PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
                     LogCore(MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_ExecutingScript, path));
 
                     InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);
@@ -1104,28 +1102,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // no-op
         }
 
-        public void ReportError(ILogMessage message)
-        {
-            // no-op
-        }
-
         public NuGetActionType ActionType { get; set; }
 
-        public Guid OperationId
-        {
-            get
-            {
-                if (_operationId == Guid.Empty)
-                {
-                    _operationId = Guid.NewGuid();
-                }
-                return _operationId;
-            }
-            set
-            {
-                _operationId = value;
-            }
-        }
+        public TelemetryServiceHelper TelemetryService { get; set; }
     }
 
     public class ProgressRecordCollection : KeyedCollection<int, ProgressRecord>
@@ -1134,5 +1113,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             return item.ActivityId;
         }
+    }
+
+    public interface IPSNuGetProjectContext : INuGetProjectContext
+    {
+        bool IsExecuting { get; }
+
+        PSCmdlet CurrentPSCmdlet { get; }
+
+        void ExecutePSScript(string scriptPath, bool throwOnFailure);
     }
 }

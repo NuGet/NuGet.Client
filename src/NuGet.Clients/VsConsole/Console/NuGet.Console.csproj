@@ -140,6 +140,8 @@
       <Name>NuGet.Console.Types</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\NuGet.Core\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.csproj"/>
+    <ProjectReference Include="..\..\..\NuGet.Core\NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.csproj"/>
+    <ProjectReference Include="..\..\..\NuGet.Core\NuGet.ProjectManagement\NuGet.ProjectManagement.csproj"/>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Xamls\ConsoleContainer.xaml">

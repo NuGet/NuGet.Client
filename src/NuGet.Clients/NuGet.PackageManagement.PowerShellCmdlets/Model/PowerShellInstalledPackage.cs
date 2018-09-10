@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
+using NuGet.PackageManagement.UI;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets

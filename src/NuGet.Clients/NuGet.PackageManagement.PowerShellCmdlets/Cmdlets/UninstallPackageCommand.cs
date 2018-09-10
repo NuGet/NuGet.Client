@@ -1,17 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Management.Automation;
 using System.Threading;
 using NuGet.Common;
-using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
-using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -53,13 +50,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private void Preprocess()
         {
             CheckSolutionState();
-
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await GetNuGetProjectAsync(ProjectName);
-                await CheckMissingPackagesAsync();
-            });
-
+            GetNuGetProject(ProjectName);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
             ActionType = NuGetActionType.Uninstall;
         }
 
@@ -68,37 +60,32 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var startTime = DateTimeOffset.Now;
             _packageCount = 1;
 
-            var stopWatch = Stopwatch.StartNew();
+            // Enable granular level events for this uninstall operation
+            TelemetryService = new TelemetryServiceHelper();
+            TelemetryUtility.StartorResumeTimer();
 
-            // Run Preprocess outside of JTF
-            Preprocess();
-
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            using (var lck = _lockService.AcquireLock())
             {
-                await _lockService.ExecuteNuGetOperationAsync(() =>
-                {
-                    SubscribeToProgressEvents();
-                    Task.Run(UninstallPackageAsync);
-                    WaitAndLogPackageActions();
-                    UnsubscribeFromProgressEvents();
+                Preprocess();
 
-                    return Task.FromResult(true);
-                }, Token);
-            });
+                SubscribeToProgressEvents();
+                Task.Run(UninstallPackageAsync);
+                WaitAndLogPackageActions();
+                UnsubscribeFromProgressEvents();
+            }
 
-            stopWatch.Stop();
-            var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
-                OperationId.ToString(),
+            TelemetryUtility.StopTimer();
+            var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
                 new[] { Project },
                 NuGetOperationType.Uninstall,
                 OperationSource.PMC,
                 startTime,
                 _status,
                 _packageCount,
-                stopWatch.Elapsed.TotalSeconds);
+                TelemetryUtility.GetTimerElapsedTimeInSeconds());
 
-            // emit telemetry event along with granular level events
-            TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
+            // emit telemetry event with granular level events
+            ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, TelemetryService.TelemetryEvents);
         }
 
         protected override void EndProcessing()
@@ -147,18 +134,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected async Task UninstallPackageByIdAsync(NuGetProject project, string packageId, UninstallationContext uninstallContext, INuGetProjectContext projectContext, bool isPreview)
         {
-            var actions = await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
-
             if (isPreview)
             {
+                IEnumerable<NuGetProjectAction> actions = await PackageManager.PreviewUninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
                 PreviewNuGetPackageActions(actions);
             }
             else
             {
-                await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, projectContext, NullSourceCacheContext.Instance, CancellationToken.None);
-
-                // Refresh Manager UI if needed
-                RefreshUI(actions);
+                await PackageManager.UninstallPackageAsync(project, packageId, uninstallContext, projectContext, CancellationToken.None);
             }
         }
 

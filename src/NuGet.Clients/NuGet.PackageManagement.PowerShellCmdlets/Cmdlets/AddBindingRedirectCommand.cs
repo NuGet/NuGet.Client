@@ -1,13 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
+using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -44,12 +45,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     CheckSolutionState();
 
-                    var projects = new List<IVsProjectAdapter>();
+                    var projects = new List<Project>();
 
                     // if no project specified, use default
                     if (ProjectName == null)
                     {
-                        var defaultProject = await GetDefaultProjectAsync();
+                        Project defaultProject = GetDefaultProject();
 
                         // if no default project (empty solution), throw terminating
                         if (defaultProject == null)
@@ -62,15 +63,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     else
                     {
                         // get matching projects, expanding wildcards
-                        projects.AddRange(await GetProjectsByNameAsync(ProjectName));
+                        projects.AddRange(GetProjectsByName(ProjectName));
                     }
 
                     // Create a new app domain so we don't load the assemblies into the host app domain
-                    var domain = AppDomain.CreateDomain("domain");
+                    AppDomain domain = AppDomain.CreateDomain("domain");
 
                     try
                     {
-                        foreach (var project in projects)
+                        foreach (Project project in projects)
                         {
                             var projectAssembliesCache = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
                             var redirects = await RuntimeHelpers.AddBindingRedirectsAsync(VsSolutionManager, project, domain, projectAssembliesCache, _frameworkMultiTargeting, this);
