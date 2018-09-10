@@ -1,13 +1,14 @@
 // Copyright(c) .NET Foundation.All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
-    public sealed class SourceItem : AddItem
+    public sealed class SourceItem : AddItem, IEquatable<SourceItem>
     {
         public string ProtocolVersion
         {
@@ -60,5 +61,24 @@ namespace NuGet.Configuration
                 Origin = Origin,
             };
         }
+
+        public bool Equals(SourceItem other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return string.Equals(Key, other.Key, StringComparison.Ordinal) &&
+                string.Equals(ProtocolVersion, other.ProtocolVersion, StringComparison.Ordinal);
+        }
+
+        public override bool Equals(SettingBase other) => Equals(other as SourceItem);
+        public override bool Equals(object other) => Equals(other as SourceItem);
     }
 }
