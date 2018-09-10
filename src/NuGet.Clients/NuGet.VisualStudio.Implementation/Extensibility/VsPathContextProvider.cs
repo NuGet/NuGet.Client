@@ -29,12 +29,12 @@ namespace NuGet.VisualStudio
     [PartCreationPolicy(CreationPolicy.Shared)]
     public sealed class VsPathContextProvider : IVsPathContextProvider2
     {
-        private readonly IAsyncServiceProvider _asyncServiceprovider;
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<NuGet.Common.ILogger> _logger;
         private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
 
+        private readonly AsyncLazy<EnvDTE.DTE> _dte;
         private readonly Lazy<INuGetProjectContext> _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext());
 
         [ImportingConstructor]
@@ -45,17 +45,6 @@ namespace NuGet.VisualStudio
             Lazy<IVsSolutionManager> solutionManager,
             [Import("VisualStudioActivityLogger")]
             Lazy<NuGet.Common.ILogger> logger)
-            : this(AsyncServiceProvider.GlobalProvider,
-                  settings,
-                  solutionManager,
-                  logger)
-        { }
-
-        public VsPathContextProvider(
-            IAsyncServiceProvider asyncServiceProvider,
-            Lazy<ISettings> settings,
-            Lazy<IVsSolutionManager> solutionManager,
-            Lazy<NuGet.Common.ILogger> logger)
         {
             if (serviceProvider == null)
             {
@@ -65,6 +54,15 @@ namespace NuGet.VisualStudio
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            _dte = new AsyncLazy<EnvDTE.DTE>(
+                async() =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return serviceProvider.GetDTE();
+                },
+                NuGetUIThreadHelper.JoinableTaskFactory);
+
             _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
         }
 
@@ -152,6 +150,7 @@ namespace NuGet.VisualStudio
 
             var pathToProject = new Dictionary<string, EnvDTE.Project>(StringComparer.OrdinalIgnoreCase);
 
+            var dte = await _dte.GetValueAsync();
             var supportedProjects = dte.Solution.Projects.Cast<EnvDTE.Project>();
 
             foreach (var solutionProject in supportedProjects)
@@ -165,7 +164,7 @@ namespace NuGet.VisualStudio
                 }
             }
 
-            return pathToProject;
+            return null;
         }
 
         public async Task<IVsPathContext> CreatePathContextAsync(NuGetProject nuGetProject, CancellationToken token)
