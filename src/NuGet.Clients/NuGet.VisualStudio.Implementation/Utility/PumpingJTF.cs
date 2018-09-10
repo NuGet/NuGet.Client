@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -17,10 +17,10 @@ namespace NuGet.VisualStudio
     /// This class is used to have a pumping JTF, in order, to not allow access to DTE objects from a background
     /// thread
     /// </summary>
-    internal class PumpingJTF : DelegatingJoinableTaskFactory
+    internal class PumpingJTF : JoinableTaskFactory
     {
-        public PumpingJTF(JoinableTaskFactory joinableTaskFactory)
-            : base(joinableTaskFactory)
+        public PumpingJTF(JoinableTaskContext joinableTaskContext)
+            : base(joinableTaskContext)
         {
         }
 

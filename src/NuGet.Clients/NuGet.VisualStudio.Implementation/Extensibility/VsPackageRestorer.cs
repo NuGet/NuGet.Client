@@ -1,14 +1,16 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
 using System.Threading;
 using EnvDTE;
-using NuGet.Common;
+using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.VisualStudio
 {
@@ -48,12 +50,11 @@ namespace NuGet.VisualStudio
                 NuGetUIThreadHelper.JoinableTaskFactory.Run(() =>
                     _restoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
                     nuGetProjectContext,
-                    NullLogger.Instance,
                     CancellationToken.None));
             }
             catch (Exception ex)
             {
-                ExceptionHelper.WriteErrorToActivityLog(ex);
+                ExceptionHelper.WriteToActivityLog(ex);
             }
         }
     }
