@@ -1065,6 +1065,289 @@ namespace NuGet.Configuration.Test
                 item.Value.Should().Be("value");
             }
         }
+       
+        [Fact]
+        public void AddOrUpdate_WithSpecificConfig_WithEmptySectionName_Throws()
+        {
+            // Arrange
+            var configFile = "NuGet.Config";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                var settings = new Settings(settingsFile);
+
+                // Act & Assert
+                var ex = Record.Exception(() => settings.AddOrUpdate(settingsFile, "", new AddItem("SomeKey", "SomeValue")));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<ArgumentNullException>();
+            }
+        }
+
+        [Fact]
+        public void AddOrUpdate_WithSpecificConfig_WithNullItem_Throws()
+        {
+            // Arrange
+            var configFile = "NuGet.Config";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                var settings = new Settings(settingsFile);
+
+                // Act & Assert
+                var ex = Record.Exception(() => settings.AddOrUpdate(settingsFile, "SomeKey", item: null));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<ArgumentNullException>();
+            }
+        }
+
+        [Fact]
+        public void AddOrUpdate_WithSpecificConfig_WithMachineWideSettings_Throws()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config"), @"<configuration></configuration>");
+                var settingsFile = new SettingsFile(Path.Combine(mockBaseDirectory, "nuget", "Config"), "a1.config", isMachineWide: true);
+                var settings = new Settings(settingsFile);
+
+                // Act
+                var ex = Record.Exception(() => settings.AddOrUpdate(settingsFile, "section", new AddItem("SomeKey", "SomeValue")));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<InvalidOperationException>();
+
+            }
+        }
+
+        [Fact]
+        public void AddOrUpdate_WithSpecificConfig_SectionThatDoesntExist_WillAddSection()
+        {
+            // Arrange
+            var configFile = "NuGet.Config";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key"" value=""value"" />
+    </SectionName>
+</configuration>";
+
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                var settings = new Settings(settingsFile);
+
+                // Act
+                settings.AddOrUpdate(settingsFile, "NewSectionName", new AddItem("key", "value"));
+                settings.SaveToDisk();
+
+                // Assert
+                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key"" value=""value"" />
+    </SectionName>
+    <NewSectionName>
+        <add key=""key"" value=""value"" />
+    </NewSectionName>
+</configuration>");
+
+                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, configFile))).Should().Be(result);
+                var section = settings.GetSection("NewSectionName");
+                section.Should().NotBeNull();
+                section.Items.Count.Should().Be(1);
+            }
+        }
+
+        [Fact]
+        public void AddOrUpdate_WithSpecificConfig_SectionThatExist_WillAddToSection()
+        {
+            // Arrange
+            var configFile = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key"" value=""value"" />
+    </SectionName>
+</configuration>";
+
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                var settings = new Settings(settingsFile);
+
+                // Act
+                settings.AddOrUpdate(settingsFile, "SectionName", new AddItem("keyTwo", "valueTwo"));
+                settings.SaveToDisk();
+
+                // Assert
+                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key"" value=""value"" />
+        <add key=""keyTwo"" value=""valueTwo"" />
+    </SectionName>
+</configuration>");
+
+                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, configFile))).Should().Be(result);
+            }
+        }
+
+        [Fact]
+        public void AddOrUpdate_WithSpecificConfig_WhenItemExistsInSection_OverrideItem()
+        {
+            // Arrange
+            var configFile = "NuGet.Config";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key"" value=""value"" />
+    </SectionName>
+</configuration>";
+
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                var settings = new Settings(settingsFile);
+
+                // Act
+                settings.AddOrUpdate(settingsFile, "SectionName", new AddItem("key", "NewValue"));
+                settings.SaveToDisk();
+
+                // Assert
+                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key"" value=""NewValue"" />
+    </SectionName>
+</configuration>");
+
+                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, configFile))).Should().Be(result);
+                var section = settings.GetSection("SectionName");
+                section.Should().NotBeNull();
+
+                var item = section.GetFirstItemWithAttribute<AddItem>("key", "key");
+                item.Should().NotBeNull();
+                item.Value.Should().Be("NewValue");
+            }
+        }
+
+        [Fact]
+        public void AddOrUpdate_WithSpecificConfig_PreserveComments()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<!-- Comment in nuget configuration -->
+<configuration>
+    <!-- Will add an item to this section -->
+    <SectionName>
+        <add key=""key1"" value=""value"" />
+    </SectionName>
+    <!-- This section wont have a new item -->
+    <SectionName2>
+        <add key=""key"" value=""value"" />
+    </SectionName2>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                var settings = new Settings(settingsFile);
+
+                // Act & Assert
+                settings.AddOrUpdate(settingsFile, "SectionName", new AddItem("newKey", "value"));
+                settings.SaveToDisk();
+
+                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<!-- Comment in nuget configuration -->
+<configuration>
+    <!-- Will add an item to this section -->
+    <SectionName>
+        <add key=""key1"" value=""value"" />
+        <add key=""newKey"" value=""value"" />
+    </SectionName>
+    <!-- This section wont have a new item -->
+    <SectionName2>
+        <add key=""key"" value=""value"" />
+    </SectionName2>
+</configuration>");
+
+                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
+
+                var section = settings.GetSection("SectionName");
+                section.Should().NotBeNull();
+
+                var item = section.GetFirstItemWithAttribute<AddItem>("key", "newKey");
+                item.Should().NotBeNull();
+                item.Value.Should().Be("value");
+            }
+        }
+
+        [Fact]
+        public void AddOrUpdate_WithSpecificConfig_PreserveUnknownItems()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""value"" />
+    </SectionName>
+    <SectionName2>
+        <add key=""key"" value=""value"" />
+    </SectionName2>
+    <UnknownSection>
+        <UnknownItem meta1=""data1"" />
+        <OtherUnknownItem>
+        </OtherUnknownItem>
+    </UnknownSection>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                var settings = new Settings(settingsFile);
+
+                // Act & Assert
+                settings.AddOrUpdate(settingsFile, "SectionName", new AddItem("newKey", "value"));
+                settings.SaveToDisk();
+
+                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""value"" />
+        <add key=""newKey"" value=""value"" />
+    </SectionName>
+    <SectionName2>
+        <add key=""key"" value=""value"" />
+    </SectionName2>
+    <UnknownSection>
+        <UnknownItem meta1=""data1"" />
+        <OtherUnknownItem>
+        </OtherUnknownItem>
+    </UnknownSection>
+</configuration>");
+
+                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
+
+                var section = settings.GetSection("SectionName");
+                section.Should().NotBeNull();
+
+                var item = section.GetFirstItemWithAttribute<AddItem>("key", "newKey");
+                item.Should().NotBeNull();
+                item.Value.Should().Be("value");
+            }
+        }
 
         [Fact]
         public void Remove_MachineWide_Throws()

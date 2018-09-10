@@ -19,11 +19,6 @@ namespace NuGet.Configuration
         public string ConfigFilePath => Path.GetFullPath(Path.Combine(DirectoryPath, FileName));
 
         /// <summary>
-        /// Event handler to be called when this setting file has changed.
-        /// </summary>
-        public event EventHandler SettingsChanged = delegate { };
-
-        /// <summary>
         /// Folder under which the settings file is present
         /// </summary>
         internal string DirectoryPath { get; }
@@ -165,7 +160,6 @@ namespace NuGet.Configuration
                 });
 
                 IsDirty = false;
-                SettingsChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -173,9 +167,7 @@ namespace NuGet.Configuration
 
         internal bool TryGetSection(string sectionName, out SettingSection section)
         {
-            var result = _rootElement.Sections.TryGetValue(sectionName, out var parsedSection);
-            section = parsedSection;
-            return result;
+           return _rootElement.Sections.TryGetValue(sectionName, out section);
         }
 
         internal static void ConnectSettingsFilesLinkedList(IList<SettingsFile> settingFiles)

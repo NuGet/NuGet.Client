@@ -82,10 +82,12 @@ namespace NuGet.Configuration
 
             // Operation is an add
             var outputSettingsFile = GetOutputSettingFileForSection(sectionName);
-            if (outputSettingsFile != null)
+            if (outputSettingsFile == null)
             {
-                AddOrUpdate(outputSettingsFile, sectionName, item);
+                throw new InvalidOperationException(Resources.NoWritteableConfig);
             }
+
+            AddOrUpdate(outputSettingsFile, sectionName, item);
         }
 
         internal void AddOrUpdate(SettingsFile settingsFile, string sectionName, SettingItem item)
@@ -100,21 +102,34 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(item));
             }
 
-            if (!Priority.Contains(settingsFile))
+            var currentSettings = Priority.First(f => f.Equals(settingsFile));
+            if (settingsFile.IsMachineWide || (currentSettings?.IsMachineWide ?? false))
+            {
+                throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
+            }
+
+            if (currentSettings == null)
             {
                 Priority.Last().SetNextFile(settingsFile);
             }
 
+            // If it is an update this will take care of it and modify the underlaying object, which is also referenced by _computedSections.
             settingsFile.AddOrUpdate(sectionName, item);
 
-            if (_computedSections.TryGetValue(sectionName, out var section))
+            // AddOrUpdate should have created this section, therefore this should always exist.
+            settingsFile.TryGetSection(sectionName, out var settingFileSection);
+
+            // If it is an add we have to manually add it to the _computedSections.
+            var computedSectionExists = _computedSections.TryGetValue(sectionName, out var section);
+            if (computedSectionExists && !section.Items.Contains(item))
             {
-                section.Add(item);
+                var existingItem = settingFileSection.Items.First(i => i.Equals(item));
+                section.Add(existingItem);
             }
-            else
+            else if (!computedSectionExists)
             {
                 _computedSections.Add(sectionName,
-                    new AbstractSettingSection(settingsFile.GetSection(sectionName)));
+                    new AbstractSettingSection(settingFileSection));
             }
         }
 
@@ -159,7 +174,7 @@ namespace NuGet.Configuration
         public Settings(string root, string fileName, bool isMachineWide)
             : this(new SettingsFile(root, fileName, isMachineWide)) { }
 
-        private Settings(SettingsFile settingsHead)
+        internal Settings(SettingsFile settingsHead)
         {
             _settingsHead = settingsHead;
             var computedSections = new Dictionary<string, AbstractSettingSection>();
@@ -168,7 +183,6 @@ namespace NuGet.Configuration
             while (curr != null)
             {
                 curr.MergeSectionsInto(computedSections);
-                curr.SettingsChanged += (_, __) => SettingsChanged?.Invoke(this, EventArgs.Empty);
                 curr = curr.Next;
             }
 
@@ -226,6 +240,8 @@ namespace NuGet.Configuration
             {
                 settingsFile.SaveToDisk();
             }
+
+            SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>

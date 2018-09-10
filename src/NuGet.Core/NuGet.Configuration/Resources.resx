@@ -156,6 +156,9 @@
   <data name="MustContainAbsolutePath" xml:space="preserve">
     <value>'{0}' must contain an absolute path '{1}'.</value>
   </data>
+  <data name="NoWritteableConfig" xml:space="preserve">
+    <value>There is no NuGet.Config that could be used for writting settings. Please create one at the desired location and restart the client.</value>
+  </data>
   <data name="PackageSource_Invalid" xml:space="preserve">
     <value>The package source does not belong to the collection of available sources.</value>
   </data>

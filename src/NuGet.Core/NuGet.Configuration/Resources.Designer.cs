@@ -170,6 +170,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There is no NuGet.Config that could be used for writting settings. Please create one at the desired location and restart the client..
+        /// </summary>
+        internal static string NoWritteableConfig {
+            get {
+                return ResourceManager.GetString("NoWritteableConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package source does not belong to the collection of available sources..
         /// </summary>
         internal static string PackageSource_Invalid {
