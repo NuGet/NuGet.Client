@@ -8,6 +8,7 @@ using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Credentials;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -50,6 +51,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.NoServiceEndpoint_Description,
                     CommandOptionType.NoValue);
 
+                var interactive = delete.Option(
+                    "--interactive",
+                    Strings.PushDeleteCommand_Interactive,
+                    CommandOptionType.SingleValue);
+
                 delete.OnExecute(async () =>
                 {
                     if (arguments.Values.Count < 2)
@@ -63,6 +69,8 @@ namespace NuGet.CommandLine.XPlat
                     string apiKeyValue = apikey.Value();
                     bool nonInteractiveValue = nonInteractive.HasValue();
                     bool noServiceEndpoint = noServiceEndpointDescription.HasValue();
+
+                    DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
                     PackageSourceProvider sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
 
