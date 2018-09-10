@@ -98,6 +98,10 @@
     <None Include="Scripts\NuGet.Format.ps1xml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\NuGet.Core\NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.csproj"/>
+    <ProjectReference Include="..\..\..\NuGet.Core\NuGet.Repositories\NuGet.Repositories.csproj"/>
+    <ProjectReference Include="..\..\..\NuGet.Core\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.csproj"/>
+    <ProjectReference Include="..\..\..\NuGet.Core\NuGet.ProjectManagement\NuGet.ProjectManagement.csproj"/>
     <ProjectReference Include="..\..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj">
       <Project>{98bee375-a5a0-4fc2-9b7a-25db41c8045d}</Project>
       <Name>NuGet.Common</Name>
@@ -142,11 +146,11 @@
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
+    <ProjectReference Include="..\..\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
       <Name>NuGet.PackageManagement.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
+    <ProjectReference Include="..\..\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>NuGet.PackageManagement.VisualStudio</Name>
     </ProjectReference>
