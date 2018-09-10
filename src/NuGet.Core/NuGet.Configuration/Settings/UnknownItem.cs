@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
 using NuGet.Shared;
@@ -66,14 +65,10 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(setting));
             }
 
-            Debug.Assert(!IsAbstract());
-
             if (Origin.IsMachineWide)
             {
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
-
-            Debug.Assert(setting.IsAbstract());
 
             if (!MutableChildren.Contains(setting) && !setting.IsEmpty())
             {
@@ -103,9 +98,6 @@ namespace NuGet.Configuration
             {
                 throw new ArgumentNullException(nameof(setting));
             }
-
-            Debug.Assert(!IsAbstract());
-            Debug.Assert(setting.Origin == Origin);
 
             if (Origin != null && Origin.IsMachineWide)
             {

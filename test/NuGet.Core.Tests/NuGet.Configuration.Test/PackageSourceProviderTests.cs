@@ -706,6 +706,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new AbstractSettingSection("disabledPackageSources"));
             settings.Setup(s => s.GetSection("packageSourceCredentials"))
                 .Returns(new AbstractSettingSection("packageSourceCredentials"));
+            settings.Setup(s => s.GetSection("config"))
+                .Returns(new AbstractSettingSection("config"));
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -738,6 +740,9 @@ namespace NuGet.Configuration.Test
 
             settings.Setup(s => s.GetSection("packageSourceCredentials"))
                 .Returns(new AbstractSettingSection("packageSourceCredentials"));
+
+            settings.Setup(s => s.GetSection("config"))
+                .Returns(new AbstractSettingSection("config"));
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1204,6 +1209,8 @@ namespace NuGet.Configuration.Test
                     ));
             settings.Setup(s => s.GetSection("packageSourceCredentials"))
                 .Returns(new AbstractSettingSection("packageSourceCredentials"));
+            settings.Setup(s => s.GetSection("config"))
+                .Returns(new AbstractSettingSection("config"));
 
             var provider = CreatePackageSourceProvider(settings.Object);
 

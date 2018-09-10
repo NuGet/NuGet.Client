@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
@@ -42,7 +41,6 @@ namespace NuGet.Configuration
             if (ChildrenSet.ContainsKey(item))
             {
                 var currentChild = ChildrenSet[item];
-                Debug.Assert(!currentChild.IsAbstract());
 
                 if (currentChild.Origin.IsMachineWide)
                 {

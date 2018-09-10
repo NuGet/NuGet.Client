@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -69,8 +68,6 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(item));
             }
 
-            Debug.Assert(item.IsAbstract());
-
             // Operation is an update
             if (_computedSections.TryGetValue(sectionName, out var section) && section.Items.Contains(item))
             {
@@ -108,8 +105,6 @@ namespace NuGet.Configuration
                 Priority.Last().SetNextFile(settingsFile);
             }
 
-            Debug.Assert(item.IsAbstract());
-
             settingsFile.AddOrUpdate(sectionName, item);
 
             if (_computedSections.TryGetValue(sectionName, out var section))
@@ -134,8 +129,6 @@ namespace NuGet.Configuration
             {
                 throw new ArgumentNullException(nameof(item));
             }
-
-            Debug.Assert(item.IsAbstract());
 
             if (!_computedSections.TryGetValue(sectionName, out var section))
             {

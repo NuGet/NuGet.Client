@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
@@ -50,16 +51,32 @@ namespace NuGet.Configuration
             }
 
             var xElement = Node as XElement;
-            foreach (var attribute in setting.Attributes.ToDictionary(a => a.Key, a => a.Value))
+            var otherAttributes = setting.Attributes.ToDictionary(a => a.Key, a => a.Value);
+            var attributesImmutable = new Dictionary<string, string>(MutableAttributes);
+            foreach (var attribute in attributesImmutable)
             {
-                if (xElement != null)
+                if (otherAttributes.TryGetValue(attribute.Key, out var otherValue))
                 {
-                    // Update or remove any existing item that has changed
-                    xElement.SetAttributeValue(attribute.Key, attribute.Value);
-                    Origin.IsDirty = true;
+                    otherAttributes.Remove(attribute.Key);
                 }
 
-                AddOrUpdateAttribute(attribute.Key, attribute.Value);
+                string value = null;
+                if (otherValue != null)
+                {
+                    value = otherValue;
+                }
+
+                if (!string.Equals(value, attribute.Value, StringComparison.Ordinal))
+                {
+                    if (xElement != null)
+                    {
+                        // Update or remove any existing item that has changed
+                        xElement.SetAttributeValue(attribute.Key, value);
+                        Origin.IsDirty = true;
+                    }
+
+                    AddOrUpdateAttribute(attribute.Key, value);
+                }
             }
         }
     }

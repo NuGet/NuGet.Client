@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -82,14 +81,10 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(setting));
             }
 
-            Debug.Assert(!IsAbstract());
-
             if (Origin.IsMachineWide)
             {
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
-
-            Debug.Assert(setting.IsAbstract());
 
             if (!ChildrenSet.ContainsKey(setting) && !setting.IsEmpty())
             {
@@ -115,19 +110,13 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(setting));
             }
 
-            Debug.Assert(!IsAbstract());
-
             if (Origin != null && Origin.IsMachineWide)
             {
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
-            Debug.Assert(setting.IsAbstract());
-
             if (ChildrenSet.TryGetValue(setting, out var currentSetting) && ChildrenSet.Remove(currentSetting))
             {
-                Debug.Assert(currentSetting.Origin == Origin);
-
                 XElementUtility.RemoveIndented(currentSetting.Node);
                 Origin.IsDirty = true;
 
