@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.Test
     public class RestoreProjectJsonTest
     {
         [Fact]
-        public async Task RestoreProjectJson_MinClientVersionFailAsync()
+        public void RestoreProjectJson_MinClientVersionFail()
         {
             // Arrange
             using (var workingPath = TestDirectory.Create())
@@ -31,14 +31,14 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
 
-                var packageContext = new SimpleTestPackageContext()
+                SimpleTestPackageContext packageContext = new SimpleTestPackageContext()
                 {
                     Id = "packageA",
                     Version = "1.0.0",
                     MinClientVersion = "9.9.9"
                 };
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageContext);
+                SimpleTestPackageUtility.CreatePackages(repositoryPath, packageContext);
 
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var projectJson = @"{
@@ -52,7 +52,7 @@ namespace NuGet.CommandLine.Test
 
                 var projectPath = Util.CreateUAPProject(workingPath, projectJson);
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -109,7 +109,7 @@ namespace NuGet.CommandLine.Test
                                                 }
                                         }");
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     workingPath,
                     "-Source",
@@ -205,7 +205,7 @@ namespace NuGet.CommandLine.Test
                         EndGlobal
                         ");
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     project1Path,
                     "-Source",
@@ -233,7 +233,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreProjectJson_RestoreWithFallbackFolderAsync()
+        public async Task RestoreProjectJson_RestoreWithFallbackFolder()
         {
             // Arrange
             using (var workingPath = TestDirectory.Create())
@@ -293,12 +293,12 @@ namespace NuGet.CommandLine.Test
                                                 }
                                         }");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
                     fallbackFolder,
                     new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")),
                     new PackageIdentity("packageB", NuGetVersion.Parse("1.0.0")));
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     project1Path
                 };
@@ -371,7 +371,7 @@ namespace NuGet.CommandLine.Test
                         EndGlobal
                         ");
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -393,157 +393,6 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 Assert.True(test1Lock.Exists);
-            }
-        }
-
-        [Fact]
-        public void RestoreProjectJson_RestoreFromSlnWithCsproj_InconsitentCaseForProjectRef()
-        {
-            // Arrange
-            using (var workingPath = TestDirectory.Create())
-            {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var projectDir1 = Path.Combine(workingPath, "FolderA", "test1");
-                var projectDir2 = Path.Combine(workingPath, "FolderB", "test2");
-                var projectDir3 = Path.Combine(workingPath, "FolderB", "test3");
-                var nugetexe = Util.GetNuGetExePath();
-
-                Directory.CreateDirectory(Path.Combine(workingPath, "FolderA"));
-                Directory.CreateDirectory(Path.Combine(workingPath, "FolderB"));
-                Directory.CreateDirectory(projectDir1);
-                Directory.CreateDirectory(projectDir2);
-                Directory.CreateDirectory(projectDir3);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-
-                Util.CreateFile(projectDir1, "project.json",
-                                                @"{
-                                                    'dependencies': {
-                                                    },
-                                                    'frameworks': {
-                                                                'net45': { }
-                                                            }
-                                                    }");
-                Util.CreateFile(projectDir2, "project.json",
-                                                @"{
-                                                    'dependencies': {
-                                                    },
-                                                    'frameworks': {
-                                                                'net45': { }
-                                                            }
-                                                    }");
-                Util.CreateFile(projectDir3, "project.json",
-                                                @"{
-                                                    'dependencies': {
-                                                    },
-                                                    'frameworks': {
-                                                                'net45': { }
-                                                            }
-                                                    }");
-
-                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
-                Util.CreateFile(projectDir2, "test2.csproj", Util.GetCSProjXML("test2"));
-                Util.CreateFile(projectDir3, "test3.csproj", Util.GetCSProjXML("test3"));
-                using (var stream = new FileStream(Path.Combine(projectDir2, "test2.csproj"), FileMode.Open, FileAccess.ReadWrite))
-                {
-                    var xml = XDocument.Load(stream);
-
-                    var attributes = new Dictionary<string, string>();
-
-                    var properties = new Dictionary<string, string>
-                    {
-                        { "Project", "AA6279C1-B5EE-4C6B-9FA3-A794CE195136" },
-                        { "Name", "test1" }
-                    };
-                    ProjectFileUtils.AddItem(
-                            xml,
-                            "ProjectReference",
-                            @"..\..\folderA\Test1\Test1.csproj",
-                            string.Empty,
-                            properties,
-                            attributes);
-
-                    ProjectFileUtils.WriteXmlToFile(xml, stream);
-                }
-                using (var stream = new FileStream(Path.Combine(projectDir3, "test3.csproj"), FileMode.Open, FileAccess.ReadWrite))
-                {
-                    var xml = XDocument.Load(stream);
-
-                    var attributes = new Dictionary<string, string>();
-
-                    var properties = new Dictionary<string, string>
-                    {
-                        { "Project", "AA6279C1-B5EE-4C6B-9FA3-A794CE195136" },
-                        { "Name", "test1" }
-                    };
-                    ProjectFileUtils.AddItem(
-                            xml,
-                            "ProjectReference",
-                            @"..\..\FolderA\Test1\Test1.csproj",
-                            string.Empty,
-                            properties,
-                            attributes);
-
-                    ProjectFileUtils.WriteXmlToFile(xml, stream);
-                }
-
-
-                var slnPath = Path.Combine(workingPath, "xyz.sln");
-
-                Util.CreateFile(workingPath, "xyz.sln",
-                           @"
-                        Microsoft Visual Studio Solution File, Format Version 12.00
-                        # Visual Studio 14
-                        VisualStudioVersion = 14.0.23107.0
-                        MinimumVisualStudioVersion = 10.0.40219.1
-                        Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test1"", ""FolderA\test1\test1.csproj"", ""{AA6279C1-B5EE-4C6B-9FA3-A794CE195136}""
-                        EndProject
-                        Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test2"", ""FolderB\test2\test2.csproj"", ""{CBDF173F-6E99-44A7-937F-E4A87BF3A3E0}""
-                        EndProject
-                        Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test3"", ""FolderB\test3\test3.csproj"", ""{D39F3B98-4518-4204-858F-3B7BF88D6DC1}""
-                        EndProject
-                        Global
-                            GlobalSection(SolutionConfigurationPlatforms) = preSolution
-                                Debug|Any CPU = Debug|Any CPU
-                                Release|Any CPU = Release|Any CPU
-                            EndGlobalSection
-                            GlobalSection(ProjectConfigurationPlatforms) = postSolution
-                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                                {CBDF173F-6E99-44A7-937F-E4A87BF3A3E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                                {CBDF173F-6E99-44A7-937F-E4A87BF3A3E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                                {D39F3B98-4518-4204-858F-3B7BF88D6DC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                                {D39F3B98-4518-4204-858F-3B7BF88D6DC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                            EndGlobalSection
-                            GlobalSection(SolutionProperties) = preSolution
-                                HideSolutionNode = FALSE
-                            EndGlobalSection
-                        EndGlobal
-                        ");
-
-                var args = new string[] {
-                    "restore",
-                    "-Source",
-                    repositoryPath,
-                    "-solutionDir",
-                    workingPath,
-                    slnPath
-                };
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
-
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
-
-                // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-
-                Assert.True(test1Lock.Exists);
-
             }
         }
 
@@ -561,7 +410,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestDirectory.Create())
             {
-                string getProjectDir(int i) => Path.Combine(workingPath, "test" + i);
+                Func<int, string> getProjectDir = (int i) => Path.Combine(workingPath, "test" + i);
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -569,9 +418,9 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
-                for (var i = 1; i <= projectCount; i++)
+                for (int i = 1; i <= projectCount; i++)
                 {
-                    var projectDir = getProjectDir(i);
+                    string projectDir = getProjectDir(i);
 
                     Directory.CreateDirectory(projectDir);
 
@@ -599,7 +448,7 @@ namespace NuGet.CommandLine.Test
 
                 var guids = new string[projectCount + 1];
 
-                for (var i = 1; i <= projectCount; i++)
+                for (int i = 1; i <= projectCount; i++)
                 {
                     guids[i] = Guid.NewGuid().ToString().ToUpper();
                     var projGuid = guids[i];
@@ -618,7 +467,7 @@ namespace NuGet.CommandLine.Test
                             EndGlobalSection
                             GlobalSection(ProjectConfigurationPlatforms) = postSolution");
 
-                for (var i = 0; i < projectCount; i++)
+                for (int i = 0; i < projectCount; i++)
                 {
                     sln.AppendLine($"                                {guids[i]}.Debug|Any CPU.ActiveCfg = Debug|Any CPU");
                     sln.AppendLine($"                                {guids[i]}.Debug|Any CPU.Build.0 = Debug|Any CPU");
@@ -667,7 +516,7 @@ namespace NuGet.CommandLine.Test
                 var timeoutResult = timeoutLineResult.Substring(timeoutLineResult.IndexOf(prefix) + prefix.Length);
                 Assert.Equal(expectedTimeOut, int.Parse(timeoutResult));
 
-                for (var i = 1; i < projectCount + 1; i++)
+                for (int i = 1; i < projectCount + 1; i++)
                 {
                     var test1Lock = new FileInfo(Path.Combine(getProjectDir(i), "project.lock.json"));
 
@@ -766,7 +615,7 @@ namespace NuGet.CommandLine.Test
                 packageA.Files.Add(libA);
                 Util.CreateTestPackage(packageA, repositoryPath);
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -826,7 +675,7 @@ namespace NuGet.CommandLine.Test
 
                 var projectFilePath = Path.Combine(workingPath, "test.fsproj");
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     projectFilePath,
                     "-Source",
@@ -866,7 +715,7 @@ namespace NuGet.CommandLine.Test
 
                 var projectJsonPath = Path.Combine(workingPath, "project.json");
 
-                var args = new string[] {
+                string[] args = new string[] {
                 "restore",
                 projectJsonPath,
                 "-Source",
@@ -918,7 +767,7 @@ namespace NuGet.CommandLine.Test
 
                 Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     project1Path,
                     "-Source",
@@ -969,7 +818,7 @@ namespace NuGet.CommandLine.Test
 
                 Util.CreateFile(projectDir1, "test1.abcproj", Util.GetCSProjXML("test1"));
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     project1Path,
                     "-Source",
@@ -1071,7 +920,7 @@ namespace NuGet.CommandLine.Test
                         EndGlobal
                     ");
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -1100,7 +949,7 @@ namespace NuGet.CommandLine.Test
 
         // Verify that the settings for the solution are used for all projects
         [Fact]
-        public async Task RestoreProjectJson_RestoreFromSlnUsesNuGetFolderSettingsAsync()
+        public void RestoreProjectJson_RestoreFromSlnUsesNuGetFolderSettings()
         {
             // Arrange
             using (var workingPath = TestDirectory.Create())
@@ -1187,7 +1036,7 @@ namespace NuGet.CommandLine.Test
                         EndGlobal
                         ".Replace("$TEST1DIR$", projectDir1).Replace("$TEST2DIR$", projectDir2));
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-solutionDir",
                     workingPath,
@@ -1195,8 +1044,8 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Create the packages needed by the projects
-                await SimpleTestPackageUtility.CreateFullPackageAsync(repositoryPath, "packageA", "1.0.0");
-                await SimpleTestPackageUtility.CreateFullPackageAsync(repositoryPath, "packageB", "1.0.0");
+                SimpleTestPackageUtility.CreateFullPackage(repositoryPath, "packageA", "1.0.0");
+                SimpleTestPackageUtility.CreateFullPackage(repositoryPath, "packageB", "1.0.0");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -1244,7 +1093,7 @@ namespace NuGet.CommandLine.Test
 
                 var projectPath = Util.CreateUAPProject(workingPath, projectJson);
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -1302,7 +1151,7 @@ namespace NuGet.CommandLine.Test
 
                 var projectPath = Util.CreateUAPProject(workingPath, projectJson);
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -1361,7 +1210,7 @@ namespace NuGet.CommandLine.Test
 
                 var projectPath = Util.CreateUAPProject(workingPath, projectJson);
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -1417,7 +1266,7 @@ namespace NuGet.CommandLine.Test
 
                 var projectPath = Util.CreateUAPProject(workingPath, projectJson);
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -1475,7 +1324,7 @@ namespace NuGet.CommandLine.Test
 
                 var projectPath = Util.CreateUAPProject(workingPath, projectJson);
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -1532,7 +1381,7 @@ namespace NuGet.CommandLine.Test
 
                 var projectPath = Util.CreateUAPProject(workingPath, projectJson);
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -1589,7 +1438,7 @@ namespace NuGet.CommandLine.Test
 
                 var projectPath = Util.CreateUAPProject(workingPath, projectJson);
 
-                var args = new string[] {
+                string[] args = new string[] {
                         "restore",
                         "-Source",
                         repositoryPath,
@@ -1706,7 +1555,7 @@ namespace NuGet.CommandLine.Test
                         EndGlobal
                         ");
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -1772,7 +1621,7 @@ namespace NuGet.CommandLine.Test
 
                 var csprojPath = Path.Combine(workingPath, "test.csproj");
 
-                var args = new string[] {
+                string[] args = new string[] {
                 "restore",
                 "-Source",
                 repositoryPath,
@@ -1866,7 +1715,7 @@ namespace NuGet.CommandLine.Test
 
                 var csprojPath = Path.Combine(projectDir, "test.csproj");
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -1940,7 +1789,7 @@ namespace NuGet.CommandLine.Test
 
                 var csprojPath = Path.Combine(workingPath, "test.csproj");
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -1969,7 +1818,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreProjectJson_GenerateTargetsForFallbackFolderAsync()
+        public async Task RestoreProjectJson_GenerateTargetsForFallbackFolder()
         {
             // Arrange
             using (var workingPath = TestDirectory.Create())
@@ -2025,7 +1874,7 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage(packageA, repositoryPath);
 
                 var saveMode = PackageSaveMode.Defaultv3;
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(fallback2, saveMode, Directory.GetFiles(repositoryPath));
+                await SimpleTestPackageUtility.CreateFolderFeedV3(fallback2, saveMode, Directory.GetFiles(repositoryPath));
 
                 Util.CreateTestPackage(packageB, repositoryPath);
 
@@ -2044,7 +1893,7 @@ namespace NuGet.CommandLine.Test
 
                 var csprojPath = Path.Combine(projectDir, "test.csproj");
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     csprojPath
                 };
@@ -2123,7 +1972,7 @@ namespace NuGet.CommandLine.Test
 
                 var nuProjPath = Path.Combine(workingPath, "test.nuproj");
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -2157,7 +2006,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestDirectory.Create())
             {
-                var folderName = Path.GetFileName(workingPath);
+                string folderName = Path.GetFileName(workingPath);
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -2198,7 +2047,7 @@ namespace NuGet.CommandLine.Test
 
                 Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -2232,7 +2081,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestDirectory.Create())
             {
-                var folderName = Path.GetFileName(workingPath);
+                string folderName = Path.GetFileName(workingPath);
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -2265,7 +2114,7 @@ namespace NuGet.CommandLine.Test
                 Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
 
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -2302,7 +2151,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestDirectory.Create())
             {
-                var folderName = Path.GetFileName(workingPath);
+                string folderName = Path.GetFileName(workingPath);
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -2343,7 +2192,7 @@ namespace NuGet.CommandLine.Test
 
                 Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
@@ -2436,7 +2285,7 @@ namespace NuGet.CommandLine.Test
 
                 var projectPath = Util.CreateUAPProject(workingPath, projectJson);
 
-                var args = new string[] {
+                string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,

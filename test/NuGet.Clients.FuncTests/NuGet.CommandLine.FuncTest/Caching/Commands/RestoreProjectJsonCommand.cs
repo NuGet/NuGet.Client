@@ -1,4 +1,4 @@
-using NuGet.Packaging.Core;
+﻿using NuGet.Packaging.Core;
 
 namespace NuGet.CommandLine.Test.Caching
 {
@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.Test.Caching
             context.WriteProjectJson(identity);
             context.WriteProject();
 
-            var args = $"restore {context.ProjectPath} -verbosity detailed";
+            var args = $"restore {context.ProjectPath}";
 
             return context.FinishArguments(args);
         }

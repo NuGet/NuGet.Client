@@ -35,8 +35,8 @@
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
     </ProjectReference>
-    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
-    <ProjectReference Include="..\..\TestExtensions\SampleCommandLineExtensions\SampleCommandLineExtensions.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="$(NuGetClientsSrcDirectory)SampleCommandLineExtensions\SampleCommandLineExtensions.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\TestExtensions\TestablePluginCredentialProvider\TestableCredentialProvider.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
@@ -49,12 +49,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="compiler\resources\*" />
-    <EmbeddedResource Include="compiler\resources\*" />
-  </ItemGroup>
-    
   <PropertyGroup>
     <PostBuildEvent>
       xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\net46\CredentialProvider.Testable.exe $(OutputPath)TestableCredentialProvider\

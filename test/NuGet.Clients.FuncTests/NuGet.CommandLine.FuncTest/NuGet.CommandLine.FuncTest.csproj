@@ -18,7 +18,7 @@
       <Name>NuGet.CommandLine.Test</Name>
     </ProjectReference>
 
-    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)Test.Utility\Test.Utility.csproj" />
 
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />

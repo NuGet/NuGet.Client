@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,11 +9,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.Packaging.Rules;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -101,6 +99,94 @@ namespace NuGet.CommandLine.Test
                     var files = package.GetFiles().Select(f => f.Path).ToArray();
                     Assert.Contains(Path.Combine("Content", "image.jpg"), files);
                     Assert.Contains(Path.Combine("Content", "other", "image2.jpg"), files);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_IncludeExcludePackageFromJson()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles", "any", "any"),
+                    "image.jpg",
+                    "");
+
+                Directory.CreateDirectory(
+                    Path.Combine(workingDirectory, "bin", "Debug"));
+
+                Util.CreateFile(
+                    workingDirectory,
+                    Path.GetFileName(workingDirectory) + ".project.json",
+                @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
+  ""dependencies"": {
+    ""packageB"": {
+      ""version"": ""1.0.0"",
+      ""include"": ""runtime, compile, build"",
+      ""exclude"": ""runtime, compile""
+    },
+    ""packageC"": {
+      ""version"": ""1.0.0"",
+      ""include"": ""runtime, compile, build"",
+      ""suppressParent"": ""compile, build""
+    },
+    ""packageD"": {
+      ""version"": ""1.0.0"",
+      ""exclude"": ""runtime, compile, build""
+    },
+    ""packageE"": {
+      ""version"": ""1.0.0"",
+      ""include"": ""all"",
+      ""suppressParent"": ""none""
+    },
+  },
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack " + Path.GetFileName(workingDirectory) + ".project.json",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                var id = Path.GetFileName(workingDirectory);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, id + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == id + ".nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "dependencies");
+
+                    var actual = node.ToString().Replace("\r\n", "\n");
+
+                    Assert.Equal(
+                        @"<dependencies xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <group>
+    <dependency id=""packageB"" version=""1.0.0"" exclude=""Runtime,Compile,Build,Native,Analyzers"" />
+    <dependency id=""packageC"" version=""1.0.0"" exclude=""Compile,Build,Native,Analyzers"" />
+    <dependency id=""packageD"" version=""1.0.0"" exclude=""Runtime,Compile,Build,Analyzers"" />
+    <dependency id=""packageE"" version=""1.0.0"" include=""All"" />
+  </group>
+</dependencies>".Replace("\r\n", "\n"), actual);
                 }
             }
         }
@@ -346,6 +432,73 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void PackCommand_PackJsonRuntimesRefNativeNoWarnings()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+
+                string id = Path.GetFileName(workingDirectory);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "bin", "Debug", "uap10.0"),
+                    id + ".dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "bin", "Debug", "native"),
+                    id + ".dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "project.json",
+                @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
+  ""frameworks"": {
+    ""native"": {
+    },
+    ""uap10.0"": {
+    }
+  }
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack project.json",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, Path.GetFileName(workingDirectory) + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+
+                Assert.Equal(
+                    new string[]
+                    {
+                            Path.Combine("lib", "native", id + ".dll"),
+                            Path.Combine("lib", "uap10.0" , id + ".dll"),
+                    },
+                    files);
+
+                Assert.False(r.Item2.Contains("Assembly outside lib folder"));
+            }
+        }
+
+        [Fact]
         public void PackCommand_PackAnalyzers()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -400,85 +553,57 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void PackCommand_SymbolPackageWithNuspecFile()
+        public void PackCommand_PackAnalyzersJson()
         {
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
+                string id = Path.GetFileName(workingDirectory);
+
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "lib", "uap10.0"),
-                    "packageA.dll",
+                    Path.Combine(workingDirectory, "bin", "Debug", "native"),
+                    id + ".dll",
                     string.Empty);
-
-                Util.CreateFile(
-                    Path.Combine(workingDirectory, "lib", "uap10.0"),
-                    "packageA.pdb",
-                    string.Empty);
-
-                Util.CreateFile(
-                    Path.Combine(workingDirectory, "contentFiles", "any", "any"),
-                    "image.jpg",
-                    "");
-
-                Util.CreateFile(
-                    Path.Combine(workingDirectory, "contentFiles", "cs", "net45"),
-                    "code.cs",
-                    "");
 
                 Util.CreateFile(
                     workingDirectory,
-                    "packageA.nuspec",
-@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
-  <metadata>
-    <id>packageA</id>
-    <version>1.0.0</version>
-    <title>packageA</title>
-    <authors>test</authors>
-    <owners>test</owners>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Description</description>
-    <copyright>Copyright ©  2013</copyright>
-  </metadata>
-</package>");
+                    "project.json",
+                @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
+}");
 
                 // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    "pack packageA.nuspec -symbols -SymbolPackageFormat snupkg",
+                    "pack project.json",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
-                var symbolPath = Path.Combine(workingDirectory, "packageA.1.0.0.snupkg");
-                var package = new PackageArchiveReader(path);
-                var symbolPackage = new PackageArchiveReader(symbolPath);
-                var files = package.GetFiles()
-                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
-                    .ToArray();
-                var symbolFiles = symbolPackage.GetFiles()
-                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
-                    .ToArray();
+                var path = Path.Combine(workingDirectory, Path.GetFileName(workingDirectory) + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
-                Array.Sort(symbolFiles);
 
                 Assert.Equal(
                     new string[]
                     {
-                        "contentFiles/any/any/image.jpg",
-                        "contentFiles/cs/net45/code.cs",
-                        Path.Combine("lib", "uap10.0", "packageA.dll").Replace('\\', '/'),
+                            Path.Combine("lib", "native" ,id + ".dll")
                     },
                     files);
-                Assert.Equal(
-                    new string[]
-                    {
-                        Path.Combine("lib", "uap10.0", "packageA.pdb").Replace('\\','/'),
-                    },
-                    symbolFiles);
+
+                Assert.False(r.Item2.Contains("Assembly outside lib folder"));
             }
         }
 
@@ -835,10 +960,8 @@ namespace Proj1
         }
 
         // Test creating symbol package with -IncludeReferencedProject.
-        [Theory]
-        [InlineData(SymbolPackageFormat.SymbolsNupkg)]
-        [InlineData(SymbolPackageFormat.Snupkg)]
-        public void PackCommand_WithProjectReferencesSymbols(SymbolPackageFormat symbolPackageFormat)
+        [Fact]
+        public void PackCommand_WithProjectReferencesSymbols()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -914,48 +1037,51 @@ namespace Proj2
         public int A { get; set; }
     }
 }");
-                var extension = symbolPackageFormat == SymbolPackageFormat.Snupkg ? "snupkg" : "symbols.nupkg";
+
                 // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj2Directory,
-                    $"pack proj2.csproj -build -IncludeReferencedProjects -symbols -SymbolPackageFormat {extension}",
+                    "pack proj2.csproj -build -IncludeReferencedProjects -symbols",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new PackageArchiveReader(Path.Combine(proj2Directory, $"proj2.0.0.0.{extension}"));
-                var files = package.GetFiles()
-                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))                    
-                    .ToArray();
+                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.symbols.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
-                var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
+
+                string proj1SymbolsFileName;
+                string proj2SymbolsFileName;
+
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    proj1SymbolsFileName = "proj1.dll.mdb";
+                    proj2SymbolsFileName = "proj2.dll.mdb";
+                }
+                else
+                {
+                    proj1SymbolsFileName = "proj1.pdb";
+                    proj2SymbolsFileName = "proj2.pdb";
+                }
+
+                Assert.Equal(
+                    new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
                         Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj1.pdb"),
+                        Path.Combine("lib", "net40", proj1SymbolsFileName),
                         Path.Combine("lib", "net40", "proj2.dll"),
-                        Path.Combine("lib", "net40", "proj2.pdb"),
-                        "proj2.nuspec",
+                        Path.Combine("lib", "net40", proj2SymbolsFileName),
                         Path.Combine("src", "proj1", "proj1_file1.cs"),
                         Path.Combine("src", "proj2", "proj2_file1.cs"),
-                    }
-                    : new string[]
-                    {
-                        Path.Combine("lib", "net40", "proj1.pdb"),
-                        Path.Combine("lib", "net40", "proj2.pdb"),
-                        "proj2.nuspec"
-                    };
-                actual = actual.Select(t => NuGet.Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
-                Assert.Equal(actual, files);
-                
+                    },
+                    files);
             }
         }
 
-        [Theory]
-        [InlineData(SymbolPackageFormat.SymbolsNupkg)]
-        [InlineData(SymbolPackageFormat.Snupkg)]
-        public void PackCommand_IncludesDllSymbols(SymbolPackageFormat symbolPackageFormat)
+        [Fact]
+        public void PackCommand_IncludesDllSymbols()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -985,43 +1111,35 @@ namespace Proj2
 {
     public int C { get; set; }
 }");
-                var extension = symbolPackageFormat == SymbolPackageFormat.Snupkg ? "snupkg" : "symbols.nupkg";
 
                 // Act
                 var result = CommandRunner.Run(
                     nugetexe,
                     projDirectory,
-                    $"pack A.csproj -build -symbols -SymbolPackageFormat {extension}",
+                    "pack A.csproj -build -symbols",
                     waitForExit: true);
                 Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
 
                 // Assert
-                var package = new PackageArchiveReader(Path.Combine(projDirectory, $"A.0.0.0.{extension}"));
-                var files = package.GetFiles()
-                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))
-                    .ToArray();
+                var package = new OptimizedZipPackage(Path.Combine(projDirectory, "A.0.0.0.symbols.nupkg"));
+                var files = package.GetFiles().Select(file => file.Path).ToArray();
                 Array.Sort(files);
-                var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ?  new string[]
+
+                var symbolsFileName = RuntimeEnvironmentHelper.IsMono ? "A.dll.mdb" : "A.pdb";
+
+                Assert.Equal(
+                    new string[]
                     {
-                        "A.nuspec",
-                        "lib/net40/A.dll",
-                        "lib/net40/A.pdb",
-                        "src/B.cs"
-                    }
-                    : new string[]
-                    {
-                        "A.nuspec",
-                        "lib/net40/A.pdb"
-                    };
-                actual = actual.Select(t => NuGet.Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
-                Assert.Equal(actual, files);
+                        Path.Combine("lib", "net40", "A.dll"),
+                        Path.Combine("lib", "net40", symbolsFileName),
+                        Path.Combine("src", "B.cs")
+                    },
+                    files);
             }
         }
 
-        [Theory]
-        [InlineData(SymbolPackageFormat.SymbolsNupkg)]
-        [InlineData(SymbolPackageFormat.Snupkg)]
-        public void PackCommand_IncludesExeSymbols(SymbolPackageFormat symbolPackageFormat)
+        [Fact]
+        public void PackCommand_IncludesExeSymbols()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -1054,34 +1172,29 @@ public class B
     public static void Main() { }
 }");
 
-                var extension = symbolPackageFormat == SymbolPackageFormat.Snupkg ? "snupkg" : "symbols.nupkg";
                 // Act
                 var result = CommandRunner.Run(
                     nugetexe,
                     projDirectory,
-                    $"pack A.csproj -build -symbols -SymbolPackageFormat {extension}",
+                    "pack A.csproj -build -symbols",
                     waitForExit: true);
                 Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
 
                 // Assert
-                var package = new PackageArchiveReader(Path.Combine(projDirectory, $"A.0.0.0.{extension}"));
-                var files = package.GetFiles()
-                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))
-                    .ToArray();
+                var package = new OptimizedZipPackage(Path.Combine(projDirectory, "A.0.0.0.symbols.nupkg"));
+                var files = package.GetFiles().Select(file => file.Path).ToArray();
                 Array.Sort(files);
-                var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
+
+                var symbolsFileName = RuntimeEnvironmentHelper.IsMono ? "A.exe.mdb" : "A.pdb";
+
+                Assert.Equal(
+                    new string[]
                     {
-                        "A.nuspec",
-                        "lib/net40/A.exe",
-                        "lib/net40/A.pdb",
-                        "src/B.cs"
-                    }
-                    : new string[]
-                    {
-                        "A.nuspec",
-                        "lib/net40/A.pdb"
-                    };
-                Assert.Equal(actual, files);
+                        Path.Combine("lib", "net40", "A.exe"),
+                        Path.Combine("lib", "net40", symbolsFileName),
+                        Path.Combine("src", "B.cs")
+                    },
+                    files);
             }
         }
 
@@ -1987,254 +2100,6 @@ public class B
                     },
                     dependencies,
                     new PackageDepencyComparer());
-            }
-        }
-
-        [WindowsNTFact]
-        public void PackCommand_OutputResolvedNuSpecFileAttemptToOverwriteOriginal()
-        {
-            using (var workingDirectory = TestDirectory.Create())
-            {
-                // Arrange
-
-                var nuspecName = "packageA.nuspec";
-
-                Util.CreateFile(
-                    workingDirectory,
-                    nuspecName,
-@"<?xml version=""1.0"" encoding=""utf-8""?>
-<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
-  <metadata minClientVersion=""3.3"">
-    <id>packageA</id>
-    <version>1.2.3.4</version>
-    <title>packageATitle</title>
-    <authors>test</authors>
-    <owners>testOwner</owners>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>the description</description>
-    <copyright>Copyright (C) Microsoft 2013</copyright>
-    <tags>Microsoft,Sample,test</tags>
-    <frameworkAssemblies>
-      <frameworkAssembly assemblyName=""System"" />
-    </frameworkAssemblies>
-  </metadata>
-</package>");
-
-                // Act
-
-                // Execute the pack command and try to output the resolved nuspec over the input nuspec
-                var commandRunner = CommandRunner.Run(
-                    Util.GetNuGetExePath(),
-                    workingDirectory,
-                    "pack packageA.nuspec -InstallPackageToOutputPath",
-                    waitForExit: true);
-
-                // Assert
-
-                // Verify the nuget pack command exit code
-                Assert.NotNull(commandRunner);
-                Assert.Equal(1, commandRunner.Item1);
-
-                var exepctedError = string.Format(
-                    "Unable to output resolved nuspec file because it would overwrite the original at '{0}\\{1}'\r\n",
-                    workingDirectory,
-                    nuspecName);
-
-                Assert.Contains(exepctedError, commandRunner.Item3);
-            }
-        }
-
-        [WindowsNTFact]
-        public void PackCommand_InstallPackageToOutputPath()
-        {
-            using (var workingDirectory = TestDirectory.Create())
-            {
-                // Arrange
-                var nuspecName = "packageA.nuspec";
-                var configurationFileName = "Microsoft.VisualStudio.Offline.xml";
-                var originalDirectory = Path.Combine(workingDirectory, "Original");
-                Directory.CreateDirectory(originalDirectory);
-
-                Util.CreateFile(
-                    originalDirectory,
-                    nuspecName,
-@"<?xml version=""1.0"" encoding=""utf-8""?>
-<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
-  <metadata minClientVersion=""3.3"">
-    <id>packageA</id>
-    <version>1.2.3.4</version>
-    <title>packageATitle</title>
-    <authors>$author$</authors>
-    <owners>testOwner</owners>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>the description</description>
-    <copyright>Copyright (C) Microsoft 2013</copyright>
-    <tags>Microsoft,Sample,$tagVar$</tags>
-    <repository type=""git"" url=""https://github.com/NuGet/NuGet.Client.git"" branch=""dev"" commit=""e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3"" />
-    <frameworkAssemblies>
-      <frameworkAssembly assemblyName=""System"" />
-    </frameworkAssemblies>
-  </metadata>
-</package>");
-
-                Util.CreateFile(
-                    originalDirectory,
-                    configurationFileName,
-@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <packageSources>
-    <add key=""Microsoft Visual Studio Offline Packages"" value = ""C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\""/>
-  </packageSources>
-</configuration>");
-
-                // Act
-
-                // Execute the pack command and feed in some properties for token replacements and 
-                // set the flag to save the resolved nuspec to output directory.\
-                var arguments = string.Format(
-                    "pack {0} -ConfigFile {1} -properties tagVar=CustomTag;author=test1@microsoft.com -InstallPackageToOutputPath -OutputFileNamesWithoutVersion",
-                    Path.Combine(originalDirectory, nuspecName),
-                    Path.Combine(originalDirectory, configurationFileName));
-
-                var commandRunner = CommandRunner.Run(
-                    Util.GetNuGetExePath(),
-                    workingDirectory,
-                    arguments,
-                    waitForExit: true);
-
-                // Assert
-
-                // Verify the nuget pack command exit code
-                Assert.NotNull(commandRunner);
-                Assert.True(
-                    0 == commandRunner.Item1,
-                    string.Format("{0} {1}", commandRunner.Item2 ?? "null", commandRunner.Item3 ?? "null"));
-
-                var nupkgPath = Path.Combine(workingDirectory, "packageA.nupkg");
-
-                // Verify the zip file has the resolved nuspec
-                XDocument nuspecZipXml = null;
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-                    nuspecZipXml = nuspecReader.Xml;
-
-                    Assert.Equal("packageA", nuspecReader.GetIdentity().Id);
-                    Assert.Equal("1.2.3.4", nuspecReader.GetVersion().Version.ToString());
-                    Assert.Equal("packageATitle", nuspecReader.GetTitle());
-                    Assert.Equal("test1@microsoft.com", nuspecReader.GetAuthors());
-                    Assert.Equal("testOwner", nuspecReader.GetOwners());
-                    Assert.Equal(false, nuspecReader.GetRequireLicenseAcceptance());
-                    Assert.Equal("the description", nuspecReader.GetDescription());
-                    Assert.Equal("Copyright (C) Microsoft 2013", nuspecReader.GetCopyright());
-                    Assert.Equal("Microsoft,Sample,CustomTag", nuspecReader.GetTags());
-                    Assert.Equal("git", nuspecReader.GetRepositoryMetadata().Type);
-                    Assert.Equal("https://github.com/NuGet/NuGet.Client.git", nuspecReader.GetRepositoryMetadata().Url);
-                    Assert.Equal("dev", nuspecReader.GetRepositoryMetadata().Branch);
-                    Assert.Equal("e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3", nuspecReader.GetRepositoryMetadata().Commit);
-                }
-
-                // Verify the package directory has the resolved nuspec
-                var resolveNuSpecPath = Path.Combine(workingDirectory, nuspecName);
-                Assert.True(File.Exists(resolveNuSpecPath));
-
-                // Verify the nuspec contents in the zip file and the resolved nuspec side by 
-                // side with the package are the same
-                var resolvedNuSpecContents = File.ReadAllText(resolveNuSpecPath);
-                var packageOutputDirectoryNuSpecXml = XDocument.Parse(resolvedNuSpecContents);
-                Assert.Equal(nuspecZipXml.ToString(), packageOutputDirectoryNuSpecXml.ToString());
-
-                // Verify the package directory has the sha512 file
-                var sha512File = Path.Combine(workingDirectory, "packageA.nupkg.sha512");
-                Assert.True(File.Exists(sha512File));
-
-                var sha512FileContents = File.ReadAllText(sha512File);
-                Assert.False(string.IsNullOrWhiteSpace(sha512FileContents));
-                Assert.True(sha512FileContents.EndsWith("="));
-            }
-        }
-
-        [WindowsNTFact]
-        public void PackCommand_InstallPackageToOutputPathWithResponseFile()
-        {
-            using (var workingDirectory = TestDirectory.Create())
-            {
-                // Arrange
-                var nuspecName = "packageA.nuspec";
-                var originalDirectory = Path.Combine(workingDirectory, "Original");
-                Directory.CreateDirectory(originalDirectory);
-
-                // Create response file
-                var arguments = string.Format(
-                    "pack {0} -properties tagVar=CustomTag;author=test1@microsoft.com -InstallPackageToOutputPath -OutputFileNamesWithoutVersion",
-                    Path.Combine(originalDirectory, nuspecName));
-
-                var responseFilePath = Path.Combine(workingDirectory, "responseFile1.rsp");
-                File.WriteAllText(responseFilePath, arguments);
-
-                Util.CreateFile(
-                    originalDirectory,
-                    nuspecName,
-@"<?xml version=""1.0"" encoding=""utf-8""?>
-<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
-  <metadata minClientVersion=""3.3"">
-    <id>packageA</id>
-    <version>1.2.3.4</version>
-    <title>packageATitle</title>
-    <authors>$author$</authors>
-    <owners>testOwner</owners>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>the description</description>
-    <copyright>Copyright (C) Microsoft 2013</copyright>
-    <tags>Microsoft,Sample,$tagVar$</tags>
-    <frameworkAssemblies>
-      <frameworkAssembly assemblyName=""System"" />
-    </frameworkAssemblies>
-  </metadata>
-</package>");
-
-                // Act
-
-                // Execute the pack command and feed in some properties for token replacements and 
-                // set the flag to save the resolved nuspec to output directory.\
-                var commandRunner = CommandRunner.Run(
-                    Util.GetNuGetExePath(),
-                    workingDirectory,
-                    "@" + responseFilePath,
-                    waitForExit: true);
-
-                // Assert
-
-                // Verify the nuget pack command exit code
-                Assert.NotNull(commandRunner);
-                Assert.True(
-                    0 == commandRunner.Item1,
-                    string.Format("{0} {1}", commandRunner.Item2 ?? "null", commandRunner.Item3 ?? "null"));
-
-                var nupkgPath = Path.Combine(workingDirectory, "packageA.nupkg");
-
-                // Verify the zip file has the resolved nuspec
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-                    Assert.Equal("packageA", nuspecReader.GetIdentity().Id);
-                    Assert.Equal("1.2.3.4", nuspecReader.GetVersion().Version.ToString());
-                    Assert.Equal("packageATitle", nuspecReader.GetTitle());
-                    Assert.Equal("test1@microsoft.com", nuspecReader.GetAuthors());
-                    Assert.Equal("testOwner", nuspecReader.GetOwners());
-                    Assert.Equal(false, nuspecReader.GetRequireLicenseAcceptance());
-                    Assert.Equal("the description", nuspecReader.GetDescription());
-                    Assert.Equal("Copyright (C) Microsoft 2013", nuspecReader.GetCopyright());
-                    Assert.Equal("Microsoft,Sample,CustomTag", nuspecReader.GetTags());
-                }
-
-                // Verify the package directory has the resolved nuspec
-                var resolveNuSpecPath = Path.Combine(workingDirectory, nuspecName);
-                Assert.True(File.Exists(resolveNuSpecPath));
-
-                // Verify the package directory has the sha512 file
-                var sha512File = Path.Combine(workingDirectory, "packageA.nupkg.sha512");
-                Assert.True(File.Exists(sha512File));
             }
         }
 
@@ -3192,7 +3057,103 @@ namespace Proj1
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                Assert.Contains(string.Format(AnalysisResources.UnspecifiedDependencyVersionWarning, "json"), r.AllOutput);
+                Assert.Contains("Issue: Specify version of dependencies.", r.Item2);
+                Assert.Contains("Description: The version of dependency 'json' is not specified.", r.Item2);
+                Assert.Contains("Solution: Specify the version of dependency and rebuild your package.", r.Item2);
+            }
+        }
+
+        // Test that nuget displays warnings when dependency version is not specified
+        // in nuspec.
+        [Fact]
+        public void PackCommand_WarningDependencyVersionNotSpecifiedInJson()
+        {
+            var msbuild = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                    @"Microsoft.NET\Framework\v4.0.30319\msbuild.exe");
+            if (!File.Exists(msbuild))
+            {
+                return;
+            }
+
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj1_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file2.txt",
+                    "file2");
+
+                Util.CreateFile(
+                    proj1Directory,
+                    "project.json",
+                    @"{
+  ""version"": ""1.0.0"",
+  ""authors"": [ ""author"" ],
+  ""owners"": [ ""author"" ],
+  ""requireLicenseAcceptance"": ""false"",
+  ""description"": ""description"",
+  ""copyright"": ""Copyright 2013"",
+  ""dependencies"": {
+    ""json"": { }
+  }
+}");
+                var r = CommandRunner.Run(
+                    msbuild,
+                    proj1Directory,
+                    "proj1.csproj /p:Config=Release",
+                    waitForExit: true);
+
+                // Act
+                r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack project.json",
+                    waitForExit: true);
+                Assert.Equal(1, r.Item1);
+
+                // Assert
+                Assert.Contains("Package dependencies must specify a version range.", r.Item3);
             }
         }
 
@@ -3668,7 +3629,7 @@ namespace Proj2
     }
 }");
                 var msbuildPath = Util.GetMsbuildPathOnWindows();
-                if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
+                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
                 {
                     msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
                 }
@@ -3797,7 +3758,7 @@ namespace Proj2
     }
 }");
                 var msbuildPath = Util.GetMsbuildPathOnWindows();
-                if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
+                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
                 {
                     msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
                 }
@@ -4036,6 +3997,88 @@ namespace " + projectName + @"
         }
 
         [Fact]
+        public void PackCommand_FrameworkAssemblies()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles", "any", "any"),
+                    "image.jpg",
+                    "");
+
+                Directory.CreateDirectory(
+                    Path.Combine(workingDirectory, "bin/Debug"));
+
+                Util.CreateFile(
+                    workingDirectory,
+                    Path.GetFileName(workingDirectory) + ".project.json",
+                @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""frameworks"": {
+    ""net46"": {
+      ""frameworkAssemblies"": {
+        ""System.Xml"": """",
+        ""System.Xml.Linq"": """"
+      }
+    }
+  },
+  ""packInclude"": {
+    ""image"": ""contentFiles/any/any/image.jpg""
+  },
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+  }
+}
+");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack " + Path.GetFileName(workingDirectory) + ".project.json",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                var id = Path.GetFileName(workingDirectory);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, id + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == id + ".nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "dependencies");
+                    var actual = node.ToString().Replace("\r\n", "\n");
+
+                    Assert.Equal(
+                        @"<dependencies xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
+  <group targetFramework="".NETFramework4.6"" />
+</dependencies>".Replace("\r\n", "\n"), actual);
+
+                    node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "frameworkAssemblies");
+                    actual = node.ToString().Replace("\r\n", "\n");
+
+                    Assert.Equal(
+                        @"<frameworkAssemblies xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
+  <frameworkAssembly assemblyName=""System.Xml"" targetFramework="".NETFramework4.6"" />
+  <frameworkAssembly assemblyName=""System.Xml.Linq"" targetFramework="".NETFramework4.6"" />
+</frameworkAssemblies>".Replace("\r\n", "\n"), actual);
+                }
+            }
+        }
+
+        [Fact]
         public void PackCommand_PackageFromNuspecWithXmlEncoding()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -4068,7 +4111,7 @@ stuff \n &lt;&lt;
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    "pack packageA.nuspec -verbosity detailed",
+                    "pack packageA.nuspec",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
@@ -4109,6 +4152,386 @@ stuff \n <<".Replace("\r\n", "\n");
                     actualDescription = description.Value.Replace("\r\n", "\n");
                     Assert.Equal(expectedDescription, actualDescription);
                 }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_JsonSnapshotValue()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles", "any", "any"),
+                    "image.jpg",
+                    "");
+
+                Directory.CreateDirectory(
+                    Path.Combine(workingDirectory, "bin/Debug"));
+
+                Util.CreateFile(
+                    workingDirectory,
+                    Path.GetFileName(workingDirectory) + ".project.json",
+                @"{
+  ""version"": ""1.0.0-*"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
+  ""dependencies"": {
+    ""packageB"": {
+      ""version"": ""1.0.0"",
+    },
+  },
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack " + Path.GetFileName(workingDirectory) + ".project.json -Suffix rc-123",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                var id = Path.GetFileName(workingDirectory);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, id + ".1.0.0-rc-123.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == id + ".nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "version");
+
+                    Assert.Equal("1.0.0-rc-123", node.Value);
+                }
+            }
+        }
+
+        // Skip this test on mono: https://github.com/NuGet/Home/issues/3522
+        [WindowsNTFact]
+        public void PackCommand_JsonPackOptionsFiles()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image1.jpg",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image2.jpg",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image3.jpg",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "file1.txt",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "file2.txt",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "file3.txt",
+                    "");
+
+                Directory.CreateDirectory(
+                    Path.Combine(workingDirectory, "bin/Debug"));
+
+                Util.CreateFile(
+                    workingDirectory,
+                    Path.GetFileName(workingDirectory) + ".project.json",
+                @"{
+  ""version"": ""1.0.0-*"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""owners"": [ ""test"" ],
+  ""requireLicenseAcceptance"": ""false"",
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""files"": {
+      ""include"": ""contentFiles/**"",
+      ""exclude"": ""contentFiles/**.txt"",
+      ""includeFiles"": [ ""contentFiles/file2.txt"" ],
+      ""excludeFiles"": [ ""contentFiles/image3.jpg"" ],
+    }
+  }
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack " + Path.GetFileName(workingDirectory) + ".project.json",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                var id = Path.GetFileName(workingDirectory);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, id + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == id + ".nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+
+                    Assert.Equal(
+                        new string[]
+                        {
+                            Path.Combine("contentFiles", "file2.txt"),
+                            Path.Combine("contentFiles", "image1.jpg"),
+                            Path.Combine("contentFiles", "image2.jpg"),
+                        },
+                        files);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_JsonPackOptionsFilesMappings()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image1.jpg",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image2.jpg",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image3.jpg",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "file1.txt",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "file2.txt",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "file3.txt",
+                    "");
+
+                Directory.CreateDirectory(
+                    Path.Combine(workingDirectory, "bin/Debug"));
+
+                Util.CreateFile(
+                    workingDirectory,
+                    Path.GetFileName(workingDirectory) + ".project.json",
+                @"{
+  ""version"": ""1.0.0-*"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""owners"": [ ""test"" ],
+  ""requireLicenseAcceptance"": ""false"",
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""files"": {
+      ""mappings"": {
+          ""map1"" : {
+            ""include"": ""contentFiles/**"",
+            ""exclude"": ""contentFiles/**.txt""
+          },
+          ""map2"": {
+            ""includeFiles"": [ ""contentFiles/file2.txt"", ""contentFiles/file3.txt"" ],
+            ""excludeFiles"": [ ""contentFiles/file3.txt"" ]
+          }
+        }
+      }
+    }
+  }
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack " + Path.GetFileName(workingDirectory) + ".project.json",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                var id = Path.GetFileName(workingDirectory);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, id + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == id + ".nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+
+                    Assert.Equal(
+                        new string[]
+                        {
+                            Path.Combine("map1", "image1.jpg"),
+                            Path.Combine("map1", "image2.jpg"),
+                            Path.Combine("map1", "image3.jpg"),
+                            Path.Combine("map2", "file2.txt"),
+                        },
+                        files);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_JsonSnapshotRcValue()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles", "any", "any"),
+                    "image.jpg",
+                    "");
+
+                Directory.CreateDirectory(
+                    Path.Combine(workingDirectory, "bin/Debug"));
+
+                Util.CreateFile(
+                    workingDirectory,
+                    Path.GetFileName(workingDirectory) + ".project.json",
+                @"{
+  ""version"": ""1.0.0-rc-*"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
+  ""dependencies"": {
+    ""packageB"": {
+      ""version"": ""1.0.0"",
+    },
+  },
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack " + Path.GetFileName(workingDirectory) + ".project.json -Suffix 123",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                var id = Path.GetFileName(workingDirectory);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, id + ".1.0.0-rc-123.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == id + ".nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "version");
+
+                    Assert.Equal("1.0.0-rc-123", node.Value);
+                }
+            }
+        }
+
+        [SkipMono]
+        public void PackCommand_PackJsonCorrectLibPathInNupkg()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+
+                string id = Path.GetFileName(workingDirectory);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "someDirName", id, "bin", "Debug", "netcoreapp1.0"),
+                    id + ".dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "someDirName", id, "bin", "Debug", "netcoreapp1.0", "win7-x64"),
+                    id + ".dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "project.json",
+                @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
+  ""frameworks"": {
+    ""native"": {
+    },
+    ""uap10.0"": {
+    }
+  }
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack project.json",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, Path.GetFileName(workingDirectory) + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+
+                Assert.Equal(
+                    new string[]
+                    {
+                            Path.Combine("lib", "netcoreapp1.0", id + ".dll"),
+                            Path.Combine("lib", "netcoreapp1.0", "win7-x64", id + ".dll"),
+                    },
+                    files);
+
+                Assert.False(r.Item2.Contains("Assembly outside lib folder"));
             }
         }
 
@@ -4163,7 +4586,326 @@ stuff \n <<".Replace("\r\n", "\n");
                 Assert.Equal(1, r.Item1);
 
                 // Assert
-                Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
+                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
+                {
+                    Assert.Contains("Failed to build 'proj1.csproj'.", r.Item3);
+                }
+                else
+                {
+                    Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
+                }
+            }
+        }
+
+        [SkipMonoTheory]
+        [InlineData(".dll")]
+        [InlineData(".exe")]
+        public void PackCommand_PackJsonCorrectLibPathInNupkgWithOutputName(string extension)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var testFolder = TestDirectory.Create())
+            {
+                // Arrange
+                var id = "packageId";
+                var workingDirectory = Path.Combine(testFolder, id);
+                string dllName = "myDllName";
+
+                Directory.CreateDirectory(id);
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "someDirName", id, "bin", "Debug", "netcoreapp1.0"),
+                    dllName + extension,
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "someDirName", id, "bin", "Debug", "netcoreapp1.0", "win7-x64"),
+                    dllName + extension,
+                    string.Empty);
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "project.json",
+                @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""buildOptions"": {
+    ""outputName"": """ + dllName + @""",
+  },
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
+  ""copyright"": ""Copyright ©  2013"",
+  ""frameworks"": {
+    ""native"": {
+    },
+    ""uap10.0"": {
+    }
+  }
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack project.json",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, Path.GetFileName(workingDirectory) + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+
+                Assert.Equal(
+                    new string[]
+                    {
+                            Path.Combine("lib", "netcoreapp1.0" , dllName + extension),
+                            Path.Combine("lib", "netcoreapp1.0", "win7-x64", dllName + extension),
+                    },
+                    files);
+
+                Assert.False(r.Item2.Contains("Assembly outside lib folder"));
+            }
+        }
+
+        [Fact]
+        public void PackCommand_BuildBareMinimumProjectJson()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+
+                CreateTestProject(workingDirectory, "proj1",
+                    new string[] {
+                    });
+                Util.CreateFile(
+                proj1Directory,
+                "project.json",
+            @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""proj1"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""frameworks"": {
+    ""net46"": {
+      ""frameworkAssemblies"": {
+        ""System"": """",
+        ""System.Runtime"": """"
+      }
+    }
+  }
+}");
+
+                // Act
+                CommandRunner.Run(
+                    NuGetEnvironment.GetDotNetLocation(),
+                    proj1Directory,
+                    "restore",
+                    waitForExit: true);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack project.json -build",
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_BuildProjectJson()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+
+                CreateTestProject(workingDirectory, "proj1",
+                    new string[] {
+                    });
+                Util.CreateFile(
+                proj1Directory,
+                "project.json",
+            @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""proj1"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
+  ""frameworks"": {
+    ""net46"": {
+      ""frameworkAssemblies"": {
+        ""System"": """",
+        ""System.Runtime"": """"
+      }
+    }
+  }
+}");
+
+                // Act
+                CommandRunner.Run(
+                    NuGetEnvironment.GetDotNetLocation(),
+                    proj1Directory,
+                    "restore",
+                    waitForExit: true);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack project.json -build",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.1.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+
+                Assert.Equal(
+                    new string[]
+                    {
+                        Path.Combine("lib", "net46", "proj1.dll"),
+                    },
+                    files);
+            }
+        }
+
+        [SkipMono]
+        public void PackCommand_BuildProjectJsonWithFullBasePath()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+
+                CreateTestProject(workingDirectory, "proj1",
+                    new string[] {
+                    });
+                Util.CreateFile(
+                proj1Directory,
+                "project.json",
+            @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""proj1"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
+  ""frameworks"": {
+    ""net46"": {
+      ""frameworkAssemblies"": {
+        ""System"": """",
+        ""System.Runtime"": """"
+      }
+    }
+  }
+}");
+
+                // Act
+                var rootDir = RuntimeEnvironmentHelper.IsWindows ? "C:\\" : "/";
+                CommandRunner.Run(
+                    NuGetEnvironment.GetDotNetLocation(),
+                    proj1Directory,
+                    "restore",
+                    waitForExit: true);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    rootDir,
+                    $"pack {Path.Combine(proj1Directory, "project.json")} -build -basepath {Path.Combine(proj1Directory, "buildDir")} -outputdir {Path.Combine(proj1Directory, "outDir")}",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "outDir", "proj1.1.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+
+                Assert.Equal(
+                    new string[]
+                    {
+                        Path.Combine("lib", "net46", "proj1.dll")
+                    },
+                    files);
+            }
+        }
+
+        [SkipMono]
+        public void PackCommand_BuildProjectJsonWithRelativeBasePath()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+
+                CreateTestProject(workingDirectory, "proj1",
+                    new string[] {
+                    });
+                Util.CreateFile(
+                proj1Directory,
+                "project.json",
+            @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""proj1"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
+  ""frameworks"": {
+    ""net46"": {
+      ""frameworkAssemblies"": {
+        ""System"": """",
+        ""System.Runtime"": """"
+      }
+    }
+  }
+}");
+
+                // Act
+                CommandRunner.Run(
+                    NuGetEnvironment.GetDotNetLocation(),
+                    proj1Directory,
+                    "restore",
+                    waitForExit: true);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    $"pack {Path.Combine("proj1", "project.json")} -build -basepath buildDir -outputdir {Path.Combine("proj1", "outDir")}",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "outDir", "proj1.1.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+
+                Assert.Equal(
+                    new string[]
+                    {
+                        Path.Combine("lib", "net46", "proj1.dll")
+                    },
+                    files);
             }
         }
 
@@ -4298,131 +5040,6 @@ namespace Proj1
                         Path.Combine("lib", "net40", "proj1.dll")
                     },
                     files);
-            }
-        }
-
-        [PlatformTheory(Platform.Windows)]
-        [InlineData("NU5105", false)]
-        [InlineData("NU5106", true)]
-        public void PackCommand_NoWarn_SuppressesWarnings(string value, bool expectToWarn)
-        {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingDirectory = TestDirectory.Create())
-            {
-                var semver2Version = "1.0.0-rtm+asdassd";
-                var proj1Directory = Path.Combine(workingDirectory, "proj1");
-
-                // create project 1
-                Util.CreateFile(
-                    proj1Directory,
-                    "proj1.csproj",
-$@"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <NoWarn>{value}</NoWarn>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include='proj1_file1.cs' />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include='proj1_file2.txt' />
-  </ItemGroup>
-  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
-</Project>");
-                Util.CreateFile(
-                    proj1Directory,
-                    "proj1_file1.cs",
-@"using System;
-
-namespace Proj1
-{
-    public class Class1
-    {
-        public int A { get; set; }
-    }
-}");
-                Util.CreateFile(
-                    proj1Directory,
-                    "proj1_file2.txt",
-                    "file2");
-                
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    proj1Directory,
-                    $"pack proj1.csproj -build -version {semver2Version}",
-                    waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                var expectedWarning = string.Format("WARNING: " + NuGetLogCode.NU5105 + ": " + AnalysisResources.LegacyVersionWarning, semver2Version);
-                Assert.Equal(r.AllOutput.Contains(expectedWarning), expectToWarn);
-            }
-        }
-
-        [PlatformTheory(Platform.Windows)]
-        [InlineData("WarningsAsErrors", "NU5105", true)]
-        [InlineData("WarningsAsErrors", "NU5106", false)]
-        [InlineData("TreatWarningsAsErrors", "true", true)]
-        public void PackCommand_WarnAsError_PrintsWarningsAsErrors(string property, string value, bool expectToError)
-        {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingDirectory = TestDirectory.Create())
-            {
-                var semver2Version = "1.0.0-rtm+asdassd";
-                var proj1Directory = Path.Combine(workingDirectory, "proj1");
-
-                // create project 1
-                Util.CreateFile(
-                    proj1Directory,
-                    "proj1.csproj",
-$@"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <{property}>{value}</{property}>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include='proj1_file1.cs' />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include='proj1_file2.txt' />
-  </ItemGroup>
-  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
-</Project>");
-                Util.CreateFile(
-                    proj1Directory,
-                    "proj1_file1.cs",
-@"using System;
-
-namespace Proj1
-{
-    public class Class1
-    {
-        public int A { get; set; }
-    }
-}");
-                Util.CreateFile(
-                    proj1Directory,
-                    "proj1_file2.txt",
-                    "file2");
-
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    proj1Directory,
-                    $"pack proj1.csproj -build -version {semver2Version}",
-                    waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                var expectedWarning = string.Format("Error " + NuGetLogCode.NU5105 + ": " + AnalysisResources.LegacyVersionWarning, semver2Version);
-                Assert.Equal(r.AllOutput.Contains(expectedWarning), expectToError);
             }
         }
 
