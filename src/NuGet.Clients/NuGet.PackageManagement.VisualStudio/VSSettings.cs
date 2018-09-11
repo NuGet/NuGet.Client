@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio
         // The value for SolutionSettings can't possibly be null, but it could be a read-only instance
         private bool CanChangeSettings => !ReferenceEquals(SolutionSettings, NullSettings.Instance);
 
-        //TODO: Remove deprecated methods
+        //TODO: Remove deprecated methods https://github.com/NuGet/Home/issues/7294
 
 #pragma warning disable CS0618 // Type or member is obsolete
 

@@ -102,7 +102,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(item));
             }
 
-            var currentSettings = Priority.First(f => f.Equals(settingsFile));
+            var currentSettings = Priority.Last(f => f.Equals(settingsFile));
             if (settingsFile.IsMachineWide || (currentSettings?.IsMachineWide ?? false))
             {
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
@@ -110,7 +110,7 @@ namespace NuGet.Configuration
 
             if (currentSettings == null)
             {
-                Priority.Last().SetNextFile(settingsFile);
+                Priority.First().SetNextFile(settingsFile);
             }
 
             // If it is an update this will take care of it and modify the underlaying object, which is also referenced by _computedSections.
@@ -147,7 +147,7 @@ namespace NuGet.Configuration
 
             if (!_computedSections.TryGetValue(sectionName, out var section))
             {
-                throw new InvalidOperationException(Resources.SectionDoesNotExist);
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.SectionDoesNotExist, sectionName));
             }
 
             if (!section.Items.Contains(item))
@@ -205,16 +205,16 @@ namespace NuGet.Configuration
 
             if (clearedSections.Any())
             {
-                return clearedSections.Last().Origin;
+                return clearedSections.First().Origin;
             }
 
             // if none have a clear tag, default to furthest from the user
-            return writteableSettingsFiles.FirstOrDefault();
+            return writteableSettingsFiles.LastOrDefault();
         }
 
         /// <summary>
         /// Enumerates the sequence of <see cref="SettingsFile"/> instances
-        /// used in the order they where read
+        /// ordered from closer to user to further
         /// </summary>
         internal IEnumerable<SettingsFile> Priority
         {
@@ -229,6 +229,8 @@ namespace NuGet.Configuration
                     found.Add(current);
                     current = current.Next;
                 }
+
+                found.Reverse();
 
                 return found;
             }
@@ -392,11 +394,9 @@ namespace NuGet.Configuration
 
             if (machineWideSettings != null && machineWideSettings.Settings is Settings mwSettings && string.IsNullOrEmpty(configFileName))
             {
-                // Priority gives you the settings file in the order you want to start reading them,
-                // we want them in the reverse order to add them correctly to the settings and connect
-                // them to the other configs
+                // Priority gives you the settings file in the order you want to start reading them
                 validSettingFiles.AddRange(
-                    mwSettings.Priority.Reverse().Select(
+                    mwSettings.Priority.Select(
                         s => new SettingsFile(s.DirectoryPath, s.FileName, s.IsMachineWide)));
             }
 
@@ -692,7 +692,7 @@ namespace NuGet.Configuration
             yield break;
         }
 
-        // TODO: Delete obsolete methods
+        // TODO: Delete obsolete methods https://github.com/NuGet/Home/issues/7294
 #pragma warning disable CS0618 // Type or member is obsolete
 
         [Obsolete("GetValue(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]

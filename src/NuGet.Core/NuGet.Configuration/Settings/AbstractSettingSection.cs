@@ -15,8 +15,7 @@ namespace NuGet.Configuration
         {
         }
 
-        // This is public for testing
-        public AbstractSettingSection(string name, params SettingItem[] children)
+        internal AbstractSettingSection(string name, params SettingItem[] children)
             : this(name, attributes: null, children: new HashSet<SettingItem>(children))
         {
         }

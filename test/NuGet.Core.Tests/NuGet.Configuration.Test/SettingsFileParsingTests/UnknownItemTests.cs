@@ -63,7 +63,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <Section>
         <Unknown>
-            <add Key=""key"" Value=""Val"" />
+            <add key=""key"" value=""Val"" />
         </Unknown>
     </Section>
 </configuration>";

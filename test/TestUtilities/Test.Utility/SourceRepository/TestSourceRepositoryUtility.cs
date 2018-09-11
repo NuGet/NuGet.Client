@@ -99,9 +99,9 @@ namespace Test.Utility
 
         public void DisablePackageSource(string name) => throw new NotImplementedException();
 
-        public PackageSource GetPackageSourceWithName(string name) => throw new NotImplementedException();
+        public PackageSource GetPackageSourceByName(string name) => throw new NotImplementedException();
 
-        public PackageSource GetPackageSourceWithSource(string source) => throw new NotImplementedException();
+        public PackageSource GetPackageSourceBySource(string source) => throw new NotImplementedException();
 
         public void UpdatePackageSource(PackageSource source, bool updateCredentials, bool updateEnabled) => throw new NotImplementedException();
 

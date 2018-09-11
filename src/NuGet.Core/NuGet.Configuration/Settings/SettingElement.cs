@@ -241,7 +241,7 @@ namespace NuGet.Configuration
 
                 foreach (var attribute in element.Attributes())
                 {
-                    if (!AllowedAttributes.Contains(attribute.Name.LocalName, StringComparer.OrdinalIgnoreCase))
+                    if (!AllowedAttributes.Contains(attribute.Name.LocalName))
                     {
                         throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
                     }
@@ -252,7 +252,7 @@ namespace NuGet.Configuration
             {
                 foreach (var requireAttribute in RequiredAttributes)
                 {
-                    var attribute = GetAttributeWithKeyIgnoreCase(element, requireAttribute);
+                    var attribute = element.Attribute(requireAttribute);
                     if (attribute == null)
                     {
                         throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
@@ -264,7 +264,7 @@ namespace NuGet.Configuration
             {
                 foreach (var attributeValues in AllowedValues)
                 {
-                    var attribute = GetAttributeWithKeyIgnoreCase(element, attributeValues.Key);
+                    var attribute = element.Attribute(attributeValues.Key);
                     if (attribute != null && !attributeValues.Value.Contains(attribute.Value.Trim()))
                     {
                         throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
@@ -276,18 +276,13 @@ namespace NuGet.Configuration
             {
                 foreach (var attributeValues in DisallowedValues)
                 {
-                    var attribute = GetAttributeWithKeyIgnoreCase(element, attributeValues.Key);
+                    var attribute = element.Attribute(attributeValues.Key);
                     if (attribute != null && attributeValues.Value.Contains(attribute.Value.Trim()))
                     {
                         throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
                     }
                 }
             }
-        }
-
-        private XAttribute GetAttributeWithKeyIgnoreCase(XElement element, string key)
-        {
-            return element.Attributes().Where(a => string.Equals(a.Name.LocalName, key, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
         }
     }
 }

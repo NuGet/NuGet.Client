@@ -11,7 +11,7 @@ namespace NuGet.Configuration
     /// </summary>
     public interface ISettings
     {
-        //TODO: Delete all obsolete APIs.
+        //TODO: Delete all obsolete APIs. https://github.com/NuGet/Home/issues/7294
 
         /// <summary>
         /// Gets a value for the given key from the given section

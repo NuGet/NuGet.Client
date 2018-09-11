@@ -205,9 +205,9 @@ namespace NuGet.Configuration
                 return true;
             }
 
-            return string.Equals(Source, other.Source, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(Username, other.Username, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(PasswordText, other.PasswordText, StringComparison.OrdinalIgnoreCase) &&
+            return string.Equals(Source, other.Source, StringComparison.Ordinal) &&
+                string.Equals(Username, other.Username, StringComparison.Ordinal) &&
+                string.Equals(PasswordText, other.PasswordText, StringComparison.Ordinal) &&
                 IsPasswordClearText == other.IsPasswordClearText;
         }
 

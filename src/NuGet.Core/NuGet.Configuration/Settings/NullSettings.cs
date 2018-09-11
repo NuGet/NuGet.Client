@@ -21,7 +21,7 @@ namespace NuGet.Configuration
 
         public void SaveToDisk() { }
 
-        //TODO: Remove deprecated methods
+        //TODO: Remove deprecated methods https://github.com/NuGet/Home/issues/7294
 #pragma warning disable CS0618 // Type or member is obsolete
 
         [Obsolete("GetValue(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]

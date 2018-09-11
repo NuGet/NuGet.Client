@@ -269,7 +269,7 @@ namespace NuGet.Configuration
             return null;
         }
 
-        public PackageSource GetPackageSourceWithName(string name)
+        public PackageSource GetPackageSourceByName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -279,7 +279,7 @@ namespace NuGet.Configuration
             return GetPackageSource(name, LoadPackageSourceLookupByName());
         }
 
-        public PackageSource GetPackageSourceWithSource(string source)
+        public PackageSource GetPackageSourceBySource(string source)
         {
             if (string.IsNullOrEmpty(source))
             {

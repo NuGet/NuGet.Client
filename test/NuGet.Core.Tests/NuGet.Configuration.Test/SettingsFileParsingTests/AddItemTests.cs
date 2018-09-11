@@ -32,7 +32,7 @@ namespace NuGet.Configuration.Test
             var config = @"
 <configuration>
     <SectionName>
-        <add Key='key2' Value='value2' />
+        <add Key='key2' Value='value2' />,
     </SectionName>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";

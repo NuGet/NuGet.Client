@@ -71,7 +71,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The item passed to the Update method cannot refer to a different item to the one to be updated..
+        ///   Looks up a localized string similar to The item passed to the Update method cannot refer to a different item than the one being updated..
         /// </summary>
         internal static string CannotUpdateDifferentItems {
             get {
@@ -80,7 +80,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to update setting since it is in a machine wide NuGet.Config.
+        ///   Looks up a localized string similar to Unable to update setting since it is in a machine wide NuGet.Config..
         /// </summary>
         internal static string CannotUpdateMachineWide {
             get {
@@ -89,7 +89,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not add disabled package source.
+        ///   Looks up a localized string similar to Could not add disabled package source..
         /// </summary>
         internal static string Error_CouldNotDisableSources {
             get {
@@ -206,7 +206,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The section does not exist in the settings.
+        ///   Looks up a localized string similar to The section &apos;{0}&apos; does not exist in the settings..
         /// </summary>
         internal static string SectionDoesNotExist {
             get {
@@ -215,7 +215,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parameter &apos;fileName&apos; to Settings must be just a fileName and not a path.
+        ///   Looks up a localized string similar to Parameter &apos;fileName&apos; to Settings must be just a fileName and not a path..
         /// </summary>
         internal static string Settings_FileName_Cannot_Be_A_Path {
             get {

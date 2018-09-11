@@ -8,7 +8,7 @@ namespace NuGet.Configuration
 {
     public interface IPackageSourceProvider
     {
-        //TODO: Delete all obsolete APIs.
+        //TODO: Delete all obsolete APIs. https://github.com/NuGet/Home/issues/7294
 
         /// <summary>
         /// Gets a list of all of the package sources
@@ -21,14 +21,14 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="name">Name of source to be searched for</param>
         /// <returns>PackageSource that matches the given name. Null if none was found</returns>
-        PackageSource GetPackageSourceWithName(string name);
+        PackageSource GetPackageSourceByName(string name);
 
         /// <summary>
         /// Gets the source that matches a given source url.
         /// </summary>
         /// <param name="source">Url of source to be searched for</param>
         /// <returns>PackageSource that matches the given source. Null if none was found</returns>
-        PackageSource GetPackageSourceWithSource(string source);
+        PackageSource GetPackageSourceBySource(string source);
 
         /// <summary>
         /// Event raised when the package sources have been changed.

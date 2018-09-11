@@ -12,7 +12,7 @@ namespace NuGet.Configuration
 {
     public static class SettingsUtility
     {
-        //TODO: Delete all obsolete APIs.
+        //TODO: Delete all obsolete APIs. https://github.com/NuGet/Home/issues/7294
 
         private const string GlobalPackagesFolderKey = "globalPackagesFolder";
         private const string GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES";

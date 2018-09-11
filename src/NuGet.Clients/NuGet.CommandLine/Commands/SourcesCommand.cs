@@ -92,7 +92,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNameRequired"));
             }
 
-            var packageSource = SourceProvider.GetPackageSourceWithName(Name);
+            var packageSource = SourceProvider.GetPackageSourceByName(Name);
             if (packageSource == null)
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNoMatchingSourcesFound"), Name);
@@ -122,7 +122,7 @@ namespace NuGet.CommandLine
             // Check to see if we already have a registered source with the same name or source
             var sourceList = SourceProvider.LoadPackageSources().ToList();
 
-            var source = SourceProvider.GetPackageSourceWithName(Name);
+            var source = SourceProvider.GetPackageSourceByName(Name);
             if (source == null)
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNoMatchingSourcesFound"), Name);
@@ -156,12 +156,12 @@ namespace NuGet.CommandLine
             ValidateCredentials();
 
             // Check to see if we already have a registered source with the same name or source
-            var existingSourceWithName = SourceProvider.GetPackageSourceWithName(Name);
+            var existingSourceWithName = SourceProvider.GetPackageSourceByName(Name);
             if (existingSourceWithName != null)
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandUniqueName"));
             }
-            var existingSourceWithSource = SourceProvider.GetPackageSourceWithSource(Source);
+            var existingSourceWithSource = SourceProvider.GetPackageSourceBySource(Source);
             if (existingSourceWithSource != null)
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandUniqueSource"));
@@ -191,7 +191,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNameRequired"));
             }
 
-            var existingSource = SourceProvider.GetPackageSourceWithName(Name);
+            var existingSource = SourceProvider.GetPackageSourceByName(Name);
             if (existingSource == null)
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNoMatchingSourcesFound"), Name);
@@ -205,7 +205,7 @@ namespace NuGet.CommandLine
                 }
 
                 // If the user is updating the source, verify we don't have a duplicate.
-                var duplicateSource = SourceProvider.GetPackageSourceWithSource(Source);
+                var duplicateSource = SourceProvider.GetPackageSourceBySource(Source);
                 if (duplicateSource != null)
                 {
                     throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandUniqueSource"));

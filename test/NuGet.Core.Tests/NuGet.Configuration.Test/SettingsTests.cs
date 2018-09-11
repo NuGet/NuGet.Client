@@ -1385,7 +1385,7 @@ namespace NuGet.Configuration.Test
                 var ex = Record.Exception(() => settings.Remove("SectionName", item));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in a machine wide NuGet.Config");
+                ex.Message.Should().Be("Unable to update setting since it is in a machine wide NuGet.Config.");
 
                 settings.SaveToDisk();
 

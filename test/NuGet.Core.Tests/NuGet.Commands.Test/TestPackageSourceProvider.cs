@@ -39,9 +39,9 @@ namespace NuGet.Commands.Test
 
         public void RemovePackageSource(string name) => throw new NotImplementedException();
 
-        public PackageSource GetPackageSourceWithName(string name) => throw new NotImplementedException();
+        public PackageSource GetPackageSourceByName(string name) => throw new NotImplementedException();
 
-        public PackageSource GetPackageSourceWithSource(string source) => throw new NotImplementedException();
+        public PackageSource GetPackageSourceBySource(string source) => throw new NotImplementedException();
 
         public void EnablePackageSource(string name) => throw new NotImplementedException();
 
