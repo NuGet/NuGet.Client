@@ -13,6 +13,5 @@
         <file src="build\PackageWithImport.targets" target="build\PackageWithImport.targets" />
         <file src="build\PackageWithImport.props" target="build\PackageWithImport.props" />
         <file src="content\one.txt" target="content\one.txt" />
-        <file src="lib\net45\PackageWithImport.dll" target="lib\net45\PackageWithImport.dll" />
     </files>
 </package>

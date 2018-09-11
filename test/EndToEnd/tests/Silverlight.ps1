@@ -1,5 +1,4 @@
 function Test-BindingRedirectDoesNotAddToSilverlightProject {
-    [SkipTestForVS15()]
     param(
         $context
     )
@@ -10,19 +9,15 @@ function Test-BindingRedirectDoesNotAddToSilverlightProject {
     $c | Install-Package TestSL -Version 1.0 -Source $context.RepositoryPath
 
     # Assert
-    $c | ForEach-Object {
-        Assert-Reference $_ TestSL 1.0.0.0;
-        Assert-Reference $_ HostSL 1.0.1.0;
-    }
+    $c | %{ Assert-Reference $_ TestSL 1.0.0.0; 
+            Assert-Reference $_ HostSL 1.0.1.0; }
 
     Assert-NoBindingRedirect $c app.config HostSL '0.0.0.0-1.0.1.0' '1.0.1.0'
 }
 
-function Test-InstallPackageRespectReferencesAccordingToDifferentFrameworks {
-    [SkipTestForVS15()]
-    param (
-        $context
-    )
+function Test-InstallPackageRespectReferencesAccordingToDifferentFrameworks
+{
+    param ($context)
 
     # Arrange
     $p1 = New-SilverlightClassLibrary

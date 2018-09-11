@@ -6,7 +6,7 @@
     <Icon Package="{CAE03EC1-301F-11d3-BF4B-00C349EFBC}" ID="4547" />
     <TemplateID>Microsoft.CSharp.ClassLibrary</TemplateID>
     <ProjectType>CSharp</ProjectType>
-    <RequiredFrameworkVersion>4.6</RequiredFrameworkVersion>
+    <RequiredFrameworkVersion>4.5</RequiredFrameworkVersion>
     <SortOrder>20</SortOrder>
     <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
     <CreateNewFolder>true</CreateNewFolder>
@@ -16,7 +16,7 @@
   <TemplateContent>
     <Project File="BuildIntegratedClassLibrary.csproj" ReplaceParameters="true">
       <ProjectItem ReplaceParameters="true" TargetFileName="Properties\AssemblyInfo.cs">AssemblyInfo.cs</ProjectItem>
-      <ProjectItem ReplaceParameters="true">Class1.cs</ProjectItem>
+      <ProjectItem ReplaceParameters="true" OpenInEditor="true">Class1.cs</ProjectItem>
       <ProjectItem>project.json</ProjectItem>
     </Project>
   </TemplateContent>
