@@ -16,7 +16,7 @@
     <ProjectReference Include="..\NuGet.Protocol.VisualStudio\NuGet.Protocol.VisualStudio.csproj" />
     <ProjectReference Include="..\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.Interop" Version="1.0.0-*" PrivateAssets="all"/>
-    <PackageReference Include="Xunit" Version= "2.1.0"/>
+    <PackageReference Include="Xunit" Version= "$(XunitVersion)"/>
     <Reference Include="System.Runtime.Serialization"/>
   </ItemGroup>
   

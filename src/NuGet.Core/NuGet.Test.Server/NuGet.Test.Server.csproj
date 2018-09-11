@@ -9,7 +9,7 @@
     <PackProject>false</PackProject>
     <Shipping>false</Shipping>
     <IncludeInVSIX>false</IncludeInVSIX>
-    <XPLATProject>true</XPLATProject>
+    <XPLATProject>false</XPLATProject>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.0</NetStandardImplicitPackageVersion>
   </PropertyGroup>
 
