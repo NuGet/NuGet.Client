@@ -1725,7 +1725,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Remove_WithValidSectionAndKey_DeletesTheEntryAndReturnsTrue()
+        public void Remove_WithValidSectionAndKey_DeletesTheEntry()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";

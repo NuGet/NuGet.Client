@@ -60,16 +60,9 @@ namespace NuGet.Configuration
 
             foreach (var descendant in descendants)
             {
-                if (descendant is ClearItem)
+                if (descendant is ClearItem && canBeCleared)
                 {
-                    if (canBeCleared)
-                    {
-                        children.Clear();
-                    }
-
-                    children.Add(descendant);
-
-                    continue;
+                    children.Clear();
                 }
 
                 children.Add(descendant);

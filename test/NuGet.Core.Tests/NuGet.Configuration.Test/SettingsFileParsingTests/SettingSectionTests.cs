@@ -15,7 +15,7 @@ namespace NuGet.Configuration.Test
     public class SettingSectionTests
     {
         [Fact]
-        public void GetValues_UnexistantChild_ReturnsNull()
+        public void SettingSection_GetValues_UnexistantChild_ReturnsNull()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -44,7 +44,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void GetValues_ReturnsAllChildElements()
+        public void SettingSection_GetValues_ReturnsAllChildElements()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -75,7 +75,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void WithAClear_ParseClearCorrectly()
+        public void SettingSection_WithAClear_ParseClearCorrectly()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -114,7 +114,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void AddOrUpdate_Succeds()
+        public void SettingSection_AddOrUpdate_AddsAnElementCorrectly()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -152,7 +152,50 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void AddOrUpdate_ToMachineWide_Throws()
+        public void SettingSection_AddOrUpdate_UpdatesAnElementCorrectly()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <add key='key0' value='value0' />
+        <add key='key1' value='value1' meta1='data1' meta2='data2'/>
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var configFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+
+                // Act
+                var section = settingsFile.GetSection("Section");
+                section.Should().NotBeNull();
+                section.Items.Count.Should().Be(2);
+
+                settingsFile.AddOrUpdate("Section", new AddItem("key0", "value0", new Dictionary<string, string>() { { "meta1", "data1" } }));
+
+                section = settingsFile.GetSection("Section");
+                section.Should().NotBeNull();
+                section.Items.Count.Should().Be(2);
+
+                var item = section.Items.First() as AddItem;
+                item.Should().NotBeNull();
+                item.AdditionalAttributes.Count.Should().Be(1);
+                item.AdditionalAttributes["meta1"].Should().Be("data1");
+
+                settingsFile.SaveToDisk();
+
+                var updatedFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                updatedFileHash.Should().NotBeEquivalentTo(configFileHash);
+            }
+        }
+
+        [Fact]
+        public void SettingSection_AddOrUpdate_ToMachineWide_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -193,7 +236,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Remove_Succeeds()
+        public void SettingSection_Remove_Succeeds()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -233,7 +276,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Remove_ToMachineWide_Throws()
+        public void SettingSection_Remove_ToMachineWide_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -273,7 +316,7 @@ namespace NuGet.Configuration.Test
 
 
         [Fact]
-        public void Remove_OnlyOneChild_SucceedsAndRemovesSection()
+        public void SettingSection_Remove_OnlyOneChild_SucceedsAndRemovesSection()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -310,7 +353,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Remove_UnexistantChild_ReturnsFalse()
+        public void SettingSection_Remove_UnexistantChild_DoesNotRemoveAnything()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -343,7 +386,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Merge_JoinsTwoSectionsCorrectly()
+        public void SettingSection_Merge_JoinsTwoSectionsCorrectly()
         {
             var firstSection = new AbstractSettingSection("Section", new AddItem("key1", "value1"), new AddItem("key2", "value2"));
             var secondSection = new ParsedSettingSection("Section", new AddItem("key2", "valueX"), new AddItem("key3", "value3"));
@@ -356,7 +399,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Merge_WithTwoDifferentSections_Throws()
+        public void SettingSection_Merge_WithTwoDifferentSections_Throws()
         {
             var firstSection = new AbstractSettingSection("Section", new AddItem("key1", "value1"), new AddItem("key2", "value2"));
             var secondSection = new ParsedSettingSection("SectionName", new AddItem("key2", "valueX"), new AddItem("key3", "value3"));

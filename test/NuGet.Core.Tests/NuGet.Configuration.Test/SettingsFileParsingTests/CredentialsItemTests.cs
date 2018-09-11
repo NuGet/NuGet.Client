@@ -20,7 +20,7 @@ namespace NuGet.Configuration.Test
         [InlineData("name", "", "pass")]
         [InlineData("name", "user", null)]
         [InlineData("name", "user", "")]
-        public void Constructor_WithEmptyOrNullParameters_Throws(string name, string username, string password)
+        public void CredentialsItem_Constructor_WithEmptyOrNullParameters_Throws(string name, string username, string password)
         {
             var ex = Record.Exception(() => new CredentialsItem(name, username, password, isPasswordClearText: true, validAuthenticationTypes: null));
             ex.Should().NotBeNull();
@@ -28,7 +28,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Parsing_WithoutUsername_Throws()
+        public void CredentialsItem_Parsing_WithoutUsername_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -55,7 +55,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Parsing_WithoutPasswordOrClearTextPassword_Throws()
+        public void CredentialsItem_Parsing_WithoutPasswordOrClearTextPassword_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -82,7 +82,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Parsing_WithUsernamePasswordAndClearTextPassword_Throws()
+        public void CredentialsItem_Parsing_WithUsernamePasswordAndClearTextPassword_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -111,7 +111,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void WithAdditionalMetada_Throws()
+        public void CredentialsItem_WithAdditionalMetada_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -140,7 +140,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Update_WhenItemIsNotCredentialsItem_Throws()
+        public void CredentialsItem_Update_WhenItemIsNotCredentialsItem_Throws()
         {
             // Arrange
             var credentials = new CredentialsItem("name", "user", "pass", isPasswordClearText: true, validAuthenticationTypes: null);
@@ -159,7 +159,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Update_WhenOriginIsMachineWide_Throws()
+        public void CredentialsItem_Update_WhenOriginIsMachineWide_Throws()
         {
             // Arrange
             using (var mockBaseDirectory = TestDirectory.Create())
@@ -186,7 +186,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Update_ChangeUsername_UpdatesObjectAndXNode()
+        public void CredentialsItem_Update_ChangeUsername_UpdatesObjectAndXNode()
         {
             // Arrange
             using (var mockBaseDirectory = TestDirectory.Create())
@@ -218,7 +218,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Update_ChangePassword_UpdatesObjectAndXNode()
+        public void CredentialsItem_Update_ChangePassword_UpdatesObjectAndXNode()
         {
             // Arrange
             using (var mockBaseDirectory = TestDirectory.Create())
@@ -250,7 +250,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Update_ChangeClearTextPassword_UpdatesObjectAndXNode()
+        public void CredentialsItem_Update_ChangeClearTextPassword_UpdatesObjectAndXNode()
         {
             // Arrange
             using (var mockBaseDirectory = TestDirectory.Create())
@@ -282,7 +282,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Update_MakingPasswordClearText_UpdatesObjectAndXNode()
+        public void CredentialsItem_Update_MakingPasswordClearText_UpdatesObjectAndXNode()
         {
             // Arrange
             using (var mockBaseDirectory = TestDirectory.Create())
@@ -314,7 +314,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Update_MakingPasswordEncrypted_UpdatesObjectAndXNode()
+        public void CredentialsItem_Update_MakingPasswordEncrypted_UpdatesObjectAndXNode()
         {
             // Arrange
             using (var mockBaseDirectory = TestDirectory.Create())
@@ -347,7 +347,7 @@ namespace NuGet.Configuration.Test
 
 
         [Fact]
-        public void AsXNode_WithUsernameAndPassword_ReturnsCorrectElement()
+        public void CredentialsItem_AsXNode_WithUsernameAndPassword_ReturnsCorrectElement()
         {
             // Arrange
             var credentialsItem = new CredentialsItem("name", "username", "password", isPasswordClearText: false, validAuthenticationTypes: null);
@@ -376,7 +376,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void AsXNode_WithUsernameAndClearTextPassword_ReturnsCorrectElement()
+        public void CredentialsItem_AsXNode_WithUsernameAndClearTextPassword_ReturnsCorrectElement()
         {
             // Arrange
             var credentialsItem = new CredentialsItem("name", "username", "password", isPasswordClearText: true, validAuthenticationTypes: null);

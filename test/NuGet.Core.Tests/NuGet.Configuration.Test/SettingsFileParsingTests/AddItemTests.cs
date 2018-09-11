@@ -16,17 +16,17 @@ namespace NuGet.Configuration.Test
     public class AddItemTests
     {
         [Theory]
-        [InlineData(null, "value")]
-        [InlineData("", "value")]
-        public void Constructor_WithEmptyOrNullKey_Throws(string key, string value)
+        [InlineData(null)]
+        [InlineData("")]
+        public void AddItem_Constructor_WithEmptyOrNullKey_Throws(string key)
         {
-            var ex = Record.Exception(() => new AddItem(key: key, value: value));
+            var ex = Record.Exception(() => new AddItem(key, "value"));
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
         }
 
         [Fact]
-        public void WithoutRequiredAttributes_Throws()
+        public void AddItem_WithoutRequiredAttributes_Throws()
         {
             // Arrange
             var config = @"
@@ -50,7 +50,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SingleTag_WithOnlyKeyAndValue_ParsedSuccessfully()
+        public void AddItem_SingleTag_WithOnlyKeyAndValue_ParsedSuccessfully()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -81,7 +81,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void MultiTag_WithOnlyKeyAndValue_ParsedSuccessfully()
+        public void AddItem_MultiTag_WithOnlyKeyAndValue_ParsedSuccessfully()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -112,7 +112,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void WithAdditionalMetada_ParsedSuccessfully()
+        public void AddItem_WithAdditionalMetada_ParsedSuccessfully()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -147,7 +147,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Parsing_ElementWithChildren_Throws()
+        public void AddItem_Parsing_ElementWithChildren_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -174,7 +174,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void UpdatingAttribute_WithAddOrUpdate_SuccessfullyUpdatesConfigFile()
+        public void AddItem_UpdatingAttribute_WithAddOrUpdate_SuccessfullyUpdatesConfigFile()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -210,7 +210,6 @@ namespace NuGet.Configuration.Test
                 element2.Should().NotBeNull();
                 element2.Value.Should().Be("value1");
 
-
                 settingsFile.AddOrUpdate("Section", element);
                 settingsFile.SaveToDisk();
 
@@ -227,7 +226,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void GetValueAsPath_ResolvesPathsCorrectly()
+        public void AddItem_GetValueAsPath_ResolvesPathsCorrectly()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";

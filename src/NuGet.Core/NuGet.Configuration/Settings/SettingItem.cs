@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
@@ -13,6 +12,8 @@ namespace NuGet.Configuration
     public abstract class SettingItem : SettingElement
     {
         protected virtual bool CanHaveChildren => false;
+
+        internal SettingItem MergedWith { get; set; }
 
         protected SettingItem()
             : base()
@@ -77,6 +78,17 @@ namespace NuGet.Configuration
 
                     AddOrUpdateAttribute(attribute.Key, value);
                 }
+            }
+
+            foreach (var attribute in otherAttributes)
+            {
+                if (xElement != null)
+                {
+                    xElement.SetAttributeValue(attribute.Key, attribute.Value);
+                    Origin.IsDirty = true;
+                }
+
+                AddOrUpdateAttribute(attribute.Key, attribute.Value);
             }
         }
     }

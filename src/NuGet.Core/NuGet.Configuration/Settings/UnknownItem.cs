@@ -13,7 +13,7 @@ namespace NuGet.Configuration
     {
         public override string Name { get; protected set; }
 
-        public IReadOnlyList<SettingItem> Children => MutableChildren.AsReadOnly();
+        public IReadOnlyList<SettingBase> Children => MutableChildren.Select(c => c.Value).ToList().AsReadOnly();
 
         public new IReadOnlyDictionary<string, string> Attributes => base.Attributes;
 
@@ -21,21 +21,26 @@ namespace NuGet.Configuration
 
         protected override bool CanHaveChildren => true;
 
-        private List<SettingItem> MutableChildren { get; set; }
+        private Dictionary<SettingBase, SettingBase> MutableChildren { get; set; }
 
         internal UnknownItem(XElement element, SettingsFile origin)
             : base(element, origin)
         {
             Name = element.Name.LocalName;
-            MutableChildren = SettingFactory.ParseChildren<SettingItem>(element, origin, canBeCleared: false).Where(c => c != null).ToList();
+            MutableChildren = new Dictionary<SettingBase, SettingBase>();
 
-            foreach (var child in MutableChildren)
+            var descendants = element.Nodes().Where(n => n is XText text && !string.IsNullOrWhiteSpace(text.Value) || n is XElement)
+                .Select(d => SettingFactory.Parse(d, origin)).Distinct();
+
+            foreach (var descendant in descendants)
             {
-                child.Parent = this;
+                descendant.Parent = this;
+
+                MutableChildren.Add(descendant, descendant);
             }
         }
 
-        public UnknownItem(string name, IReadOnlyDictionary<string, string> attributes, IEnumerable<SettingItem> children)
+        public UnknownItem(string name, IReadOnlyDictionary<string, string> attributes, IEnumerable<SettingBase> children)
             : base(attributes)
         {
             if (string.IsNullOrEmpty(name))
@@ -44,21 +49,21 @@ namespace NuGet.Configuration
             }
 
             Name = name;
+            MutableChildren = new Dictionary<SettingBase, SettingBase>();
 
             if (children != null)
             {
-                MutableChildren = children.ToList();
-
-                foreach (var child in MutableChildren)
+                foreach (var child in children)
                 {
                     child.Parent = this;
+                    MutableChildren.Add(child, child);
                 }
             }
         }
 
-        internal override SettingBase Clone() => new UnknownItem(Name, Attributes, Children) { Origin = Origin };
+        internal override SettingBase Clone() => new UnknownItem(Name, Attributes, Children.Select(c => c.Clone())) { Origin = Origin };
 
-        internal bool Add(SettingItem setting)
+        internal bool Add(SettingBase setting)
         {
             if (setting == null)
             {
@@ -70,9 +75,9 @@ namespace NuGet.Configuration
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
-            if (!MutableChildren.Contains(setting) && !setting.IsEmpty())
+            if (!MutableChildren.ContainsKey(setting) && !setting.IsEmpty())
             {
-                MutableChildren.Add(setting);
+                MutableChildren.Add(setting, setting);
 
                 setting.AddToOrigin(Origin);
                 setting.Node = setting.AsXNode();
@@ -89,10 +94,10 @@ namespace NuGet.Configuration
 
         void ISettingsGroup.Remove(SettingElement setting)
         {
-            Remove(setting as SettingItem);
+            Remove(setting);
         }
 
-        private void Remove(SettingItem setting)
+        internal void Remove(SettingBase setting)
         {
             if (setting == null)
             {
@@ -104,8 +109,7 @@ namespace NuGet.Configuration
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
-            var currentSetting = MutableChildren.Find(c => c.Equals(setting));
-            if (currentSetting != null && MutableChildren.Remove(currentSetting))
+            if (MutableChildren.TryGetValue(setting, out var currentSetting) && MutableChildren.Remove(currentSetting))
             {
                 XElementUtility.RemoveIndented(currentSetting.Node);
                 Origin.IsDirty = true;
@@ -181,9 +185,8 @@ namespace NuGet.Configuration
 
             var unknown = other as UnknownItem;
 
-            var otherChildren = unknown.MutableChildren.ToDictionary(i => i, i => i);
-            var childrenImmutable = new List<SettingItem>(Children);
-            foreach (var child in childrenImmutable)
+            var otherChildren = new Dictionary<SettingBase, SettingBase>(unknown.MutableChildren);
+            foreach (var child in Children)
             {
                 if (otherChildren.TryGetValue(child, out var otherChild))
                 {
@@ -194,9 +197,9 @@ namespace NuGet.Configuration
                 {
                     Remove(child);
                 }
-                else if (!child.DeepEquals(otherChild))
+                else if (!child.DeepEquals(otherChild) && child is SettingItem item)
                 {
-                    child.Update(otherChild);
+                    item.Update(otherChild as SettingItem);
                 }
             }
 
@@ -210,20 +213,21 @@ namespace NuGet.Configuration
         {
             foreach (var attribute in item.Attributes)
             {
-                if (!Attributes.ContainsKey(attribute.Key))
-                {
-                    AddAttribute(attribute.Key, attribute.Value);
-                }
+                AddOrUpdateAttribute(attribute.Key, attribute.Value);
             }
 
             foreach (var child in item.Children)
             {
-                if (!Children.Contains(child))
+                if (MutableChildren.TryGetValue(child, out var existingChild))
                 {
-                    if (!MutableChildren.Contains(child))
+                    if (!existingChild.DeepEquals(child) && existingChild is SettingItem childItem)
                     {
-                        MutableChildren.Add(child);
+                        childItem.Update(child as SettingItem);
                     }
+                }
+                else
+                {
+                    MutableChildren.Add(child, child);
                 }
             }
         }

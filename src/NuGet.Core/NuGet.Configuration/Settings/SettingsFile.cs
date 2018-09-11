@@ -130,7 +130,7 @@ namespace NuGet.Configuration
         /// <param name="sectionName">section where the <paramref name="item"/> has to be added. If this section does not exist, one will be created.</param>
         /// <param name="item">item to be added to the settings.</param>
         /// <returns>true if the item was successfully updated or added in the settings</returns>
-        public void AddOrUpdate(string sectionName, SettingItem item)
+        internal void AddOrUpdate(string sectionName, SettingItem item)
         {
             _rootElement.AddOrUpdate(sectionName, item);
         }
@@ -142,7 +142,7 @@ namespace NuGet.Configuration
         /// <param name="sectionName">Section where the <paramref name="item"/> is stored. If this section does not exist, the method will throw</param>
         /// <param name="item">item to be removed from the settings</param>
         /// <remarks> If the SettingsFile is a machine wide config this method will throw</remarks>
-        public void Remove(string sectionName, SettingItem item)
+        internal void Remove(string sectionName, SettingItem item)
         {
             _rootElement.Remove(sectionName, item);
         }
@@ -150,7 +150,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Flushes any in-memory updates in the SettingsFile to disk.
         /// </summary>
-        public void SaveToDisk()
+        internal void SaveToDisk()
         {
             if (IsDirty)
             {
@@ -165,6 +165,11 @@ namespace NuGet.Configuration
 
         internal bool IsEmpty() => _rootElement == null || _rootElement.IsEmpty();
 
+        /// <remarks>
+        /// This method gives you a reference to the actual abstraction instead of a clone of it.
+        /// It should be used only when intended. For most purposed you should be able to use
+        /// GetSection(...) instead.
+        /// </remarks>
         internal bool TryGetSection(string sectionName, out SettingSection section)
         {
            return _rootElement.Sections.TryGetValue(sectionName, out section);

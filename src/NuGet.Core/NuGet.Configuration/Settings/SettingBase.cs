@@ -10,6 +10,8 @@ namespace NuGet.Configuration
     {
         internal XNode Node { get; set; }
 
+        internal ISettingsGroup Parent { get; set; }
+
         internal SettingsFile Origin { get; set; }
 
         internal SettingBase(XNode node, SettingsFile origin)
@@ -63,5 +65,13 @@ namespace NuGet.Configuration
         /// Just copies the abstraction.
         /// </summary>
         internal abstract SettingBase Clone();
+
+        /// <summary>
+        /// Convenience method to add an Origin to an element and all its children when adding it in a group
+        /// </summary>
+        internal virtual void AddToOrigin(SettingsFile origin)
+        {
+            Origin = origin;
+        }
     }
 }

@@ -123,10 +123,6 @@ namespace NuGet.Configuration
             return element;
         }
 
-        internal SettingItem MergedWith { get; set; }
-
-        internal ISettingsGroup Parent { get; set; }
-
         protected void AddOrUpdateAttribute(string attributeName, string value)
         {
             if (!UpdateAttribute(attributeName, value))
@@ -190,14 +186,6 @@ namespace NuGet.Configuration
             }
         }
 
-        /// <summary>
-        /// Convenience method to add an Origin to an element and all its children when adding it in a collection
-        /// </summary>
-        internal virtual void AddToOrigin(SettingsFile origin)
-        {
-            Origin = origin;
-        }
-
         private bool IsAttributeValid(string attributeName, string value)
         {
             if (AllowedAttributes != null)
@@ -253,7 +241,7 @@ namespace NuGet.Configuration
 
                 foreach (var attribute in element.Attributes())
                 {
-                    if (!AllowedAttributes.Contains(attribute.Name.LocalName))
+                    if (!AllowedAttributes.Contains(attribute.Name.LocalName, StringComparer.OrdinalIgnoreCase))
                     {
                         throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
                     }
@@ -264,7 +252,7 @@ namespace NuGet.Configuration
             {
                 foreach (var requireAttribute in RequiredAttributes)
                 {
-                    var attribute = element.Attribute(requireAttribute);
+                    var attribute = GetAttributeWithKeyIgnoreCase(element, requireAttribute);
                     if (attribute == null)
                     {
                         throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
@@ -276,7 +264,7 @@ namespace NuGet.Configuration
             {
                 foreach (var attributeValues in AllowedValues)
                 {
-                    var attribute = element.Attribute(attributeValues.Key);
+                    var attribute = GetAttributeWithKeyIgnoreCase(element, attributeValues.Key);
                     if (attribute != null && !attributeValues.Value.Contains(attribute.Value.Trim()))
                     {
                         throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
@@ -288,13 +276,18 @@ namespace NuGet.Configuration
             {
                 foreach (var attributeValues in DisallowedValues)
                 {
-                    var attribute = element.Attribute(attributeValues.Key);
+                    var attribute = GetAttributeWithKeyIgnoreCase(element, attributeValues.Key);
                     if (attribute != null && attributeValues.Value.Contains(attribute.Value.Trim()))
                     {
                         throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
                     }
                 }
             }
+        }
+
+        private XAttribute GetAttributeWithKeyIgnoreCase(XElement element, string key)
+        {
+            return element.Attributes().Where(a => string.Equals(a.Name.LocalName, key, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
         }
     }
 }

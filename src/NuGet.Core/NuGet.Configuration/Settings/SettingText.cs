@@ -51,7 +51,7 @@ namespace NuGet.Configuration
         internal SettingText(XText text, SettingsFile origin)
             : base(text, origin)
         {
-            Value = text.Value;
+            Value = text.Value.Trim();
         }
 
         internal override XNode AsXNode()
@@ -62,24 +62,6 @@ namespace NuGet.Configuration
             }
 
             return new XText(Value);
-        }
-
-        internal bool Update(SettingText setting)
-        {
-            if (Origin != null && Origin.IsMachineWide)
-            {
-                throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
-            }
-
-            if (Node != null && Node is XText xText)
-            {
-                xText.Value = setting.Value;
-                Origin.IsDirty = true;
-
-                return true;
-            }
-
-            return false;
         }
     }
 }

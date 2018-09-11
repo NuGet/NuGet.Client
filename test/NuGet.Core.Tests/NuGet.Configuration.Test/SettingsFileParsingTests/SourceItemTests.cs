@@ -13,7 +13,7 @@ namespace NuGet.Configuration.Test
     public class SourceItemTests
     {
         [Fact]
-        public void WithUnallowedAttributes_Throws()
+        public void SourceItem_WithUnallowedAttributes_Throws()
         {
             // Arrange
             var config = @"
@@ -38,7 +38,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void ParsedSuccessfully()
+        public void SourceItem_ParsedSuccessfully()
         {
             // Arrange
             var config = @"
@@ -80,9 +80,8 @@ namespace NuGet.Configuration.Test
             }
         }
 
-
         [Fact]
-        public void Parsing_ElementWithChildren_Throws()
+        public void SourceItem_Parsing_ElementWithChildren_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";

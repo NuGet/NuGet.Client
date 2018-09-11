@@ -12,7 +12,7 @@ namespace NuGet.Configuration.Test
     public class ClearItemTests
     {
         [Fact]
-        public void Constructor_ClearElement_WithAttributes_Throws()
+        public void ClearItem_Constructor_ClearElement_WithAttributes_Throws()
         {
             // Arrange
             var config = @"
@@ -36,7 +36,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SingleTag_ParsedSuccessfully()
+        public void ClearItem_SingleTag_ParsedSuccessfully()
         {
             // Arrange
             var config = @"
@@ -63,7 +63,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void MultiTag_ParsedSuccessfully()
+        public void ClearItem_MultiTag_ParsedSuccessfully()
         {
             // Arrange
             var config = @"
@@ -90,7 +90,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Parsing_ElementWithChildren_Throws()
+        public void ClearItem_Parsing_ElementWithChildren_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
