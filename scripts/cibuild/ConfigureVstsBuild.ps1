@@ -94,7 +94,7 @@ $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
 $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
-$NuGetLocalizationRepoBranch = 'master'
+$NuGetLocalizationRepoBranch = 'release-4.0.0-rtm'
 $updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
 
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
@@ -208,4 +208,5 @@ else
         exit 1
     }
     Update-VsixVersion -manifestName source.extension.vs15.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $env:BUILDNUMBER
+    Update-VsixVersion -manifestName source.extension.vs15.insertable.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $env:BUILDNUMBER
 }

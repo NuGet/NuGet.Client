@@ -52,19 +52,19 @@
     <Content Include="source.extension.vs15.vsixmanifest" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt">
+    <Content Include="..\VsConsole\PowershellHost\Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt">
       <Link>Modules\NuGet\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">
+    <Content Include="..\VsConsole\PowershellHost\Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">
       <Link>Modules\NuGet\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="$(SolutionPackagesFolder)Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll">
+    <Content Include="$(SolutionPackagesFolder)Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll">
       <Link>Newtonsoft.Json.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="$(SolutionPackagesFolder)Microsoft.Web.Xdt.2.1.2\lib\net40\Microsoft.Web.XmlTransform.dll">
+    <Content Include="$(SolutionPackagesFolder)Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll">
       <Link>Microsoft.Web.XmlTransform.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -72,45 +72,37 @@
       <Link>Lucene.Net.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\Add-WrapperMembers.ps1">
+    <Content Include="..\VsConsole\PowershellHost\Scripts\Add-WrapperMembers.ps1">
       <Link>Modules\NuGet\Add-WrapperMembers.ps1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\NuGet.Format.ps1xml">
+    <Content Include="..\VsConsole\PowershellHost\Scripts\NuGet.Format.ps1xml">
       <Link>Modules\NuGet\NuGet.Format.ps1xml</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\NuGet.psd1">
+    <Content Include="..\VsConsole\PowershellHost\Scripts\NuGet.psd1">
       <Link>Modules\NuGet\NuGet.psd1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\nuget.psm1">
+    <Content Include="..\VsConsole\PowershellHost\Scripts\nuget.psm1">
       <Link>Modules\NuGet\nuget.psm1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\NuGet.Types.ps1xml">
+    <Content Include="..\VsConsole\PowershellHost\Scripts\NuGet.Types.ps1xml">
       <Link>Modules\NuGet\NuGet.Types.ps1xml</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\Profile.ps1">
+    <Content Include="..\VsConsole\PowershellHost\Scripts\Profile.ps1">
       <Link>Modules\NuGet\Profile.ps1</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <None Include="project.json" />
-    <Content Include="..\NuGet.PackageManagement.UI\Resources\PackageIconMonikers.imagemanifest">
-      <Link>PackageIconMonikers.imagemanifest</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Core\Microsoft.Build.NuGetSdkResolver\Microsoft.Build.NuGetSdkResolver.csproj">
-      <Project>{299b3e44-5372-4d6b-a4e9-3dbea4705701}</Project>
-      <Name>Microsoft.Build.NuGetSdkResolver</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.Build.Tasks.csproj">
       <Project>{e09441b8-8d74-4a96-8431-480e2065f844}</Project>
       <Name>NuGet.Build.Tasks</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Client\NuGet.Client.csproj"/>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj">
       <Project>{98bee375-a5a0-4fc2-9b7a-25db41c8045d}</Project>
       <Name>NuGet.Common</Name>
@@ -145,14 +137,22 @@
       <Project>{bd6bbc90-60be-4e7d-8458-91e9cda66abe}</Project>
       <Name>NuGet.Packaging</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.csproj"/>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.ProjectModel\NuGet.ProjectModel.csproj">
       <Project>{f013e43f-b6d5-4f59-acf0-eecec2c794f5}</Project>
       <Name>NuGet.ProjectModel</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.ProjectManagement\NuGet.ProjectManagement.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol.Core.v3\NuGet.Protocol.Core.v3.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol.VisualStudio\NuGet.Protocol.VisualStudio.csproj"/>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Repositories\NuGet.Repositories.csproj"/>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj">
       <Project>{51aa27a9-b8b4-458f-9211-e6889b441573}</Project>
       <Name>NuGet.Resolver</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.RuntimeModel\NuGet.RuntimeModel.csproj"/>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj">
       <Project>{24e62ab7-64e4-4975-9417-883559d1bc19}</Project>
       <Name>NuGet.Versioning</Name>
@@ -172,6 +172,10 @@
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Commands\NuGet.Commands.csproj">
       <Project>{567E8582-0E73-4A34-A7D3-ED9486415523}</Project>
       <Name>NuGet.Commands</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.ContentModel\NuGet.ContentModel.csproj">
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
@@ -205,6 +209,11 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
+    <ProjectReference Include="..\NuGet.Options\NuGet.Options.csproj">
+      <Name>NuGet.Options</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
     <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>NuGet.PackageManagement.VisualStudio</Name>
@@ -223,21 +232,33 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
+    <ProjectReference Include="..\NuGet.TeamFoundationServer\NuGet.TeamFoundationServer.csproj"/>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>NuGet.VisualStudio</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\NuGet.Console\NuGet.Console.csproj">
+    <ProjectReference Include="..\VsConsole\Console\NuGet.Console.csproj">
       <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
       <Name>NuGet.Console</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\NuGetConsole.Host.PowerShell\NuGetConsole.Host.PowerShell.csproj">
+    <ProjectReference Include="..\VsConsole\Console.Types\NuGet.Console.Types.csproj">
+      <Project>{6fd11460-39a3-4a10-ba63-7541b0a7d053}</Project>
+      <Name>NuGet.Console.Types</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\VsConsole\PowershellHost\NuGetConsole.Host.PowerShell.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
       <Name>NuGetConsole.Host.PowerShell</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\VsConsole\PowershellHostProvider\NuGetConsole.Host.PowerShellProvider.csproj">
+      <Name>NuGetConsole.Host.PowerShellProvider</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
@@ -273,8 +294,11 @@
     <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
       <SourceVsixManifest Include="source.extension.vs14.vsixmanifest" />
     </ItemGroup>
-    <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <ItemGroup Condition="'$(IsInsertable)' != 'true' AND '$(VisualStudioVersion)' == '15.0'">
       <SourceVsixManifest Include="source.extension.vs15.vsixmanifest" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(IsInsertable)' == 'true' AND '$(VisualStudioVersion)' == '15.0'">
+      <SourceVsixManifest Include="source.extension.vs15.insertable.vsixmanifest" />
     </ItemGroup>
   </Target>
   <ItemGroup>
@@ -367,7 +391,7 @@
     </MSBuild>
     <ItemGroup>
       <VSIXSourceItem Include="@(LocalizedFilesForVsix)" />
-      <_LocalizedFiles Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.2\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll" />
+      <_LocalizedFiles Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll" />
       <_LocalizedFiles Include="$(ArtifactsDirectory)vsixlangpack\**\extension.vsixlangpack" />
       <_LocalizedFiles Include="$(ArtifactsDirectory)eulas\**\eula.rtf" />
       <_VsixLocFiles Include="@(_LocalizedFiles)">

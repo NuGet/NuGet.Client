@@ -42,6 +42,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="..\NuGet.Build.Tasks\Common\*.cs"/>
   </ItemGroup>
   
   <ItemGroup>

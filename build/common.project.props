@@ -252,7 +252,8 @@
                                $(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\NuGet.Tests.Apex.csproj"
                       Condition=" '$(ExcludeTestProjects)' != 'true' " />
 
-    <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
+    <SolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" Exclude="$(RepositoryRootDirectory)src\*\*\*test*.csproj"/>
+    <SolutionProjects Include="$(RepositoryRootDirectory)src\*\VsConsole\*\*.csproj" />
     <SolutionProjectsWithoutVSIX Include="@(SolutionProjects)"
                                 Exclude="$(VSIXProject)" />
   </ItemGroup>
@@ -265,6 +266,7 @@
 
   <ItemGroup>
       <AllSolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
+      <AllSolutionProjects Include="$(RepositoryRootDirectory)src\*\VsConsole\*\*.csproj" />
   </ItemGroup>
 
   <ItemGroup>

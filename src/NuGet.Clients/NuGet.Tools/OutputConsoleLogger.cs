@@ -1,15 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using Microsoft.VisualStudio.Shell;
-using NuGet.Common;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
-using NuGet.VisualStudio.Common;
+using NuGetConsole;
 
 namespace NuGetVSExtension
 {
@@ -21,35 +20,30 @@ namespace NuGetVSExtension
         private const string DTEProjectPage = "ProjectsAndSolution";
         private const string DTEEnvironmentCategory = "Environment";
         private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
-
         private const int DefaultVerbosityLevel = 2;
-        private int _verbosityLevel;
-        private EnvDTE.DTE _dte;
 
         // keeps a reference to BuildEvents so that our event handler
         // won't get disconnected because of GC.
         private EnvDTE.BuildEvents _buildEvents;
         private EnvDTE.SolutionEvents _solutionEvents;
 
+        private int _verbosityLevel;
+
+        private EnvDTE.DTE _dte;
+
         public IOutputConsole OutputConsole { get; private set; }
 
-        public Lazy<ErrorListTableDataSource> ErrorListTableDataSource { get; private set; }
+        public ErrorListProvider ErrorListProvider { get; private set; }
 
         [ImportingConstructor]
         public OutputConsoleLogger(
-            IOutputConsoleProvider consoleProvider,
-            Lazy<ErrorListTableDataSource> errorListDataSource)
-            : this(AsyncServiceProvider.GlobalProvider, consoleProvider, errorListDataSource)
-        { }
-
-        public OutputConsoleLogger(
-            IAsyncServiceProvider asyncServiceProvider,
-            IOutputConsoleProvider consoleProvider,
-            Lazy<ErrorListTableDataSource> errorListDataSource)
+            [Import(typeof(SVsServiceProvider))]
+            IServiceProvider serviceProvider,
+            IOutputConsoleProvider consoleProvider)
         {
-            if (asyncServiceProvider == null)
+            if (serviceProvider == null)
             {
-                throw new ArgumentNullException(nameof(asyncServiceProvider));
+                throw new ArgumentNullException(nameof(serviceProvider));
             }
 
             if (consoleProvider == null)
@@ -57,17 +51,20 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException(nameof(consoleProvider));
             }
 
-            ErrorListTableDataSource = errorListDataSource;
-
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _dte = await asyncServiceProvider.GetDTEAsync();
+                ErrorListProvider = new ErrorListProvider(serviceProvider);
+
+                _dte = serviceProvider.GetDTE();
+
                 _buildEvents = _dte.Events.BuildEvents;
-                _buildEvents.OnBuildBegin += (_, __) => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
+                _buildEvents.OnBuildBegin += (_, __) => { ErrorListProvider.Tasks.Clear(); };
+
                 _solutionEvents = _dte.Events.SolutionEvents;
-                _solutionEvents.AfterClosing += () => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
+                _solutionEvents.AfterClosing += () => { ErrorListProvider.Tasks.Clear(); };
+
                 OutputConsole = consoleProvider.CreatePackageManagerConsole();
             });
         }
@@ -77,7 +74,8 @@ namespace NuGetVSExtension
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                ErrorListTableDataSource.Value.Dispose();
+
+                ErrorListProvider.Dispose();
             });
         }
 
@@ -90,8 +88,11 @@ namespace NuGetVSExtension
                 OutputConsole.WriteLine(Resources.Finished);
                 OutputConsole.WriteLine(string.Empty);
 
-                // Give the error list focus
-                ErrorListTableDataSource.Value.BringToFront();
+                if (ErrorListProvider.Tasks.Count > 0)
+                {
+                    ErrorListProvider.BringToFront();
+                    ErrorListProvider.ForceShowErrors();
+                }
             });
         }
 
@@ -108,23 +109,6 @@ namespace NuGetVSExtension
                 }
 
                 RunTaskOnUI(() => OutputConsole.WriteLine(message));
-            }
-        }
-
-        public void Log(ILogMessage message)
-        {
-            if (message.Level == LogLevel.Information
-                || message.Level == LogLevel.Error
-                || message.Level == LogLevel.Warning
-                || _verbosityLevel > DefaultVerbosityLevel)
-            {
-                RunTaskOnUI(() => OutputConsole.WriteLine(message.FormatWithCode()));
-
-                if (message.Level == LogLevel.Error ||
-                    message.Level == LogLevel.Warning)
-                {
-                    RunTaskOnUI(() => ReportError(message));
-                }                    
             }
         }
 
@@ -147,24 +131,24 @@ namespace NuGetVSExtension
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _verbosityLevel = GetMSBuildVerbosityLevel();
+                ErrorListProvider.Tasks.Clear();
 
                 OutputConsole.Activate();
                 OutputConsole.Clear();
-
-                ErrorListTableDataSource.Value.ClearNuGetEntries();
             });
         }
 
         public void ReportError(string message)
         {
-            var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
-            RunTaskOnUI(() => ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry));
-        }
-
-        public void ReportError(ILogMessage message)
-        {
-            var errorListEntry = new ErrorListTableEntry(message);
-            RunTaskOnUI(() => ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry));
+            var errorTask = new ErrorTask
+            {
+                Text = message,
+                ErrorCategory = TaskErrorCategory.Error,
+                Category = TaskCategory.User,
+                Priority = TaskPriority.High,
+                HierarchyItem = null
+            };
+            RunTaskOnUI(() => ErrorListProvider.Tasks.Add(errorTask));
         }
 
         private static void RunTaskOnUI(Action action)

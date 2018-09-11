@@ -11,7 +11,6 @@ using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.VisualStudio;
 
 namespace NuGetVSExtension
 {
