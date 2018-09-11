@@ -17,47 +17,42 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="System.IO.Compression" />
   </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-    <Compile Include="ProjectSystems\LegacyPackageReferenceProjectTests.cs" />
-  </ItemGroup>
+    
   <ItemGroup>
-    <Compile Include="DispatcherThreadCollection.cs" />
-    <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />
-    <Compile Include="Feeds\UpdatePackageFeedTests.cs" />
-    <Compile Include="Feeds\InstalledPackageFeedTests.cs" />
+    <Compile Include="LegacyCSProjPackageReferenceProjectTests.cs" />
     <Compile Include="FrameworkAssemblyResolverTests.cs" />
-    <Compile Include="ProjectSystems\ProjectKNuGetProjectTests.cs" />
+    <Compile Include="ProjectKNuGetProjectTests.cs" />
     <Compile Include="ProjectSystems\ProjectSystemCacheTests.cs" />
-    <Compile Include="Services\NuGetLockServiceTests.cs" />
-    <Compile Include="Telemetry\ActionsTelemetryServiceTests.cs" />
     <Compile Include="Telemetry\NuGetTelemetryServiceTests.cs" />
-    <Compile Include="Telemetry\RestoreTelemetryServiceTests.cs" />
-    <Compile Include="Telemetry\TestTelemetryUtility.cs" />
     <Compile Include="VisualStudioAccountProviderTests.cs" />
-    <Compile Include="VisualStudioCredentialProviderTests.cs" />
     <Compile Include="VsCredentialProviderAdapterTests.cs" />
     <Compile Include="VsCredentialProviderImporterTests.cs" />
-    <Compile Include="VSRestoreSettingsUtilityTests.cs" />
-    <Compile Include="Telemetry\VsTelemetrySessionTest.cs" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.Credentials\NuGet.Credentials.csproj" />
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
-
-    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
-
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.Credentials\NuGet.Credentials.csproj">
+      <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
+      <Name>NuGet.Credentials</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
+      <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
+      <Name>NuGet.VisualStudio</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
+      <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
+      <Name>NuGet.PackageManagement.VisualStudio</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
+      <Project>{EEA49A74-6EFC-410E-9745-BAD367AC151D}</Project>
+      <Name>NuGet.VisualStudio.Facade</Name>
+    </ProjectReference>
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
   <Choose>
     <When Condition="$(VisualStudioVersion)=='14.0'">
       <ItemGroup>
         <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-          <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
           <EmbedInteropTypes>True</EmbedInteropTypes>
         </Reference>
       </ItemGroup>
@@ -65,15 +60,7 @@
     <When Condition="$(VisualStudioVersion)=='15.0'">
       <ItemGroup>
         <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-          <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-        <Reference Include="VSLangProj140">
-          <HintPath>$(SolutionPackagesFolder)VSLangProj140.14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-        <Reference Include="VSLangProj150">
-          <HintPath>$(SolutionPackagesFolder)VSLangProj150.1.0.0\lib\net46\VSLangProj150.dll</HintPath>
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.582-pre-g76aab6d79c\lib\net46\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
           <EmbedInteropTypes>True</EmbedInteropTypes>
         </Reference>
       </ItemGroup>

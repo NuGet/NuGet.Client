@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,36 +8,21 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft;
 using Microsoft.VisualStudio.ProjectSystem.Interop;
-using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
-using Test.Utility.Threading;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
     public class ProjectKNuGetProjectTests
     {
-        private readonly JoinableTaskFactory _jtf;
-
-        public ProjectKNuGetProjectTests(DispatcherThreadFixture fixture)
-        {
-            Assumes.Present(fixture);
-
-            _jtf = fixture.JoinableTaskFactory;
-
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_jtf);
-        }
-
         [Fact]
         public async Task ProjectKNuGetProject_WithVersionRange_GetInstalledPackagesAsync()
         {
@@ -57,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Equal(1, actual.Count());
                 var packageReference = actual.First();
                 Assert.Equal("foo", packageReference.PackageIdentity.Id);
-                Assert.Equal(NuGetVersion.Parse("1.0.0-0"), packageReference.PackageIdentity.Version);
+                Assert.Equal(NuGetVersion.Parse("1.0.0--"), packageReference.PackageIdentity.Version);
             }
         }
 
@@ -68,7 +53,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new TestContext(testDirectory);
-                using (var download = await tc.InitializePackageAsync())
+                using (var download = tc.InitializePackage())
                 {
                     // Act
                     var result = await tc.Target.InstallPackageAsync(
@@ -102,7 +87,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new TestContext(testDirectory);
-                using (var download = await tc.InitializePackageAsync())
+                using (var download = tc.InitializePackage())
                 {
                     // Act
                     var result = await tc.Target.InstallPackageAsync(
@@ -183,17 +168,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             public List<PackageType> PackageTypes { get; }
             public List<NuGetFramework> SupportedFrameworks { get; }
 
-            public async Task<DownloadResourceResult> InitializePackageAsync()
+            public DownloadResourceResult InitializePackage()
             {
                 var context = new SimpleTestPackageContext(PackageIdentity);
                 context.PackageTypes.Clear();
                 context.PackageTypes.AddRange(PackageTypes);
 
-                var package = await SimpleTestPackageUtility.CreateFullPackageAsync(
+                var package = SimpleTestPackageUtility.CreateFullPackage(
                     TestDirectory,
                     context);
 
-                return new DownloadResourceResult(package.OpenRead(), TestDirectory.Path);
+                return new DownloadResourceResult(package.OpenRead());
             }
         }
     }
