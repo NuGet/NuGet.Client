@@ -9,41 +9,36 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="PresentationFramework" />
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Converters\IconUrlToImageCacheConverterTests.cs" />
-    <Compile Include="Converters\VersionToStringConverterTests.cs" />
     <Compile Include="ConverterTests.cs" />
+    <Compile Include="DispatchThread.cs" />
+    <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />
+    <Compile Include="Feeds\UpdatePackageFeedTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageItemLoaderTests.cs" />
-    <Compile Include="PackageManagerListItemsTest.cs" />
     <Compile Include="PackageManagerProviderTest.cs" />
+    <Compile Include="Services\NuGetLockServiceTests.cs" />
+    <Compile Include="Telemetry\ActionsTelemetryServiceTests.cs" />
+    <Compile Include="Telemetry\RestoreTelemetryServiceTests.cs" />
+    <Compile Include="Telemetry\TestTelemetryUtility.cs" />
     <Compile Include="TestPackageManagerProviders.cs" />
-    <Compile Include="WpfFactAttribute.cs" />
-    <Compile Include="WpfFactDiscoverer.cs" />
-    <Compile Include="WpfTestCase.cs" />
-    <Compile Include="WpfTheoryAttribute.cs" />
-    <Compile Include="WpfTheoryDiscoverer.cs" />
-    <Compile Include="Xamls\InfiniteScrollListTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
-    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -53,9 +48,6 @@
     <Content Include="Resources\packageicon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="compiler\resources\EntityFrameworkSearch.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="xunit.runner.json">

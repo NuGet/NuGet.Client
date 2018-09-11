@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using Xunit;
+using NuGet.VisualStudio;
 using System.ComponentModel.Composition;
+using Microsoft.VisualStudio.Utilities;
 using System.ComponentModel.Composition.Hosting;
 using System.Reflection;
-using Microsoft.VisualStudio.Utilities;
-using NuGet.VisualStudio;
-using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
 {
