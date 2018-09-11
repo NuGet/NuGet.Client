@@ -1,24 +1,21 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Moq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Moq;
-using NuGet.Common;
-using NuGet.Configuration;
 using Xunit;
+using NuGet.Configuration;
 using WebProxy = System.Net.WebProxy;
 
 namespace NuGet.Credentials.Test
 {
+    
     public class CredentialServiceTests
     {
-        private static int _lockTestConcurrencyCount = 0;
-
         private readonly Mock<ICredentialProvider> _mockProvider;
 
         public CredentialServiceTests()
@@ -38,39 +35,12 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public void Constructor_ThrowsForNullProviders()
+        public async Task GetCredentials_PassesAllParametersToProviders()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new CredentialService(providers: null, nonInteractive: true, handlesDefaultCredentials: true));
-
-            Assert.Equal("providers", exception.ParamName);
-        }
-
-        [Fact]
-        public async Task GetCredentialsAsync_ThrowsForNullUri()
-        {
-            var service = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(Enumerable.Empty<ICredentialProvider>())), nonInteractive: true, handlesDefaultCredentials: true);
-
-            var exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => service.GetCredentialsAsync(
-                    uri: null,
-                    proxy: Mock.Of<IWebProxy>(),
-                    type: CredentialRequestType.Unauthorized,
-                    message: "a",
-                    cancellationToken: CancellationToken.None));
-
-            Assert.Equal("uri", exception.ParamName);
-        }
-
-        [Fact]
-        public async Task GetCredentialsAsync_PassesAllParametersToProviders()
-        {
-            IEnumerable<ICredentialProvider> providers = new[] { _mockProvider.Object };
             // Arrange
             var service = new CredentialService(
-                new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(providers)),
-                nonInteractive: true,
-                handlesDefaultCredentials: true);
+                new[] { _mockProvider.Object },
+                nonInteractive: true);
             var webProxy = new WebProxy();
             var uri = new Uri("http://uri");
 
@@ -94,15 +64,12 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async Task GetCredentialsAsync_FirstCallHasRetryFalse()
+        public async Task GetCredentials_FirstCallHasRetryFalse()
         {
             // Arrange
-            IEnumerable<ICredentialProvider> providers = new[] { _mockProvider.Object };
-
             var service = new CredentialService(
-                new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(providers)),
-                nonInteractive: false,
-                handlesDefaultCredentials: true);
+                new[] { _mockProvider.Object },
+                nonInteractive: false);
             _mockProvider.Setup(
                 x => x.GetAsync(
                     It.IsAny<Uri>(),
@@ -151,14 +118,12 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async Task GetCredentialsAsync_SecondCallHasRetryTrue()
+        public async Task GetCredentials_SecondCallHasRetryTrue()
         {
             // Arrange
-            IEnumerable<ICredentialProvider> providers = new[] { _mockProvider.Object };
             var service = new CredentialService(
-                new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(providers)),
-                nonInteractive: false,
-                handlesDefaultCredentials: true);
+                new[] { _mockProvider.Object },
+                nonInteractive: false);
             _mockProvider.Setup(
                 x => x.GetAsync(
                     It.IsAny<Uri>(),
@@ -205,15 +170,14 @@ namespace NuGet.Credentials.Test
                 CancellationToken.None));
         }
 
+        private static int _lockTestConcurrencyCount = 0;
         [Fact]
-        public void GetCredentialsAsync_SingleThreadedAccessToEachProvider()
+        public void GetCredentials_SingleThreadedAccessToEachProvider()
         {
             // Arrange
-            IEnumerable<ICredentialProvider> providers = new[] { _mockProvider.Object };
             var service = new CredentialService(
-                new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(providers)),
-                nonInteractive: true,
-                handlesDefaultCredentials: true);
+                new[] { _mockProvider.Object },
+                nonInteractive: true);
             var webProxy = new WebProxy();
             var uri = new Uri("http://uri");
             _mockProvider
@@ -251,14 +215,12 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async Task GetCredentialsAsync_WhenUriHasSameAuthority_ThenReturnsCachedCredential()
+        public async Task GetCredentials_WhenUriHasSameAuthority_ThenReturnsCachedCredential()
         {
             // Arrange
-            IEnumerable<ICredentialProvider> providers = new[] { _mockProvider.Object };
             var service = new CredentialService(
-                new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(providers)),
-                nonInteractive: false,
-                handlesDefaultCredentials: true);
+                new[] { _mockProvider.Object },
+                nonInteractive: false);
             _mockProvider
                 .Setup(x => x.GetAsync(
                     It.IsAny<Uri>(),
@@ -301,14 +263,12 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async Task GetCredentialsAsync_NullResponsesAreCached()
+        public async Task GetCredentials_NullResponsesAreCached()
         {
             // Arrange
-            IEnumerable<ICredentialProvider> providers = new[] { _mockProvider.Object };
             var service = new CredentialService(
-                new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(providers)),
-                nonInteractive: false,
-                handlesDefaultCredentials: true);
+                new[] { _mockProvider.Object },
+                nonInteractive: false);
             _mockProvider
                 .Setup(x => x.GetAsync(
                     It.IsAny<Uri>(),
@@ -350,7 +310,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async Task GetCredentialsAsync_TriesAllProviders_EvenWhenSameType()
+        public async Task GetCredentials_TriesAllProviders_EvenWhenSameType()
         {
             // Arrange
             var mockProvider1 = new Mock<ICredentialProvider>();
@@ -378,12 +338,9 @@ namespace NuGet.Credentials.Test
                 .Returns(
                     Task.FromResult(new CredentialResponse(CredentialStatus.ProviderNotApplicable)));
             mockProvider2.Setup(x => x.Id).Returns("2");
-            IEnumerable<ICredentialProvider> providers = new[] { mockProvider1.Object, mockProvider2.Object };
-
             var service = new CredentialService(
-                new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(providers)),
-                nonInteractive: false,
-                handlesDefaultCredentials: true);
+                new[] {mockProvider1.Object, mockProvider2.Object},
+                nonInteractive: false);
             var uri1 = new Uri("http://host/some/path");
 
             // Act
@@ -419,14 +376,12 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async Task GetCredentialsAsync_WhenRetry_ThenDoesNotReturnCachedCredential()
+        public async Task GetCredentials_WhenRetry_ThenDoesNotReturnCachedCredential()
         {
             // Arrange
-            IEnumerable<ICredentialProvider> providers = new[] { _mockProvider.Object };
             var service = new CredentialService(
-                new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(providers)),
-                nonInteractive: false,
-                handlesDefaultCredentials: true);
+                new[] { _mockProvider.Object },
+                nonInteractive: false);
             _mockProvider
                 .Setup(x => x.GetAsync(
                     It.IsAny<Uri>(),
@@ -465,152 +420,6 @@ namespace NuGet.Credentials.Test
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()),
                 Times.Exactly(2));
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void TryGetLastKnownGoodCredentialsFromCache_ThrowsForNullUri(bool isProxy)
-        {
-            var service = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(Enumerable.Empty<ICredentialProvider>())), nonInteractive: true, handlesDefaultCredentials: true);
-            ICredentials credentials;
-
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => service.TryGetLastKnownGoodCredentialsFromCache(
-                    uri: null,
-                    isProxy: isProxy,
-                    credentials: out credentials));
-
-            Assert.Equal("uri", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void TryGetLastKnownGoodCredentialsFromCache_ReturnsFalseForCacheMiss(bool isProxy)
-        {
-            var service = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(Enumerable.Empty<ICredentialProvider>())), nonInteractive: true, handlesDefaultCredentials: true);
-            ICredentials credentials;
-
-            var wasCacheHit = service.TryGetLastKnownGoodCredentialsFromCache(
-                new Uri("https://unit.test"),
-                isProxy,
-                out credentials);
-
-            Assert.False(wasCacheHit);
-        }
-
-        [Theory]
-        [InlineData(CredentialStatus.ProviderNotApplicable, true)]
-        [InlineData(CredentialStatus.ProviderNotApplicable, false)]
-        [InlineData(CredentialStatus.UserCanceled, true)]
-        [InlineData(CredentialStatus.UserCanceled, false)]
-        public async Task TryGetLastKnownGoodCredentialsFromCache_DoesNotReturnUnsuccessfulCredentials(
-            CredentialStatus credentialStatus,
-            bool isProxy)
-        {
-            var provider = new Mock<ICredentialProvider>(MockBehavior.Strict);
-
-            provider.Setup(x => x.GetAsync(
-                    It.IsAny<Uri>(),
-                    It.IsAny<IWebProxy>(),
-                    It.IsAny<CredentialRequestType>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(new CredentialResponse(credentialStatus)));
-            provider.Setup(x => x.Id).Returns("a");
-            IEnumerable<ICredentialProvider> providers = new[] { provider.Object };
-            var service = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(providers)), nonInteractive: false, handlesDefaultCredentials: true);
-            var uri = new Uri("https://unit.test");
-            var type = isProxy ? CredentialRequestType.Proxy : CredentialRequestType.Unauthorized;
-            var credentials = await service.GetCredentialsAsync(
-                uri,
-                proxy: null,
-                type: type,
-                message: null,
-                cancellationToken: CancellationToken.None);
-
-            ICredentials cachedCredentials;
-            var wasCacheHit = service.TryGetLastKnownGoodCredentialsFromCache(uri, isProxy, out cachedCredentials);
-
-            Assert.False(wasCacheHit);
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task TryGetLastKnownGoodCredentialsFromCache_ReturnsCredentialsForCacheHit(bool isProxy)
-        {
-            var networkCredential = new NetworkCredential();
-            var provider = new Mock<ICredentialProvider>(MockBehavior.Strict);
-
-            provider.Setup(x => x.GetAsync(
-                    It.IsAny<Uri>(),
-                    It.IsAny<IWebProxy>(),
-                    It.IsAny<CredentialRequestType>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(new CredentialResponse(networkCredential)));
-            provider.Setup(x => x.Id).Returns("a");
-            IEnumerable<ICredentialProvider> providers = new[] { provider.Object };
-
-            var service = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(providers)), nonInteractive: false, handlesDefaultCredentials: true);
-            var uri = new Uri("https://unit.test");
-            var type = isProxy ? CredentialRequestType.Proxy : CredentialRequestType.Unauthorized;
-            var credentials = await service.GetCredentialsAsync(
-                uri,
-                proxy: null,
-                type: type,
-                message: null,
-                cancellationToken: CancellationToken.None);
-
-            ICredentials cachedCredentials;
-            var wasCacheHit = service.TryGetLastKnownGoodCredentialsFromCache(uri, isProxy, out cachedCredentials);
-
-            Assert.True(wasCacheHit);
-            Assert.Same(networkCredential, credentials);
-            Assert.Same(credentials, cachedCredentials);
-        }
-
-        [Fact]
-        public async Task GetCredentialProvidersExecutedOnlyOnce()
-        {
-            var counter = new CallCounter();
-            var service = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => counter.GetProviders()), nonInteractive: true, handlesDefaultCredentials: true);
-
-            var uri1 = new Uri("http://uri1");
-
-            // Act
-            var result1 = await service.GetCredentialsAsync(
-                uri1,
-                proxy: null,
-                type: CredentialRequestType.Unauthorized,
-                message: null,
-                cancellationToken: CancellationToken.None);
-            var result2 = await service.GetCredentialsAsync(
-                uri1,
-                proxy: null,
-                type: CredentialRequestType.Unauthorized,
-                message: null,
-                cancellationToken: CancellationToken.None);
-
-            Assert.Equal(1, counter.CallCount);
-        }
-
-
-        private class CallCounter
-        {
-            public int CallCount { get; private set; }
-
-            public Task<IEnumerable<ICredentialProvider>> GetProviders()
-            {
-                CallCount++;
-                return Task.FromResult(Enumerable.Empty<ICredentialProvider>());
-            }
         }
     }
 }
