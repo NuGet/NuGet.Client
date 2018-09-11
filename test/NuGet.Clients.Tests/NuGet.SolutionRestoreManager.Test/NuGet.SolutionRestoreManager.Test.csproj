@@ -19,21 +19,25 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.SolutionRestoreManager.Interop\NuGet.SolutionRestoreManager.Interop.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj" />
-    <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.15.3.DesignTime">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.15.3.DesignTime.15.0.26612\lib\Microsoft.VisualStudio.Shell.Interop.15.3.DesignTime.dll</HintPath>
+      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.15.3.DesignTime.15.0.0\lib\Microsoft.VisualStudio.Shell.Interop.15.3.DesignTime.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.15.3.DesignTime" Version="15.0.26606">
       <ExcludeAssets>All</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="System.ValueTuple" Version="4.3.0-preview1-24530-04"/>
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>

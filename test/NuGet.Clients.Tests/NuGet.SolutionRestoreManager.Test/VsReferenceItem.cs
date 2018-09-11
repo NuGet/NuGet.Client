@@ -15,7 +15,7 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("Argument cannot be null or empty", nameof(name));
+                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             if (properties == null)
