@@ -10,6 +10,8 @@ namespace NuGet.Packaging.Test
 {
     public class LicenseExpressionParserTests
     {
+        //TODO NK - tests for both strict and not strict licenses.
+        // Make license ids conform to the specification.
         [Theory]
         [InlineData("MIT OR LPL-1.0", "MIT OR LPL-1.0", "OR")]
         [InlineData("MIT AND LPL-1.0", "MIT AND LPL-1.0", "AND")]
@@ -100,7 +102,7 @@ namespace NuGet.Packaging.Test
 
         public void LicenseExpressionParser_EvaluatesComplexExpression(string infix, string postfix, string rootOperator)
         {
-            var postfixExpression = LicenseExpressionParser.Parse(new LicenseExpressionTokenizer(infix).Tokenize().ToArray());
+            var postfixExpression = LicenseExpressionParser.Parse(new LicenseExpressionTokenizer(infix).Tokenize().ToArray(), false);
             Assert.Equal(postfix, postfixExpression.ToString());
 
             if (Enum.TryParse<LogicalOperatorType>(rootOperator, true, out var logicalOperator))
@@ -131,7 +133,7 @@ namespace NuGet.Packaging.Test
         [InlineData("A WITH B C WITH D")]
         public void LicenseExpressionParser_EvaluateThrowsWhenBracketsDoNotMatch(string infix)
         {
-            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(new LicenseExpressionTokenizer(infix).Tokenize().ToArray()));
+            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(new LicenseExpressionTokenizer(infix).Tokenize().ToArray(), false));
         }
 
         [Theory]
@@ -143,7 +145,7 @@ namespace NuGet.Packaging.Test
         [InlineData("A WITH B C WITH D OR E")]
         public void LicenseExpressionParser_EvaluateThrowsIfExpressionIsInvalid(string infix)
         {
-            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(new LicenseExpressionTokenizer(infix).Tokenize().ToArray()));
+            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(new LicenseExpressionTokenizer(infix).Tokenize().ToArray(), false));
         }
     }
 }
