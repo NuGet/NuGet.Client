@@ -14,9 +14,12 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -48,6 +51,8 @@ namespace NuGet.Commands
         private const string ValidateRestoreGraphs = "ValidateRestoreGraphs";
         private const string CreateRestoreResult = "CreateRestoreResult";
         private const string RestoreNoOpInformation = "RestoreNoOpInformation";
+        private const string RestoreLockFileInformation = "RestoreLockFileInformation";
+        private const string ValidatePackagesSha = "ValidatePackagesSha";
 
         // names for intervals in RestoreNoOpInformation
         private const string CacheFileEvaluateDuration = "CacheFileEvaluateDuration";
@@ -58,6 +63,13 @@ namespace NuGet.Commands
         //names for child events for GenerateRestoreGraph
         private const string CreateRestoreTargetGraph = "CreateRestoreTargetGraph";
         private const string RestoreAdditionalCompatCheck = "RestoreAdditionalCompatCheck";
+
+        // names for intervals in RestoreLockFileInformation
+        private const string IsLockFileEnabled = "IsLockFileEnabled";
+        private const string ReadLockFileDuration = "ReadLockFileDuration";
+        private const string ValidateLockFileDuration = "ValidateLockFileDuration";
+        private const string IsLockFileValidForRestore = "IsLockFileValidForRestore";
+        private const string LockFileEvaluationResult = "LockFileEvaluationResult";
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -104,6 +116,7 @@ namespace NuGet.Commands
                 var contextForProject = CreateRemoteWalkContext(_request, _logger);
 
                 CacheFile cacheFile = null;
+
                 using (var noOpTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: RestoreNoOpInformation))
                 {
                     if (NoOpRestoreUtilities.IsNoOpSupported(_request))
@@ -146,6 +159,58 @@ namespace NuGet.Commands
                                     restoreTime.Elapsed);
                             }
                         }
+                    }
+                }
+
+                // evaluate packages.lock.json file
+                var packagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
+                var isLockFileValid = false;
+                PackagesLockFile packagesLockFile = null;
+
+                using (var lockFileTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: RestoreLockFileInformation))
+                {
+                    lockFileTelemetry.TelemetryEvent[IsLockFileEnabled] = PackagesLockFileUtilities.IsNuGetLockFileSupported(_request.Project);
+
+                    var packagesLockFileResult = await EvaluatePackagesLockFileAsync(packagesLockFilePath, contextForProject, lockFileTelemetry);
+
+                    // result of packages.lock.json file evaluation where
+                    // Item1 is the status of evaluating packages lock file if false, then bail restore
+                    // Item2 is also a tuple which has 2 parts -
+                    //      Item1 tells whether lock file is still valid to be consumed for this restore
+                    //      Item2 is the PackagesLockFile instance
+                    var result = packagesLockFileResult.Item1;
+                    isLockFileValid = packagesLockFileResult.Item2.Item1;
+                    packagesLockFile = packagesLockFileResult.Item2.Item2;
+
+                    lockFileTelemetry.TelemetryEvent[IsLockFileValidForRestore] = isLockFileValid;
+                    lockFileTelemetry.TelemetryEvent[LockFileEvaluationResult] = result;
+
+                    if (!result)
+                    {
+                        _success = result;
+
+                        // Replay Warnings and Errors from an existing lock file
+                        await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile, _logger);
+
+                        if (cacheFile != null)
+                        {
+                            cacheFile.Success = _success;
+                        }
+
+                        return new RestoreResult(
+                            success: _success,
+                            restoreGraphs: new List<RestoreTargetGraph>(),
+                            compatibilityCheckResults: new List<CompatibilityCheckResult>(),
+                            msbuildFiles: new List<MSBuildOutputFile>(),
+                            lockFile: _request.ExistingLockFile,
+                            previousLockFile: _request.ExistingLockFile,
+                            lockFilePath: _request.ExistingLockFile?.Path,
+                            cacheFile: cacheFile,
+                            cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
+                            packagesLockFilePath: packagesLockFilePath,
+                            packagesLockFile: packagesLockFile,
+                            projectStyle: _request.ProjectStyle,
+                            elapsedTime: restoreTime.Elapsed);
                     }
                 }
 
@@ -233,6 +298,26 @@ namespace NuGet.Commands
                     // Revert to the original case if needed
                     await FixCaseForLegacyReaders(graphs, assetsFile, token);
 
+                    // if lock file was still valid then validate package's sha512 hash or else write
+                    // the file if enabled.
+                    if (isLockFileValid)
+                    {
+                        using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: ValidatePackagesSha))
+                        {
+                            // validate package's SHA512
+                            _success &= ValidatePackagesSha512(packagesLockFile, assetsFile);
+                        }
+
+                        // clear out the existing lock file so that we don't over-write the same file
+                        packagesLockFile = null;
+                    }
+                    else if (PackagesLockFileUtilities.IsNuGetLockFileSupported(_request.Project))
+                    {
+                        // generate packages.lock.json file if enabled
+                        packagesLockFile = new PackagesLockFileBuilder()
+                            .CreateNuGetLockFile(assetsFile);
+                    }
+
                     // Write the logs into the assets file
                     var logs = _logger.Errors
                         .Select(l => AssetsLogMessage.Create(l))
@@ -276,6 +361,8 @@ namespace NuGet.Commands
                     assetsFilePath,
                     cacheFile,
                     cacheFilePath,
+                    packagesLockFilePath,
+                    packagesLockFile,
                     _request.ProjectStyle,
                     restoreTime.Elapsed);
             }
@@ -300,6 +387,117 @@ namespace NuGet.Commands
             return result;
         }
 
+        /// <summary>
+        /// Accounts for using the restore commands on 2 projects living in the same path
+        /// </summary>
+        private bool VerifyAssetsFileMatchesProject()
+        {
+            if (_request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
+            {
+                return true;
+            }
+            var pathComparer = PathUtility.GetStringComparerBasedOnOS();
+            return (_request.ExistingLockFile != null && pathComparer.Equals( _request.ExistingLockFile.PackageSpec.FilePath , _request.Project.FilePath));
+        }
+
+        private bool ValidatePackagesSha512(PackagesLockFile lockFile, LockFile assetsFile)
+        {
+            var librariesLookUp = lockFile.Targets
+                .SelectMany(t => t.Dependencies.Where(dep => dep.Type != PackageDependencyType.Project))
+                .Distinct(new LockFileDependencyIdVersionComparer())
+                .ToDictionary(dep => new PackageIdentity(dep.Id, dep.ResolvedVersion), val => val.Sha512);
+
+            foreach (var library in assetsFile.Libraries.Where(lib => lib.Type == LibraryType.Package))
+            {
+                var package = new PackageIdentity(library.Name, library.Version);
+
+                if (!librariesLookUp.TryGetValue(package, out var sha512) || sha512 != library.Sha512)
+                {
+                    // raise validation error
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageValidationFailed, package.ToString());
+                    _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1403, message));
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Evaluate packages.lock.json file if available and accordingly return result.
+        /// </summary>
+        /// <param name="packagesLockFilePath"></param>
+        /// <param name="contextForProject"></param>
+        /// <returns>result of packages.lock.json file evaluation where
+        /// Item1 is the status of evaluating packages lock file if false, then bail restore
+        /// Item2 is also a tuple which has 2 parts -
+        ///     Item1 tells whether lock file is still valid to be consumed for this restore
+        ///     Item2 is the PackagesLockFile instance
+        /// </returns>
+        private async Task<Tuple<bool, Tuple<bool, PackagesLockFile>>> EvaluatePackagesLockFileAsync(
+            string packagesLockFilePath,
+            RemoteWalkContext contextForProject,
+            TelemetryActivity lockFileTelemetry)
+        {
+            PackagesLockFile packagesLockFile = null;
+            var isLockFileValid = false;
+            var success = true;
+
+            var restorePackagesWithLockFile = _request.Project.RestoreMetadata?.RestoreLockProperties.RestorePackagesWithLockFile;
+
+            if (!MSBuildStringUtility.IsTrueOrEmpty(restorePackagesWithLockFile) && File.Exists(packagesLockFilePath))
+            {
+                success = false;
+
+                // invalid input since packages.lock.json file exists along with RestorePackagesWithLockFile is set to false.
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidLockFileInput, packagesLockFilePath);
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message));
+
+                return Tuple.Create(success, Tuple.Create(isLockFileValid, packagesLockFile));
+            }
+
+            // read packages.lock.json file if exists and ReevaluateRestoreGraph flag is not set to true
+            if (!_request.ReevaluateRestoreGraph && File.Exists(packagesLockFilePath))
+            {
+                lockFileTelemetry.StartIntervalMeasure();
+                packagesLockFile = PackagesLockFileFormat.Read(packagesLockFilePath, _logger);
+                lockFileTelemetry.EndIntervalMeasure(ReadLockFileDuration);
+
+                if (_request.DependencyGraphSpec != null && packagesLockFile.Targets.Count > 0)
+                {
+                    // check if lock file is out of sync with project data
+                    lockFileTelemetry.StartIntervalMeasure();
+                    isLockFileValid = PackagesLockFileUtilities.IsLockFileStillValid(_request.DependencyGraphSpec, packagesLockFile);
+                    lockFileTelemetry.EndIntervalMeasure(ValidateLockFileDuration);
+
+                    if (isLockFileValid)
+                    {
+                        // pass lock file details down to generate restore graph
+                        foreach (var target in packagesLockFile.Targets)
+                        {
+                            var libraries = target.Dependencies
+                                .Where(dep => dep.Type != PackageDependencyType.Project)
+                                .Select(dep => new LibraryIdentity(dep.Id, dep.ResolvedVersion, LibraryType.Package))
+                                .ToList();
+
+                            // add lock file libraries into RemoteWalkContext so that it can be used during restore graph generation
+                            contextForProject.LockFileLibraries.Add(new LockFileCacheKey(target.TargetFramework, target.RuntimeIdentifier), libraries);
+                        }
+                    }
+                    else if (_request.IsRestoreOriginalAction && _request.Project.RestoreMetadata.RestoreLockProperties.RestoreLockedMode)
+                    {
+                        success = false;
+
+                        // bail restore since it's the locked mode but required to update the lock file.
+                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode));
+                    }
+                }
+            }
+
+            return Tuple.Create(success, Tuple.Create(isLockFileValid, packagesLockFile));
+        }
+
         private KeyValuePair<CacheFile, bool> EvaluateCacheFile()
         {
             CacheFile cacheFile;
@@ -313,7 +511,11 @@ namespace NuGet.Commands
                 NoOpRestoreUtilities.UpdateRequestBestMatchingToolPathsIfAvailable(_request);
             }
 
-            if (_request.AllowNoOp && File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
+            // if --reevaluate flag is passed then restore noop check will also be skipped.
+            // this will also help us to get rid of -force flag in near future.
+            if (_request.AllowNoOp &&
+                !_request.ReevaluateRestoreGraph &&
+                File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 

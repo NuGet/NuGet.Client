@@ -160,6 +160,24 @@ namespace NuGet.Test.Utility
             }
         }
 
+        public string NuGetLockFileOutputPath
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case ProjectStyle.PackageReference:
+                        if (Properties.ContainsKey("NuGetLockFilePath"))
+                        {
+                            return Properties["NuGetLockFilePath"];
+                        }
+                        return Path.Combine(Path.GetDirectoryName(ProjectPath), "packages.lock.json");
+                    default:
+                        return null;
+                }
+            }
+        }
+
         public string TargetsOutput
         {
             get

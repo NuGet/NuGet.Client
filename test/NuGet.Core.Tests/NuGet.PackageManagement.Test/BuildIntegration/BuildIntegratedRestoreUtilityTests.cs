@@ -58,13 +58,14 @@ namespace NuGet.Test
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     testLogger,
                     CancellationToken.None);
 
@@ -110,13 +111,14 @@ namespace NuGet.Test
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     testLogger,
                     CancellationToken.None);
 
@@ -178,13 +180,14 @@ namespace NuGet.Test
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     testLogger,
                     CancellationToken.None);
 

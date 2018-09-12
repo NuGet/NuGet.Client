@@ -707,4 +707,19 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>The provided SymbolPackageFormat value {0} is invalid. Allowed values : 'snupkg', 'symbols.nupkg'.</value>
     <comment>Do not localize snupkg and symbols.nupkg</comment>
   </data>
+  <data name="Error_RestoreInLockedMode" xml:space="preserve">
+    <value>The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Please disable RestoreLockedMode MSBuild property or pass explicit --reevaluate flag to run restore to update the lock file.</value>
+  </data>
+  <data name="Error_PackageValidationFailed" xml:space="preserve">
+    <value>The package {0} sha512 validation failed. The package is different than the last restore.</value>
+    <comment>{0} - package id and version</comment>
+  </data>
+  <data name="Error_InvalidLockFileInput" xml:space="preserve">
+    <value>Invalid restore input where RestorePackagesWithLockFile property is set to false and also exist a packages lock file at {0}.</value>
+    <comment>{0} - packages lock file path</comment>
+  </data>
+  <data name="Log_WritingPackagesLockFile" xml:space="preserve">
+    <value>Writing packages lock file at disk. Path: {0}</value>
+    <comment>{0} - Path to packages lock file</comment>
+  </data>
 </root>

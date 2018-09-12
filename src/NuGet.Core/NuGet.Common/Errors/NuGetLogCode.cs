@@ -60,6 +60,16 @@ namespace NuGet.Common
         NU1003 = 1003,
 
         /// <summary>
+        /// Locked mode, but restore needs to update the lock file.
+        /// </summary>
+        NU1004 = 1004,
+
+        /// <summary>
+        /// Invalid combination of RestorePackagesWithLockFile and packages.lock.json file.
+        /// </summary>
+        NU1005 = 1005,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
@@ -144,6 +154,11 @@ namespace NuGet.Common
         /// Package contains unsafe zip entry.
         /// </summary>
         NU1402 = 1402,
+
+        /// <summary>
+        /// Package sha512 validation failed.
+        /// </summary>
+        NU1403 = 1403,
 
         /// <summary>
         /// Package Signature is invalid

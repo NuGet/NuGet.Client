@@ -74,6 +74,11 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public bool Interactive { get; set; }
 
+        /// <summary>
+        /// Reevaluate resotre graph even with a lock file, skip no op as well.
+        /// </summary>
+        public bool ReevaluateRestoreGraph { get; set; }
+
         public override bool Execute()
         {
             var log = new MSBuildLogger(Log);
@@ -86,6 +91,7 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
             log.LogDebug($"(in) RestoreForce '{RestoreForce}'");
             log.LogDebug($"(in) HideWarningsAndErrors '{HideWarningsAndErrors}'");
+            log.LogDebug($"(in) Reevaluate '{ReevaluateRestoreGraph}'");
 
             try
             {
@@ -159,7 +165,8 @@ namespace NuGet.Build.Tasks
                     PreLoadedRequestProviders = providers,
                     CachingSourceProvider = sourceProvider,
                     AllowNoOp = !RestoreForce,
-                    HideWarningsAndErrors = HideWarningsAndErrors
+                    HideWarningsAndErrors = HideWarningsAndErrors,
+                    ReevaluateRestoreGraph = ReevaluateRestoreGraph
                 };
 
                 if (restoreContext.DisableParallel)

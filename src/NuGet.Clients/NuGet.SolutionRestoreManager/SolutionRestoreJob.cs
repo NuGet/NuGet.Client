@@ -315,15 +315,17 @@ namespace NuGet.SolutionRestoreManager
                             var providerCache = new RestoreCommandProvidersCache();
                             Action<SourceCacheContext> cacheModifier = (cache) => { };
 
+                            var isRestoreOriginalAction = true;
                             var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                                 _solutionManager,
+                                dgSpec,
                                 cacheContext,
                                 providerCache,
                                 cacheModifier,
                                 sources,
                                 _nuGetProjectContext.OperationId,
                                 forceRestore,
-                                dgSpec,
+                                isRestoreOriginalAction,
                                 l,
                                 t);
 

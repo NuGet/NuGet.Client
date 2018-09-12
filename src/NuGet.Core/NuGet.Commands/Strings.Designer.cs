@@ -179,6 +179,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid restore input where RestorePackagesWithLockFile property is set to false and also exist a packages lock file at {0}..
+        /// </summary>
+        internal static string Error_InvalidLockFileInput {
+            get {
+                return ResourceManager.GetString("Error_InvalidLockFileInput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid project-package combination for {0} {1}. DotnetToolReference project style can only contain references of the DotnetTool type.
         /// </summary>
         internal static string Error_InvalidProjectPackageCombo {
@@ -260,6 +269,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package {0} sha512 validation failed. The package is different than the last restore..
+        /// </summary>
+        internal static string Error_PackageValidationFailed {
+            get {
+                return ResourceManager.GetString("Error_PackageValidationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to build package. {0}.
         /// </summary>
         internal static string Error_PackFailed {
@@ -292,6 +310,15 @@ namespace NuGet.Commands {
         internal static string Error_ProjectWithIncorrectDependenciesCount {
             get {
                 return ResourceManager.GetString("Error_ProjectWithIncorrectDependenciesCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The packages lock file is inconsistent with the project dependencies so restore can&apos;t be run in locked mode. Please disable RestoreLockedMode MSBuild property or pass explicit --reevaluate flag to run restore to update the lock file..
+        /// </summary>
+        internal static string Error_RestoreInLockedMode {
+            get {
+                return ResourceManager.GetString("Error_RestoreInLockedMode", resourceCulture);
             }
         }
         
@@ -1166,6 +1193,15 @@ namespace NuGet.Commands {
         internal static string Log_WritingLockFile {
             get {
                 return ResourceManager.GetString("Log_WritingLockFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing packages lock file at disk. Path: {0}.
+        /// </summary>
+        internal static string Log_WritingPackagesLockFile {
+            get {
+                return ResourceManager.GetString("Log_WritingPackagesLockFile", resourceCulture);
             }
         }
         

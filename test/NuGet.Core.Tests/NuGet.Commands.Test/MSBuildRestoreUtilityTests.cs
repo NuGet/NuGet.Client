@@ -2485,6 +2485,52 @@ namespace NuGet.Commands.Test
             MSBuildRestoreUtility.FixSourcePath(input).Should().Be("file:///tmp/test/");
         }
 
+        [Theory]
+        [InlineData("true", "c:\\temp\\nuget.lock.json", "true")]
+        [InlineData(null, "c:\\temp\\nuget.lock.json", "false")]
+        [InlineData("false", null, null)]
+        public void MSBuildRestoreUtility_GetPackageSpec_NuGetLockFileProperties(
+            string RestoreWithLockFile,
+            string NuGetLockFilePath,
+            string LockedMode)
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+
+                var items = new List<IDictionary<string, string>>();
+
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "Version", "2.0.0-rc.2+a.b.c" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46" },
+                    { "RestorePackagesWithLockFile", RestoreWithLockFile },
+                    { "NuGetLockFilePath", NuGetLockFilePath },
+                    { "RestoreLockedMode", LockedMode }
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single();
+                var lockedModeBool = string.IsNullOrEmpty(LockedMode) ? false : bool.Parse(LockedMode);
+
+                // Assert
+                project1Spec.RestoreMetadata.RestoreLockProperties.RestorePackagesWithLockFile.Should().Be(RestoreWithLockFile);
+                project1Spec.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath.Should().Be(NuGetLockFilePath);
+                project1Spec.RestoreMetadata.RestoreLockProperties.RestoreLockedMode.Should().Be(lockedModeBool);
+            }
+        }
+
         private static IDictionary<string, string> CreateProject(string root, string uniqueName)
         {
             var project1Path = Path.Combine(root, "a.csproj");

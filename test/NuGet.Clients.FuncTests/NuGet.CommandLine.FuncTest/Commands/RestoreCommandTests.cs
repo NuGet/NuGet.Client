@@ -1,193 +1,156 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
-using FluentAssertions;
-using NuGet.Common;
+using NuGet.CommandLine.Test;
 using NuGet.Frameworks;
-using NuGet.Packaging.Signing;
+using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
-using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.CommandLine.FuncTest.Commands
 {
-    /// <summary>
-    /// Tests restore command
-    /// These tests require admin privilege as the certs need to be added to the root store location
-    /// </summary>
-    [Collection(SignCommandTestCollection.Name)]
     public class RestoreCommandTests
     {
-        private static readonly string _NU3008Message = "The package integrity check failed.";
-        private static readonly string _NU3008 = $"NU3008: {_NU3008Message}";
-        private static readonly string _NU3027Message = "The signature should be timestamped to enable long-term signature validity after the certificate has expired.";
-        private static readonly string _NU3027 = $"NU3027: {_NU3027Message}";
-
-        private SignCommandTestFixture _testFixture;
-        private TrustedTestCert<TestCertificate> _trustedTestCert;
-        private readonly string _nugetExePath;
-
-        public RestoreCommandTests(SignCommandTestFixture fixture)
-        {
-            _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
-            _nugetExePath = _testFixture.NuGetExePath;
-        }
-
-        [CIOnlyFact]
-        public async Task Restore_TamperedPackageInPackagesConfig_FailsWithErrorAsync()
+        [Fact]
+        public async Task Restore_LegacyPackageReference_WithNuGetLockFile()
         {
             // Arrange
-            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-            var packagesConfigContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<packages>" +
-                "  <package id=\"X\" version=\"9.0.0\" targetFramework=\"net461\" />" +
-                "</packages>";
-
             using (var pathContext = new SimpleTestPathContext())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
-                var projectA = new SimpleTestProjectContext(
-                    "a",
-                    ProjectStyle.PackagesConfig,
-                    pathContext.SolutionRoot);
+                var net461 = NuGetFramework.Parse("net461");
 
-                var packageX = new SimpleTestPackageContext("X", "9.0.0");
-                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, packageX, pathContext.PackageSource);
-                SignedArchiveTestUtility.TamperWithPackage(signedPackagePath);
-
-                projectA.AddPackageToAllFrameworks(packageX);
-                solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
-
-                var packagesConfigPath = Path.Combine(Directory.GetParent(projectA.ProjectPath).FullName, "packages.config");
-
-                File.WriteAllBytes(packagesConfigPath, Encoding.ASCII.GetBytes(packagesConfigContent));
-
-                var args = new string[]
-                {
-                    projectA.ProjectPath,
-                    "-Source",
-                    pathContext.PackageSource,
-                    "-PackagesDirectory",
-                    "./packages"
-                };
-
-                // Act
-                var result = RunRestore(_nugetExePath, pathContext, expectedExitCode: 1, additionalArgs: args);
-
-                // Assert
-                result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(_NU3008);
-                result.AllOutput.Should().Contain(_NU3027);
-            }
-        }
-
-        [CIOnlyFact]
-        public async Task Restore_TamperedPackage_FailsAsync()
-        {
-            // Arrange
-            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-
-            using (var pathContext = new SimpleTestPathContext())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            {
-                // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                var projectA = SimpleTestProjectContext.CreateNETCore(
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
                     "a",
                     pathContext.SolutionRoot,
-                    NuGetFramework.Parse("NETStandard2.0"));
+                    net461);
 
-                var packageX = new SimpleTestPackageContext("X", "9.0.0");
-                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, packageX, pathContext.PackageSource);
-                SignedArchiveTestUtility.TamperWithPackage(signedPackagePath);
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/a.dll");
 
                 projectA.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                var args = new string[]
-                {
-                    projectA.ProjectPath,
-                    "-Source",
-                    pathContext.PackageSource
-                };
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
 
                 // Act
-                var result = RunRestore(_nugetExePath, pathContext, expectedExitCode: 1, additionalArgs: args);
-                var reader = new LockFileFormat();
-                var lockFile = reader.Read(projectA.AssetsFileOutputPath);
-                var errors = lockFile.LogMessages.Where(m => m.Level == LogLevel.Error);
-                var warnings = lockFile.LogMessages.Where(m => m.Level == LogLevel.Warning);
-            
+                var result = RunRestore(pathContext);
+
                 // Assert
-                result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(_NU3008);
-                result.AllOutput.Should().Contain($"WARNING: {_NU3027}");
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
-                errors.Count().Should().Be(1);
-                errors.First().Code.Should().Be(NuGetLogCode.NU3008);
-                errors.First().Message.Should().Be(_NU3008Message);
-                errors.First().LibraryId.Should().Be(packageX.ToString());
+                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+                Assert.Equal(4, lockFile.Targets.Count);
 
-                warnings.Count().Should().Be(1);
-                warnings.First().Code.Should().Be(NuGetLogCode.NU3027);
-                warnings.First().Message.Should().Be(_NU3027Message);
-                warnings.First().LibraryId.Should().Be("X.9.0.0");
+                var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
+                Assert.Equal(1, targets.Count);
+                Assert.Equal(".NETFramework,Version=v4.6.1", targets[0].Name);
+                Assert.Equal(1, targets[0].Dependencies.Count);
+                Assert.Equal("x", targets[0].Dependencies[0].Id);
             }
         }
 
         [Fact]
-        public void GetCertificateChain_WithUntrustedRoot_Throws()
+        public async Task Restore_LegacyPackageReference_WithNuGetLockFilePath()
         {
-            using (var chainHolder = new X509ChainHolder())
-            using (var rootCertificate = SigningTestUtility.GetCertificate("root.crt"))
-            using (var intermediateCertificate = SigningTestUtility.GetCertificate("intermediate.crt"))
-            using (var leafCertificate = SigningTestUtility.GetCertificate("leaf.crt"))
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var chain = chainHolder.Chain;
-                var extraStore = new X509Certificate2Collection() { rootCertificate, intermediateCertificate };
-                var logger = new TestLogger();
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
-                var exception = Assert.ThrowsAsync<SignatureException>(
-                    async () => CertificateChainUtility.GetCertificateChain(
-                        leafCertificate,
-                        extraStore,
-                        logger,
-                        CertificateType.Signature));
+                var net461 = "net461";
 
-                Assert.Equal(NuGetLogCode.NU3018, exception.Result.Code);
-                Assert.Equal("Certificate chain validation failed.", exception.Result.Message);
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse(net461));
 
-                Assert.Equal(1, logger.Errors);
-                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 2 : 1, logger.Warnings);
+                var projectB = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse(net461));
 
-                SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Error);
-                SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
-
-                if (RuntimeEnvironmentHelper.IsWindows)
+                // set up packages
+                var packageX = new SimpleTestPackageContext()
                 {
-                    SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
-                }
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile($"lib/{0}/x.dll", net461);
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY.Files.Clear();
+                packageY.AddFile($"lib/{0}/y.dll", net461);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   PackageSaveMode.Defaultv3,
+                   packageX,
+                   packageY);
+
+                // set up projects and solution
+                projectB.AddPackageToAllFrameworks(packageY);
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                var packagesLockFilePath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.custom.lock.json");
+                projectA.Properties.Add("NuGetLockFilePath", packagesLockFilePath);
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var result = RunRestore(pathContext);
+
+                // Assert
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+                Assert.Equal(packagesLockFilePath, projectA.NuGetLockFileOutputPath);
+
+                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+                Assert.Equal(4, lockFile.Targets.Count);
+
+                var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
+                Assert.Equal(1, targets.Count);
+                Assert.Equal(".NETFramework,Version=v4.6.1", targets[0].Name);
+                Assert.Equal(3, targets[0].Dependencies.Count);
+                Assert.Equal("x", targets[0].Dependencies[0].Id);
+                Assert.Equal(PackageDependencyType.Direct, targets[0].Dependencies[0].Type);
+                Assert.Equal("y", targets[0].Dependencies[1].Id);
+                Assert.Equal(PackageDependencyType.Transitive, targets[0].Dependencies[1].Type);
+                Assert.Equal("b", targets[0].Dependencies[2].Id);
+                Assert.Equal(PackageDependencyType.Project, targets[0].Dependencies[2].Type);
             }
         }
 
-        public static CommandRunnerResult RunRestore(string nugetExe, SimpleTestPathContext pathContext, int expectedExitCode = 0, params string[] additionalArgs)
+        public static CommandRunnerResult RunRestore(SimpleTestPathContext pathContext, int expectedExitCode = 0)
         {
+            var nugetExe = Util.GetNuGetExePath();
+
             // Store the dg file for debugging
             var envVars = new Dictionary<string, string>()
             {
@@ -197,16 +160,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
             var args = new string[]
             {
                 "restore",
+                pathContext.SolutionRoot,
                 "-Verbosity",
                 "detailed"
             };
 
-            args = args.Concat(additionalArgs).ToArray();
-
             // Act
             var r = CommandRunner.Run(
                 nugetExe,
-                pathContext.WorkingDirectory,
+                pathContext.WorkingDirectory.Path,
                 string.Join(" ", args),
                 waitForExit: true,
                 environmentVariables: envVars);

@@ -1,14 +1,20 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
     internal static class JsonUtility
     {
+        internal static readonly char[] PathSplitChars = new[] { LockFile.DirectorySeparatorChar };
+
         /// <summary>
         /// JsonLoadSettings with line info and comments ignored.
         /// </summary>
@@ -35,6 +41,74 @@ namespace NuGet.ProjectModel
 
                 return JObject.Load(jsonReader, DefaultLoadSettings);
             }
+        }
+
+        internal static PackageDependency ReadPackageDependency(string property, JToken json)
+        {
+            var versionStr = json.Value<string>();
+            return new PackageDependency(
+                property,
+                versionStr == null ? null : VersionRange.Parse(versionStr));
+        }
+
+        internal static JProperty WritePackageDependency(PackageDependency item)
+        {
+            return new JProperty(
+                item.Id,
+                WriteString(item.VersionRange?.ToLegacyShortString()));
+        }
+
+        internal static TItem ReadProperty<TItem>(JObject jObject, string propertyName)
+        {
+            if (jObject != null)
+            {
+                JToken value;
+                if (jObject.TryGetValue(propertyName, out value) && value != null)
+                {
+                    return value.Value<TItem>();
+                }
+            }
+
+            return default(TItem);
+        }
+
+        internal static IList<TItem> ReadObject<TItem>(JObject jObject, Func<string, JToken, TItem> readItem)
+        {
+            if (jObject == null)
+            {
+                return new List<TItem>();
+            }
+            var items = new List<TItem>();
+            foreach (var child in jObject)
+            {
+                items.Add(readItem(child.Key, child.Value));
+            }
+            return items;
+        }
+
+        internal static JObject WriteObject<TItem>(IEnumerable<TItem> items, Func<TItem, JProperty> writeItem)
+        {
+            var array = new JObject();
+            foreach (var item in items)
+            {
+                array.Add(writeItem(item));
+            }
+            return array;
+        }
+
+        internal static int ReadInt(JToken cursor, string property, int defaultValue)
+        {
+            var valueToken = cursor[property];
+            if (valueToken == null)
+            {
+                return defaultValue;
+            }
+            return valueToken.Value<int>();
+        }
+
+        internal static JToken WriteString(string item)
+        {
+            return item != null ? new JValue(item) : JValue.CreateNull();
         }
     }
 }

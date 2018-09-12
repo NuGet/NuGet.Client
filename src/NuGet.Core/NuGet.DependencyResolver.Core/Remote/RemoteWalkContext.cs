@@ -6,6 +6,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -33,6 +35,8 @@ namespace NuGet.DependencyResolver
             RemoteLibraryProviders = new List<IRemoteDependencyProvider>();
 
             FindLibraryEntryCache = new ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphItem<RemoteResolveResult>>>();
+
+            LockFileLibraries = new Dictionary<LockFileCacheKey, IList<LibraryIdentity>>();
         }
 
         public SourceCacheContext CacheContext { get; }
@@ -41,6 +45,11 @@ namespace NuGet.DependencyResolver
         public IList<IDependencyProvider> ProjectLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> LocalLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> RemoteLibraryProviders { get; }
+
+        /// <summary>
+        /// Packages lock file libraries to be used while generating restore graph.
+        /// </summary>
+        public IDictionary<LockFileCacheKey, IList<LibraryIdentity>> LockFileLibraries { get; }
 
         /// <summary>
         /// Library entry cache.

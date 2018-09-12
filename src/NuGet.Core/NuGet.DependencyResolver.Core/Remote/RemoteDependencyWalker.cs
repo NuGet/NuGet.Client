@@ -90,6 +90,7 @@ namespace NuGet.DependencyResolver
                     _context.FindLibraryEntryCache,
                     libraryRange,
                     framework,
+                    runtimeName,
                     outerEdge,
                     _context,
                     CancellationToken.None)

@@ -329,6 +329,17 @@ namespace NuGet.ProjectModel
                 msbuildMetadata.ProjectWideWarningProperties = new WarningProperties(warnAsError, noWarn, allWarningsAsErrors);
             }
 
+            // read NuGet lock file msbuild properties
+            var restoreLockProperties = rawMSBuildMetadata.GetValue<JObject>("restoreLockProperties");
+
+            if (restoreLockProperties != null)
+            {
+                msbuildMetadata.RestoreLockProperties = new RestoreLockProperties(
+                    restoreLockProperties.GetValue<string>("restorePackagesWithLockFile"),
+                    restoreLockProperties.GetValue<string>("nuGetLockFilePath"),
+                    GetBoolOrFalse(restoreLockProperties, "restoreLockedMode", packageSpec.FilePath));
+            }
+
             return msbuildMetadata;
         }
 

@@ -34,5 +34,8 @@ namespace NuGet.ProjectManagement
         public const string WarningsAsErrors = nameof(WarningsAsErrors);
         public const string TreatWarningsAsErrors = nameof(TreatWarningsAsErrors);
         public const string DotnetCliToolTargetFramework = nameof(DotnetCliToolTargetFramework);
+        public const string RestorePackagesWithLockFile = nameof(RestorePackagesWithLockFile);
+        public const string NuGetLockFilePath = nameof(NuGetLockFilePath);
+        public const string RestoreLockedMode = nameof(RestoreLockedMode);
     }
 }
