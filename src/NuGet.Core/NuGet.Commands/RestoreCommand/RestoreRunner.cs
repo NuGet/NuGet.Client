@@ -293,7 +293,8 @@ namespace NuGet.Commands
             }
 
             // Remote the summary messages from the assets file. This will be removed later.
-            var messages = restoreResult.Result.LockFile.LogMessages.Select(e => new RestoreLogMessage(e.Level, e.Code, e.Message));
+            var messages = restoreResult.Result.LockFile?.LogMessages
+                .Select(e => new RestoreLogMessage(e.Level, e.Code, e.Message)) ?? Enumerable.Empty<RestoreLogMessage>();
 
             // Build the summary
             return new RestoreSummary(

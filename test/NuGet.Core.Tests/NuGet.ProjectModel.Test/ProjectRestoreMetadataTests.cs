@@ -94,6 +94,25 @@ namespace NuGet.ProjectModel.Test
             metadata1.Equals(metadata2).Should().BeFalse();
         }
 
+        [Fact]
+        public void Equals_WithDifferentRestoreLockProperties_ReturnsFalse()
+        {
+            // Arrange
+            var metadata1 = CreateProjectRestoreMetadata();
+            var metadata2 = metadata1.Clone();
+            var metadata3 = metadata1.Clone();
+            var metadata4 = metadata1.Clone();
+
+            metadata2.RestoreLockProperties = new RestoreLockProperties("false", null, false);
+            metadata3.RestoreLockProperties = new RestoreLockProperties("true", "tempPath", false);
+            metadata4.RestoreLockProperties = new RestoreLockProperties("true", null, true);
+
+            // Act & Assert
+            metadata1.Equals(metadata2).Should().BeFalse();
+            metadata1.Equals(metadata3).Should().BeFalse();
+            metadata1.Equals(metadata4).Should().BeFalse();
+        }
+
         private ProjectRestoreMetadata CreateProjectRestoreMetadata()
         {
             var projectReference = new ProjectRestoreReference
@@ -116,6 +135,7 @@ namespace NuGet.ProjectModel.Test
             var noWarn = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1500 };
             var warningsAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1501 };
             var warningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn);
+            var restoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: false);
             var originalProjectRestoreMetadata = new ProjectRestoreMetadata
             {
                 ProjectStyle = ProjectStyle.PackageReference,
@@ -136,7 +156,8 @@ namespace NuGet.ProjectModel.Test
                 ConfigFilePaths = new List<string>() { "config1" },
                 OriginalTargetFrameworks = new List<string>() { "net45" },
                 Files = new List<ProjectRestoreMetadataFile>() { new ProjectRestoreMetadataFile("packagePath", "absolutePath") },
-                ProjectWideWarningProperties = warningProperties
+                ProjectWideWarningProperties = warningProperties,
+                RestoreLockProperties = restoreLockProperties
             };
 
             return originalProjectRestoreMetadata;

@@ -156,6 +156,9 @@ namespace NuGet.ProjectModel
             WriteMetadataTargetFrameworks(writer, msbuildMetadata);
             SetWarningProperties(writer, msbuildMetadata);
 
+            // write NuGet lock file msbuild properties
+            WriteNuGetLockFileProperties(writer, msbuildMetadata);
+
             writer.WriteObjectEnd();
         }
 
@@ -165,6 +168,24 @@ namespace NuGet.ProjectModel
             SetValueIfTrue(writer, "legacyPackagesDirectory", msbuildMetadata.LegacyPackagesDirectory);
             SetValueIfTrue(writer, "validateRuntimeAssets", msbuildMetadata.ValidateRuntimeAssets);
             SetValueIfTrue(writer, "skipContentFileWrite", msbuildMetadata.SkipContentFileWrite);
+        }
+
+
+        private static void WriteNuGetLockFileProperties(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
+        {
+            if (msbuildMetadata.RestoreLockProperties != null &&
+                (!string.IsNullOrEmpty(msbuildMetadata.RestoreLockProperties.RestorePackagesWithLockFile) ||
+                 !string.IsNullOrEmpty(msbuildMetadata.RestoreLockProperties.NuGetLockFilePath) ||
+                 msbuildMetadata.RestoreLockProperties.RestoreLockedMode))
+            {
+                writer.WriteObjectStart("restoreLockProperties");
+
+                SetValue(writer, "restorePackagesWithLockFile", msbuildMetadata.RestoreLockProperties.RestorePackagesWithLockFile);
+                SetValue(writer, "nuGetLockFilePath", msbuildMetadata.RestoreLockProperties.NuGetLockFilePath);
+                SetValueIfTrue(writer, "restoreLockedMode", msbuildMetadata.RestoreLockProperties.RestoreLockedMode);
+
+                writer.WriteObjectEnd();
+            }
         }
 
         private static void WriteMetadataTargetFrameworks(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)

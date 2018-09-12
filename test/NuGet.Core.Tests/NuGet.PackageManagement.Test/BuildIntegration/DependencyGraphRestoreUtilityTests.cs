@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Test.Utility;
@@ -57,13 +55,14 @@ namespace NuGet.PackageManagement.Test
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     new RestoreCommandProvidersCache(),
                     (c) => { },
                     sources,
                     Guid.Empty,
                     false,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                    true,
                     logger,
                     CancellationToken.None);
 

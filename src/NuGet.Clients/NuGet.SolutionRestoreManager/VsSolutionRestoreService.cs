@@ -57,7 +57,9 @@ namespace NuGet.SolutionRestoreManager
         private const string TreatWarningsAsErrors = nameof(TreatWarningsAsErrors);
         private const string WarningsAsErrors = nameof(WarningsAsErrors);
         private const string NoWarn = nameof(NoWarn);
-
+        private const string RestorePackagesWithLockFile = nameof(RestorePackagesWithLockFile);
+        private const string NuGetLockFilePath = nameof(NuGetLockFilePath);
+        private const string RestoreLockedMode = nameof(RestoreLockedMode);
 
         private static readonly Version Version20 = new Version(2, 0, 0, 0);
 
@@ -286,7 +288,11 @@ namespace NuGet.SolutionRestoreManager
                         treatWarningsAsErrors: GetSingleOrDefaultPropertyValue(projectRestoreInfo.TargetFrameworks, TreatWarningsAsErrors, e => e),
                         warningsAsErrors: GetSingleOrDefaultNuGetLogCodes(projectRestoreInfo.TargetFrameworks, WarningsAsErrors, e => MSBuildStringUtility.GetNuGetLogCodes(e)),
                         noWarn: GetSingleOrDefaultNuGetLogCodes(projectRestoreInfo.TargetFrameworks, NoWarn, e => MSBuildStringUtility.GetNuGetLogCodes(e))),
-                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: outputPath, projectPath: projectFullPath)
+                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: outputPath, projectPath: projectFullPath),
+                    RestoreLockProperties = new RestoreLockProperties(
+                        GetRestorePackagesWithLockFile(projectRestoreInfo.TargetFrameworks),
+                        GetNuGetLockFilePath(projectRestoreInfo.TargetFrameworks),
+                        IsLockFileFreezeOnRestore(projectRestoreInfo.TargetFrameworks))
                 },
                 RuntimeGraph = GetRuntimeGraph(projectRestoreInfo),
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
@@ -314,6 +320,21 @@ namespace NuGet.SolutionRestoreManager
         private static string GetRestoreProjectPath(IVsTargetFrameworks tfms)
         {
             return GetSingleNonEvaluatedPropertyOrNull(tfms, RestorePackagesPath, e => e);
+        }
+
+        private static string GetRestorePackagesWithLockFile(IVsTargetFrameworks tfms)
+        {
+            return GetSingleNonEvaluatedPropertyOrNull(tfms, RestorePackagesWithLockFile, v => v);
+        }
+
+        private static string GetNuGetLockFilePath(IVsTargetFrameworks tfms)
+        {
+            return GetSingleNonEvaluatedPropertyOrNull(tfms, NuGetLockFilePath, v => v);
+        }
+
+        private static bool IsLockFileFreezeOnRestore(IVsTargetFrameworks tfms)
+        {
+            return GetSingleNonEvaluatedPropertyOrNull(tfms, RestoreLockedMode, MSBuildStringUtility.IsTrue);
         }
 
         /// <summary>

@@ -13,6 +13,7 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Test
@@ -1459,23 +1460,6 @@ namespace NuGet.Test
         }
     }
 
-    internal class TestDependencyInfoProvider : ResourceProvider
-    {
-        public List<SourcePackageDependencyInfo> Packages { get; set; }
-
-        public TestDependencyInfoProvider(List<SourcePackageDependencyInfo> packages)
-            : base(typeof(DependencyInfoResource))
-        {
-            Packages = packages;
-        }
-
-        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
-        {
-            var nuGetResource = new TestDependencyInfo(source, Packages);
-            return Task.FromResult(new Tuple<bool, INuGetResource>(true, nuGetResource));
-        }
-    }
-
     internal class TestThrowingDependencyInfoProvider : ResourceProvider
     {
         public Exception Exception { get; set; }
@@ -1559,133 +1543,6 @@ namespace NuGet.Test
 
                 await Task.Delay(20);
             }
-        }
-    }
-
-    /// <summary>
-    /// Resolves against a local set of packages
-    /// </summary>
-    internal class TestDependencyInfo : DependencyInfoResource
-    {
-        public SourceRepository Source { get; set; }
-
-        public List<SourcePackageDependencyInfo> Packages { get; set; }
-
-        public TestDependencyInfo(SourceRepository source, List<SourcePackageDependencyInfo> packages)
-        {
-            Source = source;
-            Packages = packages;
-        }
-
-        public override Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
-        {
-            var matchingPackage = Packages.FirstOrDefault(e => PackageIdentity.Comparer.Equals(e, package));
-            return Task.FromResult<SourcePackageDependencyInfo>(ApplySource(matchingPackage));
-        }
-
-        public override Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
-        {
-            var results = new HashSet<SourcePackageDependencyInfo>(
-                Packages.Where(e => StringComparer.OrdinalIgnoreCase.Equals(packageId, e.Id)),
-                PackageIdentity.Comparer);
-
-            return Task.FromResult<IEnumerable<SourcePackageDependencyInfo>>(results.Select(p => ApplySource(p)));
-        }
-
-        SourcePackageDependencyInfo ApplySource(SourcePackageDependencyInfo original)
-        {
-            if (original == null)
-            {
-                return null;
-            }
-
-            return new SourcePackageDependencyInfo(
-                original.Id,
-                original.Version,
-                original.Dependencies,
-                original.Listed,
-                Source);
-        }
-    }
-
-    /// <summary>
-    /// Test MetadataProvider for unit tests
-    /// </summary>
-    internal class TestMetadataProvider : ResourceProvider
-    {
-        public List<SourcePackageDependencyInfo> Packages { get; set; }
-
-        public TestMetadataProvider(List<SourcePackageDependencyInfo> packages)
-            : base(typeof(MetadataResource))
-        {
-            Packages = packages;
-        }
-
-        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
-        {
-            var nuGetResource = new TestMetadataResource(Packages);
-            return Task.FromResult(new Tuple<bool, INuGetResource>(true, nuGetResource));
-        }
-    }
-
-    /// <summary>
-    /// Retrieve versions from a local set of packages
-    /// </summary>
-    internal class TestMetadataResource : MetadataResource
-    {
-        public List<SourcePackageDependencyInfo> Packages { get; set; }
-
-        public TestMetadataResource(List<SourcePackageDependencyInfo> packages)
-        {
-            Packages = packages;
-        }
-
-        public override Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
-        {
-            return Task.FromResult(Packages
-                .Where(p =>
-                    p.Id.Equals(packageId, StringComparison.InvariantCultureIgnoreCase)
-                    && (!p.Version.IsPrerelease || includePrerelease)
-                    && (p.Listed || includeUnlisted))
-                .Select(p => p.Version)
-            );
-        }
-
-        public override Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
-        {
-            return Task.FromResult(Packages
-                .Exists(p =>
-                    ((PackageIdentity)p).Equals(identity)
-                    && (p.Listed || includeUnlisted))
-            );
-        }
-
-        public override Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
-        {
-            return Task.FromResult(Packages
-                .Exists((p) =>
-                    p.Id.Equals(packageId, StringComparison.InvariantCultureIgnoreCase)
-                    && (!p.Version.IsPrerelease || includePrerelease)
-                    && (p.Listed || includeUnlisted))
-            );
-        }
-
-        public async override Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token)
-        {
-            var results = new List<KeyValuePair<string, NuGetVersion>>();
-
-            foreach (var id in packageIds)
-            {
-                var versions = await GetVersions(id, sourceCacheContext, log, token);
-                var latest = versions.OrderByDescending(p => p, VersionComparer.VersionRelease).FirstOrDefault();
-
-                if (latest != null)
-                {
-                    results.Add(new KeyValuePair<string, NuGetVersion>(id, latest));
-                }
-            }
-
-            return results;
         }
     }
 }

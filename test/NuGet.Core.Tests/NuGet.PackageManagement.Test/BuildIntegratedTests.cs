@@ -1814,13 +1814,14 @@ namespace NuGet.Test
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
                     testSolutionManager,
+                    dgSpec1,
                     restoreContext,
                     providersCache,
                     (c) => { },
                     sourceRepositoryProvider.GetRepositories(),
                     Guid.Empty,
                     false,
-                    dgSpec1,
+                    true,
                     testLogger,
                     CancellationToken.None);
 
