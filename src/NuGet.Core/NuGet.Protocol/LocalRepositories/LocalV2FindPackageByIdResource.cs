@@ -313,6 +313,7 @@ namespace NuGet.Protocol
                     try
                     {
                         reader = new NuspecReader(packageReader.GetNuspec());
+                        // similarly to this, I will need to add a way to get the License file...probably as a stream.
                     }
                     catch (XmlException ex)
                     {

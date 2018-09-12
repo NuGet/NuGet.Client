@@ -718,4 +718,14 @@ Valid from:</comment>
   <data name="SigningWouldRequireZip64" xml:space="preserve">
     <value>The package cannot be signed as it would require the Zip64 format.</value>
   </data>
+  <data name="NuGetLicenseExpression_InvalidToken" xml:space="preserve">
+    <value>Invalid element '{0}'</value>
+    <comment>0 - The element value</comment>
+  </data>
+  <data name="NuGetLicenseExpression_MismatchedParenthesis" xml:space="preserve">
+    <value>Mismatched parentheses in the expression.</value>
+  </data>
+  <data name="NuGetLicenseExpression_InvalidExpression" xml:space="preserve">
+    <value>The license expression is invalid.</value>
+  </data>
 </root>

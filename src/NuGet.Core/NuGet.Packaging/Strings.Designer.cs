@@ -728,6 +728,33 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The license expression is invalid..
+        /// </summary>
+        internal static string NuGetLicenseExpression_InvalidExpression {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_InvalidExpression", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid element &apos;{0}&apos;.
+        /// </summary>
+        internal static string NuGetLicenseExpression_InvalidToken {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_InvalidToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mismatched parentheses in the expression..
+        /// </summary>
+        internal static string NuGetLicenseExpression_MismatchedParenthesis {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_MismatchedParenthesis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to nuget-package-owners: {0}.
         /// </summary>
         internal static string NuGetPackageOwners {

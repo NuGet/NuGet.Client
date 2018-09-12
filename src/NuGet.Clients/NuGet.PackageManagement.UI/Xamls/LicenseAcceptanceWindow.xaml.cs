@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Windows;
@@ -23,6 +23,9 @@ namespace NuGet.PackageManagement.UI
             if (hyperlink != null
                 && hyperlink.NavigateUri != null)
             {
+                // This might be 2 different links.
+                // What do we do when the license is embedded?
+
                 UIUtility.LaunchExternalLink(hyperlink.NavigateUri);
                 e.Handled = true;
             }
