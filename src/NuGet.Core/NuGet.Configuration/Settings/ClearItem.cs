@@ -13,8 +13,6 @@ namespace NuGet.Configuration
 
         internal override bool IsEmpty() => false;
 
-        protected override HashSet<string> AllowedAttributes => new HashSet<string>();
-
         public ClearItem() { }
 
         internal override SettingBase Clone()

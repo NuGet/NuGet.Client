@@ -13,31 +13,6 @@ namespace NuGet.Configuration.Test
     public class SourceItemTests
     {
         [Fact]
-        public void SourceItem_WithUnallowedAttributes_Throws()
-        {
-            // Arrange
-            var config = @"
-<configuration>
-    <packageSources>
-        <add key='nugetorg' value='http://serviceIndexorg.test/api/index.json' notValid='test' />
-    </packageSources>
-</configuration>";
-
-            var nugetConfigPath = "NuGet.Config";
-            using (var mockBaseDirectory = TestDirectory.Create())
-            {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-
-                // Act and Assert
-                var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
-
-                ex.Should().NotBeNull();
-                ex.Should().BeOfType<NuGetConfigurationException>();
-                ex.Message.Should().Be(string.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
-            }
-        }
-
-        [Fact]
         public void SourceItem_ParsedSuccessfully()
         {
             // Arrange

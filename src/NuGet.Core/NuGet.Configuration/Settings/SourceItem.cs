@@ -47,8 +47,6 @@ namespace NuGet.Configuration
             return combiner.CombinedHash;
         }
 
-        protected override HashSet<string> AllowedAttributes => new HashSet<string>() { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute, ConfigurationConstants.ProtocolVersionAttribute };
-
         internal SourceItem(XElement element, SettingsFile origin)
             : base(element, origin)
         {

@@ -14,8 +14,6 @@ namespace NuGet.Configuration
 
         internal IReadOnlyDictionary<string, SettingSection> Sections => ChildrenSet.Select(c => c.Value).ToDictionary(c => c.ElementName);
 
-        protected override HashSet<string> AllowedAttributes => new HashSet<string>();
-
         protected override bool CanBeCleared => false;
 
         /// <remarks>

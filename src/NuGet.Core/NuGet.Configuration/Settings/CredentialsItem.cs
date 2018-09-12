@@ -89,8 +89,6 @@ namespace NuGet.Configuration
 
         protected override bool CanHaveChildren => true;
 
-        protected override HashSet<string> AllowedAttributes => new HashSet<string>();
-
         internal override bool IsEmpty() => string.IsNullOrEmpty(Username) && string.IsNullOrEmpty(Password);
 
         internal AddItem _username { get; set; }
