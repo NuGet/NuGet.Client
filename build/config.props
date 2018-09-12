@@ -7,14 +7,14 @@
     <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">0</MinorNuGetVersion>
     <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">1</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
-    <VsTargetBranch>lab/d16.$(MinorNuGetVersion)stg</VsTargetBranch>
+    <VsTargetBranch>svc/d15rtwsvc</VsTargetBranch>
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d16.$(MinorNuGetVersion)</VsTargetBranch>
     <SdkTargetBranch>release/2.1.4xx</SdkTargetBranch>
     <CliTargetBranch>release/2.1.4xx</CliTargetBranch>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">rtm</ReleaseLabel>
   </PropertyGroup>
 
   <!-- Dependency versions -->
