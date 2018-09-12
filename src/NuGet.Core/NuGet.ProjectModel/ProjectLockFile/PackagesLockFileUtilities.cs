@@ -27,7 +27,7 @@ namespace NuGet.ProjectModel
                 return null;
             }
 
-            var path = project.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath;
+            var path = MSBuildStringUtility.TrimQuotes(project.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath);
 
             if (!string.IsNullOrEmpty(path))
             {

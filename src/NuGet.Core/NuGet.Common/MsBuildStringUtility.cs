@@ -19,6 +19,21 @@ namespace NuGet.Common
         }
 
         /// <summary>
+        /// Trim double quotes from the msbuild proprty value.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string TrimQuotes(string s)
+        {
+            if (s == null)
+            {
+                return null;
+            }
+
+            return s.Trim('"');
+        }
+
+        /// <summary>
         /// Split on ; and trim. Null or empty inputs will return an
         /// empty array.
         /// </summary>
