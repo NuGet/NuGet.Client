@@ -4,17 +4,37 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace NuGet.Packaging.Licenses
 {
-    public class LicenseExpressionEvaluator
+    public class LicenseExpressionParser
     {
         /// <summary>
+        /// Parses a License Expression if valid.
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns>NuGetLicenseExpression</returns>
+        /// <exception cref="ArgumentException">If the passed in values are not a valid SPDX License Expression.</exception>
+        public static NuGetLicenseExpression Parse(string expression, bool strict = true)
+        {
+            var tokenizer = new LicenseExpressionTokenizer(expression);
+            if (!tokenizer.HasValidCharacters())
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidCharacters));
+            }
+
+            return Parse(tokenizer.Tokenize().ToArray(), strict);
+        }
+
+        /// <summary>
         /// Based on the Shunting Yard algorithm. <see href="https://en.wikipedia.org/wiki/Shunting-yard_algorithm"/>
+        /// Given an array of tokens, generates a NuGetLicenseExpression if valid.
         /// </summary>
         /// <param name="infixTokens"></param>
-        /// <returns></returns>
-        public static NuGetLicenseExpression Evaluate(LicenseExpressionToken[] infixTokens)
+        /// <returns>NuGetLicenseExpression</returns>
+        /// <exception cref="ArgumentException">If the passed in values are not a valid SPDX License Expression.</exception>
+        public static NuGetLicenseExpression Parse(LicenseExpressionToken[] infixTokens, bool strict)
         {
             var operatorStack = new Stack<LicenseExpressionToken>();
             var operandStack = new Stack<LicenseExpressionToken>();
@@ -46,7 +66,7 @@ namespace NuGet.Packaging.Licenses
                         // pop until we hit the opening bracket
                         while (operatorStack.Count > 0 && operatorStack.Peek().TokenType != LicenseTokenType.OPENING_BRACKET)
                         {
-                            ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression);
+                            ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression, strict);
                         }
 
                         if (operatorStack.Count > 0)
@@ -85,7 +105,7 @@ namespace NuGet.Packaging.Licenses
                         // An operator that has lower/same priority than the operator on the stack
                         else if (token.TokenType >= operatorStack.Peek().TokenType)
                         {
-                            ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression);
+                            ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression, strict);
                             operatorStack.Push(token);
                         }
                         break;
@@ -100,7 +120,7 @@ namespace NuGet.Packaging.Licenses
             {
                 if (operatorStack.Peek().TokenType != LicenseTokenType.OPENING_BRACKET)
                 {
-                    ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression);
+                    ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression, strict);
                 }
                 else
                 {
@@ -113,7 +133,7 @@ namespace NuGet.Packaging.Licenses
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
         }
 
-        private static void ProcessOperators(Stack<LicenseExpressionToken> operatorStack, Stack<LicenseExpressionToken> operandStack, ref NuGetLicenseExpression leftHandSideExpression, ref NuGetLicenseExpression rightHandSideExpression)
+        private static void ProcessOperators(Stack<LicenseExpressionToken> operatorStack, Stack<LicenseExpressionToken> operandStack, ref NuGetLicenseExpression leftHandSideExpression, ref NuGetLicenseExpression rightHandSideExpression, bool strict)
         {
             var op = operatorStack.Pop();
             if (op.TokenType == LicenseTokenType.WITH)
@@ -121,7 +141,7 @@ namespace NuGet.Packaging.Licenses
                 var right = PopIfNotEmpty(operandStack);
                 var left = PopIfNotEmpty(operandStack);
 
-                var withNode = new WithOperator(NuGetLicense.Parse(left.Value), NuGetLicenseException.Parse(right.Value));
+                var withNode = new WithOperator(NuGetLicense.Parse(left.Value, strict), NuGetLicenseException.Parse(right.Value, strict));
 
                 if (leftHandSideExpression == null)
                 {
@@ -144,12 +164,12 @@ namespace NuGet.Packaging.Licenses
                 {
                     var right = PopIfNotEmpty(operandStack);
                     var left = PopIfNotEmpty(operandStack);
-                    leftHandSideExpression = new LogicalOperator(logicalOperator, NuGetLicense.Parse(left.Value), NuGetLicense.Parse(right.Value));
+                    leftHandSideExpression = new LogicalOperator(logicalOperator, NuGetLicense.Parse(left.Value, strict), NuGetLicense.Parse(right.Value, strict));
                 }
                 else if (rightHandSideExpression == null)
                 {
                     var right = PopIfNotEmpty(operandStack);
-                    var newExpression = new LogicalOperator(logicalOperator, leftHandSideExpression, NuGetLicense.Parse(right.Value));
+                    var newExpression = new LogicalOperator(logicalOperator, leftHandSideExpression, NuGetLicense.Parse(right.Value, strict));
                     leftHandSideExpression = newExpression;
                 }
                 else if (leftHandSideExpression == null)
@@ -173,4 +193,3 @@ namespace NuGet.Packaging.Licenses
         }
     }
 }
-

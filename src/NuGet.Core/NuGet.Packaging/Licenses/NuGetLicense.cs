@@ -17,7 +17,7 @@ namespace NuGet.Packaging
             Type = LicenseExpressionType.License;
         }
 
-        public static NuGetLicense Parse(string identifier)
+        public static NuGetLicense Parse(string identifier, bool strict = true)
         {
             if (!string.IsNullOrWhiteSpace(identifier))
             {

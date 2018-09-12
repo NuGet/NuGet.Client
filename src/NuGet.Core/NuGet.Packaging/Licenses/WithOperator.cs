@@ -19,7 +19,7 @@ namespace NuGet.Packaging
 
         public override string ToString()
         {
-            return $"{License.Identifier} WITH {Exception.Identifier}";
+            return $"{License.ToString()} WITH {Exception.ToString()}";
         }
     }
 }

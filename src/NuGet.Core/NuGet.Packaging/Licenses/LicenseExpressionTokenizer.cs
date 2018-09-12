@@ -22,23 +22,31 @@ namespace NuGet.Packaging.Licenses
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException("Invalid license expression. Cannot be empty or whitespace");
+                throw new ArgumentNullException(nameof(value));
             }
             _value = value.Trim();
         }
 
-        public bool HasValidCharacters(string value)
+        /// <summary>
+        /// The valid characters for a license identifier are a-zA-Z0-9.-+
+        /// The valid characters for a license expression are the above whitespace and ().
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public bool HasValidCharacters()
         {
-            for (var i = 0; i < value.Length; i++)
+            for (var i = 0; i < _value.Length; i++)
             {
                 // If the character is not among these characters
-                if (!((value[i] >= 'a' && value[i] <= 'z') ||
-                    (value[i] >= 'A' && value[i] <= 'Z') ||
-                    value[i] == ' ' ||
-                    value[i] == '.' ||
-                    value[i] == '-' ||
-                    value[i] == '(' ||
-                    value[i] == ')'
+                if (!((_value[i] >= 'a' && _value[i] <= 'z') ||
+                    (_value[i] >= 'A' && _value[i] <= 'Z') ||
+                    (_value[i] >= '0' && _value[i] <= '9') ||
+                    _value[i] == ' ' ||
+                    _value[i] == '.' ||
+                    _value[i] == '-' ||
+                    _value[i] == '+' ||
+                    _value[i] == '(' ||
+                    _value[i] == ')'
                     ))
                 {
                     return false;
@@ -49,7 +57,6 @@ namespace NuGet.Packaging.Licenses
 
         public IEnumerable<LicenseExpressionToken> Tokenize()
         {
-            // TODO NK - Write a lazy/more efficient tokenizer
             var potentialTokens = _value.Split(' ');
             foreach (var token in potentialTokens)
             {

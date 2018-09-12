@@ -728,6 +728,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The expression contains invalid characters..
+        /// </summary>
+        internal static string NuGetLicenseExpression_InvalidCharacters {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_InvalidCharacters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The license expression is invalid..
         /// </summary>
         internal static string NuGetLicenseExpression_InvalidExpression {

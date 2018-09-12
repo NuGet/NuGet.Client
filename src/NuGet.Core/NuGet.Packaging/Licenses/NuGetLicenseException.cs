@@ -14,13 +14,18 @@ namespace NuGet.Packaging
 
         public string Identifier { get; }
 
-        public static NuGetLicenseException Parse(string identifier)
+        public static NuGetLicenseException Parse(string identifier, bool strict = true)
         {
             if (!string.IsNullOrWhiteSpace(identifier))
             {
                 return new NuGetLicenseException(identifier);
             }
             return null;
+        }
+
+        public override string ToString()
+        {
+            return Identifier;
         }
     }
 }

@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Test
 
         public void LicenseExpressionTokenizer_ThrowsForInvalidLicenseStrings(string value)
         {
-            Assert.Throws<ArgumentException>(() => new LicenseExpressionTokenizer(value));
+            Assert.Throws<ArgumentNullException>(() => new LicenseExpressionTokenizer(value));
         }
 
         [Theory]
@@ -73,6 +73,17 @@ namespace NuGet.Packaging.Test
             {
                 Assert.Equal(tokens[i].Value, values[i + 1]);
             }
+        }
+
+        [Theory]
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT!")]
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT@")]
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT/")]
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT[]")]
+        public void LicenseExpressionTokenizer_ReturnsFalseForExpressionsWithInvalidCharacters(string infix)
+        {
+            var tokenizer = new LicenseExpressionTokenizer(infix);
+            Assert.False(tokenizer.HasValidCharacters());
         }
 
         public static IEnumerable<object[]> ComplexSPDXExpressionData()
