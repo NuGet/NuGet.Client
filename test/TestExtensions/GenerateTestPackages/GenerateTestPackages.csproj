@@ -6,7 +6,6 @@
     <TargetFramework>net46</TargetFramework>
     <OutputType>Exe</OutputType>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>ToolTestKey.snk</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
   </PropertyGroup>
 
