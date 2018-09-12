@@ -1,13 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace API.Test
@@ -57,7 +55,7 @@ namespace API.Test
 
             string projectTemplateFilePath = null;
 
-            var dte = ServiceLocator.GetDTE();
+            var dte = ServiceLocator.GetInstance<DTE>();
             var dte2 = (DTE2)dte;
             var solution2 = dte2.Solution as Solution2;
             Project solutionFolderProject = null;
@@ -93,13 +91,12 @@ namespace API.Test
 
             window.SetFocus();
 
-            if (solutionFolderProject != null)
+            await GetProjectAsync(solution2, projectName, solutionFolderProject);
+
+            // HACK: May need to be fixed
+            if (newProject == null)
             {
-                newProject = await VSSolutionHelper.GetProjectAsync(solutionFolderProject, projectName);
-            }
-            else
-            {
-                newProject = await VSSolutionHelper.GetProjectAsync(solution2, projectName);
+                newProject = await GetProjectAsync(solution2, projectName, solutionFolderProject);
             }
 
             if (newProject == null)
@@ -193,6 +190,45 @@ namespace API.Test
                     solutionConfiguration.Activate();
                 }
             }
+        }
+
+        private static async Task<Project> GetProjectAsync(
+            Solution2 solution2,
+            string projectName,
+            Project solutionFolderProject)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            Project newProject = null;
+
+            if (solutionFolderProject != null)
+            {
+                foreach (ProjectItem project in solutionFolderProject.ProjectItems)
+                {
+                    newProject = project.Object as Project;
+                    if (project.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        newProject = null;
+                    }
+                }
+            }
+            else
+            {
+                foreach (Project project in solution2.Projects)
+                {
+                    if (project.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        newProject = project;
+                        break;
+                    }
+                }
+            }
+
+            return newProject;
         }
     }
 }

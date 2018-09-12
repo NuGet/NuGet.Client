@@ -1,11 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
+using System.Threading;
+using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -13,105 +13,114 @@ namespace API.Test
 {
     public static class InternalAPITestHook
     {
+        private static int _cacheUpdateEventCount = 0;
+        private static Action<object, NuGetEventArgs<string>> _cacheUpdateEventHandler = delegate (object sender, NuGetEventArgs<string> e)
+        {
+            _cacheUpdateEventCount++;
+        };
+
+        public static int CacheUpdateEventCount
+        {
+            get
+            {
+                return _cacheUpdateEventCount;
+            }
+
+            set
+            {
+                _cacheUpdateEventCount = value;
+            }
+        }
+
         public static void InstallLatestPackageApi(string id, bool prerelease)
         {
-            ThreadHelper.JoinableTaskFactory.Run(
-                async () =>
-                {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            var services = ServiceLocator.GetInstance<IVsPackageInstaller2>();
 
-                    var dte = ServiceLocator.GetDTE();
-                    var services = ServiceLocator.GetComponent<IVsPackageInstaller2>();
-
-                    foreach (EnvDTE.Project project in dte.Solution.Projects)
-                    {
-                        services.InstallLatestPackage(null, project, id, prerelease, false);
-                        return;
-                    }
-                });
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                services.InstallLatestPackage(null, project, id, prerelease, false);
+                return;
+            }
         }
 
         public static void InstallPackageApi(string id, string version)
         {
-            InstallPackageApi(source: null, id: id, version: version, prerelease: false);
+            InstallPackageApi(null, id, version, false);
         }
 
         public static void InstallPackageApi(string source, string id, string version, bool prerelease)
         {
-            ThreadHelper.JoinableTaskFactory.Run(
-                async () =>
-                {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageInstaller services = ServiceLocator.GetInstance<IVsPackageInstaller>();
 
-                    var dte = ServiceLocator.GetDTE();
-                    var services = ServiceLocator.GetComponent<IVsPackageInstaller>();
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                services.InstallPackage(source, project, id, version, prerelease);
+                return;
+            }
+        }
 
-                    foreach (EnvDTE.Project project in dte.Solution.Projects)
-                    {
-                        services.InstallPackage(source, project, id, version, prerelease);
-                        return;
-                    }
-                });
+        public static void InstallPackageApiBadSource(string id, string version)
+        {
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageInstaller services = ServiceLocator.GetInstance<IVsPackageInstaller>();
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                services.InstallPackage("http://packagesource", project, id, version, false);
+                return;
+            }
         }
 
         public static void UninstallPackageApi(string id, bool dependency)
         {
-            ThreadHelper.JoinableTaskFactory.Run(
-                async () =>
-                {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageUninstaller uninstaller = ServiceLocator.GetInstance<IVsPackageUninstaller>();
 
-                    var dte = ServiceLocator.GetDTE();
-                    var uninstaller = ServiceLocator.GetComponent<IVsPackageUninstaller>();
-
-                    foreach (EnvDTE.Project project in dte.Solution.Projects)
-                    {
-                        uninstaller.UninstallPackage(project, id, dependency);
-                        return;
-                    }
-                });
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                uninstaller.UninstallPackage(project, id, dependency);
+                return;
+            }
         }
 
         public static void RestorePackageApi()
         {
-            ThreadHelper.JoinableTaskFactory.Run(
-                async () =>
-                {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            EnvDTE.DTE dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            IVsPackageRestorer restorer = ServiceLocator.GetInstance<IVsPackageRestorer>();
 
-                    var dte = ServiceLocator.GetDTE();
-                    var restorer = ServiceLocator.GetComponent<IVsPackageRestorer>();
-
-                    foreach (EnvDTE.Project project in dte.Solution.Projects)
-                    {
-                        restorer.RestorePackages(project);
-                        return;
-                    }
-                });
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                restorer.RestorePackages(project);
+                return;
+            }
         }
 
         public static IVsPathContext GetVsPathContext(string projectUniqueName)
         {
-            var provider = ServiceLocator.GetComponent<IVsPathContextProvider>();
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            var factory = ServiceLocator.GetInstance<IVsPathContextProvider>();
 
-            IVsPathContext context;
-            if (provider.TryCreateContext(projectUniqueName, out context))
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
             {
-                return context;
+                if (project.UniqueName == projectUniqueName)
+                {
+                    return factory.CreateAsync(project, CancellationToken.None).Result;
+                }
             }
 
             return null;
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD002", Justification ="Task.Result for a completed task is safe here.")]
-        public static bool ExecuteInitScript(string id, string version, int timeoutSec = 30)
+        public static bool ExecuteInitScript(string id, string version)
         {
-            var scriptExecutor = ServiceLocator.GetComponent<IVsGlobalPackagesInitScriptExecutor>();
+            var scriptExecutor = ServiceLocator.GetInstance<IVsGlobalPackagesInitScriptExecutor>();
             // It is important that this method does not wait on ExecuteInitScriptAsync on the calling thread.
             // Calling thread is powershell execution thread and ExecuteInitScriptAsync needs to switch to
             // Powershell execution thread to execute the scripts
-            var task = Task.Run(() => scriptExecutor.ExecuteInitScriptAsync(id, version));
-            Task.WaitAny(task, Task.Delay(TimeSpan.FromSeconds(timeoutSec)));
+            var task = Task.Run(async () => await scriptExecutor.ExecuteInitScriptAsync(id, version));
+            Task.WaitAny(task, Task.Delay(30000));
             if (task.IsCompleted)
             {
                 return task.Result;
@@ -122,42 +131,54 @@ namespace API.Test
 
         public static bool BatchEventsApi(string id, string version)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(
-                async () =>
-                {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            var packageProjectEventService = ServiceLocator.GetInstance<IVsPackageInstallerProjectEvents>();
+            var installerServices = ServiceLocator.GetInstance<IVsPackageInstaller>();
+            var batchStartIds = new List<string>();
+            var batchEndIds = new List<string>();
 
-                    var dte = ServiceLocator.GetDTE();
-                    var packageProjectEventService = ServiceLocator.GetComponent<IVsPackageInstallerProjectEvents>();
-                    var installerServices = ServiceLocator.GetComponent<IVsPackageInstaller>();
-                    var batchStartIds = new List<string>();
-                    var batchEndIds = new List<string>();
+            packageProjectEventService.BatchStart += (args) =>
+            {
+                batchStartIds.Add(args.BatchId);
+            };
 
-                    packageProjectEventService.BatchStart += (args) =>
-                    {
-                        batchStartIds.Add(args.BatchId);
-                    };
+            packageProjectEventService.BatchEnd += (args) =>
+            {
+                batchEndIds.Add(args.BatchId);
+            };
 
-                    packageProjectEventService.BatchEnd += (args) =>
-                    {
-                        batchEndIds.Add(args.BatchId);
-                    };
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                installerServices.InstallPackage(null, project, id, version, false);
+            }
 
-                    foreach (EnvDTE.Project project in dte.Solution.Projects)
-                    {
-                        installerServices.InstallPackage(null, project, id, version, false);
-                    }
-
-                    return batchStartIds.Count == 1 &&
-                           batchEndIds.Count == 1 &&
-                           batchStartIds[0].Equals(batchEndIds[0], StringComparison.Ordinal);
-                });
+            return batchStartIds.Count == 1 &&
+                   batchEndIds.Count == 1 &&
+                   batchStartIds[0].Equals(batchEndIds[0], StringComparison.Ordinal);
         }
 
-        public static async Task<IVsProjectJsonToPackageReferenceMigrateResult> MigrateJsonProject(string projectName)
+        public static void ProjectCacheEventApi_AttachHandler()
         {
-            var migrator = ServiceLocator.GetComponent<IVsProjectJsonToPackageReferenceMigrator>();
-            return (IVsProjectJsonToPackageReferenceMigrateResult)await migrator.MigrateProjectJsonToPackageReferenceAsync(projectName);
+            var vsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            vsSolutionManager.AfterNuGetCacheUpdated += _cacheUpdateEventHandler.Invoke;
+        }
+
+
+        public static void ProjectCacheEventApi_InstallPackage(string id, string version)
+        {
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            var vsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            var installerServices = ServiceLocator.GetInstance<IVsPackageInstaller>();
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                installerServices.InstallPackage(null, project, id, version, false);
+            }
+        }
+
+        public static void ProjectCacheEventApi_DetachHandler()
+        {
+            var vsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            vsSolutionManager.AfterNuGetCacheUpdated -= _cacheUpdateEventHandler.Invoke;
         }
     }
 }

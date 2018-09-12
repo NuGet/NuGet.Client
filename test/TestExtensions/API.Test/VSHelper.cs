@@ -1,12 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace API.Test
@@ -15,34 +14,48 @@ namespace API.Test
     {
         public static string GetVSVersion()
         {
-            return ThreadHelper.JoinableTaskFactory.Run(() => GetVSVersionAsync());
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                var version = await GetVSVersionAsync();
+                return version;
+            });
         }
 
-        private static EnvDTE.Window PSWindow = null;
-
+        private static Window PSWindow = null;
         public static void StorePSWindow()
         {
-            ThreadHelper.JoinableTaskFactory.Run(() => StorePSWindowAsync());
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await StorePSWindowAsync();
+            });
         }
 
         private static async Task StorePSWindowAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = ServiceLocator.GetDTE();
+            var dte = ServiceLocator.GetInstance<DTE>();
             PSWindow = dte.ActiveWindow;
         }
 
         public static void FocusStoredPSWindow()
         {
-            ThreadHelper.JoinableTaskFactory.Run(() => FocusStoredPSWindowAsync());
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await FocusStoredPSWindowAsync();
+            });
         }
 
         private static async Task FocusStoredPSWindowAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            PSWindow?.SetFocus();
+            if (PSWindow == null)
+            {
+                throw new InvalidOperationException("There is no stored PSWindow");
+            }
+
+            PSWindow.SetFocus();
             PSWindow = null;
         }
 
@@ -50,7 +63,7 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = ServiceLocator.GetDTE();
+            var dte = ServiceLocator.GetInstance<DTE>();
             var version = dte.Version;
 
             return version;
@@ -58,7 +71,11 @@ namespace API.Test
 
         public static string GetBuildOutput()
         {
-            return ThreadHelper.JoinableTaskFactory.Run(() => GetBuildOutputAsync());
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                var text = await GetBuildOutputAsync();
+                return text;
+            });
         }
 
         private static string BuildOutputPaneName = "Build";
@@ -66,7 +83,7 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = ServiceLocator.GetDTE();
+            var dte = ServiceLocator.GetInstance<DTE>();
             var dte2 = (DTE2)dte;
             var buildPane = dte2.ToolWindows.OutputWindow.OutputWindowPanes.Item(BuildOutputPaneName);
             var doc = buildPane.TextDocument;
@@ -79,14 +96,17 @@ namespace API.Test
 
         public static void NewTextFile()
         {
-            ThreadHelper.JoinableTaskFactory.Run(() => NewTextFileAsync());
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await NewTextFileAsync();
+            });
         }
 
         private static async Task NewTextFileAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = ServiceLocator.GetDTE();
+            var dte = ServiceLocator.GetInstance<DTE>();
             dte.ItemOperations.NewFile("General\\Text File");
             dte.ActiveDocument.Object("TextDocument");
         }
@@ -96,11 +116,11 @@ namespace API.Test
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = ServiceLocator.GetDTE();
+            var dte = ServiceLocator.GetInstance<DTE>();
             dte.ExecuteCommand("View.ErrorList", " ");
 
-            EnvDTE.Window errorListWindow = null;
-            foreach (EnvDTE.Window window in dte.Windows)
+            Window errorListWindow = null;
+            foreach (Window window in dte.Windows)
             {
                 if (window.Caption.StartsWith(ErrorListWindowCaption, System.StringComparison.OrdinalIgnoreCase))
                 {
@@ -114,7 +134,7 @@ namespace API.Test
                 throw new InvalidOperationException("Unable to locate the error list");
             }
 
-            var errorList = errorListWindow.Object as ErrorList;
+            ErrorList errorList = errorListWindow.Object as ErrorList;
             if (errorList == null)
             {
                 throw new InvalidOperationException("Unable to retrieve the error list");
@@ -148,7 +168,11 @@ namespace API.Test
 
         public static string[] GetErrors()
         {
-            return ThreadHelper.JoinableTaskFactory.Run(() => GetErrorsAsync());
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                var errors = await GetErrorsAsync();
+                return errors;
+            });
         }
 
         private static async Task<string[]> GetErrorsAsync()
@@ -162,7 +186,11 @@ namespace API.Test
 
         public static string[] GetWarnings()
         {
-            return ThreadHelper.JoinableTaskFactory.Run(() =>GetWarningsAsync());
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                var warnings = await GetWarningsAsync();
+                return warnings;
+            });
         }
 
         private static async Task<string[]> GetWarningsAsync()
