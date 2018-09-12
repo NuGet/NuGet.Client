@@ -83,7 +83,7 @@ namespace NuGet.Packaging.Licenses
                             operatorStack.Push(token);
                         }
                         // An operator that has lower/same priority than the operator on the stack
-                        else if (token.TokenType >= operatorStack.Peek().TokenType) // TODO NK - safeguard for overpopping here. Don't 
+                        else if (token.TokenType >= operatorStack.Peek().TokenType)
                         {
                             ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression);
                             operatorStack.Push(token);
@@ -108,7 +108,9 @@ namespace NuGet.Packaging.Licenses
                 }
             }
 
-            return rightHandSideExpression == null ? leftHandSideExpression : null; //TODO NK - A WITH B C WITH D
+            return rightHandSideExpression == null ? // We cannot have 2 "dangling" expressions. While impossible to happen in the current implementation, this safeguards for future refactoring
+                leftHandSideExpression :
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
         }
 
         private static void ProcessOperators(Stack<LicenseExpressionToken> operatorStack, Stack<LicenseExpressionToken> operandStack, ref NuGetLicenseExpression leftHandSideExpression, ref NuGetLicenseExpression rightHandSideExpression)
@@ -131,7 +133,7 @@ namespace NuGet.Packaging.Licenses
                 }
                 else
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));//  TODO NK - add tests ex. A WITH B C WITH D OR E
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
                 }
             }
             else

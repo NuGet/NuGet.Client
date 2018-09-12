@@ -11,6 +11,7 @@ namespace NuGet.Packaging.Test
     public class LicenseExpressionEvaluatorTests
     {
         // TODO NK - Add tests with plus
+        // TODO NK - Add tests that try to mess with the precedence of operators
         [Theory]
         [InlineData("MIT OR LPL-1.0", "MIT OR LPL-1.0", "OR")]
         [InlineData("MIT AND LPL-1.0", "MIT AND LPL-1.0", "AND")]
@@ -64,6 +65,7 @@ namespace NuGet.Packaging.Test
         [InlineData("MIT (AND LPL-1.0)")]
         [InlineData("MIT  () OR LPL-1.0")]
         [InlineData("MIT OR GPL-1.0 (WITH E8 OR LPL-1.0)")]
+        [InlineData("A WITH B C WITH D")]
         public void LicenseExpressionEvaluator_EvaluateThrowsWhenBracketsDoNotMatch(string infix)
         {
             Assert.Throws<ArgumentException>(() => LicenseExpressionEvaluator.Evaluate(new LicenseExpressionTokenizer(infix).Tokenize().ToArray()));
@@ -74,7 +76,9 @@ namespace NuGet.Packaging.Test
         [InlineData("MIT LPL-1.0 GPL-1.0 E8 WITH OR OR")]
         [InlineData("OR MIT (GPL-1.0 E8 WITH)")]
         [InlineData("MIT WITH GPL-1.0 WITH E8 WITH LPL-1.0")]
-        public void LicenseExpressionEvaluator_EvaluateNotInfixExpressionThrows(string infix)
+        [InlineData("A WITH B C WITH D")]
+        [InlineData("A WITH B C WITH D OR E")]
+        public void LicenseExpressionEvaluator_EvaluateThrowsIfExpressionIsInvalid(string infix)
         {
             Assert.Throws<ArgumentException>(() => LicenseExpressionEvaluator.Evaluate(new LicenseExpressionTokenizer(infix).Tokenize().ToArray()));
         }
