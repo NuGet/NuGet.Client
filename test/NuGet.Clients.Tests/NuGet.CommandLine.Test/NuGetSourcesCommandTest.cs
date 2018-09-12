@@ -87,7 +87,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
 
                 var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
-                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.Name, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
+                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.ElementName, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
                 Assert.NotNull(credentialItem);
 
                 Assert.Equal("test_user_name", credentialItem.Username);
@@ -135,7 +135,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
 
                 var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
-                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.Name, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
+                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.ElementName, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
                 Assert.NotNull(credentialItem);
 
                 Assert.Equal("test_user_name", credentialItem.Username);
@@ -194,7 +194,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
 
                 var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
-                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.Name, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
+                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.ElementName, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
                 Assert.NotNull(credentialItem);
 
                 Assert.Equal("test_user_name", credentialItem.Username);

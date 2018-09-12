@@ -12,7 +12,7 @@ namespace NuGet.Configuration
 {
     public class AddItem : SettingItem, IEquatable<AddItem>
     {
-        public override string Name => ConfigurationConstants.Add;
+        public override string ElementName => ConfigurationConstants.Add;
 
         public string Key => Attributes[ConfigurationConstants.KeyAttribute];
 

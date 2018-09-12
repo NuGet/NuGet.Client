@@ -1130,7 +1130,7 @@ namespace NuGet.Configuration.Test
                 sourcesCredentialsSection.Items.Count.Should().Be(1);
                 var two = sourcesCredentialsSection.Items.FirstOrDefault() as CredentialsItem;
                 two.Should().NotBeNull();
-                two.Name.Should().Be("twoname");
+                two.ElementName.Should().Be("twoname");
                 two.Username.Should().Be("User");
                 two.IsPasswordClearText.Should().BeFalse();
                 two.Password.Should().Be(encryptedPassword);
@@ -1185,7 +1185,7 @@ namespace NuGet.Configuration.Test
                 sourcesCredentialsSection.Items.Count.Should().Be(1);
                 var two = sourcesCredentialsSection.Items.FirstOrDefault() as CredentialsItem;
                 two.Should().NotBeNull();
-                two.Name.Should().Be("twoname");
+                two.ElementName.Should().Be("twoname");
                 two.Username.Should().Be("User");
                 two.IsPasswordClearText.Should().BeTrue();
                 two.Password.Should().Be("password");

@@ -734,7 +734,7 @@ namespace NuGet.Configuration
                 return new List<string>().AsReadOnly();
             }
 
-            return sectionElement.Items.Where(c => c is CredentialsItem || c is UnknownItem).Select(i => i.Name).ToList().AsReadOnly();
+            return sectionElement.Items.Where(c => c is CredentialsItem || c is UnknownItem).Select(i => i.ElementName).ToList().AsReadOnly();
         }
 
         [Obsolete("GetSettingValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
@@ -804,7 +804,7 @@ namespace NuGet.Configuration
             {
                 var settingValues = new List<SettingValue>();
 
-                if (string.Equals(i.Name, subSection, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(i.ElementName, subSection, StringComparison.OrdinalIgnoreCase))
                 {
                     if (i is CredentialsItem credentials)
                     {
@@ -946,7 +946,7 @@ namespace NuGet.Configuration
                 try
                 {
                     var sectionElement = GetSection(section);
-                    var item = sectionElement?.Items.Where(c => string.Equals(c.Name, subsection, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    var item = sectionElement?.Items.Where(c => string.Equals(c.ElementName, subsection, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
                     if (item != null)
                     {
@@ -1001,7 +1001,7 @@ namespace NuGet.Configuration
 
             if (_computedSections.TryGetValue(section, out var sectionElement) && values.Any())
             {
-                var subsectionItem = sectionElement.Items.FirstOrDefault(c => string.Equals(c.Name, subsection, StringComparison.OrdinalIgnoreCase));
+                var subsectionItem = sectionElement.Items.FirstOrDefault(c => string.Equals(c.ElementName, subsection, StringComparison.OrdinalIgnoreCase));
 
                 if (subsectionItem != null)
                 {

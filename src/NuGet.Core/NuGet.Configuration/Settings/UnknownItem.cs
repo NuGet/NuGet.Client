@@ -11,7 +11,7 @@ namespace NuGet.Configuration
 {
     public sealed class UnknownItem : SettingItem, ISettingsGroup, IEquatable<UnknownItem>
     {
-        public override string Name { get; protected set; }
+        public override string ElementName { get; protected set; }
 
         public IReadOnlyList<SettingBase> Children => MutableChildren.Select(c => c.Value).ToList().AsReadOnly();
 
@@ -26,7 +26,7 @@ namespace NuGet.Configuration
         internal UnknownItem(XElement element, SettingsFile origin)
             : base(element, origin)
         {
-            Name = element.Name.LocalName;
+            ElementName = element.Name.LocalName;
             MutableChildren = new Dictionary<SettingBase, SettingBase>();
 
             var descendants = element.Nodes().Where(n => n is XText text && !string.IsNullOrWhiteSpace(text.Value) || n is XElement)
@@ -48,7 +48,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(name));
             }
 
-            Name = name;
+            ElementName = name;
             MutableChildren = new Dictionary<SettingBase, SettingBase>();
 
             if (children != null)
@@ -61,7 +61,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal override SettingBase Clone() => new UnknownItem(Name, Attributes, Children.Select(c => c.Clone())) { Origin = Origin };
+        internal override SettingBase Clone() => new UnknownItem(ElementName, Attributes, Children.Select(c => c.Clone())) { Origin = Origin };
 
         internal bool Add(SettingBase setting)
         {
@@ -132,7 +132,7 @@ namespace NuGet.Configuration
                 return Node;
             }
 
-            var element = new XElement(Name, Children.Select(c => c.AsXNode()));
+            var element = new XElement(ElementName, Children.Select(c => c.AsXNode()));
             foreach (var attr in Attributes)
             {
                 element.SetAttributeValue(attr.Key, attr.Value);
@@ -153,7 +153,7 @@ namespace NuGet.Configuration
                 return true;
             }
 
-            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(ElementName, other.ElementName, StringComparison.OrdinalIgnoreCase);
         }
 
         public bool DeepEquals(UnknownItem other)
@@ -168,7 +168,7 @@ namespace NuGet.Configuration
                 return true;
             }
 
-            return string.Equals(Name, other.Name, StringComparison.Ordinal) &&
+            return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal) &&
                 other.Attributes.Count == Attributes.Count &&
                 Attributes.OrderedEquals(other.Attributes, data => data.Key, StringComparer.OrdinalIgnoreCase) &&
                 Children.SequenceEqual(other.Children);
@@ -177,7 +177,7 @@ namespace NuGet.Configuration
         public override bool Equals(SettingBase other) => Equals(other as UnknownItem);
         public override bool DeepEquals(SettingBase other) => DeepEquals(other as UnknownItem);
         public override bool Equals(object other) => Equals(other as UnknownItem);
-        public override int GetHashCode() => Name.GetHashCode();
+        public override int GetHashCode() => ElementName.GetHashCode();
 
         internal override void Update(SettingItem other)
         {

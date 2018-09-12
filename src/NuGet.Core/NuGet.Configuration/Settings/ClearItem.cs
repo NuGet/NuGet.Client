@@ -9,7 +9,7 @@ namespace NuGet.Configuration
 {
     public sealed class ClearItem : SettingItem, IEquatable<ClearItem>
     {
-        public override string Name => ConfigurationConstants.Clear;
+        public override string ElementName => ConfigurationConstants.Clear;
 
         internal override bool IsEmpty() => false;
 
@@ -27,7 +27,7 @@ namespace NuGet.Configuration
         public override bool DeepEquals(SettingBase other) => Equals(other as ClearItem);
         public override bool Equals(SettingBase other) => Equals(other as ClearItem);
         public override bool Equals(object other) => Equals(other as ClearItem);
-        public override int GetHashCode() => Name.GetHashCode();
+        public override int GetHashCode() => ElementName.GetHashCode();
 
         internal ClearItem(XElement element, SettingsFile origin)
             : base(element, origin)

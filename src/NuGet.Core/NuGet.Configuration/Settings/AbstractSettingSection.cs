@@ -11,7 +11,7 @@ namespace NuGet.Configuration
     public sealed class AbstractSettingSection : SettingSection
     {
         internal AbstractSettingSection(SettingSection section)
-            : this(section.Name, section.Attributes, section.Items)
+            : this(section.ElementName, section.Attributes, section.Items)
         {
         }
 
@@ -151,7 +151,7 @@ namespace NuGet.Configuration
 
         internal override SettingBase Clone()
         {
-            return new AbstractSettingSection(Name, Attributes, Items.Select(s => s.Clone() as SettingItem));
+            return new AbstractSettingSection(ElementName, Attributes, Items.Select(s => s.Clone() as SettingItem));
         }
     }
 }

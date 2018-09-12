@@ -15,7 +15,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Text that differentiates element tag
         /// </summary>
-        public virtual string Name { get; protected set; }
+        public virtual string ElementName { get; protected set; }
 
         /// <summary>
         /// Specifies the keys for the attributes that the element can have
@@ -113,7 +113,7 @@ namespace NuGet.Configuration
                 return Node;
             }
 
-            var element = new XElement(Name);
+            var element = new XElement(ElementName);
 
             foreach (var attr in Attributes)
             {

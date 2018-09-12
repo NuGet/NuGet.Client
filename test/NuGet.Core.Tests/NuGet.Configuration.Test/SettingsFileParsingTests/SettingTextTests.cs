@@ -79,7 +79,7 @@ namespace NuGet.Configuration.Test
 
                 text.Value = "This is another test";
 
-                settingsFile.AddOrUpdate("SectionName", new UnknownItem(item.Name, attributes: null, children: new List<SettingBase>() { text }));
+                settingsFile.AddOrUpdate("SectionName", new UnknownItem(item.ElementName, attributes: null, children: new List<SettingBase>() { text }));
 
                 section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();

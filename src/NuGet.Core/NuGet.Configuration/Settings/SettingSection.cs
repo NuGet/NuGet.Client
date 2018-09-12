@@ -23,7 +23,7 @@ namespace NuGet.Configuration
         protected SettingSection(string name, IReadOnlyDictionary<string, string> attributes, IEnumerable<SettingItem> children)
             : base(attributes, children)
         {
-            Name = XmlConvert.EncodeLocalName(name) ?? throw new ArgumentNullException(nameof(name));
+            ElementName = XmlConvert.EncodeLocalName(name) ?? throw new ArgumentNullException(nameof(name));
         }
 
         internal SettingSection(XElement element, SettingsFile origin)
@@ -67,7 +67,7 @@ namespace NuGet.Configuration
                 return true;
             }
 
-            return string.Equals(Name, other.Name, StringComparison.Ordinal);
+            return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal);
         }
 
         public bool DeepEquals(SettingSection other)
@@ -82,13 +82,13 @@ namespace NuGet.Configuration
                 return true;
             }
 
-            return string.Equals(Name, other.Name, StringComparison.Ordinal) &&
+            return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal) &&
                 Items.SequenceEqual(other.Items);
         }
 
         public override bool DeepEquals(SettingBase other) => DeepEquals(other as SettingSection);
         public override bool Equals(SettingBase other) => Equals(other as SettingSection);
         public override bool Equals(object other) => Equals(other as SettingSection);
-        public override int GetHashCode() => Name.GetHashCode();
+        public override int GetHashCode() => ElementName.GetHashCode();
     }
 }

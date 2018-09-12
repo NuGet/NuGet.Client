@@ -204,7 +204,7 @@ namespace NuGet.Configuration
             }
 
             var credentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
-            var credentialsItem = credentialsSection?.Items.Select(c => c as CredentialsItem).Where(s => s != null).FirstOrDefault(s => string.Equals(s.Name, sourceName, StringComparison.Ordinal));
+            var credentialsItem = credentialsSection?.Items.Select(c => c as CredentialsItem).Where(s => s != null).FirstOrDefault(s => string.Equals(s.ElementName, sourceName, StringComparison.Ordinal));
 
             if (credentialsItem != null && !credentialsItem.IsEmpty())
             {
@@ -313,7 +313,7 @@ namespace NuGet.Configuration
                 .Where(s => s != null);
 
             var sourcesToRemove = sourcesSettings?.Where(s => string.Equals(s.Key, name, StringComparison.OrdinalIgnoreCase));
-            var credentialsToRemove = sourceCredentialsSettings?.Where(s => string.Equals(s.Name, name, StringComparison.OrdinalIgnoreCase));
+            var credentialsToRemove = sourceCredentialsSettings?.Where(s => string.Equals(s.ElementName, name, StringComparison.OrdinalIgnoreCase));
 
             if (sourcesToRemove != null)
             {
@@ -461,7 +461,7 @@ namespace NuGet.Configuration
                 {
                     // get list of disabled packages
                     var disabledSourcesSection = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
-                    disabledSourceItem = disabledSourcesSection?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, sourceToUpdate.Name);
+                    disabledSourceItem = disabledSourcesSection?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, sourceToUpdate.ElementName);
                 }
 
                 if (updateCredentials)
@@ -469,7 +469,7 @@ namespace NuGet.Configuration
                     // get list of credentials for sources
                     var credentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
                     credentialsSettingsItem = credentialsSection?.Items.Select(s => s as CredentialsItem)
-                        .Where(s => s != null).Where(s => string.Equals(s.Name, sourceToUpdate.Key, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                        .Where(s => s != null).Where(s => string.Equals(s.ElementName, sourceToUpdate.Key, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 }
 
                 var oldPackageSource = ReadPackageSource(sourceToUpdate, disabledSourceItem == null);
@@ -609,7 +609,7 @@ namespace NuGet.Configuration
 
             var credentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
             var existingCredentials = credentialsSection?.Items.Select(c => c as CredentialsItem).Where(c => c != null);
-            var existingCredentialsLookup = existingCredentials?.ToDictionary(setting => setting.Name, StringComparer.OrdinalIgnoreCase);
+            var existingCredentialsLookup = existingCredentials?.ToDictionary(setting => setting.ElementName, StringComparer.OrdinalIgnoreCase);
 
             foreach (var source in sources)
             {
@@ -654,7 +654,7 @@ namespace NuGet.Configuration
                 var sourceCredentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
                 var sourceCredentialsSettings = sourceCredentialsSection?.Items.Select(s => s as CredentialsItem)
                     .Where(s => s != null);
-                var existingsourceCredentialsLookup = sourceCredentialsSettings?.ToDictionary(setting => setting.Name, StringComparer.OrdinalIgnoreCase);
+                var existingsourceCredentialsLookup = sourceCredentialsSettings?.ToDictionary(setting => setting.ElementName, StringComparer.OrdinalIgnoreCase);
 
                 foreach (var sourceItem in existingSettingsLookup)
                 {

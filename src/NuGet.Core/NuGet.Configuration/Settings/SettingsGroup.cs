@@ -39,7 +39,7 @@ namespace NuGet.Configuration
         internal SettingsGroup(XElement element, SettingsFile origin)
             : base(element, origin)
         {
-            Name = element.Name.LocalName;
+            ElementName = element.Name.LocalName;
 
             ChildrenSet = SettingFactory.ParseChildren<T>(element, origin, CanBeCleared).ToDictionary(c => c, c => c);
         }
@@ -51,7 +51,7 @@ namespace NuGet.Configuration
                 return Node;
             }
 
-            var element = new XElement(Name, ChildrenSet.Select(c => c.Value.AsXNode()));
+            var element = new XElement(ElementName, ChildrenSet.Select(c => c.Value.AsXNode()));
 
             foreach (var attr in Attributes)
             {

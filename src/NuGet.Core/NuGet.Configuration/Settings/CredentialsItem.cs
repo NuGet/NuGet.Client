@@ -17,7 +17,7 @@ namespace NuGet.Configuration
     /// </summary>
     public sealed class CredentialsItem : SettingItem, IEquatable<CredentialsItem>
     {
-        public override string Name { get; protected set; }
+        public override string ElementName { get; protected set; }
 
         public string Username
         {
@@ -117,7 +117,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(password));
             }
 
-            Name = name;
+            ElementName = name;
 
             _username = new AddItem(ConfigurationConstants.UsernameToken, username);
 
@@ -135,7 +135,7 @@ namespace NuGet.Configuration
         internal CredentialsItem(XElement element, SettingsFile origin)
             : base(element, origin)
         {
-            Name = element.Name.LocalName;
+            ElementName = element.Name.LocalName;
 
             var elementDescendants = element.Elements();
             var countOfDescendants = elementDescendants.Count();
@@ -177,7 +177,7 @@ namespace NuGet.Configuration
 
         internal override SettingBase Clone()
         {
-            return new CredentialsItem(Name, Username, Password, IsPasswordClearText, ValidAuthenticationTypes) { Origin = Origin };
+            return new CredentialsItem(ElementName, Username, Password, IsPasswordClearText, ValidAuthenticationTypes) { Origin = Origin };
         }
 
         internal override XNode AsXNode()
@@ -187,7 +187,7 @@ namespace NuGet.Configuration
                 return Node;
             }
 
-            var element = new XElement(Name,
+            var element = new XElement(ElementName,
                 _username.AsXNode(),
                 _password.AsXNode());
 
@@ -216,7 +216,7 @@ namespace NuGet.Configuration
                 return true;
             }
 
-            return string.Equals(Name, other.Name, StringComparison.Ordinal);
+            return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal);
         }
 
         public bool DeepEquals(CredentialsItem other)
@@ -235,7 +235,7 @@ namespace NuGet.Configuration
                 string.IsNullOrEmpty(other.ValidAuthenticationTypes) :
                 string.Equals(ValidAuthenticationTypes, other.ValidAuthenticationTypes, StringComparison.Ordinal);
 
-            return string.Equals(Name, other.Name, StringComparison.Ordinal)
+            return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal)
                 && string.Equals(Username, other.Username, StringComparison.Ordinal)
                 && IsPasswordClearText == other.IsPasswordClearText
                 && string.Equals(Password, other.Password, StringComparison.Ordinal)
@@ -245,7 +245,7 @@ namespace NuGet.Configuration
         public override bool DeepEquals(SettingBase other) => DeepEquals(other as CredentialsItem);
         public override bool Equals(SettingBase other) => Equals(other as CredentialsItem);
         public override bool Equals(object other) => Equals(other as CredentialsItem);
-        public override int GetHashCode() => Name.GetHashCode();
+        public override int GetHashCode() => ElementName.GetHashCode();
 
         /// <remarks>
         /// This method is internal because it updates directly the xElement behind this abstraction.

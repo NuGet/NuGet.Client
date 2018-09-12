@@ -153,7 +153,7 @@ namespace NuGet.Configuration.Test
             ex.Should().BeOfType<InvalidOperationException>();
             ex.Message.Should().Be("The item passed to the Update method cannot refer to a different item than the one being updated.");
 
-            credentials.Name.Should().Be("name");
+            credentials.ElementName.Should().Be("name");
             credentials.Username.Should().Be("user");
             credentials.Password.Should().Be("pass");
         }

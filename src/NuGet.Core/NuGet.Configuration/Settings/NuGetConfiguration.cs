@@ -10,9 +10,9 @@ namespace NuGet.Configuration
 {
     internal sealed class NuGetConfiguration : SettingsGroup<SettingSection>, IEquatable<NuGetConfiguration>, ISettingsGroup
     {
-        public override string Name => ConfigurationConstants.Configuration;
+        public override string ElementName => ConfigurationConstants.Configuration;
 
-        internal IReadOnlyDictionary<string, SettingSection> Sections => ChildrenSet.Select(c => c.Value).ToDictionary(c => c.Name);
+        internal IReadOnlyDictionary<string, SettingSection> Sections => ChildrenSet.Select(c => c.Value).ToDictionary(c => c.ElementName);
 
         protected override HashSet<string> AllowedAttributes => new HashSet<string>();
 
@@ -56,7 +56,7 @@ namespace NuGet.Configuration
         internal NuGetConfiguration(XElement element, SettingsFile origin)
             : base(element, origin)
         {
-            if (element.Name != Name)
+            if (element.Name != ElementName)
             {
                 throw new NuGetConfigurationException(
                          string.Format(Resources.ShowError_ConfigRootInvalid, origin.ConfigFilePath));
@@ -126,7 +126,7 @@ namespace NuGet.Configuration
             // loop through the current element's sections: merge any overlapped sections, add any missing section
             foreach (var section in Sections)
             {
-                if (sectionsContainer.TryGetValue(section.Value.Name, out var settingsSection))
+                if (sectionsContainer.TryGetValue(section.Value.ElementName, out var settingsSection))
                 {
                     settingsSection.Merge(section.Value);
                 }
