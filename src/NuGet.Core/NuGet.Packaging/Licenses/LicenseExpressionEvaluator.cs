@@ -17,8 +17,6 @@ namespace NuGet.Packaging.Licenses
         public static NuGetLicenseExpression Evaluate(LicenseExpressionToken[] infixTokens)
         {
             var operatorStack = new Stack<LicenseExpressionToken>();
-            var infixStack = GetStackFromInfixTokens(infixTokens);
-
             var operandStack = new Stack<LicenseExpressionToken>();
             NuGetLicenseExpression leftHandSideExpression = null;
             NuGetLicenseExpression rightHandSideExpression = null;
@@ -26,23 +24,23 @@ namespace NuGet.Packaging.Licenses
             var lastTokenType = LicenseTokenType.VALUE;
             var firstPass = true;
 
-            while (infixStack.Count > 0)
+            foreach (var token in infixTokens)
             {
-                var currentTokenType = infixStack.Peek().TokenType;
-                switch (infixStack.Peek().TokenType)
+                var currentTokenType = token.TokenType;
+                switch (token.TokenType)
                 {
                     case LicenseTokenType.OPENING_BRACKET:
-                        if (!firstPass && !infixStack.Peek().TokenType.IsValidPrecedingToken(lastTokenType))
+                        if (!firstPass && !token.TokenType.IsValidPrecedingToken(lastTokenType))
                         {
-                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidToken, infixStack.Peek().Value));
+                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidToken, token.Value));
                         }
-                        operatorStack.Push(infixStack.Pop());
+                        operatorStack.Push(token);
                         break;
 
                     case LicenseTokenType.CLOSING_BRACKET:
-                        if (firstPass || !infixStack.Peek().TokenType.IsValidPrecedingToken(lastTokenType))
+                        if (firstPass || !token.TokenType.IsValidPrecedingToken(lastTokenType))
                         {
-                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidToken, infixStack.Peek().Value));
+                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidToken, token.Value));
                         }
 
                         // pop until we hit the opening bracket
@@ -60,37 +58,35 @@ namespace NuGet.Packaging.Licenses
                         {
                             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_MismatchedParenthesis));
                         }
-
-                        infixStack.Pop();
                         break;
 
                     case LicenseTokenType.VALUE:
-                        if (!firstPass && !infixStack.Peek().TokenType.IsValidPrecedingToken(lastTokenType))
+                        if (!firstPass && !token.TokenType.IsValidPrecedingToken(lastTokenType))
                         {
-                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidToken, infixStack.Peek().Value));
+                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidToken, token.Value));
                         }
                         // Add it to the operandstack. Only add it to the expression when you meet an operator
-                        operandStack.Push(infixStack.Pop());
+                        operandStack.Push(token);
                         break;
 
                     case LicenseTokenType.WITH:
                     case LicenseTokenType.AND:
                     case LicenseTokenType.OR:
-                        if (firstPass && !infixStack.Peek().TokenType.IsValidPrecedingToken(lastTokenType))
+                        if (firstPass && !token.TokenType.IsValidPrecedingToken(lastTokenType))
                         {
-                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidToken, infixStack.Peek().Value));
+                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidToken, token.Value));
                         }
                         if (operatorStack.Count == 0 || // The operator stack is empty
                             operatorStack.Peek().TokenType == LicenseTokenType.OPENING_BRACKET || // The last token is an opening bracket (treat it the same as empty
-                            infixStack.Peek().TokenType < operatorStack.Peek().TokenType) // An operator that has higher priority than the operator on the stack
+                            token.TokenType < operatorStack.Peek().TokenType) // An operator that has higher priority than the operator on the stack
                         {
-                            operatorStack.Push(infixStack.Pop());
+                            operatorStack.Push(token);
                         }
                         // An operator that has lower/same priority than the operator on the stack
-                        else if (infixStack.Peek().TokenType >= operatorStack.Peek().TokenType) // TODO NK - safeguard for overpopping here. Don't 
+                        else if (token.TokenType >= operatorStack.Peek().TokenType) // TODO NK - safeguard for overpopping here. Don't 
                         {
                             ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression);
-                            operatorStack.Push(infixStack.Pop());
+                            operatorStack.Push(token);
                         }
                         break;
                     default:
@@ -172,17 +168,6 @@ namespace NuGet.Packaging.Licenses
             return stack.Count > 0 ?
                 stack.Pop() :
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
-        }
-
-        private static Stack<LicenseExpressionToken> GetStackFromInfixTokens(LicenseExpressionToken[] infixTokens)
-        {
-            var infixStack = new Stack<LicenseExpressionToken>();
-
-            for (var i = infixTokens.Length - 1; i >= 0; i--)
-            {
-                infixStack.Push(infixTokens[i]);
-            }
-            return infixStack;
         }
     }
 }

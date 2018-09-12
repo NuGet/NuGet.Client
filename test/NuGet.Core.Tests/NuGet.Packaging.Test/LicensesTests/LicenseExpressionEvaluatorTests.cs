@@ -44,7 +44,7 @@ namespace NuGet.Packaging.Test
                 var expression = postfixExpression as LogicalOperator;
                 Assert.Equal(expression.LogicalOperatorType, logicalOperator);
             }
-            else if (rootOperator.Equals("with", StringComparison.OrdinalIgnoreCase))
+            else if (rootOperator.Equals("WITH", StringComparison.OrdinalIgnoreCase))
             {
                 var expression = postfixExpression as WithOperator;
                 Assert.NotNull(expression);
