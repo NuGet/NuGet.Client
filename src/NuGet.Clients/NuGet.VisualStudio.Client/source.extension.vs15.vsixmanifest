@@ -20,11 +20,12 @@
     <InstallationTarget Id="Microsoft.VisualStudio.VSWinDesktopExpress" Version="[15.0,16.0)" />
   </Installation>
   <Assets>
-    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="NuGet.Tools" Path="|NuGet.Tools;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.PackageManagement.VisualStudio" Path="|NuGet.PackageManagement.VisualStudio|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.PackageManagement.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.PackageManagement.UI.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.ProjectManagement.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.Tools" Path="|NuGet.Tools|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Protocol.VisualStudio.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.Console" Path="|NuGet.Console|" />
