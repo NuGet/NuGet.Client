@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Xunit;
 
 namespace NuGet.Versioning.Test
@@ -20,7 +21,7 @@ namespace NuGet.Versioning.Test
             var version = NuGetVersion.Parse(versionString);
 
             // act
-            var s = string.Format(formatter, "{0:F}", version);
+            var s = String.Format(formatter, "{0:F}", version);
             var s2 = version.ToString("F", formatter);
 
             // assert
@@ -41,7 +42,7 @@ namespace NuGet.Versioning.Test
             var version = NuGetVersion.Parse(versionString);
 
             // act
-            var s = string.Format(formatter, "{0:N}", version);
+            var s = String.Format(formatter, "{0:N}", version);
             var s2 = version.ToString("N", formatter);
 
             // assert
@@ -60,7 +61,7 @@ namespace NuGet.Versioning.Test
             var version = NuGetVersion.Parse(versionString);
 
             // act
-            var s = string.Format(formatter, "{0:M}", version);
+            var s = String.Format(formatter, "{0:M}", version);
             var s2 = version.ToString("M", formatter);
 
             // assert
@@ -80,7 +81,7 @@ namespace NuGet.Versioning.Test
             var version = NuGetVersion.Parse(versionString);
 
             // act
-            var s = string.Format(formatter, "{0:R}", version);
+            var s = String.Format(formatter, "{0:R}", version);
             var s2 = version.ToString("R", formatter);
 
             // assert
@@ -100,7 +101,7 @@ namespace NuGet.Versioning.Test
             var version = NuGetVersion.Parse(versionString);
 
             // act
-            var s = string.Format(formatter, "{0:V}", version);
+            var s = String.Format(formatter, "{0:V}", version);
             var s2 = version.ToString("V", formatter);
 
             // assert
@@ -120,7 +121,7 @@ namespace NuGet.Versioning.Test
             var version = NuGetVersion.Parse(versionString);
 
             // act
-            var s = string.Format(formatter, "{0:x}.{0:x}.{0:y}.{0:z}.{0:r}({0:M})*{0:R}: {0:V}", version, version, version, version, version, version, version, version);
+            var s = String.Format(formatter, "{0:x}.{0:x}.{0:y}.{0:z}.{0:r}({0:M})*{0:R}: {0:V}", version, version, version, version, version, version, version, version);
             var s2 = version.ToString("x.x.y.z.r(M)*R: V", formatter);
 
             // assert

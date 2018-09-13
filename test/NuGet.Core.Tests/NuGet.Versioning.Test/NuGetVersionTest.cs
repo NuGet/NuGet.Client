@@ -1,10 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using FluentAssertions;
 using Xunit;
 
 namespace NuGet.Versioning.Test
@@ -26,7 +25,7 @@ namespace NuGet.Versioning.Test
             versions.Add(new NuGetVersion(4, 3, 0, string.Empty));
             versions.Add(new NuGetVersion(4, 3, 0, null));
             versions.Add(new NuGetVersion(4, 3, 0, 0));
-            versions.Add(new NuGetVersion(new Version(4, 3, 0), Array.Empty<string>(), string.Empty, "4.3"));
+            versions.Add(new NuGetVersion(new Version(4, 3, 0), new string[0], string.Empty, "4.3"));
 
             versions.Add(new SemanticVersion(4, 3, 0));
             versions.Add(new SemanticVersion(4, 3, 0, string.Empty));
@@ -200,13 +199,6 @@ namespace NuGet.Versioning.Test
             Assert.False(semVer.Equals(other));
         }
 
-        [Fact]
-        public void EqualsIsTrueForEmptyRevision()
-        {
-            NuGetVersion.Parse("1.0.0.0").Equals(SemanticVersion.Parse("1.0.0")).Should().BeTrue();
-            SemanticVersion.Parse("1.0.0").Equals(NuGetVersion.Parse("1.0.0.0")).Should().BeTrue();
-        }
-
         [Theory]
         [InlineData("1.0", "1.0.0.0")]
         [InlineData("1.23.01", "1.23.1")]
@@ -214,8 +206,6 @@ namespace NuGet.Versioning.Test
         [InlineData("1.45.6-Alpha", "1.45.6-Alpha")]
         [InlineData("1.6.2-BeTa", "1.6.02-beta")]
         [InlineData("22.3.07     ", "22.3.07")]
-        [InlineData("1.0", "1.0.0.0+beta")]
-        [InlineData("1.0.0.0+beta.2", "1.0.0.0+beta.1")]
         public void SemVerEqualsOperatorWorks(string versionA, string versionB)
         {
             // Arrange
@@ -256,7 +246,7 @@ namespace NuGet.Versioning.Test
         [InlineData("1.0.0-b")]
         [InlineData("3.0.1.2")]
         [InlineData("2.1.4.3-pre-1")]
-        public void ToStringReturnsOriginalValueForNonSemVer2(string version)
+        public void ToStringReturnsOriginalValue(string version)
         {
             // Act
             var semVer = NuGetVersion.Parse(version);
@@ -296,20 +286,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(expected, semVer.ToString());
-        }
-
-        [Theory]
-        [InlineData("01.42.0")]
-        [InlineData("01.0")]
-        [InlineData("01.42.0-alpha")]
-        [InlineData("01.42.0-alpha.1")]
-        [InlineData("01.42.0-alpha+metadata")]
-        [InlineData("01.42.0+metadata")]
-        public void NuGetVersionKeepsOriginalVersionString(string originalVersion)
-        {
-            var version = new NuGetVersion(originalVersion);
-
-            Assert.Equal(originalVersion, version.OriginalVersion);
         }
 
         [Theory]
