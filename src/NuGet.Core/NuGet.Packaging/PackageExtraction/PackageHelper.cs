@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,8 +24,6 @@ namespace NuGet.Packaging
         };
 
         private static readonly char[] Slashes = new char[] { '/', '\\' };
-
-        private const string ExcludeExtension = ".nupkg.sha512";
 
         public static bool IsAssembly(string path)
         {
@@ -68,10 +66,16 @@ namespace NuGet.Packaging
             {
                 return !ExcludePaths.Any(p =>
                     packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase)) &&
-                    !packageFileName.EndsWith(ExcludeExtension, StringComparison.OrdinalIgnoreCase);
+                    !IsNuGetGeneratedFile(packageFileName);
             }
 
             return false;
+        }
+
+        private static bool IsNuGetGeneratedFile(string path)
+        {
+            return path.EndsWith(PackagingCoreConstants.HashFileExtension, StringComparison.OrdinalIgnoreCase) ||
+                path.EndsWith(PackagingCoreConstants.NupkgMetadataFileExtension, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

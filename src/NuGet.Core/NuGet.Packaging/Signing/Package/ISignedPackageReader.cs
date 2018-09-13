@@ -36,5 +36,12 @@ namespace NuGet.Packaging.Signing
         /// <param name="signatureContent">SignatureContent with expected hash value and hash algorithm used</param>
         /// <returns></returns>
         Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token);
+
+        /// <summary>
+        /// Get the hash of the package content excluding signature context for signed package.
+        /// </summary>
+        /// <param name="token">Cancellation token</param>
+        /// <returns>hash of the unsigned content of the signed package. but return null for unsigned package.</returns>
+        string GetContentHashForSignedPackage(CancellationToken token);
     }
 }

@@ -113,7 +113,7 @@ namespace NuGet.Protocol.FuncTest
                     var packageReader = downloadResult.PackageReader;
                     var files = packageReader.GetFiles();
 
-                    Assert.Equal(11, files.Count());
+                    Assert.Equal(12, files.Count());
                 }
             }
         }

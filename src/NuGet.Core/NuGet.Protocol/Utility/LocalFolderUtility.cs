@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -1155,6 +1156,40 @@ namespace NuGet.Protocol
                 log.LogDebug(e.Message);
             }
             return fileInfo;
+        }
+
+        public static void GenerateNupkgMetadataFile(string nupkgPath, string installPath, string hashPath, string nupkgMetadataPath)
+        {
+            ConcurrencyUtilities.ExecuteWithFileLocked(nupkgPath,
+                action: () =>
+                {
+                    // make sure new hash file doesn't exists within File lock before actually creating it.
+                    if (!File.Exists(nupkgMetadataPath))
+                    {
+                        var tempNupkgMetadataFilePath = Path.Combine(installPath, Path.GetRandomFileName());
+                        using (var stream = File.Open(nupkgPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        using (var packageReader = new PackageArchiveReader(stream))
+                        {
+                            // get hash of unsigned content of signed package
+                            var packageHash = packageReader.GetContentHashForSignedPackage(CancellationToken.None);
+
+                            // if null, then it's unsigned package so just read the existing sha512 file
+                            if (string.IsNullOrEmpty(packageHash))
+                            {
+                                packageHash = File.ReadAllText(hashPath);
+                            }
+
+                            // write the new hash file
+                            var hashFile = new NupkgMetadataFile()
+                            {
+                                ContentHash = packageHash
+                            };
+
+                            NupkgMetadataFileFormat.Write(tempNupkgMetadataFilePath, hashFile);
+                            File.Move(tempNupkgMetadataFilePath, nupkgMetadataPath);
+                        }
+                    }
+                });
         }
     }
 }

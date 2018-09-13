@@ -122,7 +122,7 @@ namespace NuGet.Commands.Test
                 var request = GetRestoreRequest(packagesDirectory, logger);
                 var resolver = new VersionFolderPathResolver(packagesDirectory, isLowercase: false);
 
-                var hashPath = resolver.GetHashPath(identity.Id, identity.Version);
+                var hashPath = resolver.GetNupkgMetadataPath(identity.Id, identity.Version);
                 Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
 
                 // The hash file is what determines if the package is installed or not.
@@ -136,7 +136,7 @@ namespace NuGet.Commands.Test
                     CancellationToken.None);
 
                 // Assert
-                Assert.True(File.Exists(resolver.GetHashPath(identity.Id, identity.Version)));
+                Assert.True(File.Exists(resolver.GetNupkgMetadataPath(identity.Id, identity.Version)));
                 Assert.Equal(0, logger.Messages.Count(x => x.Contains(identity.ToString())));
             }
         }

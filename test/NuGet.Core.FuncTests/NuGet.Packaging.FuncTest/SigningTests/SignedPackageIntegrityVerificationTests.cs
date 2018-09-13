@@ -948,6 +948,38 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
+        [CIOnlyFact]
+        public async Task VerifyPackageContentHash_SignedPackagesAsync()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            string expectedHash = null;
+
+            using (var zipStream = await nupkg.CreateAsStreamAsync())
+            {
+                expectedHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(zipStream));
+            }
+
+            using (var dir = TestDirectory.Create())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
+
+                var verifier = new PackageSignatureVerifier(_trustProviders);
+
+                using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                {
+                    // Act
+                    var result = packageReader.GetContentHashForSignedPackage(CancellationToken.None);
+
+                    // Assert
+                    result.Should().NotBeNullOrEmpty();
+                    Assert.Equal(expectedHash, result);
+                }
+            }
+        }
+
         private void AssertSignatureEntryMetadataThrowsException(Stream packageStream)
         {
             using (var reader = new BinaryReader(packageStream, _readerEncoding, leaveOpen: true))

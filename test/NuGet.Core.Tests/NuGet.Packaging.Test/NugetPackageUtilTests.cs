@@ -148,7 +148,7 @@ namespace Commands.Test
                 Directory.CreateDirectory(packageDir);
 
                 var nupkgPath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
-                var shaPath = pathResolver.GetHashPath(package.Id, identity.Version);
+                var shaPath = pathResolver.GetNupkgMetadataPath(package.Id, identity.Version);
 
                 File.WriteAllBytes(shaPath, new byte[] { });
 

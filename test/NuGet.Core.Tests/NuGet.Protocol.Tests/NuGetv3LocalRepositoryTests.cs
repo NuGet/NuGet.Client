@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -384,6 +385,27 @@ namespace NuGet.Repositories.Test
 
                 // Assert
                 packageResultA.RuntimeGraph.Should().BeNull();
+            }
+        }
+
+        [Fact]
+        public async Task NuGetv3LocalRepository_GenerateNupkgMetadataFile()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                var target = new NuGetv3LocalRepository(workingDir);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    workingDir,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext("foo", "1.0.0"));
+
+                var pathResolver = new VersionFolderPathResolver(workingDir);
+
+                File.Delete(pathResolver.GetNupkgMetadataPath("foo", new NuGetVersion("1.0.0")));
+
+                // Assert
+                target.Exists("foo", NuGetVersion.Parse("1.0.0")).Should().BeTrue();
+                File.Exists(pathResolver.GetNupkgMetadataPath("foo", new NuGetVersion("1.0.0")));
             }
         }
     }

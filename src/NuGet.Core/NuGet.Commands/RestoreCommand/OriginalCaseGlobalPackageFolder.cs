@@ -74,7 +74,7 @@ namespace NuGet.Commands
                 foreach (var remoteMatch in packages)
                 {
                     var identity = GetPackageIdentity(remoteMatch);
-                    var hashPath = _pathResolver.GetHashPath(identity.Id, identity.Version);
+                    var hashPath = _pathResolver.GetNupkgMetadataPath(identity.Id, identity.Version);
 
                     // No need to re-install the same package identity more than once or if it is
                     // already installed.
