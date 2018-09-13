@@ -107,7 +107,7 @@ namespace NuGet.Packaging.Test
 
                 var saveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files;
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
                     userFolder,
                     saveMode,
                     new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
@@ -148,7 +148,7 @@ namespace NuGet.Packaging.Test
 
                 var targetFolder = fallbackFolders[0];
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
                     targetFolder,
                     saveMode,
                     new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
@@ -189,7 +189,7 @@ namespace NuGet.Packaging.Test
 
                 var targetFolder = fallbackFolders[1];
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
                     targetFolder,
                     saveMode,
                     new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
@@ -230,17 +230,17 @@ namespace NuGet.Packaging.Test
 
                 var targetFolder = fallbackFolders[1];
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
                     userFolder,
                     saveMode,
                     new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
                     fallbackFolders[0],
                     saveMode,
                     new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
                     fallbackFolders[1],
                     saveMode,
                     new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));

@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,10 +7,6 @@ using System.Linq;
 using System.Text;
 using NuGet.Frameworks;
 using Xunit;
-using NuGet.Packaging.Core;
-using System.Collections.Generic;
-using NuGet.Versioning;
-using FluentAssertions;
 
 namespace NuGet.Packaging.Test
 {
@@ -259,107 +255,12 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
-        private const string VersionRangeInDependency = @"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?>
-                <package xmlns=""http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd"">
-                  <metadata>
-                    <id>PackageA</id>
-                    <version>2.0.1.0</version>
-                    <title>Package A</title>
-                    <authors>ownera, ownerb</authors>
-                    <description>Package A description</description>
-                    <tags>ServiceStack Serilog</tags>
-                    <dependencies>
-                      <dependency id=""PackageB"" version=""{0}"" />
-                    </dependencies>
-                  </metadata>
-                </package>";
-
-        private const string RepositoryBasic = @"<?xml version=""1.0""?>
-                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
-                  <metadata>
-                    <id>packageA</id>
-                    <version>1.0.1-alpha</version>
-                    <title>Package A</title>
-                    <authors>ownera, ownerb</authors>
-                    <owners>ownera, ownerb</owners>
-                    <description>package A description.</description>
-                    <repository type=""git"" url=""https://github.com/NuGet/NuGet.Client.git"" />
-                  </metadata>
-                </package>";
-
-        private const string RepositoryComplete = @"<?xml version=""1.0""?>
-                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
-                  <metadata>
-                    <id>packageA</id>
-                    <version>1.0.1-alpha</version>
-                    <title>Package A</title>
-                    <authors>ownera, ownerb</authors>
-                    <owners>ownera, ownerb</owners>
-                    <description>package A description.</description>
-                    <repository type=""git"" url=""https://github.com/NuGet/NuGet.Client.git"" branch=""dev"" commit=""e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3"" />
-                  </metadata>
-                </package>";
-
-        public static IEnumerable<object[]> GetValidVersions()
-        {
-            return GetVersionRange(validVersions: true);
-        }
-
-        public static IEnumerable<object[]> GetInValidVersions()
-        {
-            return GetVersionRange(validVersions: false);
-        }
-
-        private static IEnumerable<object[]> GetVersionRange(bool validVersions)
-        {
-            var range = validVersions
-                ? ValidVersionRange()
-                : InvalidVersionRange();
-
-            foreach (var s in range)
-            {
-                yield return new object[] { s };
-            }
-        }
-
-        private static IEnumerable<string> ValidVersionRange()
-        {
-            yield return "0.0.0";
-            yield return "1.0.0-beta";
-            yield return "1.0.1-alpha.1.2.3";
-            yield return "1.0.1-alpha.1.2.3+a.b.c.d";
-            yield return "1.0.1+metadata";
-            yield return "1.0.1--";
-            yield return "1.0.1-a.really.long.version.release.label";
-            yield return "00.00.00.00-alpha";
-            yield return "0.0-alpha.1";
-            yield return "(1.0.0-alpha.1, )";
-            yield return "[1.0.0-alpha.1+metadata]";
-            yield return "[1.0, 2.0.0+metadata)";
-            yield return "[1.0+metadata, 2.0.0+metadata)";
-        }
-
-        private static IEnumerable<string> InvalidVersionRange()
-        {
-            yield return null;
-            yield return string.Empty;
-            yield return " ";
-            yield return "\t";
-            yield return "~1";
-            yield return "~1.0.0";
-            yield return "0.0.0-~4";
-            yield return "$version$";
-            yield return "Invalid";
-            yield return "[15.106.0.preview]";
-            yield return "15.106.0-preview.01"; // no leading zeros in numeric identifiers of release label
-        }
-
         [Fact]
         public void NuspecReaderTests_NamespaceOnMetadata()
         {
-            var reader = GetReader(NamespaceOnMetadataNuspec);
+            NuspecReader reader = GetReader(NamespaceOnMetadataNuspec);
 
-            var id = reader.GetId();
+            string id = reader.GetId();
 
             Assert.Equal("packageB", id);
         }
@@ -367,9 +268,9 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_Id()
         {
-            var reader = GetReader(BasicNuspec);
+            NuspecReader reader = GetReader(BasicNuspec);
 
-            var id = reader.GetId();
+            string id = reader.GetId();
 
             Assert.Equal("packageA", id);
         }
@@ -377,7 +278,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_EmptyGroups()
         {
-            var reader = GetReader(EmptyGroups);
+            NuspecReader reader = GetReader(EmptyGroups);
 
             var dependencies = reader.GetDependencyGroups().ToList();
             var references = reader.GetReferenceGroups().ToList();
@@ -389,7 +290,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_DependencyGroups()
         {
-            var reader = GetReader(BasicNuspec);
+            NuspecReader reader = GetReader(BasicNuspec);
 
             var dependencies = reader.GetDependencyGroups().ToList();
 
@@ -399,79 +300,17 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_DuplicateDependencyGroups()
         {
-            var reader = GetReader(DuplicateGroups);
+            NuspecReader reader = GetReader(DuplicateGroups);
 
             var dependencies = reader.GetDependencyGroups().ToList();
 
             Assert.Equal(2, dependencies.Count);
         }
 
-        [Theory]
-        [MemberData(nameof(GetValidVersions))]
-        [MemberData(nameof(GetInValidVersions))]
-        public void NuspecReaderTests_NonStrictCheckInDependencyShouldNotThrowException(string versionRange)
-        {
-            // Arrange
-            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
-            var nuspecReader = GetReader(formattedNuspec);
-
-            // Act
-            var dependencies = nuspecReader.GetDependencyGroups().ToList();
-
-            // Assert
-            Assert.Equal(1, dependencies.Count);
-        }
-
-        [Theory]
-        [MemberData(nameof(GetInValidVersions))]
-        public void NuspecReaderTests_NonStrictCheckInDependencyShouldFallbackToAllRangeForInvalidVersions(
-            string versionRange)
-        {
-            // Arrange
-            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
-            var nuspecReader = GetReader(formattedNuspec);
-
-            // Act
-            var dependencies = nuspecReader.GetDependencyGroups().ToList();
-
-            // Assert
-            Assert.Equal(VersionRange.All, dependencies.First().Packages.First().VersionRange);
-        }
-
-        [Theory]
-        [MemberData(nameof(GetInValidVersions))]
-        public void NuspecReaderTests_InvalidVersionRangeInDependencyThrowsExceptionForStrictCheck(string versionRange)
-        {
-            // Arrange
-            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
-            var nuspecReader = GetReader(formattedNuspec);
-            Action action = () => nuspecReader.GetDependencyGroups(useStrictVersionCheck: true).ToList();
-
-            // Act & Assert
-            Assert.Throws<PackagingException>(action);
-        }
-
-        [Theory]
-        [MemberData(nameof(GetValidVersions))]
-        public void NuspecReaderTests_ValidVersionRangeInDependencyReturnsResultForStrictCheck(string versionRange)
-        {
-            // Arrange
-            var formattedNuspec = string.Format(VersionRangeInDependency, versionRange);
-            var nuspecReader = GetReader(formattedNuspec);
-            var expectedVersionRange = string.IsNullOrEmpty(versionRange) ? VersionRange.All : VersionRange.Parse(versionRange);
-
-            // Act
-            var dependencyGroups = nuspecReader.GetDependencyGroups(useStrictVersionCheck: true).ToList();
-
-            // Assert
-            Assert.Equal(1, dependencyGroups.Count);
-            Assert.Equal(expectedVersionRange, dependencyGroups.First().Packages.First().VersionRange);
-        }
-
         [Fact]
         public void NuspecReaderTests_FrameworkGroups()
         {
-            var reader = GetReader(CommaDelimitedFrameworksNuspec);
+            NuspecReader reader = GetReader(CommaDelimitedFrameworksNuspec);
 
             var dependencies = reader.GetFrameworkReferenceGroups().ToList();
 
@@ -481,11 +320,11 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_FrameworkSplitGroup()
         {
-            var reader = GetReader(CommaDelimitedFrameworksNuspec);
+            NuspecReader reader = GetReader(CommaDelimitedFrameworksNuspec);
 
             var groups = reader.GetFrameworkReferenceGroups();
 
-            var group = groups.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net40")));
+            var group = groups.Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("net40"))).Single();
 
             Assert.Equal(2, group.Items.Count());
 
@@ -496,7 +335,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_Language()
         {
-            var reader = GetReader(BasicNuspec);
+            NuspecReader reader = GetReader(BasicNuspec);
 
             var language = reader.GetLanguage();
 
@@ -506,7 +345,7 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void NuspecReaderTests_UnsupportedDependencyGroups()
         {
-            var reader = GetReader(UnknownDependencyGroupsNuspec);
+            NuspecReader reader = GetReader(UnknownDependencyGroupsNuspec);
 
             // verify we can handle multiple unsupported dependency groups gracefully
             var dependencies = reader.GetDependencyGroups().ToList();
@@ -514,14 +353,14 @@ namespace NuGet.Packaging.Test
             // unsupported frameworks remain ungrouped
             Assert.Equal(5, dependencies.Count);
 
-            Assert.Equal(4, dependencies.Count(g => g.TargetFramework == NuGetFramework.UnsupportedFramework));
+            Assert.Equal(4, dependencies.Where(g => g.TargetFramework == NuGetFramework.UnsupportedFramework).Count());
         }
 
         [Fact]
         public void NuspecReaderTests_DependencyWithSingleIncludeExclude()
         {
             // Arrange
-            var reader = GetReader(IncludeExcludeNuspec);
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -536,7 +375,7 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_DependencyWithMultipleInclude()
         {
             // Arrange
-            var reader = GetReader(IncludeExcludeNuspec);
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -551,7 +390,7 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_DependencyWithWhiteSpace()
         {
             // Arrange
-            var reader = GetReader(IncludeExcludeNuspec);
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -566,7 +405,7 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_DependencyWithMultipleExclude()
         {
             // Arrange
-            var reader = GetReader(IncludeExcludeNuspec);
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -581,7 +420,7 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_DependencyWithBlankExclude()
         {
             // Arrange
-            var reader = GetReader(IncludeExcludeNuspec);
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -596,7 +435,7 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_DependencyNoAttributesForIncludeExclude()
         {
             // Arrange
-            var reader = GetReader(IncludeExcludeNuspec);
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -611,7 +450,7 @@ namespace NuGet.Packaging.Test
         public void NuspecReaderTests_DependencyEmptyAttributesForIncludeExclude()
         {
             // Arrange
-            var reader = GetReader(IncludeExcludeNuspec);
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
 
             // Act
             var group = reader.GetDependencyGroups().Single();
@@ -666,54 +505,6 @@ namespace NuGet.Packaging.Test
 
             // Assert
             Assert.True(actual);
-        }
-
-        [Fact]
-        public void NuspecReaderTests_RepositoryVerifyBlank()
-        {
-            // Arrange
-            var reader = GetReader(ServiceablePackageTypesElement);
-
-            // Act
-            var repo = reader.GetRepositoryMetadata();
-
-            // Assert
-            repo.Branch.Should().BeEmpty();
-            repo.Type.Should().BeEmpty();
-            repo.Url.Should().BeEmpty();
-            repo.Commit.Should().BeEmpty();
-        }
-
-        [Fact]
-        public void NuspecReaderTests_RepositoryComplete()
-        {
-            // Arrange
-            var reader = GetReader(RepositoryComplete);
-
-            // Act
-            var repo = reader.GetRepositoryMetadata();
-
-            // Assert
-            repo.Branch.Should().Be("dev");
-            repo.Type.Should().Be("git");
-            repo.Url.Should().Be("https://github.com/NuGet/NuGet.Client.git");
-            repo.Commit.Should().Be("e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3");
-        }
-
-        [Fact]
-        public void NuspecReaderTests_RepositoryBasic()
-        {
-            // Arrange
-            var reader = GetReader(RepositoryBasic);
-
-            // Act
-            var repo = reader.GetRepositoryMetadata();
-
-            // Assert
-            repo.Type.Should().Be("git");
-            repo.Url.Should().Be("https://github.com/NuGet/NuGet.Client.git");
-            repo.Branch.Should().BeEmpty();
-            repo.Commit.Should().BeEmpty();
         }
 
         private static NuspecReader GetReader(string nuspec)
