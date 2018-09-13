@@ -10,7 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Test.Utility\NuGet.Test.Utility.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Commands\NuGet.Commands.csproj" />
+    <ProjectReference Include="..\NuGet.Commands.Test.Utility\NuGet.Commands.Test.Utility.csproj" />
+    <ProjectReference Include="..\NuGet.DependencyResolver.Core.Tests.Utility\NuGet.DependencyResolver.Core.Tests.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">

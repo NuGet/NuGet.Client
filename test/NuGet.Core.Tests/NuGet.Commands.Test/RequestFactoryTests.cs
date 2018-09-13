@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using NuGet.Configuration;
@@ -13,6 +12,35 @@ namespace NuGet.Commands.Test
 {
     public class RequestFactoryTests
     {
+        [Fact]
+        public void RequestFactory_FindConfigInProjectFolder()
+        {
+            // Verifies that we include any config file found in the project folder
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var innerConfigFile = Path.Combine(workingDir, "sub", Settings.DefaultSettingsFileName);
+                var outerConfigFile = Path.Combine(workingDir, Settings.DefaultSettingsFileName);
+
+                var projectDirectory = Path.GetDirectoryName(innerConfigFile);
+                Directory.CreateDirectory(projectDirectory);
+
+                File.WriteAllText(innerConfigFile, InnerConfig);
+                File.WriteAllText(outerConfigFile, OuterConfig);
+
+                var restoreArgs = new RestoreArgs();
+
+                // Act
+                var settings = restoreArgs.GetSettings(projectDirectory);
+                var innerValue = settings.GetValue("SectionName", "inner-key");
+                var outerValue = settings.GetValue("SectionName", "outer-key");
+
+                // Assert
+                Assert.Equal("inner-value", innerValue);
+                Assert.Equal("outer-value", outerValue);
+            }
+        }
+
         [Fact]
         public void RequestFactory_RestorePackagesArgRelativeToCwd()
         {
@@ -36,19 +64,24 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RequestFactory_ReadDGSpec()
+        public async Task RequestFactory_FindProjectJsonFilesInDirectory()
         {
             // Arrange
             var cache = new RestoreCommandProvidersCache();
-            var provider = new DependencyGraphFileRequestProvider(cache);
+            var provider = new ProjectJsonRestoreRequestProvider(cache);
 
             using (var workingDir = TestDirectory.Create())
             {
-                var dgSpec = Path.Combine(workingDir, "project.dg");
+                var p1 = Path.Combine(workingDir, "project.json");
+                var p2 = Path.Combine(workingDir, "sub", "project.json");
+                var p3 = Path.Combine(workingDir, "myproj.project.json");
 
-                Directory.CreateDirectory(Path.GetDirectoryName(dgSpec));
+                Directory.CreateDirectory(Path.GetDirectoryName(p1));
+                Directory.CreateDirectory(Path.GetDirectoryName(p2));
 
-                File.WriteAllText(dgSpec, DGSpec);
+                File.WriteAllText(p1, EmptyProjectJson);
+                File.WriteAllText(p2, EmptyProjectJson);
+                File.WriteAllText(p3, EmptyProjectJson);
 
                 var context = new RestoreArgs();
                 using (var cacheContext = new SourceCacheContext())
@@ -57,65 +90,44 @@ namespace NuGet.Commands.Test
                     context.Log = new TestLogger();
 
                     // Act
-                    var supports = await provider.Supports(dgSpec);
-                    Assert.Equal(true, supports);
+                    var supports = await provider.Supports(workingDir);
+                    var requests = await provider.CreateRequests(workingDir, context);
 
-                    var requests = await provider.CreateRequests(dgSpec, context);
-                    Assert.Equal(1, requests.Count);
+                    // Assert
+                    Assert.Equal(true, supports);
+                    Assert.Equal(3, requests.Count);
                 }
             }
         }
-        private static string DGSpec = @"
 
-{
-  ""format"": 1,
-  ""restore"": {
-    ""C:\\Users\\ConsoleApp1\\ConsoleApp1.csproj"": {}
-  },
-  ""projects"": {
-    ""C:\\Users\\ConsoleApp1\\ConsoleApp1.csproj"": {
-      ""version"": ""1.0.0"",
-      ""restore"": {
-        ""projectUniqueName"": ""C:\\Users\\ConsoleApp1\\ConsoleApp1.csproj"",
-        ""projectName"": ""ConsoleApp1"",
-        ""projectPath"": ""C:\\Users\\ConsoleApp1\\ConsoleApp1.csproj"",
-        ""packagesPath"": ""C:\\Users\\.nuget\\packages\\"",
-        ""outputPath"": ""C:\\Users\\Documents\\Visual Studio 2017\\Projects\\ConsoleApp7\\ConsoleApp1\\obj\\"",
-        ""projectStyle"": ""PackageReference"",
-        ""configFilePaths"": [
-        ],
-        ""fallbackFolders"": [
-          ""C:\\Users\\.dotnet\\NuGetFallbackFolder""
-        ],
-        ""originalTargetFrameworks"": [
-          ""netcoreapp1.1""
-        ],
-        ""sources"": {
-          ""https://api.nuget.org/v3/index.json"": {},
-          ""C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\"": {}
-        },
-        ""frameworks"": {
-          ""netcoreapp1.1"": {
-            ""projectReferences"": {}
-          }
-        }
-      },
-      ""frameworks"": {
-        ""netcoreapp1.1"": {
-          ""dependencies"": {
-            ""Microsoft.NETCore.App"": {
-              ""target"": ""Package"",
-              ""version"": ""1.1.1""
-            },
-            ""jQuery"": {
-              ""target"": ""Package"",
-              ""version"": ""3.1.1""
-            }
-          }
-        }
-      }
-    }
-  }
-}";
+        private static string EmptyProjectJson = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""net45"": {
+                }
+              }
+            }";
+
+        private static string InnerConfig =
+            @"<?xml version=""1.0"" encoding=""utf-8""?>
+              <configuration>
+                <SectionName>
+                  <add key=""inner-key"" value=""inner-value"" />
+                </SectionName>
+              </configuration>";
+
+        private static string OuterConfig =
+            @"<?xml version=""1.0"" encoding=""utf-8""?>
+              <configuration>
+                <SectionName>
+                  <add key=""outer-key"" value=""outer-value"" />
+                </SectionName>
+              </configuration>";
     }
 }

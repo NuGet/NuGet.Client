@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -610,11 +609,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(2, vbItems.Count());
                 Assert.Equal(2, anyItems.Count());
 
-                anyItems.Select(e => e.Path).Should().BeEquivalentTo(new[]
-                {
-                    "contentFiles/any/net40/image.jpg",
-                    "contentFiles/any/net40/image2.jpg"
-                });
+                Assert.Equal("contentFiles/any/net40/image.jpg|contentFiles/any/net40/image2.jpg", string.Join("|", anyItems));
             }
         }
 

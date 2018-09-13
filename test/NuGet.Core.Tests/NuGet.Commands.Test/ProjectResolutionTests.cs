@@ -199,9 +199,8 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.GetAllUnresolved().Count);
                 Assert.NotNull(project2Lib);
                 Assert.Equal("Project project2 is not compatible with net45 (.NETFramework,Version=v4.5). Project project2 supports: net46 (.NETFramework,Version=v4.6)", issue.Format());
-                Assert.Equal(1, logger.ErrorMessages.Count());
-
-                Assert.Contains("Project project2 is not compatible with net45 (.NETFramework,Version=v4.5). Project project2 supports: net46 (.NETFramework,Version=v4.6)", logger.ErrorMessages.Last());
+                Assert.Equal(2, logger.ErrorMessages.Count());
+                Assert.Equal("One or more projects are incompatible with .NETFramework,Version=v4.5.", logger.ErrorMessages.Last());
 
                 // Incompatible projects are marked as Unsupported
                 Assert.Equal(NuGetFramework.UnsupportedFramework.DotNetFrameworkName, project2Lib.Framework);
@@ -294,7 +293,8 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.GetAllUnresolved().Count);
                 Assert.NotNull(project2Lib);
                 Assert.Equal("Project project2 is not compatible with net45 (.NETFramework,Version=v4.5). Project project2 supports:\n  - net46 (.NETFramework,Version=v4.6)\n  - win81 (Windows,Version=v8.1)".Replace("\n", Environment.NewLine), issue.Format());
-                Assert.Equal(1, logger.ErrorMessages.Count());
+                Assert.Equal(2, logger.ErrorMessages.Count());
+                Assert.Equal("One or more projects are incompatible with .NETFramework,Version=v4.5.", logger.ErrorMessages.Last());
             }
         }
 
@@ -381,9 +381,8 @@ namespace NuGet.Commands.Test
                 Assert.False(result.Success);
                 Assert.Equal(0, result.GetAllUnresolved().Count);
                 Assert.Equal("Project project2 is not compatible with net45 (.NETFramework,Version=v4.5). Project project2 supports: net46 (.NETFramework,Version=v4.6)", issue.Format());
-                Assert.Equal(1, logger.ErrorMessages.Count());
-
-                Assert.Contains("Project project2 is not compatible with net45 (.NETFramework,Version=v4.5). Project project2 supports: net46 (.NETFramework,Version=v4.6)", logger.ErrorMessages.Last());
+                Assert.Equal(2, logger.ErrorMessages.Count());
+                Assert.Equal("One or more projects are incompatible with .NETFramework,Version=v4.5.", logger.ErrorMessages.Last());
             }
         }
 

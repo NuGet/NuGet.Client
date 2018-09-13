@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace NuGet.Commands.Test
     public class FallbackFolderRestoreTests
     {
         [Fact]
-        public async Task FallbackFolderRestore_AllPackagesFoundInFallbackAsync()
+        public async Task FallbackFolderRestore_AllPackagesFoundInFallback()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -61,10 +61,9 @@ namespace NuGet.Commands.Test
                     sources,
                     packagesDir.FullName,
                     new List<string>() { fallbackFolder.FullName },
-                    logger)
-                {
-                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
-                };
+                    logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 var packageBContext = new SimpleTestPackageContext()
                 {
@@ -82,7 +81,7 @@ namespace NuGet.Commands.Test
 
                 var saveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files | PackageSaveMode.Nupkg;
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
                     fallbackFolder.FullName,
                     saveMode,
                     packageAContext,
@@ -115,7 +114,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task FallbackFolderRestore_AllPackagesFoundInFallback_NuspecModeAsync()
+        public async Task FallbackFolderRestore_AllPackagesFoundInFallback_NuspecMode()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -158,10 +157,9 @@ namespace NuGet.Commands.Test
                     sources,
                     packagesDir.FullName,
                     new List<string>() { fallbackFolder.FullName },
-                    logger)
-                {
-                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
-                };
+                    logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 var packageBContext = new SimpleTestPackageContext()
                 {
@@ -179,7 +177,7 @@ namespace NuGet.Commands.Test
 
                 var saveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files;
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
                     fallbackFolder.FullName,
                     saveMode,
                     packageAContext,
@@ -203,7 +201,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task FallbackFolderRestore_SinglePackageFoundInFallbackAsync()
+        public async Task FallbackFolderRestore_SinglePackageFoundInFallback()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -247,10 +245,9 @@ namespace NuGet.Commands.Test
                     sources,
                     packagesDir.FullName,
                     new List<string>() { fallbackFolder.FullName },
-                    logger)
-                {
-                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
-                };
+                    logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 var packageBContext = new SimpleTestPackageContext()
                 {
@@ -266,12 +263,12 @@ namespace NuGet.Commands.Test
 
                 var saveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files | PackageSaveMode.Nupkg;
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
                     fallbackFolder.FullName,
                     saveMode,
                     packageAContext);
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(
+                SimpleTestPackageUtility.CreatePackages(
                     packageSource.FullName,
                     packageBContext);
 
@@ -294,7 +291,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task FallbackFolderRestore_NoPackagesFoundInFallbackAsync()
+        public async Task FallbackFolderRestore_NoPackagesFoundInFallback()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -341,10 +338,9 @@ namespace NuGet.Commands.Test
                     sources,
                     packagesDir.FullName,
                     new List<string>() { fallbackFolder.FullName, fallbackFolder2.FullName },
-                    logger)
-                {
-                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
-                };
+                    logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 var packageBContext = new SimpleTestPackageContext()
                 {
@@ -358,7 +354,7 @@ namespace NuGet.Commands.Test
                     Version = "1.0.0"
                 };
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(
+                SimpleTestPackageUtility.CreatePackages(
                     packageSource.FullName,
                     packageAContext,
                     packageBContext);
@@ -382,7 +378,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task FallbackFolderRestore_VerifyMissingFallbackFolderFailsAsync()
+        public async Task FallbackFolderRestore_VerifyMissingFallbackFolderFails()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -426,10 +422,9 @@ namespace NuGet.Commands.Test
                     sources,
                     packagesDir.FullName,
                     new List<string>() { fallbackFolder.FullName },
-                    logger)
-                {
-                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
-                };
+                    logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 var packageBContext = new SimpleTestPackageContext()
                 {
@@ -443,7 +438,7 @@ namespace NuGet.Commands.Test
                     Version = "1.0.0"
                 };
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(
+                SimpleTestPackageUtility.CreatePackages(
                     packageSource.FullName,
                     packageAContext,
                     packageBContext);

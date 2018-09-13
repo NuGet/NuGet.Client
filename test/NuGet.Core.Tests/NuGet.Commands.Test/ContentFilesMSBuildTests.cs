@@ -1,7 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,7 +17,7 @@ namespace NuGet.Commands.Test
     public class ContentFilesMSBuildTests
     {
         [Fact]
-        public async Task ContentFilesMSBuild_VerifyNoContentItemsForEmptyFolderAsync()
+        public async Task ContentFilesMSBuild_VerifyNoContentItemsForEmptyFolder()
         {
             // Arrange
             var logger = new TestLogger();
@@ -49,7 +46,7 @@ namespace NuGet.Commands.Test
                 packageA.AddFile("contentFiles/cs/net45/_._");
                 packageA.AddFile("contentFiles/cs/any/_._");
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA);
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();
@@ -82,7 +79,7 @@ namespace NuGet.Commands.Test
         [InlineData("contentFiles/vb/any/x.txt", "'$(Language)' == 'VB' AND '$(ExcludeRestorePackageImports)' != 'true'")]
         [InlineData("contentFiles/ZzZ/any/x.txt", "'$(Language)' == 'ZZZ' AND '$(ExcludeRestorePackageImports)' != 'true'")]
         [InlineData("contentFiles/1/any/x.txt", "'$(Language)' == '1' AND '$(ExcludeRestorePackageImports)' != 'true'")]
-        public async Task ContentFilesMSBuild_VerifyConditionForContentItemGroupWithoutCrossTargetingAsync(string file, string expected)
+        public async Task ContentFilesMSBuild_VerifyConditionForContentItemGroupWithoutCrossTargeting(string file, string expected)
         {
             // Arrange
             var logger = new TestLogger();
@@ -109,7 +106,7 @@ namespace NuGet.Commands.Test
                 var packageA = new SimpleTestPackageContext("a");
                 packageA.AddFile(file);
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA);
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();
@@ -143,7 +140,7 @@ namespace NuGet.Commands.Test
         [InlineData("contentFiles/cs/any/x.txt|contentFiles/cs/any/y.txt", "'$(Language)' != 'C#' AND '$(ExcludeRestorePackageImports)' != 'true'")]
         [InlineData("contentFiles/cs/any/x.txt|contentFiles/fs/any/x.txt", "'$(Language)' != 'C#' AND '$(Language)' != 'F#' AND '$(ExcludeRestorePackageImports)' != 'true'")]
         [InlineData("contentFiles/zz/any/x.txt|contentFiles/xx/any/x.txt|contentFiles/yy/any/x.txt", "'$(Language)' != 'XX' AND '$(Language)' != 'YY' AND '$(Language)' != 'ZZ' AND '$(ExcludeRestorePackageImports)' != 'true'")]
-        public async Task ContentFilesMSBuild_VerifyConditionForFallbackContentItemGroupAsync(string files, string expected)
+        public async Task ContentFilesMSBuild_VerifyConditionForFallbackContentItemGroup(string files, string expected)
         {
             // Arrange
             var logger = new TestLogger();
@@ -175,7 +172,7 @@ namespace NuGet.Commands.Test
                     packageA.AddFile(file);
                 }
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA);
+                SimpleTestPackageUtility.CreatePackages(pathContext.PackageSource, packageA);
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();

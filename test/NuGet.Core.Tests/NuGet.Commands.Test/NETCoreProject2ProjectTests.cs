@@ -1,7 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -264,7 +261,7 @@ namespace NuGet.Commands.Test
 
                 packageX.Dependencies.Add(packageY);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX,
@@ -467,7 +464,7 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.False(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
-                Assert.Contains("Unable to find project", string.Join(Environment.NewLine, logger.Messages));
+                Assert.Contains("Unable to resolve", string.Join(Environment.NewLine, logger.Messages));
                 Assert.Contains(projects[1].ProjectPath, string.Join(Environment.NewLine, logger.Messages));
             }
         }

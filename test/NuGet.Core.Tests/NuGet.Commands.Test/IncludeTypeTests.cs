@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace NuGet.Commands.Test
     public class IncludeTypeTests
     {
         [Fact]
-        public async Task IncludeType_ProjectToProjectDeeperDependencyExcludedAsync()
+        public async Task IncludeType_ProjectToProjectDeeperDependencyExcluded()
         {
             // Arrange
             var logger = new TestLogger();
@@ -54,11 +54,11 @@ namespace NuGet.Commands.Test
                 ""runtimes"": { ""any"": { } }
             }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"), "all", string.Empty);
+                CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
 
                 // Act
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
-                result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+                result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -77,7 +77,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectDeeperDependencyOverridesAsync()
+        public async Task IncludeType_ProjectToProjectDeeperDependencyOverrides()
         {
             // Arrange
             var logger = new TestLogger();
@@ -109,11 +109,11 @@ namespace NuGet.Commands.Test
                 ""runtimes"": { ""any"": { } }
             }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"), "all", string.Empty);
+                CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
 
                 // Act
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
-                result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+                result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -132,7 +132,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectDefaultFlowDoubleRestoreAsync()
+        public async Task IncludeType_ProjectToProjectDefaultFlowDoubleRestore()
         {
             // Arrange
             var logger = new TestLogger();
@@ -161,11 +161,11 @@ namespace NuGet.Commands.Test
                 ""runtimes"": { ""any"": { } }
             }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"), "all", string.Empty);
+                CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
 
                 // Act
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
-                result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+                result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -201,7 +201,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectFlowAllDoubleRestoreAsync()
+        public async Task IncludeType_ProjectToProjectFlowAllDoubleRestore()
         {
             // Arrange
             var logger = new TestLogger();
@@ -231,11 +231,11 @@ namespace NuGet.Commands.Test
                 ""runtimes"": { ""any"": { } }
             }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"), "all", string.Empty);
+                CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
 
                 // Act
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
-                result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+                result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -271,7 +271,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectFlowAllAsync()
+        public async Task IncludeType_ProjectToProjectFlowAll()
         {
             // Arrange
             var logger = new TestLogger();
@@ -301,10 +301,10 @@ namespace NuGet.Commands.Test
                 ""runtimes"": { ""any"": { } }
             }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"), "all", string.Empty);
+                CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
 
                 // Act
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -340,7 +340,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectsIntersectExcludesAsync()
+        public async Task IncludeType_ProjectToProjectsIntersectExcludes()
         {
             // Arrange
             var logger = new TestLogger();
@@ -383,10 +383,10 @@ namespace NuGet.Commands.Test
                   ""runtimes"": { ""any"": { } }
                 }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"));
+                CreateXYZ(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await TriangleProjectSetupAsync(workingDir, logger, configJson1, configJson2, configJson3);
+                var result = await TriangleProjectSetup(workingDir, logger, configJson1, configJson2, configJson3);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -409,7 +409,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ExludeDependencyAsync()
+        public async Task IncludeType_ExludeDependency()
         {
             // Arrange
             var logger = new TestLogger();
@@ -434,10 +434,10 @@ namespace NuGet.Commands.Test
                         ""runtimes"": { ""any"": { } }
                     }";
 
-                await CreateAToBAsync(Path.Combine(workingDir, "repository"));
+                CreateAToB(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -457,7 +457,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_CircularDependencyIsHandledInFlattenAsync()
+        public async Task IncludeType_CircularDependencyIsHandledInFlatten()
         {
             // Arrange
             var logger = new TestLogger();
@@ -507,10 +507,10 @@ namespace NuGet.Commands.Test
                     x
                 };
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(packages, Path.Combine(workingDir, "repository"));
+                SimpleTestPackageUtility.CreatePackages(packages, Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -531,7 +531,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_UnifyDependencyEdgesAsync()
+        public async Task IncludeType_UnifyDependencyEdges()
         {
             // Arrange
             var logger = new TestLogger();
@@ -603,10 +603,10 @@ namespace NuGet.Commands.Test
                     b
                 };
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(packages, Path.Combine(workingDir, "repository"));
+                SimpleTestPackageUtility.CreatePackages(packages, Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -625,7 +625,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectWithBuildOverrideToExcludeAsync()
+        public async Task IncludeType_ProjectToProjectWithBuildOverrideToExclude()
         {
             // Arrange
             var logger = new TestLogger();
@@ -656,10 +656,10 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                 }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"));
+                CreateXYZ(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -676,7 +676,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectWithBuildOverrideAsync()
+        public async Task IncludeType_ProjectToProjectWithBuildOverride()
         {
             // Arrange
             var logger = new TestLogger();
@@ -706,10 +706,10 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                 }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"));
+                CreateXYZ(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -726,7 +726,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectNoTransitiveBuildAsync()
+        public async Task IncludeType_ProjectToProjectNoTransitiveBuild()
         {
             // Arrange
             var logger = new TestLogger();
@@ -755,10 +755,10 @@ namespace NuGet.Commands.Test
                 ""runtimes"": { ""any"": { } }
             }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"));
+                CreateXYZ(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -775,7 +775,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectNoTransitiveContentAsync()
+        public async Task IncludeType_ProjectToProjectNoTransitiveContent()
         {
             // Arrange
             var logger = new TestLogger();
@@ -804,10 +804,10 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                 }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"));
+                CreateXYZ(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -822,7 +822,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ExcludedAndTransitivePackageAsync()
+        public async Task IncludeType_ExcludedAndTransitivePackage()
         {
             // Arrange
             var logger = new TestLogger();
@@ -853,10 +853,10 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                 }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"));
+                CreateXYZ(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -872,7 +872,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectReferenceWithBuildReferenceAndTopLevelAsync()
+        public async Task IncludeType_ProjectToProjectReferenceWithBuildReferenceAndTopLevel()
         {
             // Restore Project1
             // Project2 has only build dependencies
@@ -907,10 +907,10 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                 }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"));
+                CreateXYZ(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -926,7 +926,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectReferenceWithBuildDependencyAsync()
+        public async Task IncludeType_ProjectToProjectReferenceWithBuildDependency()
         {
             // Restore Project1
             // Project2 has only build dependencies
@@ -960,7 +960,7 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                 }";
 
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -974,7 +974,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectReferenceWithBuildTypeDependencyAppliedAsync()
+        public async Task IncludeType_ProjectToProjectReferenceWithBuildTypeDependencyApplied()
         {
             // Restore Project1
             // Project2 has only build dependencies
@@ -1008,7 +1008,7 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                 }";
 
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
                 var dependencies = target.Libraries.Single(lib => lib.Name == "TestProject2").Dependencies;
 
@@ -1023,7 +1023,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectToProjectReferenceWithBuildTypeDependencyTopLevelAsync()
+        public async Task IncludeType_ProjectToProjectReferenceWithBuildTypeDependencyTopLevel()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1066,10 +1066,10 @@ namespace NuGet.Commands.Test
                     Dependencies = new List<SimpleTestPackageContext>() { contextY }
                 };
 
-                await SimpleTestPackageUtility.CreateFullPackageAsync(repository, contextX);
-                await SimpleTestPackageUtility.CreateFullPackageAsync(repository, contextY);
+                SimpleTestPackageUtility.CreateFullPackage(repository, contextX);
+                SimpleTestPackageUtility.CreateFullPackage(repository, contextY);
 
-                var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 // Assert
@@ -1084,7 +1084,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectIncludesOnlyCompileAsync()
+        public async Task IncludeType_ProjectIncludesOnlyCompile()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1105,10 +1105,10 @@ namespace NuGet.Commands.Test
                         ""runtimes"": { ""any"": { } }
                  }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"));
+                CreateXYZ(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -1129,7 +1129,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectOverrideNuspecExcludeAsync()
+        public async Task IncludeType_ProjectOverrideNuspecExclude()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1151,10 +1151,10 @@ namespace NuGet.Commands.Test
                          ""runtimes"": { ""any"": { } }
                  }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"), string.Empty, "build");
+                CreateXYZ(Path.Combine(workingDir, "repository"), string.Empty, "build");
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -1172,7 +1172,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectOverrideNuspecExclude_UnderFrameworkAsync()
+        public async Task IncludeType_ProjectOverrideNuspecExclude_UnderFramework()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1193,10 +1193,10 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                  }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"), string.Empty, "build");
+                CreateXYZ(Path.Combine(workingDir, "repository"), string.Empty, "build");
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -1214,7 +1214,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectExcludesBuildFromAllAsync()
+        public async Task IncludeType_ProjectExcludesBuildFromAll()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1236,10 +1236,10 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                  }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"));
+                CreateXYZ(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -1257,7 +1257,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_NuspecExcludesBuildFromTransitiveDependenciesAsync()
+        public async Task IncludeType_NuspecExcludesBuildFromTransitiveDependencies()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1277,10 +1277,10 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                  }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"), string.Empty, "build");
+                CreateXYZ(Path.Combine(workingDir, "repository"), string.Empty, "build");
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -1299,7 +1299,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_NuspecFlowsOnlyRuntimeTransitiveDependenciesAsync()
+        public async Task IncludeType_NuspecFlowsOnlyRuntimeTransitiveDependencies()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1319,10 +1319,10 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                  }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"), "runtime", string.Empty);
+                CreateXYZ(Path.Combine(workingDir, "repository"), "runtime", string.Empty);
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -1343,7 +1343,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_NuspecFlowsContentFromTransitiveDependenciesAsync()
+        public async Task IncludeType_NuspecFlowsContentFromTransitiveDependencies()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1363,10 +1363,10 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                  }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"), "contentFiles", string.Empty);
+                CreateXYZ(Path.Combine(workingDir, "repository"), "contentFiles", string.Empty);
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -1384,7 +1384,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_ProjectOverridesNoContentFromTransitiveDependenciesAsync()
+        public async Task IncludeType_ProjectOverridesNoContentFromTransitiveDependencies()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1407,10 +1407,10 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                     }";
 
-                await CreateAToBAsync(Path.Combine(workingDir, "repository"));
+                CreateAToB(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -1430,7 +1430,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_NoContentFromTransitiveDependenciesAsync()
+        public async Task IncludeType_NoContentFromTransitiveDependencies()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1450,10 +1450,10 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                     }";
 
-                await CreateAToBAsync(Path.Combine(workingDir, "repository"));
+                CreateAToB(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -1583,7 +1583,7 @@ namespace NuGet.Commands.Test
                         },
                         ""runtimes"": { ""any"": { } }
                     }")]
-        public async Task IncludeType_SingleProjectEquivalentToTheDefaultAsync(string projectJson)
+        public async Task IncludeType_SingleProjectEquivalentToTheDefault(string projectJson)
         {
             // Arrange
             var logger = new TestLogger();
@@ -1591,10 +1591,11 @@ namespace NuGet.Commands.Test
 
             using (var workingDir = TestDirectory.Create())
             {
-                await CreateAToBAsync(Path.Combine(workingDir, "repository"));
+
+                CreateAToB(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
@@ -1627,7 +1628,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_TransitiveDependenciesWithTargetsAsync()
+        public async Task IncludeType_TransitiveDependenciesWithTargets()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1648,10 +1649,10 @@ namespace NuGet.Commands.Test
                          ""runtimes"": { ""any"": { } }
                  }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"));
+                CreateXYZ(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var msbuildTargets = GetInstalledTargets(workingDir);
                 var buildTargets = msbuildTargets["TestProject"].ToList();
@@ -1669,7 +1670,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_MultipleDependenciesWithTargetsAsync()
+        public async Task IncludeType_MultipleDependenciesWithTargets()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1692,12 +1693,12 @@ namespace NuGet.Commands.Test
                          ""runtimes"": { ""any"": { } }
                  }";
 
-                await CreateXYZAsync(Path.Combine(workingDir, "repository"));
+                CreateXYZ(Path.Combine(workingDir, "repository"));
 
-                await CreateAToBAsync(Path.Combine(workingDir, "repository"));
+                CreateAToB(Path.Combine(workingDir, "repository"));
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var msbuildTargets = GetInstalledTargets(workingDir);
                 var buildTargets = msbuildTargets["TestProject"].ToList();
@@ -1717,7 +1718,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task IncludeType_DependenciesWithTargetsAsync()
+        public async Task IncludeType_DependenciesWithTargets()
         {
             // Arrange
             var logger = new TestLogger();
@@ -1738,10 +1739,10 @@ namespace NuGet.Commands.Test
                          ""runtimes"": { ""any"": { } }
                  }";
 
-                await CreateXyzIndividuallyAsync(Path.Combine(workingDir, "repository"), string.Empty, string.Empty);
+                CreateXyzIndividually(Path.Combine(workingDir, "repository"), string.Empty, string.Empty);
 
                 // Act
-                var result = await StandardSetupAsync(workingDir, logger, projectJson);
+                var result = await StandardSetup(workingDir, logger, projectJson);
 
                 var msbuildTargets = GetInstalledTargets(workingDir);
                 var buildTargets = msbuildTargets["TestProject"].ToList();
@@ -1758,7 +1759,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        private async Task<RestoreResult> ProjectToProjectSetupAsync(
+        private async Task<RestoreResult> ProjectToProjectSetup(
             string workingDir,
             NuGet.Common.ILogger logger,
             string configJson1,
@@ -1796,16 +1797,13 @@ namespace NuGet.Commands.Test
                 writer.WriteLine(configJson2.ToString());
             }
 
-            var sources = new List<PackageSource>
-            {
-                new PackageSource(repository)
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
 
-            var request = new TestRestoreRequest(spec1, sources, packagesDir, logger)
-            {
-                LockFilePath = Path.Combine(testProject1Dir, "project.lock.json"),
+            var request = new TestRestoreRequest(spec1, sources, packagesDir, logger);
+            request.LockFilePath = Path.Combine(testProject1Dir, "project.lock.json");
 
-                ExternalProjects = new List<ExternalProjectReference>()
+            request.ExternalProjects = new List<ExternalProjectReference>()
             {
                 new ExternalProjectReference(
                     "TestProject1",
@@ -1818,7 +1816,6 @@ namespace NuGet.Commands.Test
                     spec2,
                     Path.Combine(testProject1Dir, "TestProject2.csproj"),
                     Enumerable.Empty<string>())
-            }
             };
 
             var command = new RestoreCommand(request);
@@ -1830,7 +1827,7 @@ namespace NuGet.Commands.Test
             return result;
         }
 
-        private async Task<RestoreResult> TriangleProjectSetupAsync(
+        private async Task<RestoreResult> TriangleProjectSetup(
             string workingDir,
             NuGet.Common.ILogger logger,
             string configJson1,
@@ -1872,20 +1869,16 @@ namespace NuGet.Commands.Test
                 writer.WriteLine(configJson3);
             }
 
-            var sources = new List<PackageSource>
-            {
-                new PackageSource(repository)
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
 
-            var request = new TestRestoreRequest(spec1, sources, packagesDir, logger)
-            {
-                LockFilePath = Path.Combine(testProject1Dir, "project.lock.json"),
-                ExternalProjects = new List<ExternalProjectReference>()
+            var request = new TestRestoreRequest(spec1, sources, packagesDir, logger);
+            request.LockFilePath = Path.Combine(testProject1Dir, "project.lock.json");
+            request.ExternalProjects = new List<ExternalProjectReference>()
             {
                 new ExternalProjectReference("TestProject1", spec1, null, new string[] { "TestProject2", "TestProject3" }),
                 new ExternalProjectReference("TestProject2", spec2, null, Enumerable.Empty<string>()),
                 new ExternalProjectReference("TestProject3", spec3, null, Enumerable.Empty<string>())
-            }
             };
 
             var command = new RestoreCommand(request);
@@ -1897,7 +1890,7 @@ namespace NuGet.Commands.Test
             return result;
         }
 
-        private async Task<RestoreResult> StandardSetupAsync(
+        private async Task<RestoreResult> StandardSetup(
             string workingDir,
             NuGet.Common.ILogger logger,
             string configJson)
@@ -1912,18 +1905,14 @@ namespace NuGet.Commands.Test
             var testProjectDir = Path.Combine(projectDir, "TestProject");
             Directory.CreateDirectory(testProjectDir);
 
-            var sources = new List<PackageSource>
-            {
-                new PackageSource(repository)
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
 
             var specPath = Path.Combine(testProjectDir, "project.json");
             var spec = JsonPackageSpecReader.GetPackageSpec(configJson, "TestProject", specPath);
 
-            var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-            {
-                LockFilePath = Path.Combine(testProjectDir, "project.lock.json")
-            };
+            var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+            request.LockFilePath = Path.Combine(testProjectDir, "project.lock.json");
 
             request.ExternalProjects.Add(
                 new ExternalProjectReference(
@@ -1942,7 +1931,7 @@ namespace NuGet.Commands.Test
             return result;
         }
 
-        private static async Task CreateAToBAsync(string repositoryDir)
+        private static void CreateAToB(string repositoryDir)
         {
             var b = new SimpleTestPackageContext()
             {
@@ -1962,15 +1951,15 @@ namespace NuGet.Commands.Test
                 a
             };
 
-            await SimpleTestPackageUtility.CreatePackagesAsync(packages, repositoryDir);
+            SimpleTestPackageUtility.CreatePackages(packages, repositoryDir);
         }
 
-        private static async Task CreateXYZAsync(string repositoryDir)
+        private static void CreateXYZ(string repositoryDir)
         {
-            await CreateXYZAsync(repositoryDir, string.Empty, string.Empty);
+            CreateXYZ(repositoryDir, string.Empty, string.Empty);
         }
 
-        private static async Task CreateXYZAsync(string repositoryDir, string include, string exclude)
+        private static void CreateXYZ(string repositoryDir, string include, string exclude)
         {
             var z = new SimpleTestPackageContext()
             {
@@ -2003,10 +1992,10 @@ namespace NuGet.Commands.Test
                 x
             };
 
-            await SimpleTestPackageUtility.CreatePackagesAsync(packages, repositoryDir);
+            SimpleTestPackageUtility.CreatePackages(packages, repositoryDir);
         }
 
-        private static async Task CreateXyzIndividuallyAsync(string repositoryDir, string include, string exclude)
+        private static void CreateXyzIndividually(string repositoryDir, string include, string exclude)
         {
             var z = new SimpleTestPackageContext()
             {
@@ -2037,7 +2026,7 @@ namespace NuGet.Commands.Test
                 x, y, z
             };
 
-            await SimpleTestPackageUtility.CreatePackagesAsync(packages, repositoryDir);
+            SimpleTestPackageUtility.CreatePackages(packages, repositoryDir);
         }
 
         private bool IsEmptyFolder(IEnumerable<LockFileItem> group)
@@ -2063,17 +2052,14 @@ namespace NuGet.Commands.Test
 
                 if (targets != null)
                 {
-                    using (var stream = targets.OpenRead())
-                    {
-                        var xml = XDocument.Load(stream);
+                    var xml = XDocument.Load(targets.OpenRead());
 
-                        foreach (var package in xml.Descendants()
-                            .Where(node => node.Name.LocalName == "Import")
-                            .Select(node => node.Attribute(XName.Get("Project")))
-                            .Select(file => Path.GetFileNameWithoutExtension(file.Value)))
-                        {
-                            result[dir.Name].Add(package);
-                        }
+                    foreach (var package in xml.Descendants()
+                        .Where(node => node.Name.LocalName == "Import")
+                        .Select(node => node.Attribute(XName.Get("Project")))
+                        .Select(file => Path.GetFileNameWithoutExtension(file.Value)))
+                    {
+                        result[dir.Name].Add(package);
                     }
                 }
             }

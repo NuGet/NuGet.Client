@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,7 @@ namespace NuGet.Commands.Test
     {
         // Float on release label
         [Fact]
-        public async Task RestoreSemVer_RestorePackageFloatOnReleaseLabelAsync()
+        public async Task RestoreSemVer_RestorePackageFloatOnReleaseLabel()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -58,10 +58,9 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
-                {
-                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 var packages = new List<SimpleTestPackageContext>();
 
@@ -114,7 +113,7 @@ namespace NuGet.Commands.Test
                 package7.AddFile("lib/netstandard1.5/a.dll");
                 packages.Add(package7);
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(packages, packageSource.FullName);
+                SimpleTestPackageUtility.CreatePackages(packages, packageSource.FullName);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -137,7 +136,7 @@ namespace NuGet.Commands.Test
 
         // Restore 1.0.0-alpha.1.2.3
         [Fact]
-        public async Task RestoreSemVer_RestorePackageWithMultipleReleaseLabelsAsync()
+        public async Task RestoreSemVer_RestorePackageWithMultipleReleaseLabels()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -175,10 +174,9 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
-                {
-                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 var packageAContext = new SimpleTestPackageContext("packageA")
                 {
@@ -187,7 +185,7 @@ namespace NuGet.Commands.Test
 
                 packageAContext.AddFile("lib/netstandard1.5/a.dll");
 
-                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -210,7 +208,7 @@ namespace NuGet.Commands.Test
 
         // Restore 1.0.0+security.fix
         [Fact]
-        public async Task RestoreSemVer_RestorePackageWithMetadata_IdenticalAsync()
+        public async Task RestoreSemVer_RestorePackageWithMetadata_Identical()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -248,10 +246,9 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
-                {
-                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 var packageAContext = new SimpleTestPackageContext("packageA")
                 {
@@ -260,7 +257,7 @@ namespace NuGet.Commands.Test
 
                 packageAContext.AddFile("lib/netstandard1.5/a.dll");
 
-                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -283,7 +280,7 @@ namespace NuGet.Commands.Test
 
         // Restore 1.0.0+security.fix where the package does not contain +security.fix
         [Fact]
-        public async Task RestoreSemVer_RestorePackageWithMetadata_MetadataOnlyInProjectJsonAsync()
+        public async Task RestoreSemVer_RestorePackageWithMetadata_MetadataOnlyInProjectJson()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -321,10 +318,9 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
-                {
-                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 var packageAContext = new SimpleTestPackageContext("packageA")
                 {
@@ -333,7 +329,7 @@ namespace NuGet.Commands.Test
 
                 packageAContext.AddFile("lib/netstandard1.5/a.dll");
 
-                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -356,7 +352,7 @@ namespace NuGet.Commands.Test
 
         // Restore 1.0.0+security.fix where the project does not contain +security.fix
         [Fact]
-        public async Task RestoreSemVer_RestorePackageWithMetadata_MetadataOnlyInPackageAsync()
+        public async Task RestoreSemVer_RestorePackageWithMetadata_MetadataOnlyInPackage()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -394,10 +390,9 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
-                {
-                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 var packageAContext = new SimpleTestPackageContext("packageA")
                 {
@@ -406,7 +401,7 @@ namespace NuGet.Commands.Test
 
                 packageAContext.AddFile("lib/netstandard1.5/a.dll");
 
-                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -428,7 +423,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreSemVer_RestorePackageWithMetadata_DifferentMetadataDoesNotMatterAsync()
+        public async Task RestoreSemVer_RestorePackageWithMetadata_DifferentMetadataDoesNotMatter()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -466,10 +461,9 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
-                {
-                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 var packageAContext = new SimpleTestPackageContext("packageA")
                 {
@@ -478,7 +472,7 @@ namespace NuGet.Commands.Test
 
                 packageAContext.AddFile("lib/netstandard1.5/a.dll");
 
-                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
 
                 // Act
                 var command = new RestoreCommand(request);
