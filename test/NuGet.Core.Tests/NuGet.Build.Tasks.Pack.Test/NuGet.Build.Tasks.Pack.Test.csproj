@@ -15,8 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
-    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Test.Utility\NuGet.Test.Utility.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj" />
+    <ProjectReference Include="..\NuGet.DependencyResolver.Core.Tests.Utility\NuGet.DependencyResolver.Core.Tests.Utility.csproj" />
+    <ProjectReference Include="..\NuGet.Commands.Test.Utility\NuGet.Commands.Test.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">
