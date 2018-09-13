@@ -51,14 +51,9 @@
       "a",
       "c"
     ],
-    "configFilePaths": [
-      "b",
-      "a",
-      "c"
-    ],
     "originalTargetFrameworks": [
-      "a",
       "b",
+      "a",
       "c"
     ],
     "sources": {
@@ -88,43 +83,24 @@
     ]
   },
   "dependencies": {
-    "library": {
+    "range": {
       "include": "Build",
       "target": "Package",
       "version": "[1.2.3, )"
-    },
-    "libraryRangeWithNoWarnGlobal": {
-      "include": "Build",
-      "target": "Package",
-      "version": "[1.2.3, )",
-      "noWarn": [
-        "NU1500",
-        "NU1608"
-      ]
     }
   },
   "frameworks": {
     "frameworkidentifier123-frameworkprofile": {
-      "imports": [
-        "frameworkidentifier123-frameworkprofile"
-      ]
-    },
-    "frameworkidentifierwithnowarn125-frameworkprofilewithnowarn": {
       "dependencies": {
-        "libraryWithNoWarn": {
+        "range": {
           "include": "Build",
           "target": "Package",
-          "version": "[1.2.3, )",
-          "noWarn": [
-            "NU1500",
-            "NU1601"
-          ]
+          "version": "[1.2.3, )"
         }
       },
       "imports": [
-        "frameworkidentifierwithnowarn125-frameworkprofilewithnowarn"
-      ],
-      "warn": true
+        "frameworkidentifier123-frameworkprofile"
+      ]
     }
   },
   "runtimes": {
