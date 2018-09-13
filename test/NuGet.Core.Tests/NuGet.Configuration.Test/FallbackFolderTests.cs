@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet.Test.Utility;
@@ -16,7 +15,7 @@ namespace NuGet.Configuration.Test
         public void GetFallbackPackageFolders_DefaultHasNoFallbackFolders()
         {
             // Arrange & Act
-            var paths = SettingsUtility.GetFallbackPackageFolders(NullSettings.Instance);
+            var paths = SettingsUtility.GetFallbackPackageFolders(new NullSettings());
 
             // Assert
             Assert.Equal(0, paths.Count);
@@ -181,15 +180,16 @@ namespace NuGet.Configuration.Test
                     machineWideSettings: machineWideSettings);
 
                 // Act
-                var actual = SettingsUtility
-                    .GetFallbackPackageFolders(settings)
-                    .Select(GetFileName);
+                var paths = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();
 
-                var expected = new[] { "a", "b", "c", "d", "x", "y" };
-
-                // Ignore any extra folders on the machine
-                var actualFiltered = Enumerable.Intersect(actual, expected);
-                Assert.Equal(expected, actualFiltered);
+                // Assert
+                Assert.Equal(6, paths.Length);
+                Assert.Equal("a", GetFileName(paths[0]));
+                Assert.Equal("b", GetFileName(paths[1]));
+                Assert.Equal("c", GetFileName(paths[2]));
+                Assert.Equal("d", GetFileName(paths[3]));
+                Assert.Equal("x", GetFileName(paths[4]));
+                Assert.Equal("y", GetFileName(paths[5]));
             }
         }
 

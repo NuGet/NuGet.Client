@@ -78,6 +78,28 @@ namespace NuGet.Common.Test
             Assert.Equal("00000000-0000-0000-0000-000000000000", ActivityCorrelationId.Current);
         }
 
+        [Fact]
+        public async Task ActivityCorrelationId_StressTest()
+        {
+            // Arrange
+            var taskCount = 8;
+            var iterationCount = 250;
+
+            var tasks = Enumerable
+                .Range(0, taskCount)
+                .Select(t => Task.Run(async () =>
+                {
+                    for (var i = 0; i < iterationCount; i++)
+                    {
+                        await ActivityCorrelationId_FlowsDownAsyncCalls();
+                    }
+                }))
+                .ToArray();
+
+            // Act & Assert
+            await Task.WhenAll(tasks);
+        }
+
         private async Task<string> AsyncCallA(TimeSpan delay)
         {
             await Task.Yield();

@@ -44,7 +44,7 @@ namespace NuGet.Configuration.Test
             Assert.Null(proxy);
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact, Platform(Platform.Windows)]
         public void GetUserConfiguredProxy_OnWindows_ReadsCredentialsFromSettings()
         {
             // Arrange
