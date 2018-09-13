@@ -1,8 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -13,7 +12,6 @@ using Newtonsoft.Json.Linq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Commands;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
@@ -42,10 +40,8 @@ namespace NuGet.XPlat.FuncTest
             {
                 var json = new JObject();
 
-                var frameworks = new JObject
-                {
-                    ["netcoreapp1.0"] = new JObject()
-                };
+                var frameworks = new JObject();
+                frameworks["netcoreapp1.0"] = new JObject();
 
                 json["dependencies"] = new JObject();
 
@@ -78,23 +74,17 @@ namespace NuGet.XPlat.FuncTest
         /// </summary>
         public static string CopyFuncTestConfig(string destinationFolder)
         {
-            var testSettingsFolder = TestSources.GetConfigFileRoot();
-            var funcTestConfigPath = Path.Combine(testSettingsFolder, TestSources.ConfigFile);
-
+            var sourceConfigFolder = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+            var sourceConfigFile = Path.Combine(sourceConfigFolder, "NuGet.Core.FuncTests.Config");
             var destConfigFile = Path.Combine(destinationFolder, "NuGet.Config");
-            File.Copy(funcTestConfigPath, destConfigFile);
+            File.Copy(sourceConfigFile, destConfigFile);
             return destConfigFile;
         }
 
-        private const string ProtocolConfigFileName = "NuGet.Protocol.FuncTest.config";
-
         public static string ReadApiKey(string feedName)
         {
-            var testSettingsFolder = TestSources.GetConfigFileRoot();
-            var protocolConfigPath = Path.Combine(testSettingsFolder, ProtocolConfigFileName);
-
-            var fullPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-            using (Stream configStream = File.OpenRead(protocolConfigPath))
+            string fullPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+            using (Stream configStream = File.OpenRead(Path.Combine(fullPath, "NuGet.Protocol.FuncTest.config")))
             {
                 var doc = XDocument.Load(XmlReader.Create(configStream));
                 var element = doc.Root.Element(feedName);
@@ -166,17 +156,11 @@ namespace NuGet.XPlat.FuncTest
             SimpleTestPathContext pathContext,
             string projectFrameworks)
         {
-            var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(pathContext.NuGetConfig), Path.GetFileName(pathContext.NuGetConfig), null);
             var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     projectName: projectName,
                     solutionRoot: pathContext.SolutionRoot,
                     isToolingVersion15: true,
                     frameworks: MSBuildStringUtility.Split(projectFrameworks));
-
-            project.FallbackFolders = (IList<string>) SettingsUtility.GetFallbackPackageFolders(settings);
-            project.GlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
-            var packageSourceProvider = new PackageSourceProvider(settings);
-            project.Sources = packageSourceProvider.LoadPackageSources();
 
             project.Save();
             return project;
@@ -184,9 +168,7 @@ namespace NuGet.XPlat.FuncTest
 
         public static SimpleTestPackageContext CreatePackage(string packageId = "packageX",
             string packageVersion = "1.0.0",
-            string frameworkString = null,
-            PackageType packageType = null,
-            bool developmentDependency = false)
+            string frameworkString = null)
         {
             var package = new SimpleTestPackageContext()
             {
@@ -195,18 +177,13 @@ namespace NuGet.XPlat.FuncTest
             };
             var frameworks = MSBuildStringUtility.Split(frameworkString);
 
-            if (packageType != null)
-            {
-                package.PackageType = packageType;
-            }
-
             // Make the package Compatible with specific frameworks
             frameworks?
                 .ToList()
                 .ForEach(f => package.AddFile($"lib/{f}/a.dll"));
 
             // To ensure that the nuspec does not have System.Runtime.dll
-            package.Nuspec = GetNetCoreNuspec(packageId, packageVersion, developmentDependency);
+            package.Nuspec = GetNetCoreNuspec(packageId, packageVersion);
 
             return package;
         }
@@ -239,21 +216,8 @@ namespace NuGet.XPlat.FuncTest
             };
         }
 
-        public static XDocument GetNetCoreNuspec(string package, string packageVersion, bool developmentDependency = false)
+        public static XDocument GetNetCoreNuspec(string package, string packageVersion)
         {
-            if (developmentDependency)
-            {
-                return XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <package>
-                        <metadata>
-                            <id>{package}</id>
-                            <version>{packageVersion}</version>
-                            <developmentDependency>true</developmentDependency>
-                            <title />
-                        </metadata>
-                        </package>");
-            }
-
             return XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package>
                         <metadata>
@@ -266,11 +230,10 @@ namespace NuGet.XPlat.FuncTest
 
         // Assert Helper Methods
 
-        public static bool ValidateReference(XElement root, string packageId, string version, PackageType packageType = null, bool developmentDependency = false)
+        public static bool ValidateReference(XElement root, string packageId, string version)
         {
-
             var packageReferences = root
-                    .Descendants(GetReferenceType(packageType))
+                    .Descendants("PackageReference")
                     .Where(d => d.FirstAttribute.Value.Equals(packageId, StringComparison.OrdinalIgnoreCase));
 
             if (packageReferences.Count() != 1)
@@ -287,69 +250,35 @@ namespace NuGet.XPlat.FuncTest
             {
                 return false;
             }
-
-            if (developmentDependency)
-            {
-                var privateAssets = packageReferences.First().Element("PrivateAssets");
-
-                if (privateAssets == null ||
-                    !privateAssets.Value.Equals("all", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                var includeAssets = packageReferences.First().Element("IncludeAssets");
-
-                if (includeAssets == null ||
-                    !includeAssets.Value.Equals("runtime; build; native; contentfiles; analyzers", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-
             return true;
         }
 
-        public static bool ValidateAssetsFile(SimpleTestProjectContext project, string packageId)
-        {
-            if (!File.Exists(project.AssetsFileOutputPath))
-            {
-                return false;
-            }
-
-            return project.AssetsFile.Targets.Any(t => t.Libraries.Any(library => string.Equals(library.Name, packageId, StringComparison.OrdinalIgnoreCase)));
-        }
-
-        public static bool ValidateNoReference(XElement root, string packageId, PackageType packageType = null)
+        public static bool ValidateNoReference(XElement root, string packageId)
         {
             var packageReferences = root
-                    .Descendants(GetReferenceType(packageType))
+                    .Descendants("PackageReference")
                     .Where(d => d.FirstAttribute.Value.Equals(packageId, StringComparison.OrdinalIgnoreCase));
 
             return !(packageReferences.Count() > 0);
         }
 
-        public static XElement GetItemGroupForFramework(XElement root, string framework, PackageType packageType = null)
+        public static XElement GetItemGroupForFramework(XElement root, string framework)
         {
             var itemGroups = root.Descendants("ItemGroup");
             return itemGroups
-                    .Where(i => i.Descendants(GetReferenceType(packageType)).Any() &&
+                    .Where(i => i.Descendants("PackageReference").Any() &&
                                 i.FirstAttribute != null &&
                                 i.FirstAttribute.Name.LocalName.Equals("Condition", StringComparison.OrdinalIgnoreCase) &&
                                 i.FirstAttribute.Value.Trim().Equals(GetTargetFrameworkCondition(framework), StringComparison.OrdinalIgnoreCase))
                      .First();
         }
 
-        public static XElement GetItemGroupForAllFrameworks(XElement root, PackageType packageType = null)
+        public static XElement GetItemGroupForAllFrameworks(XElement root)
         {
             var itemGroups = root.Descendants("ItemGroup");
-            var referenceType = GetReferenceType(packageType);
-            foreach(var i in itemGroups)
-            {
-                var x = i.Descendants(referenceType);
-            }
+
             return itemGroups
-                    .Where(i => i.Descendants(referenceType).Count() > 0 &&
+                    .Where(i => i.Descendants("PackageReference").Count() > 0 &&
                                 i.FirstAttribute == null)
                      .First();
         }
@@ -414,18 +343,6 @@ namespace NuGet.XPlat.FuncTest
             {
                 File.Delete(filePath);
             }
-        }
-
-        public static string GetReferenceType(PackageType packageType)
-        {
-            var referenceType = "PackageReference";
-
-            if (packageType == PackageType.DotnetCliTool)
-            {
-                referenceType = "DotNetCliToolReference";
-            }
-
-            return referenceType;
         }
     }
 }
