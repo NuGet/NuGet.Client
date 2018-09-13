@@ -194,7 +194,8 @@ namespace NuGet.PackageManagement
             {
                 var downloadContext = new PackageDownloadContext(cacheContext)
                 {
-                    ParentId = nuGetProjectContext.OperationId
+                    ParentId = nuGetProjectContext.OperationId,
+                    ExtractionContext = nuGetProjectContext.PackageExtractionContext
                 };
 
                 return await RestoreMissingPackagesAsync(
@@ -230,7 +231,8 @@ namespace NuGet.PackageManagement
             {
                 var downloadContext = new PackageDownloadContext(cacheContext)
                 {
-                    ParentId = nuGetProjectContext.OperationId
+                    ParentId = nuGetProjectContext.OperationId,
+                    ExtractionContext = nuGetProjectContext.PackageExtractionContext
                 };
 
                 return await RestoreMissingPackagesAsync(
@@ -266,6 +268,18 @@ namespace NuGet.PackageManagement
                 maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism,
                 logger: NullLogger.Instance);
 
+            if (nuGetProjectContext.PackageExtractionContext == null)
+            {
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    packageRestoreContext.Logger,
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault());
+            }
+
             return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);
         }
 
@@ -292,6 +306,18 @@ namespace NuGet.PackageManagement
                 sourceRepositories: null,
                 maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism,
                 logger: logger);
+
+            if (nuGetProjectContext.PackageExtractionContext == null)
+            {
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    packageRestoreContext.Logger,
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault());
+            }
 
             return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);
         }
@@ -343,21 +369,6 @@ namespace NuGet.PackageManagement
             // So, just to be sure, create a hashset with the keys from the dictionary using the PackageReferenceComparer
             // Now, we are guaranteed to not restore the same package more than once
             var hashSetOfMissingPackageReferences = new HashSet<PackageReference>(missingPackages.Select(p => p.PackageReference), new PackageReferenceComparer());
-
-            // Before starting to restore package, set the nuGetProjectContext such that satellite files are not copied yet
-            // Satellite files will be copied as a post operation. This helps restore packages in parallel
-            // and not have to determine if the package is a satellite package beforehand
-            if (nuGetProjectContext.PackageExtractionContext == null)
-            {
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
-                nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv2,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    packageRestoreContext.Logger,
-                    signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault());
-            }
 
             nuGetProjectContext.PackageExtractionContext.CopySatelliteFiles = false;
 

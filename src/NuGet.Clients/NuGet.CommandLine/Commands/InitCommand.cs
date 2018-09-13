@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
@@ -36,6 +39,19 @@ namespace NuGet.CommandLine
 
             if (packagePaths.Count > 0)
             {
+                var packageSaveMode = Expand
+                    ? PackageSaveMode.Defaultv3
+                    : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
+
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                var packageExtractionContext = new PackageExtractionContext(
+                    packageSaveMode,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    Console,
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault());
+
                 foreach (var packagePath in packagePaths)
                 {
                     var offlineFeedAddContext = new OfflineFeedAddContext(
@@ -45,7 +61,8 @@ namespace NuGet.CommandLine
                         throwIfSourcePackageIsInvalid: false,
                         throwIfPackageExistsAndInvalid: false,
                         throwIfPackageExists: false,
-                        expand: Expand);
+                        expand: Expand,
+                        extractionContext: packageExtractionContext);
 
                     await OfflineFeedUtility.AddPackageToSource(offlineFeedAddContext, CancellationToken.None);
                 }

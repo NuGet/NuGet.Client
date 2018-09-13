@@ -9,6 +9,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
@@ -141,12 +144,21 @@ namespace NuGet.Commands
                 restoreArgs.Log);
             
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+            var extractionContext = new PackageExtractionContext(
+                restoreArgs.PackageSaveMode,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                restoreArgs.Log,
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.GetDefault());
 
             // Create request
             var request = new RestoreRequest(
                 project.PackageSpec,
                 sharedCache,
                 restoreArgs.CacheContext,
+                extractionContext,
                 restoreArgs.Log)
             {
                 // Set properties from the restore metadata

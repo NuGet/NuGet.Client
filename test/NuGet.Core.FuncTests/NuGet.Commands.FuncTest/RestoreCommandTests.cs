@@ -2008,7 +2008,14 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
+                    var packageExtractionContext = new PackageExtractionContext(
+                         PackageSaveMode.Defaultv3,
+                         XmlDocFileSaveMode.None,
+                         logger,
+                         signedPackageVerifier: null,
+                         signedPackageVerifierSettings: null);
+
+                    var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2057,7 +2064,13 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
+                    var packageExtractionContext = new PackageExtractionContext(
+                         PackageSaveMode.Defaultv3,
+                         XmlDocFileSaveMode.None,
+                         logger,
+                         signedPackageVerifier: null,
+                         signedPackageVerifierSettings: null);
+                    var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2106,7 +2119,13 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
+                    var packageExtractionContext = new PackageExtractionContext(
+                         PackageSaveMode.Defaultv3,
+                         XmlDocFileSaveMode.None,
+                         logger,
+                         signedPackageVerifier: null,
+                         signedPackageVerifierSettings: null);
+                    var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2155,7 +2174,13 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
+                    var packageExtractionContext = new PackageExtractionContext(
+                         PackageSaveMode.Defaultv3,
+                         XmlDocFileSaveMode.None,
+                         logger,
+                         signedPackageVerifier: null,
+                         signedPackageVerifierSettings: null);
+                    var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2204,7 +2229,13 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
+                    var packageExtractionContext = new PackageExtractionContext(
+                         PackageSaveMode.Defaultv3,
+                         XmlDocFileSaveMode.None,
+                         logger,
+                         signedPackageVerifier: null,
+                         signedPackageVerifierSettings: null);
+                    var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2253,7 +2284,13 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
+                    var packageExtractionContext = new PackageExtractionContext(
+                         PackageSaveMode.Defaultv3,
+                         XmlDocFileSaveMode.None,
+                         logger,
+                         signedPackageVerifier: null,
+                         signedPackageVerifierSettings: null);
+                    var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2302,7 +2339,13 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
+                    var packageExtractionContext = new PackageExtractionContext(
+                         PackageSaveMode.Defaultv3,
+                         XmlDocFileSaveMode.None,
+                         logger,
+                         signedPackageVerifier: null,
+                         signedPackageVerifierSettings: null);
+                    var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2351,7 +2394,14 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
+
+                    var packageExtractionContext = new PackageExtractionContext(
+                         PackageSaveMode.Defaultv3,
+                         XmlDocFileSaveMode.None,
+                         logger,
+                         signedPackageVerifier: null,
+                         signedPackageVerifierSettings: null);
+                    var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };

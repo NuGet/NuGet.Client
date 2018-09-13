@@ -191,7 +191,8 @@ namespace NuGet.PackageManagement
         {
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
-                ParentId = nuGetProjectContext.OperationId
+                ParentId = nuGetProjectContext.OperationId,
+                ExtractionContext = nuGetProjectContext.PackageExtractionContext
             };
 
             return InstallPackageAsync(
@@ -242,7 +243,8 @@ namespace NuGet.PackageManagement
         {
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
-                ParentId = nuGetProjectContext.OperationId
+                ParentId = nuGetProjectContext.OperationId,
+                ExtractionContext = nuGetProjectContext.PackageExtractionContext
             };
 
             await InstallPackageAsync(
@@ -313,7 +315,8 @@ namespace NuGet.PackageManagement
         {
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
-                ParentId = nuGetProjectContext.OperationId
+                ParentId = nuGetProjectContext.OperationId,
+                ExtractionContext = nuGetProjectContext.PackageExtractionContext
             };
 
             return InstallPackageAsync(
@@ -367,7 +370,8 @@ namespace NuGet.PackageManagement
         {
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
-                ParentId = nuGetProjectContext.OperationId
+                ParentId = nuGetProjectContext.OperationId,
+                ExtractionContext = nuGetProjectContext.PackageExtractionContext
             };
 
             await InstallPackageAsync(
@@ -2118,7 +2122,8 @@ namespace NuGet.PackageManagement
         {
             var downloadContext = new PackageDownloadContext(sourceCacheContext)
             {
-                ParentId = nuGetProjectContext.OperationId
+                ParentId = nuGetProjectContext.OperationId,
+                ExtractionContext = nuGetProjectContext.PackageExtractionContext
             };
 
             await ExecuteNuGetProjectActionsAsync(nuGetProject,

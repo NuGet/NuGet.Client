@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -32,6 +35,23 @@ namespace NuGet.Commands.Test
             PackageSpec project,
             IEnumerable<PackageSource> sources,
             string packagesDirectory,
+            PackageExtractionContext extractionContext,
+            ILogger log)
+            : this(
+                  project,
+                  sources.Select(source => Repository.Factory.GetCoreV3(source.Source)),
+                  packagesDirectory,
+                  new List<string>(),
+                  new TestSourceCacheContext(),
+                  extractionContext,
+                  log)
+        {
+        }
+
+        public TestRestoreRequest(
+            PackageSpec project,
+            IEnumerable<PackageSource> sources,
+            string packagesDirectory,
             SourceCacheContext cacheContext,
             ILogger log)
             : this(
@@ -41,6 +61,27 @@ namespace NuGet.Commands.Test
                   new List<string>(),
                   cacheContext,
                   log)
+        {
+        }
+
+        public TestRestoreRequest(
+            PackageSpec project,
+            IEnumerable<PackageSource> sources,
+            string packagesDirectory,
+            SourceCacheContext cacheContext,
+            PackageExtractionContext extractionContext,
+            ILogger log) : base(
+                project,
+                RestoreCommandProviders.Create(
+                    packagesDirectory,
+                    fallbackPackageFolderPaths: new List<string>(),
+                    sources: sources.Select(source => Repository.Factory.GetCoreV3(source.Source)),
+                    cacheContext: cacheContext,
+                    packageFileCache: new LocalPackageFileCache(),
+                    log: log),
+                cacheContext,
+                extractionContext,
+                log)
         {
         }
 
@@ -73,6 +114,12 @@ namespace NuGet.Commands.Test
                   packagesDirectory,
                   fallbackPackageFolders,
                   cacheContext,
+                  new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                     PackageExtractionBehavior.XmlDocFileSaveMode,
+                     log,
+                     new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders()),
+                     SignedPackageVerifierSettings.GetDefault()),
                   log)
         {
         }
@@ -88,6 +135,12 @@ namespace NuGet.Commands.Test
                 packagesDirectory,
                 fallbackPackageFolders,
                 new TestSourceCacheContext(),
+                new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                     PackageExtractionBehavior.XmlDocFileSaveMode,
+                     log,
+                     new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders()),
+                     SignedPackageVerifierSettings.GetDefault()),
                 log)
         {
         }
@@ -98,6 +151,7 @@ namespace NuGet.Commands.Test
             string packagesDirectory,
             IEnumerable<string> fallbackPackageFolders,
             SourceCacheContext cacheContext,
+            PackageExtractionContext extractionContext,
             ILogger log) : base(
                 project,
                 RestoreCommandProviders.Create(
@@ -108,6 +162,7 @@ namespace NuGet.Commands.Test
                     packageFileCache: new LocalPackageFileCache(),
                     log: log),
                 cacheContext,
+                extractionContext,
                 log)
         {
         }

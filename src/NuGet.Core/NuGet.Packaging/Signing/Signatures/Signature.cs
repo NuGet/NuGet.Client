@@ -77,11 +77,15 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(issues));
             }
 
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             verificationFlags = SignatureVerificationStatusFlags.NoErrors;
             validTimestamp = null;
 
             var timestamps = Timestamps;
-            settings = settings ?? SignedPackageVerifierSettings.GetDefault();
 
             if (timestamps.Count == 0)
             {

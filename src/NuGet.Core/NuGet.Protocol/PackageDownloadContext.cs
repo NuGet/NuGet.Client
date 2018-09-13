@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Packaging;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -42,5 +43,7 @@ namespace NuGet.Protocol.Core.Types
         public string DirectDownloadDirectory { get; }
 
         public Guid ParentId { get; set; }
+
+        public PackageExtractionContext ExtractionContext {get;set;}
     }
 }

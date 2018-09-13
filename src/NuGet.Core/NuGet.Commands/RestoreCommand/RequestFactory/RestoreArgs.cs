@@ -178,8 +178,6 @@ namespace NuGet.Commands
 
         public void ApplyStandardProperties(RestoreRequest request)
         {
-            request.PackageSaveMode = PackageSaveMode;
-
             if (request.ProjectStyle == ProjectStyle.PackageReference
                 || request.ProjectStyle == ProjectStyle.DotnetToolReference
                 || request.ProjectStyle == ProjectStyle.Standalone)

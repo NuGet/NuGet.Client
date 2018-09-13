@@ -200,10 +200,21 @@ namespace NuGet.CommandLine
                 cacheContext.DirectDownload = DirectDownload;
 
                 var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload);
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                var projectContext = new ConsoleProjectContext(Console)
+                {
+                    PackageExtractionContext = new PackageExtractionContext(
+                        Packaging.PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        Console,
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault())
+                };
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,
-                    new ConsoleProjectContext(Console),
+                    projectContext,
                     downloadContext);
 
                 if (downloadContext.DirectDownload)

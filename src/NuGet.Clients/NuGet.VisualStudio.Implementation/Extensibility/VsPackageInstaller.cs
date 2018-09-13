@@ -15,7 +15,10 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
@@ -59,7 +62,19 @@ namespace NuGet.VisualStudio
             _deleteOnRestartManager = deleteOnRestartManager;
             _isCPSJTFLoaded = false;
 
-            _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext());
+            _projectContext = new Lazy<INuGetProjectContext>(() => {
+                var projectContext = new VSAPIProjectContext();
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                projectContext.PackageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    new LoggerAdapter(projectContext),
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault());
+
+                return projectContext;
+            });
 
             PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
         }
@@ -164,6 +179,15 @@ namespace NuGet.VisualStudio
 
             var projectContext = new VSAPIProjectContext();
 
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+            projectContext.PackageExtractionContext = new PackageExtractionContext(
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                new LoggerAdapter(projectContext),
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.GetDefault());
+
             return InstallInternalAsync(project, toInstall, GetSources(sources), projectContext, includePrerelease, ignoreDependencies, CancellationToken.None);
         }
 
@@ -217,6 +241,14 @@ namespace NuGet.VisualStudio
                     var disableBindingRedirects = skipAssemblyReferences;
 
                     var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
+                    var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                    projectContext.PackageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        new LoggerAdapter(projectContext),
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault());
 
                     await InstallInternalAsync(
                         project,
@@ -268,6 +300,14 @@ namespace NuGet.VisualStudio
                     var disableBindingRedirects = skipAssemblyReferences;
 
                     var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
+                    var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                    projectContext.PackageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        new LoggerAdapter(projectContext),
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault());
 
                     return InstallInternalAsync(
                         project,
@@ -438,6 +478,14 @@ namespace NuGet.VisualStudio
             var disableBindingRedirects = skipAssemblyReferences;
 
             var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+            projectContext.PackageExtractionContext = new PackageExtractionContext(
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                new LoggerAdapter(projectContext),
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.GetDefault());
 
             await InstallInternalAsync(
                 project,

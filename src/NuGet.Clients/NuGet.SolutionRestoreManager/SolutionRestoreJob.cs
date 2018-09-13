@@ -547,7 +547,8 @@ namespace NuGet.SolutionRestoreManager
             {
                 var downloadContext = new PackageDownloadContext(cacheContext)
                 {
-                    ParentId = _nuGetProjectContext.OperationId
+                    ParentId = _nuGetProjectContext.OperationId,
+                    ExtractionContext = _nuGetProjectContext.PackageExtractionContext
                 };
 
                 await _packageRestoreManager.RestoreMissingPackagesAsync(

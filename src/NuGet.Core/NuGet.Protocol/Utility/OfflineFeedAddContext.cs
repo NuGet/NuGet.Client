@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Globalization;
-using NuGet.Protocol;
+using NuGet.Packaging;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -16,6 +16,7 @@ namespace NuGet.Protocol.Core.Types
         public bool ThrowIfPackageExistsAndInvalid { get; }
         public bool ThrowIfPackageExists { get; }
         public bool Expand { get; }
+        public PackageExtractionContext ExtractionContext {get;}
 
         public OfflineFeedAddContext(
             string packagePath,
@@ -24,7 +25,8 @@ namespace NuGet.Protocol.Core.Types
             bool throwIfSourcePackageIsInvalid,
             bool throwIfPackageExistsAndInvalid,
             bool throwIfPackageExists,
-            bool expand)
+            bool expand,
+            PackageExtractionContext extractionContext)
         {
             if (string.IsNullOrEmpty(packagePath))
             {
@@ -40,18 +42,14 @@ namespace NuGet.Protocol.Core.Types
                     nameof(source)));
             }
 
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             PackagePath = packagePath;
             Source = source;
-            Logger = logger;
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             ThrowIfSourcePackageIsInvalid = throwIfSourcePackageIsInvalid;
             ThrowIfPackageExists = throwIfPackageExists;
             ThrowIfPackageExistsAndInvalid = throwIfPackageExistsAndInvalid;
             Expand = expand;
+            ExtractionContext = extractionContext ?? throw new ArgumentNullException(nameof(extractionContext));
         }
     }
 }

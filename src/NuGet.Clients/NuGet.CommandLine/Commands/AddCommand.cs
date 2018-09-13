@@ -1,5 +1,8 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
@@ -35,6 +38,19 @@ namespace NuGet.CommandLine
             // If the Source Feed Folder does not exist, it will be created.
             OfflineFeedUtility.ThrowIfInvalid(Source);
 
+            var packageSaveMode = Expand
+                ? PackageSaveMode.Defaultv3
+                : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
+
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+            var packageExtractionContext = new PackageExtractionContext(
+                packageSaveMode,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                Console,
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.GetDefault());
+
             var offlineFeedAddContext = new OfflineFeedAddContext(
                 packagePath,
                 Source,
@@ -42,7 +58,8 @@ namespace NuGet.CommandLine
                 throwIfSourcePackageIsInvalid: true,
                 throwIfPackageExistsAndInvalid: true,
                 throwIfPackageExists: false,
-                expand: Expand);
+                expand: Expand,
+                extractionContext: packageExtractionContext);
 
             await OfflineFeedUtility.AddPackageToSource(offlineFeedAddContext, CancellationToken.None);
         }

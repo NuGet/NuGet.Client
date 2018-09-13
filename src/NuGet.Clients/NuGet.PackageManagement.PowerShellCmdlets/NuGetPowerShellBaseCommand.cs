@@ -22,6 +22,8 @@ using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -248,9 +250,21 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     using (var cacheContext = new SourceCacheContext())
                     {
+                        var logger = new LoggerAdapter(this);
+
+                        var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                        var packageExtractionContext = new PackageExtractionContext(
+                            PackageSaveMode.Defaultv3,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
+                            logger,
+                            signedPackageVerifier,
+                            SignedPackageVerifierSettings.GetDefault());
+
                         var downloadContext = new PackageDownloadContext(cacheContext)
                         {
-                            ParentId = OperationId
+                            ParentId = OperationId,
+                            ExtractionContext = packageExtractionContext
                         };
 
                         var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
@@ -258,7 +272,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                             packages,
                             this,
                             downloadContext,
-                            new LoggerAdapter(this),
+                            logger,
                             Token);
 
                         if (result.Restored)

@@ -16,6 +16,8 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Newtonsoft.Json;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -36,6 +38,7 @@ namespace NuGet.Protocol.Core.Types
         private HttpSource _httpSource;
         private string _source;
         private bool _disableBuffering;
+        public ISettings Settings { get; set; }
 
         public PackageUpdateResource(string source,
             HttpSource httpSource)
@@ -413,13 +416,24 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                var packageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    log,
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault());
+
                 var context = new OfflineFeedAddContext(pathToPackage,
                     root,
                     log,
                     throwIfSourcePackageIsInvalid: true,
                     throwIfPackageExistsAndInvalid: false,
                     throwIfPackageExists: false,
-                    expand: true);
+                    expand: true,
+                    extractionContext: packageExtractionContext);
+                
                 await OfflineFeedUtility.AddPackageToSource(context, token);
             }
         }

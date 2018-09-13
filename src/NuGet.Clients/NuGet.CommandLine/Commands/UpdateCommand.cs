@@ -14,6 +14,9 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.Packaging.Signing;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
 
 namespace NuGet.CommandLine
 {
@@ -76,6 +79,17 @@ namespace NuGet.CommandLine
 
             _msbuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console).Value.Path;
             var context = new UpdateConsoleProjectContext(Console, FileConflictAction);
+
+            var signedPackageVerifier = new PackageSignatureVerifier(
+                SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+            var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetDefault();
+
+            context.PackageExtractionContext = new PackageExtractionContext(
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                new LoggerAdapter(context),
+                signedPackageVerifier,
+                signedPackageVerifierSettings);
 
             string inputFileName = Path.GetFileName(inputFile);
             // update with packages.config as parameter

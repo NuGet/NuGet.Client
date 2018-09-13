@@ -143,24 +143,9 @@ namespace NuGet.ProjectManagement
                 packageDirectory,
                 action: async cancellationToken =>
                 {
-                    // 1. Set a default package extraction context, if necessary.
                     var packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
 
-                    if (packageExtractionContext == null)
-                    {
-                        var signedPackageVerifier = !downloadResourceResult.SignatureVerified ? new PackageSignatureVerifier(
-                            SignatureVerificationProviderFactory.GetSignatureVerificationProviders()) : null;
-                        var signedPackageVerifierSettings = !downloadResourceResult.SignatureVerified ? SignedPackageVerifierSettings.GetDefault() : null;
-
-                        packageExtractionContext = new PackageExtractionContext(
-                            PackageSaveMode.Defaultv2,
-                            PackageExtractionBehavior.XmlDocFileSaveMode,
-                            new LoggerAdapter(nuGetProjectContext),
-                            signedPackageVerifier,
-                            signedPackageVerifierSettings);
-                    }
-
-                    // 2. Check if the Package already exists at root, if so, return false
+                    // 1. Check if the Package already exists at root, if so, return false
                     if (PackageExists(packageIdentity, packageExtractionContext.PackageSaveMode))
                     {
                         nuGetProjectContext.Log(MessageLevel.Info, Strings.PackageAlreadyExistsInFolder, packageIdentity, Root);
@@ -169,7 +154,7 @@ namespace NuGet.ProjectManagement
 
                     nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Path.GetFullPath(Root));
 
-                    // 3. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
+                    // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
                     if (downloadResourceResult.Status == DownloadResourceResultStatus.Available)
                     {
                         downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
@@ -414,24 +399,11 @@ namespace NuGet.ProjectManagement
 
             token.ThrowIfCancellationRequested();
 
-            var packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
-            if (packageExtractionContext == null)
-            {
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
-                packageExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv2,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    new LoggerAdapter(nuGetProjectContext),
-                    signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault());
-            }
-
             var copiedSatelliteFiles = await PackageExtractor.CopySatelliteFilesAsync(
                 packageIdentity,
                 PackagePathResolver,
                 GetPackageSaveMode(nuGetProjectContext),
-                packageExtractionContext,
+                nuGetProjectContext.PackageExtractionContext,
                 token);
 
             FileSystemUtility.PendAddFiles(copiedSatelliteFiles, Root, nuGetProjectContext);
