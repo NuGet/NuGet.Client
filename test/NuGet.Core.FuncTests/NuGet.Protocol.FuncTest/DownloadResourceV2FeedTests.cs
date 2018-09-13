@@ -22,11 +22,11 @@ namespace NuGet.Protocol.FuncTest
         public async Task DownloadResourceFromUrl()
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV3(TestSources.NuGetV2Uri);
+            var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
 
             var downloadResource = await repo.GetResourceAsync<DownloadResource>();
 
-            var package = new SourcePackageDependencyInfo("WindowsAzure.Storage", new NuGetVersion("6.2.0"), null, true, repo, new Uri($@"{TestSources.NuGetV2Uri}/package/WindowsAzure.Storage/6.2.0"), "");
+            var package = new SourcePackageDependencyInfo("WindowsAzure.Storage", new NuGetVersion("6.2.0"), null, true, repo, new Uri($@"{TestServers.NuGetV2}/package/WindowsAzure.Storage/6.2.0"), "");
 
             // Act & Assert
             using (var packagesFolder = TestDirectory.Create())
@@ -49,7 +49,7 @@ namespace NuGet.Protocol.FuncTest
         public async Task DownloadResourceFromIdentity()
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV3(TestSources.NuGetV2Uri);
+            var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
 
             var downloadResource = await repo.GetResourceAsync<DownloadResource>();
 
@@ -76,11 +76,11 @@ namespace NuGet.Protocol.FuncTest
         public async Task DownloadResourceFromInvalidIdInUrl()
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV3(TestSources.NuGetV2Uri);
+            var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
 
             var downloadResource = await repo.GetResourceAsync<DownloadResource>();
 
-            var package = new SourcePackageDependencyInfo("not-found", new NuGetVersion("6.2.0"), null, true, repo, new Uri($@"{TestSources.NuGetV2Uri}/package/not-found/6.2.0"), "");
+            var package = new SourcePackageDependencyInfo("not-found", new NuGetVersion("6.2.0"), null, true, repo, new Uri($@"{TestServers.NuGetV2}/package/not-found/6.2.0"), "");
 
             // Act
             using (var packagesFolder = TestDirectory.Create())

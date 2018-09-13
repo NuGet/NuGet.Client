@@ -1,7 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -23,14 +20,14 @@ namespace NuGet.Protocol.FuncTest
         public async Task ODataServiceDocumentResourceV2_Valid()
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV3(TestSources.NuGetV2Uri);
+            var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
 
             // Act 
             var resource = await repo.GetResourceAsync<ODataServiceDocumentResourceV2>();
 
             // Assert
             Assert.NotNull(resource);
-            Assert.Equal(TestSources.NuGetV2Uri, resource.BaseAddress);
+            Assert.Equal(TestServers.NuGetV2, resource.BaseAddress);
         }
 
         [Fact]

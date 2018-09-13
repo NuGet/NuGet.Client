@@ -1,11 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
@@ -21,13 +20,13 @@ namespace NuGet.Protocol.FuncTest
         [Fact]
         public async Task V2FeedParser_DownloadFromInvalidUrl()
         {
-            // Arrange
+        // Arrange
             var randomName = Guid.NewGuid().ToString();
-            var repo = Repository.Factory.GetCoreV3(TestSources.NuGetV2Uri);
+            var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
 
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, TestSources.NuGetV2Uri);
+            V2FeedParser parser = new V2FeedParser(httpSource, TestServers.NuGetV2);
 
             // Act 
             using (var packagesFolder = TestDirectory.Create())
@@ -52,11 +51,11 @@ namespace NuGet.Protocol.FuncTest
         public async Task V2FeedParser_DownloadFromUrlInvalidId()
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV3(TestSources.NuGetV2Uri);
+            var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
 
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, TestSources.NuGetV2Uri);
+            V2FeedParser parser = new V2FeedParser(httpSource, TestServers.NuGetV2);
 
             // Act 
             using (var packagesFolder = TestDirectory.Create())
@@ -64,7 +63,7 @@ namespace NuGet.Protocol.FuncTest
             {
                 var actual = await parser.DownloadFromUrl(
                     new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
-                    new Uri($@"{TestSources.NuGetV2Uri}/package/not-found/6.2.0"),
+                    new Uri($@"{TestServers.NuGetV2}/package/not-found/6.2.0"),
                     new PackageDownloadContext(cacheContext),
                     packagesFolder,
                     NullLogger.Instance,
@@ -80,11 +79,11 @@ namespace NuGet.Protocol.FuncTest
         public async Task V2FeedParser_DownloadFromIdentity()
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV3(TestSources.NuGetV2Uri);
+            var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
 
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, TestSources.NuGetV2Uri);
+            V2FeedParser parser = new V2FeedParser(httpSource, TestServers.NuGetV2);
 
             // Act & Assert
             using (var packagesFolder = TestDirectory.Create())
@@ -94,7 +93,6 @@ namespace NuGet.Protocol.FuncTest
                     new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
                     new PackageDownloadContext(cacheContext),
                     packagesFolder,
-                    cacheContext,
                     NullLogger.Instance,
                     CancellationToken.None))
                 {
@@ -106,26 +104,32 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [PackageSourceTheory]
-        [PackageSourceData(TestSources.ProGet, TestSources.Klondike, TestSources.Artifactory, TestSources.MyGet)]
+        [Theory]
+        [InlineData(TestServers.ProGet)]
+        [InlineData(TestServers.Klondike)]
+        //[InlineData(TestServers.Artifactory)]
+        [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_NormalizedVersion(string packageSource)
         {
             // Arrange
             var repo = Repository.Factory.GetCoreV3(packageSource);
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, packageSource);
+            V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             // Act
-            var package = await parser.GetPackage(new PackageIdentity("owin", new NuGetVersion("1.0")), NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
+            var package = await parser.GetPackage(new PackageIdentity("owin", new NuGetVersion("1.0")), NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal("Owin", package.Id);
             Assert.Equal("1.0", package.Version.ToString());
         }
 
-        [PackageSourceTheory]
-        [PackageSourceData(TestSources.ProGet, TestSources.Klondike, TestSources.Artifactory, TestSources.MyGet)]
+        [Theory]
+        [InlineData(TestServers.ProGet)]
+        [InlineData(TestServers.Klondike)]
+        //[InlineData(TestServers.Artifactory)]
+        [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_DownloadFromIdentityFromDifferentServer(string packageSource)
         {
             // Arrange
@@ -133,7 +137,7 @@ namespace NuGet.Protocol.FuncTest
 
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, packageSource);
+            V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             // Act & Assert
             using (var packagesFolder = TestDirectory.Create())
@@ -143,7 +147,6 @@ namespace NuGet.Protocol.FuncTest
                     new PackageIdentity("newtonsoft.json", new NuGetVersion("8.0.3")),
                     new PackageDownloadContext(cacheContext),
                     packagesFolder,
-                    cacheContext,
                     NullLogger.Instance,
                     CancellationToken.None))
                 {
@@ -155,9 +158,11 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [PackageSourceTheory]
         // ProGet does not support seach portable framework, it will return empty packages
-        [PackageSourceData(TestSources.Klondike, TestSources.Artifactory, TestSources.MyGet)]
+        [Theory]
+        [InlineData(TestServers.Klondike)]
+        //[InlineData(TestServers.Artifactory)]
+        [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_SearchWithPortableFramework(string packageSource)
         {
             // Arrange
@@ -165,7 +170,7 @@ namespace NuGet.Protocol.FuncTest
 
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, packageSource);
+            V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             var searchFilter = new SearchFilter(includePrerelease: false)
             {
@@ -180,8 +185,11 @@ namespace NuGet.Protocol.FuncTest
             Assert.Equal("NUnit", package.Id);
         }
 
-        [PackageSourceTheory]
-        [PackageSourceData(TestSources.ProGet, TestSources.Klondike, TestSources.Artifactory, TestSources.MyGet)]
+        [Theory]
+        [InlineData(TestServers.ProGet)]
+        [InlineData(TestServers.Klondike)]
+        //[InlineData(TestServers.Artifactory)]
+        [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_Search(string packageSource)
         {
             // Arrange
@@ -189,7 +197,7 @@ namespace NuGet.Protocol.FuncTest
 
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, packageSource);
+            V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             var searchFilter = new SearchFilter(includePrerelease: false)
             {
@@ -204,8 +212,11 @@ namespace NuGet.Protocol.FuncTest
             Assert.Equal("NUnit", package.Id);
         }
 
-        [PackageSourceTheory]
-        [PackageSourceData(TestSources.ProGet, TestSources.Klondike, TestSources.Artifactory, TestSources.MyGet)]
+        [Theory]
+        [InlineData(TestServers.ProGet)]
+        [InlineData(TestServers.Klondike)]
+        //[InlineData(TestServers.Artifactory)]
+        [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_SearchWithPrerelease(string packageSource)
         {
             // Arrange
@@ -213,7 +224,7 @@ namespace NuGet.Protocol.FuncTest
 
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, packageSource);
+            V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             var searchFilter = new SearchFilter(includePrerelease: true)
             {
@@ -228,34 +239,44 @@ namespace NuGet.Protocol.FuncTest
             Assert.NotNull(package);
         }
 
-        [PackageSourceTheory]
-        [PackageSourceData(TestSources.NuGetServer, TestSources.VSTS)]
-        public async Task V2FeedParser_CredentialNormalizedVersion(PackageSource packageSource)
+        [Theory]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.Vsts, "Vsts")]
+        public async Task V2FeedParser_CredentialNormalizedVersion(string packageSource, string feedName)
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV2(packageSource);
+            var credential = Utility.ReadCredential(feedName);
+            var source = new PackageSource(packageSource);
+            var sourceCredential = new PackageSourceCredential(packageSource, credential.Item1, credential.Item2, true);
+            source.Credentials = sourceCredential;
+            var repo = Repository.Factory.GetCoreV2(source);
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, packageSource.Source);
+            V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             // Act
-            var package = await parser.GetPackage(new PackageIdentity("owin", new NuGetVersion("1.0")), NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
+            var package = await parser.GetPackage(new PackageIdentity("owin", new NuGetVersion("1.0")), NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal("Owin", package.Id);
             Assert.Equal("1.0", package.Version.ToString());
         }
 
-        [PackageSourceTheory]
-        [PackageSourceData(TestSources.NuGetServer, TestSources.VSTS)]
-        public async Task V2FeedParser_DownloadFromIdentityFromDifferentCredentialServer(PackageSource packageSource)
+        [Theory]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.Vsts, "Vsts")]
+        public async Task V2FeedParser_DownloadFromIdentityFromDifferentCredentialServer(string packageSource, string feedName)
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV2(packageSource);
+            var credential = Utility.ReadCredential(feedName);
+            var source = new PackageSource(packageSource);
+            var sourceCredential = new PackageSourceCredential(packageSource, credential.Item1, credential.Item2, true);
+            source.Credentials = sourceCredential;
+            var repo = Repository.Factory.GetCoreV2(source);
 
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, packageSource.Source);
+            V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             // Act & Assert
             using (var packagesFolder = TestDirectory.Create())
@@ -265,7 +286,6 @@ namespace NuGet.Protocol.FuncTest
                     new PackageIdentity("newtonsoft.json", new NuGetVersion("8.0.3")),
                     new PackageDownloadContext(cacheContext),
                     packagesFolder,
-                    cacheContext,
                     NullLogger.Instance,
                     CancellationToken.None))
                 {
@@ -277,16 +297,21 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [PackageSourceTheory]
-        [PackageSourceData(TestSources.NuGetServer, TestSources.VSTS)]
-        public async Task V2FeedParser_SearchWithPortableFrameworkFromCredentialServer(PackageSource packageSource)
+        [Theory]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.Vsts, "Vsts")]
+        public async Task V2FeedParser_SearchWithPortableFrameworkFromCredentialServer(string packageSource, string feedName)
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV2(packageSource);
+            var credential = Utility.ReadCredential(feedName);
+            var source = new PackageSource(packageSource);
+            var sourceCredential = new PackageSourceCredential(packageSource, credential.Item1, credential.Item2, true);
+            source.Credentials = sourceCredential;
+            var repo = Repository.Factory.GetCoreV2(source);
 
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, packageSource.Source);
+            V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             var searchFilter = new SearchFilter(includePrerelease: false)
             {
@@ -301,16 +326,21 @@ namespace NuGet.Protocol.FuncTest
             Assert.Equal("NUnit", package.Id);
         }
 
-        [PackageSourceTheory]
-        [PackageSourceData(TestSources.NuGetServer, TestSources.VSTS)]
-        public async Task V2FeedParser_SearchFromCredentialServer(PackageSource packageSource)
+        [Theory]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.Vsts, "Vsts")]
+        public async Task V2FeedParser_SearchFromCredentialServer(string packageSource, string feedName)
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV2(packageSource);
+            var credential = Utility.ReadCredential(feedName);
+            var source = new PackageSource(packageSource);
+            var sourceCredential = new PackageSourceCredential(packageSource, credential.Item1, credential.Item2, true);
+            source.Credentials = sourceCredential;
+            var repo = Repository.Factory.GetCoreV2(source);
 
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, packageSource.Source);
+            V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             var searchFilter = new SearchFilter(includePrerelease: false)
             {
@@ -325,16 +355,21 @@ namespace NuGet.Protocol.FuncTest
             Assert.Equal("NUnit", package.Id);
         }
 
-        [PackageSourceTheory]
-        [PackageSourceData(TestSources.NuGetServer, TestSources.VSTS)]
-        public async Task V2FeedParser_SearchWithPrereleaseCredentialServer(PackageSource packageSource)
+        [Theory]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.Vsts, "Vsts")]
+        public async Task V2FeedParser_SearchWithPrereleaseCredentialServer(string packageSource, string feedName)
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV2(packageSource);
+            var credential = Utility.ReadCredential(feedName);
+            var source = new PackageSource(packageSource);
+            var sourceCredential = new PackageSourceCredential(packageSource, credential.Item1, credential.Item2, true);
+            source.Credentials = sourceCredential;
+            var repo = Repository.Factory.GetCoreV2(source);
 
             var httpSource = HttpSource.Create(repo);
 
-            var parser = new V2FeedParser(httpSource, packageSource.Source);
+            V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             var searchFilter = new SearchFilter(includePrerelease: true)
             {
