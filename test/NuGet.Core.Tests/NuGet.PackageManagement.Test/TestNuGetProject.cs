@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,22 +22,11 @@ namespace NuGet.Test
             _installedPackages = installedPackages;
         }
 
-        public TestNuGetProject(string projectName, IList<Packaging.PackageReference> installedPackages)
-            : base(CreateMetadata(projectName))
-        {
-            _installedPackages = installedPackages;
-        }
-
         private static Dictionary<string, object> CreateMetadata()
-        {
-            return CreateMetadata(nameof(TestNuGetProject));
-        }
-
-        private static Dictionary<string, object> CreateMetadata(string projectName)
         {
             return new Dictionary<string, object>
             {
-                { NuGetProjectMetadataKeys.Name, projectName },
+                { NuGetProjectMetadataKeys.Name, nameof(TestNuGetProject) },
                 { NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.Parse("net45") },
                 { NuGetProjectMetadataKeys.ProjectId, Guid.NewGuid().ToString() },
             };

@@ -35,7 +35,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
-                var testSettings = NullSettings.Instance;
+                var testSettings = new Configuration.NullSettings();
                 var token = CancellationToken.None;
                 var deleteOnRestartManger = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
@@ -105,7 +105,7 @@ namespace NuGet.Test
 
             public int GetHashCode(NuGetProjectAction obj)
             {
-                var combiner = new NuGet.Shared.HashCodeCombiner();
+                var combiner = new HashCodeCombiner();
                 combiner.AddObject(obj.PackageIdentity.GetHashCode());
                 combiner.AddObject(obj.NuGetProjectActionType);
                 return combiner.CombinedHash;

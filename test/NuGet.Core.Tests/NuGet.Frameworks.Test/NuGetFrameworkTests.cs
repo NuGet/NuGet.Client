@@ -252,7 +252,6 @@ namespace NuGet.Test
         [InlineData("aspnet451", false)]
         [InlineData("uap10.0", true)]
         [InlineData("uap11.0", true)]
-        [InlineData("tizen3.0", true)]
         public void NuGetFramework_IsPackageBased(string framework, bool isPackageBased)
         {
             var fw = NuGetFramework.Parse(framework);

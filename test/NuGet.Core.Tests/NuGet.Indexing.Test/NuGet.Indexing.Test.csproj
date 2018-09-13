@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Protocol.VisualStudio\NuGet.Protocol.VisualStudio.csproj" />
   </ItemGroup>
 
   <ItemGroup>

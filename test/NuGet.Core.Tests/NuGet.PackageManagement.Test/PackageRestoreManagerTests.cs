@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -46,7 +46,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var token = CancellationToken.None;
 
-                using (var packageStream = GetDownloadResult(randomPackageSourcePath.Path, packageFileInfo))
+                using (var packageStream = GetDownloadResult(packageFileInfo))
                 {
                     // Act
                     await projectA.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -160,7 +160,6 @@ namespace NuGet.Test
                 // Act
                 await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory,
                     testNuGetProjectContext,
-                    new TestLogger(),
                     CancellationToken.None);
 
                 Assert.Equal(1, restoredPackages.Count);
@@ -184,7 +183,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var token = CancellationToken.None;
 
-                using (var packageStream = GetDownloadResult(randomPackageSourcePath.Path, packageFileInfo))
+                using (var packageStream = GetDownloadResult(packageFileInfo))
                 {
                     // Act
                     await projectA.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
@@ -268,7 +267,6 @@ namespace NuGet.Test
                 // Act
                 await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory,
                     testNuGetProjectContext,
-                    new TestLogger(),
                     CancellationToken.None);
 
                 Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
@@ -316,7 +314,7 @@ namespace NuGet.Test
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestPackageSourcePath,
                     testPackage1.Id, testPackage1.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResult(randomTestPackageSourcePath.Path, packageFileInfo))
+                using (var packageStream = GetDownloadResult(packageFileInfo))
                 {
                     // Act
                     await projectB.InstallPackageAsync(testPackage1, packageStream, testNuGetProjectContext, token);
@@ -325,7 +323,7 @@ namespace NuGet.Test
 
                 packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestPackageSourcePath,
                     testPackage2.Id, testPackage2.Version.ToNormalizedString());
-                using (var packageStream = GetDownloadResult(randomTestPackageSourcePath.Path, packageFileInfo))
+                using (var packageStream = GetDownloadResult(packageFileInfo))
                 {
                     // Act
                     await projectA.InstallPackageAsync(testPackage2, packageStream, testNuGetProjectContext, token);
@@ -360,7 +358,6 @@ namespace NuGet.Test
                 // Act
                 await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory,
                     testNuGetProjectContext,
-                    new TestLogger(),
                     CancellationToken.None);
 
                 // Assert
@@ -396,9 +393,9 @@ namespace NuGet.Test
             }
         }
 
-        private static DownloadResourceResult GetDownloadResult(string source, FileInfo packageFileInfo)
+        private static DownloadResourceResult GetDownloadResult(FileInfo packageFileInfo)
         {
-            return new DownloadResourceResult(packageFileInfo.OpenRead(), source);
+            return new DownloadResourceResult(packageFileInfo.OpenRead());
         }
     }
 }
