@@ -1,9 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -31,7 +30,7 @@ namespace NuGet.Commands.FuncTest
         [InlineData("https://www.nuget.org/api/v2/", new Type[0])]
         [InlineData("https://api.nuget.org/v3/index.json", new[] { typeof(RemoteV3FindPackageByIdResourceProvider) })]
         [InlineData("https://api.nuget.org/v3/index.json", new[] { typeof(HttpFileSystemBasedFindPackageByIdResourceProvider) })]
-        public async Task RestoreCommand_LockFileHasOriginalPackageIdCaseAsync(string source, Type[] excludedProviders)
+        public async Task RestoreCommand_LockFileHasOriginalPackageIdCase(string source, Type[] excludedProviders)
         {
             // Arrange
             var providers = Repository
@@ -68,7 +67,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_LockFileHasOriginalVersionCaseAsync()
+        public async Task RestoreCommand_LockFileHasOriginalVersionCase()
         {
             // Arrange
             using (var packagesDir = TestDirectory.Create())
@@ -129,13 +128,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_CannotFindProjectReferenceWithDifferentNameCaseAsync()
+        public async Task RestoreCommand_CannotFindProjectReferenceWithDifferentNameCase()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -181,7 +178,7 @@ namespace NuGet.Commands.FuncTest
         /// This test fixes https://github.com/NuGet/Home/issues/2901.
         /// </summary>
         [Fact]
-        public async Task RestoreCommand_DependenciesOfDifferentCaseAsync()
+        public async Task RestoreCommand_DependenciesOfDifferentCase()
         {
             // Arrange
             using (var packagesDir = TestDirectory.Create())
@@ -262,13 +259,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_VerifyMinClientVersionV2SourceAsync()
+        public async Task RestoreCommand_VerifyMinClientVersionV2Source()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -280,10 +275,53 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "TestPackage.MinClientVersion", "1.0.0");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
+                Exception ex = null;
+
+                // Act
+                var command = new RestoreCommand(request);
+
+                try
                 {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                    await command.ExecuteAsync();
+                }
+                catch (Exception thrownEx)
+                {
+                    ex = thrownEx;
+                }
+
+                // Assert
+                Assert.Contains("'TestPackage.MinClientVersion 1.0.0' package requires NuGet client version '9.9999.0' or above", ex.Message);
+                Assert.False(File.Exists(request.LockFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_VerifyMinClientVersionV3Source()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
+
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
+            {
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+                // This package has a minclientversion of 9999
+                AddDependency(spec, "TestPackage.MinClientVersion", "1.0.0");
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
 
                 Exception ex = null;
 
@@ -306,51 +344,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_VerifyMinClientVersionV3SourceAsync()
-        {
-            // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://api.nuget.org/v3/index.json")
-            };
-
-            using (var packagesDir = TestDirectory.Create())
-            using (var projectDir = TestDirectory.Create())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                // This package has a minclientversion of 9999
-                AddDependency(spec, "TestPackage.MinClientVersion", "1.0.0");
-
-                var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
-
-                Exception ex = null;
-
-                // Act
-                var command = new RestoreCommand(request);
-
-                try
-                {
-                    await command.ExecuteAsync();
-                }
-                catch (Exception thrownEx)
-                {
-                    ex = thrownEx;
-                }
-
-                // Assert
-                Assert.Contains("'TestPackage.MinClientVersion 1.0.0' package requires NuGet client version '9.9999.0' or above", ex.Message);
-                Assert.False(File.Exists(request.LockFilePath));
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_VerifyMinClientVersionLocalFolderAsync()
+        public async Task RestoreCommand_VerifyMinClientVersionLocalFolder()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -367,10 +361,11 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "packageA", "1.0.0");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
 
                 var packageContext = new SimpleTestPackageContext()
                 {
@@ -379,7 +374,7 @@ namespace NuGet.Commands.FuncTest
                     MinClientVersion = "9.9.9"
                 };
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(sourceDir, packageContext);
+                SimpleTestPackageUtility.CreatePackages(sourceDir, packageContext);
 
                 Exception ex = null;
 
@@ -402,7 +397,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_VerifyMinClientVersionAlreadyInstalledAsync()
+        public async Task RestoreCommand_VerifyMinClientVersionAlreadyInstalled()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -420,10 +415,11 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "packageA", "1.0.0");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
 
                 var packageContext = new SimpleTestPackageContext()
                 {
@@ -434,27 +430,19 @@ namespace NuGet.Commands.FuncTest
 
                 var packagePath = Path.Combine(workingDir, "packageA.1.0.0.nupkg");
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(workingDir, packageContext);
+                SimpleTestPackageUtility.CreatePackages(workingDir, packageContext);
 
                 // install the package
-                var packageIdentity = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
-
-                using (var packageDownloader = new LocalPackageArchiveDownloader(
-                    workingDir,
-                    packagePath,
-                    packageIdentity,
-                    logger))
+                using (var fileStream = File.OpenRead(packagePath))
                 {
-                    await PackageExtractor.InstallFromSourceAsync(
-                        new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")),
-                        packageDownloader,
-                        new VersionFolderPathResolver(packagesDir),
-                        new PackageExtractionContext(
-                            PackageSaveMode.Defaultv3,
-                            XmlDocFileSaveMode.None,
+                    await PackageExtractor.InstallFromSourceAsync((stream) =>
+                        fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                        new VersionFolderPathContext(
+                            new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")),
+                            packagesDir,
                             logger,
-                            signedPackageVerifier: null,
-                            signedPackageVerifierSettings: null),
+                            PackageSaveMode.Defaultv3,
+                            XmlDocFileSaveMode.None),
                         CancellationToken.None);
                 }
 
@@ -479,13 +467,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_FrameworkImportRulesAreAppliedAsync()
+        public async Task RestoreCommand_FrameworkImportRulesAreApplied()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -507,11 +493,11 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
 
@@ -535,13 +521,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_FrameworkImportArrayAsync()
+        public async Task RestoreCommand_FrameworkImportArray()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -563,11 +547,11 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("netstandard1.2"), new List<NuGetFramework> { NuGetFramework.Parse("dotnet5.3"),
                                                                                                                          NuGetFramework.Parse("portable-net452+win81")});
@@ -593,13 +577,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_FrameworkImportRulesAreApplied_NoopAsync()
+        public async Task RestoreCommand_FrameworkImportRulesAreApplied_Noop()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -621,11 +603,11 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var result = await command.ExecuteAsync();
@@ -633,11 +615,10 @@ namespace NuGet.Commands.FuncTest
                 logger.Clear();
 
                 // Act
-                request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json"),
-                    ExistingLockFile = result.LockFile
-                };
+                request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+                request.ExistingLockFile = result.LockFile;
                 command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
@@ -651,13 +632,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_LeftOverNupkg_OverwrittenAsync()
+        public async Task RestoreCommand_LeftOverNupkg_Overwritten()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -712,13 +691,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_FrameworkImport_WarnOnAsync()
+        public async Task RestoreCommand_FrameworkImport_WarnOn()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -740,14 +717,14 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
-                var warning = "Package 'Newtonsoft.Json 7.0.1' was restored using '.NETPortable,Version=v0.0,Profile=net452+win81' instead of the project target framework '.NETPlatform,Version=v5.0'. This package may not be fully compatible with your project.";
+                var warning = "Package 'Newtonsoft.Json 7.0.1' was restored using '.NETPortable,Version=v0.0,Profile=net452+win81' instead the project target framework '.NETPlatform,Version=v5.0'. This may cause compatibility problems.";
 
                 // Act
                 var result = await command.ExecuteAsync();
@@ -759,18 +736,16 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(1, result.GetAllInstalled().Count);
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(1, logger.Warnings);
-                Assert.Equal(1, logger.Messages.Where(message => message.Contains(warning)).Count());
+                Assert.Equal(1, logger.Messages.Where(message => message.Equals(warning)).Count());
             }
         }
 
         [Fact]
-        public async Task RestoreCommand_FollowFallbackDependenciesAsync()
+        public async Task RestoreCommand_FollowFallbackDependencies()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -792,11 +767,11 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
 
@@ -818,13 +793,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_FrameworkImportValidateLockFileAsync()
+        public async Task RestoreCommand_FrameworkImportValidateLockFile()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -846,11 +819,11 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var result = await command.ExecuteAsync();
@@ -865,23 +838,19 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_DependenciesDifferOnCaseAsync()
+        public async Task RestoreCommand_DependenciesDifferOnCase()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
             {
                 var json = new JObject();
 
-                var frameworks = new JObject
-                {
-                    ["net46"] = new JObject()
-                };
+                var frameworks = new JObject();
+                frameworks["net46"] = new JObject();
 
                 json["dependencies"] = new JObject();
 
@@ -894,11 +863,11 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "json-ld.net", "1.0.4");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
 
                 // Act
@@ -920,23 +889,19 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_DependenciesDifferOnCase_DowngradeAsync()
+        public async Task RestoreCommand_DependenciesDifferOnCase_Downgrade()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
             {
                 var json = new JObject();
 
-                var frameworks = new JObject
-                {
-                    ["net46"] = new JObject()
-                };
+                var frameworks = new JObject();
+                frameworks["net46"] = new JObject();
 
                 json["dependencies"] = new JObject();
 
@@ -949,11 +914,11 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "dotNetRDF", "1.0.8.3533");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
 
                 // Act
@@ -968,13 +933,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_TestLockFileWrittenOnLockFileChangeAsync()
+        public async Task RestoreCommand_TestLockFileWrittenOnLockFileChange()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -985,11 +948,11 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
 
@@ -1002,13 +965,12 @@ namespace NuGet.Commands.FuncTest
                 var lockFormat = new LockFileFormat();
                 lockFormat.Write(File.OpenWrite(lockFilePath), modifiedLockFile);
 
-                request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json"),
+                request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
-                    // Act
-                    ExistingLockFile = modifiedLockFile
-                };
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                // Act
+                request.ExistingLockFile = modifiedLockFile;
 
                 command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
@@ -1023,13 +985,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_NoopOnLockFileWriteIfFilesMatchAsync()
+        public async Task RestoreCommand_WriteLockFileOnForce()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1040,10 +1000,59 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                var lockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                // Add white space to the end of the file
+                var whitespace = $"{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}";
+                File.AppendAllText(lockFilePath, whitespace);
+
+                // Act
+                request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+                var previousLockFile = result.LockFile;
+                request.ExistingLockFile = result.LockFile;
+
+                command = new RestoreCommand(request);
+                result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, true, CancellationToken.None);
+
+                var output = File.ReadAllText(lockFilePath);
+
+                // Assert
+                // The file should committed and it should clear the whitespace
+                Assert.False(output.EndsWith(whitespace, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_NoopOnLockFileWriteIfFilesMatch()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
+            {
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+                AddDependency(spec, "NuGet.Versioning", "1.0.7");
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
@@ -1055,10 +1064,9 @@ namespace NuGet.Commands.FuncTest
                 // Act
                 var lastDate = File.GetLastWriteTime(lockFilePath);
 
-                request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
                 var previousLockFile = result.LockFile;
                 request.ExistingLockFile = result.LockFile;
 
@@ -1090,13 +1098,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_NuGetVersioning107RuntimeAssembliesAsync()
+        public async Task RestoreCommand_NuGetVersioning107RuntimeAssemblies()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1107,10 +1113,11 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1134,13 +1141,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_InstallPackageWithDependenciesAsync()
+        public async Task RestoreCommand_InstallPackageWithDependencies()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1151,10 +1156,11 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "WebGrease", "1.6.0");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1177,7 +1183,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_InstallPackageWithManyDependenciesAsync()
+        public async Task RestoreCommand_InstallPackageWithManyDependencies()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -1214,15 +1220,14 @@ namespace NuGet.Commands.FuncTest
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
-                {
-                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 var packages = new List<SimpleTestPackageContext>();
                 var dependencies = new List<SimpleTestPackageContext>();
 
-                for (var i = 0; i < 500; i++)
+                for (int i = 0; i < 500; i++)
                 {
                     var package = new SimpleTestPackageContext()
                     {
@@ -1238,7 +1243,7 @@ namespace NuGet.Commands.FuncTest
                     Dependencies = dependencies
                 };
                 packages.Add(packageA);
-                await SimpleTestPackageUtility.CreatePackagesAsync(packages, packageSource.FullName);
+                SimpleTestPackageUtility.CreatePackages(packages, packageSource.FullName);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1256,13 +1261,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_InstallPackageWithReferenceDependenciesAsync()
+        public async Task RestoreCommand_InstallPackageWithReferenceDependencies()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1273,10 +1276,11 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "Moon.Owin.Localization", "1.3.1");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1299,13 +1303,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_RestoreWithNoChangesAsync()
+        public async Task RestoreCommand_RestoreWithNoChanges()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1316,10 +1318,9 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var command = new RestoreCommand(request);
                 var firstRun = await command.ExecuteAsync();
@@ -1341,13 +1342,11 @@ namespace NuGet.Commands.FuncTest
         [Theory]
         [InlineData("https://www.nuget.org/api/v2/")]
         [InlineData("https://api.nuget.org/v3/index.json")]
-        public async Task RestoreCommand_PackageIsAddedToPackageCacheAsync(string source)
+        public async Task RestoreCommand_PackageIsAddedToPackageCache(string source)
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource(source)
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(source));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1358,10 +1357,9 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1377,13 +1375,11 @@ namespace NuGet.Commands.FuncTest
         [Theory]
         [InlineData("https://www.nuget.org/api/v2/")]
         [InlineData("https://api.nuget.org/v3/index.json")]
-        public async Task RestoreCommand_PackagesAreExtractedToTheNormalizedPathAsync(string source)
+        public async Task RestoreCommand_PackagesAreExtractedToTheNormalizedPath(string source)
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource(source)
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(source));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1394,10 +1390,9 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "owin", "1.0");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1411,13 +1406,11 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_WarnWhenWeBumpYouUpAsync()
+        public async Task RestoreCommand_WarnWhenWeBumpYouUp()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1428,10 +1421,9 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "Newtonsoft.Json", "7.0.0"); // 7.0.0 does not exist so we'll bump up to 7.0.1
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1443,19 +1435,17 @@ namespace NuGet.Commands.FuncTest
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
 
                 // Assert
-                Assert.Equal(1, logger.Warnings); // Warnings are combined on message
-                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
+                Assert.Equal(3, logger.Warnings); // We'll get the warning for each runtime and for the runtime-less restore.
+                Assert.Contains("Dependency specified was Newtonsoft.Json (>= 7.0.0) but ended up with Newtonsoft.Json 7.0.1.", logger.Messages);
             }
         }
 
         [Fact]
-        public async Task RestoreCommand_WarnWhenWeBumpYouUpOnSubsequentRestoresAsync()
+        public async Task RestoreCommand_WarnWhenWeBumpYouUpOnSubsequentRestores()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1464,40 +1454,34 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
 
                 AddDependency(spec, "Newtonsoft.Json", "7.0.0"); // 7.0.0 does not exist so we'll bump up to 7.0.1
-
+                
                 // Execute the first restore
-                var requestA = new TestRestoreRequest(spec, sources, packagesDir, new TestLogger())
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var requestA = new TestRestoreRequest(spec, sources, packagesDir, new TestLogger());
+                requestA.LockFilePath = Path.Combine(projectDir, "project.lock.json");
                 var commandA = new RestoreCommand(requestA);
                 var resultA = await commandA.ExecuteAsync();
 
                 var logger = new TestLogger();
-                var requestB = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json"),
-                    ExistingLockFile = resultA.LockFile
-                };
+                var requestB = new TestRestoreRequest(spec, sources, packagesDir, logger);
+                requestB.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+                requestB.ExistingLockFile = resultA.LockFile;
                 var commandB = new RestoreCommand(requestB);
 
                 // Act
                 var resultB = await commandB.ExecuteAsync();
 
                 // Assert
-                Assert.Equal(1, logger.Warnings); // Warnings for all graphs are combined
-                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
+                Assert.Equal(3, logger.Warnings); // We'll get the warning for each runtime and for the runtime-less restore.
+                Assert.Contains("Dependency specified was Newtonsoft.Json (>= 7.0.0) but ended up with Newtonsoft.Json 7.0.1.", logger.Messages);
             }
         }
 
         [Fact]
-        public async Task RestoreCommand_JsonNet701RuntimeAssembliesAsync()
+        public async Task RestoreCommand_JsonNet701RuntimeAssemblies()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1508,10 +1492,11 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "Newtonsoft.Json", "7.0.1");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1535,13 +1520,12 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_NoCompatibleRuntimeAssembliesForProjectAsync()
+        public async Task RestoreCommand_NoCompatibleRuntimeAssembliesForProject()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
             {
@@ -1551,10 +1535,11 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "NuGet.Core", "2.8.3");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1571,12 +1556,11 @@ namespace NuGet.Commands.FuncTest
                     FrameworkConstants.CommonFrameworks.NetCore50,
                     null,
                     new[] { NuGetFramework.Parse("net40-client") });
-
                 Assert.Contains(expectedIssue, result.CompatibilityCheckResults.SelectMany(c => c.Issues).ToArray());
                 Assert.False(result.CompatibilityCheckResults.Any(c => c.Success));
-                Assert.True(logger.Messages.Any(e => e.Contains(expectedIssue.Format())));
+                Assert.Contains(expectedIssue.Format(), logger.Messages);
 
-                Assert.Equal(6, logger.Errors);
+                Assert.Equal(9, logger.Errors);
                 Assert.Equal(2, installed.Count);
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal(0, runtimeAssemblies.Count);
@@ -1584,17 +1568,14 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_CorrectlyIdentifiesUnresolvedPackagesAsync()
+        public async Task RestoreCommand_CorrectlyIdentifiesUnresolvedPackages()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
-            using (var sourceCacheContext = new SourceCacheContext())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1602,10 +1583,11 @@ namespace NuGet.Commands.FuncTest
                 AddDependency(spec, "NotARealPackage.ThisShouldNotExists.DontCreateIt.Seriously.JustDontDoIt.Please", "2.8.3");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, sourceCacheContext, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1616,7 +1598,7 @@ namespace NuGet.Commands.FuncTest
                 // Assert
                 Assert.False(result.Success);
 
-                Assert.Equal(1, logger.Errors);
+                Assert.Equal(3, logger.Errors);
                 Assert.Empty(result.CompatibilityCheckResults);
                 Assert.DoesNotContain("compatible with", logger.Messages);
                 Assert.Equal(1, unresolved.Count);
@@ -1625,7 +1607,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_PopulatesProjectFileDependencyGroupsCorrectlyAsync()
+        public async Task RestoreCommand_PopulatesProjectFileDependencyGroupsCorrectly()
         {
             const string project = @"{
     ""dependencies"": {
@@ -1639,10 +1621,8 @@ namespace NuGet.Commands.FuncTest
 }
 ";
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1651,10 +1631,11 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1672,7 +1653,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_CanInstallPackageWithSatelliteAssembliesAsync()
+        public async Task RestoreCommand_CanInstallPackageWithSatelliteAssemblies()
         {
             const string project = @"
 {
@@ -1686,10 +1667,9 @@ namespace NuGet.Commands.FuncTest
 ";
 
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://www.nuget.org/api/v2")
-            };
+            var sources = new List<PackageSource>();
+
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1698,10 +1678,11 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1713,7 +1694,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_UnmatchedRefAndLibAssembliesAsync()
+        public async Task RestoreCommand_UnmatchedRefAndLibAssemblies()
         {
             const string project = @"
 {
@@ -1731,10 +1712,9 @@ namespace NuGet.Commands.FuncTest
 ";
 
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+
+            sources.Add(new PackageSource("https://nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1743,10 +1723,11 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1764,7 +1745,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_LockedLockFileWithOutOfDateProjectAsync()
+        public async Task RestoreCommand_LockedLockFileWithOutOfDateProject()
         {
             const string project = @"
 {
@@ -1816,10 +1797,9 @@ namespace NuGet.Commands.FuncTest
 ";
 
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+
+            sources.Add(new PackageSource("https://nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1831,10 +1811,9 @@ namespace NuGet.Commands.FuncTest
                 var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    ExistingLockFile = lockFile
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+
+                request.ExistingLockFile = lockFile;
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -1852,14 +1831,12 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_RestoreExactVersionWithFailingSourceAsync()
+        public async Task RestoreCommand_RestoreExactVersionWithFailingSource()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://failingSource"));
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1879,11 +1856,11 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, logger);
 
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
 
                 // Act
@@ -1895,14 +1872,12 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_RestoreFloatingVersionWithFailingHttpSourceAsync()
+        public async Task RestoreCommand_RestoreFloatingVersionWithFailingHttpSource()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://failingSource"));
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1922,11 +1897,11 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, logger);
 
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
 
                 // Act & Assert
@@ -1936,14 +1911,12 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_RestoreFloatingVersionWithFailingLocalSourceAsync()
+        public async Task RestoreCommand_RestoreFloatingVersionWithFailingLocalSource()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("\\failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("\\failingSource"));
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1962,11 +1935,11 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
 
                 // Act & Assert
@@ -1976,14 +1949,12 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_RestoreFloatingVersionWithIgnoreFailingLocalSourceAsync()
+        public async Task RestoreCommand_RestoreFloatingVersionWithIgnoreFailingLocalSource()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("\\failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("\\failingSource"));
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -2007,12 +1978,12 @@ namespace NuGet.Commands.FuncTest
                     context.IgnoreFailedSources = true;
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
-                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
-                    {
-                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                    };
+                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
+                    var request = new RestoreRequest(spec, provider, context, logger);
 
+                    request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                    var lockFileFormat = new LockFileFormat();
                     var command = new RestoreCommand(request);
 
                     // Act
@@ -2025,14 +1996,12 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_RestoreFloatingVersionWithIgnoreFailingHttpSourceAsync()
+        public async Task RestoreCommand_RestoreFloatingVersionWithIgnoreFailingHttpSource()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://failingSource"));
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -2056,306 +2025,12 @@ namespace NuGet.Commands.FuncTest
                     context.IgnoreFailedSources = true;
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
-                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
-                    {
-                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                    };
+                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
+                    var request = new RestoreRequest(spec, provider, context, logger);
 
-                    var command = new RestoreCommand(request);
+                    request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                    // Act
-                    var result = await command.ExecuteAsync();
-
-                    // Assert
-                    Assert.True(result.Success);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_RestoreNonExistingWithIgnoreFailingLocalSourceAsync()
-        {
-            // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("\\failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
-
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""XXX"": ""7.0.91""
-                    },
-                     ""frameworks"": {
-                        ""net45"": { }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var logger = new TestLogger();
-                using(var context = new SourceCacheContext())
-                {
-                    context.IgnoreFailedSources = true;
-                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
-
-                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
-                    {
-                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                    };
-
-                    var command = new RestoreCommand(request);
-
-                    // Act
-                    var result = await command.ExecuteAsync();
-
-                    // Assert
-                    Assert.False(result.Success);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_RestoreNonExistingWithIgnoreFailingHttpSourceAsync()
-        {
-            // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
-
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""XXX"": ""7.0.91""
-                    },
-                     ""frameworks"": {
-                        ""net45"": { }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var logger = new TestLogger();
-                using(var context = new SourceCacheContext())
-                {
-                    context.IgnoreFailedSources = true;
-                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
-
-                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
-                    {
-                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                    };
-
-                    var command = new RestoreCommand(request);
-
-                    // Act
-                    var result = await command.ExecuteAsync();
-
-                    // Assert
-                    Assert.False(result.Success);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_RestoreNonExistingWithIgnoreFailingV3HttpSourceAsync()
-        {
-            // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://failingSource.json"),
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
-
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""XXX"": ""7.0.91""
-                    },
-                     ""frameworks"": {
-                        ""net45"": { }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var logger = new TestLogger();
-                using(var context = new SourceCacheContext())
-                {
-                    context.IgnoreFailedSources = true;
-                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
-
-                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
-                    {
-                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                    };
-
-                    var command = new RestoreCommand(request);
-
-                    // Act
-                    var result = await command.ExecuteAsync();
-
-                    // Assert
-                    Assert.False(result.Success);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_RestoreInexactWithIgnoreFailingLocalSourceAsync()
-        {
-            // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("\\failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
-
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.91""
-                    },
-                     ""frameworks"": {
-                        ""net45"": { }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var logger = new TestLogger();
-                using(var context = new SourceCacheContext())
-                {
-                    context.IgnoreFailedSources = true;
-                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
-
-                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
-                    {
-                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                    };
-
-                    var command = new RestoreCommand(request);
-
-                    // Act
-                    var result = await command.ExecuteAsync();
-
-                    // Assert
-                    Assert.True(result.Success);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_RestoreInexactWithIgnoreFailingHttpSourceAsync()
-        {
-            // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
-
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.91""
-                    },
-                     ""frameworks"": {
-                        ""net45"": { }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var logger = new TestLogger();
-                using(var context = new SourceCacheContext())
-                {
-                    context.IgnoreFailedSources = true;
-                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
-
-                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
-                    {
-                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                    };
-
-                    var command = new RestoreCommand(request);
-
-                    // Act
-                    var result = await command.ExecuteAsync();
-
-                    // Assert
-                    Assert.True(result.Success);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_RestoreInexactWithIgnoreFailingV3HttpSourceAsync()
-        {
-            // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource("https://failingSource.json"),
-                new PackageSource("https://www.nuget.org/api/v2/")
-            };
-
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""NewtonSoft.Json"": ""7.0.91""
-                    },
-                     ""frameworks"": {
-                        ""net45"": { }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var logger = new TestLogger();
-                using(var context = new SourceCacheContext())
-                {
-                    context.IgnoreFailedSources = true;
-                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
-
-                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, logger)
-                    {
-                        LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                    };
-
+                    var lockFileFormat = new LockFileFormat();
                     var command = new RestoreCommand(request);
 
                     // Act
@@ -2415,19 +2090,14 @@ namespace NuGet.Commands.FuncTest
         {
             get
             {
+                var json = new JObject();
 
+                var frameworks = new JObject();
+                frameworks["netcore50"] = new JObject();
 
-                var frameworks = new JObject
-                {
-                    ["netcore50"] = new JObject()
-                };
+                json["dependencies"] = new JObject();
 
-                var json = new JObject
-                {
-                    ["dependencies"] = new JObject(),
-
-                    ["frameworks"] = frameworks
-                };
+                json["frameworks"] = frameworks;
 
                 json.Add("runtimes", JObject.Parse("{ \"uap10-x86\": { }, \"uap10-x86-aot\": { } }"));
 
@@ -2439,19 +2109,14 @@ namespace NuGet.Commands.FuncTest
         {
             get
             {
+                var json = new JObject();
 
+                var frameworks = new JObject();
+                frameworks["net46"] = new JObject();
 
-                var frameworks = new JObject
-                {
-                    ["net46"] = new JObject()
-                };
+                json["dependencies"] = new JObject();
 
-                var json = new JObject
-                {
-                    ["dependencies"] = new JObject(),
-
-                    ["frameworks"] = frameworks
-                };
+                json["frameworks"] = frameworks;
 
                 json.Add("runtimes", JObject.Parse("{ \"uap10-x86\": { }, \"uap10-x86-aot\": { } }"));
 

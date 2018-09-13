@@ -15,7 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Test.Utility\NuGet.Test.Utility.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Commands\NuGet.Commands.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core.Tests\NuGet.Commands.Test.Utility\NuGet.Commands.Test.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup>
