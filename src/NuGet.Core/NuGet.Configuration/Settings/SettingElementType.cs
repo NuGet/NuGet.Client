@@ -29,6 +29,14 @@ namespace NuGet.Configuration
 
         Add,
 
-        Clear
+        Author,
+
+        Certificate,
+
+        Clear,
+
+        Owners,
+
+        Repository
     }
 }
