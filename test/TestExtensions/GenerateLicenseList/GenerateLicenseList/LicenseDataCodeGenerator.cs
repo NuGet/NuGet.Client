@@ -94,11 +94,11 @@ namespace GenerateLicenseList
                 throw new ArgumentException("The license list version and the exception list version are not equivalent");
             }
 
-            return Environment.NewLine + Environment.NewLine + LicenseDataHolderBase +
+            return Environment.NewLine + Environment.NewLine + LiceseDataClassDeclaration +
                 string.Join(Environment.NewLine, licenses.LicenseList.Where(e => e.ReferenceNumber < 3).Select(e => PrettyPrint(e))) +
-                Intermediate +
+                ClosingBracket +
                 string.Join(Environment.NewLine, exceptions.ExceptionList.Where(e => e.ReferenceNumber < 3).Select(e => PrettyPrint(e))) +
-                last;
+                ClosingBracket2;
         }
 
         private static string PrettyPrint(LicenseData licenseData)
@@ -111,21 +111,21 @@ namespace GenerateLicenseList
             return $@"            {{""{exceptionData.LicenseExceptionID}"", new ExceptionData(licenseID: ""{exceptionData.LicenseExceptionID}"", referenceNumber: {exceptionData.ReferenceNumber}, isDeprecatedLicenseId: {exceptionData.IsDeprecatedLicenseId.ToString().ToLowerInvariant()}) }}, ";
         }
 
-        private static string LicenseDataHolderBase = $@"internal class NuGetLicenseData
+        private static string LiceseDataClassDeclaration = $@"internal class NuGetLicenseData
 {{
     public static string LicenseListVersion = ""listversion"";
 
     public static Dictionary<string, LicenseData> LicenseList = new Dictionary<string, LicenseData>()
         {{" + Environment.NewLine;
 
-        private static string Intermediate = Environment.NewLine + $@"        }};
+        private static string ClosingBracket = Environment.NewLine + $@"        }};
 
     public static Dictionary<string, ExceptionData> ExceptionList = new Dictionary<string, ExceptionData>()
         {{" + Environment.NewLine;
 
-        private static string last = Environment.NewLine + $@"        }};" + Environment.NewLine + $@"}}";
+        private static string ClosingBracket2 = Environment.NewLine + $@"        }};" + Environment.NewLine + $@"}}";
 
-        private static string LicenseData = $@"internal class LicenseData
+        private static readonly string LicenseData = $@"internal class LicenseData
 {{
     public LicenseData(string licenseID, int referenceNumber, bool isOsiApproved, bool isDeprecatedLicenseId)
     {{
@@ -141,7 +141,7 @@ namespace GenerateLicenseList
     bool IsDeprecatedLicenseId {{ get; }}
 }}";
 
-        private static string ExceptionData = $@"internal class ExceptionData
+        private static readonly string ExceptionData = $@"internal class ExceptionData
 {{
     public ExceptionData(string licenseID, int referenceNumber, bool isDeprecatedLicenseId)
     {{
@@ -155,7 +155,7 @@ namespace GenerateLicenseList
     bool IsDeprecatedLicenseId {{ get; }}
 }}";
 
-        private static string NamespaceDeclaration = $@"// Copyright (c) .NET Foundation. All rights reserved.
+        private static readonly string NamespaceDeclaration = $@"// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
