@@ -468,17 +468,17 @@ namespace NuGet.Packaging
             IsDeprecatedLicenseId = isDeprecatedLicenseId;
         }
 
-        string LicenseExceptionID
+        internal string LicenseExceptionID
         {
             get;
         }
 
-        int ReferenceNumber
+        internal int ReferenceNumber
         {
             get;
         }
 
-        bool IsDeprecatedLicenseId
+        internal bool IsDeprecatedLicenseId
         {
             get;
         }
