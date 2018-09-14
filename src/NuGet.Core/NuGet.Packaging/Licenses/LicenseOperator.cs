@@ -7,5 +7,10 @@ namespace NuGet.Packaging
     public abstract class LicenseOperator : NuGetLicenseExpression
     {
         public OperatorType OperatorType { get; protected set; }
+
+        protected LicenseOperator()
+        {
+            Type = LicenseExpressionType.Operator;
+        }
     }
 }

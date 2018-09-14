@@ -7,11 +7,10 @@ namespace NuGet.Packaging
 {
     public class WithOperator : LicenseOperator
     {
-        public WithOperator(NuGetLicense license, NuGetLicenseException exception)
+        public WithOperator(NuGetLicense license, NuGetLicenseException exception) : base()
         {
             License = license ?? throw new ArgumentNullException(nameof(license));
             Exception = exception ?? throw new ArgumentNullException(nameof(exception));
-            Type = LicenseExpressionType.Operator;
         }
 
         public NuGetLicense License { get; private set; }

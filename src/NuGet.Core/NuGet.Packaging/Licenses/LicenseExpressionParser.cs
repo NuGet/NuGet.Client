@@ -112,7 +112,7 @@ namespace NuGet.Packaging.Licenses
                         }
                         break;
                     default:
-                        throw new ArgumentException("Should not happen. File a bug on NuGet/Home if seen.");
+                        throw new ArgumentException("Should not happen. File a bug with repro steps on NuGet/Home if seen.");
                 }
                 lastTokenType = currentTokenType;
                 firstPass = false;
@@ -176,7 +176,7 @@ namespace NuGet.Packaging.Licenses
                 }
                 else if (leftHandSideExpression == null)
                 {
-                    throw new ArgumentException("Should not happen. File a bug on NuGet/Home if seen.");
+                    throw new ArgumentException("Should not happen. File a bug with repro steps on NuGet/Home if seen.");
                 }
                 else
                 {

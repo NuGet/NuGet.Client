@@ -6,7 +6,7 @@ namespace NuGet.Packaging
 {
     public class LogicalOperator : LicenseOperator
     {
-        public LogicalOperator(LogicalOperatorType logicalOperatorType, NuGetLicenseExpression left, NuGetLicenseExpression right)
+        public LogicalOperator(LogicalOperatorType logicalOperatorType, NuGetLicenseExpression left, NuGetLicenseExpression right) : base()
         {
             LogicalOperatorType = logicalOperatorType;
             Left = left;

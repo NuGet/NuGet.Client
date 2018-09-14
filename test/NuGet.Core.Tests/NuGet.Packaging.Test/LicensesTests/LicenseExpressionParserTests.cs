@@ -11,7 +11,7 @@ namespace NuGet.Packaging.Test
     public class LicenseExpressionParserTests
     {
         // TODO NK - Make license ids conform to the specification.
-        //TODO NK - add tests for casing of the license iDs and casing of the operators
+        // TODO NK - add tests for casing of the license iDs and casing of the operators
         // TODO NK - Should strict parse the deprecated exceptions?
         // TODO NK - maybe we have different handling for the deprecated IDs.
 
@@ -40,9 +40,11 @@ namespace NuGet.Packaging.Test
         // Separate strict and non strict parsing
         [InlineData("(And+) AND or", "And+ AND or", "AND", false)]
 
-        public void LicenseExpressionParser_ParsesComplexExpression(string infix, string postfix, string rootOperator, bool strict)
+        public void LicenseExpressionParser_ParsesComplexExpression(string infix, string postfix, string rootOperator, bool hasNonStandardIdentifiers)
         {
-            var postfixExpression = LicenseExpressionParser.Parse(infix, strict: strict);
+            var postfixExpression = LicenseExpressionParser.Parse(infix);
+
+            //TODO NK - walk and find the non standard identifiers. hasNonStandardIdentifiers
             Assert.Equal(postfix, postfixExpression.ToString());
 
             if (Enum.TryParse<LogicalOperatorType>(rootOperator, true, out var logicalOperator))
