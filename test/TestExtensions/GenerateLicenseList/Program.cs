@@ -39,7 +39,6 @@ namespace GenerateLicenseList
                         writer.Flush();
                     }
                     Console.WriteLine($"Completed the update of {targetFile}");
-                    Console.ReadLine();
                     return 0;
                 }
 

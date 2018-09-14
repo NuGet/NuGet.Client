@@ -97,10 +97,13 @@ namespace GenerateLicenseList
                 throw new ArgumentException("The license list version and the exception list version are not equivalent");
             }
 
-            return Environment.NewLine + Environment.NewLine + LicenseDataClassDeclaration + licenses.LicenseListVersion + Ok +
-                string.Join(Environment.NewLine, licenses.LicenseList.Where(e => e.ReferenceNumber < 3).Select(e => PrettyPrint(e))) +
+            return Environment.NewLine + Environment.NewLine +
+                LicenseDataClassDeclaration +
+                licenses.LicenseListVersion +
+                DictionaryDeclaration +
+                string.Join(Environment.NewLine, licenses.LicenseList.Where(e => e.ReferenceNumber < 10).Select(e => PrettyPrint(e))) +
                 ClosingBracket +
-                string.Join(Environment.NewLine, exceptions.ExceptionList.Where(e => e.ReferenceNumber < 3).Select(e => PrettyPrint(e))) +
+                string.Join(Environment.NewLine, exceptions.ExceptionList.Where(e => e.ReferenceNumber < 10).Select(e => PrettyPrint(e))) +
                 ClosingBracket2;
         }
 
@@ -117,7 +120,8 @@ namespace GenerateLicenseList
         private static string LicenseDataClassDeclaration = $@"internal class NuGetLicenseData
 {{
     public static string LicenseListVersion = """;
-        private static string Ok = $@""";
+
+        private static string DictionaryDeclaration = $@""";
 
     public static Dictionary<string, LicenseData> LicenseList = new Dictionary<string, LicenseData>()
         {{" + Environment.NewLine;
