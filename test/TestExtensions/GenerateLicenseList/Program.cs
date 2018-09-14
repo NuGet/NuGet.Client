@@ -33,12 +33,13 @@ namespace GenerateLicenseList
                 var codeIssues = node.GetDiagnostics();
                 if (!codeIssues.Any())
                 {
-
                     using (var writer = File.CreateText(targetFile))
                     {
                         node.WriteTo(writer);
+                        writer.Flush();
                     }
                     Console.WriteLine($"Completed the update of {targetFile}");
+                    Console.ReadLine();
                     return 0;
                 }
 
