@@ -144,10 +144,10 @@ internal class NuGetLicenseData
         IsDeprecatedLicenseId = isDeprecatedLicenseId;
     }}
 
-    string LicenseID {{ get; }}
-    int ReferenceNumber {{ get; }}
-    bool IsOsiApproved {{ get; }}
-    bool IsDeprecatedLicenseId {{ get; }}
+    internal string LicenseID {{ get; }}
+    internal int ReferenceNumber {{ get; }}
+    internal bool IsOsiApproved {{ get; }}
+    internal bool IsDeprecatedLicenseId {{ get; }}
 }}";
 
         private static readonly string ExceptionData = $@"internal class ExceptionData
@@ -159,9 +159,9 @@ internal class NuGetLicenseData
         IsDeprecatedLicenseId = isDeprecatedLicenseId;
     }}
 
-    string LicenseExceptionID {{ get; }}
-    int ReferenceNumber {{ get; }}
-    bool IsDeprecatedLicenseId {{ get; }}
+    internal string LicenseExceptionID {{ get; }}
+    internal int ReferenceNumber {{ get; }}
+    internal bool IsDeprecatedLicenseId {{ get; }}
 }}";
 
         private static readonly string NamespaceDeclaration = $@"// Copyright (c) .NET Foundation. All rights reserved.

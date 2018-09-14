@@ -438,22 +438,22 @@ namespace NuGet.Packaging
             IsDeprecatedLicenseId = isDeprecatedLicenseId;
         }
 
-        string LicenseID
+        internal string LicenseID
         {
             get;
         }
 
-        int ReferenceNumber
+        internal int ReferenceNumber
         {
             get;
         }
 
-        bool IsOsiApproved
+        internal bool IsOsiApproved
         {
             get;
         }
 
-        bool IsDeprecatedLicenseId
+        internal bool IsDeprecatedLicenseId
         {
             get;
         }

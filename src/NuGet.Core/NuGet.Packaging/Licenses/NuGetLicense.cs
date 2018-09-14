@@ -10,10 +10,13 @@ namespace NuGet.Packaging
         public string Identifier { get; }
         public bool Plus { get; }
 
-        public NuGetLicense(string identifier, bool plus)
+        public bool IsDeprecated { get; }
+
+        public NuGetLicense(string identifier, bool plus, bool deprecated)
         {
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
             Plus = plus;
+            IsDeprecated = deprecated;
             Type = LicenseExpressionType.License;
         }
 
@@ -21,12 +24,19 @@ namespace NuGet.Packaging
         {
             if (!string.IsNullOrWhiteSpace(identifier))
             {
-                // TODO NK - Do the actual parsing.
-                if (identifier[identifier.Length - 1] == '+')
+                if (NuGetLicenseData.LicenseList.TryGetValue(identifier, out var licenseData))
                 {
-                    return new NuGetLicense(identifier.Substring(0, identifier.Length - 1), true);
+                    return new NuGetLicense(identifier, plus: false, deprecated: licenseData.IsDeprecatedLicenseId);
                 }
-                return new NuGetLicense(identifier, false);
+                else
+                {
+
+                    // TODO NK - Do the actual parsing.
+                    if (identifier[identifier.Length - 1] == '+')
+                    {
+                        return new NuGetLicense(identifier.Substring(0, identifier.Length - 1), true);
+                    }
+                }
             }
             return null;
         }
