@@ -11,9 +11,9 @@ namespace NuGet.Configuration
         //TODO: Delete all obsolete APIs. https://github.com/NuGet/Home/issues/7294
 
         /// <summary>
-        /// Gets a list of all of the package sources
+        /// Gets an enumerable of all of the package sources
         /// </summary>
-        /// <returns>List of all of the package sources</returns>
+        /// <returns>Enumerable of all of the package sources</returns>
         IEnumerable<PackageSource> LoadPackageSources();
 
         /// <summary>
@@ -21,6 +21,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="name">Name of source to be searched for</param>
         /// <returns>PackageSource that matches the given name. Null if none was found</returns>
+        /// <throws>ArgumentException when <paramref name="name"/> is null or empty.</throws>
         PackageSource GetPackageSourceByName(string name);
 
         /// <summary>
@@ -28,6 +29,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="source">Url of source to be searched for</param>
         /// <returns>PackageSource that matches the given source. Null if none was found</returns>
+        /// <throws>ArgumentException when <paramref name="source"/> is null or empty.</throws>
         PackageSource GetPackageSourceBySource(string source);
 
         /// <summary>
@@ -86,7 +88,7 @@ namespace NuGet.Configuration
         /// Disables the given package source
         /// </summary>
         /// <param name="source">PackageSource to disable</param>
-        [Obsolete("DisablePackageSource(PackageSource source) is deprecated, please use DisablePackageSource(string name) instead.")]
+        [Obsolete("DisablePackageSource(PackageSource source) is deprecated. Please use DisablePackageSource(string name) instead.")]
         void DisablePackageSource(PackageSource source);
 
         /// <summary>
@@ -94,7 +96,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="source"></param>
         /// <returns>true if the source is not part of the disabled sources</returns>
-        [Obsolete("IsPackageSourceEnabled(PackageSource source) is deprecated, please use IsPackageSourceEnabled(string name) instead.")]
+        [Obsolete("IsPackageSourceEnabled(PackageSource source) is deprecated. Please use IsPackageSourceEnabled(string name) instead.")]
         bool IsPackageSourceEnabled(PackageSource source);
 
         /// <summary>

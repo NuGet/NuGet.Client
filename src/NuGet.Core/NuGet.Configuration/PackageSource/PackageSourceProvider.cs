@@ -13,7 +13,7 @@ namespace NuGet.Configuration
     {
         public ISettings Settings { get; private set; }
 
-        private const int MaxSupportedProtocolVersion = 3;
+        internal const int MaxSupportedProtocolVersion = 3;
         private readonly IEnumerable<PackageSource> _configurationDefaultSources;
 
         public PackageSourceProvider(
@@ -57,15 +57,13 @@ namespace NuGet.Configuration
         private Dictionary<string, IndexedPackageSource> LoadPackageSourceLookup(bool byName)
         {
             var packageSourcesSection = Settings.GetSection(ConfigurationConstants.PackageSources);
-            var sources = packageSourcesSection?.Items.Select(s => s as SourceItem)
-                .Where(s => s != null);
+            var sources = packageSourcesSection?.Items.OfType<SourceItem>();
 
             // get list of disabled packages
             var disabledSourcesSection = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
-            var disabledSourcesSettings = disabledSourcesSection?.Items.Select(s => s as AddItem)
-                .Where(s => s != null);
+            var disabledSourcesSettings = disabledSourcesSection?.Items.OfType<AddItem>();
 
-            var disabledSources = new HashSet<string>(disabledSourcesSettings?.GroupBy(setting => setting.Key).Select(group => group.First().Key) ?? new List<string>());
+            var disabledSources = new HashSet<string>(disabledSourcesSettings?.GroupBy(setting => setting.Key).Select(group => group.First().Key) ?? Enumerable.Empty<string>());
             var packageSourceLookup = new Dictionary<string, IndexedPackageSource>(StringComparer.OrdinalIgnoreCase);
 
             if (sources != null)
@@ -204,15 +202,16 @@ namespace NuGet.Configuration
             }
 
             var credentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
-            var credentialsItem = credentialsSection?.Items.Select(c => c as CredentialsItem).Where(s => s != null).FirstOrDefault(s => string.Equals(s.ElementName, sourceName, StringComparison.Ordinal));
+            var credentialsItem = credentialsSection?.Items.OfType<CredentialsItem>().FirstOrDefault(s => string.Equals(s.ElementName, sourceName, StringComparison.Ordinal));
 
             if (credentialsItem != null && !credentialsItem.IsEmpty())
             {
-                var username = credentialsItem.Username;
-                var password = credentialsItem.Password;
-                var authenticationTypes = credentialsItem.ValidAuthenticationTypes;
-
-                return new PackageSourceCredential(sourceName, username, password, credentialsItem.IsPasswordClearText, authenticationTypes);
+                return new PackageSourceCredential(
+                    sourceName,
+                    credentialsItem.Username,
+                    credentialsItem.Password,
+                    credentialsItem.IsPasswordClearText,
+                    credentialsItem.ValidAuthenticationTypes);
             }
 
             return null;
@@ -256,10 +255,10 @@ namespace NuGet.Configuration
 
                 foreach (var packageSource in _configurationDefaultSources)
                 {
-                    var sourceMatching = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.CurrentCultureIgnoreCase));
-                    var feedNameMatching = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase));
+                    var isSourceMatch = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.CurrentCultureIgnoreCase));
+                    var isFeedNameMatch = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase));
 
-                    if (sourceMatching || feedNameMatching)
+                    if (isSourceMatch || isFeedNameMatch)
                     {
                         return packageSource;
                     }
@@ -273,7 +272,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             return GetPackageSource(name, LoadPackageSourceLookupByName());
@@ -283,7 +282,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(source))
             {
-                throw new ArgumentNullException(nameof(source));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(source));
             }
 
             return GetPackageSource(source, LoadPackageSourceLookupBySource());
@@ -293,7 +292,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             var isDirty = false;
@@ -304,13 +303,11 @@ namespace NuGet.Configuration
         {
             // get list of sources
             var packageSourcesSection = Settings.GetSection(ConfigurationConstants.PackageSources);
-            var sourcesSettings = packageSourcesSection?.Items.Select(s => s as SourceItem)
-                .Where(s => s != null);
+            var sourcesSettings = packageSourcesSection?.Items.OfType<SourceItem>();
 
             // get list of credentials for sources
             var sourceCredentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
-            var sourceCredentialsSettings = sourceCredentialsSection?.Items.Select(s => s as CredentialsItem)
-                .Where(s => s != null);
+            var sourceCredentialsSettings = sourceCredentialsSection?.Items.OfType<CredentialsItem>();
 
             var sourcesToRemove = sourcesSettings?.Where(s => string.Equals(s.Key, name, StringComparison.OrdinalIgnoreCase));
             var credentialsToRemove = sourceCredentialsSettings?.Where(s => string.Equals(s.ElementName, name, StringComparison.OrdinalIgnoreCase));
@@ -351,7 +348,7 @@ namespace NuGet.Configuration
             }
         }
 
-        [Obsolete("DisablePackageSource(PackageSource source) is deprecated, please use DisablePackageSource(string name) instead.")]
+        [Obsolete("DisablePackageSource(PackageSource source) is deprecated. Please use DisablePackageSource(string name) instead.")]
         public void DisablePackageSource(PackageSource source)
         {
             if (source == null)
@@ -367,7 +364,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             var isDirty = false;
@@ -383,9 +380,12 @@ namespace NuGet.Configuration
             {
                 try
                 {
-                    (Settings as Settings).AddOrUpdate(sourceSetting.Origin, ConfigurationConstants.DisabledPackageSources, new AddItem(name, "true"));
-                    isDirty = true;
-                    addedInSameFileAsCurrentSource = true;
+                    if (sourceSetting.Origin != null)
+                    {
+                        (Settings as Settings).AddOrUpdate(sourceSetting.Origin, ConfigurationConstants.DisabledPackageSources, new AddItem(name, "true"));
+                        isDirty = true;
+                        addedInSameFileAsCurrentSource = true;
+                    }
                 }
                 // We ignore any errors since this means the current source file could not be edited
                 catch { }
@@ -409,7 +409,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             var isDirty = false;
@@ -420,8 +420,7 @@ namespace NuGet.Configuration
         {
             // get list of disabled sources
             var disabledSourcesSection = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
-            var disabledSourcesSettings = disabledSourcesSection?.Items.Select(s => s as AddItem)
-                .Where(s => s != null);
+            var disabledSourcesSettings = disabledSourcesSection?.Items.OfType<AddItem>();
 
             var disableSourcesToRemove = disabledSourcesSettings?.Where(s => string.Equals(s.Key, name, StringComparison.OrdinalIgnoreCase));
 
@@ -468,8 +467,7 @@ namespace NuGet.Configuration
                 {
                     // get list of credentials for sources
                     var credentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
-                    credentialsSettingsItem = credentialsSection?.Items.Select(s => s as CredentialsItem)
-                        .Where(s => s != null).Where(s => string.Equals(s.ElementName, sourceToUpdate.Key, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    credentialsSettingsItem = credentialsSection?.Items.OfType<CredentialsItem>().Where(s => string.Equals(s.ElementName, sourceToUpdate.Key, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 }
 
                 var oldPackageSource = ReadPackageSource(sourceToUpdate, disabledSourceItem == null);
@@ -604,11 +602,11 @@ namespace NuGet.Configuration
             var existingSettingsLookup = GetExistingSettingsLookup();
 
             var disabledSourcesSection = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
-            var existingDisabledSources = disabledSourcesSection?.Items.Select(c => c as AddItem).Where(c => c != null);
+            var existingDisabledSources = disabledSourcesSection?.Items.OfType<AddItem>();
             var existingDisabledSourcesLookup = existingDisabledSources?.ToDictionary(setting => setting.Key, StringComparer.OrdinalIgnoreCase);
 
             var credentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
-            var existingCredentials = credentialsSection?.Items.Select(c => c as CredentialsItem).Where(c => c != null);
+            var existingCredentials = credentialsSection?.Items.OfType<CredentialsItem>();
             var existingCredentialsLookup = existingCredentials?.ToDictionary(setting => setting.ElementName, StringComparer.OrdinalIgnoreCase);
 
             foreach (var source in sources)
@@ -652,8 +650,7 @@ namespace NuGet.Configuration
             {
                 // get list of credentials for sources
                 var sourceCredentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
-                var sourceCredentialsSettings = sourceCredentialsSection?.Items.Select(s => s as CredentialsItem)
-                    .Where(s => s != null);
+                var sourceCredentialsSettings = sourceCredentialsSection?.Items.OfType<CredentialsItem>();
                 var existingsourceCredentialsLookup = sourceCredentialsSettings?.ToDictionary(setting => setting.ElementName, StringComparer.OrdinalIgnoreCase);
 
                 foreach (var sourceItem in existingSettingsLookup)
@@ -687,7 +684,7 @@ namespace NuGet.Configuration
         private Dictionary<string, SourceItem> GetExistingSettingsLookup()
         {
             var sourcesSection = Settings.GetSection(ConfigurationConstants.PackageSources);
-            var existingSettings = sourcesSection?.Items.OfType<SourceItem>().Where(c => !c.Origin.IsMachineWide).ToList();
+            var existingSettings = sourcesSection?.Items.OfType<SourceItem>().Where(c => !c.Origin?.IsMachineWide ?? true).ToList();
 
             var existingSettingsLookup = new Dictionary<string, SourceItem>(StringComparer.OrdinalIgnoreCase);
             if (existingSettings != null)
@@ -735,7 +732,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             var disabledSources = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
@@ -746,7 +743,7 @@ namespace NuGet.Configuration
             return value == null;
         }
 
-        [Obsolete("IsPackageSourceEnabled(PackageSource source) is deprecated, please use IsPackageSourceEnabled(string name) instead.")]
+        [Obsolete("IsPackageSourceEnabled(PackageSource source) is deprecated. Please use IsPackageSourceEnabled(string name) instead.")]
         public bool IsPackageSourceEnabled(PackageSource source)
         {
             if (source == null)
@@ -765,7 +762,7 @@ namespace NuGet.Configuration
             get
             {
                 var activeSourceSection = Settings.GetSection(ConfigurationConstants.ActivePackageSourceSectionName);
-                return activeSourceSection?.Items.Select(c => c as AddItem).Where(c => c != null).FirstOrDefault()?.Key;
+                return activeSourceSection?.Items.OfType<AddItem>().FirstOrDefault()?.Key;
             }
         }
 

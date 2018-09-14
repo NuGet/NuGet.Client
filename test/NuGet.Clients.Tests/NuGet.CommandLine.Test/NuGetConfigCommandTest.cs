@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using NuGet.Test.Utility;
-using NuGet.Common;
-using Xunit;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Test.Utility;
+using Xunit;
 
 namespace NuGet.CommandLine.Test
 {

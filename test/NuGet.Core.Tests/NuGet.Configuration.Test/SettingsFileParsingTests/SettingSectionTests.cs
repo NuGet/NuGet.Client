@@ -388,10 +388,10 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SettingSection_Merge_JoinsTwoSectionsCorrectly()
         {
-            var firstSection = new AbstractSettingSection("Section", new AddItem("key1", "value1"), new AddItem("key2", "value2"));
-            var secondSection = new ParsedSettingSection("Section", new AddItem("key2", "valueX"), new AddItem("key3", "value3"));
+            var firstSection = new VirtualSettingSection("Section", new AddItem("key1", "value1"), new AddItem("key2", "value2"));
+            var secondSection = new VirtualSettingSection("Section", new AddItem("key2", "valueX"), new AddItem("key3", "value3"));
 
-            var expectedSection = new AbstractSettingSection("Section", new AddItem("key1", "value1"), new AddItem("key2", "valueX"), new AddItem("key3", "value3"));
+            var expectedSection = new VirtualSettingSection("Section", new AddItem("key1", "value1"), new AddItem("key2", "valueX"), new AddItem("key3", "value3"));
 
             firstSection.Merge(secondSection);
 
@@ -401,8 +401,8 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SettingSection_Merge_WithTwoDifferentSections_Throws()
         {
-            var firstSection = new AbstractSettingSection("Section", new AddItem("key1", "value1"), new AddItem("key2", "value2"));
-            var secondSection = new ParsedSettingSection("SectionName", new AddItem("key2", "valueX"), new AddItem("key3", "value3"));
+            var firstSection = new VirtualSettingSection("Section", new AddItem("key1", "value1"), new AddItem("key2", "value2"));
+            var secondSection = new VirtualSettingSection("SectionName", new AddItem("key2", "valueX"), new AddItem("key3", "value3"));
 
             var ex = Record.Exception(() => firstSection.Merge(secondSection));
             ex.Should().NotBeNull();

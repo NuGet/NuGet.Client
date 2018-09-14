@@ -56,8 +56,8 @@ namespace NuGet.Configuration
                 if (_defaultPackageSources == null)
                 {
                     _defaultPackageSources = new List<PackageSource>();
-                    var disabledPackageSources = _settingsManager.GetSection(ConfigurationConstants.DisabledPackageSources)?.Items.OfType<AddItem>() ?? new List<AddItem>();
-                    var packageSources = _settingsManager.GetSection(ConfigurationConstants.PackageSources)?.Items.OfType<SourceItem>() ?? new List<SourceItem>();
+                    var disabledPackageSources = _settingsManager.GetSection(ConfigurationConstants.DisabledPackageSources)?.Items.OfType<AddItem>() ?? Enumerable.Empty<AddItem>();
+                    var packageSources = _settingsManager.GetSection(ConfigurationConstants.PackageSources)?.Items.OfType<SourceItem>() ?? Enumerable.Empty<SourceItem>();
 
                     foreach (var source in packageSources)
                     {

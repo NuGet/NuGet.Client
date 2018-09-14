@@ -23,7 +23,7 @@ namespace NuGet.Configuration.Test
 
         public static byte[] GetFileHash(string fileName)
         {
-            var hashAlgorithm = SHA512.Create();
+            using (var hashAlgorithm = SHA512.Create())
             using (var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
                 return hashAlgorithm.ComputeHash(stream);

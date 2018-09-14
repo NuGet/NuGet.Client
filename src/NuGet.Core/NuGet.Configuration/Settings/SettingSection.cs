@@ -11,7 +11,7 @@ namespace NuGet.Configuration
 {
     public abstract class SettingSection : SettingsGroup<SettingItem>, IEquatable<SettingSection>
     {
-        public IReadOnlyCollection<SettingItem> Items => ChildrenSet.Select(c => c.Value).ToList();
+        public IReadOnlyCollection<SettingItem> Items => ChildrenSet.Values;
 
         public T GetFirstItemWithAttribute<T>(string attributeName, string expectedAttributeValue) where T : SettingItem
         {
@@ -23,7 +23,12 @@ namespace NuGet.Configuration
         protected SettingSection(string name, IReadOnlyDictionary<string, string> attributes, IEnumerable<SettingItem> children)
             : base(attributes, children)
         {
-            ElementName = XmlConvert.EncodeLocalName(name) ?? throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
+            }
+
+            ElementName = XmlConvert.EncodeLocalName(name);
         }
 
         internal SettingSection(XElement element, SettingsFile origin)
@@ -42,7 +47,7 @@ namespace NuGet.Configuration
             {
                 var currentChild = ChildrenSet[item];
 
-                if (currentChild.Origin.IsMachineWide)
+                if (currentChild.Origin != null && currentChild.Origin.IsMachineWide)
                 {
                     return false;
                 }
@@ -72,14 +77,9 @@ namespace NuGet.Configuration
 
         public bool DeepEquals(SettingSection other)
         {
-            if (other == null)
+            if (!Equals(other))
             {
                 return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
             }
 
             return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal) &&

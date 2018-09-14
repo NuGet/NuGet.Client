@@ -695,7 +695,7 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>(MockBehavior.Strict);
 
             settings.Setup(s => s.GetSection("packageSources"))
-                .Returns(new AbstractSettingSection("packageSources",
+                .Returns(new VirtualSettingSection("packageSources",
                     new SourceItem("one", "onesource"),
                     new SourceItem("two", "twosource"),
                     new SourceItem("three", "threesource")
@@ -703,11 +703,11 @@ namespace NuGet.Configuration.Test
                 .Verifiable();
 
             settings.Setup(s => s.GetSection("disabledPackageSources"))
-                .Returns(new AbstractSettingSection("disabledPackageSources"));
+                .Returns(new VirtualSettingSection("disabledPackageSources"));
             settings.Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new AbstractSettingSection("packageSourceCredentials"));
+                .Returns(new VirtualSettingSection("packageSourceCredentials"));
             settings.Setup(s => s.GetSection("config"))
-                .Returns(new AbstractSettingSection("config"));
+                .Returns(new VirtualSettingSection("config"));
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -727,22 +727,22 @@ namespace NuGet.Configuration.Test
             // Arrange
             var settings = new Mock<ISettings>(MockBehavior.Strict);
             settings.Setup(s => s.GetSection("packageSources"))
-                .Returns(new AbstractSettingSection("packageSources",
+                .Returns(new VirtualSettingSection("packageSources",
                         new SourceItem("one", "onesource"),
                         new SourceItem("two", "twosource"),
                         new SourceItem("three", "threesource")
                     ));
 
             settings.Setup(s => s.GetSection("disabledPackageSources"))
-                .Returns(new AbstractSettingSection("packageSources",
+                .Returns(new VirtualSettingSection("packageSources",
                     new AddItem("two", "true")
                     ));
 
             settings.Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new AbstractSettingSection("packageSourceCredentials"));
+                .Returns(new VirtualSettingSection("packageSourceCredentials"));
 
             settings.Setup(s => s.GetSection("config"))
-                .Returns(new AbstractSettingSection("config"));
+                .Returns(new VirtualSettingSection("config"));
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -765,7 +765,7 @@ namespace NuGet.Configuration.Test
             var settingWithV3Protocol2 = new SourceItem("Source3", "Source3", "3");
 
             settings.Setup(s => s.GetSection("packageSources"))
-                .Returns(new AbstractSettingSection("packageSources",
+                .Returns(new VirtualSettingSection("packageSources",
                     new SourceItem("Source1", "https://some-source.org"),
                     settingWithV3Protocol1,
                     settingWithV3Protocol2,
@@ -774,12 +774,12 @@ namespace NuGet.Configuration.Test
 
             settings
                 .Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new AbstractSettingSection("packageSourceCredentials",
+                .Returns(new VirtualSettingSection("packageSourceCredentials",
                     new CredentialsItem("Source3", "source3-user", "source3-password", isPasswordClearText: true, validAuthenticationTypes: null)));
 
             settings
                 .Setup(s => s.GetSection("disabledPackageSources"))
-                .Returns(new AbstractSettingSection("disabledPackageSources",
+                .Returns(new VirtualSettingSection("disabledPackageSources",
                         new AddItem("Source4", "true")
                     ));
 
@@ -851,7 +851,7 @@ namespace NuGet.Configuration.Test
             // Arrange
             var settings = new Mock<ISettings>(MockBehavior.Strict);
             settings.Setup(s => s.GetSection("disabledPackageSources"))
-                .Returns(new AbstractSettingSection("disabledPackageSources",
+                .Returns(new VirtualSettingSection("disabledPackageSources",
                     new AddItem("A", "sdfds")
                     ));
             var provider = CreatePackageSourceProvider(settings.Object);
@@ -872,7 +872,7 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>();
             settings
                 .Setup(s => s.GetSection("packageSources"))
-                .Returns(new AbstractSettingSection("packageSources",
+                .Returns(new VirtualSettingSection("packageSources",
                     new SourceItem("one", "onesource"),
                     new SourceItem("two", "twosource"),
                     new SourceItem("three", "threesource")
@@ -880,7 +880,7 @@ namespace NuGet.Configuration.Test
 
             settings
                 .Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new AbstractSettingSection("two",
+                .Returns(new VirtualSettingSection("two",
                     new CredentialsItem("two", "user1", encryptedPassword, isPasswordClearText: false, validAuthenticationTypes: null)
                     ));
 
@@ -904,7 +904,7 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>();
             settings
                 .Setup(s => s.GetSection("packageSources"))
-                .Returns(new AbstractSettingSection("packageSources",
+                .Returns(new VirtualSettingSection("packageSources",
                     new SourceItem("one", "onesource"),
                     new SourceItem("two", "twosource"),
                     new SourceItem("three", "threesource")
@@ -912,7 +912,7 @@ namespace NuGet.Configuration.Test
 
             settings
              .Setup(s => s.GetSection("packageSourceCredentials"))
-             .Returns(new AbstractSettingSection("two",
+             .Returns(new VirtualSettingSection("two",
                  new CredentialsItem("two", "user1", clearTextPassword, isPasswordClearText: true, validAuthenticationTypes: null)
                  ));
 
@@ -934,7 +934,7 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>();
             settings
                 .Setup(s => s.GetSection("packageSources"))
-                .Returns(new AbstractSettingSection("packageSources",
+                .Returns(new VirtualSettingSection("packageSources",
                     new SourceItem("one", "onesource"),
                     new SourceItem("two", "twosource"),
                     new SourceItem("three", "threesource")
@@ -942,7 +942,7 @@ namespace NuGet.Configuration.Test
 
             settings
                 .Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new AbstractSettingSection("two",
+                .Returns(new VirtualSettingSection("two",
                     new CredentialsItem("two", "settinguser", "settingpassword", isPasswordClearText: true, validAuthenticationTypes: null)
                     ));
 
@@ -1198,19 +1198,19 @@ namespace NuGet.Configuration.Test
             // Arrange
             var settings = new Mock<ISettings>(MockBehavior.Strict);
             settings.Setup(s => s.GetSection("packageSources"))
-                .Returns(new AbstractSettingSection("packageSources",
+                .Returns(new VirtualSettingSection("packageSources",
                         new SourceItem("one", "onesource"),
                         new SourceItem("TWO", "twosource"),
                         new SourceItem("three", "threesource")
                     ));
             settings.Setup(s => s.GetSection("disabledPackageSources"))
-                .Returns(new AbstractSettingSection("disabledPackageSources",
+                .Returns(new VirtualSettingSection("disabledPackageSources",
                     new AddItem("TWO", "true")
                     ));
             settings.Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new AbstractSettingSection("packageSourceCredentials"));
+                .Returns(new VirtualSettingSection("packageSourceCredentials"));
             settings.Setup(s => s.GetSection("config"))
-                .Returns(new AbstractSettingSection("config"));
+                .Returns(new VirtualSettingSection("config"));
 
             var provider = CreatePackageSourceProvider(settings.Object);
 

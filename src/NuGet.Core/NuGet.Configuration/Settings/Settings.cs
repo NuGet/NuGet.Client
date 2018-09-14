@@ -44,7 +44,7 @@ namespace NuGet.Configuration
 
         private SettingsFile _settingsHead { get; }
 
-        private Dictionary<string, AbstractSettingSection> _computedSections { get; set; }
+        private Dictionary<string, VirtualSettingSection> _computedSections { get; set; }
 
         public SettingSection GetSection(string sectionName)
         {
@@ -60,7 +60,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(sectionName))
             {
-                throw new ArgumentNullException(nameof(sectionName));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(sectionName));
             }
 
             if (item == null)
@@ -94,7 +94,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(sectionName))
             {
-                throw new ArgumentNullException(nameof(sectionName));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(sectionName));
             }
 
             if (item == null)
@@ -129,7 +129,7 @@ namespace NuGet.Configuration
             else if (!computedSectionExists)
             {
                 _computedSections.Add(sectionName,
-                    new AbstractSettingSection(settingFileSection));
+                    new VirtualSettingSection(settingFileSection));
             }
         }
 
@@ -137,7 +137,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(sectionName))
             {
-                throw new ArgumentNullException(nameof(sectionName));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(sectionName));
             }
 
             if (item == null)
@@ -177,7 +177,7 @@ namespace NuGet.Configuration
         internal Settings(SettingsFile settingsHead)
         {
             _settingsHead = settingsHead;
-            var computedSections = new Dictionary<string, AbstractSettingSection>();
+            var computedSections = new Dictionary<string, VirtualSettingSection>();
 
             var curr = _settingsHead;
             while (curr != null)
@@ -230,9 +230,8 @@ namespace NuGet.Configuration
                     current = current.Next;
                 }
 
-                found.Reverse();
-
-                return found;
+                return found
+                    .OrderByDescending(s => s.Priority);
             }
         }
 
@@ -695,17 +694,17 @@ namespace NuGet.Configuration
         // TODO: Delete obsolete methods https://github.com/NuGet/Home/issues/7294
 #pragma warning disable CS0618 // Type or member is obsolete
 
-        [Obsolete("GetValue(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetValue(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         public string GetValue(string section, string key, bool isPath = false)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException(nameof(key));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
 
             var sectionElement = GetSection(section);
@@ -719,12 +718,12 @@ namespace NuGet.Configuration
             return item?.Value;
         }
 
-        [Obsolete("GetAllSubsections(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetAllSubsections(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         public IReadOnlyList<string> GetAllSubsections(string section)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             var sectionElement = GetSection(section);
@@ -737,12 +736,12 @@ namespace NuGet.Configuration
             return sectionElement.Items.Where(c => c is CredentialsItem || c is UnknownItem).Select(i => i.ElementName).ToList().AsReadOnly();
         }
 
-        [Obsolete("GetSettingValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetSettingValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             var sectionElement = GetSection(section);
@@ -763,17 +762,17 @@ namespace NuGet.Configuration
             }).Where(i => i != null).ToList().AsReadOnly();
         }
 
-        [Obsolete("GetNestedValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetNestedValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             if (string.IsNullOrEmpty(subSection))
             {
-                throw new ArgumentNullException(nameof(subSection));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subSection));
             }
 
             var values = GetNestedSettingValues(section, subSection);
@@ -781,17 +780,17 @@ namespace NuGet.Configuration
             return values.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)).ToList().AsReadOnly();
         }
 
-        [Obsolete("GetNestedSettingValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetNestedSettingValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             if (string.IsNullOrEmpty(subSection))
             {
-                throw new ArgumentNullException(nameof(subSection));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subSection));
             }
 
             var sectionElement = GetSection(section);
@@ -848,29 +847,29 @@ namespace NuGet.Configuration
             }).ToList().AsReadOnly();
         }
 
-        [Obsolete("SetValue(...) is deprecated, please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
+        [Obsolete("SetValue(...) is deprecated. Please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
         public void SetValue(string section, string key, string value)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException(nameof(key));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
 
             AddOrUpdate(section, new AddItem(key, value));
             SaveToDisk();
         }
 
-        [Obsolete("SetValues(...) is deprecated, please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
+        [Obsolete("SetValues(...) is deprecated. Please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
         public void SetValues(string section, IReadOnlyList<SettingValue> values)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             if (values == null)
@@ -886,12 +885,12 @@ namespace NuGet.Configuration
             SaveToDisk();
         }
 
-        [Obsolete("UpdateSections(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
+        [Obsolete("UpdateSections(...) is deprecated. Please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             if (values == null)
@@ -907,17 +906,17 @@ namespace NuGet.Configuration
             SaveToDisk();
         }
 
-        [Obsolete("UpdateSubsections(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
+        [Obsolete("UpdateSubsections(...) is deprecated. Please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             if (string.IsNullOrEmpty(subsection))
             {
-                throw new ArgumentNullException(nameof(subsection));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subsection));
             }
 
             if (values == null)
@@ -958,17 +957,17 @@ namespace NuGet.Configuration
             SaveToDisk();
         }
 
-        [Obsolete("SetNestedValues(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
+        [Obsolete("SetNestedValues(...) is deprecated. Please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             if (string.IsNullOrEmpty(subsection))
             {
-                throw new ArgumentNullException(nameof(subsection));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subsection));
             }
 
             if (values == null)
@@ -979,17 +978,17 @@ namespace NuGet.Configuration
             SetNestedSettingValues(section, subsection, values.Select(kvp => new SettingValue(kvp.Key, kvp.Value, isMachineWide: false)).ToList());
         }
 
-        [Obsolete("SetNestedSettingValues(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
+        [Obsolete("SetNestedSettingValues(...) is deprecated. Please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             if (string.IsNullOrEmpty(subsection))
             {
-                throw new ArgumentNullException(nameof(subsection));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subsection));
             }
 
             if (values == null)
@@ -1098,17 +1097,17 @@ namespace NuGet.Configuration
             return !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password);
         }
 
-        [Obsolete("DeleteValue(...) is deprecated, please use Remove(...) with the item you want to remove from the setttings.")]
+        [Obsolete("DeleteValue(...) is deprecated. Please use Remove(...) with the item you want to remove from the setttings.")]
         public bool DeleteValue(string section, string key)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException(nameof(key));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
 
             var sectionElement = GetSection(section);
@@ -1129,12 +1128,12 @@ namespace NuGet.Configuration
             return false;
         }
 
-        [Obsolete("DeleteSection(...) is deprecated,, please use Remove(...) with all the items in the section you want to remove from the setttings.")]
+        [Obsolete("DeleteSection(...) is deprecated,. Please use Remove(...) with all the items in the section you want to remove from the setttings.")]
         public bool DeleteSection(string section)
         {
             if (string.IsNullOrEmpty(section))
             {
-                throw new ArgumentNullException(nameof(section));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
 
             var sectionElement = GetSection(section);

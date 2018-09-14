@@ -20,7 +20,7 @@ namespace NuGet.Configuration
         /// There should not be a NuGetConfiguration without an Origin.
         /// This constructor should only be used for tests.
         /// </remarks>
-        internal NuGetConfiguration(IReadOnlyDictionary<string, string> attributes, IEnumerable<SettingSection> children)
+        private NuGetConfiguration(IReadOnlyDictionary<string, string> attributes, IEnumerable<SettingSection> children)
             : base(attributes, children)
         {
         }
@@ -30,39 +30,42 @@ namespace NuGet.Configuration
         /// This constructor should only be used for tests.
         /// </remarks>
         internal NuGetConfiguration(params SettingSection[] sections)
-            : base(attributes: null, children: new HashSet<SettingSection>(sections))
+            : base()
         {
+            foreach (var section in sections)
+            {
+                section.Parent = this;
+                ChildrenSet.Add(section, section);
+            }
         }
 
         internal NuGetConfiguration(SettingsFile origin)
             : base()
         {
-            var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: "3");
-            var defaultSection = new ParsedSettingSection(ConfigurationConstants.PackageSources, defaultSource);
+            var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: PackageSourceProvider.MaxSupportedProtocolVersion.ToString());
 
-            var section = new ParsedSettingSection(defaultSection.AsXNode() as XElement, origin)
+            defaultSource.SetNode(defaultSource.AsXNode());
+
+            var defaultSection = new ParsedSettingSection(ConfigurationConstants.PackageSources, defaultSource)
             {
                 Parent = this
             };
 
-            ChildrenSet.Add(section, section);
+            defaultSection.SetNode(defaultSection.AsXNode());
 
-            Node = AsXNode();
-            Origin = origin;
+            ChildrenSet.Add(defaultSection, defaultSection);
+
+            SetNode(AsXNode());
+            SetOrigin(origin);
         }
 
         internal NuGetConfiguration(XElement element, SettingsFile origin)
             : base(element, origin)
         {
-            if (element.Name != ElementName)
+            if (!string.Equals(element.Name.LocalName, ElementName, StringComparison.OrdinalIgnoreCase))
             {
                 throw new NuGetConfigurationException(
                          string.Format(Resources.ShowError_ConfigRootInvalid, origin.ConfigFilePath));
-            }
-
-            foreach (var child in ChildrenSet)
-            {
-                child.Value.Parent = this;
             }
         }
 
@@ -70,7 +73,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(sectionName))
             {
-                throw new ArgumentNullException(nameof(sectionName));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(sectionName));
             }
 
             if (item == null)
@@ -95,7 +98,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(sectionName))
             {
-                throw new ArgumentNullException(nameof(sectionName));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(sectionName));
             }
 
             if (item == null)
@@ -119,7 +122,7 @@ namespace NuGet.Configuration
             return null;
         }
 
-        internal void MergeSectionsInto(Dictionary<string, AbstractSettingSection> sectionsContainer)
+        internal void MergeSectionsInto(Dictionary<string, VirtualSettingSection> sectionsContainer)
         {
             // loop through the current element's sections: merge any overlapped sections, add any missing section
             foreach (var section in Sections)
@@ -130,7 +133,7 @@ namespace NuGet.Configuration
                 }
                 else
                 {
-                    sectionsContainer.Add(section.Key, new AbstractSettingSection(section.Value));
+                    sectionsContainer.Add(section.Key, new VirtualSettingSection(section.Value));
                 }
             }
         }

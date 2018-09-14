@@ -185,7 +185,7 @@ namespace NuGet.Configuration.Test
                     .GetFallbackPackageFolders(settings)
                     .Select(GetFileName);
 
-                var expected = new[] { "x", "y", "c", "d", "a", "b" };
+                var expected = new[] { "a", "b", "c", "d", "x", "y" };
 
                 // Ignore any extra folders on the machine
                 var actualFiltered = Enumerable.Intersect(actual, expected);

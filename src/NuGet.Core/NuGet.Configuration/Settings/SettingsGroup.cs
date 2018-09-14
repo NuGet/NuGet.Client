@@ -42,11 +42,16 @@ namespace NuGet.Configuration
             ElementName = element.Name.LocalName;
 
             ChildrenSet = SettingFactory.ParseChildren<T>(element, origin, CanBeCleared).ToDictionary(c => c, c => c);
+
+            foreach (var child in ChildrenSet)
+            {
+                child.Value.Parent = this;
+            }
         }
 
         internal override XNode AsXNode()
         {
-            if (Node != null && Node is XElement)
+            if (Node is XElement)
             {
                 return Node;
             }
@@ -61,16 +66,23 @@ namespace NuGet.Configuration
             return element;
         }
 
-        /// <summary>
-        /// Convenience method to add an Origin to an element and all its children when adding it in a collection
-        /// </summary>
-        internal override void AddToOrigin(SettingsFile origin)
+        internal override void SetOrigin(SettingsFile origin)
         {
-            Origin = origin;
+            base.SetOrigin(origin);
 
             foreach (var child in ChildrenSet)
             {
-                child.Value.Origin = origin;
+                child.Value.SetOrigin(origin);
+            }
+        }
+
+        internal override void RemoveFromSettings()
+        {
+            base.RemoveFromSettings();
+
+            foreach (var child in ChildrenSet)
+            {
+                child.Value.RemoveFromSettings();
             }
         }
 
@@ -90,12 +102,13 @@ namespace NuGet.Configuration
             {
                 ChildrenSet.Add(setting, setting);
 
-                setting.AddToOrigin(Origin);
-                setting.Node = setting.AsXNode();
+                setting.SetOrigin(Origin);
+                setting.SetNode(setting.AsXNode());
 
                 XElementUtility.AddIndented(Node as XElement, setting.Node);
-                setting.Parent = this;
                 Origin.IsDirty = true;
+
+                setting.Parent = this;
 
                 return true;
             }
@@ -117,12 +130,7 @@ namespace NuGet.Configuration
 
             if (ChildrenSet.TryGetValue(setting, out var currentSetting) && ChildrenSet.Remove(currentSetting))
             {
-                XElementUtility.RemoveIndented(currentSetting.Node);
-                Origin.IsDirty = true;
-
-                currentSetting.Origin = null;
-                currentSetting.Node = null;
-                currentSetting.Parent = null;
+                currentSetting.RemoveFromSettings();
 
                 if (Parent != null && IsEmpty())
                 {

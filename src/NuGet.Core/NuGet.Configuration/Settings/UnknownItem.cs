@@ -13,7 +13,7 @@ namespace NuGet.Configuration
     {
         public override string ElementName { get; protected set; }
 
-        public IReadOnlyList<SettingBase> Children => MutableChildren.Select(c => c.Value).ToList().AsReadOnly();
+        public IReadOnlyList<SettingBase> Children => _mutableChildren.Select(c => c.Value).ToList();
 
         public new IReadOnlyDictionary<string, string> Attributes => base.Attributes;
 
@@ -21,13 +21,13 @@ namespace NuGet.Configuration
 
         protected override bool CanHaveChildren => true;
 
-        private Dictionary<SettingBase, SettingBase> MutableChildren { get; set; }
+        private Dictionary<SettingBase, SettingBase> _mutableChildren;
 
         internal UnknownItem(XElement element, SettingsFile origin)
             : base(element, origin)
         {
             ElementName = element.Name.LocalName;
-            MutableChildren = new Dictionary<SettingBase, SettingBase>();
+            _mutableChildren = new Dictionary<SettingBase, SettingBase>();
 
             var descendants = element.Nodes().Where(n => n is XText text && !string.IsNullOrWhiteSpace(text.Value) || n is XElement)
                 .Select(d => SettingFactory.Parse(d, origin)).Distinct();
@@ -36,7 +36,7 @@ namespace NuGet.Configuration
             {
                 descendant.Parent = this;
 
-                MutableChildren.Add(descendant, descendant);
+                _mutableChildren.Add(descendant, descendant);
             }
         }
 
@@ -45,23 +45,33 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             ElementName = name;
-            MutableChildren = new Dictionary<SettingBase, SettingBase>();
+            _mutableChildren = new Dictionary<SettingBase, SettingBase>();
 
             if (children != null)
             {
                 foreach (var child in children)
                 {
                     child.Parent = this;
-                    MutableChildren.Add(child, child);
+                    _mutableChildren.Add(child, child);
                 }
             }
         }
 
-        internal override SettingBase Clone() => new UnknownItem(ElementName, Attributes, Children.Select(c => c.Clone())) { Origin = Origin };
+        internal override SettingBase Clone()
+        {
+            var newSetting = new UnknownItem(ElementName, Attributes, Children.Select(c => c.Clone()));
+
+            if (Origin != null)
+            {
+                newSetting.SetOrigin(Origin);
+            }
+
+            return newSetting;
+        }
 
         internal bool Add(SettingBase setting)
         {
@@ -70,21 +80,29 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(setting));
             }
 
-            if (Origin.IsMachineWide)
+            if (Origin != null && Origin.IsMachineWide)
             {
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
-            if (!MutableChildren.ContainsKey(setting) && !setting.IsEmpty())
+            if (!_mutableChildren.ContainsKey(setting) && !setting.IsEmpty())
             {
-                MutableChildren.Add(setting, setting);
+                _mutableChildren.Add(setting, setting);
 
-                setting.AddToOrigin(Origin);
-                setting.Node = setting.AsXNode();
+                if (Origin != null)
+                {
+                    setting.SetOrigin(Origin);
 
-                XElementUtility.AddIndented(Node as XElement, setting.Node);
+                    if (Node != null)
+                    {
+                        setting.SetNode(setting.AsXNode());
+
+                        XElementUtility.AddIndented(Node as XElement, setting.Node);
+                        Origin.IsDirty = true;
+                    }
+                }
+
                 setting.Parent = this;
-                Origin.IsDirty = true;
 
                 return true;
             }
@@ -109,14 +127,9 @@ namespace NuGet.Configuration
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
-            if (MutableChildren.TryGetValue(setting, out var currentSetting) && MutableChildren.Remove(currentSetting))
+            if (_mutableChildren.TryGetValue(setting, out var currentSetting) && _mutableChildren.Remove(currentSetting))
             {
-                XElementUtility.RemoveIndented(currentSetting.Node);
-                Origin.IsDirty = true;
-
-                currentSetting.Origin = null;
-                currentSetting.Node = null;
-                currentSetting.Parent = null;
+                currentSetting.RemoveFromSettings();
 
                 if (Parent != null && IsEmpty())
                 {
@@ -127,7 +140,7 @@ namespace NuGet.Configuration
 
         internal override XNode AsXNode()
         {
-            if (Node != null && Node is XElement)
+            if (Node is XElement)
             {
                 return Node;
             }
@@ -153,19 +166,14 @@ namespace NuGet.Configuration
                 return true;
             }
 
-            return string.Equals(ElementName, other.ElementName, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal);
         }
 
         public bool DeepEquals(UnknownItem other)
         {
-            if (other == null)
+            if (!Equals(other))
             {
                 return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
             }
 
             return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal) &&
@@ -179,13 +187,13 @@ namespace NuGet.Configuration
         public override bool Equals(object other) => Equals(other as UnknownItem);
         public override int GetHashCode() => ElementName.GetHashCode();
 
-        internal override void Update(SettingItem other)
+        internal override void Update(SettingItem setting)
         {
-            base.Update(other);
+            base.Update(setting);
 
-            var unknown = other as UnknownItem;
+            var unknown = setting as UnknownItem;
 
-            var otherChildren = new Dictionary<SettingBase, SettingBase>(unknown.MutableChildren);
+            var otherChildren = new Dictionary<SettingBase, SettingBase>(unknown._mutableChildren);
             foreach (var child in Children)
             {
                 if (otherChildren.TryGetValue(child, out var otherChild))
@@ -211,6 +219,11 @@ namespace NuGet.Configuration
 
         internal void Merge(UnknownItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             foreach (var attribute in item.Attributes)
             {
                 AddOrUpdateAttribute(attribute.Key, attribute.Value);
@@ -218,7 +231,7 @@ namespace NuGet.Configuration
 
             foreach (var child in item.Children)
             {
-                if (MutableChildren.TryGetValue(child, out var existingChild))
+                if (_mutableChildren.TryGetValue(child, out var existingChild))
                 {
                     if (!existingChild.DeepEquals(child) && existingChild is SettingItem childItem)
                     {
@@ -227,8 +240,28 @@ namespace NuGet.Configuration
                 }
                 else
                 {
-                    MutableChildren.Add(child, child);
+                    _mutableChildren.Add(child, child);
                 }
+            }
+        }
+
+        internal override void SetOrigin(SettingsFile origin)
+        {
+            base.SetOrigin(origin);
+
+            foreach(var child in _mutableChildren)
+            {
+                child.Value.SetOrigin(origin);
+            }
+        }
+
+        internal override void RemoveFromSettings()
+        {
+            base.RemoveFromSettings();
+
+            foreach (var child in _mutableChildren)
+            {
+                child.Value.RemoveFromSettings();
             }
         }
     }

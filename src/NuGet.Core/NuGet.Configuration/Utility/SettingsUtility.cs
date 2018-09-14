@@ -79,7 +79,7 @@ namespace NuGet.Configuration
             return 0;
         }
 
-        [Obsolete("GetDecryptedValue is deprecated, please use GetDecryptedValueForAddItem instead")]
+        [Obsolete("GetDecryptedValue is deprecated. Please use GetDecryptedValueForAddItem instead")]
         public static string GetDecryptedValue(ISettings settings, string section, string key, bool isPath = false)
         {
             return GetDecryptedValueForAddItem(settings, section, key, isPath);
@@ -116,7 +116,7 @@ namespace NuGet.Configuration
             return decryptedString;
         }
 
-        [Obsolete("SetEncryptedValue is deprecated, please use SetEncryptedValueForAddItem instead")]
+        [Obsolete("SetEncryptedValue is deprecated. Please use SetEncryptedValueForAddItem instead")]
         public static void SetEncryptedValue(ISettings settings, string section, string key, string value)
         {
             SetEncryptedValueForAddItem(settings, section, key, value);
@@ -272,10 +272,12 @@ namespace NuGet.Configuration
             var fallbackFoldersSection = settings.GetSection(ConfigurationConstants.FallbackPackageFolders);
             var fallbackValues = fallbackFoldersSection?.Items ?? Enumerable.Empty<SettingItem>();
 
+            // Settings are usually read from top to bottom, but in the case of fallback folders
+            // we care more about the bottom ones, so those ones should go first.
             return fallbackValues
-                .Select(f => f as AddItem)
-                .Where(f => f != null)
-                .Select(f => f.GetValueAsPath())
+                .OrderByDescending(i => i.Origin?.Priority ?? 0)
+                .OfType<AddItem>()
+                .Select(folder => folder.GetValueAsPath())
                 .ToList();
         }
 
@@ -382,7 +384,7 @@ namespace NuGet.Configuration
                 return settingsImpl.Priority.Select(config => Path.GetFullPath(Path.Combine(config.DirectoryPath, config.FileName)));
             }
 
-            return new List<string>();
+            return Enumerable.Empty<string>();
         }
 
         /// <summary>
@@ -395,7 +397,7 @@ namespace NuGet.Configuration
                 return settingsImpl.Priority.Select(config => config.DirectoryPath);
             }
 
-            return new List<string>();
+            return Enumerable.Empty<string>();
         }
 
         private static string GetPathFromEnvOrConfig(string envVarName, string configKey, ISettings settings)

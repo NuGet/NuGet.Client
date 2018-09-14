@@ -12,25 +12,20 @@ namespace NuGet.Configuration
         internal ParsedSettingSection(XElement element, SettingsFile origin)
             : base(element, origin)
         {
+        }
+
+        internal ParsedSettingSection(string name, params SettingItem[] children)
+            : base(name, attributes: null, children: new HashSet<SettingItem>(children))
+        {
             foreach (var child in ChildrenSet)
             {
                 child.Value.Parent = this;
             }
         }
 
-        /// <remarks>
-        /// This constructor should only be used when the section is intended to be
-        /// added to a specific NuGetConfiguration. A ParsedSettingSection should not
-        /// be missing an Origin.
-        /// </remarks>
-        public ParsedSettingSection(string name, params SettingItem[] children)
-            : base(name, attributes: null, children: new HashSet<SettingItem>(children))
-        {
-        }
-
         internal override SettingBase Clone()
         {
-            return new AbstractSettingSection(ElementName, Attributes, Items.Select(s => s.Clone() as SettingItem));
+            return new VirtualSettingSection(ElementName, Attributes, Items.Select(s => s.Clone() as SettingItem));
         }
     }
 }

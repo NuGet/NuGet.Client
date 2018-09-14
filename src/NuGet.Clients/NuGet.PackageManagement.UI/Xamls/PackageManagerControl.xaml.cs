@@ -295,10 +295,10 @@ namespace NuGet.PackageManagement.UI
             if (nugetSettings != null)
             {
                 var configSection = nugetSettings.GetSection(ConfigurationConstants.Config);
-                var dependencySetting = configSection?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, "dependencyversion");
+                var dependencySetting = configSection?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, ConfigurationConstants.DependencyVersion);
 
                 DependencyBehavior behavior;
-                var success = Enum.TryParse(dependencySetting?.Value, true, out behavior);
+                var success = Enum.TryParse(dependencySetting?.Value, ignoreCase: true, result: out behavior);
                 if (success)
                 {
                     return behavior;

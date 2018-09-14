@@ -138,7 +138,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(attributeName))
             {
-                throw new ArgumentNullException(nameof(attributeName));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(attributeName));
             }
 
             if (!IsAttributeValid(attributeName, newValue))
@@ -167,13 +167,10 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(attributeName))
             {
-                throw new ArgumentNullException(nameof(attributeName));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(attributeName));
             }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            value = value ?? string.Empty;
 
             if (!IsAttributeValid(attributeName, value))
             {

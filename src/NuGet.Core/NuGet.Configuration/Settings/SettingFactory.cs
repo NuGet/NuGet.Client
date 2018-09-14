@@ -24,26 +24,39 @@ namespace NuGet.Configuration
 
             if (node is XElement element)
             {
-                if (string.Equals(element.Parent?.Name.LocalName, ConfigurationConstants.Configuration, StringComparison.OrdinalIgnoreCase))
-                {
-                    return new ParsedSettingSection(element, origin);
-                }
-                else if (string.Equals(element.Name.LocalName, ConfigurationConstants.Add, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (string.Equals(element.Parent?.Name.LocalName, ConfigurationConstants.PackageSources, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return new SourceItem(element, origin);
-                    }
+                var elementType = SettingElementType.Unknown;
+                Enum.TryParse(element.Name.LocalName, ignoreCase: true, result: out elementType);
 
-                    return new AddItem(element, origin);
-                }
-                else if (string.Equals(element.Name.LocalName, ConfigurationConstants.Clear, StringComparison.OrdinalIgnoreCase))
+                var parentType = SettingElementType.Unknown;
+                if (element.Parent != null)
                 {
-                    return new ClearItem(element, origin);
+                    Enum.TryParse(element.Parent?.Name.LocalName, ignoreCase: true, result: out parentType);
                 }
-                else if (string.Equals(element.Parent?.Name.LocalName, ConfigurationConstants.CredentialsSectionName, StringComparison.OrdinalIgnoreCase))
+
+                switch (parentType)
                 {
-                    return new CredentialsItem(element, origin);
+                    case SettingElementType.Configuration:
+                        return new ParsedSettingSection(element, origin);
+
+                    case SettingElementType.PackageSourceCredentials:
+                        return new CredentialsItem(element, origin);
+
+                    case SettingElementType.PackageSources:
+                        if (elementType == SettingElementType.Add)
+                        {
+                            return new SourceItem(element, origin);
+                        }
+
+                        break;
+                }
+
+                switch (elementType)
+                {
+                    case SettingElementType.Add:
+                        return new AddItem(element, origin);
+
+                    case SettingElementType.Clear:
+                        return new ClearItem(element, origin);
                 }
 
                 return new UnknownItem(element, origin);
@@ -60,7 +73,7 @@ namespace NuGet.Configuration
 
             foreach (var descendant in descendants)
             {
-                if (descendant is ClearItem && canBeCleared)
+                if (canBeCleared && descendant is ClearItem)
                 {
                     children.Clear();
                 }

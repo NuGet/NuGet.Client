@@ -111,35 +111,6 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void CredentialsItem_WithAdditionalMetada_Throws()
-        {
-            // Arrange
-            var nugetConfigPath = "NuGet.Config";
-            var config = @"
-<configuration>
-    <packageSourceCredentials>
-        <NuGet.Org meta1='data1'>
-            <add key='Username' value='username' />
-            <add key='Password' value='password' />
-        </NuGet.Org>
-    </packageSourceCredentials>
-</configuration>";
-
-            using (var mockBaseDirectory = TestDirectory.Create())
-            {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-
-                // Act
-                var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
-
-                // Assert
-                ex.Should().NotBeNull();
-                ex.Should().BeOfType<NuGetConfigurationException>();
-                ex.Message.Should().Be(string.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
-            }
-        }
-
-        [Fact]
         public void CredentialsItem_Update_WhenItemIsNotCredentialsItem_Throws()
         {
             // Arrange

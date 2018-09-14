@@ -848,17 +848,17 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
-                var settingsDict = new Dictionary<string, AbstractSettingSection>() {
-                    { "Section4", new AbstractSettingSection("Section4", new AddItem("key4", "value4")) }
+                var settingsDict = new Dictionary<string, VirtualSettingSection>() {
+                    { "Section4", new VirtualSettingSection("Section4", new AddItem("key4", "value4")) }
                 };
 
                 settingsFile.MergeSectionsInto(settingsDict);
 
-                var expectedSettingsDict = new Dictionary<string, AbstractSettingSection>() {
-                    { "Section4", new AbstractSettingSection("Section4", new AddItem("key4", "value4")) },
-                    { "Section1", new AbstractSettingSection("Section1", new AddItem("key1", "value1")) },
-                    { "Section2", new AbstractSettingSection("Section2", new AddItem("key2", "value2")) },
-                    { "Section3", new AbstractSettingSection("Section3", new AddItem("key3", "value3")) }
+                var expectedSettingsDict = new Dictionary<string, VirtualSettingSection>() {
+                    { "Section4", new VirtualSettingSection("Section4", new AddItem("key4", "value4")) },
+                    { "Section1", new VirtualSettingSection("Section1", new AddItem("key1", "value1")) },
+                    { "Section2", new VirtualSettingSection("Section2", new AddItem("key2", "value2")) },
+                    { "Section3", new VirtualSettingSection("Section3", new AddItem("key3", "value3")) }
                 };
 
                 foreach (var pair in settingsDict)
@@ -895,19 +895,19 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
-                var settingsDict = new Dictionary<string, AbstractSettingSection>() {
-                    { "Section2", new AbstractSettingSection("Section2", new AddItem("keyX", "valueX")) },
-                    { "Section3", new AbstractSettingSection("Section3", new AddItem("key3", "valueY")) },
-                    { "Section4", new AbstractSettingSection("Section4", new AddItem("key4", "value4")) }
+                var settingsDict = new Dictionary<string, VirtualSettingSection>() {
+                    { "Section2", new VirtualSettingSection("Section2", new AddItem("keyX", "valueX")) },
+                    { "Section3", new VirtualSettingSection("Section3", new AddItem("key3", "valueY")) },
+                    { "Section4", new VirtualSettingSection("Section4", new AddItem("key4", "value4")) }
                 };
 
                 settingsFile.MergeSectionsInto(settingsDict);
 
-                var expectedSettingsDict = new Dictionary<string, AbstractSettingSection>() {
-                    { "Section2", new AbstractSettingSection("Section2", new AddItem("keyX", "valueX"), new AddItem("key2", "value2")) },
-                    { "Section3", new AbstractSettingSection("Section3", new AddItem("key3", "value3")) },
-                    { "Section4", new AbstractSettingSection("Section4", new AddItem("key4", "value4")) },
-                    { "Section1", new AbstractSettingSection("Section1", new AddItem("key1", "value1")) },
+                var expectedSettingsDict = new Dictionary<string, VirtualSettingSection>() {
+                    { "Section2", new VirtualSettingSection("Section2", new AddItem("keyX", "valueX"), new AddItem("key2", "value2")) },
+                    { "Section3", new VirtualSettingSection("Section3", new AddItem("key3", "value3")) },
+                    { "Section4", new VirtualSettingSection("Section4", new AddItem("key4", "value4")) },
+                    { "Section1", new VirtualSettingSection("Section1", new AddItem("key1", "value1")) },
                 };
 
                 foreach (var pair in settingsDict)
@@ -941,17 +941,17 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
-                var settingsDict = new Dictionary<string, AbstractSettingSection>() {
-                    { "Section2", new AbstractSettingSection("Section2", new AddItem("keyX", "valueX")) },
-                    { "Section3", new AbstractSettingSection("Section3", new AddItem("key3", "valueY")) },
+                var settingsDict = new Dictionary<string, VirtualSettingSection>() {
+                    { "Section2", new VirtualSettingSection("Section2", new AddItem("keyX", "valueX")) },
+                    { "Section3", new VirtualSettingSection("Section3", new AddItem("key3", "valueY")) },
                 };
 
                 settingsFile.MergeSectionsInto(settingsDict);
 
-                var expectedSettingsDict = new Dictionary<string, AbstractSettingSection>() {
-                    { "Section2", new AbstractSettingSection("Section2", new ClearItem()) },
-                    { "Section3", new AbstractSettingSection("Section3", new AddItem("key3", "valueY")) },
-                    { "Section1", new AbstractSettingSection("Section1", new AddItem("key1", "value1")) },
+                var expectedSettingsDict = new Dictionary<string, VirtualSettingSection>() {
+                    { "Section2", new VirtualSettingSection("Section2", new ClearItem()) },
+                    { "Section3", new VirtualSettingSection("Section3", new AddItem("key3", "valueY")) },
+                    { "Section1", new VirtualSettingSection("Section1", new AddItem("key1", "value1")) },
                 };
 
                 foreach (var pair in settingsDict)

@@ -13,7 +13,7 @@ namespace NuGet.Configuration.Test
         public void AsXNode_ReturnsExpectedXNode()
         {
             var configuration = new NuGetConfiguration(
-                new AbstractSettingSection("Section",
+                new VirtualSettingSection("Section",
                     new AddItem("key0", "value0")));
 
             var expectedXNode = new XElement("configuration",

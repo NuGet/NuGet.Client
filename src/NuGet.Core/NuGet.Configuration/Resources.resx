@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -124,10 +124,13 @@
     <value>The item passed to the Update method cannot refer to a different item than the one being updated.</value>
   </data>
   <data name="CannotUpdateMachineWide" xml:space="preserve">
-    <value>Unable to update setting since it is in a machine wide NuGet.Config.</value>
+    <value>Unable to update setting since it is in a machine-wide NuGet.Config.</value>
   </data>
-  <data name="Error_CouldNotDisableSources" xml:space="preserve">
-    <value>Could not add disabled package source.</value>
+  <data name="CannotUpdateNode" xml:space="preserve">
+    <value>Cannot update the node of a setting.</value>
+  </data>
+  <data name="CannotUpdateOrigin" xml:space="preserve">
+    <value>Cannot update the origin of a setting.</value>
   </data>
   <data name="Error_EncryptionUnsupported" xml:space="preserve">
     <value>Encryption is not supported on non-Windows platforms.</value>
@@ -157,12 +160,12 @@
     <value>'{0}' must contain an absolute path '{1}'.</value>
   </data>
   <data name="NoWritteableConfig" xml:space="preserve">
-    <value>There is no NuGet.Config that could be used for writting settings. Please create one at the desired location and restart the client.</value>
+    <value>There is no NuGet.Config that could be used for writing settings. Please create one at the desired location and restart the client.</value>
   </data>
   <data name="PackageSource_Invalid" xml:space="preserve">
     <value>The package source does not belong to the collection of available sources.</value>
   </data>
-  <data name="PropertyCannotBeNull" xml:space="preserve">
+  <data name="PropertyCannotBeNullOrEmpty" xml:space="preserve">
     <value>{0} cannot be null or empty.</value>
     <comment>0 - property name</comment>
   </data>
@@ -174,7 +177,7 @@
     <comment>0 - section name</comment>
   </data>
   <data name="Settings_FileName_Cannot_Be_A_Path" xml:space="preserve">
-    <value>Parameter 'fileName' to Settings must be just a fileName and not a path.</value>
+    <value>Parameter 'fileName' to Settings must be just a file name and not a path.</value>
   </data>
   <data name="ShowError_CannotHaveChildren" xml:space="preserve">
     <value>Error parsing NuGet.Config. Element '{0}' cannot have descendant elements. Path: '{1}'.</value>

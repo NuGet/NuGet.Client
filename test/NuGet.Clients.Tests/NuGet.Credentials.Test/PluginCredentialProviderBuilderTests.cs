@@ -163,7 +163,7 @@ namespace NuGet.Credentials.Test
                 .Setup(x => x.GetEnvironmentVariable("NUGET_CREDENTIAL_PROVIDER_TIMEOUT_SECONDS"))
                 .Returns("10");
             builder._mockSettings.Setup(x => x.GetSection("config"))
-                .Returns(new AbstractSettingSection("config",
+                .Returns(new VirtualSettingSection("config",
                     new AddItem("CredentialProvider.Timeout", "20")));
 
             var result = builder.BuildAll(NormalVerbosity).ToList();

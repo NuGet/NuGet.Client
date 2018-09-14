@@ -52,7 +52,7 @@ namespace NuGet.Configuration.Test
             var encryptedPassword = EncryptionUtility.EncryptString("password");
             var settings = new Mock<ISettings>(MockBehavior.Strict);
             settings.Setup(s => s.GetSection("config"))
-                .Returns(new AbstractSettingSection("config",
+                .Returns(new VirtualSettingSection("config",
                     new AddItem("http_proxy", host),
                     new AddItem("http_proxy.user", user),
                     new AddItem("http_proxy.password", encryptedPassword)));
@@ -74,7 +74,7 @@ namespace NuGet.Configuration.Test
             var host = "http://127.0.0.1";
             var settings = new Mock<ISettings>(MockBehavior.Strict);
             settings.Setup(s => s.GetSection("config"))
-                .Returns(new AbstractSettingSection("config",
+                .Returns(new VirtualSettingSection("config",
                     new AddItem("http_proxy", host)));
 
             var environment = Mock.Of<IEnvironmentVariableReader>();

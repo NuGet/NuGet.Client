@@ -11,7 +11,7 @@ namespace NuGet.Configuration
     /// <summary>
     /// Represents a single setting value in a settings file
     /// </summary>
-    [Obsolete("SettingValue is deprecated, please use AddItem instead")]
+    [Obsolete("SettingValue is deprecated. Please use AddItem instead")]
     public class SettingValue
     {
         public SettingValue(string key,

@@ -25,8 +25,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                var bindingRedirectSection = _settings.GetSection(ConfigurationConstants.BindingRedirectsSection);
-                var skipItem = bindingRedirectSection?.GetFirstItemWithAttribute<AddItem>(
+                var bindingRedirectsSection = _settings.GetSection(ConfigurationConstants.BindingRedirectsSection);
+                var skipItem = bindingRedirectsSection?.GetFirstItemWithAttribute<AddItem>(
                     ConfigurationConstants.KeyAttribute,
                     ConfigurationConstants.SkipBindingRedirectsKey);
 
@@ -47,8 +47,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                var bindingRedirectSection = _settings.GetSection(ConfigurationConstants.BindingRedirectsSection);
-                var failItem = bindingRedirectSection?.GetFirstItemWithAttribute<AddItem>(
+                var bindingRedirectsSection = _settings.GetSection(ConfigurationConstants.BindingRedirectsSection);
+                var failItem = bindingRedirectsSection?.GetFirstItemWithAttribute<AddItem>(
                     ConfigurationConstants.KeyAttribute,
                     ConfigurationConstants.FailOnBindingRedirects);
 

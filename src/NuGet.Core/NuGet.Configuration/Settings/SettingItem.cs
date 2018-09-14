@@ -36,11 +36,16 @@ namespace NuGet.Configuration
 
         /// <remarks>
         /// This method is internal because it updates directly the xElement behind this abstraction.
-        /// It should only be called whenever the underlaying config file is intended to be changed.
+        /// It should only be called whenever the underlying config file is intended to be changed.
         /// To persist changes to disk one must save the corresponding setting files
         /// </remarks>
         internal virtual void Update(SettingItem setting)
         {
+            if (setting == null)
+            {
+                throw new ArgumentNullException(nameof(setting));
+            }
+
             if (Origin != null && Origin.IsMachineWide)
             {
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
@@ -69,7 +74,7 @@ namespace NuGet.Configuration
 
                 if (!string.Equals(value, attribute.Value, StringComparison.Ordinal))
                 {
-                    if (xElement != null)
+                    if (xElement != null && Origin != null)
                     {
                         // Update or remove any existing item that has changed
                         xElement.SetAttributeValue(attribute.Key, value);
@@ -82,7 +87,7 @@ namespace NuGet.Configuration
 
             foreach (var attribute in otherAttributes)
             {
-                if (xElement != null)
+                if (xElement != null && Origin != null)
                 {
                     xElement.SetAttributeValue(attribute.Key, attribute.Value);
                     Origin.IsDirty = true;

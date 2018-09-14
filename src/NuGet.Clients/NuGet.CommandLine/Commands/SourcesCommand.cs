@@ -239,17 +239,17 @@ namespace NuGet.CommandLine
 
         private void ValidateCredentials()
         {
-            var usernameEmpty = string.IsNullOrEmpty(Username);
-            var passwordEmpty = string.IsNullOrEmpty(Password);
-            var authTypesEmpty = string.IsNullOrEmpty(ValidAuthenticationTypes);
+            var isUsernameEmpty = string.IsNullOrEmpty(Username);
+            var isPasswordEmpty = string.IsNullOrEmpty(Password);
+            var isAuthTypesEmpty = string.IsNullOrEmpty(ValidAuthenticationTypes);
 
-            if (usernameEmpty ^ passwordEmpty)
+            if (isUsernameEmpty ^ isPasswordEmpty)
             {
                 // If only one of them is set, throw.
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandCredentialsRequired"));
             }
 
-            if (passwordEmpty && !authTypesEmpty)
+            if (isPasswordEmpty && !isAuthTypesEmpty)
             {
                 // can't specify auth types without credentials
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandCredentialsRequiredWithAuthTypes"));

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Xml.Linq;
 using NuGet.Shared;
 
@@ -54,10 +53,14 @@ namespace NuGet.Configuration
 
         internal override SettingBase Clone()
         {
-            return new SourceItem(Key, Value, ProtocolVersion)
+            var newSetting = new SourceItem(Key, Value, ProtocolVersion);
+
+            if (Origin != null)
             {
-                Origin = Origin,
-            };
+                newSetting.SetOrigin(Origin);
+            }
+
+            return newSetting;
         }
 
         public bool Equals(SourceItem other)

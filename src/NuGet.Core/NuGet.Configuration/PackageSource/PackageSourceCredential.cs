@@ -81,6 +81,8 @@ namespace NuGet.Configuration
         /// <returns>True if credentials object is valid</returns>
         public bool IsValid() => !string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(PasswordText);
 
+        private Lazy<int> _hashCode { get; }
+
         /// <summary>
         /// Instantiates the credential instance out of raw values read from a config file.
         /// </summary>
@@ -101,6 +103,18 @@ namespace NuGet.Configuration
 
             // validAuthenticationTypesText is permitted to be null
             ValidAuthenticationTypesText = validAuthenticationTypesText;
+
+            _hashCode = new Lazy<int>(() =>
+            {
+                var combiner = new HashCodeCombiner();
+
+                combiner.AddObject(Source);
+                combiner.AddObject(Username);
+                combiner.AddObject(PasswordText);
+                combiner.AddObject(IsPasswordClearText);
+
+                return combiner.GetHashCode();
+            });
         }
 
         /// <summary>
@@ -218,14 +232,7 @@ namespace NuGet.Configuration
 
         public override int GetHashCode()
         {
-            var combiner = new HashCodeCombiner();
-
-            combiner.AddObject(Source);
-            combiner.AddObject(Username);
-            combiner.AddObject(PasswordText);
-            combiner.AddObject(IsPasswordClearText);
-
-            return combiner.GetHashCode();
+            return _hashCode.Value;
         }
     }
 }

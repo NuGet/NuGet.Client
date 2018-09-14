@@ -19,7 +19,7 @@ namespace NuGet.Configuration
         public virtual string Value
         {
             get => Settings.ApplyEnvironmentTransform(Attributes[ConfigurationConstants.ValueAttribute]);
-            set => AddOrUpdateAttribute(ConfigurationConstants.ValueAttribute, value);
+            set => AddOrUpdateAttribute(ConfigurationConstants.ValueAttribute, value ?? string.Empty);
         }
 
         public IReadOnlyDictionary<string, string> AdditionalAttributes => new ReadOnlyDictionary<string, string>(
@@ -38,7 +38,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException(nameof(key));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
 
             AddAttribute(ConfigurationConstants.KeyAttribute, key);
@@ -103,14 +103,9 @@ namespace NuGet.Configuration
 
         public bool DeepEquals(AddItem other)
         {
-            if (other == null || other.GetType() != GetType())
+            if (!Equals(other))
             {
                 return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
             }
 
             if (other.Attributes.Count == Attributes.Count)
@@ -140,10 +135,14 @@ namespace NuGet.Configuration
 
         internal override SettingBase Clone()
         {
-            return new AddItem(Key, Value, AdditionalAttributes)
+            var newItem = new AddItem(Key, Value, AdditionalAttributes);
+
+            if (Origin != null)
             {
-                Origin = Origin
-            };
+                newItem.SetOrigin(Origin);
+            }
+
+            return newItem;
         }
 
         internal override void Update(SettingItem other)

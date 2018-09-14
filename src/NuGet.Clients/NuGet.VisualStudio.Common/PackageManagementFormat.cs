@@ -70,7 +70,7 @@ namespace NuGet.VisualStudio
 
                 var settingsValue = doNotShowItem?.Value ?? string.Empty;
 
-                _showDialogValue = IsSet(settingsValue, false);
+                _showDialogValue = ParseValue(settingsValue, defaultValue: false);
                 return _showDialogValue.Value;
             }
 
@@ -93,7 +93,7 @@ namespace NuGet.VisualStudio
 
                 var settingsValue = defautFormatItem?.Value ?? string.Empty;
 
-                _selectedPackageFormat = IsSet(settingsValue, 0);
+                _selectedPackageFormat = ParseValue(settingsValue, defaultValue: 0);
                 return _selectedPackageFormat;
             }
 
@@ -109,7 +109,7 @@ namespace NuGet.VisualStudio
             _settings.SaveToDisk();
         }
 
-        private static bool IsSet(string value, bool defaultValue)
+        private static bool ParseValue(string value, bool defaultValue)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -127,7 +127,7 @@ namespace NuGet.VisualStudio
             return result;
         }
 
-        private static int IsSet(string value, int defaultValue)
+        private static int ParseValue(string value, int defaultValue)
         {
             if (string.IsNullOrWhiteSpace(value))
             {

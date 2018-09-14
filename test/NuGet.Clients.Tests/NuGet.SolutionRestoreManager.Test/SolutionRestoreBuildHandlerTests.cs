@@ -61,7 +61,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             Mock.Get(settings)
                 .Setup(x => x.GetSection("packageRestore"))
-                .Returns(() => new AbstractSettingSection("packageRestore",
+                .Returns(() => new VirtualSettingSection("packageRestore",
                     new AddItem("automatic", bool.FalseString)));
 
             using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager))
@@ -88,7 +88,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             Mock.Get(settings)
                 .Setup(x => x.GetSection("packageRestore"))
-                .Returns(() => new AbstractSettingSection("packageRestore",
+                .Returns(() => new VirtualSettingSection("packageRestore",
                     new AddItem("automatic", bool.TrueString)));
 
             using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager))
@@ -115,7 +115,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             Mock.Get(settings)
                 .Setup(x => x.GetSection("packageRestore"))
-                .Returns(() => new AbstractSettingSection("packageRestore",
+                .Returns(() => new VirtualSettingSection("packageRestore",
                     new AddItem("automatic", bool.TrueString)));
             Mock.Get(restoreWorker)
                 .SetupGet(x => x.JoinableTaskFactory)

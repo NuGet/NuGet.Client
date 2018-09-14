@@ -19,7 +19,7 @@ namespace NuGet.Configuration
         /// returned
         /// Otherwise, path relative to ISettings.Root is returned
         /// </summary>
-        [Obsolete("GetValue(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetValue(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         string GetValue(string section, string key, bool isPath = false);
 
         /// <summary>
@@ -27,25 +27,25 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="section">Name of the section.</param>
         /// <returns>List of string containing subsection element names.</returns>
-        [Obsolete("GetAllSubsections(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetAllSubsections(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         IReadOnlyList<string> GetAllSubsections(string section);
 
         /// <summary>
         /// Gets all the values under section
         /// </summary>
-        [Obsolete("GetSettingValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetSettingValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         IList<SettingValue> GetSettingValues(string section, bool isPath = false);
 
         /// <summary>
         /// Gets all the values under section as List of KeyValuePair
         /// </summary>
-        [Obsolete("GetNestedValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetNestedValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection);
 
         /// <summary>
         /// Gets all the values under section as List of SettingValue
         /// </summary>
-        [Obsolete("GetNestedSettingValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetNestedSettingValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection);
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace NuGet.Configuration
         /// <param name="section">The name of the section.</param>
         /// <param name="key">The key to set set.</param>
         /// <param name="value">The value to set.</param>
-        [Obsolete("SetValue(...) is deprecated, please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
+        [Obsolete("SetValue(...) is deprecated. Please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
         void SetValue(string section, string key, string value);
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="section">The name of the section.</param>
         /// <param name="values">The values to set.</param>
-        [Obsolete("SetValues(...) is deprecated, please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
+        [Obsolete("SetValues(...) is deprecated. Please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
         void SetValues(string section, IReadOnlyList<SettingValue> values);
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="section">The name of the section.</param>
         /// <param name="values">The values to set.</param>
-        [Obsolete("UpdateSections(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
+        [Obsolete("UpdateSections(...) is deprecated. Please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         void UpdateSections(string section, IReadOnlyList<SettingValue> values);
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace NuGet.Configuration
         /// <param name="section">The name of the section.</param>
         /// <param name="subsection">The name of the subsection.</param>
         /// <param name="values">The values to set.</param>
-        [Obsolete("UpdateSubsections(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
+        [Obsolete("UpdateSubsections(...) is deprecated. Please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values);
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace NuGet.Configuration
         /// <param name="section">The name of the section.</param>
         /// <param name="subsection">The name of the subsection.</param>
         /// <param name="values">The values to set.</param>
-        [Obsolete("SetNestedValues(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
+        [Obsolete("SetNestedValues(...) is deprecated. Please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values);
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace NuGet.Configuration
         /// <param name="section">The name of the section.</param>
         /// <param name="subsection">The name of the subsection.</param>
         /// <param name="values">The setting values to set.</param>
-        [Obsolete("SetNestedSettingValues(...) is deprecated, please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
+        [Obsolete("SetNestedSettingValues(...) is deprecated. Please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
         void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values);
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace NuGet.Configuration
         /// <param name="section">The name of the section.</param>
         /// <param name="key">The key to be delted.</param>
         /// <returns>bool indicating success.</returns>
-        [Obsolete("DeleteValue(...) is deprecated, please use Remove(...) with the item you want to remove from the setttings.")]
+        [Obsolete("DeleteValue(...) is deprecated. Please use Remove(...) with the item you want to remove from the setttings.")]
         bool DeleteValue(string section, string key);
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="section">The name of the section.</param>
         /// <returns>bool indicating success.</returns>
-        [Obsolete("DeleteSection(...) is deprecated,, please use Remove(...) with all the items in the section you want to remove from the setttings.")]
+        [Obsolete("DeleteSection(...) is deprecated,. Please use Remove(...) with all the items in the section you want to remove from the setttings.")]
         bool DeleteSection(string section);
 
         /// <summary>

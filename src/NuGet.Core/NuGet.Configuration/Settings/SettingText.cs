@@ -2,18 +2,37 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace NuGet.Configuration
 {
     public sealed class SettingText : SettingBase, IEquatable<SettingText>
     {
-        public string Value { get; set; }
+        private string _value;
+        public string Value
+        {
+            get => _value;
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(value));
+                }
+
+                _value = value;
+            }
+        }
 
         public SettingText(string value)
             : base()
         {
-            Value = value ?? throw new ArgumentNullException(nameof(value));
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(value));
+            }
+
+            _value = value;
         }
 
         public bool Equals(SettingText other)
@@ -45,18 +64,32 @@ namespace NuGet.Configuration
 
         internal override SettingBase Clone()
         {
-            return new SettingText(Value) { Origin = Origin };
+            var newSetting = new SettingText(Value);
+
+            if (Origin != null)
+            {
+                newSetting.SetOrigin(Origin);
+            }
+
+            return newSetting;
         }
 
         internal SettingText(XText text, SettingsFile origin)
             : base(text, origin)
         {
-            Value = text.Value.Trim();
+            var value = text.Value.Trim();
+
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+            }
+
+            Value = value;
         }
 
         internal override XNode AsXNode()
         {
-            if (Node != null && Node is XText xText)
+            if (Node is XText xText)
             {
                 return xText;
             }

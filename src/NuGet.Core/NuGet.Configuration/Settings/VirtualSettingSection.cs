@@ -8,60 +8,57 @@ using System.Linq;
 
 namespace NuGet.Configuration
 {
-    public sealed class AbstractSettingSection : SettingSection
+    public sealed class VirtualSettingSection : SettingSection
     {
-        internal AbstractSettingSection(SettingSection section)
+        internal VirtualSettingSection(SettingSection section)
             : this(section.ElementName, section.Attributes, section.Items)
         {
         }
 
-        internal AbstractSettingSection(string name, params SettingItem[] children)
+        internal VirtualSettingSection(string name, params SettingItem[] children)
             : this(name, attributes: null, children: new HashSet<SettingItem>(children))
         {
         }
 
-        internal AbstractSettingSection(string name, IReadOnlyDictionary<string, string> attributes, IEnumerable<SettingItem> children)
+        internal VirtualSettingSection(string name, IReadOnlyDictionary<string, string> attributes, IEnumerable<SettingItem> children)
             : base(name, attributes, children)
         {
         }
 
-        internal AbstractSettingSection Merge(SettingSection other)
+        internal VirtualSettingSection Merge(SettingSection other)
         {
             if (!Equals(other))
             {
                 throw new ArgumentException(Resources.Error_MergeTwoDifferentSections);
             }
 
-            foreach (var item in other.Items)
+            foreach (var item in other.Items.Where(item => item != null))
             {
-                if (item != null)
+                if (item is ClearItem)
                 {
-                    if (item is ClearItem)
+                    if (CanBeCleared)
                     {
-                        if (CanBeCleared)
-                        {
-                            ChildrenSet.Clear();
-                        }
-
-                        ChildrenSet.Add(item, item);
-
-                        continue;
+                        ChildrenSet.Clear();
                     }
 
-                    if (ChildrenSet.ContainsKey(item))
-                    {
-                        if (item is UnknownItem unknown)
-                        {
-                            unknown.Merge(ChildrenSet[item] as UnknownItem);
-                        }
+                    ChildrenSet.Add(item, item);
 
-                        item.MergedWith = ChildrenSet[item];
-                        ChildrenSet[item] = item;
-                    }
-                    else
+                    continue;
+                }
+
+                if (ChildrenSet.ContainsKey(item))
+                {
+                    if (item is UnknownItem unknown)
                     {
-                        ChildrenSet.Add(item, item);
+                        unknown.Merge(ChildrenSet[item] as UnknownItem);
                     }
+
+                    item.MergedWith = ChildrenSet[item];
+                    ChildrenSet[item] = item;
+                }
+                else
+                {
+                    ChildrenSet.Add(item, item);
                 }
             }
 
@@ -96,7 +93,7 @@ namespace NuGet.Configuration
             {
                 Debug.Assert(!currentSetting.IsAbstract());
 
-                if (currentSetting.Origin.IsMachineWide)
+                if (currentSetting.Origin != null && currentSetting.Origin.IsMachineWide)
                 {
                     throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
                 }
@@ -151,7 +148,7 @@ namespace NuGet.Configuration
 
         internal override SettingBase Clone()
         {
-            return new AbstractSettingSection(ElementName, Attributes, Items.Select(s => s.Clone() as SettingItem));
+            return new VirtualSettingSection(ElementName, Attributes, Items.Select(s => s.Clone() as SettingItem));
         }
     }
 }

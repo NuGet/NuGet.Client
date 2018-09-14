@@ -12,30 +12,6 @@ namespace NuGet.Configuration.Test
     public class ClearItemTests
     {
         [Fact]
-        public void ClearItem_Constructor_ClearElement_WithAttributes_Throws()
-        {
-            // Arrange
-            var config = @"
-<configuration>
-    <SectionName>
-        <clear atrribute='value' />
-    </SectionName>
-</configuration>";
-            var nugetConfigPath = "NuGet.Config";
-            using (var mockBaseDirectory = TestDirectory.Create())
-            {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-
-                // Act and Assert
-                var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
-
-                ex.Should().NotBeNull();
-                ex.Should().BeOfType<NuGetConfigurationException>();
-                ex.Message.Should().Be(string.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
-            }
-        }
-
-        [Fact]
         public void ClearItem_SingleTag_ParsedSuccessfully()
         {
             // Arrange

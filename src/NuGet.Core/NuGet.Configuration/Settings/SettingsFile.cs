@@ -45,22 +45,28 @@ namespace NuGet.Configuration
         internal bool IsMachineWide { get; }
 
         /// <summary>
+        /// Order in which the files will be read.
+        /// A larger number means closer to the user.
+        /// </summary>
+        internal int Priority { get; private set; }
+
+        /// <summary>
         /// XML element for settings file
         /// </summary>
-        private XDocument _xDocument { get; }
+        private readonly XDocument _xDocument;
 
         /// <summary>
         /// Root element of configuration file.
         /// By definition of a nuget.config, the root element has to be a 'configuration' element
         /// </summary>
-        private NuGetConfiguration _rootElement { get; set; }
+        private readonly NuGetConfiguration _rootElement;
 
         /// <summary>
         /// Creates an instance of a non machine wide SettingsFile with the default filename.
         /// </summary>
         /// <param name="directoryPath">path to the directory where the file is</param>
         public SettingsFile(string directoryPath)
-            : this(directoryPath, Settings.DefaultSettingsFileName, false)
+            : this(directoryPath, Settings.DefaultSettingsFileName, isMachineWide: false)
         {
         }
 
@@ -70,7 +76,7 @@ namespace NuGet.Configuration
         /// <param name="directoryPath">path to the directory where the file is</param>
         /// <param name="fileName">name of config file</param>
         public SettingsFile(string directoryPath, string fileName)
-            : this(directoryPath, fileName, false)
+            : this(directoryPath, fileName, isMachineWide: false)
         {
         }
 
@@ -86,12 +92,12 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(directoryPath))
             {
-                throw new ArgumentNullException(nameof(directoryPath), Resources.Argument_Cannot_Be_Null_Or_Empty);
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(directoryPath));
             }
 
             if (string.IsNullOrEmpty(fileName))
             {
-                throw new ArgumentNullException(nameof(fileName), Resources.Argument_Cannot_Be_Null_Or_Empty);
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(fileName));
             }
 
             if (!FileSystemUtility.IsPathAFile(fileName))
@@ -102,6 +108,7 @@ namespace NuGet.Configuration
             DirectoryPath = directoryPath;
             FileName = fileName;
             IsMachineWide = isMachineWide;
+            Priority = 0;
 
             XDocument config = null;
             ExecuteSynchronized(() =>
@@ -167,7 +174,7 @@ namespace NuGet.Configuration
 
         /// <remarks>
         /// This method gives you a reference to the actual abstraction instead of a clone of it.
-        /// It should be used only when intended. For most purposed you should be able to use
+        /// It should be used only when intended. For most purposes you should be able to use
         /// GetSection(...) instead.
         /// </remarks>
         internal bool TryGetSection(string sectionName, out SettingSection section)
@@ -177,6 +184,8 @@ namespace NuGet.Configuration
 
         internal static void ConnectSettingsFilesLinkedList(IList<SettingsFile> settingFiles)
         {
+            settingFiles[0].Priority = settingFiles.Count;
+
             // if multiple setting files were loaded, chain them in a linked list
             for (var i = 1; i < settingFiles.Count; ++i)
             {
@@ -187,9 +196,10 @@ namespace NuGet.Configuration
         internal void SetNextFile(SettingsFile settingsFile)
         {
             Next = settingsFile;
+            Priority = settingsFile.Priority - 1;
         }
 
-        internal void MergeSectionsInto(Dictionary<string, AbstractSettingSection> sectionsContainer)
+        internal void MergeSectionsInto(Dictionary<string, VirtualSettingSection> sectionsContainer)
         {
             _rootElement.MergeSectionsInto(sectionsContainer);
         }

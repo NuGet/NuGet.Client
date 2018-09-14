@@ -80,7 +80,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to update setting since it is in a machine wide NuGet.Config..
+        ///   Looks up a localized string similar to Unable to update setting since it is in a machine-wide NuGet.Config..
         /// </summary>
         internal static string CannotUpdateMachineWide {
             get {
@@ -89,11 +89,20 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not add disabled package source..
+        ///   Looks up a localized string similar to Cannot update the node of a setting..
         /// </summary>
-        internal static string Error_CouldNotDisableSources {
+        internal static string CannotUpdateNode {
             get {
-                return ResourceManager.GetString("Error_CouldNotDisableSources", resourceCulture);
+                return ResourceManager.GetString("CannotUpdateNode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot update the origin of a setting..
+        /// </summary>
+        internal static string CannotUpdateOrigin {
+            get {
+                return ResourceManager.GetString("CannotUpdateOrigin", resourceCulture);
             }
         }
         
@@ -170,7 +179,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There is no NuGet.Config that could be used for writting settings. Please create one at the desired location and restart the client..
+        ///   Looks up a localized string similar to There is no NuGet.Config that could be used for writing settings. Please create one at the desired location and restart the client..
         /// </summary>
         internal static string NoWritteableConfig {
             get {
@@ -190,9 +199,9 @@ namespace NuGet.Configuration {
         /// <summary>
         ///   Looks up a localized string similar to {0} cannot be null or empty..
         /// </summary>
-        internal static string PropertyCannotBeNull {
+        internal static string PropertyCannotBeNullOrEmpty {
             get {
-                return ResourceManager.GetString("PropertyCannotBeNull", resourceCulture);
+                return ResourceManager.GetString("PropertyCannotBeNullOrEmpty", resourceCulture);
             }
         }
         
@@ -215,7 +224,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parameter &apos;fileName&apos; to Settings must be just a fileName and not a path..
+        ///   Looks up a localized string similar to Parameter &apos;fileName&apos; to Settings must be just a file name and not a path..
         /// </summary>
         internal static string Settings_FileName_Cannot_Be_A_Path {
             get {

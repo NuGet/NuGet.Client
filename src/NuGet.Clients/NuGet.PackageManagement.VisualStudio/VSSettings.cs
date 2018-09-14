@@ -127,22 +127,22 @@ namespace NuGet.PackageManagement.VisualStudio
 
 #pragma warning disable CS0618 // Type or member is obsolete
 
-        [Obsolete("GetValue(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetValue(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         public string GetValue(string section, string key, bool isPath = false) => SolutionSettings.GetValue(section, key, isPath);
 
-        [Obsolete("GetAllSubsections(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetAllSubsections(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         public IReadOnlyList<string> GetAllSubsections(string section) => SolutionSettings.GetAllSubsections(section);
 
-        [Obsolete("GetSettingValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetSettingValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         public IList<SettingValue> GetSettingValues(string section, bool isPath = false) => SolutionSettings.GetSettingValues(section, isPath);
 
-        [Obsolete("GetNestedValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetNestedValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection) => SolutionSettings.GetNestedValues(section, subSection);
 
-        [Obsolete("GetNestedSettingValues(...) is deprecated, please use GetSection(...) to interact with the setting values instead.")]
+        [Obsolete("GetNestedSettingValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
         public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection) => SolutionSettings.GetNestedSettingValues(section, subSection);
 
-        [Obsolete("SetValue(...) is deprecated, please use SetItemInSection(...) to add an item to a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("SetValue(...) is deprecated. Please use SetItemInSection(...) to add an item to a section or interact directly with the SettingsElement you want.")]
         public void SetValue(string section, string key, string value)
         {
             if (CanChangeSettings)
@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        [Obsolete("SetValues(...) is deprecated, please use SetItemInSection(...) to add an item to a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("SetValues(...) is deprecated. Please use SetItemInSection(...) to add an item to a section or interact directly with the SettingsElement you want.")]
         public void SetValues(string section, IReadOnlyList<SettingValue> values)
         {
             if (CanChangeSettings)
@@ -160,7 +160,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        [Obsolete("UpdateSections(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("UpdateSections(...) is deprecated. Please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
         public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
         {
             if (CanChangeSettings)
@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        [Obsolete("UpdateSubsections(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("UpdateSubsections(...) is deprecated. Please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
         public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
         {
             if (CanChangeSettings)
@@ -178,7 +178,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        [Obsolete("SetNestedValues(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("SetNestedValues(...) is deprecated. Please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
         public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values)
         {
             if (CanChangeSettings)
@@ -187,7 +187,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        [Obsolete("SetNestedSettingValues(...) is deprecated, please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        [Obsolete("SetNestedSettingValues(...) is deprecated. Please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
         public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
         {
             if (CanChangeSettings)
@@ -196,10 +196,10 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        [Obsolete("DeleteValue(...) is deprecated, please interact directly with the SettingsElement you want to delete.")]
+        [Obsolete("DeleteValue(...) is deprecated. Please interact directly with the SettingsElement you want to delete.")]
         public bool DeleteValue(string section, string key) => CanChangeSettings && SolutionSettings.DeleteValue(section, key);
 
-        [Obsolete("DeleteSection(...) is deprecated, please interact directly with the SettingsElement you want to delete.")]
+        [Obsolete("DeleteSection(...) is deprecated. Please interact directly with the SettingsElement you want to delete.")]
         public bool DeleteSection(string section) => CanChangeSettings && SolutionSettings.DeleteSection(section);
 
 #pragma warning restore CS0618 // Type or member is obsolete

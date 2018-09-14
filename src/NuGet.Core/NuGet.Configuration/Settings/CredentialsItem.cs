@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
@@ -26,7 +25,7 @@ namespace NuGet.Configuration
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentNullException(string.Format(CultureInfo.CurrentCulture, Resources.PropertyCannotBeNull, nameof(Username)));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.PropertyCannotBeNullOrEmpty, nameof(Username)));
                 }
 
                 _username.Value = value;
@@ -41,7 +40,7 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentNullException(nameof(password));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(password));
             }
 
             if (IsPasswordClearText && !isPasswordClearText)
@@ -74,10 +73,12 @@ namespace NuGet.Configuration
                 {
                     if (_validAuthenticationTypes == null)
                     {
-                        _validAuthenticationTypes = new AddItem(ConfigurationConstants.ValidAuthenticationTypesToken, value)
+                        _validAuthenticationTypes = new AddItem(ConfigurationConstants.ValidAuthenticationTypesToken, value);
+
+                        if (Origin != null)
                         {
-                            Origin = Origin
-                        };
+                            _validAuthenticationTypes.SetOrigin(Origin);
+                        }
                     }
                     else
                     {
@@ -102,17 +103,17 @@ namespace NuGet.Configuration
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             if (string.IsNullOrEmpty(username))
             {
-                throw new ArgumentNullException(nameof(username));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(username));
             }
 
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentNullException(nameof(password));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(password));
             }
 
             ElementName = name;
@@ -153,11 +154,21 @@ namespace NuGet.Configuration
                 }
                 else if (string.Equals(item.Key, ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase))
                 {
+                    if (_password != null)
+                    {
+                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+                    }
+
                     _password = item;
                     IsPasswordClearText = false;
                 }
                 else if (string.Equals(item.Key, ConfigurationConstants.ClearTextPasswordToken, StringComparison.OrdinalIgnoreCase))
                 {
+                    if (_password != null)
+                    {
+                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+                    }
+
                     _password = item;
                     IsPasswordClearText = true;
                 }
@@ -175,12 +186,19 @@ namespace NuGet.Configuration
 
         internal override SettingBase Clone()
         {
-            return new CredentialsItem(ElementName, Username, Password, IsPasswordClearText, ValidAuthenticationTypes) { Origin = Origin };
+            var newSetting = new CredentialsItem(ElementName, Username, Password, IsPasswordClearText, ValidAuthenticationTypes);
+
+            if (Origin != null)
+            {
+                newSetting.SetOrigin(Origin);
+            }
+
+            return newSetting;
         }
 
         internal override XNode AsXNode()
         {
-            if (Node != null && Node is XElement)
+            if (Node is XElement)
             {
                 return Node;
             }
@@ -219,14 +237,9 @@ namespace NuGet.Configuration
 
         public bool DeepEquals(CredentialsItem other)
         {
-            if (other == null)
+            if (!Equals(other))
             {
                 return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
             }
 
             var validAutheticationTypesEquals = string.IsNullOrEmpty(ValidAuthenticationTypes) ?
@@ -272,11 +285,13 @@ namespace NuGet.Configuration
             {
                 if (_validAuthenticationTypes == null)
                 {
-                    _validAuthenticationTypes = new AddItem(ConfigurationConstants.ValidAuthenticationTypesToken, credentials.ValidAuthenticationTypes)
+                    _validAuthenticationTypes = new AddItem(ConfigurationConstants.ValidAuthenticationTypesToken, credentials.ValidAuthenticationTypes);
+                    _validAuthenticationTypes.SetNode(_validAuthenticationTypes.AsXNode());
+
+                    if (Origin != null)
                     {
-                        Origin = Origin,
-                        Node = _validAuthenticationTypes.AsXNode()
-                    };
+                        _validAuthenticationTypes.SetOrigin(Origin);
+                    }
 
                     var element = Node as XElement;
                     if (element != null)
@@ -293,6 +308,24 @@ namespace NuGet.Configuration
                     _validAuthenticationTypes.Update(credentials._validAuthenticationTypes);
                 }
             }
+        }
+
+        internal override void SetOrigin(SettingsFile origin)
+        {
+            base.SetOrigin(origin);
+
+            _username.SetOrigin(origin);
+            _password.SetOrigin(origin);
+            _validAuthenticationTypes?.SetOrigin(origin);
+        }
+
+        internal override void RemoveFromSettings()
+        {
+            base.RemoveFromSettings();
+
+            _username.RemoveFromSettings();
+            _password.RemoveFromSettings();
+            _validAuthenticationTypes?.RemoveFromSettings();
         }
     }
 }

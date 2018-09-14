@@ -16,7 +16,6 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.ProjectModel;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -410,9 +409,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected DependencyBehavior GetDependencyBehaviorFromConfig()
         {
-            var dependencySetting = SettingsUtility.GetConfigValue(ConfigSettings, "dependencyversion");
+            var dependencySetting = SettingsUtility.GetConfigValue(ConfigSettings, ConfigurationConstants.DependencyVersion);
             DependencyBehavior behavior;
-            var success = Enum.TryParse(dependencySetting, true, out behavior);
+            var success = Enum.TryParse(dependencySetting, ignoreCase: true, result: out behavior);
             if (success)
             {
                 return behavior;
