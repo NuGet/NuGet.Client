@@ -21,6 +21,10 @@ namespace GenerateLicenseList
             var exceptionJson = Path.GetFullPath(args[1]);
             var targetFile = Path.GetFullPath(args[2]);
 
+            Console.WriteLine($"License json: {licenseJson}");
+            Console.WriteLine($"Exception json: {exceptionJson}");
+            Console.WriteLine($"Target file: {targetFile}");
+
             var licenseDataCodeGenerator = new LicenseDataCodeGenerator(licenseJson, exceptionJson);
 
             var node = licenseDataCodeGenerator.GenerateLicenseDataFile();
@@ -37,6 +41,7 @@ namespace GenerateLicenseList
                     Console.WriteLine($"Completed the update of {targetFile}");
                     return 0;
                 }
+
                 foreach (var codeIssue in codeIssues)
                 {
                     var issue = $"ID: {codeIssue.Id}, Message: {codeIssue.GetMessage()}, Location: {codeIssue.Location.GetLineSpan()}, Severity: {codeIssue.Severity}";
