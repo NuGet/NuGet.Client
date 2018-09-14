@@ -31,7 +31,7 @@ namespace NuGet.Packaging
                     return new NuGetLicenseException(identifier, false);
                 }
             }
-            return null;
+            throw new ArgumentException($"Invalid License Exception {identifier}");
         }
 
         public override string ToString()

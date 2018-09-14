@@ -23,7 +23,7 @@ namespace NuGet.Packaging
             Type = LicenseExpressionType.License;
         }
 
-        // TODO NK - the plus might need to be parsed.
+        // TODO NK - the plus might need to be parsed. Consider making the parser more future proof.
         public static NuGetLicense Parse(string identifier, bool strict = true)
         {
             if (!string.IsNullOrWhiteSpace(identifier))
@@ -36,25 +36,28 @@ namespace NuGet.Packaging
                 {
                     if (identifier[identifier.Length - 1] == '+')
                     {
-                        if (NuGetLicenseData.LicenseList.TryGetValue(identifier.Substring(0, identifier.Length - 1), out licenseData))
+                        var cleanIdentifier = identifier.Substring(0, identifier.Length - 1);
+                        var plus = true;
+                        if (NuGetLicenseData.LicenseList.TryGetValue(cleanIdentifier, out licenseData))
                         {
-                            return new NuGetLicense(identifier, plus: true, deprecated: licenseData.IsDeprecatedLicenseId, isStandardLicense: true);
+                            return new NuGetLicense(cleanIdentifier, plus: plus, deprecated: licenseData.IsDeprecatedLicenseId, isStandardLicense: true);
+                        }
+
+                        if (!strict)
+                        {
+                            return new NuGetLicense(cleanIdentifier, plus: plus, deprecated: false, isStandardLicense: false);
                         }
                     }
                     else
                     {
-                        if (strict)
-                        {
-                            return null;
-                        }
-                        else
+                        if (!strict)
                         {
                             return new NuGetLicense(identifier, plus: false, deprecated: false, isStandardLicense: false);
                         }
                     }
                 }
             }
-            return null;
+            throw new ArgumentException($"The NuGet License cannot be parsed.{identifier}");
         }
 
         public override string ToString()
