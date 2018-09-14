@@ -17,6 +17,7 @@ namespace GenerateLicenseList
                 Console.WriteLine("This tool expects 3 arguments: licenses.json, exceptions.json, targetFileLocation");
                 return -1;
             }
+
             var licenseJson = Path.GetFullPath(args[0]);
             var exceptionJson = Path.GetFullPath(args[1]);
             var targetFile = Path.GetFullPath(args[2]);
