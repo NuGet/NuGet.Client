@@ -17,7 +17,6 @@ namespace NuGet.Packaging
             IsDeprecated = isDeprecated;
         }
 
-        // TODO NK - maybe we have different handling for the deprecated IDs.
         public static NuGetLicenseException Parse(string identifier, bool strict = true)
         {
             if (!string.IsNullOrWhiteSpace(identifier))

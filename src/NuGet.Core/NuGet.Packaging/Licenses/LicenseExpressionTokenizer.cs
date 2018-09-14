@@ -97,7 +97,6 @@ namespace NuGet.Packaging.Licenses
 
         private LicenseExpressionToken ParseTokenType(string token)
         {
-            // TODO NK - Check that the tests conform to this
             var expressionToken = Enum.TryParse(value: token, result: out LicenseTokenType result);
 
             if (expressionToken && result.IsOperator())

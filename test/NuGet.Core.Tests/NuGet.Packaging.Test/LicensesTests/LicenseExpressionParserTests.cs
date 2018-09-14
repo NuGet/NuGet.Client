@@ -12,7 +12,9 @@ namespace NuGet.Packaging.Test
     {
         // TODO NK - Make license ids conform to the specification.
         //TODO NK - add tests for casing of the license iDs and casing of the operators
-        // TODO NK - Should strict parse the deprecated exceptions? 
+        // TODO NK - Should strict parse the deprecated exceptions?
+        // TODO NK - maybe we have different handling for the deprecated IDs.
+
         [Theory]
         [InlineData("MIT OR LPL-1.0", "MIT OR LPL-1.0", "OR", true)]
         [InlineData("MIT AND LPL-1.0", "MIT AND LPL-1.0", "AND", true)]
