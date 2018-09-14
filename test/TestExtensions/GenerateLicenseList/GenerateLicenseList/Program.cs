@@ -14,7 +14,7 @@ namespace GenerateLicenseList
                 @"C:\Users\Roki2\Documents\Code\license-list-data\json\licenses.json",
                 @"C:\Users\Roki2\Documents\Code\license-list-data\json\exceptions.json");
   
-            var node = licenseDataCodeGenerator.GenerateLicenseDataClass();
+            var node = licenseDataCodeGenerator.GenerateLicenseDataFile();
             if (node != null)
             {
                 var codeIssues = node.GetDiagnostics();

@@ -16,7 +16,16 @@ namespace GenerateLicenseList
             _parser = new LicenseDataParser(licenseFile, exceptionsFile);
         }
 
-        public SyntaxNode GenerateLicenseDataClass()
+        private ClassDeclarationSyntax GetLicenseDataHolderClass()
+        {
+            return CSharpSyntaxTree.ParseText(GenerateLicenseData(_parser))
+                   .GetRoot()
+                   .DescendantNodes()
+                   .OfType<ClassDeclarationSyntax>()
+                   .FirstOrDefault();
+        }
+
+        public SyntaxNode GenerateLicenseDataFile()
         {
             var rootNode = CSharpSyntaxTree.ParseText(NamespaceDeclaration).GetRoot();
 
@@ -24,23 +33,9 @@ namespace GenerateLicenseList
 
             if (nameSpace != null)
             {
-                var licenseDataClass = CSharpSyntaxTree.ParseText(LicenseData)
-                    .GetRoot()
-                    .DescendantNodes()
-                    .OfType<ClassDeclarationSyntax>()
-                    .FirstOrDefault();
-
-                var exceptionDataClass = CSharpSyntaxTree.ParseText(ExceptionData)
-                    .GetRoot()
-                    .DescendantNodes()
-                    .OfType<ClassDeclarationSyntax>()
-                    .FirstOrDefault();
-
-                var licenseDataHolder = CSharpSyntaxTree.ParseText(GenerateLicenseData(_parser))
-                    .GetRoot()
-                    .DescendantNodes()
-                    .OfType<ClassDeclarationSyntax>()
-                    .FirstOrDefault();
+                var licenseDataClass = GetLicenseDataClass();
+                var exceptionDataClass = GetExceptionDataClass();
+                var licenseDataHolder = GetLicenseDataHolderClass();
 
                 var newNameSpace = nameSpace.AddMembers(licenseDataClass, exceptionDataClass, licenseDataHolder);
                 rootNode = rootNode.ReplaceNode(nameSpace, newNameSpace);
@@ -54,6 +49,42 @@ namespace GenerateLicenseList
             }
         }
 
+        private ClassDeclarationSyntax GetLicenseDataClass()
+        {
+            var licenseDataFormattedClass =
+                Environment.NewLine +
+                CSharpSyntaxTree.ParseText(LicenseData)
+                    .GetRoot()
+                    .DescendantNodes()
+                    .OfType<ClassDeclarationSyntax>()
+                    .FirstOrDefault().NormalizeWhitespace().ToFullString() +
+                Environment.NewLine;
+
+            return CSharpSyntaxTree.ParseText(licenseDataFormattedClass)
+                .GetRoot()
+                .DescendantNodes()
+                .OfType<ClassDeclarationSyntax>()
+                .FirstOrDefault();
+        }
+
+        private ClassDeclarationSyntax GetExceptionDataClass()
+        {
+            var exceptionDataFormattedClass =
+                Environment.NewLine +
+                CSharpSyntaxTree.ParseText(ExceptionData)
+                    .GetRoot()
+                    .DescendantNodes()
+                    .OfType<ClassDeclarationSyntax>()
+                    .FirstOrDefault().NormalizeWhitespace().ToFullString() +
+                Environment.NewLine;
+
+            return CSharpSyntaxTree.ParseText(exceptionDataFormattedClass)
+                 .GetRoot()
+                 .DescendantNodes()
+                 .OfType<ClassDeclarationSyntax>()
+                 .FirstOrDefault();
+        }
+
         private string GenerateLicenseData(LicenseDataParser licenseDataParser)
         {
             var licenses = licenseDataParser.ParseLicenses();
@@ -63,7 +94,7 @@ namespace GenerateLicenseList
                 throw new ArgumentException("The license list version and the exception list version are not equivalent");
             }
 
-            return LicenseDataHolderBase +
+            return Environment.NewLine + Environment.NewLine + LicenseDataHolderBase +
                 string.Join(Environment.NewLine, licenses.LicenseList.Where(e => e.ReferenceNumber < 3).Select(e => PrettyPrint(e))) +
                 Intermediate +
                 string.Join(Environment.NewLine, exceptions.ExceptionList.Where(e => e.ReferenceNumber < 3).Select(e => PrettyPrint(e))) +
