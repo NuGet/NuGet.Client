@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -9,33 +10,41 @@ namespace GenerateLicenseList
 {
     class Program
     {
-        static int Main(string[] args)   
+        static int Main(string[] args)
         {
-            var licenseDataCodeGenerator = new LicenseDataCodeGenerator(
-                @"C:\Users\Roki2\Documents\Code\license-list-data\json\licenses.json",
-                @"C:\Users\Roki2\Documents\Code\license-list-data\json\exceptions.json");
-  
+            if (args.Count() != 3)
+            {
+                Console.WriteLine("This tool expects 3 arguments: licenses.json, exceptions.json, targetFileLocation");
+                return -1;
+            }
+            var licenseJson = args[0];
+            var exceptionJson = args[1];
+            var targetFile = Path.GetFullPath(args[2]);
+
+            var licenseDataCodeGenerator = new LicenseDataCodeGenerator(licenseJson, exceptionJson);
+
             var node = licenseDataCodeGenerator.GenerateLicenseDataFile();
             if (node != null)
             {
                 var codeIssues = node.GetDiagnostics();
-
-                // WRite to file...but first let's do the parsing.
-                Console.ReadLine();
                 if (!codeIssues.Any())
                 {
+
+                    using (var writer = File.CreateText(targetFile))
+                    {
+                        node.WriteTo(writer);
+                    }
+                    Console.WriteLine($"Completed the update of {targetFile}");
                     return 0;
                 }
                 foreach (var codeIssue in codeIssues)
                 {
                     var issue = $"ID: {codeIssue.Id}, Message: {codeIssue.GetMessage()}, Location: {codeIssue.Location.GetLineSpan()}, Severity: {codeIssue.Severity}";
                     Console.WriteLine(issue);
+                    Console.WriteLine("License List file generation failed.");
                 }
-
             }
             return -1;
         }
-
-
     }
 }
