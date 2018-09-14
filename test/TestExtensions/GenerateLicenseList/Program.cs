@@ -9,8 +9,7 @@ namespace GenerateLicenseList
 {
     class Program
     {
-        static int Main(string[] args)
-            
+        static int Main(string[] args)   
         {
             var licenseDataCodeGenerator = new LicenseDataCodeGenerator(
                 @"C:\Users\Roki2\Documents\Code\license-list-data\json\licenses.json",
