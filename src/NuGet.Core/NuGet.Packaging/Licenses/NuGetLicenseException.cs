@@ -7,18 +7,29 @@ namespace NuGet.Packaging
 {
     public class NuGetLicenseException
     {
-        public NuGetLicenseException(string identifier)
-        {
-            Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
-        }
 
+        public bool IsDeprecated { get; }
         public string Identifier { get; }
 
+        public NuGetLicenseException(string identifier, bool isDeprecated)
+        {
+            Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
+            IsDeprecated = isDeprecated;
+        }
+
+        // TODO NK - maybe we have different handling for the deprecated IDs.
         public static NuGetLicenseException Parse(string identifier, bool strict = true)
         {
             if (!string.IsNullOrWhiteSpace(identifier))
             {
-                return new NuGetLicenseException(identifier);
+                if(NuGetLicenseData.ExceptionList.TryGetValue(identifier, out var exceptionData))
+                {
+                    return new NuGetLicenseException(identifier, exceptionData.IsDeprecatedLicenseId);
+                }
+                if (!strict)
+                {
+                    return new NuGetLicenseException(identifier, false);
+                }
             }
             return null;
         }

@@ -12,29 +12,45 @@ namespace NuGet.Packaging
 
         public bool IsDeprecated { get; }
 
-        public NuGetLicense(string identifier, bool plus, bool deprecated)
+        public bool IsStandardLicense { get; }
+
+        public NuGetLicense(string identifier, bool plus, bool deprecated, bool isStandardLicense)
         {
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
             Plus = plus;
             IsDeprecated = deprecated;
+            IsStandardLicense = isStandardLicense;
             Type = LicenseExpressionType.License;
         }
 
+        // TODO NK - the plus might need to be parsed.
         public static NuGetLicense Parse(string identifier, bool strict = true)
         {
             if (!string.IsNullOrWhiteSpace(identifier))
             {
                 if (NuGetLicenseData.LicenseList.TryGetValue(identifier, out var licenseData))
                 {
-                    return new NuGetLicense(identifier, plus: false, deprecated: licenseData.IsDeprecatedLicenseId);
+                    return new NuGetLicense(identifier, plus: false, deprecated: licenseData.IsDeprecatedLicenseId, isStandardLicense: true);
                 }
                 else
                 {
-
-                    // TODO NK - Do the actual parsing.
                     if (identifier[identifier.Length - 1] == '+')
                     {
-                        return new NuGetLicense(identifier.Substring(0, identifier.Length - 1), true);
+                        if (NuGetLicenseData.LicenseList.TryGetValue(identifier.Substring(0, identifier.Length - 1), out licenseData))
+                        {
+                            return new NuGetLicense(identifier, plus: true, deprecated: licenseData.IsDeprecatedLicenseId, isStandardLicense: true);
+                        }
+                    }
+                    else
+                    {
+                        if (strict)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return new NuGetLicense(identifier, plus: false, deprecated: false, isStandardLicense: false);
+                        }
                     }
                 }
             }
