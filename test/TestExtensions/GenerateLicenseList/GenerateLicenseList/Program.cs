@@ -8,10 +8,12 @@ namespace GenerateLicenseList
     class Program
     {
         static int Main(string[] args)
+            
         {
-            var licenseDataCodeGenerator = new LicenseDataCodeGenerator(@"F:\license-list-data\json\licenses.json", @"F:\license-list-data\json\exceptions.json");
+            var licenseDataCodeGenerator = new LicenseDataCodeGenerator(
+                @"C:\Users\Roki2\Documents\Code\license-list-data\json\licenses.json",
+                @"C:\Users\Roki2\Documents\Code\license-list-data\json\exceptions.json");
   
-
             var node = licenseDataCodeGenerator.GenerateLicenseDataClass();
             if (node != null)
             {

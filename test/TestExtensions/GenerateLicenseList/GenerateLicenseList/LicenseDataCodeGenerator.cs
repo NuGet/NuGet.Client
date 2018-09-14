@@ -23,9 +23,9 @@ namespace GenerateLicenseList
             var rootNode = CSharpSyntaxTree.ParseText(NamespaceDeclaration).GetRoot();
 
             var nameSpace = rootNode.DescendantNodes().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
+
             if (nameSpace != null)
             {
-
                 var licenseDataHolder = CSharpSyntaxTree.ParseText(GenerateLicenseData(_parser))
                     .GetRoot()
                     .DescendantNodes()
@@ -44,11 +44,18 @@ namespace GenerateLicenseList
                     .OfType<ClassDeclarationSyntax>()
                     .FirstOrDefault();
 
-                var newNameSpace = nameSpace.AddMembers(licenseDataHolder, licenseDataClass, exceptionDataClass);
+                var newNameSpace = nameSpace.AddMembers(licenseDataClass, exceptionDataClass);
                 rootNode = rootNode.ReplaceNode(nameSpace, newNameSpace);
+                rootNode = rootNode.NormalizeWhitespace();
+
+                var bla = rootNode.DescendantNodes().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
+                var newBla = bla.AddMembers(licenseDataHolder);
+                rootNode = rootNode.ReplaceNode(bla, newBla);
 
                 var workspace = new AdhocWorkspace();
-                return Formatter.Format(rootNode, Formatter.Annotation, workspace);
+                var formattedResult = Formatter.Format(rootNode, workspace);
+
+                return formattedResult;
             }
             else
             {
@@ -66,12 +73,11 @@ namespace GenerateLicenseList
                 throw new ArgumentException("The license list version and the exception list version are not equivalent");
             }
 
-            var value = LicenseDataHolderBase +
+            var value = Environment.NewLine + LicenseDataHolderBase +
                 string.Join(Environment.NewLine, licenses.LicenseList.Where(e => e.ReferenceNumber < 3).Select(e => PrettyPrint(e))) +
                 Intermediate +
                 string.Join(Environment.NewLine, exceptions.ExceptionList.Where(e => e.ReferenceNumber < 3).Select(e => PrettyPrint(e))) +
-                last;
-            Console.WriteLine(value);
+                last + Environment.NewLine;
 
             return value;
         }
@@ -116,7 +122,9 @@ namespace GenerateLicenseList
     int ReferenceNumber {{ get; }}
     bool IsOsiApproved {{ get; }}
     bool IsDeprecatedLicenseId {{ get; }}
-}}";
+}}
+
+";
 
 
         static string ExceptionData = $@"internal class ExceptionData
@@ -131,7 +139,9 @@ namespace GenerateLicenseList
     string LicenseExceptionID {{ get; }}
     int ReferenceNumber {{ get; }}
     bool IsDeprecatedLicenseId {{ get; }}
-}}";
+}}
+
+";
 
         private static string NamespaceDeclaration = $@"// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
