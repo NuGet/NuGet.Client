@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System.Collections.Generic;
 
 namespace NuGet.Packaging
@@ -8,16 +7,10 @@ namespace NuGet.Packaging
     internal class NuGetLicenseData
     {
         public static string LicenseListVersion = "listversion";
-
         public static Dictionary<string, LicenseData> LicenseList = new Dictionary<string, LicenseData>()
-        {
-            {"licenseID", new LicenseData(licenseID: "licenseID", referenceNumber: 0, isOsiApproved: true, isDeprecatedLicenseId: true) },
-        };
-
+        {{"0BSD", new LicenseData(licenseID: "0BSD", referenceNumber: 1, isOsiApproved: false, isDeprecatedLicenseId: false)}, {"AAL", new LicenseData(licenseID: "AAL", referenceNumber: 2, isOsiApproved: true, isDeprecatedLicenseId: false)}, };
         public static Dictionary<string, ExceptionData> ExceptionList = new Dictionary<string, ExceptionData>()
-        {
-            {"exceptionID", new ExceptionData(licenseID: "exceptionID", referenceNumber: 0, isDeprecatedLicenseId: true) },
-        };
+        {{"389-exception", new ExceptionData(licenseID: "389-exception", referenceNumber: 1, isDeprecatedLicenseId: false)}, {"Autoconf-exception-2.0", new ExceptionData(licenseID: "Autoconf-exception-2.0", referenceNumber: 2, isDeprecatedLicenseId: false)}, };
     }
 
     internal class LicenseData
@@ -30,10 +23,25 @@ namespace NuGet.Packaging
             IsDeprecatedLicenseId = isDeprecatedLicenseId;
         }
 
-        string LicenseID { get; }
-        int ReferenceNumber { get; }
-        bool IsOsiApproved { get; }
-        bool IsDeprecatedLicenseId { get; }
+        string LicenseID
+        {
+            get;
+        }
+
+        int ReferenceNumber
+        {
+            get;
+        }
+
+        bool IsOsiApproved
+        {
+            get;
+        }
+
+        bool IsDeprecatedLicenseId
+        {
+            get;
+        }
     }
 
     internal class ExceptionData
@@ -45,8 +53,19 @@ namespace NuGet.Packaging
             IsDeprecatedLicenseId = isDeprecatedLicenseId;
         }
 
-        string LicenseExceptionID { get; }
-        int ReferenceNumber { get; }
-        bool IsDeprecatedLicenseId { get; }
+        string LicenseExceptionID
+        {
+            get;
+        }
+
+        int ReferenceNumber
+        {
+            get;
+        }
+
+        bool IsDeprecatedLicenseId
+        {
+            get;
+        }
     }
 }
