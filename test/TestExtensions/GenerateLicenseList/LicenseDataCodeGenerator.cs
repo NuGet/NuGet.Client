@@ -36,11 +36,11 @@ namespace GenerateLicenseList
 
             if (nameSpace != null)
             {
+                var licenseDataHolder = GetLicenseDataHolderClass();
                 var licenseDataClass = GetLicenseDataClass();
                 var exceptionDataClass = GetExceptionDataClass();
-                var licenseDataHolder = GetLicenseDataHolderClass();
 
-                var newNameSpace = nameSpace.AddMembers(licenseDataClass, exceptionDataClass, licenseDataHolder);
+                var newNameSpace = nameSpace.AddMembers(licenseDataHolder, licenseDataClass, exceptionDataClass);
                 rootNode = rootNode.ReplaceNode(nameSpace, newNameSpace);
                 var workspace = new AdhocWorkspace();
                 return Formatter.Format(rootNode, workspace);
@@ -78,8 +78,7 @@ namespace GenerateLicenseList
                     .GetRoot()
                     .DescendantNodes()
                     .OfType<ClassDeclarationSyntax>()
-                    .FirstOrDefault().NormalizeWhitespace().ToFullString() +
-                Environment.NewLine;
+                    .FirstOrDefault().NormalizeWhitespace().ToFullString();
 
             return CSharpSyntaxTree.ParseText(exceptionDataFormattedClass)
                  .GetRoot()
@@ -104,7 +103,8 @@ namespace GenerateLicenseList
                 string.Join(Environment.NewLine, licenses.LicenseList.Where(e => e.ReferenceNumber < 10).Select(e => PrettyPrint(e))) +
                 ClosingBracket +
                 string.Join(Environment.NewLine, exceptions.ExceptionList.Where(e => e.ReferenceNumber < 10).Select(e => PrettyPrint(e))) +
-                ClosingBracket2;
+                ClosingBracket2 +
+                Environment.NewLine;
         }
 
         private static string PrettyPrint(LicenseData licenseData)
