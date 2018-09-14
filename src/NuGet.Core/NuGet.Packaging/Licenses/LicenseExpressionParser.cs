@@ -12,11 +12,13 @@ namespace NuGet.Packaging.Licenses
     {
         /// <summary>
         /// Parses a License Expression if valid.
+        /// The expression would be parsed correct, even if non-standard exceptions are encountered. The non-standard Licenses/Exceptions have metadata on them with which the caller can make decisions.
         /// </summary>
         /// <param name="expression"></param>
         /// <returns>NuGetLicenseExpression</returns>
-        /// <exception cref="ArgumentException">If the passed in values are not a valid SPDX License Expression.</exception>
-        public static NuGetLicenseExpression Parse(string expression, bool strict = true)
+        /// <exception cref="ArgumentException">If the expression has invalid characters.</exception>
+        /// <exception cref="ArgumentException">If the expression itself is invalid. Example: MIT OR OR Apache-2.0, or the MIT or Apache-2.0, because the expressions are case sensitive.</exception>
+        public static NuGetLicenseExpression Parse(string expression)
         {
             var tokenizer = new LicenseExpressionTokenizer(expression);
             if (!tokenizer.HasValidCharacters())
@@ -24,7 +26,7 @@ namespace NuGet.Packaging.Licenses
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidCharacters));
             }
 
-            return Parse(tokenizer.Tokenize().ToArray(), strict);
+            return Parse(tokenizer.Tokenize().ToArray());
         }
 
         /// <summary>
@@ -34,7 +36,7 @@ namespace NuGet.Packaging.Licenses
         /// <param name="infixTokens"></param>
         /// <returns>NuGetLicenseExpression</returns>
         /// <exception cref="ArgumentException">If the passed in values are not a valid SPDX License Expression.</exception>
-        public static NuGetLicenseExpression Parse(LicenseExpressionToken[] infixTokens, bool strict)
+        public static NuGetLicenseExpression Parse(LicenseExpressionToken[] infixTokens)
         {
             var operatorStack = new Stack<LicenseExpressionToken>();
             var operandStack = new Stack<LicenseExpressionToken>();
@@ -66,7 +68,7 @@ namespace NuGet.Packaging.Licenses
                         // pop until we hit the opening bracket
                         while (operatorStack.Count > 0 && operatorStack.Peek().TokenType != LicenseTokenType.OPENING_BRACKET)
                         {
-                            ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression, strict);
+                            ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression);
                         }
 
                         if (operatorStack.Count > 0)
@@ -105,7 +107,7 @@ namespace NuGet.Packaging.Licenses
                         // An operator that has lower/same priority than the operator on the stack
                         else if (token.TokenType >= operatorStack.Peek().TokenType)
                         {
-                            ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression, strict);
+                            ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression);
                             operatorStack.Push(token);
                         }
                         break;
@@ -120,7 +122,7 @@ namespace NuGet.Packaging.Licenses
             {
                 if (operatorStack.Peek().TokenType != LicenseTokenType.OPENING_BRACKET)
                 {
-                    ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression, strict);
+                    ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression);
                 }
                 else
                 {
@@ -133,7 +135,7 @@ namespace NuGet.Packaging.Licenses
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
         }
 
-        private static void ProcessOperators(Stack<LicenseExpressionToken> operatorStack, Stack<LicenseExpressionToken> operandStack, ref NuGetLicenseExpression leftHandSideExpression, ref NuGetLicenseExpression rightHandSideExpression, bool strict)
+        private static void ProcessOperators(Stack<LicenseExpressionToken> operatorStack, Stack<LicenseExpressionToken> operandStack, ref NuGetLicenseExpression leftHandSideExpression, ref NuGetLicenseExpression rightHandSideExpression)
         {
             var op = operatorStack.Pop();
             if (op.TokenType == LicenseTokenType.WITH)
@@ -141,7 +143,7 @@ namespace NuGet.Packaging.Licenses
                 var right = PopIfNotEmpty(operandStack);
                 var left = PopIfNotEmpty(operandStack);
 
-                var withNode = new WithOperator(NuGetLicense.Parse(left.Value, strict), NuGetLicenseException.Parse(right.Value, strict));
+                var withNode = new WithOperator(NuGetLicense.Parse(left.Value), NuGetLicenseException.Parse(right.Value));
 
                 if (leftHandSideExpression == null)
                 {
@@ -164,12 +166,12 @@ namespace NuGet.Packaging.Licenses
                 {
                     var right = PopIfNotEmpty(operandStack);
                     var left = PopIfNotEmpty(operandStack);
-                    leftHandSideExpression = new LogicalOperator(logicalOperator, NuGetLicense.Parse(left.Value, strict), NuGetLicense.Parse(right.Value, strict));
+                    leftHandSideExpression = new LogicalOperator(logicalOperator, NuGetLicense.Parse(left.Value), NuGetLicense.Parse(right.Value));
                 }
                 else if (rightHandSideExpression == null)
                 {
                     var right = PopIfNotEmpty(operandStack);
-                    var newExpression = new LogicalOperator(logicalOperator, leftHandSideExpression, NuGetLicense.Parse(right.Value, strict));
+                    var newExpression = new LogicalOperator(logicalOperator, leftHandSideExpression, NuGetLicense.Parse(right.Value));
                     leftHandSideExpression = newExpression;
                 }
                 else if (leftHandSideExpression == null)

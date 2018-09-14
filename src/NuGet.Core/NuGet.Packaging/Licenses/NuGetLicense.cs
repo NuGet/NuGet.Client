@@ -7,57 +7,67 @@ namespace NuGet.Packaging
 {
     public class NuGetLicense : NuGetLicenseExpression
     {
+        /// <summary>
+        /// Identifier
+        /// </summary>
         public string Identifier { get; }
+
+        /// <summary>
+        /// Signifies whether the plus operator has been specified on this license
+        /// </summary>
         public bool Plus { get; }
 
-        public bool IsDeprecated { get; }
-
+        /// <summary>
+        /// Signifies whether this is a standard license known by the NuGet APIs.
+        /// Pack for example should warn for these.
+        /// </summary>
         public bool IsStandardLicense { get; }
 
-        public NuGetLicense(string identifier, bool plus, bool deprecated, bool isStandardLicense)
+        public NuGetLicense(string identifier, bool plus, bool isStandardLicense)
         {
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
             Plus = plus;
-            IsDeprecated = deprecated;
             IsStandardLicense = isStandardLicense;
             Type = LicenseExpressionType.License;
         }
 
-        // TODO NK - the plus might need to be parsed. Consider making the parser more future proof.
-        public static NuGetLicense Parse(string identifier, bool strict = true)
+        /// <summary>
+        /// Parse a licenseIdentifier. If a licenseIdentifier is deprecated, this will throw. Non-standard licenses get parsed into a object model as well.
+        /// </summary>
+        /// <param name="licenseIdentifier"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">If the identifier is deprecated</exception>
+        /// <exception cref="ArgumentException">If it's null or empty.</exception>
+        public static NuGetLicense Parse(string licenseIdentifier)
         {
-            if (!string.IsNullOrWhiteSpace(identifier))
+            if (!string.IsNullOrWhiteSpace(licenseIdentifier))
             {
-                if (NuGetLicenseData.LicenseList.TryGetValue(identifier, out var licenseData))
+                if (NuGetLicenseData.LicenseList.TryGetValue(licenseIdentifier, out var licenseData))
                 {
-                    return new NuGetLicense(identifier, plus: false, deprecated: licenseData.IsDeprecatedLicenseId, isStandardLicense: true);
+                    return !licenseData.IsDeprecatedLicenseId ?
+                        new NuGetLicense(licenseIdentifier, plus: false, isStandardLicense: true) :
+                        throw new ArgumentException(string.Format(Strings.LicenseExpression_DeprecatedIdentifier, licenseIdentifier));
                 }
                 else
                 {
-                    if (identifier[identifier.Length - 1] == '+')
+                    if (licenseIdentifier[licenseIdentifier.Length - 1] == '+')
                     {
-                        var cleanIdentifier = identifier.Substring(0, identifier.Length - 1);
+                        var cleanIdentifier = licenseIdentifier.Substring(0, licenseIdentifier.Length - 1);
                         var plus = true;
                         if (NuGetLicenseData.LicenseList.TryGetValue(cleanIdentifier, out licenseData))
                         {
-                            return new NuGetLicense(cleanIdentifier, plus: plus, deprecated: licenseData.IsDeprecatedLicenseId, isStandardLicense: true);
+                            return !licenseData.IsDeprecatedLicenseId ?
+                                new NuGetLicense(cleanIdentifier, plus: plus, isStandardLicense: true) :
+                                throw new ArgumentException(string.Format(Strings.LicenseExpression_DeprecatedIdentifier, licenseIdentifier));
                         }
+                        return new NuGetLicense(cleanIdentifier, plus: plus, isStandardLicense: false);
+                    }
 
-                        if (!strict)
-                        {
-                            return new NuGetLicense(cleanIdentifier, plus: plus, deprecated: false, isStandardLicense: false);
-                        }
-                    }
-                    else
-                    {
-                        if (!strict)
-                        {
-                            return new NuGetLicense(identifier, plus: false, deprecated: false, isStandardLicense: false);
-                        }
-                    }
+                    return new NuGetLicense(licenseIdentifier, plus: false, isStandardLicense: false);
                 }
             }
-            throw new ArgumentException($"The NuGet License cannot be parsed.{identifier}");
+            // This will not happen in production code as the tokenizer takes cares of that. 
+            throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(licenseIdentifier));
         }
 
         public override string ToString()

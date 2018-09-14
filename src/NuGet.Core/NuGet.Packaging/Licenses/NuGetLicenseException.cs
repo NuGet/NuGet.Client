@@ -7,30 +7,31 @@ namespace NuGet.Packaging
 {
     public class NuGetLicenseException
     {
-
-        public bool IsDeprecated { get; }
         public string Identifier { get; }
 
-        public NuGetLicenseException(string identifier, bool isDeprecated)
+        public bool IsStandardException { get; }
+
+        public NuGetLicenseException(string identifier, bool isStandardException)
         {
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
-            IsDeprecated = isDeprecated;
+            IsStandardException = isStandardException;
         }
 
-        public static NuGetLicenseException Parse(string identifier, bool strict = true)
+        public static NuGetLicenseException Parse(string exceptionIdentifier)
         {
-            if (!string.IsNullOrWhiteSpace(identifier))
+            if (!string.IsNullOrWhiteSpace(exceptionIdentifier))
             {
-                if(NuGetLicenseData.ExceptionList.TryGetValue(identifier, out var exceptionData))
+                if (NuGetLicenseData.ExceptionList.TryGetValue(exceptionIdentifier, out var exceptionData))
                 {
-                    return new NuGetLicenseException(identifier, exceptionData.IsDeprecatedLicenseId);
+                    return !exceptionData.IsDeprecatedLicenseId ?
+                        new NuGetLicenseException(exceptionIdentifier, isStandardException: true) :
+                        throw new ArgumentException(string.Format(Strings.LicenseExpression_DeprecatedIdentifier, exceptionIdentifier));
+
                 }
-                if (!strict)
-                {
-                    return new NuGetLicenseException(identifier, false);
-                }
+                return new NuGetLicenseException(exceptionIdentifier, false);
             }
-            throw new ArgumentException($"Invalid License Exception {identifier}");
+            // This will not happen in production code as the tokenizer takes cares of that. 
+            throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(exceptionIdentifier));
         }
 
         public override string ToString()

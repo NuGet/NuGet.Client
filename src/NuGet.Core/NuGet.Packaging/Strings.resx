@@ -731,4 +731,8 @@ Valid from:</comment>
   <data name="NuGetLicenseExpression_InvalidCharacters" xml:space="preserve">
     <value>The expression contains invalid characters.</value>
   </data>
+  <data name="LicenseExpression_DeprecatedIdentifier" xml:space="preserve">
+    <value>The identifier {0} is deprecated. </value>
+    <comment>0 - identifier (license or exception)</comment>
+  </data>
 </root>

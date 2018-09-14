@@ -647,6 +647,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The identifier {0} is deprecated. .
+        /// </summary>
+        internal static string LicenseExpression_DeprecatedIdentifier {
+            get {
+                return ResourceManager.GetString("LicenseExpression_DeprecatedIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installing {0} {1}..
         /// </summary>
         internal static string Log_InstallingPackage {
