@@ -97,7 +97,7 @@ namespace GenerateLicenseList
                 throw new ArgumentException("The license list version and the exception list version are not equivalent");
             }
 
-            return Environment.NewLine + Environment.NewLine +
+            return Environment.NewLine +
                 LicenseDataClassDeclaration +
                 licenses.LicenseListVersion +
                 DictionaryDeclaration +
