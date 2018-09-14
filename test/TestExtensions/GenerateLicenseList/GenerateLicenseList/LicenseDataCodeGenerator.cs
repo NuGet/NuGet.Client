@@ -15,7 +15,6 @@ namespace GenerateLicenseList
         public LicenseDataCodeGenerator(string licenseFile, string exceptionsFile)
         {
             _parser = new LicenseDataParser(licenseFile, exceptionsFile);
-
         }
 
         public SyntaxNode GenerateLicenseDataClass()
@@ -26,12 +25,6 @@ namespace GenerateLicenseList
 
             if (nameSpace != null)
             {
-                var licenseDataHolder = CSharpSyntaxTree.ParseText(GenerateLicenseData(_parser))
-                    .GetRoot()
-                    .DescendantNodes()
-                    .OfType<ClassDeclarationSyntax>()
-                    .FirstOrDefault();
-
                 var licenseDataClass = CSharpSyntaxTree.ParseText(LicenseData)
                     .GetRoot()
                     .DescendantNodes()
@@ -44,18 +37,17 @@ namespace GenerateLicenseList
                     .OfType<ClassDeclarationSyntax>()
                     .FirstOrDefault();
 
-                var newNameSpace = nameSpace.AddMembers(licenseDataClass, exceptionDataClass);
-                rootNode = rootNode.ReplaceNode(nameSpace, newNameSpace);
-                rootNode = rootNode.NormalizeWhitespace();
+                var licenseDataHolder = CSharpSyntaxTree.ParseText(GenerateLicenseData(_parser))
+                    .GetRoot()
+                    .DescendantNodes()
+                    .OfType<ClassDeclarationSyntax>()
+                    .FirstOrDefault();
 
-                var bla = rootNode.DescendantNodes().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
-                var newBla = bla.AddMembers(licenseDataHolder);
-                rootNode = rootNode.ReplaceNode(bla, newBla);
+                var newNameSpace = nameSpace.AddMembers(licenseDataClass, exceptionDataClass, licenseDataHolder);
+                rootNode = rootNode.ReplaceNode(nameSpace, newNameSpace);
 
                 var workspace = new AdhocWorkspace();
-                var formattedResult = Formatter.Format(rootNode, workspace);
-
-                return formattedResult;
+                return Formatter.Format(rootNode, workspace);
             }
             else
             {
@@ -84,12 +76,12 @@ namespace GenerateLicenseList
 
         private static string PrettyPrint(LicenseData licenseData)
         {
-            return $@"        {{""{licenseData.LicenseID}"", new LicenseData(licenseID: ""{licenseData.LicenseID}"", referenceNumber: {licenseData.ReferenceNumber}, isOsiApproved: {licenseData.IsOsiApproved.ToString().ToLowerInvariant()}, isDeprecatedLicenseId: {licenseData.IsDeprecatedLicenseId.ToString().ToLowerInvariant()}) }}, ";
+            return $@"            {{""{licenseData.LicenseID}"", new LicenseData(licenseID: ""{licenseData.LicenseID}"", referenceNumber: {licenseData.ReferenceNumber}, isOsiApproved: {licenseData.IsOsiApproved.ToString().ToLowerInvariant()}, isDeprecatedLicenseId: {licenseData.IsDeprecatedLicenseId.ToString().ToLowerInvariant()}) }}, ";
         }
 
         private static string PrettyPrint(ExceptionData exceptionData)
         {
-            return $@"        {{""{exceptionData.LicenseExceptionID}"", new ExceptionData(licenseID: ""{exceptionData.LicenseExceptionID}"", referenceNumber: {exceptionData.ReferenceNumber}, isDeprecatedLicenseId: {exceptionData.IsDeprecatedLicenseId.ToString().ToLowerInvariant()}) }}, ";
+            return $@"            {{""{exceptionData.LicenseExceptionID}"", new ExceptionData(licenseID: ""{exceptionData.LicenseExceptionID}"", referenceNumber: {exceptionData.ReferenceNumber}, isDeprecatedLicenseId: {exceptionData.IsDeprecatedLicenseId.ToString().ToLowerInvariant()}) }}, ";
         }
 
         static string LicenseDataHolderBase = $@"internal class NuGetLicenseData
@@ -97,16 +89,16 @@ namespace GenerateLicenseList
     public static string LicenseListVersion = ""listversion"";
 
     public static Dictionary<string, LicenseData> LicenseList = new Dictionary<string, LicenseData>()
-    {{" + Environment.NewLine;
+        {{" + Environment.NewLine;
 
         //{{licenseID, new LicenseData(licenseID, 0, true, true) }},
-        static string Intermediate = Environment.NewLine + $@"    }};
+        static string Intermediate = Environment.NewLine + $@"        }};
 
     public static Dictionary<string, ExceptionData> ExceptionList = new Dictionary<string, ExceptionData>()
-    {{" + Environment.NewLine;
+        {{" + Environment.NewLine;
 
         //{{exceptionID, new ExceptionData(exceptionID, 0, true) }},
-        static string last = Environment.NewLine + $@"    }};" + Environment.NewLine + $@"}}";
+        static string last = Environment.NewLine + $@"        }};" + Environment.NewLine + $@"}}";
 
         static string LicenseData = $@"internal class LicenseData
 {{
