@@ -10,26 +10,4 @@ namespace NuGet.Packaging
     {
         public LicenseExpressionType Type { get; protected set; }
     }
-
-    public static class Extensions
-    {
-        public static IEnumerable<NuGetLicenseExpression> GetLeafNodes(this NuGetLicenseExpression expression)
-        {
-            switch (expression.Type)
-            {
-                case LicenseExpressionType.License:
-                    yield return expression;
-                    break;
-
-                case LicenseExpressionType.Operator:
-
-                    var licenseOperator = expression as LicenseOperator;
-
-                    break;
-                
-                default:
-                    break;
-            }
-        }
-    }
 }

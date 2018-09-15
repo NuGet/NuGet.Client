@@ -8,7 +8,7 @@ namespace NuGet.Packaging
     {
         public OperatorType OperatorType { get; protected set; }
 
-        protected LicenseOperator()
+        public LicenseOperator()
         {
             Type = LicenseExpressionType.Operator;
         }

@@ -11,6 +11,7 @@ namespace NuGet.Packaging
             LogicalOperatorType = logicalOperatorType;
             Left = left;
             Right = right;
+            OperatorType = OperatorType.LogicalOperator;
         }
 
         public LogicalOperatorType LogicalOperatorType { get; }

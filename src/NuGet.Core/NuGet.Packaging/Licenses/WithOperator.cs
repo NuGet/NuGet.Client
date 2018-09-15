@@ -11,6 +11,7 @@ namespace NuGet.Packaging
         {
             License = license ?? throw new ArgumentNullException(nameof(license));
             Exception = exception ?? throw new ArgumentNullException(nameof(exception));
+            OperatorType = OperatorType.WithOperator;
         }
 
         public NuGetLicense License { get; private set; }
