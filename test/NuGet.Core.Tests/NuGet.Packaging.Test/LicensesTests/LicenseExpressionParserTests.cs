@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Test
         // TODO NK - on the exception catching. Verify the correct is being thrown.
         // TODO NK - Make license ids conform to the specification.
         // TODO NK - add tests for casing of the license iDs and casing of the operators
-        // TODO NK - The parsing of custom/weird licenses can be improved. As in make sure they conform to the standard ID.
+        // TODO NK - Fix LicenseExpressionParser_ThrowsForMismatchedArguments
         [Theory]
         [InlineData("MIT OR LPL-1.0", "MIT OR LPL-1.0", "OR", true)]
         [InlineData("MIT AND LPL-1.0", "MIT AND LPL-1.0", "AND", true)]
