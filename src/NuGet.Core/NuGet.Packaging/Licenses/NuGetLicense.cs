@@ -46,7 +46,7 @@ namespace NuGet.Packaging
                 {
                     return !licenseData.IsDeprecatedLicenseId ?
                         new NuGetLicense(licenseIdentifier, plus: false, isStandardLicense: true) :
-                        throw new ArgumentException(string.Format(Strings.LicenseExpression_DeprecatedIdentifier, licenseIdentifier));
+                        throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_DeprecatedIdentifier, licenseIdentifier));
                 }
                 else
                 {
@@ -58,16 +58,25 @@ namespace NuGet.Packaging
                         {
                             return !licenseData.IsDeprecatedLicenseId ?
                                 new NuGetLicense(cleanIdentifier, plus: plus, isStandardLicense: true) :
-                                throw new ArgumentException(string.Format(Strings.LicenseExpression_DeprecatedIdentifier, licenseIdentifier));
+                                throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_DeprecatedIdentifier, licenseIdentifier));
                         }
-                        return new NuGetLicense(cleanIdentifier, plus: plus, isStandardLicense: false);
+                        return ProcessNonStandardLicense(cleanIdentifier, plus: plus);
                     }
 
-                    return new NuGetLicense(licenseIdentifier, plus: false, isStandardLicense: false);
+                    return ProcessNonStandardLicense(licenseIdentifier, plus: false);
                 }
             }
             // This will not happen in production code as the tokenizer takes cares of that. 
-            throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(licenseIdentifier));
+            throw new ArgumentException(Strings.NuGetLicenseExpression_LicenseIdentifierIsException, nameof(licenseIdentifier));
+        }
+
+        private static NuGetLicense ProcessNonStandardLicense(string licenseIdentifier, bool plus)
+        {
+            if (!NuGetLicenseData.ExceptionList.TryGetValue(licenseIdentifier, out var exceptionData))
+            {
+                return new NuGetLicense(licenseIdentifier, plus: plus, isStandardLicense: false);
+            }
+            throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_ExceptionIdentifierIsLicense, licenseIdentifier));
         }
 
         public override string ToString()

@@ -25,10 +25,15 @@ namespace NuGet.Packaging
                 {
                     return !exceptionData.IsDeprecatedLicenseId ?
                         new NuGetLicenseException(exceptionIdentifier, isStandardException: true) :
-                        throw new ArgumentException(string.Format(Strings.LicenseExpression_DeprecatedIdentifier, exceptionIdentifier));
-
+                        throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_DeprecatedIdentifier, exceptionIdentifier));
                 }
-                return new NuGetLicenseException(exceptionIdentifier, false);
+
+                if (!NuGetLicenseData.LicenseList.TryGetValue(exceptionIdentifier, out var licenseData))
+                {
+                    return new NuGetLicenseException(exceptionIdentifier, isStandardException: false);
+                }
+
+                throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_ExceptionIdentifierIsLicense, exceptionIdentifier));
             }
             // This will not happen in production code as the tokenizer takes cares of that. 
             throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(exceptionIdentifier));

@@ -647,15 +647,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The identifier {0} is deprecated. .
-        /// </summary>
-        internal static string LicenseExpression_DeprecatedIdentifier {
-            get {
-                return ResourceManager.GetString("LicenseExpression_DeprecatedIdentifier", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Installing {0} {1}..
         /// </summary>
         internal static string Log_InstallingPackage {
@@ -737,6 +728,24 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The identifier {0} is deprecated. .
+        /// </summary>
+        internal static string NuGetLicenseExpression_DeprecatedIdentifier {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_DeprecatedIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The identifier {0} is a license. It cannot be used as a Exception..
+        /// </summary>
+        internal static string NuGetLicenseExpression_ExceptionIdentifierIsLicense {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_ExceptionIdentifierIsLicense", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The expression contains invalid characters..
         /// </summary>
         internal static string NuGetLicenseExpression_InvalidCharacters {
@@ -760,6 +769,15 @@ namespace NuGet.Packaging {
         internal static string NuGetLicenseExpression_InvalidToken {
             get {
                 return ResourceManager.GetString("NuGetLicenseExpression_InvalidToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The identifier {0} is an exception. It cannot be used as a License. .
+        /// </summary>
+        internal static string NuGetLicenseExpression_LicenseIdentifierIsException {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_LicenseIdentifierIsException", resourceCulture);
             }
         }
         

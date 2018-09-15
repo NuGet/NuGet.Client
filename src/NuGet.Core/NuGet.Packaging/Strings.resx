@@ -731,8 +731,14 @@ Valid from:</comment>
   <data name="NuGetLicenseExpression_InvalidCharacters" xml:space="preserve">
     <value>The expression contains invalid characters.</value>
   </data>
-  <data name="LicenseExpression_DeprecatedIdentifier" xml:space="preserve">
+  <data name="NuGetLicenseExpression_DeprecatedIdentifier" xml:space="preserve">
     <value>The identifier {0} is deprecated. </value>
     <comment>0 - identifier (license or exception)</comment>
+  </data>
+  <data name="NuGetLicenseExpression_LicenseIdentifierIsException" xml:space="preserve">
+    <value>The identifier {0} is an exception. It cannot be used as a License. </value>
+  </data>
+  <data name="NuGetLicenseExpression_ExceptionIdentifierIsLicense" xml:space="preserve">
+    <value>The identifier {0} is a license. It cannot be used as a Exception.</value>
   </data>
 </root>
