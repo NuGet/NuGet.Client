@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,11 @@ namespace NuGet.Packaging
 {
     public static class NuGetLicenseExpressionExtensions
     {
+        /// <summary>
+        /// Determines whether all the licenses and exceptions are not deprecated.
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
         public static bool HasOnlyStandardIdentifiers(this NuGetLicenseExpression expression)
         {
             switch (expression.Type)
