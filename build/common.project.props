@@ -228,7 +228,8 @@
                           Exclude="$(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.PackageManagement.Test\*.csproj"/>
     <VSUnitTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Clients.Tests\*\*.csproj"
                         Exclude="$(RepositoryRootDirectory)test\NuGet.Clients.Tests\NuGet.CommandLine.Test\*.csproj" />
-    <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\*\*.csproj;
+    <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\NuGet.Commands.FuncTest\*.csproj;
+                                   $(RepositoryRootDirectory)test\NuGet.Core.FuncTests\NuGet.Protocol.FuncTest\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Clients.Tests\NuGet.CommandLine.Test\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.PackageManagement.Test\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Clients.FuncTests\*\*.csproj" />
