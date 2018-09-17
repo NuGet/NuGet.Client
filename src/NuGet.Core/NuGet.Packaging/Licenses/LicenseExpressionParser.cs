@@ -50,6 +50,15 @@ namespace NuGet.Packaging.Licenses
                 var currentTokenType = token.TokenType;
                 switch (token.TokenType)
                 {
+                    case LicenseTokenType.VALUE:
+                        if (!firstPass && !token.TokenType.IsValidPrecedingToken(lastTokenType))
+                        {
+                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidToken, token.Value));
+                        }
+                        // Add it to the operandstack. Only add it to the expression when you meet an operator
+                        operandStack.Push(token);
+                        break;
+
                     case LicenseTokenType.OPENING_BRACKET:
                         if (!firstPass && !token.TokenType.IsValidPrecedingToken(lastTokenType))
                         {
@@ -79,15 +88,6 @@ namespace NuGet.Packaging.Licenses
                         {
                             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_MismatchedParenthesis));
                         }
-                        break;
-
-                    case LicenseTokenType.VALUE:
-                        if (!firstPass && !token.TokenType.IsValidPrecedingToken(lastTokenType))
-                        {
-                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidToken, token.Value));
-                        }
-                        // Add it to the operandstack. Only add it to the expression when you meet an operator
-                        operandStack.Push(token);
                         break;
 
                     case LicenseTokenType.WITH:

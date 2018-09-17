@@ -60,7 +60,7 @@ namespace NuGet.Packaging.Licenses
         /// <returns>Tokens</returns>
         internal IEnumerable<LicenseExpressionToken> Tokenize()
         {
-            var potentialTokens = _value.Split(' ');
+            var potentialTokens = _value.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var token in potentialTokens)
             {
                 var processingToken = token;

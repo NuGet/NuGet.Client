@@ -14,7 +14,8 @@ namespace GenerateLicenseList
         {
             if (args.Count() != 3)
             {
-                Console.WriteLine("This tool expects 3 arguments: licenses.json, exceptions.json, targetFileLocation");
+                Console.WriteLine("This tool expects 3 arguments: licenses.json, exceptions.json, targetFileLocation.");
+                Console.WriteLine(@"This tool should be run only through .\scripts\utils\UpdateNuGetLicenseSPDXList.ps1");
                 return -1;
             }
 
@@ -47,8 +48,8 @@ namespace GenerateLicenseList
                 {
                     var issue = $"ID: {codeIssue.Id}, Message: {codeIssue.GetMessage()}, Location: {codeIssue.Location.GetLineSpan()}, Severity: {codeIssue.Severity}";
                     Console.WriteLine(issue);
-                    Console.WriteLine("License List file generation failed.");
                 }
+                Console.WriteLine("License List file generation failed.");
             }
             return -1;
         }

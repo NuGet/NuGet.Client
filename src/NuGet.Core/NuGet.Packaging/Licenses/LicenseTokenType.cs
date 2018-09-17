@@ -3,6 +3,9 @@
 
 namespace NuGet.Packaging.Licenses
 {
+    /// <summary>
+    /// The valid token types in a license expression. These are ordered by priority, be aware when changing them. See <seealso cref="LicenseTokenTypeExtensions"/>
+    /// </summary>
     internal enum LicenseTokenType
     {
         WITH,

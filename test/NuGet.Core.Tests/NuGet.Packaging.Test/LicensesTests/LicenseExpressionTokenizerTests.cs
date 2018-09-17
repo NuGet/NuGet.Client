@@ -66,31 +66,6 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Theory]
-        [MemberData(nameof(ComplexSPDXExpressionWithInvalidGrammarData))]
-        public void LicenseExpressionTokenizer_TokenizesComplexButInvalidSPDXGrammarExpressions(string[] values)
-        {
-            var expression = values[0];
-            var tokenizer = new LicenseExpressionTokenizer(expression);
-            var tokens = tokenizer.Tokenize().ToArray();
-            Assert.Equal(values.Length - 1, tokens.Length);
-            for (var i = 0; i < tokens.Length; i++)
-            {
-                Assert.Equal(tokens[i].Value, values[i + 1]);
-            }
-        }
-
-        [Theory]
-        [InlineData("(GPL-1.0+ WITH E8) OR MIT!")]
-        [InlineData("(GPL-1.0+ WITH E8) OR MIT@")]
-        [InlineData("(GPL-1.0+ WITH E8) OR MIT/")]
-        [InlineData("(GPL-1.0+ WITH E8) OR MIT[]")]
-        public void LicenseExpressionTokenizer_ReturnsFalseForExpressionsWithInvalidCharacters(string infix)
-        {
-            var tokenizer = new LicenseExpressionTokenizer(infix);
-            Assert.False(tokenizer.HasValidCharacters());
-        }
-
         public static IEnumerable<object[]> ComplexSPDXExpressionData()
         {
             yield return new object[] { new string[] { "MIT                or              LPL-1.0                 ", "MIT", "or", "LPL-1.0" } };
@@ -107,8 +82,20 @@ namespace NuGet.Packaging.Test
             yield return new object[] { new string[] { "((", "(", "(" } };
             yield return new object[] { new string[] { "))", ")", ")" } };
             yield return new object[] { new string[] { ")(", ")", "(" } };
+        }
 
-
+        [Theory]
+        [MemberData(nameof(ComplexSPDXExpressionWithInvalidGrammarData))]
+        public void LicenseExpressionTokenizer_TokenizesComplexButInvalidSPDXGrammarExpressions(string[] values)
+        {
+            var expression = values[0];
+            var tokenizer = new LicenseExpressionTokenizer(expression);
+            var tokens = tokenizer.Tokenize().ToArray();
+            Assert.Equal(values.Length - 1, tokens.Length);
+            for (var i = 0; i < tokens.Length; i++)
+            {
+                Assert.Equal(tokens[i].Value, values[i + 1]);
+            }
         }
 
         public static IEnumerable<object[]> ComplexSPDXExpressionWithInvalidGrammarData()
@@ -117,6 +104,17 @@ namespace NuGet.Packaging.Test
             yield return new object[] { new string[] { "MIT AND OR LPL-1.0", "MIT", "AND", "OR", "LPL-1.0" } };
             yield return new object[] { new string[] { "MIT and LPL-1.0", "MIT", "and", "LPL-1.0" } };
             yield return new object[] { new string[] { "MIT () AND OR LPL-1.0", "MIT", "(", ")", "AND", "OR", "LPL-1.0" } };
+        }
+
+        [Theory]
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT!")]
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT@")]
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT/")]
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT[]")]
+        public void LicenseExpressionTokenizer_ReturnsFalseForExpressionsWithInvalidCharacters(string infix)
+        {
+            var tokenizer = new LicenseExpressionTokenizer(infix);
+            Assert.False(tokenizer.HasValidCharacters());
         }
     }
 }
