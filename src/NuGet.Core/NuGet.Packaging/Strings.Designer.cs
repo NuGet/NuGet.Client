@@ -728,7 +728,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The identifier {0} is deprecated. .
+        ///   Looks up a localized string similar to The identifier &apos;{0}&apos; is deprecated..
         /// </summary>
         internal static string NuGetLicenseExpression_DeprecatedIdentifier {
             get {
@@ -737,7 +737,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The identifier {0} is a license. It cannot be used as an exception..
+        ///   Looks up a localized string similar to The identifier &apos;{0}&apos; is a license. It cannot be used as an exception..
         /// </summary>
         internal static string NuGetLicenseExpression_ExceptionIdentifierIsLicense {
             get {
@@ -782,7 +782,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The identifier {0} is an exception. It cannot be used as a license. .
+        ///   Looks up a localized string similar to The identifier &apos;{0}&apos; is an exception. It cannot be used as a license..
         /// </summary>
         internal static string NuGetLicenseExpression_LicenseIdentifierIsException {
             get {
@@ -802,9 +802,9 @@ namespace NuGet.Packaging {
         /// <summary>
         ///   Looks up a localized string similar to Mismatched parentheses in the expression..
         /// </summary>
-        internal static string NuGetLicenseExpression_MismatchedParenthesis {
+        internal static string NuGetLicenseExpression_MismatchedParentheses {
             get {
-                return ResourceManager.GetString("NuGetLicenseExpression_MismatchedParenthesis", resourceCulture);
+                return ResourceManager.GetString("NuGetLicenseExpression_MismatchedParentheses", resourceCulture);
             }
         }
         

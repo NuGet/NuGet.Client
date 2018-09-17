@@ -722,7 +722,7 @@ Valid from:</comment>
     <value>Invalid element '{0}'.</value>
     <comment>0 - The element value</comment>
   </data>
-  <data name="NuGetLicenseExpression_MismatchedParenthesis" xml:space="preserve">
+  <data name="NuGetLicenseExpression_MismatchedParentheses" xml:space="preserve">
     <value>Mismatched parentheses in the expression.</value>
   </data>
   <data name="NuGetLicenseExpression_InvalidExpression" xml:space="preserve">
@@ -732,14 +732,14 @@ Valid from:</comment>
     <value>The license expression '{0}' contains invalid characters.</value>
   </data>
   <data name="NuGetLicenseExpression_DeprecatedIdentifier" xml:space="preserve">
-    <value>The identifier {0} is deprecated. </value>
+    <value>The identifier '{0}' is deprecated.</value>
     <comment>0 - identifier (license or exception)</comment>
   </data>
   <data name="NuGetLicenseExpression_LicenseIdentifierIsException" xml:space="preserve">
-    <value>The identifier {0} is an exception. It cannot be used as a license. </value>
+    <value>The identifier '{0}' is an exception. It cannot be used as a license.</value>
   </data>
   <data name="NuGetLicenseExpression_ExceptionIdentifierIsLicense" xml:space="preserve">
-    <value>The identifier {0} is a license. It cannot be used as an exception.</value>
+    <value>The identifier '{0}' is a license. It cannot be used as an exception.</value>
   </data>
   <data name="NuGetLicenseExpression_InvalidExceptionIdentifier" xml:space="preserve">
     <value>The identifier '{0}' is not a standard exception.</value>

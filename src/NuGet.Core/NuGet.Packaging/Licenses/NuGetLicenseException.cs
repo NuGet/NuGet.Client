@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace NuGet.Packaging
 {
@@ -25,17 +26,17 @@ namespace NuGet.Packaging
                 {
                     return !exceptionData.IsDeprecatedLicenseId ?
                         new NuGetLicenseException(exceptionIdentifier) :
-                        throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_DeprecatedIdentifier, exceptionIdentifier));
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_DeprecatedIdentifier, exceptionIdentifier));
                 }
                 else
                 {
                     if (NuGetLicenseData.LicenseList.TryGetValue(exceptionIdentifier, out var licenseData))
                     {
-                        throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_ExceptionIdentifierIsLicense, exceptionIdentifier));
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_ExceptionIdentifierIsLicense, exceptionIdentifier));
                     }
                     else
                     {
-                        throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_InvalidExceptionIdentifier, exceptionIdentifier));
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExceptionIdentifier, exceptionIdentifier));
                     }
                 }
             }

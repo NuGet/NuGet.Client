@@ -74,7 +74,7 @@ namespace NuGet.Packaging.Licenses
                         }
                         else
                         {
-                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_MismatchedParenthesis));
+                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_MismatchedParentheses));
                         }
                         break;
 
@@ -98,6 +98,7 @@ namespace NuGet.Packaging.Licenses
                             operatorStack.Push(token);
                         }
                         break;
+
                     default:
                         throw new ArgumentException("Should not happen. File a bug with repro steps on NuGet/Home if seen.");
                 }
@@ -113,7 +114,7 @@ namespace NuGet.Packaging.Licenses
                 }
                 else
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_MismatchedParenthesis));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_MismatchedParentheses));
                 }
             }
 

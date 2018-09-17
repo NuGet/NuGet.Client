@@ -68,7 +68,7 @@ namespace NuGet.Packaging
                 }
             }
             // This will not happen in production code as the tokenizer takes cares of that. 
-            throw new ArgumentException(Strings.NuGetLicenseExpression_LicenseIdentifierIsException, nameof(licenseIdentifier));
+            throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(licenseIdentifier));
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace NuGet.Packaging
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_LicenseInvalidCharacters, licenseIdentifier));
                 }
             }
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_ExceptionIdentifierIsLicense, licenseIdentifier));
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_LicenseIdentifierIsException, licenseIdentifier));
         }
 
         public override string ToString()

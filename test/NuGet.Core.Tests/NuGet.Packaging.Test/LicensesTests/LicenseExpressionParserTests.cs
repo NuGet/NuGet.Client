@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root flicense information.
 
 using System;
+using System.Globalization;
 using NuGet.Packaging.Licenses;
 using Xunit;
 
@@ -9,7 +10,6 @@ namespace NuGet.Packaging.Test
 {
     public class LicenseExpressionParserTests
     {
-        // TODO NK - on the exception catching. Verify the correct is being thrown.
         [Theory]
         [InlineData("MIT OR LPL-1.0", "MIT OR LPL-1.0", "OR", true)]
         [InlineData("MIT AND LPL-1.0", "MIT AND LPL-1.0", "AND", true)]
@@ -69,29 +69,38 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData("MIT WITH LPL-1.0")] // Both identifiers are licenses
-        [InlineData("mif-exception WITH Classpath-exception-2.0")] // Both identifiers are exceptions
-        public void LicenseExpressionParser_ThrowsForMismatchedArguments(string infix)
+        [InlineData("MIT WITH LPL-1.0", "LPL-1.0", false)] // Both identifiers are licenses
+        [InlineData("mif-exception WITH Classpath-exception-2.0", "mif-exception", true)] // Both identifiers are exceptions
+        public void LicenseExpressionParser_ThrowsForMismatchedArguments(string infix, string badIdentifier, bool IsExceptionAsLicense)
         {
-            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            var ex = Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            if (IsExceptionAsLicense)
+            {
+                Assert.Equal(ex.Message, string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_LicenseIdentifierIsException, badIdentifier));
+            }
+            else
+            {
+                Assert.Equal(ex.Message, string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_ExceptionIdentifierIsLicense, badIdentifier));
+            }
         }
 
         [Theory]
-        [InlineData("(GPL-1.0 WITH 389-exception) OR MIT")]
-        [InlineData("MIT OR GPL-1.0 WITH 389-exception AND Apache-2.0")]
-        [InlineData("MIT OR GPL-1.0 WITH 389-exception")]
-        [InlineData("MIT OR (LPL-1.0 OR GPL-1.0 WITH 389-exception)")]
-        [InlineData("MIT OR (GPL-1.0 WITH 389-exception OR LPL-1.0)")]
-        [InlineData("(LGPL-2.1 AND BSD-2-Clause)")]
-        [InlineData("((( (LGPL-2.1) AND BSD-2-Clause)))")]
-        public void LicenseExpressionParser_ComplexExpressionWithDeprecatedIdentifiersThrows(string infix)
+        [InlineData("(GPL-1.0 WITH 389-exception) OR MIT", "GPL-1.0")]
+        [InlineData("MIT OR GPL-1.0 WITH 389-exception AND Apache-2.0", "GPL-1.0")]
+        [InlineData("MIT OR GPL-1.0 WITH 389-exception", "GPL-1.0")]
+        [InlineData("MIT OR (LPL-1.0 OR GPL-1.0 WITH 389-exception)", "GPL-1.0")]
+        [InlineData("MIT OR (GPL-1.0 WITH 389-exception OR LPL-1.0)", "GPL-1.0")]
+        [InlineData("(LGPL-2.1 AND BSD-2-Clause)", "LGPL-2.1")]
+        [InlineData("((( (LGPL-2.1) AND BSD-2-Clause)))", "LGPL-2.1")]
+        public void LicenseExpressionParser_ComplexExpressionWithDeprecatedIdentifiersThrows(string infix, string deprecatedValue)
         {
-            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            var ex = Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_DeprecatedIdentifier, deprecatedValue), ex.Message);
         }
 
         [Theory]
-        [InlineData("LGPL-2.1 AND ")]
-        [InlineData("(LGPL-2.1 AND BSD-2-Clause")]
+        [InlineData("MIT AND ")]
+        [InlineData("(MIT AND BSD-2-Clause")]
         [InlineData("MIT (AND) LPL-1.0")]
         [InlineData("((MIT) (AND) (LPL-1.0))")]
         [InlineData("MIT (AND LPL-1.0)")]
@@ -112,10 +121,11 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData("MIT WITH classpath-exception-2.0")]
-        public void LicenseExpressionParser_ThrowsForInvalidExceptionDueToBadCasing(string infix)
+        [InlineData("MIT WITH classpath-exception-2.0", "classpath-exception-2.0")]
+        public void LicenseExpressionParser_ThrowsForInvalidExceptionDueToBadCasing(string infix, string exception)
         {
-            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            var ex = Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExceptionIdentifier, exception), ex.Message);
         }
 
         [Theory]
@@ -162,9 +172,11 @@ namespace NuGet.Packaging.Test
         [InlineData("(GPL-1.0+ WITH Classpath-exception-2.0) OR MIT@")]
         [InlineData("(GPL-1.0+ WITH Classpath-exception-2.0) OR MIT/")]
         [InlineData("(GPL-1.0+ WITH Classpath-exception-2.0) OR MIT[]")]
+        [InlineData("      (GPL-1.0+ WITH Classpath-exception-2.0) OR MIT[] ")]
         public void LicenseExpressionParser_ParseThrowsForInvalidCharactersInExpression(string infix)
         {
-            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            var ex = Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidCharacters, infix), ex.Message);
         }
 
         [Theory]
