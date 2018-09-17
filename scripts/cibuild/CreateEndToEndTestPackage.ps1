@@ -114,10 +114,6 @@ try {
         exit 1
     }
 
-    Write-Verbose "Generating shared test packages"
-    Get-ChildItem $WorkingDirectory\Packages\_Shared\ -Filter *.nuspec -Recurse | New-TestPackage
-    Remove-Item $WorkingDirectory\Packages\_Shared\ -r -Force
-
     if (-not (Test-Path $OutputDirectory)) {
         mkdir $OutputDirectory | Out-Null
     }

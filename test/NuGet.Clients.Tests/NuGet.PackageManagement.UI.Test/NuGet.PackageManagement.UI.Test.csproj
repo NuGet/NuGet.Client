@@ -38,7 +38,7 @@
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj"/>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
