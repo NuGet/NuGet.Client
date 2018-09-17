@@ -339,82 +339,82 @@ phases:
         Remove-Item -Path $(BuildOutputTargetPath) -Force -Recurse -ErrorAction SilentlyContinue
     condition: "eq(variables['Agent.JobStatus'], 'Failed')"
 
-# - phase: Functional_Tests_On_Windows
-#   dependsOn: Initialize_Build
-#   variables:
-#     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-#     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-#   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "  	
-#   queue:
-#     name: VSEng-MicroBuildSxS
-#     timeoutInMinutes: 120
-#     demands: 
-#         - DotNetFramework
-#         - msbuild
+- phase: Functional_Tests_On_Windows
+  dependsOn: Initialize_Build
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+  condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "  	
+  queue:
+    name: VSEng-MicroBuildSxS
+    timeoutInMinutes: 120
+    demands: 
+        - DotNetFramework
+        - msbuild
 
-#   steps:
-#   - task: PowerShell@1
-#     displayName: "Print Environment Variables"
-#     inputs:
-#       scriptType: "inlineScript"
-#       inlineScript: |
-#         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
-#         gci env:* | sort-object name
+  steps:
+  - task: PowerShell@1
+    displayName: "Print Environment Variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
+        gci env:* | sort-object name
 
-#   - task: PowerShell@1
-#     displayName: "Download Config Files"
-#     enabled: "false"
-#     inputs:
-#       scriptType: "inlineScript"
-#       inlineScript: |
-#         $url = $(VstsConfigFileRootUrl) -f 'NuGet.Core.FuncTests.Config'
-#         Invoke-RestMethod -Method Get -Uri $url -UseDefaultCredentials -OutFile $(Build.Repository.LocalPath)\\NuGet.Core.FuncTests.Config
-#         $url = $(VstsConfigFileRootUrl) -f 'NuGet.Protocol.FuncTest.Config'
-#         Invoke-RestMethod -Method Get -Uri $url -UseDefaultCredentials -OutFile $(Build.Repository.LocalPath)\\NuGet.Protocol.FuncTest.Config
+  - task: PowerShell@1
+    displayName: "Download Config Files"
+    enabled: "false"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        $url = $(VstsConfigFileRootUrl) -f 'NuGet.Core.FuncTests.Config'
+        Invoke-RestMethod -Method Get -Uri $url -UseDefaultCredentials -OutFile $(Build.Repository.LocalPath)\\NuGet.Core.FuncTests.Config
+        $url = $(VstsConfigFileRootUrl) -f 'NuGet.Protocol.FuncTest.Config'
+        Invoke-RestMethod -Method Get -Uri $url -UseDefaultCredentials -OutFile $(Build.Repository.LocalPath)\\NuGet.Protocol.FuncTest.Config
 
-#   - task: PowerShell@1
-#     displayName: "Run Configure.ps1"
-#     inputs:
-#       scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
-#       arguments: "-Force -CI"
+  - task: PowerShell@1
+    displayName: "Run Configure.ps1"
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
+      arguments: "-Force -CI"
 
-#   - task: MSBuild@1
-#     displayName: "Restore for VS2017"
-#     inputs:
-#       solution: "build\\build.proj"
-#       msbuildVersion: "15.0"
-#       configuration: "$(BuildConfiguration)"
-#       msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
+  - task: MSBuild@1
+    displayName: "Restore for VS2017"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildVersion: "15.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
 
-#   - task: MSBuild@1
-#     displayName: "Run Functional Tests"
-#     continueOnError: "true"
-#     inputs:
-#       solution: "build\\build.proj"
-#       msbuildVersion: "15.0"
-#       configuration: "$(BuildConfiguration)"
-#       msbuildArguments: "/t:CoreFuncTests  /p:BuildRTM=false  /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk"
+  - task: MSBuild@1
+    displayName: "Run Functional Tests"
+    continueOnError: "true"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildVersion: "15.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:CoreFuncTests  /p:BuildRTM=false  /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk"
 
-#   - task: PublishTestResults@2
-#     displayName: "Publish Test Results"
-#     continueOnError: "true"
-#     inputs:
-#       testRunner: "XUnit"
-#       testResultsFiles: "*.xml"
-#       searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
-#       mergeTestResults: "true"
-#       testRunTitle: "NuGet.Client Functional Tests On Windows"
-#     condition: "succeededOrFailed()"
+  - task: PublishTestResults@2
+    displayName: "Publish Test Results"
+    continueOnError: "true"
+    inputs:
+      testRunner: "XUnit"
+      testResultsFiles: "*.xml"
+      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
+      mergeTestResults: "true"
+      testRunTitle: "NuGet.Client Functional Tests On Windows"
+    condition: "succeededOrFailed()"
 
-#   - task: PowerShell@1
-#     displayName: "Initialize Git Commit Status on GitHub"
-#     inputs:
-#       scriptType: "inlineScript"
-#       arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
-#       inlineScript: |
-#         . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-#         SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -TestName "Functional Tests On Windows"
-#     condition: "always()"
+  - task: PowerShell@1
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      scriptType: "inlineScript"
+      arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -TestName "Functional Tests On Windows"
+    condition: "always()"
 
 # - phase: Tests_On_Linux
 #   dependsOn: Initialize_Build
