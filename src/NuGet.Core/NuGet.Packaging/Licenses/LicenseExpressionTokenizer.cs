@@ -65,24 +65,24 @@ namespace NuGet.Packaging.Licenses
             {
                 var processingToken = token;
 
-                var openingBracketCount = 0;
-                var closingBracketCount = 0;
+                IList<LicenseExpressionToken> tokensAfterValue = null;
 
-                while (processingToken.Length > 0 && processingToken[0] == OpeningBracket.Item1)
+                while (processingToken.Length > 0 && (processingToken[0] == '(' || processingToken[0] == ')'))
                 {
+                    yield return ParseBracket(processingToken[0]);
+
                     processingToken = processingToken.Substring(1);
-                    openingBracketCount++;
                 }
 
-                while (processingToken.Length > 0 && processingToken[processingToken.Length - 1] == ClosingBracket.Item1)
+                while (processingToken.Length > 0 && (processingToken[processingToken.Length - 1] == '(' || processingToken[processingToken.Length - 1] == ')'))
                 {
+                    if (tokensAfterValue == null)
+                    {
+                        tokensAfterValue = new List<LicenseExpressionToken>();
+
+                    }
+                    tokensAfterValue.Add(ParseBracket(processingToken[processingToken.Length - 1]));
                     processingToken = processingToken.Substring(0, processingToken.Length - 1);
-                    closingBracketCount++;
-                }
-
-                while (openingBracketCount-- > 0)
-                {
-                    yield return new LicenseExpressionToken(OpeningBracket.Item2, LicenseTokenType.OPENING_BRACKET);
                 }
 
                 if (!string.IsNullOrEmpty(processingToken))
@@ -90,12 +90,28 @@ namespace NuGet.Packaging.Licenses
                     yield return ParseTokenType(processingToken);
                 }
 
-                while (closingBracketCount-- > 0)
+                if (tokensAfterValue != null)
                 {
-                    yield return new LicenseExpressionToken(ClosingBracket.Item2, LicenseTokenType.CLOSING_BRACKET);
+                    foreach (var tokenAfterValue in tokensAfterValue)
+                    {
+                        yield return tokenAfterValue;
+                    }
                 }
 
             }
+        }
+
+        private LicenseExpressionToken ParseBracket(char bracket)
+        {
+            if (bracket == '(')
+            {
+                return new LicenseExpressionToken(bracket.ToString(), LicenseTokenType.OPENING_BRACKET);
+            }
+            if (bracket == ')')
+            {
+                return new LicenseExpressionToken(bracket.ToString(), LicenseTokenType.CLOSING_BRACKET);
+            }
+            return null;
         }
 
         private LicenseExpressionToken ParseTokenType(string token)

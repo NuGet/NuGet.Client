@@ -103,6 +103,12 @@ namespace NuGet.Packaging.Test
             yield return new object[] { new string[] { "MIT OR ((GPL-1.0 WITH E8) AND APACHE-2.0)", "MIT", "OR", "(", "(", "GPL-1.0", "WITH", "E8", ")", "AND", "APACHE-2.0", ")" } };
             yield return new object[] { new string[] { "MIT )OR LPL-1.0", "MIT", ")", "OR", "LPL-1.0" } };
             yield return new object[] { new string[] { "MIT OR( LPL-1.0", "MIT", "OR", "(", "LPL-1.0" } };
+            yield return new object[] { new string[] { "(())", "(", "(", ")", ")" } };
+            yield return new object[] { new string[] { "((", "(", "(" } };
+            yield return new object[] { new string[] { "))", ")", ")" } };
+            yield return new object[] { new string[] { ")(", ")", "(" } };
+
+
         }
 
         public static IEnumerable<object[]> ComplexSPDXExpressionWithInvalidGrammarData()
