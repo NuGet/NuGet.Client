@@ -10,6 +10,6 @@ namespace NuGet.Packaging.Licenses
         OR,
         OPENING_BRACKET,
         CLOSING_BRACKET,
-        VALUE
+        VALUE,
     }
 }

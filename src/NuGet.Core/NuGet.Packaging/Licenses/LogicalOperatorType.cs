@@ -5,6 +5,7 @@ namespace NuGet.Packaging
 {
     public enum LogicalOperatorType
     {
-        AND, OR
+        AND,
+        OR,
     }
 }

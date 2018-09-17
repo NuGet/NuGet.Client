@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace NuGet.Packaging
 {
@@ -70,13 +71,44 @@ namespace NuGet.Packaging
             throw new ArgumentException(Strings.NuGetLicenseExpression_LicenseIdentifierIsException, nameof(licenseIdentifier));
         }
 
+        /// <summary>
+        /// The valid characters for a license identifier are a-zA-Z0-9.-
+        /// This method assumes that the trailing + operator has been stripped out.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private static bool HasValidCharacters(string value)
+        {
+            for (var i = 0; i < value.Length; i++)
+            {
+                // If the character is not among these characters
+                if (!((value[i] >= 'a' && value[i] <= 'z') ||
+                    (value[i] >= 'A' && value[i] <= 'Z') ||
+                    (value[i] >= '0' && value[i] <= '9') ||
+                    value[i] == '.' ||
+                    value[i] == '-'
+                    ))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         private static NuGetLicense ProcessNonStandardLicense(string licenseIdentifier, bool plus)
         {
             if (!NuGetLicenseData.ExceptionList.TryGetValue(licenseIdentifier, out var exceptionData))
             {
-                return new NuGetLicense(licenseIdentifier, plus: plus, isStandardLicense: false);
+                if (HasValidCharacters(licenseIdentifier))
+                {
+                    return new NuGetLicense(licenseIdentifier, plus: plus, isStandardLicense: false);
+                }
+                else
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_LicenseInvalidCharacters, licenseIdentifier));
+                }
             }
-            throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_ExceptionIdentifierIsLicense, licenseIdentifier));
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_ExceptionIdentifierIsLicense, licenseIdentifier));
         }
 
         public override string ToString()

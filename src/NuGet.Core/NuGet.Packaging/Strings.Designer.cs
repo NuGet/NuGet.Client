@@ -737,7 +737,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The identifier {0} is a license. It cannot be used as a Exception..
+        ///   Looks up a localized string similar to The identifier {0} is a license. It cannot be used as an exception..
         /// </summary>
         internal static string NuGetLicenseExpression_ExceptionIdentifierIsLicense {
             get {
@@ -746,7 +746,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The expression contains invalid characters..
+        ///   Looks up a localized string similar to The license expression &apos;{0}&apos; contains invalid characters..
         /// </summary>
         internal static string NuGetLicenseExpression_InvalidCharacters {
             get {
@@ -773,7 +773,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid element &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Invalid element &apos;{0}&apos;..
         /// </summary>
         internal static string NuGetLicenseExpression_InvalidToken {
             get {
@@ -782,11 +782,20 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The identifier {0} is an exception. It cannot be used as a License. .
+        ///   Looks up a localized string similar to The identifier {0} is an exception. It cannot be used as a license. .
         /// </summary>
         internal static string NuGetLicenseExpression_LicenseIdentifierIsException {
             get {
                 return ResourceManager.GetString("NuGetLicenseExpression_LicenseIdentifierIsException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license identifier &apos;{0}&apos; contains invalid characters..
+        /// </summary>
+        internal static string NuGetLicenseExpression_LicenseInvalidCharacters {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_LicenseInvalidCharacters", resourceCulture);
             }
         }
         

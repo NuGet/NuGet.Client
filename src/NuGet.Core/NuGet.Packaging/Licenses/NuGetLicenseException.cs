@@ -38,7 +38,6 @@ namespace NuGet.Packaging
                         throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_InvalidExceptionIdentifier, exceptionIdentifier));
                     }
                 }
-
             }
             // This will not happen in production code as the tokenizer takes cares of that. 
             throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(exceptionIdentifier));

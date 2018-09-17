@@ -719,7 +719,7 @@ Valid from:</comment>
     <value>The package cannot be signed as it would require the Zip64 format.</value>
   </data>
   <data name="NuGetLicenseExpression_InvalidToken" xml:space="preserve">
-    <value>Invalid element '{0}'</value>
+    <value>Invalid element '{0}'.</value>
     <comment>0 - The element value</comment>
   </data>
   <data name="NuGetLicenseExpression_MismatchedParenthesis" xml:space="preserve">
@@ -729,19 +729,22 @@ Valid from:</comment>
     <value>The license expression is invalid.</value>
   </data>
   <data name="NuGetLicenseExpression_InvalidCharacters" xml:space="preserve">
-    <value>The expression contains invalid characters.</value>
+    <value>The license expression '{0}' contains invalid characters.</value>
   </data>
   <data name="NuGetLicenseExpression_DeprecatedIdentifier" xml:space="preserve">
     <value>The identifier {0} is deprecated. </value>
     <comment>0 - identifier (license or exception)</comment>
   </data>
   <data name="NuGetLicenseExpression_LicenseIdentifierIsException" xml:space="preserve">
-    <value>The identifier {0} is an exception. It cannot be used as a License. </value>
+    <value>The identifier {0} is an exception. It cannot be used as a license. </value>
   </data>
   <data name="NuGetLicenseExpression_ExceptionIdentifierIsLicense" xml:space="preserve">
-    <value>The identifier {0} is a license. It cannot be used as a Exception.</value>
+    <value>The identifier {0} is a license. It cannot be used as an exception.</value>
   </data>
   <data name="NuGetLicenseExpression_InvalidExceptionIdentifier" xml:space="preserve">
     <value>The identifier '{0}' is not a standard exception.</value>
+  </data>
+  <data name="NuGetLicenseExpression_LicenseInvalidCharacters" xml:space="preserve">
+    <value>The license identifier '{0}' contains invalid characters.</value>
   </data>
 </root>

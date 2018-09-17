@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root flicense information.
 
 using System;
-using System.Linq;
 using NuGet.Packaging.Licenses;
 using Xunit;
 
@@ -151,16 +150,18 @@ namespace NuGet.Packaging.Test
         [InlineData("A () OR B")]
         [InlineData("A OR C (WITH 389-exception OR B)")]
         [InlineData("A WITH B C WITH D")]
-        public void LicenseExpressionParser_NonStrictParseThrowsForInvalidExpressions(string infix)
+        [InlineData(")A( AND B")]
+        [InlineData("A( AND )B")]
+        public void LicenseExpressionParser_ThrowsForInvalidExpressions(string infix)
         {
             Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
         }
 
         [Theory]
-        [InlineData("(GPL-1.0+ WITH E8) OR MIT!")]
-        [InlineData("(GPL-1.0+ WITH E8) OR MIT@")]
-        [InlineData("(GPL-1.0+ WITH E8) OR MIT/")]
-        [InlineData("(GPL-1.0+ WITH E8) OR MIT[]")]
+        [InlineData("(GPL-1.0+ WITH Classpath-exception-2.0) OR MIT!")]
+        [InlineData("(GPL-1.0+ WITH Classpath-exception-2.0) OR MIT@")]
+        [InlineData("(GPL-1.0+ WITH Classpath-exception-2.0) OR MIT/")]
+        [InlineData("(GPL-1.0+ WITH Classpath-exception-2.0) OR MIT[]")]
         public void LicenseExpressionParser_ParseThrowsForInvalidCharactersInExpression(string infix)
         {
             Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
@@ -174,7 +175,7 @@ namespace NuGet.Packaging.Test
         [InlineData("((MIT) (AND) (LPL-1.0))")]
         [InlineData("MIT (AND LPL-1.0)")]
         [InlineData("MIT  () OR LPL-1.0")]
-        [InlineData("MIT OR GPL-1.0 (WITH E8 OR LPL-1.0)")]
+        [InlineData("MIT OR GPL-1.0 (WITH Classpath-exception-2.0 OR LPL-1.0)")]
         [InlineData("A WITH B C WITH D")]
         public void LicenseExpressionParser_EvaluateThrowsWhenBracketsDoNotMatch(string infix)
         {
@@ -182,10 +183,10 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData("MIT OR (GPL-1.0 E8 WITH)")]
-        [InlineData("MIT LPL-1.0 GPL-1.0 E8 WITH OR OR")]
-        [InlineData("OR MIT (GPL-1.0 E8 WITH)")]
-        [InlineData("MIT WITH GPL-1.0 WITH E8 WITH LPL-1.0")]
+        [InlineData("MIT OR (GPL-1.0 Classpath-exception-2.0 WITH)")]
+        [InlineData("MIT LPL-1.0 GPL-1.0 Classpath-exception-2.0 WITH OR OR")]
+        [InlineData("OR MIT (GPL-1.0 Classpath-exception-2.0 WITH)")]
+        [InlineData("MIT WITH GPL-1.0 WITH Classpath-exception-2.0 WITH LPL-1.0")]
         [InlineData("A WITH B C WITH D")]
         [InlineData("A WITH B C WITH D OR E")]
         public void LicenseExpressionParser_NotStrict_EvaluateThrowsIfExpressionIsInvalid(string infix)

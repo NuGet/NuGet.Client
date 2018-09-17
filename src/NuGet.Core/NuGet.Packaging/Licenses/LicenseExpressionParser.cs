@@ -22,7 +22,7 @@ namespace NuGet.Packaging.Licenses
             var tokenizer = new LicenseExpressionTokenizer(expression);
             if (!tokenizer.HasValidCharacters())
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidCharacters));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidCharacters, expression));
             }
 
             return Parse(tokenizer.Tokenize());
@@ -191,7 +191,7 @@ namespace NuGet.Packaging.Licenses
                 else if (leftHandSideExpression == null)
                 {
                     throw new ArgumentException("Should not happen. File a bug with repro steps on NuGet/Home if seen.");
-                } 
+                }
                 else
                 {
                     var newExpression = new LogicalOperator(logicalOperator, leftHandSideExpression, rightHandSideExpression);
