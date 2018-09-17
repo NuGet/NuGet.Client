@@ -9,34 +9,22 @@ namespace NuGet.Packaging.Licenses
 {
     public class LicenseExpressionParser
     {
+
         /// <summary>
         /// Parses a License Expression if valid.
         /// The expression would be parsed correct, even if non-standard exceptions are encountered. The non-standard Licenses/Exceptions have metadata on them with which the caller can make decisions.
+        /// Based on the Shunting Yard algorithm. <see href="https://en.wikipedia.org/wiki/Shunting-yard_algorithm"/>
+        /// This method first creates an postfix expression by separating the operators and operands.
+        /// Later the postfix expression is evaluated into an object model that represents the expression. Note that brackets are dropped in this conversion and this is not round-trippable.
+        /// The token precedence helps make sure that the expression is a valid infix one. 
         /// </summary>
-        /// <param name="expression"></param>
+        /// <param name="infixTokens"></param>
         /// <returns>NuGetLicenseExpression</returns>
         /// <exception cref="ArgumentException">If the expression has invalid characters.</exception>
         /// <exception cref="ArgumentException">If the expression itself is invalid. Example: MIT OR OR Apache-2.0, or the MIT or Apache-2.0, because the expressions are case sensitive.</exception>
         public static NuGetLicenseExpression Parse(string expression)
         {
-            var tokenizer = new LicenseExpressionTokenizer(expression);
-            if (!tokenizer.HasValidCharacters())
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidCharacters, expression));
-            }
-
-            return Parse(tokenizer.Tokenize());
-        }
-
-        /// <summary>
-        /// Based on the Shunting Yard algorithm. <see href="https://en.wikipedia.org/wiki/Shunting-yard_algorithm"/>
-        /// Given an array of tokens, generates a NuGetLicenseExpression if valid.
-        /// </summary>
-        /// <param name="infixTokens"></param>
-        /// <returns>NuGetLicenseExpression</returns>
-        /// <exception cref="ArgumentException">If the passed in values are not a valid SPDX License Expression.</exception>
-        private static NuGetLicenseExpression Parse(IEnumerable<LicenseExpressionToken> infixTokens)
-        {
+            var tokens = GetTokens(expression);
             var operatorStack = new Stack<LicenseExpressionToken>();
             var operandStack = new Stack<LicenseExpressionToken>();
             NuGetLicenseExpression leftHandSideExpression = null;
@@ -45,7 +33,7 @@ namespace NuGet.Packaging.Licenses
             var lastTokenType = LicenseTokenType.VALUE;
             var firstPass = true;
 
-            foreach (var token in infixTokens)
+            foreach (var token in tokens)
             {
                 var currentTokenType = token.TokenType;
                 switch (token.TokenType)
@@ -147,6 +135,23 @@ namespace NuGet.Packaging.Licenses
             return rightHandSideExpression == null && leftHandSideExpression != null ? // We cannot have 2 "dangling" expressions. While impossible to happen in the current implementation, this safeguards for future refactoring
                 leftHandSideExpression :
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
+        }
+
+        /// <summary>
+        /// Tokenizes the expression as per the license expression rules. Throws if the string contains invalid characters.
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        private static IEnumerable<LicenseExpressionToken> GetTokens(string expression)
+        {
+            var tokenizer = new LicenseExpressionTokenizer(expression);
+            if (!tokenizer.HasValidCharacters())
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidCharacters, expression));
+            }
+
+            var tokens = tokenizer.Tokenize();
+            return tokens;
         }
 
         private static void ProcessOperators(Stack<LicenseExpressionToken> operatorStack, Stack<LicenseExpressionToken> operandStack, ref NuGetLicenseExpression leftHandSideExpression, ref NuGetLicenseExpression rightHandSideExpression)
