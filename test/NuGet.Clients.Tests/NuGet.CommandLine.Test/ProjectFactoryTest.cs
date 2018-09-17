@@ -309,8 +309,7 @@ namespace NuGet.CommandLine
         }
 
         // We run this test only on windows because this relies on Microsoft.Build.dll from the GAC and mac blows up
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("1.2.9")]
         [InlineData("1.2.3-rc-12345")]
         [InlineData("1.2.3-alpha.1.8")]
