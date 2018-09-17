@@ -22,7 +22,7 @@ namespace NuGet.Configuration.Test
         {
             var ex = Record.Exception(() => new AddItem(key, "value"));
             ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentNullException>();
+            ex.Should().BeOfType<ArgumentException>();
         }
 
         [Fact]
@@ -45,7 +45,41 @@ namespace NuGet.Configuration.Test
 
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<NuGetConfigurationException>();
-                ex.Message.Should().Be(string.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+                ex.Message.Should().Be(string.Format("Unable to parse config file because: Missing required attribute 'key' in element 'add'. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            }
+        }
+
+        [Fact]
+        public void SourceItem_CaseInsensitive_ParsedSuccessfully()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <section>
+        <AdD key='key' value='val' />
+    </section>
+</configuration>";
+
+            var expectedValue = new AddItem("key", "val");
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.Should().NotBeNull();
+
+                var section = settingsFile.GetSection("section");
+                section.Should().NotBeNull();
+
+                var children = section.Items.ToList();
+
+                children.Should().NotBeEmpty();
+                children.Count.Should().Be(1);
+
+                children[0].DeepEquals(expectedValue).Should().BeTrue();
             }
         }
 

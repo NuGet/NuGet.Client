@@ -81,17 +81,16 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Convenience method to add an element to an origin
+        /// Convenience method to add an element to an origin.
+        /// Since an origin should not be updated, any update will be ignored.
         /// </summary>
-        /// <remarks>Each setting can override this method to inlcude any descendants to the origin</remarks>
+        /// <remarks>Each setting can override this method to include any descendants to the origin</remarks>
         internal virtual void SetOrigin(SettingsFile origin)
         {
-            if (Origin != null)
+            if (Origin == null || (Origin != null && Origin == origin))
             {
-                throw new InvalidOperationException(Resources.CannotUpdateOrigin);
+                Origin = origin;
             }
-
-            Origin = origin ?? throw new ArgumentNullException(nameof(origin));
         }
 
         /// <summary>

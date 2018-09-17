@@ -12,6 +12,38 @@ namespace NuGet.Configuration.Test
     public class ClearItemTests
     {
         [Fact]
+        public void ClearItem_CaseInsensitive_ParsedSuccessfully()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <section>
+        <clEaR />
+    </section>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.Should().NotBeNull();
+
+                var section = settingsFile.GetSection("section");
+                section.Should().NotBeNull();
+
+                var children = section.Items.ToList();
+
+                children.Should().NotBeEmpty();
+                children.Count.Should().Be(1);
+
+                children[0].Should().BeOfType<ClearItem>();
+            }
+        }
+
+        [Fact]
         public void ClearItem_SingleTag_ParsedSuccessfully()
         {
             // Arrange

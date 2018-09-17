@@ -24,7 +24,7 @@ namespace NuGet.Configuration.Test
         {
             var ex = Record.Exception(() => new CredentialsItem(name, username, password, isPasswordClearText: true, validAuthenticationTypes: null));
             ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentNullException>();
+            ex.Should().BeOfType<ArgumentException>();
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace NuGet.Configuration.Test
 
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<NuGetConfigurationException>();
-                ex.Message.Should().Be(string.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+                ex.Message.Should().Be(string.Format("Unable to parse config file because: Credentials item must have username and password. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
             }
         }
 
@@ -77,12 +77,12 @@ namespace NuGet.Configuration.Test
 
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<NuGetConfigurationException>();
-                ex.Message.Should().Be(string.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+                ex.Message.Should().Be(string.Format("Unable to parse config file because: Credentials item must have username and password. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
             }
         }
 
         [Fact]
-        public void CredentialsItem_Parsing_WithUsernamePasswordAndClearTextPassword_Throws()
+        public void CredentialsItem_Parsing_WithUsernamePasswordAndClearTextPassword_TakesFirstAndIgnoresRest()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -102,11 +102,89 @@ namespace NuGet.Configuration.Test
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act and Assert
-                var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.Should().NotBeNull();
 
-                ex.Should().NotBeNull();
-                ex.Should().BeOfType<NuGetConfigurationException>();
-                ex.Message.Should().Be(string.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+                var section = settingsFile.GetSection("packageSourceCredentials");
+                section.Should().NotBeNull();
+                section.Items.Count.Should().Be(1);
+
+                var item = section.Items.First() as CredentialsItem;
+                item.Should().NotBeNull();
+
+                item.Password.Should().Be("password");
+                item.IsPasswordClearText.Should().BeFalse();
+            }
+        }
+
+        [Fact]
+        public void CredentialsItem_Parsing_WithMultipleUsernames_TakesFirstAndIgnoresRest()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <packageSourceCredentials>
+        <NuGet.Org meta1='data1'>
+            <add key='Username' value='username' />
+            <add key='Username' value='username2' />
+            <add key='Password' value='password' />
+        </NuGet.Org>
+    </packageSourceCredentials>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.Should().NotBeNull();
+
+                var section = settingsFile.GetSection("packageSourceCredentials");
+                section.Should().NotBeNull();
+                section.Items.Count.Should().Be(1);
+
+                var item = section.Items.First() as CredentialsItem;
+                item.Should().NotBeNull();
+
+                item.Username.Should().Be("username");
+            }
+        }
+
+        [Fact]
+        public void CredentialsItem_Parsing_WithMultipleValidAuthenticationTypes_TakesFirstAndIgnoresRest()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <packageSourceCredentials>
+        <NuGet.Org meta1='data1'>
+            <add key='Username' value='username' />
+            <add key='Password' value='password' />
+            <add key='ValidAuthenticationTypes' value='one,two,three' />
+            <add key='ValidAuthenticationTypes' value='four,five,six' />
+        </NuGet.Org>
+    </packageSourceCredentials>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.Should().NotBeNull();
+
+                var section = settingsFile.GetSection("packageSourceCredentials");
+                section.Should().NotBeNull();
+                section.Items.Count.Should().Be(1);
+
+                var item = section.Items.First() as CredentialsItem;
+                item.Should().NotBeNull();
+
+                item.ValidAuthenticationTypes.Should().Be("one,two,three");
             }
         }
 
@@ -150,7 +228,7 @@ namespace NuGet.Configuration.Test
                 // Assert
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in a machine wide NuGet.Config.");
+                ex.Message.Should().Be("Unable to update setting since it is in a machine-wide NuGet.Config.");
 
                 credentials.Password.Should().Be("pass");
             }

@@ -71,6 +71,24 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Attribute &apos;{0}&apos; is not allowed in element &apos;{1}&apos;..
+        /// </summary>
+        internal static string AttributeNotAllowed {
+            get {
+                return ResourceManager.GetString("AttributeNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The attribute &apos;{0}&apos; has an unallowed value &apos;{1}&apos; in element &apos;{2}&apos;..
+        /// </summary>
+        internal static string AttributeValueNotAllowed {
+            get {
+                return ResourceManager.GetString("AttributeValueNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The item passed to the Update method cannot refer to a different item than the one being updated..
         /// </summary>
         internal static string CannotUpdateDifferentItems {
@@ -103,6 +121,15 @@ namespace NuGet.Configuration {
         internal static string CannotUpdateOrigin {
             get {
                 return ResourceManager.GetString("CannotUpdateOrigin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Credentials item must have username and password..
+        /// </summary>
+        internal static string CredentialsItemMustHaveUsernamePassword {
+            get {
+                return ResourceManager.GetString("CredentialsItemMustHaveUsernamePassword", resourceCulture);
             }
         }
         
@@ -170,11 +197,29 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Missing required attribute &apos;{0}&apos; in element &apos;{1}&apos;..
+        /// </summary>
+        internal static string MissingRequiredAttribute {
+            get {
+                return ResourceManager.GetString("MissingRequiredAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; must contain an absolute path &apos;{1}&apos;..
         /// </summary>
         internal static string MustContainAbsolutePath {
             get {
                 return ResourceManager.GetString("MustContainAbsolutePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} item should not have any attributes and it was found with {1}..
+        /// </summary>
+        internal static string NoAttributesAllowed {
+            get {
+                return ResourceManager.GetString("NoAttributesAllowed", resourceCulture);
             }
         }
         
@@ -278,6 +323,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Text elements should not be empty..
+        /// </summary>
+        internal static string TextShouldNotBeEmpty {
+            get {
+                return ResourceManager.GetString("TextShouldNotBeEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unexpected failure reading NuGet.Config. Path: &apos;{0}&apos;..
         /// </summary>
         internal static string Unknown_Config_Exception {
@@ -305,7 +359,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to parse config file &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Unable to parse config file because: {0} Path: &apos;{1}&apos;..
         /// </summary>
         internal static string UserSettings_UnableToParseConfigFile {
             get {

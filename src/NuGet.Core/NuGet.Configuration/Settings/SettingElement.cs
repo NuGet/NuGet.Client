@@ -233,14 +233,18 @@ namespace NuGet.Configuration
             {
                 if (!AllowedAttributes.Any() && element.HasAttributes)
                 {
-                    throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+                    throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile,
+                        string.Format(CultureInfo.CurrentCulture, Resources.NoAttributesAllowed, element.Name.LocalName, element.Attributes().Count()),
+                        origin.ConfigFilePath));
                 }
 
                 foreach (var attribute in element.Attributes())
                 {
                     if (!AllowedAttributes.Contains(attribute.Name.LocalName))
                     {
-                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile,
+                            string.Format(CultureInfo.CurrentCulture, Resources.AttributeNotAllowed, attribute.Name.LocalName, element.Name.LocalName),
+                            origin.ConfigFilePath));
                     }
                 }
             }
@@ -252,7 +256,9 @@ namespace NuGet.Configuration
                     var attribute = element.Attribute(requireAttribute);
                     if (attribute == null)
                     {
-                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile,
+                            string.Format(CultureInfo.CurrentCulture, Resources.MissingRequiredAttribute, requireAttribute, element.Name.LocalName),
+                            origin.ConfigFilePath));
                     }
                 }
             }
@@ -264,7 +270,9 @@ namespace NuGet.Configuration
                     var attribute = element.Attribute(attributeValues.Key);
                     if (attribute != null && !attributeValues.Value.Contains(attribute.Value.Trim()))
                     {
-                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile,
+                              string.Format(CultureInfo.CurrentCulture, Resources.AttributeValueNotAllowed, attribute.Name.LocalName, attribute.Value.Trim(), element.Name.LocalName),
+                            origin.ConfigFilePath));
                     }
                 }
             }
@@ -276,7 +284,9 @@ namespace NuGet.Configuration
                     var attribute = element.Attribute(attributeValues.Key);
                     if (attribute != null && attributeValues.Value.Contains(attribute.Value.Trim()))
                     {
-                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile,
+                            string.Format(CultureInfo.CurrentCulture, Resources.AttributeValueNotAllowed, attribute.Name.LocalName, attribute.Value.Trim(), element.Name.LocalName),
+                            origin.ConfigFilePath));
                     }
                 }
             }

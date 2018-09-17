@@ -38,6 +38,8 @@ namespace NuGet.Configuration
         public IEnumerable<string> ValidAuthenticationTypes =>
             ParseAuthTypeFilterString(ValidAuthenticationTypesText);
 
+        private readonly Lazy<int> _hashCode;
+
         /// <summary>
         /// Comma-delimited list of authentication types the credential is valid for as stored in the config file.
         /// If null or empty, all authentication types are valid. Example: 'basic,negotiate'
@@ -80,8 +82,6 @@ namespace NuGet.Configuration
         /// </summary>
         /// <returns>True if credentials object is valid</returns>
         public bool IsValid() => !string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(PasswordText);
-
-        private Lazy<int> _hashCode { get; }
 
         /// <summary>
         /// Instantiates the credential instance out of raw values read from a config file.

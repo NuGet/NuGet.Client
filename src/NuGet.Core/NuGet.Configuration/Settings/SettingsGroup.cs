@@ -10,7 +10,7 @@ namespace NuGet.Configuration
 {
     public abstract class SettingsGroup<T> : SettingElement, ISettingsGroup where T : SettingElement
     {
-        // We use a dictionary instead of a hashset to be able to replace elements
+        // Until HashSet<T>TryGetValue(...) is available, we will use a dictionary to enable efficient element retrieval.
         protected Dictionary<T, T> ChildrenSet { get; private set; }
 
         protected virtual bool CanBeCleared => true;

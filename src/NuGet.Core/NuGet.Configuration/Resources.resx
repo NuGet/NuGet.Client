@@ -120,6 +120,17 @@
   <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
     <value>Value cannot be null or empty string.</value>
   </data>
+  <data name="AttributeNotAllowed" xml:space="preserve">
+    <value>Attribute '{0}' is not allowed in element '{1}'.</value>
+    <comment>0 - attribute name
+1 - element name</comment>
+  </data>
+  <data name="AttributeValueNotAllowed" xml:space="preserve">
+    <value>The attribute '{0}' has an unallowed value '{1}' in element '{2}'.</value>
+    <comment>0 - attribute name
+1 - attribute value
+2 - element name</comment>
+  </data>
   <data name="CannotUpdateDifferentItems" xml:space="preserve">
     <value>The item passed to the Update method cannot refer to a different item than the one being updated.</value>
   </data>
@@ -131,6 +142,9 @@
   </data>
   <data name="CannotUpdateOrigin" xml:space="preserve">
     <value>Cannot update the origin of a setting.</value>
+  </data>
+  <data name="CredentialsItemMustHaveUsernamePassword" xml:space="preserve">
+    <value>Credentials item must have username and password.</value>
   </data>
   <data name="Error_EncryptionUnsupported" xml:space="preserve">
     <value>Encryption is not supported on non-Windows platforms.</value>
@@ -156,8 +170,18 @@
     <value>The item does not exist in the {0} section.</value>
     <comment>0 - section name</comment>
   </data>
+  <data name="MissingRequiredAttribute" xml:space="preserve">
+    <value>Missing required attribute '{0}' in element '{1}'.</value>
+    <comment>0 - attribute name
+1 - element name</comment>
+  </data>
   <data name="MustContainAbsolutePath" xml:space="preserve">
     <value>'{0}' must contain an absolute path '{1}'.</value>
+  </data>
+  <data name="NoAttributesAllowed" xml:space="preserve">
+    <value>The {0} item should not have any attributes and it was found with {1}.</value>
+    <comment>0 - item name
+1- attributes count</comment>
   </data>
   <data name="NoWritteableConfig" xml:space="preserve">
     <value>There is no NuGet.Config that could be used for writing settings. Please create one at the desired location and restart the client.</value>
@@ -194,6 +218,9 @@
   <data name="ShowError_ConfigUnauthorizedAccess" xml:space="preserve">
     <value>Failed to read NuGet.Config due to unauthorized access. Path: '{0}'.</value>
   </data>
+  <data name="TextShouldNotBeEmpty" xml:space="preserve">
+    <value>Text elements should not be empty.</value>
+  </data>
   <data name="Unknown_Config_Exception" xml:space="preserve">
     <value>Unexpected failure reading NuGet.Config. Path: '{0}'.</value>
   </data>
@@ -204,6 +231,8 @@
     <value>Password encryption is not supported on .NET Core for this platform. The following feed try to use an encrypted password: '{0}'. You can use a clear text password as a workaround.</value>
   </data>
   <data name="UserSettings_UnableToParseConfigFile" xml:space="preserve">
-    <value>Unable to parse config file '{0}'.</value>
+    <value>Unable to parse config file because: {0} Path: '{1}'.</value>
+    <comment>0 - reason
+1- config file path</comment>
   </data>
 </root>

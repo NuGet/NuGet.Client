@@ -20,7 +20,7 @@ namespace NuGet.Configuration.Test
         {
             var ex = Record.Exception(() => new UnknownItem(name: name, attributes: null, children: null));
             ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentNullException>();
+            ex.Should().BeOfType<ArgumentException>();
         }
 
         [Fact]

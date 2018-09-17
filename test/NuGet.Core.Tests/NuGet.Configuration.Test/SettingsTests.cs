@@ -144,7 +144,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void GetValues_ItemsAndSectionsAreAbstract()
+        public void GetValues_ItemsAreCopiesAndSectionsAreAbstract()
         {
             // Arrange
             using (var mockBaseDirectory = TestDirectory.Create())
@@ -181,7 +181,7 @@ namespace NuGet.Configuration.Test
 
                 foreach (var item in section.Items)
                 {
-                    item.IsAbstract().Should().BeTrue();
+                    item.IsCopy().Should().BeTrue();
                 }
             }
         }
@@ -586,7 +586,7 @@ namespace NuGet.Configuration.Test
                 // Act & Assert
                 var ex = Record.Exception(() => settings.AddOrUpdate("", new AddItem("SomeKey", "SomeValue")));
                 ex.Should().NotBeNull();
-                ex.Should().BeOfType<ArgumentNullException>();
+                ex.Should().BeOfType<ArgumentException>();
             }
         }
 
@@ -1081,7 +1081,7 @@ namespace NuGet.Configuration.Test
                 // Act & Assert
                 var ex = Record.Exception(() => settings.AddOrUpdate(settingsFile, "", new AddItem("SomeKey", "SomeValue")));
                 ex.Should().NotBeNull();
-                ex.Should().BeOfType<ArgumentNullException>();
+                ex.Should().BeOfType<ArgumentException>();
             }
         }
 
@@ -1385,7 +1385,7 @@ namespace NuGet.Configuration.Test
                 var ex = Record.Exception(() => settings.Remove("SectionName", item));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in a machine wide NuGet.Config.");
+                ex.Message.Should().Be("Unable to update setting since it is in a machine-wide NuGet.Config.");
 
                 settings.SaveToDisk();
 
@@ -2271,7 +2271,7 @@ namespace NuGet.Configuration.Test
                 var ex = Record.Exception(() => new Settings(mockBaseDirectory));
                 Assert.NotNull(ex);
                 Assert.IsAssignableFrom<NuGetConfigurationException>(ex);
-                Assert.Equal(string.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)), ex.Message);
+                Assert.Equal(string.Format("Unable to parse config file because: Missing required attribute 'key' in element 'add'. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)), ex.Message);
             }
         }
 
@@ -2297,7 +2297,7 @@ namespace NuGet.Configuration.Test
                 var ex = Record.Exception(() => new Settings(mockBaseDirectory));
                 Assert.NotNull(ex);
                 Assert.IsAssignableFrom<NuGetConfigurationException>(ex);
-                Assert.Equal(string.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)), ex.Message);
+                Assert.Equal(string.Format("Unable to parse config file because: The attribute 'key' has an unallowed value '' in element 'add'. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)), ex.Message);
             }
         }
 

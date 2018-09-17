@@ -19,7 +19,7 @@ namespace NuGet.Configuration.Test
             // Act & Assert
             var ex = Record.Exception(() => new SettingsFile(null));
             Assert.NotNull(ex);
-            Assert.IsAssignableFrom<ArgumentNullException>(ex);
+            Assert.IsAssignableFrom<ArgumentException>(ex);
         }
 
         [Fact]
@@ -237,7 +237,7 @@ namespace NuGet.Configuration.Test
                 // Act & Assert
                 var ex = Record.Exception(() => settingsFile.AddOrUpdate("", new AddItem("SomeKey", "SomeValue")));
                 ex.Should().NotBeNull();
-                ex.Should().BeOfType<ArgumentNullException>();
+                ex.Should().BeOfType<ArgumentException>();
             }
         }
 
@@ -282,7 +282,7 @@ namespace NuGet.Configuration.Test
                 var ex = Record.Exception(() => settingsFile.AddOrUpdate("section", new AddItem("SomeKey", "SomeValue")));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in a machine wide NuGet.Config.");
+                ex.Message.Should().Be("Unable to update setting since it is in a machine-wide NuGet.Config.");
 
                 settingsFile.SaveToDisk();
 
@@ -546,7 +546,7 @@ namespace NuGet.Configuration.Test
                 var ex = Record.Exception(() => settingsFile.Remove("Section", item));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in a machine wide NuGet.Config.");
+                ex.Message.Should().Be("Unable to update setting since it is in a machine-wide NuGet.Config.");
 
                 settingsFile.SaveToDisk();
 

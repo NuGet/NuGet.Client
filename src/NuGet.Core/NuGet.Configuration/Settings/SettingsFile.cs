@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
@@ -184,12 +185,20 @@ namespace NuGet.Configuration
 
         internal static void ConnectSettingsFilesLinkedList(IList<SettingsFile> settingFiles)
         {
-            settingFiles[0].Priority = settingFiles.Count;
-
-            // if multiple setting files were loaded, chain them in a linked list
-            for (var i = 1; i < settingFiles.Count; ++i)
+            if (settingFiles == null && !settingFiles.Any())
             {
-                settingFiles[i].SetNextFile(settingFiles[i - 1]);
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(settingFiles));
+            }
+
+            settingFiles.First().Priority = settingFiles.Count;
+
+            if (settingFiles.Count > 1)
+            {
+                // if multiple setting files were loaded, chain them in a linked list
+                for (var i = 1; i < settingFiles.Count; ++i)
+                {
+                    settingFiles[i].SetNextFile(settingFiles[i - 1]);
+                }
             }
         }
 

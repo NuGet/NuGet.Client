@@ -81,7 +81,7 @@ namespace NuGet.Configuration
 
             if (string.IsNullOrEmpty(value))
             {
-                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, Resources.TextShouldNotBeEmpty, origin.ConfigFilePath));
             }
 
             Value = value;

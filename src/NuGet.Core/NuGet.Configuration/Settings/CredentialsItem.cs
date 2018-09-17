@@ -92,9 +92,9 @@ namespace NuGet.Configuration
 
         internal override bool IsEmpty() => string.IsNullOrEmpty(Username) && string.IsNullOrEmpty(Password);
 
-        internal AddItem _username { get; set; }
+        internal readonly AddItem _username;
 
-        internal AddItem _password { get; set; }
+        internal readonly AddItem _password;
 
         internal AddItem _validAuthenticationTypes { get; set; }
 
@@ -139,48 +139,45 @@ namespace NuGet.Configuration
             var elementDescendants = element.Elements();
             var countOfDescendants = elementDescendants.Count();
 
-            if (countOfDescendants != 2 && countOfDescendants != 3)
-            {
-                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
-            }
-
             var parsedItems = elementDescendants.Select(e => SettingFactory.Parse(e, origin) as AddItem).Where(i => i != null);
 
             foreach (var item in parsedItems)
             {
                 if (string.Equals(item.Key, ConfigurationConstants.UsernameToken, StringComparison.OrdinalIgnoreCase))
                 {
-                    _username = item;
+                    if (_username == null)
+                    {
+                        _username = item;
+                    }
                 }
                 else if (string.Equals(item.Key, ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (_password != null)
+                    if (_password == null)
                     {
-                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+                        _password = item;
+                        IsPasswordClearText = false;
                     }
-
-                    _password = item;
-                    IsPasswordClearText = false;
                 }
                 else if (string.Equals(item.Key, ConfigurationConstants.ClearTextPasswordToken, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (_password != null)
+                    if (_password == null)
                     {
-                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+                        _password = item;
+                        IsPasswordClearText = true;
                     }
-
-                    _password = item;
-                    IsPasswordClearText = true;
                 }
                 else if (string.Equals(item.Key, ConfigurationConstants.ValidAuthenticationTypesToken, StringComparison.OrdinalIgnoreCase))
                 {
-                    _validAuthenticationTypes = item;
+                    if (_validAuthenticationTypes == null)
+                    {
+                        _validAuthenticationTypes = item;
+                    }
                 }
             }
 
             if (_username == null || _password == null)
             {
-                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, origin.ConfigFilePath));
+                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, Resources.CredentialsItemMustHaveUsernamePassword, origin.ConfigFilePath));
             }
         }
 

@@ -3,6 +3,7 @@
 
 using System.Xml.Linq;
 using FluentAssertions;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Configuration.Test
@@ -10,7 +11,7 @@ namespace NuGet.Configuration.Test
     public class NuGetConfigurationTests
     {
         [Fact]
-        public void AsXNode_ReturnsExpectedXNode()
+        public void NuGetConfiguration_AsXNode_ReturnsExpectedXNode()
         {
             var configuration = new NuGetConfiguration(
                 new VirtualSettingSection("Section",
@@ -25,6 +26,25 @@ namespace NuGet.Configuration.Test
             var xNode = configuration.AsXNode();
 
             XNode.DeepEquals(xNode, expectedXNode).Should().BeTrue();
+        }
+
+        [Fact]
+        public void NuGetConfiguration__CaseInsensitive_ParsedSuccessfully()
+        {
+            // Arrange
+            var config = @"
+<cOnfiGUraTiOn>
+</cOnfiGUraTiOn>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.Should().NotBeNull();
+            }
         }
     }
 }
