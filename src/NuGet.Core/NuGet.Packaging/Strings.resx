@@ -741,4 +741,7 @@ Valid from:</comment>
   <data name="NuGetLicenseExpression_ExceptionIdentifierIsLicense" xml:space="preserve">
     <value>The identifier {0} is a license. It cannot be used as a Exception.</value>
   </data>
+  <data name="NuGetLicenseExpression_InvalidExceptionIdentifier" xml:space="preserve">
+    <value>The identifier '{0}' is not a standard exception.</value>
+  </data>
 </root>

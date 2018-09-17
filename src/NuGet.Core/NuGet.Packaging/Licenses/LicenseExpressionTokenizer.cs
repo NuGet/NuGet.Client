@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace NuGet.Packaging.Licenses
 {
-    public class LicenseExpressionTokenizer
+    internal class LicenseExpressionTokenizer
     {
         private static Tuple<char, string> OpeningBracket = new Tuple<char, string>('(', "(");
         private static Tuple<char, string> ClosingBracket = new Tuple<char, string>(')', ")");
@@ -18,7 +17,7 @@ namespace NuGet.Packaging.Licenses
         /// This implementation assumes that the input has been sanitized and that there are no invalid characters.
         /// </summary>
         /// <param name="value"></param>
-        public LicenseExpressionTokenizer(string value)
+        internal LicenseExpressionTokenizer(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -33,7 +32,7 @@ namespace NuGet.Packaging.Licenses
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool HasValidCharacters()
+        internal bool HasValidCharacters()
         {
             for (var i = 0; i < _value.Length; i++)
             {
@@ -55,7 +54,11 @@ namespace NuGet.Packaging.Licenses
             return true;
         }
 
-        public IEnumerable<LicenseExpressionToken> Tokenize()
+        /// <summary>
+        /// Given a string, tokenizes by space into operators and values. The considered operators are, AND, OR, WITH, (, and ). 
+        /// </summary>
+        /// <returns>Tokens</returns>
+        internal IEnumerable<LicenseExpressionToken> Tokenize()
         {
             var potentialTokens = _value.Split(' ');
             foreach (var token in potentialTokens)
@@ -103,7 +106,7 @@ namespace NuGet.Packaging.Licenses
             {
                 return new LicenseExpressionToken(token, result);
             }
-            else // We already covered the brackets earlier, so it has to be avalue.
+            else // We already covered the brackets earlier, so it has to be a value.
             {
                 return new LicenseExpressionToken(token, LicenseTokenType.VALUE);
 

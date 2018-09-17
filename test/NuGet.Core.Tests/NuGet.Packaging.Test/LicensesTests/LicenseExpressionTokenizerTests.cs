@@ -30,14 +30,19 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData("MIT", LicenseTokenType.VALUE)]
-        [InlineData("(", LicenseTokenType.OPENING_BRACKET)]
-        [InlineData(")", LicenseTokenType.CLOSING_BRACKET)]
-        [InlineData("AND", LicenseTokenType.AND)]
-        [InlineData("OR", LicenseTokenType.OR)]
-        [InlineData("WITH", LicenseTokenType.WITH)]
-        public void LicenseExpressionTokenizer_TokenizesSimpleExpressionCorrectly(string value, LicenseTokenType tokenType)
+        [InlineData("MIT", "VALUE")]
+        [InlineData("(", "OPENING_BRACKET")]
+        [InlineData(")", "CLOSING_BRACKET")]
+        [InlineData("AND", "AND")]
+        [InlineData("OR", "OR")]
+        [InlineData("WITH", "WITH")]
+        [InlineData("with", "VALUE")]
+        [InlineData("Or", "VALUE")]
+        [InlineData("aND", "VALUE")]
+        public void LicenseExpressionTokenizer_TokenizesSimpleExpressionCorrectly(string value, string type)
         {
+            Enum.TryParse(type, out LicenseTokenType tokenType);
+
             var tokenizer = new LicenseExpressionTokenizer(value);
 
             var tokens = tokenizer.Tokenize().ToArray();
@@ -104,7 +109,6 @@ namespace NuGet.Packaging.Test
             yield return new object[] { new string[] { "MIT AND OR LPL-1.0", "MIT", "AND", "OR", "LPL-1.0" } };
             yield return new object[] { new string[] { "MIT and LPL-1.0", "MIT", "and", "LPL-1.0" } };
             yield return new object[] { new string[] { "MIT () AND OR LPL-1.0", "MIT", "(", ")", "AND", "OR", "LPL-1.0" } };
-
         }
     }
 }

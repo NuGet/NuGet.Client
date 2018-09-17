@@ -6,18 +6,18 @@ namespace NuGet.Packaging.Licenses
     /// <summary>
     /// Represents a token of a parsed license expression. The tokens are either operators, parentheses or values. 
     /// </summary>
-    public class LicenseExpressionToken
+    internal class LicenseExpressionToken
     {
         /// <summary>
         /// The token type
         /// </summary>
-        public LicenseTokenType TokenType { get; }
+        internal LicenseTokenType TokenType { get; }
         /// <summary>
         /// The value of this token.
         /// </summary>
-        public string Value { get; }
+        internal string Value { get; }
 
-        public LicenseExpressionToken(string value, LicenseTokenType tokenType)
+        internal LicenseExpressionToken(string value, LicenseTokenType tokenType)
         {
             Value = value;
             TokenType = tokenType;

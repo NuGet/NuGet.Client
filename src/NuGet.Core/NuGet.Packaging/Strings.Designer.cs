@@ -755,6 +755,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The identifier &apos;{0}&apos; is not a standard exception..
+        /// </summary>
+        internal static string NuGetLicenseExpression_InvalidExceptionIdentifier {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_InvalidExceptionIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The license expression is invalid..
         /// </summary>
         internal static string NuGetLicenseExpression_InvalidExpression {

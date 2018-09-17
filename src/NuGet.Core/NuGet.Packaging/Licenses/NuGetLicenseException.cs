@@ -11,10 +11,10 @@ namespace NuGet.Packaging
 
         public bool IsStandardException { get; }
 
-        public NuGetLicenseException(string identifier, bool isStandardException)
+        public NuGetLicenseException(string identifier)
         {
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
-            IsStandardException = isStandardException;
+            IsStandardException = true;
         }
 
         public static NuGetLicenseException Parse(string exceptionIdentifier)
@@ -24,16 +24,21 @@ namespace NuGet.Packaging
                 if (NuGetLicenseData.ExceptionList.TryGetValue(exceptionIdentifier, out var exceptionData))
                 {
                     return !exceptionData.IsDeprecatedLicenseId ?
-                        new NuGetLicenseException(exceptionIdentifier, isStandardException: true) :
+                        new NuGetLicenseException(exceptionIdentifier) :
                         throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_DeprecatedIdentifier, exceptionIdentifier));
                 }
-
-                if (!NuGetLicenseData.LicenseList.TryGetValue(exceptionIdentifier, out var licenseData))
+                else
                 {
-                    return new NuGetLicenseException(exceptionIdentifier, isStandardException: false);
+                    if (NuGetLicenseData.LicenseList.TryGetValue(exceptionIdentifier, out var licenseData))
+                    {
+                        throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_ExceptionIdentifierIsLicense, exceptionIdentifier));
+                    }
+                    else
+                    {
+                        throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_InvalidExceptionIdentifier, exceptionIdentifier));
+                    }
                 }
 
-                throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_ExceptionIdentifierIsLicense, exceptionIdentifier));
             }
             // This will not happen in production code as the tokenizer takes cares of that. 
             throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(exceptionIdentifier));

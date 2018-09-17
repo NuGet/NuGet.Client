@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace NuGet.Packaging.Licenses
 {
@@ -26,7 +25,7 @@ namespace NuGet.Packaging.Licenses
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidCharacters));
             }
 
-            return Parse(tokenizer.Tokenize().ToArray());
+            return Parse(tokenizer.Tokenize());
         }
 
         /// <summary>
@@ -36,7 +35,7 @@ namespace NuGet.Packaging.Licenses
         /// <param name="infixTokens"></param>
         /// <returns>NuGetLicenseExpression</returns>
         /// <exception cref="ArgumentException">If the passed in values are not a valid SPDX License Expression.</exception>
-        public static NuGetLicenseExpression Parse(LicenseExpressionToken[] infixTokens)
+        private static NuGetLicenseExpression Parse(IEnumerable<LicenseExpressionToken> infixTokens)
         {
             var operatorStack = new Stack<LicenseExpressionToken>();
             var operandStack = new Stack<LicenseExpressionToken>();
@@ -130,7 +129,22 @@ namespace NuGet.Packaging.Licenses
                 }
             }
 
-            return rightHandSideExpression == null ? // We cannot have 2 "dangling" expressions. While impossible to happen in the current implementation, this safeguards for future refactoring
+            // This handles the no operators scenario. This check could be simpler, but it's dangerous to assume all scenarios have been handled by the above logic.
+            // As written and as tested, you would never have more than 1 operand on the stack
+            if (operandStack.Count > 0)
+            {
+                if (rightHandSideExpression == null && leftHandSideExpression == null)
+                {
+                    leftHandSideExpression = NuGetLicense.Parse(operandStack.Pop().Value);
+                }
+
+                if (operandStack.Count > 0)
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
+                }
+            }
+
+            return rightHandSideExpression == null && leftHandSideExpression != null ? // We cannot have 2 "dangling" expressions. While impossible to happen in the current implementation, this safeguards for future refactoring
                 leftHandSideExpression :
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
         }
@@ -177,7 +191,7 @@ namespace NuGet.Packaging.Licenses
                 else if (leftHandSideExpression == null)
                 {
                     throw new ArgumentException("Should not happen. File a bug with repro steps on NuGet/Home if seen.");
-                }
+                } 
                 else
                 {
                     var newExpression = new LogicalOperator(logicalOperator, leftHandSideExpression, rightHandSideExpression);
