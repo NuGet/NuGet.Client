@@ -3,28 +3,24 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using System.Xml.Linq;
 using NuGet.Common;
-using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
     /// <summary>
     /// Concrete implementation of ISettings to support NuGet Settings
+    /// Wrapper for computed settings from given settings files
     /// </summary>
     public class Settings : ISettings
     {
-        private const string CLEAR = "clear";
-        private const string ADD = "add";
-        private const string CONFIGURATION = "configuration";
-
         /// <summary>
         /// Default file name for a settings file is 'NuGet.config'
-        /// Also, the machine level setting file at '%APPDATA%\NuGet' always uses this name
+        /// Also, the user level setting file at '%APPDATA%\NuGet' always uses this name
         /// </summary>
         public static readonly string DefaultSettingsFileName = "NuGet.Config";
 
@@ -46,84 +42,208 @@ namespace NuGet.Configuration
             new[] { "*.config" } :
             new[] { "*.Config", "*.config" };
 
-        private XDocument ConfigXDocument { get; }
-        public string FileName { get; }
-        private bool IsMachineWideSettings { get; }
-        // next config file to read if any
-        private Settings _next;
-        // The priority of this setting file
-        private int _priority;
+        private SettingsFile _settingsHead { get; }
 
-        private bool Cleared { get; set; }
+        private Dictionary<string, VirtualSettingSection> _computedSections { get; set; }
 
-        public Settings(string root /*, ILogger logger */)
-            : this(root, DefaultSettingsFileName, false)
+        public SettingSection GetSection(string sectionName)
         {
+            if (_computedSections.TryGetValue(sectionName, out var section))
+            {
+                return section.Clone() as SettingSection;
+            }
+
+            return null;
         }
 
-        public Settings(string root, string fileName)
-            : this(root, fileName, false)
+        public void AddOrUpdate(string sectionName, SettingItem item)
         {
+            if (string.IsNullOrEmpty(sectionName))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(sectionName));
+            }
+
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            // Operation is an update
+            if (_computedSections.TryGetValue(sectionName, out var section) && section.Items.Contains(item))
+            {
+                // An update could not be possible here because the operation might be
+                // in a machine wide config. If so then we want to add the item to
+                // the output config.
+                if (section.Update(item))
+                {
+                    return;
+                }
+            }
+
+            // Operation is an add
+            var outputSettingsFile = GetOutputSettingFileForSection(sectionName);
+            if (outputSettingsFile == null)
+            {
+                throw new InvalidOperationException(Resources.NoWritteableConfig);
+            }
+
+            AddOrUpdate(outputSettingsFile, sectionName, item);
         }
 
-        public Settings(string root, string fileName, bool isMachineWideSettings)
+        internal void AddOrUpdate(SettingsFile settingsFile, string sectionName, SettingItem item)
         {
-            if (string.IsNullOrEmpty(root))
+            if (string.IsNullOrEmpty(sectionName))
             {
-                throw new ArgumentException("root cannot be null or empty", nameof(root));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(sectionName));
             }
 
-            if (string.IsNullOrEmpty(fileName))
+            if (item == null)
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(fileName));
+                throw new ArgumentNullException(nameof(item));
             }
 
-            if (!FileSystemUtility.IsPathAFile(fileName))
+            var currentSettings = Priority.Last(f => f.Equals(settingsFile));
+            if (settingsFile.IsMachineWide || (currentSettings?.IsMachineWide ?? false))
             {
-                throw new ArgumentException(Resources.Settings_FileName_Cannot_Be_A_Path, nameof(fileName));
+                throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
-            Root = root;
-            FileName = fileName;
-            XDocument config = null;
-            ExecuteSynchronized(() => config = XmlUtility.GetOrCreateDocument(CreateDefaultConfig(), ConfigFilePath));
-            ConfigXDocument = config;
-            IsMachineWideSettings = isMachineWideSettings;
-            CheckConfigRoot();
+            if (currentSettings == null)
+            {
+                Priority.First().SetNextFile(settingsFile);
+            }
+
+            // If it is an update this will take care of it and modify the underlaying object, which is also referenced by _computedSections.
+            settingsFile.AddOrUpdate(sectionName, item);
+
+            // AddOrUpdate should have created this section, therefore this should always exist.
+            settingsFile.TryGetSection(sectionName, out var settingFileSection);
+
+            // If it is an add we have to manually add it to the _computedSections.
+            var computedSectionExists = _computedSections.TryGetValue(sectionName, out var section);
+            if (computedSectionExists && !section.Items.Contains(item))
+            {
+                var existingItem = settingFileSection.Items.First(i => i.Equals(item));
+                section.Add(existingItem);
+            }
+            else if (!computedSectionExists)
+            {
+                _computedSections.Add(sectionName,
+                    new VirtualSettingSection(settingFileSection));
+            }
+        }
+
+        public void Remove(string sectionName, SettingItem item)
+        {
+            if (string.IsNullOrEmpty(sectionName))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(sectionName));
+            }
+
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (!_computedSections.TryGetValue(sectionName, out var section))
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.SectionDoesNotExist, sectionName));
+            }
+
+            if (!section.Items.Contains(item))
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.ItemDoesNotExist, sectionName));
+            }
+
+            section.Remove(item);
+
+            if (section.IsEmpty())
+            {
+                _computedSections.Remove(sectionName);
+            }
         }
 
         public event EventHandler SettingsChanged = delegate { };
 
-        public IEnumerable<ISettings> Priority
+        public Settings(string root)
+            : this(new SettingsFile(root)) { }
+
+        public Settings(string root, string fileName)
+            : this(new SettingsFile(root, fileName)) { }
+
+        public Settings(string root, string fileName, bool isMachineWide)
+            : this(new SettingsFile(root, fileName, isMachineWide)) { }
+
+        internal Settings(SettingsFile settingsHead)
+        {
+            _settingsHead = settingsHead;
+            var computedSections = new Dictionary<string, VirtualSettingSection>();
+
+            var curr = _settingsHead;
+            while (curr != null)
+            {
+                curr.MergeSectionsInto(computedSections);
+                curr = curr.Next;
+            }
+
+            _computedSections = computedSections;
+        }
+
+        private SettingsFile GetOutputSettingFileForSection(string sectionName)
+        {
+            // Search for the furthest from the user that can be written
+            // to that is not clearing the ones before it on the hierarchy
+            var writteableSettingsFiles = Priority.Where(f => !f.IsMachineWide);
+
+            var clearedSections = writteableSettingsFiles.Select(f => {
+                if(f.TryGetSection(sectionName, out var section))
+                {
+                    return section;
+                }
+                return null;
+            }).Where(s => s != null && s.Items.Contains(new ClearItem()));
+
+            if (clearedSections.Any())
+            {
+                return clearedSections.First().Origin;
+            }
+
+            // if none have a clear tag, default to furthest from the user
+            return writteableSettingsFiles.LastOrDefault();
+        }
+
+        /// <summary>
+        /// Enumerates the sequence of <see cref="SettingsFile"/> instances
+        /// ordered from closer to user to further
+        /// </summary>
+        internal IEnumerable<SettingsFile> Priority
         {
             get
             {
                 // explore the linked list, terminating when a duplicate path is found
-                var current = this;
-                var found = new List<Settings>();
+                var current = _settingsHead;
+                var found = new List<SettingsFile>();
                 var paths = new HashSet<string>();
                 while (current != null && paths.Add(current.ConfigFilePath))
                 {
                     found.Add(current);
-                    current = current._next;
+                    current = current.Next;
                 }
 
-                // sort by priority
                 return found
-                    .OrderByDescending(s => s._priority)
-                    .ToArray();
+                    .OrderByDescending(s => s.Priority);
             }
         }
 
-        /// <summary>
-        /// Folder under which the config file is present
-        /// </summary>
-        public string Root { get; }
+        public void SaveToDisk()
+        {
+            foreach(var settingsFile in Priority)
+            {
+                settingsFile.SaveToDisk();
+            }
 
-        /// <summary>
-        /// Full path to the ConfigFile corresponding to this Settings object
-        /// </summary>
-        public string ConfigFilePath => Path.GetFullPath(Path.Combine(Root, FileName));
+            SettingsChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         /// <summary>
         /// Load default settings based on a directory.
@@ -131,11 +251,11 @@ namespace NuGet.Configuration
         /// </summary>
         public static ISettings LoadDefaultSettings(string root)
         {
-            return LoadDefaultSettings(
+            return LoadSettings(
                 root,
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting(),
-                loadAppDataSettings: true,
+                loadUserWideSettings: true,
                 useTestingGlobalPath: false);
         }
 
@@ -174,11 +294,11 @@ namespace NuGet.Configuration
             string configFileName,
             IMachineWideSettings machineWideSettings)
         {
-            return LoadDefaultSettings(
+            return LoadSettings(
                 root,
                 configFileName,
                 machineWideSettings,
-                loadAppDataSettings: true,
+                loadUserWideSettings: true,
                 useTestingGlobalPath: false);
         }
 
@@ -193,43 +313,17 @@ namespace NuGet.Configuration
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(configFileName));
             }
 
-            return LoadDefaultSettings(
+            return LoadSettings(
                 root,
                 configFileName,
                 machineWideSettings: null,
-                loadAppDataSettings: true,
+                loadUserWideSettings: true,
                 useTestingGlobalPath: false);
-        }
-
-        /// <summary>
-        /// For internal use only
-        /// </summary>
-        public static ISettings LoadDefaultSettings(
-            string root,
-            string configFileName,
-            IMachineWideSettings machineWideSettings,
-            bool loadAppDataSettings,
-            bool useTestingGlobalPath)
-        {
-            {
-                // Walk up the tree to find a config file; also look in .nuget subdirectories
-                // If a configFile is passed, don't walk up the tree. Only use that single config file.
-                var validSettingFiles = new List<Settings>();
-                if (root != null && string.IsNullOrEmpty(configFileName))
-                {
-                    validSettingFiles.AddRange(
-                        GetSettingsFileNames(root)
-                            .Select(f => ReadSettings(root, f))
-                            .Where(f => f != null));
-                }
-
-                return LoadSettingsForSpecificConfigs(root, configFileName, validSettingFiles, machineWideSettings, loadAppDataSettings, useTestingGlobalPath);
-            }
         }
 
         public static ISettings LoadSettingsGivenConfigPaths(IList<string> configFilePaths)
         {
-            var settings = new List<Settings>();
+            var settings = new List<SettingsFile>();
             if (configFilePaths == null || configFilePaths.Count == 0)
             {
                 return NullSettings.Instance;
@@ -237,37 +331,72 @@ namespace NuGet.Configuration
 
             foreach (var configFile in configFilePaths)
             {
-                settings.Add(LoadSettings(configFile));
+                var file = new FileInfo(configFile);
+                settings.Add(new SettingsFile(file.DirectoryName, file.Name));
             }
 
-            return LoadSettingsForSpecificConfigs(settings.First().Root, settings.First().FileName, settings, null, false, false);
+            return LoadSettingsForSpecificConfigs(
+                settings.First().DirectoryPath,
+                settings.First().FileName,
+                validSettingFiles: settings,
+                machineWideSettings: null,
+                loadUserWideSettings: false,
+                useTestingGlobalPath: false);
         }
 
-        private static Settings LoadSettings(string configPath)
-        {
-            var file = new FileInfo(configPath);
-            return new Settings(file.DirectoryName, file.Name);
-        }
-
-        // Used to reconstruct the settings from give config files
-        public static ISettings LoadSettingsForSpecificConfigs(
+        /// <summary>
+        /// For internal use only
+        /// </summary>
+        internal static ISettings LoadSettings(
             string root,
             string configFileName,
-            List<Settings> validSettingFiles,
             IMachineWideSettings machineWideSettings,
-            bool loadAppDataSettings,
+            bool loadUserWideSettings,
             bool useTestingGlobalPath)
         {
-            if (loadAppDataSettings)
-            {
-                LoadUserSpecificSettings(validSettingFiles, root, configFileName, machineWideSettings, useTestingGlobalPath);
-            }
-
-            if (machineWideSettings != null && string.IsNullOrEmpty(configFileName))
+            // Walk up the tree to find a config file; also look in .nuget subdirectories
+            // If a configFile is passed, don't walk up the tree. Only use that single config file.
+            var validSettingFiles = new List<SettingsFile>();
+            if (root != null && string.IsNullOrEmpty(configFileName))
             {
                 validSettingFiles.AddRange(
-                    machineWideSettings.Settings.Select(
-                        s => new Settings(s.Root, s.FileName, s.IsMachineWideSettings)));
+                    GetSettingsFilesFullPath(root)
+                        .Select(f => ReadSettings(root, f))
+                        .Where(f => f != null));
+            }
+
+            return LoadSettingsForSpecificConfigs(
+                root,
+                configFileName,
+                validSettingFiles,
+                machineWideSettings,
+                loadUserWideSettings,
+                useTestingGlobalPath);
+        }
+
+        private static ISettings LoadSettingsForSpecificConfigs(
+            string root,
+            string configFileName,
+            List<SettingsFile> validSettingFiles,
+            IMachineWideSettings machineWideSettings,
+            bool loadUserWideSettings,
+            bool useTestingGlobalPath)
+        {
+            if (loadUserWideSettings)
+            {
+                var userSpecific = LoadUserSpecificSettings(root, configFileName, useTestingGlobalPath);
+                if (userSpecific != null)
+                {
+                    validSettingFiles.Add(userSpecific);
+                }
+            }
+
+            if (machineWideSettings != null && machineWideSettings.Settings is Settings mwSettings && string.IsNullOrEmpty(configFileName))
+            {
+                // Priority gives you the settings file in the order you want to start reading them
+                validSettingFiles.AddRange(
+                    mwSettings.Priority.Select(
+                        s => new SettingsFile(s.DirectoryPath, s.FileName, s.IsMachineWide)));
             }
 
             if (validSettingFiles?.Any() != true)
@@ -278,124 +407,77 @@ namespace NuGet.Configuration
                 return NullSettings.Instance;
             }
 
-            SetClearTagForSettings(validSettingFiles);
+            SettingsFile.ConnectSettingsFilesLinkedList(validSettingFiles);
 
-            validSettingFiles[0]._priority = validSettingFiles.Count;
-
-            // if multiple setting files were loaded, chain them in a linked list
-            for (var i = 1; i < validSettingFiles.Count; ++i)
-            {
-                validSettingFiles[i]._next = validSettingFiles[i - 1];
-                validSettingFiles[i]._priority = validSettingFiles[i - 1]._priority - 1;
-            }
-
-            // return the linked list head. Typicall, it's either the config file in %ProgramData%\NuGet\Config,
-            // or the user specific config (%APPDATA%\NuGet\nuget.config) if there are no machine
-            // wide config files. The head file is the one we want to read first, while the user specific config
+            // Create a settings object with the linked list head. Typically, it's either the config file in %ProgramData%\NuGet\Config,
+            // or the user wide config (%APPDATA%\NuGet\nuget.config) if there are no machine
+            // wide config files. The head file is the one we want to read first, while the user wide config
             // is the one that we want to write to.
             // TODO: add UI to allow specifying which one to write to
-            return validSettingFiles.Last();
+            return new Settings(validSettingFiles.Last());
         }
 
-        private static void LoadUserSpecificSettings(
-            List<Settings> validSettingFiles,
+        private static SettingsFile LoadUserSpecificSettings(
             string root,
             string configFileName,
-            IMachineWideSettings machineWideSettings,
-            bool useTestingGlobalPath
-            )
+            bool useTestingGlobalPath)
         {
-            if (root == null)
-            {
-                // Path.Combine is performed with root so it should not be null
-                // However, it is legal for it be empty in this method
-                root = string.Empty;
-            }
+            // Path.Combine is performed with root so it should not be null
+            // However, it is legal for it be empty in this method
+            var rootDirectory = root ?? string.Empty;
+
             // for the default location, allow case where file does not exist, in which case it'll end
             // up being created if needed
-            Settings appDataSettings = null;
+            SettingsFile userSpecificSettings = null;
             if (configFileName == null)
             {
                 var defaultSettingsFilePath = string.Empty;
                 if (useTestingGlobalPath)
                 {
-                    defaultSettingsFilePath = Path.Combine(root, "TestingGlobalPath", DefaultSettingsFileName);
+                    defaultSettingsFilePath = Path.Combine(rootDirectory, "TestingGlobalPath", DefaultSettingsFileName);
                 }
                 else
                 {
                     var userSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
 
-                    // If there is no user settings directory, return no appdata settings
+                    // If there is no user settings directory, return no settings
                     if (userSettingsDir == null)
                     {
-                        return;
+                        return null;
                     }
                     defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
                 }
 
-                if (!File.Exists(defaultSettingsFilePath) && machineWideSettings != null)
+                userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath);
+
+                if (File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
                 {
+                    var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
 
-                    // Since defaultSettingsFilePath is a full path, so it doesn't matter what value is
-                    // used as root for the PhysicalFileSystem.
-                    appDataSettings = ReadSettings(
-                    root,
-                    defaultSettingsFilePath);
-
-                    // Disable machinewide sources to improve perf
-                    var disabledSources = new List<SettingValue>();
-                    foreach (var setting in machineWideSettings.Settings)
+                    if (!File.Exists(trackFilePath))
                     {
-                        var values = setting.GetSettingValues(ConfigurationConstants.PackageSources, isPath: true);
-                        foreach (var value in values)
-                        {
-                            var packageSource = new PackageSource(value.Value);
+                        File.Create(trackFilePath).Dispose();
 
-                            // if the machine wide package source is http source, disable it by default
-                            if (packageSource.IsHttp)
-                            {
-                                disabledSources.Add(new SettingValue(value.Key, "true", origin: setting, isMachineWide: true, priority: 0));
-                            }
-                        }
-                    }
-                    appDataSettings.UpdateSections(ConfigurationConstants.DisabledPackageSources, disabledSources);
-                }
-                else
-                {
-                    appDataSettings = ReadSettings(root, defaultSettingsFilePath);
-                    var IsEmptyConfig = !appDataSettings.GetSettingValues(ConfigurationConstants.PackageSources).Any();
-
-                    if (IsEmptyConfig)
-                    {
-                        var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
-
-                        if (!File.Exists(trackFilePath))
-                        {
-                            File.Create(trackFilePath).Dispose();
-                            var defaultPackageSource = new SettingValue(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, isMachineWide: false);
-                            defaultPackageSource.AdditionalData.Add(ConfigurationConstants.ProtocolVersionAttribute, "3");
-                            appDataSettings.UpdateSections(ConfigurationConstants.PackageSources, new List<SettingValue> { defaultPackageSource });
-                        }
+                        var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: "3");
+                        userSpecificSettings.AddOrUpdate(ConfigurationConstants.PackageSources, defaultSource);
+                        userSpecificSettings.SaveToDisk();
                     }
                 }
             }
             else
             {
-                if (!FileSystemUtility.DoesFileExistIn(root, configFileName))
+                if (!FileSystemUtility.DoesFileExistIn(rootDirectory, configFileName))
                 {
                     var message = string.Format(CultureInfo.CurrentCulture,
                         Resources.FileDoesNotExist,
-                        Path.Combine(root, configFileName));
+                        Path.Combine(rootDirectory, configFileName));
                     throw new InvalidOperationException(message);
                 }
 
-                appDataSettings = ReadSettings(root, configFileName);
+                userSpecificSettings = ReadSettings(rootDirectory, configFileName);
             }
 
-            if (appDataSettings != null)
-            {
-                validSettingFiles.Add(appDataSettings);
-            }
+            return userSpecificSettings;
         }
 
         /// <summary>
@@ -412,7 +494,7 @@ namespace NuGet.Configuration
         /// <param name="root">The file system in which the settings files are read.</param>
         /// <param name="paths">The additional paths under which to look for settings files.</param>
         /// <returns>The list of settings read.</returns>
-        public static IEnumerable<Settings> LoadMachineWideSettings(
+        public static ISettings LoadMachineWideSettings(
             string root,
             params string[] paths)
         {
@@ -421,7 +503,7 @@ namespace NuGet.Configuration
                 throw new ArgumentException("root cannot be null or empty");
             }
 
-            var settingFiles = new List<Settings>();
+            var settingFiles = new List<SettingsFile>();
             var combinedPath = Path.Combine(paths);
 
             while (true)
@@ -429,7 +511,7 @@ namespace NuGet.Configuration
                 // load setting files in directory
                 foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root, combinedPath, SupportedMachineWideConfigExtension, SearchOption.TopDirectoryOnly))
                 {
-                    var settings = ReadSettings(root, file, true);
+                    var settings = ReadSettings(root, file, isMachineWideSettings: true);
                     if (settings != null)
                     {
                         settingFiles.Add(settings);
@@ -449,611 +531,76 @@ namespace NuGet.Configuration
                 combinedPath = combinedPath.Substring(0, index);
             }
 
-            return settingFiles;
+            if (settingFiles.Any())
+            {
+                SettingsFile.ConnectSettingsFilesLinkedList(settingFiles);
+
+                return new Settings(settingFiles.Last());
+            }
+
+            return NullSettings.Instance;
         }
 
-        public string GetValue(string section, string key, bool isPath = false)
+        public static string ApplyEnvironmentTransform(string value)
         {
-            if (string.IsNullOrEmpty(section))
+            if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+                return value;
             }
 
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
-            }
-
-            XElement element = null;
-            string ret = null;
-
-            var curr = this;
-            while (curr != null)
-            {
-                var newElement = curr.GetValueInternal(section, key, element);
-                if (!ReferenceEquals(element, newElement))
-                {
-                    element = newElement;
-
-                    // we need to evaluate using current Settings in case value needs path transformation
-                    ret = curr.ElementToValue(element, isPath);
-                }
-                curr = curr._next;
-            }
-
-            return ret;
+            return Environment.ExpandEnvironmentVariables(value);
         }
 
-        private string ApplyEnvironmentTransform(string configValue)
+        public static Tuple<string, string> GetFileNameAndItsRoot(string root, string settingsPath)
         {
-            if (string.IsNullOrEmpty(configValue))
+            string fileName = null;
+            string directory = null;
+
+            if (Path.IsPathRooted(settingsPath))
             {
-                return configValue;
+                fileName = Path.GetFileName(settingsPath);
+                directory = Path.GetDirectoryName(settingsPath);
+            }
+            else if (!FileSystemUtility.IsPathAFile(settingsPath))
+            {
+                var fullPath = Path.Combine(root ?? string.Empty, settingsPath);
+                fileName = Path.GetFileName(fullPath);
+                directory = Path.GetDirectoryName(fullPath);
+            }
+            else
+            {
+                fileName = settingsPath;
+                directory = root;
             }
 
-            return Environment.ExpandEnvironmentVariables(configValue);
+            return new Tuple<string, string>(fileName, directory);
         }
 
-        public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
+        internal static string ResolvePathFromOrigin(string originDirectoryPath, string originFilePath, string path)
         {
-            if (string.IsNullOrEmpty(section))
+            if (Uri.TryCreate(path, UriKind.Relative, out var _) &&
+                !string.IsNullOrEmpty(originDirectoryPath) &&
+                !string.IsNullOrEmpty(originFilePath))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+                return ResolveRelativePath(originDirectoryPath, originFilePath, path);
             }
 
-            var settingValues = new List<SettingValue>();
-            var curr = this;
-            while (curr != null)
-            {
-                curr.PopulateValues(section, settingValues, isPath);
-                curr = curr._next;
-            }
-
-            return settingValues.AsReadOnly();
+            return path;
         }
 
-        public IReadOnlyList<string> GetAllSubsections(string section)
+        private static string ResolveRelativePath(string originDirectoryPath, string originFilePath, string path)
         {
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-
-            var subsections = new List<string>();
-            var curr = this;
-            while (curr != null)
-            {
-                subsections.AddRange(curr.GetSubsections(section));
-                curr = curr._next;
-            }
-
-            return subsections.AsReadOnly();
-        }
-
-        private IReadOnlyList<string> GetSubsections(string section)
-        {
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-
-            var subsections = new List<string>();
-            var sectionElement = GetSection(ConfigXDocument.Root, section);
-
-            if (sectionElement != null)
-            {
-                var subsectionElements = sectionElement.Elements();
-
-                foreach (var element in subsectionElements)
-                {
-                    subsections.Add(element.Name.LocalName);
-                }
-            }
-
-            return subsections.AsReadOnly();
-        }
-
-        public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
-        {
-            var values = GetNestedSettingValues(section, subSection);
-
-            return values.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)).ToList().AsReadOnly();
-        }
-
-        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
-        {
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-
-            if (string.IsNullOrEmpty(subSection))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subSection));
-            }
-
-            var values = new List<SettingValue>();
-            var curr = this;
-            while (curr != null)
-            {
-                curr.PopulateNestedValues(section, subSection, values);
-                curr = curr._next;
-            }
-
-            return values.AsReadOnly();
-        }
-
-        public void SetValue(string section, string key, string value)
-        {
-            // machine wide settings cannot be changed.
-            if (IsMachineWideSettings)
-            {
-                if (_next == null)
-                {
-                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
-                }
-
-                _next.SetValue(section, key, value);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-            var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
-            SetValueInternal(sectionElement, key, value, attributes: null);
-            Save();
-        }
-
-        public void SetValues(string section, IReadOnlyList<SettingValue> values)
-        {
-            // machine wide settings cannot be changed.
-            if (IsMachineWideSettings)
-            {
-                if (_next == null)
-                {
-                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
-                }
-
-                _next.SetValues(section, values);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
-            foreach (var value in values)
-            {
-                SetValueInternal(sectionElement, value.Key, value.Value, value.AdditionalData);
-            }
-            Save();
-        }
-
-        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
-        {
-            // machine wide settings cannot be changed.
-            if (IsMachineWideSettings ||
-                ((section == ConfigurationConstants.PackageSources || section == ConfigurationConstants.DisabledPackageSources) && Cleared))
-            {
-                if (_next == null)
-                {
-                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
-                }
-
-                _next.UpdateSubsections(section, subsection, values);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-
-
-            if (string.IsNullOrEmpty(subsection))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subsection));
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            var valuesToWrite = _next == null ? values : values.Where(v => v.Priority < _next._priority);
-
-            var sectionElement = GetSection(ConfigXDocument.Root, section);
-            if (sectionElement == null && valuesToWrite.Any())
-            {
-                sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
-            }
-
-            UpdateSection(sectionElement, subsection, valuesToWrite);
-
-            if (!sectionElement.HasElements)
-            {
-                DeleteSectionFromRoot(ConfigXDocument.Root, section);
-            }
-
-            Save();
-
-            if (_next != null)
-            {
-                _next.UpdateSubsections(section, subsection, values.Where(v => v.Priority >= _next._priority).ToList());
-            }
-        }
-
-        public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
-        {
-            // machine wide settings cannot be changed.
-            if (IsMachineWideSettings ||
-                ((section == ConfigurationConstants.PackageSources || section == ConfigurationConstants.DisabledPackageSources) && Cleared))
-            {
-                if (_next == null)
-                {
-                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
-                }
-
-                _next.UpdateSections(section, values);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            var valuesToWrite = _next == null ? values : values.Where(v => v.Priority < _next._priority);
-
-            UpdateSection(ConfigXDocument.Root, section, valuesToWrite);
-
-            Save();
-
-            if (_next != null)
-            {
-                _next.UpdateSections(section, values.Where(v => v.Priority >= _next._priority).ToList());
-            }
-        }
-
-        /// <summary>
-        /// Adds or Updates a section in the root element with the values.
-        /// </summary>
-        /// <param name="root">Root element.</param>
-        /// <param name="section">Name of the section.</param>
-        /// <param name="valuesToWrite">Values to be added or updated in the section.</param>
-        private void UpdateSection(XElement root, string section, IEnumerable<SettingValue> valuesToWrite)
-        {
-            var sectionElement = GetSection(root, section);
-
-            if (sectionElement == null && valuesToWrite.Any())
-            {
-                sectionElement = GetOrCreateSection(root, section);
-            }
-
-            // When updating attempt to preserve the clear tag (and any sources that appear prior to it)
-            // to avoid creating extra diffs in the source.
-            RemoveElementBeforeClearTag(sectionElement);
-
-            if (valuesToWrite.Any())
-            {
-                foreach (var value in valuesToWrite)
-                {
-                    var element = new XElement(ADD);
-                    SetElementValues(element, value.Key, value.OriginalValue, value.AdditionalData);
-                    XElementUtility.AddIndented(sectionElement, element);
-                }
-            }
-            else if (!ContainsClearTag(sectionElement))
-            {
-                // Delete the section if it does not have values and a clear tag
-                DeleteSectionFromRoot(root, section);
-            }
-        }
-
-        /// <summary>
-        /// Removes all element nodes in the sectionElement which appear before a clear element.
-        /// </summary>
-        /// <param name="sectionElement">XElement section.</param>
-        private static void RemoveElementBeforeClearTag(XElement sectionElement)
-        {
-            if (sectionElement == null)
-            {
-                return;
-            }
-
-            var nodesToRemove = new List<XNode>();
-            foreach (var node in sectionElement.Nodes())
-            {
-                if (node.NodeType != XmlNodeType.Element)
-                {
-                    nodesToRemove.Add(node);
-                    continue;
-                }
-
-                var element = (XElement)node;
-
-                if (HasName(element, CLEAR))
-                {
-                    nodesToRemove.Clear();
-                }
-                else
-                {
-                    nodesToRemove.Add(element);
-                }
-            }
-
-            // Special case for the scenario where the clear element is the last element in the
-            // section (followed by whitespace and comments). In this case, we can avoid removing any
-            // node and preserving the original formatting.
-            if (nodesToRemove.Any(node => node.NodeType == XmlNodeType.Element))
-            {
-                foreach (var element in nodesToRemove)
-                {
-                    element.Remove();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Checks if a section contains clear tag.
-        /// </summary>
-        /// <param name="section">XElement section.</param>
-        private static bool ContainsClearTag(XElement section)
-        {
-            if (section == null)
-            {
-                return false;
-            }
-
-            return section
-                .Nodes()
-                .Any(n => IsElement(n) && HasName((XElement)n, CLEAR));
-        }
-
-        /// <summary>
-        /// Checks if an XNode is an XElement.
-        /// </summary>
-        /// <param name="node">XNode</param>
-        /// <returns>Bool indicating if the node is an element.</returns>
-        private static bool IsElement(XNode node)
-        {
-            return node.NodeType == XmlNodeType.Element;
-        }
-
-        /// <summary>
-        /// Checks if an XElement has a specific local name. Performs an OrdinalIgnoreCase comparison.
-        /// </summary>
-        /// <param name="element">XElement to be matched</param>
-        /// <param name="name">name to be matched</param>
-        /// <returns>Bool indicating if the element and has the same local name as the name parameter.</returns>
-        private static bool HasName(XElement element, string name)
-        {
-            return string.Equals(element.Name.LocalName, name, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static void SetElementValues(XElement element, string key, string value, IDictionary<string, string> attributes)
-        {
-            foreach (var existingAttribute in element.Attributes())
-            {
-                if (!string.Equals(existingAttribute.Name.LocalName, ConfigurationConstants.KeyAttribute, StringComparison.OrdinalIgnoreCase)
-                    &&
-                    !string.Equals(existingAttribute.Name.LocalName, ConfigurationConstants.ValueAttribute, StringComparison.OrdinalIgnoreCase)
-                    &&
-                    !attributes.ContainsKey(existingAttribute.Name.LocalName))
-                {
-                    // Remove previously existing attributes that are no longer present.
-                    existingAttribute.Remove();
-                }
-            }
-
-            element.SetAttributeValue(ConfigurationConstants.KeyAttribute, key);
-            element.SetAttributeValue(ConfigurationConstants.ValueAttribute, value);
-
-            if (attributes != null)
-            {
-                foreach (var attribute in attributes)
-                {
-                    element.SetAttributeValue(attribute.Key, attribute.Value);
-                }
-            }
-        }
-
-        public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values)
-        {
-            SetNestedSettingValues(section, subsection, values.Select(kvp => new SettingValue(kvp.Key, kvp.Value, isMachineWide: false)).AsList());
-        }
-
-        public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
-        {
-            // machine wide settings cannot be changed.
-            if (IsMachineWideSettings)
-            {
-                if (_next == null)
-                {
-                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
-                }
-
-                _next.SetNestedSettingValues(section, subsection, values);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            var sectionElement = GetOrCreateSection(ConfigXDocument.Root, section);
-            var subsectionElement = GetOrCreateSection(sectionElement, subsection);
-
-            foreach (var value in values)
-            {
-                SetValueInternal(subsectionElement, value.Key, value.Value, attributes: value.AdditionalData);
-            }
-
-            Save();
-        }
-
-        public bool DeleteValue(string section, string key)
-        {
-            // machine wide settings cannot be changed.
-            if (IsMachineWideSettings)
-            {
-                if (_next == null)
-                {
-                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
-                }
-
-                return _next.DeleteValue(section, key);
-            }
-
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
-            }
-
-            var sectionElement = GetSection(ConfigXDocument.Root, section);
-            if (sectionElement == null)
-            {
-                return false;
-            }
-
-            var elementToDelete = FindElementByKey(sectionElement, key, null);
-            if (elementToDelete == null)
-            {
-                return false;
-            }
-            XElementUtility.RemoveIndented(elementToDelete);
-            Save();
-            return true;
-        }
-
-        public bool DeleteSection(string section)
-        {
-            if (DeleteSectionFromRoot(ConfigXDocument.Root, section))
-            {
-                Save();
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool DeleteSectionFromRoot(XElement root, string section)
-        {
-            // machine wide settings cannot be changed.
-            if (IsMachineWideSettings)
-            {
-                if (_next == null)
-                {
-                    throw new InvalidOperationException(Resources.Error_NoWritableConfig);
-                }
-
-                return _next.DeleteSection(section);
-            }
-
-            if (string.IsNullOrEmpty(section))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
-            }
-
-            var sectionElement = GetSection(root, section);
-            if (sectionElement == null)
-            {
-                return false;
-            }
-
-            XElementUtility.RemoveIndented(sectionElement);
-
-            return true;
-        }
-
-        private XElement GetValueInternal(string section, string key, XElement curr)
-        {
-            // Get the section and return curr if it doesn't exist
-            var sectionElement = GetSection(ConfigXDocument.Root, section);
-            if (sectionElement == null)
-            {
-                return curr;
-            }
-
-            // Get the add element that matches the key and return curr if it doesn't exist
-            return FindElementByKey(sectionElement, key, curr);
-        }
-
-        private static XElement GetSection(XElement parentElement, string section)
-        {
-            section = XmlConvert.EncodeLocalName(section);
-            return parentElement.Element(section);
-        }
-
-        private static XElement GetOrCreateSection(XElement parentElement, string sectionName)
-        {
-            sectionName = XmlConvert.EncodeLocalName(sectionName);
-            var section = parentElement.Element(sectionName);
-            if (section == null)
-            {
-                section = new XElement(sectionName);
-                XElementUtility.AddIndented(parentElement, section);
-            }
-            return section;
-        }
-
-        private static XElement FindElementByKey(XElement sectionElement, string key, XElement curr)
-        {
-            var result = curr;
-            foreach (var element in sectionElement.Elements())
-            {
-                if (HasName(element, CLEAR))
-                {
-                    result = null;
-                }
-                else if (HasName(element, ADD) &&
-                         XElementUtility.GetOptionalAttributeValue(element, ConfigurationConstants.KeyAttribute).Equals(key, StringComparison.OrdinalIgnoreCase))
-                {
-                    result = element;
-                }
-            }
-            return result;
-        }
-
-        private string ElementToValue(XElement element, bool isPath)
-        {
-            if (element == null)
+            if (string.IsNullOrEmpty(originDirectoryPath) || string.IsNullOrEmpty(originFilePath))
             {
                 return null;
             }
 
-            // Return the optional value which if not there will be null;
-            var value = XElementUtility.GetOptionalAttributeValue(element, ConfigurationConstants.ValueAttribute);
-            value = ApplyEnvironmentTransform(value);
-            if (!isPath
-                || string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(path))
             {
-                return value;
+                return path;
             }
-            return Path.Combine(Root, ResolvePath(Path.GetDirectoryName(ConfigFilePath), value));
+
+            return Path.Combine(originDirectoryPath, ResolvePath(Path.GetDirectoryName(originFilePath), path));
         }
 
         private static string ResolvePath(string configDirectory, string value)
@@ -1076,150 +623,19 @@ namespace NuGet.Configuration
             return Path.Combine(configDirectory, value);
         }
 
-        private void PopulateValues(string section, List<SettingValue> current, bool isPath)
-        {
-            var sectionElement = GetSection(ConfigXDocument.Root, section);
-            if (sectionElement != null)
-            {
-                ReadSection(sectionElement, current, isPath);
-            }
-        }
-
-        private void PopulateNestedValues(string section, string subSection, List<SettingValue> current)
-        {
-            var sectionElement = GetSection(ConfigXDocument.Root, section);
-            if (sectionElement == null)
-            {
-                return;
-            }
-            var subSectionElement = GetSection(sectionElement, subSection);
-            if (subSectionElement == null)
-            {
-                return;
-            }
-            ReadSection(subSectionElement, current, isPath: false);
-        }
-
-        private void ReadSection(XContainer sectionElement, ICollection<SettingValue> values, bool isPath)
-        {
-            var elements = sectionElement.Elements();
-
-            foreach (var element in elements)
-            {
-                if (HasName(element, ADD))
-                {
-                    values.Add(ReadSettingsValue(element, isPath));
-                }
-                else if (HasName(element, CLEAR))
-                {
-                    values.Clear();
-                }
-            }
-        }
-
-        private SettingValue ReadSettingsValue(XElement element, bool isPath)
-        {
-            var keyAttribute = element.Attribute(ConfigurationConstants.KeyAttribute);
-            var valueAttribute = element.Attribute(ConfigurationConstants.ValueAttribute);
-
-            if (keyAttribute == null
-                || string.IsNullOrEmpty(keyAttribute.Value)
-                || valueAttribute == null)
-            {
-                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, ConfigFilePath));
-            }
-
-            var value = ApplyEnvironmentTransform(valueAttribute.Value);
-            var originalValue = valueAttribute.Value;
-            Uri uri;
-
-            if (isPath && Uri.TryCreate(value, UriKind.Relative, out uri))
-            {
-                var configDirectory = Path.GetDirectoryName(ConfigFilePath);
-                value = Path.Combine(Root, Path.Combine(configDirectory, value));
-            }
-
-            var settingValue = new SettingValue(keyAttribute.Value,
-                                                value,
-                                                origin: this,
-                                                isMachineWide: IsMachineWideSettings,
-                                                originalValue: originalValue,
-                                                priority: _priority);
-            foreach (var attribute in element.Attributes())
-            {
-                // Add all attributes other than ConfigurationContants.KeyAttribute and ConfigurationContants.ValueAttribute to AdditionalValues
-                if (!string.Equals(attribute.Name.LocalName, ConfigurationConstants.KeyAttribute, StringComparison.Ordinal)
-                    &&
-                    !string.Equals(attribute.Name.LocalName, ConfigurationConstants.ValueAttribute, StringComparison.Ordinal))
-                {
-                    settingValue.AdditionalData[attribute.Name.LocalName] = attribute.Value;
-                }
-            }
-
-            return settingValue;
-        }
-
-        private void SetValueInternal(XElement sectionElement, string key, string value, IDictionary<string, string> attributes)
-        {
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, ConfigurationConstants.KeyAttribute);
-            }
-            if (value == null)
-            {
-                throw new ArgumentNullException(ConfigurationConstants.ValueAttribute);
-            }
-
-            var element = FindElementByKey(sectionElement, key, null);
-
-            if (element != null)
-            {
-                SetElementValues(element, key, value, attributes);
-                Save();
-            }
-            else
-            {
-                element = new XElement(ADD);
-                SetElementValues(element, key, value, attributes);
-                XElementUtility.AddIndented(sectionElement, element);
-            }
-        }
-
-        private static Settings ReadSettings(string root, string settingsPath, bool isMachineWideSettings = false)
+        private static SettingsFile ReadSettings(string settingsRoot, string settingsPath, bool isMachineWideSettings = false)
         {
             try
             {
-                var tuple = GetFileNameAndItsRoot(root, settingsPath);
-                var fileName = tuple.Item1;
-                root = tuple.Item2;
-                return new Settings(root, fileName, isMachineWideSettings);
+                var tuple = GetFileNameAndItsRoot(settingsRoot, settingsPath);
+                var filename = tuple.Item1;
+                var root = tuple.Item2;
+                return new SettingsFile(root, filename, isMachineWideSettings);
             }
             catch (XmlException)
             {
                 return null;
             }
-        }
-
-        public static Tuple<string, string> GetFileNameAndItsRoot(string root, string settingsPath)
-        {
-            string fileName = null;
-            if (Path.IsPathRooted(settingsPath))
-            {
-                root = Path.GetDirectoryName(settingsPath);
-                fileName = Path.GetFileName(settingsPath);
-            }
-            else if (!FileSystemUtility.IsPathAFile(settingsPath))
-            {
-                var fullPath = Path.Combine(root ?? string.Empty, settingsPath);
-                root = Path.GetDirectoryName(fullPath);
-                fileName = Path.GetFileName(fullPath);
-            }
-            else
-            {
-                fileName = settingsPath;
-            }
-
-            return new Tuple<string, string>(fileName, root);
         }
 
         /// <remarks>
@@ -1228,7 +644,7 @@ namespace NuGet.Configuration
         /// c:\someLocation\nuget.config
         /// c:\nuget.config
         /// </remarks>
-        private static IEnumerable<string> GetSettingsFileNames(string root)
+        private static IEnumerable<string> GetSettingsFilesFullPath(string root)
         {
             // for dirs obtained by walking up the tree, only consider setting files that already exist.
             // otherwise we'd end up creating them.
@@ -1275,97 +691,502 @@ namespace NuGet.Configuration
             yield break;
         }
 
-        private void Save()
-        {
-            ExecuteSynchronized(() => FileSystemUtility.AddFile(ConfigFilePath, ConfigXDocument.Save));
-        }
+        // TODO: Delete obsolete methods https://github.com/NuGet/Home/issues/7294
+#pragma warning disable CS0618 // Type or member is obsolete
 
-        private void ExecuteSynchronized(Action ioOperation)
+        [Obsolete("GetValue(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
+        public string GetValue(string section, string key, bool isPath = false)
         {
-            ConcurrencyUtilities.ExecuteWithFileLocked(filePath: ConfigFilePath, action: () =>
+            if (string.IsNullOrEmpty(section))
             {
-                try
-                {
-                    ioOperation();
-                }
-                catch (InvalidOperationException e)
-                {
-                    throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigInvalidOperation, ConfigFilePath, e.Message), e);
-                }
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
 
-                catch (UnauthorizedAccessException e)
-                {
-                    throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigUnauthorizedAccess, ConfigFilePath, e.Message), e);
-                }
-
-                catch (XmlException e)
-                {
-                    throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigInvalidXml, ConfigFilePath, e.Message), e);
-                }
-
-                catch (Exception e)
-                {
-                    throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture, Resources.Unknown_Config_Exception, ConfigFilePath, e.Message), e);
-                }
-            });
-        }
-
-        private static XDocument CreateDefaultConfig()
-        {
-            return new XDocument(new XElement(CONFIGURATION,
-                                 new XElement(ConfigurationConstants.PackageSources,
-                                 new XElement(ADD,
-                                 new XAttribute(ConfigurationConstants.KeyAttribute, NuGetConstants.FeedName),
-                                 new XAttribute(ConfigurationConstants.ValueAttribute, NuGetConstants.V3FeedUrl),
-                                 new XAttribute(ConfigurationConstants.ProtocolVersionAttribute, "3")))));
-        }
-
-        private static void SetClearTagForSettings(List<Settings> settings)
-        {
-            var result = new List<Settings>();
-            var foundClear = false;
-
-            foreach (var setting in settings)
+            if (string.IsNullOrEmpty(key))
             {
-                if (!foundClear)
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
+            }
+
+            var sectionElement = GetSection(section);
+            var item = sectionElement?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
+
+            if (isPath)
+            {
+                return item?.GetValueAsPath();
+            }
+
+            return item?.Value;
+        }
+
+        [Obsolete("GetAllSubsections(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
+        public IReadOnlyList<string> GetAllSubsections(string section)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            var sectionElement = GetSection(section);
+
+            if (sectionElement == null)
+            {
+                return new List<string>().AsReadOnly();
+            }
+
+            return sectionElement.Items.Where(c => c is CredentialsItem || c is UnknownItem).Select(i => i.ElementName).ToList().AsReadOnly();
+        }
+
+        [Obsolete("GetSettingValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
+        public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            var sectionElement = GetSection(section);
+
+            if (sectionElement == null)
+            {
+                return new List<SettingValue>().AsReadOnly();
+            }
+
+            return sectionElement?.Items.Select(i =>
+            {
+                if (i is AddItem addItem)
                 {
-                    foundClear = FoundClearTag(setting.ConfigXDocument);
+                    return TransformAddItem(addItem, isPath);
+                }
+
+                return null;
+            }).Where(i => i != null).ToList().AsReadOnly();
+        }
+
+        [Obsolete("GetNestedValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
+        public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(subSection))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subSection));
+            }
+
+            var values = GetNestedSettingValues(section, subSection);
+
+            return values.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)).ToList().AsReadOnly();
+        }
+
+        [Obsolete("GetNestedSettingValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
+        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(subSection))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subSection));
+            }
+
+            var sectionElement = GetSection(section);
+            if (sectionElement == null)
+            {
+                return new List<SettingValue>().AsReadOnly();
+            }
+
+            return sectionElement.Items.SelectMany(i =>
+            {
+                var settingValues = new List<SettingValue>();
+
+                if (string.Equals(i.ElementName, subSection, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (i is CredentialsItem credentials)
+                    {
+                        settingValues.Add(new SettingValue(
+                            ConfigurationConstants.UsernameToken,
+                            credentials.Username,
+                            origin: this,
+                            isMachineWide: credentials.Origin?.IsMachineWide ?? false,
+                            originalValue: credentials.Username,
+                            priority: 0));
+
+                        settingValues.Add(new SettingValue(
+                            credentials.IsPasswordClearText ? ConfigurationConstants.ClearTextPasswordToken : ConfigurationConstants.PasswordToken,
+                            credentials.Password,
+                            origin: this,
+                            isMachineWide: credentials.Origin?.IsMachineWide ?? false,
+                            originalValue: credentials.Password,
+                            priority: 0));
+
+                        if (!string.IsNullOrEmpty(credentials.ValidAuthenticationTypes))
+                        {
+                            settingValues.Add(new SettingValue(
+                                ConfigurationConstants.ValidAuthenticationTypesToken,
+                                credentials.ValidAuthenticationTypes,
+                                origin: this,
+                                isMachineWide: credentials.Origin?.IsMachineWide ?? false,
+                                originalValue: credentials.ValidAuthenticationTypes,
+                                priority: 0));
+                        }
+                    }
+                    else if (i is UnknownItem unknown)
+                    {
+                        if (unknown.Children != null && unknown.Children.Any())
+                        {
+                            settingValues.AddRange(unknown.Children.Where(c => c is AddItem).Select(item => TransformAddItem(item as AddItem)).ToList());
+                        }
+                    }
+                }
+
+                return settingValues;
+            }).ToList().AsReadOnly();
+        }
+
+        [Obsolete("SetValue(...) is deprecated. Please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
+        public void SetValue(string section, string key, string value)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
+            }
+
+            AddOrUpdate(section, new AddItem(key, value));
+            SaveToDisk();
+        }
+
+        [Obsolete("SetValues(...) is deprecated. Please use AddOrUpdate(...) to add an item to a section or interact directly with the SettingItem you want.")]
+        public void SetValues(string section, IReadOnlyList<SettingValue> values)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            foreach (var value in values)
+            {
+                AddOrUpdate(section, TransformSettingValue(value));
+            }
+
+            SaveToDisk();
+        }
+
+        [Obsolete("UpdateSections(...) is deprecated. Please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
+        public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            foreach (var value in values)
+            {
+                AddOrUpdate(section, TransformSettingValue(value));
+            }
+
+            SaveToDisk();
+        }
+
+        [Obsolete("UpdateSubsections(...) is deprecated. Please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
+        public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(subsection))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subsection));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            if (values.Any())
+            {
+                SettingItem itemToAdd = null;
+
+                if (string.Equals(ConfigurationConstants.CredentialsSectionName, section, StringComparison.OrdinalIgnoreCase) &&
+                    GetCredentialsItemValues(values, out var username, out var password, out var isPasswordClearText, out var validAuthenticationTypes))
+                {
+                    itemToAdd = new CredentialsItem(subsection, username, password, isPasswordClearText, validAuthenticationTypes);
                 }
                 else
                 {
-                    setting.Cleared = true;
+                    itemToAdd = new UnknownItem(subsection, attributes: null, children: values.Select(v => TransformSettingValue(v)));
                 }
+
+                AddOrUpdate(section, itemToAdd);
             }
+            else
+            {
+                try
+                {
+                    var sectionElement = GetSection(section);
+                    var item = sectionElement?.Items.Where(c => string.Equals(c.ElementName, subsection, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+
+                    if (item != null)
+                    {
+                        Remove(section, item);
+                    }
+                } catch { }
+            }
+
+            SaveToDisk();
         }
 
-        private static bool FoundClearTag(XDocument config)
+        [Obsolete("SetNestedValues(...) is deprecated. Please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
+        public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values)
         {
-            var sectionElement = GetSection(config.Root, ConfigurationConstants.PackageSources);
-            if (sectionElement != null)
+            if (string.IsNullOrEmpty(section))
             {
-                foreach (var element in sectionElement.Elements())
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(subsection))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subsection));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            SetNestedSettingValues(section, subsection, values.Select(kvp => new SettingValue(kvp.Key, kvp.Value, isMachineWide: false)).ToList());
+        }
+
+        [Obsolete("SetNestedSettingValues(...) is deprecated. Please use AddOrUpdate(...) to update an item in a section or interact directly with the SettingItem you want.")]
+        public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(subsection))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(subsection));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            var updatedCurrentElement = false;
+
+            if (_computedSections.TryGetValue(section, out var sectionElement) && values.Any())
+            {
+                var subsectionItem = sectionElement.Items.FirstOrDefault(c => string.Equals(c.ElementName, subsection, StringComparison.OrdinalIgnoreCase));
+
+                if (subsectionItem != null)
                 {
-                    if (HasName(element, CLEAR))
+                    if (subsectionItem is CredentialsItem credential)
                     {
-                        return true;
+                        var updatedCredential = credential.Clone() as CredentialsItem;
+
+                        GetCredentialsItemValues(values, out var username, out var password, out var isPasswordClearText, out var validAuthenticationTypes);
+                        if (!string.IsNullOrEmpty(username))
+                        {
+                            updatedCredential.Username = username;
+                        }
+
+                        if (!string.IsNullOrEmpty(password))
+                        {
+                            updatedCredential.UpdatePassword(password, isPasswordClearText);
+                        }
+
+                        if (!string.IsNullOrEmpty(validAuthenticationTypes))
+                        {
+                            updatedCredential.ValidAuthenticationTypes = validAuthenticationTypes;
+                        }
+
+                        credential.Update(updatedCredential);
+
+                        updatedCurrentElement = true;
+
+                    }
+                    else if (subsectionItem is UnknownItem unknown)
+                    {
+                        foreach (var value in values)
+                        {
+                            unknown.Add(TransformSettingValue(value));
+                        }
+
+                        updatedCurrentElement = true;
                     }
                 }
             }
+
+            if (!updatedCurrentElement)
+            {
+                var isItemUnknown = true;
+                SettingItem item = null;
+
+
+                if (string.Equals(section, ConfigurationConstants.CredentialsSectionName, StringComparison.OrdinalIgnoreCase) &&
+                    GetCredentialsItemValues(values, out var username, out var password, out var isPasswordClearText, out var validAuthenticationTypes))
+                {
+                    isItemUnknown = false;
+                    item = new CredentialsItem(subsection, username, password, isPasswordClearText, validAuthenticationTypes);
+                }
+
+                if (isItemUnknown)
+                {
+                    item = new UnknownItem(subsection, attributes: null, children: values.Select(v => TransformSettingValue(v)));
+                }
+
+                AddOrUpdate(section, item);
+            }
+
+            SaveToDisk();
+        }
+
+        private bool GetCredentialsItemValues(IEnumerable<SettingValue> values, out string username, out string password, out bool isPasswordClearText, out string validAuthenticationTypes)
+        {
+            username = string.Empty;
+            password = string.Empty;
+            isPasswordClearText = true;
+            validAuthenticationTypes = string.Empty;
+
+            foreach (var item in values)
+            {
+                if (string.Equals(item.Key, ConfigurationConstants.UsernameToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    username = item.Value;
+                }
+                else if (string.Equals(item.Key, ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    password = item.Value;
+                    isPasswordClearText = false;
+                }
+                else if (string.Equals(item.Key, ConfigurationConstants.ClearTextPasswordToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    password = item.Value;
+                    isPasswordClearText = true;
+                }
+                else if (string.Equals(item.Key, ConfigurationConstants.ValidAuthenticationTypesToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    validAuthenticationTypes = item.Value;
+                }
+            }
+
+            return !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password);
+        }
+
+        [Obsolete("DeleteValue(...) is deprecated. Please use Remove(...) with the item you want to remove from the setttings.")]
+        public bool DeleteValue(string section, string key)
+        {
+            if (string.IsNullOrEmpty(section))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
+            }
+
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
+            }
+
+            var sectionElement = GetSection(section);
+            var item = sectionElement?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
+
+            if (item != null)
+            {
+                try
+                {
+                    Remove(section, item);
+                    SaveToDisk();
+
+                    return true;
+                }
+                catch { }
+            }
+
             return false;
         }
 
-        // this method will check NuGet.Config file, if the root is not configuration, it will throw.
-        private void CheckConfigRoot()
+        [Obsolete("DeleteSection(...) is deprecated,. Please use Remove(...) with all the items in the section you want to remove from the setttings.")]
+        public bool DeleteSection(string section)
         {
-            if (ConfigXDocument.Root.Name != CONFIGURATION)
+            if (string.IsNullOrEmpty(section))
             {
-                throw new NuGetConfigurationException(
-                         string.Format(Resources.ShowError_ConfigRootInvalid, ConfigFilePath));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
             }
+
+            var sectionElement = GetSection(section);
+
+            if (sectionElement != null)
+            {
+                var success = true;
+
+                foreach (var item in sectionElement.Items)
+                {
+                    try
+                    {
+                        Remove(section, item);
+                    }
+                    catch
+                    {
+                        success = false;
+                    }
+                }
+
+                SaveToDisk();
+
+                return success;
+            }
+
+            return false;
         }
+
+        private SettingValue TransformAddItem(AddItem addItem, bool isPath = false)
+        {
+            var value = isPath ? addItem.GetValueAsPath() : addItem.Value;
+            var originalValue = addItem.Attributes[ConfigurationConstants.ValueAttribute];
+
+            var settingValue = new SettingValue(addItem.Key, value, origin: this, isMachineWide: addItem.Origin?.IsMachineWide ?? false, originalValue: originalValue, priority: 0);
+
+            foreach (var attribute in addItem.Attributes)
+            {
+                // Add all attributes other than ConfigurationContants.KeyAttribute and ConfigurationContants.ValueAttribute to AdditionalValues
+                if (!string.Equals(attribute.Key, ConfigurationConstants.KeyAttribute, StringComparison.Ordinal) &&
+                    !string.Equals(attribute.Key, ConfigurationConstants.ValueAttribute, StringComparison.Ordinal))
+                {
+                    settingValue.AdditionalData[attribute.Key] = attribute.Value;
+                }
+            }
+
+            return settingValue;
+        }
+
+        private AddItem TransformSettingValue(SettingValue value)
+        {
+            return new AddItem(value.Key, value.Value, new ReadOnlyDictionary<string, string>(value.AdditionalData));
+        }
+
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

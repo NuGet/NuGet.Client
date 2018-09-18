@@ -365,7 +365,7 @@ namespace NuGet.CommandLine
                 return new RestoreSummary(
                     result.Restored,
                     "packages.config projects",
-                    Settings.Priority.Select(x => Path.Combine(x.Root, x.FileName)),
+                    SettingsUtility.GetConfigFilePaths(Settings),
                     packageSources.Select(x => x.Source),
                     installCount,
                     collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)));

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using FluentAssertions;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -143,6 +144,51 @@ namespace NuGet.Configuration.Test
                 validAuthenticationTypesText: null);
 
             Assert.Empty(credentials.ValidAuthenticationTypes);
+        }
+
+        [Fact]
+        public void AsCredentialsItem_WithClearTextPassword_WorksCorrectly()
+        {
+            var credentials = new PackageSourceCredential(
+                "source",
+                "user",
+                "password",
+                isPasswordClearText: false,
+                validAuthenticationTypesText: null);
+
+            var expectedItem = new CredentialsItem("source", "user", "password", isPasswordClearText: false, validAuthenticationTypes: null);
+
+            credentials.AsCredentialsItem().DeepEquals(expectedItem).Should().BeTrue();
+        }
+
+        [Fact]
+        public void AsCredentialsItem_WithPassword_WorksCorrectly()
+        {
+            var credentials = new PackageSourceCredential(
+                "source",
+                "user",
+                "password",
+                isPasswordClearText: true,
+                validAuthenticationTypesText: null);
+
+            var expectedItem = new CredentialsItem("source", "user", "password", isPasswordClearText: true, validAuthenticationTypes: null);
+
+            credentials.AsCredentialsItem().DeepEquals(expectedItem).Should().BeTrue();
+        }
+
+        [Fact]
+        public void AsCredentialsItem_WithAuthenticationTypes_WorksCorrectly()
+        {
+            var credentials = new PackageSourceCredential(
+                "source",
+                "user",
+                "password",
+                isPasswordClearText: false,
+                validAuthenticationTypesText: "basic, negotiate");
+
+            var expectedItem = new CredentialsItem("source", "user", "password", isPasswordClearText: false, validAuthenticationTypes: "basic, negotiate");
+
+            credentials.AsCredentialsItem().DeepEquals(expectedItem).Should().BeTrue();
         }
     }
 }

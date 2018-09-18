@@ -48,8 +48,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             var settings = Mock.Of<ISettings>();
             Mock.Get(settings)
-                .Setup(x => x.GetValue("config", "globalPackagesFolder", true))
-                .Returns(() => "solution/packages");
+                .Setup(x => x.GetSection("config"))
+                .Returns(() => new VirtualSettingSection("config",
+                    new AddItem("globalPackagesFolder", "solution/packages")));
 
             var target = new VsPathContextProvider(
                 settings,
@@ -73,12 +74,11 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             var settings = new Mock<ISettings>();
             settings
-                .Setup(x => x.GetSettingValues("fallbackPackageFolders", true))
-                .Returns(() => new List<SettingValue>
-                {
-                    new SettingValue("a", "solution/packagesA", isMachineWide: false),
-                    new SettingValue("b", "solution/packagesB", isMachineWide: false)
-                });
+                .Setup(x => x.GetSection("fallbackPackageFolders"))
+                .Returns(() => new VirtualSettingSection("fallbackPackageFolders",
+                    new AddItem("a", "solution/packagesA"),
+                    new AddItem("b", "solution/packagesB")
+                ));
 
             var target = new VsPathContextProvider(
                 settings.Object,
@@ -194,8 +194,10 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
                 var settings = Mock.Of<ISettings>();
                 Mock.Get(settings)
-                    .Setup(x => x.GetValue("config", "globalPackagesFolder", true))
-                    .Returns(() => userPackageFolder);
+                    .Setup(x => x.GetSection("config"))
+                    .Returns(() => new VirtualSettingSection("config",
+                        new AddItem("globalPackagesFolder", userPackageFolder),
+                        new AddItem("repositoryPath", userPackageFolder)));
 
                 var target = new VsPathContextProvider(
                     settings,
@@ -241,8 +243,10 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
                 var settings = Mock.Of<ISettings>();
                 Mock.Get(settings)
-                    .Setup(x => x.GetValue("config", "globalPackagesFolder", true))
-                    .Returns(() => userPackageFolder);
+                    .Setup(x => x.GetSection("config"))
+                    .Returns(() => new VirtualSettingSection("config",
+                        new AddItem("globalPackagesFolder", userPackageFolder),
+                        new AddItem("repositoryPath", userPackageFolder)));
 
                 var target = new VsPathContextProvider(
                     settings,
@@ -287,8 +291,11 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
                 var settings = Mock.Of<ISettings>();
                 Mock.Get(settings)
-                    .Setup(x => x.GetValue("config", "globalPackagesFolder", true))
-                    .Returns(() => "solution/packages");
+                    .Setup(x => x.GetSection("config"))
+                    .Returns(() => new VirtualSettingSection("config",
+                        new AddItem("globalPackagesFolder", "solution/packages")));
+                Mock.Get(settings);
+ 
 
                 var solutionManager = new Mock<IVsSolutionManager>();
                 solutionManager
@@ -321,12 +328,11 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
                 var settings = new Mock<ISettings>();
                 settings
-                    .Setup(x => x.GetSettingValues("fallbackPackageFolders", true))
-                    .Returns(() => new List<SettingValue>
-                    {
-                    new SettingValue("a", "solution/packagesA", isMachineWide: false),
-                    new SettingValue("b", "solution/packagesB", isMachineWide: false)
-                    });
+                .Setup(x => x.GetSection("fallbackPackageFolders"))
+                .Returns(() => new VirtualSettingSection("fallbackPackageFolders",
+                    new AddItem("a", "solution/packagesA"),
+                    new AddItem("b", "solution/packagesB")
+                ));
 
                 var solutionManager = new Mock<IVsSolutionManager>();
                 solutionManager
@@ -371,8 +377,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
                 var settings = Mock.Of<ISettings>();
                 Mock.Get(settings)
-                    .Setup(x => x.GetValue("config", "repositoryPath", true))
-                    .Returns(() => solutionPackageFolder);
+                    .Setup(x => x.GetSection("config"))
+                    .Returns(() => new VirtualSettingSection("config",
+                        new AddItem("repositoryPath", solutionPackageFolder)));
 
                 var target = new VsPathContextProvider(
                 settings,

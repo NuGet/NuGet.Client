@@ -49,10 +49,10 @@ namespace NuGet.Commands
         {
             // try searching API key by endpoint first
             // needed to support config key mappings like 'https://www.nuget.org/api/v2/package'
-            var apiKey = SettingsUtility.GetDecryptedValue(settings, ConfigurationConstants.ApiKeys, endpoint);
+            var apiKey = SettingsUtility.GetDecryptedValueForAddItem(settings, ConfigurationConstants.ApiKeys, endpoint);
 
             // if not found try finding it by source url
-            apiKey = apiKey ?? SettingsUtility.GetDecryptedValue(settings, ConfigurationConstants.ApiKeys, source);
+            apiKey = apiKey ?? SettingsUtility.GetDecryptedValueForAddItem(settings, ConfigurationConstants.ApiKeys, source);
 
             // fallback for a case of nuget.org source
             // try to retrieve an api key mapped to a default "gallery" url
@@ -60,7 +60,7 @@ namespace NuGet.Commands
                 && source.IndexOf(NuGetConstants.NuGetHostName, StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 var defaultConfigKey = isSymbolApiKey ? NuGetConstants.DefaultSymbolServerUrl : NuGetConstants.DefaultGalleryServerUrl;
-                apiKey = SettingsUtility.GetDecryptedValue(settings, ConfigurationConstants.ApiKeys, defaultConfigKey);
+                apiKey = SettingsUtility.GetDecryptedValueForAddItem(settings, ConfigurationConstants.ApiKeys, defaultConfigKey);
             }
 
             // return an API key when found or the default one

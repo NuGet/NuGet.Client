@@ -156,7 +156,7 @@ namespace NuGet.PackageManagement.Test
 
                 var testLogger = new TestLogger();
                 var settings = new Settings(rootFolder);
-                settings.SetValue(SettingsUtility.ConfigSection, "globalPackagesFolder", packagesFolder);
+                settings.AddOrUpdate(ConfigurationConstants.Config, new AddItem("globalPackagesFolder", packagesFolder));
 
                 var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
 
@@ -322,7 +322,7 @@ namespace NuGet.PackageManagement.Test
 
                 var testLogger = new TestLogger();
                 var settings = new Settings(rootFolder);
-                settings.SetValue(SettingsUtility.ConfigSection, "globalPackagesFolder", packagesFolder);
+                settings.AddOrUpdate(ConfigurationConstants.Config, new AddItem("globalPackagesFolder", packagesFolder));
 
                 var solutionManager = new TestSolutionManager(false);
                 solutionManager.NuGetProjects.Add(project);
@@ -403,7 +403,7 @@ namespace NuGet.PackageManagement.Test
 
                 var testLogger = new TestLogger();
                 var settings = new Settings(rootFolder);
-                settings.SetValue(SettingsUtility.ConfigSection, "globalPackagesFolder", packagesFolder);
+                settings.AddOrUpdate(ConfigurationConstants.Config, new AddItem("globalPackagesFolder", packagesFolder));
 
                 var providersCache = new RestoreCommandProvidersCache();
                 var restoreContext = new DependencyGraphCacheContext(testLogger, settings);

@@ -5742,7 +5742,7 @@ namespace NuGet.Test
                 var Settings = new Settings(settingsdir);
                 foreach (var source in sourceRepositoryProvider.GetRepositories())
                 {
-                    Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+                    Settings.AddOrUpdate(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
                 }
 
                 var token = CancellationToken.None;
@@ -5947,7 +5947,7 @@ namespace NuGet.Test
                 var Settings = new Settings(settingsdir);
                 foreach (var source in sourceRepositoryProvider.GetRepositories())
                 {
-                    Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+                    Settings.AddOrUpdate(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
                 }
 
                 var token = CancellationToken.None;
@@ -6622,7 +6622,7 @@ namespace NuGet.Test
                 var settings = Settings.LoadSpecificSettings(testSolutionManager.SolutionDirectory, "NuGet.Config");
                 foreach (var source in sourceRepositoryProvider.GetRepositories())
                 {
-                    settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+                    settings.AddOrUpdate(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
                 }
 
                 var token = CancellationToken.None;

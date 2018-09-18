@@ -11,11 +11,11 @@ using System.Management.Automation.Host;
 using System.Text;
 using System.Threading;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.ProjectModel;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -409,9 +409,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         protected DependencyBehavior GetDependencyBehaviorFromConfig()
         {
-            string dependencySetting = ConfigSettings.GetValue("config", "dependencyversion");
+            var dependencySetting = SettingsUtility.GetConfigValue(ConfigSettings, ConfigurationConstants.DependencyVersion);
             DependencyBehavior behavior;
-            bool success = Enum.TryParse(dependencySetting, true, out behavior);
+            var success = Enum.TryParse(dependencySetting, ignoreCase: true, result: out behavior);
             if (success)
             {
                 return behavior;
