@@ -3044,6 +3044,52 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void CallingSetValueWillACreateASourceItemIfCorrectSection()
+        {
+            // Arrange
+            var configFile = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""source1"" value=""http://source1.test"" />
+  </packageSources>
+</configuration>";
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                settings.SetValue("packageSources", "source2", "http://source2.test");
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""source1"" value=""http://source1.test"" />
+    <add key=""source2"" value=""http://source2.test"" />
+  </packageSources>
+</configuration>";
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)).Replace("\r\n", "\n"));
+
+                var section = settings.GetSection("packageSources");
+                section.Should().NotBeNull();
+                section.Items.Should().NotBeEmpty();
+                section.Items.Count.Should().Be(2);
+
+                var items = section.Items.ToList();
+                items[0].Should().BeOfType<SourceItem>();
+                (items[0] as SourceItem).Key.Should().Be("source1");
+                (items[0] as SourceItem).Value.Should().Be("http://source1.test");
+
+                items[1].Should().BeOfType<SourceItem>();
+                (items[1] as SourceItem).Key.Should().Be("source2");
+                (items[1] as SourceItem).Value.Should().Be("http://source2.test");
+            }
+        }
+
+        [Fact]
         public void CallingSetValueWillOverrideValueIfKeyExists()
         {
             // Arrange
