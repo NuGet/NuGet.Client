@@ -1197,12 +1197,25 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         private ISettings PopulateSettingsWithSources(SourceRepositoryProvider sourceRepositoryProvider, TestDirectory settingsDirectory)
         {
-            var Settings = new Settings(settingsDirectory);
-            Settings.DeleteSection(ConfigurationConstants.PackageSources);
-            foreach (var source in sourceRepositoryProvider.GetRepositories())
-                Settings.SetValue(ConfigurationConstants.PackageSources, ConfigurationConstants.PackageSources, source.PackageSource.Source);
+            var settings = new Settings(settingsDirectory);
+            var section = settings.GetSection(ConfigurationConstants.PackageSources);
 
-            return Settings;
+            if (section != null && section.Items.Any())
+            {
+                foreach (var item in section.Items)
+                {
+                    settings.Remove(ConfigurationConstants.PackageSources, item);
+                }
+            }
+
+            foreach (var source in sourceRepositoryProvider.GetRepositories())
+            {
+                settings.AddOrUpdate(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
+            }
+
+            settings.SaveToDisk();
+
+            return settings;
         }
 
         private SourceRepositoryProvider CreateSource(List<SourcePackageDependencyInfo> packages)
