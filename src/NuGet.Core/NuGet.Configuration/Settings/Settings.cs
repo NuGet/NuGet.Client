@@ -860,7 +860,13 @@ namespace NuGet.Configuration
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(key));
             }
 
-            AddOrUpdate(section, new AddItem(key, value));
+            var itemToAdd = new AddItem(key, value);
+            if (string.Equals(section, ConfigurationConstants.PackageSources, StringComparison.OrdinalIgnoreCase))
+            {
+                itemToAdd = new SourceItem(key, value);
+            }
+
+            AddOrUpdate(section, itemToAdd);
             SaveToDisk();
         }
 
@@ -879,7 +885,7 @@ namespace NuGet.Configuration
 
             foreach (var value in values)
             {
-                AddOrUpdate(section, TransformSettingValue(value));
+                AddOrUpdate(section, TransformSettingValue(section, value));
             }
 
             SaveToDisk();
@@ -900,7 +906,7 @@ namespace NuGet.Configuration
 
             foreach (var value in values)
             {
-                AddOrUpdate(section, TransformSettingValue(value));
+                AddOrUpdate(section, TransformSettingValue(section, value));
             }
 
             SaveToDisk();
@@ -935,7 +941,7 @@ namespace NuGet.Configuration
                 }
                 else
                 {
-                    itemToAdd = new UnknownItem(subsection, attributes: null, children: values.Select(v => TransformSettingValue(v)));
+                    itemToAdd = new UnknownItem(subsection, attributes: null, children: values.Select(v => TransformSettingValue(subsection, v)));
                 }
 
                 AddOrUpdate(section, itemToAdd);
@@ -1033,7 +1039,7 @@ namespace NuGet.Configuration
                     {
                         foreach (var value in values)
                         {
-                            unknown.Add(TransformSettingValue(value));
+                            unknown.Add(TransformSettingValue(subsection, value));
                         }
 
                         updatedCurrentElement = true;
@@ -1056,7 +1062,7 @@ namespace NuGet.Configuration
 
                 if (isItemUnknown)
                 {
-                    item = new UnknownItem(subsection, attributes: null, children: values.Select(v => TransformSettingValue(v)));
+                    item = new UnknownItem(subsection, attributes: null, children: values.Select(v => TransformSettingValue(subsection, v)));
                 }
 
                 AddOrUpdate(section, item);
@@ -1182,8 +1188,14 @@ namespace NuGet.Configuration
             return settingValue;
         }
 
-        private AddItem TransformSettingValue(SettingValue value)
+        private AddItem TransformSettingValue(string section, SettingValue value)
         {
+            if (string.Equals(section, ConfigurationConstants.PackageSources, StringComparison.OrdinalIgnoreCase))
+            {
+                value.AdditionalData.TryGetValue(ConfigurationConstants.ProtocolVersionAttribute, out var protocol);
+                return new SourceItem(value.Key, value.Value, protocol);
+            }
+
             return new AddItem(value.Key, value.Value, new ReadOnlyDictionary<string, string>(value.AdditionalData));
         }
 
