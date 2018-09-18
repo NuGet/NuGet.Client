@@ -3,13 +3,14 @@
 
 using System;
 using System.Globalization;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
     /// <summary>
     /// Represents credentials required to authenticate user within package source web requests.
     /// </summary>
-    public class PackageSourceCredential
+    public class PackageSourceCredential : IEquatable<PackageSourceCredential>
     {
         /// <summary>
         /// User name
@@ -25,6 +26,8 @@ namespace NuGet.Configuration
         /// Indicates if password is stored in clear text.
         /// </summary>
         public bool IsPasswordClearText { get; }
+
+        private readonly Lazy<int> _hashCode;
 
         /// <summary>
         /// Retrieves password in clear text. Decrypts on-demand.
@@ -76,6 +79,18 @@ namespace NuGet.Configuration
             Username = username ?? throw new ArgumentNullException(nameof(username));
             PasswordText = passwordText;
             IsPasswordClearText = isPasswordClearText;
+
+            _hashCode = new Lazy<int>(() =>
+            {
+                var combiner = new HashCodeCombiner();
+
+                combiner.AddObject(Source);
+                combiner.AddObject(Username);
+                combiner.AddObject(PasswordText);
+                combiner.AddObject(IsPasswordClearText);
+
+                return combiner.GetHashCode();
+            });
         }
 
         /// <summary>
@@ -118,6 +133,40 @@ namespace NuGet.Configuration
         internal PackageSourceCredential Clone()
         {
             return new PackageSourceCredential(Source, Username, PasswordText, IsPasswordClearText);
+        }
+
+
+        public CredentialsItem AsCredentialsItem()
+        {
+            return new CredentialsItem(Source, Username, PasswordText, IsPasswordClearText);
+        }
+
+        public bool Equals(PackageSourceCredential other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return string.Equals(Source, other.Source, StringComparison.Ordinal) &&
+                string.Equals(Username, other.Username, StringComparison.Ordinal) &&
+                string.Equals(PasswordText, other.PasswordText, StringComparison.Ordinal) &&
+                IsPasswordClearText == other.IsPasswordClearText;
+        }
+
+        public override bool Equals(object other)
+        {
+            return Equals(other as PackageSourceCredential);
+        }
+
+        public override int GetHashCode()
+        {
+            return _hashCode.Value;
         }
     }
 }

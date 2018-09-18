@@ -41,14 +41,14 @@ namespace NuGet.CommandLine
                 source = SourceProvider.ResolveAndValidateSource(Source);
             }
 
-            SettingsUtility.SetEncryptedValue(Settings, ConfigurationConstants.ApiKeys, source, apiKey);
+            SettingsUtility.SetEncryptedValueForAddItem(Settings, ConfigurationConstants.ApiKeys, source, apiKey);
 
             string sourceName = CommandLineUtility.GetSourceDisplayName(source);
 
             // Setup the symbol server key
             if (setSymbolServerKey)
             {
-                SettingsUtility.SetEncryptedValue(Settings, ConfigurationConstants.ApiKeys, NuGetConstants.DefaultSymbolServerUrl, apiKey);
+                SettingsUtility.SetEncryptedValueForAddItem(Settings, ConfigurationConstants.ApiKeys, NuGetConstants.DefaultSymbolServerUrl, apiKey);
                 Console.WriteLine(LocalizedResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved"),
                                   apiKey,
                                   sourceName,

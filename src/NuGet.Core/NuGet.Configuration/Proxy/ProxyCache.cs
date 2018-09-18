@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,10 +36,7 @@ namespace NuGet.Configuration
                 new EnvironmentVariableWrapper());
         }
 
-        public static ProxyCache Instance
-        {
-            get { return _instance.Value; }
-        }
+        public static ProxyCache Instance => _instance.Value;
 
         public Guid Version { get; private set; } = Guid.NewGuid();
 
@@ -83,7 +80,7 @@ namespace NuGet.Configuration
         public WebProxy GetUserConfiguredProxy()
         {
             // Try reading from the settings. The values are stored as 3 config values http_proxy, http_proxy.user, http_proxy.password
-            var host = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.HostKey);
+            var host = SettingsUtility.GetConfigValue(_settings, ConfigurationConstants.HostKey);
             if (!string.IsNullOrEmpty(host))
             {
                 // The host is the minimal value we need to assume a user configured proxy.
@@ -91,8 +88,8 @@ namespace NuGet.Configuration
 
                 if (RuntimeEnvironmentHelper.IsWindows)
                 {
-                    var userName = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.UserKey);
-                    var password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, ConfigurationConstants.PasswordKey);
+                    var userName = SettingsUtility.GetConfigValue(_settings, ConfigurationConstants.UserKey);
+                    var password = SettingsUtility.GetDecryptedValueForAddItem(_settings, ConfigurationConstants.Config, ConfigurationConstants.PasswordKey);
 
                     if (!string.IsNullOrEmpty(userName)
                         && !string.IsNullOrEmpty(password))
@@ -100,8 +97,7 @@ namespace NuGet.Configuration
                         webProxy.Credentials = new NetworkCredential(userName, password);
                     }
                 }
-
-                var noProxy = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.NoProxy);
+                var noProxy = SettingsUtility.GetConfigValue(_settings, ConfigurationConstants.NoProxy);
                 if (!string.IsNullOrEmpty(noProxy))
                 {
                     // split comma-separated list of domains
