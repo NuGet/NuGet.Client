@@ -15,7 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
-    <Reference Include="System.IO.Compression, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
     <Reference Include="System.Runtime"/>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Net.Http" />
@@ -27,6 +26,7 @@
     <ProjectReference Include="..\NuGet.ProjectModel\NuGet.ProjectModel.csproj" />
     <ProjectReference Include="..\NuGet.Packaging\NuGet.Packaging.csproj" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" PrivateAssets="none" IncludeAssets="all"/>
+    <PackageReference Include="System.IO.Compression" Version="4.0.0"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
