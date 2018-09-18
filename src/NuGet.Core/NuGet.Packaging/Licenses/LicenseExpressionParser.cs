@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace NuGet.Packaging.Licenses
+namespace NuGet.Packaging
 {
     public class LicenseExpressionParser
     {
