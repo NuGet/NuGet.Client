@@ -1,26 +1,5 @@
 # Contains all the utility methods used by the performance tests.
 
-    # Downloads a nuget exe in the given directory.
-    # The exe will be found at $directory/$version/nuget.exe
-    function DownloadNuGetExe([string]$version, [string]$downloadDirectory)
-    {        
-        $NuGetExeUriRoot = "https://dist.nuget.org/win-x86-commandline/v"
-        $NuGetExeSuffix = "/nuget.exe"
-
-        $url = $NuGetExeUriRoot + $version + $NuGetExeSuffix
-        $Path =  $downloadDirectory + "\" + $version
-        $ExePath = $Path + "\nuget.exe"
-
-        if (!(Test-Path($ExePath)))
-        {
-            Log "Downloading $url to $ExePath" -color "Green"
-            New-Item -ItemType Directory -Force -Path $Path > $null
-            Invoke-WebRequest -Uri $url -OutFile $ExePath
-        }
-        return GetAbsolutePath $ExePath
-    }
-
-    
     # The format of the URL is assumed to be https://github.com/NuGet/NuGet.Client.git. The result would be NuGet-Client-git
     function GenerateNameFromGitUrl([string]$gitUrl)
     {
@@ -30,20 +9,20 @@
     # Appends the log time in front of the log statement with the color specified. 
     function Log([string]$logStatement, [string]$color)
     {
-        if(-not ([string]::IsNullOrEmpty($color)))
+        if([string]::IsNullOrEmpty($color))
         {
-            Write-Host "$($(Get-Date).ToString()): $logStatement" -ForegroundColor $color
+            Write-Host "$($(Get-Date).ToString()): $logStatement"
         }
         else
         { 
-            Write-Host "$($(Get-Date).ToString()): $logStatement"
+            Write-Host "$($(Get-Date).ToString()): $logStatement" -ForegroundColor $color
         }
     }
 
     # Given a relative path, gets the absolute path from the current directory
     function GetAbsolutePath([string]$Path)
     {
-        $Path = [System.IO.Path]::Combine(((pwd).Path), ($Path));
+        $Path = [System.IO.Path]::Combine((pwd).Path, $Path);
         $Path = [System.IO.Path]::GetFullPath($Path);
         return $Path;
     }
@@ -83,7 +62,7 @@
     # Determines if the client is dotnet.exe by checking the path.
     function GetClientName([string]$nugetClient)
     {
-        return $nugetClient.Substring($($nugetClient.LastIndexOf([System.IO.Path]::DirectorySeparatorChar) + 1))
+        return [System.IO.Path]::GetFileName($nugetClient)
     }
 
     function IsClientDotnetExe([string]$nugetClient)
@@ -94,14 +73,14 @@
     # Downloads the repository at the given path.
     function DownloadRepository([string]$repository, [string]$commitHash, [string]$sourceDirectoryPath)
     {
-        if(!(Test-Path $sourceDirectoryPath))
+        if(Test-Path $sourceDirectoryPath)
         {
-                git clone $repository $sourceDirectoryPath
-                git -c $sourceDirectoryPath checkout $commitHash
+            Log "Skipping the cloning of $repository as $sourceDirectoryPath is not empty" -color "Yellow"
         }
         else 
         {
-                Log "Skipping the cloning of $repository as $sourceDirectoryPath is not empty" -color "Yellow"
+            git clone $repository $sourceDirectoryPath
+            git -c $sourceDirectoryPath checkout $commitHash
         }
     }
     
@@ -168,7 +147,7 @@
         else 
         {
             $versionQuery = . $nugetClient
-            $version = $(($versionQuery -split '\n')[0]).Substring(15)
+            $version = $(($versionQuery -split '\n')[0]).Substring("NuGet Version: ".Length)
             return $version
         }
     }

@@ -17,7 +17,7 @@ Param(
     
     if ([string]::IsNullOrEmpty($testDirectoryPath)) 
     {
-        $testDirectoryPath = $([System.IO.Path]::Combine($env:TEMP, "np"))
+        $testDirectoryPath = [System.IO.Path]::Combine($env:TEMP, "np")
     }
 
     Log "Clients: $nugetClients" "green"
@@ -65,14 +65,3 @@ Param(
             Remove-Item -r -force $testDirectoryPath -ErrorAction Ignore > $null
         }
     }
-
-    # Add logic to use the locally built NuGet.exe 
-    # Log "Attempting to use the fallback option." "yellow"
-            
-    # $relativePath = $([System.IO.Path]::Combine("..", "..", "artifacts", "VS15", "NuGet.exe"))
-    # $nugetClient = GetAbsolutePath $([System.IO.Path]::Combine($PSScriptRoot, $relativePath))
-    # if (!$(Test-Path $nugetClient)) 
-    # {
-    #     Log "The project has not been built and there is not NuGet.exe available at $nugetClient. Either build the exe or pass a path to a NuGet client."
-    # }
-    # Log "Using the fallback client from $nugetClient"
