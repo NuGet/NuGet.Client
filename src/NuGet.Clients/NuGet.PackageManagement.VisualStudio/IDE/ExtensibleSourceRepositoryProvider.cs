@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     _initialized = true;
 
-                    _packageSourceProvider = new Configuration.PackageSourceProvider(_settings.Value, migratePackageSources: null);
+                    _packageSourceProvider = new Configuration.PackageSourceProvider(_settings.Value);
 
                     // Hook up event to refresh package sources when the package sources changed
                     _packageSourceProvider.PackageSourcesChanged += (sender, e) => { ResetRepositories(); };

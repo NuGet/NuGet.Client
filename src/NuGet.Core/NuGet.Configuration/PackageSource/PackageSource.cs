@@ -91,16 +91,6 @@ namespace NuGet.Configuration
             }
         }
 
-        /// <summary>
-        /// Gets the <see cref="ISettings"/> that this source originated from. May be null.
-        /// </summary>
-        public ISettings Origin { get; set; }
-
-        /// <summary>
-        /// Corresponding trusted source details. Null if the package source does not have trusted sources information.
-        /// </summary>
-        public TrustedSource TrustedSource { get; set; }
-
         public PackageSource(string source)
             : this(source, source, isEnabled: true)
         {
@@ -129,6 +119,16 @@ namespace NuGet.Configuration
             IsOfficial = isOfficial;
             IsPersistable = isPersistable;
             _hashCode = Name.ToUpperInvariant().GetHashCode() * 3137 + Source.ToUpperInvariant().GetHashCode();
+        }
+
+        public SourceItem AsSourceItem()
+        {
+            string protocolVersion = null;
+            if (ProtocolVersion != DefaultProtocolVersion)
+            {
+                protocolVersion = $"{ProtocolVersion}";
+            }
+            return new SourceItem(Name, Source, protocolVersion);
         }
 
         public bool Equals(PackageSource other)
@@ -170,7 +170,6 @@ namespace NuGet.Configuration
                 Credentials = Credentials?.Clone(),
                 IsMachineWide = IsMachineWide,
                 ProtocolVersion = ProtocolVersion,
-                TrustedSource = TrustedSource?.Clone()
             };
         }
     }

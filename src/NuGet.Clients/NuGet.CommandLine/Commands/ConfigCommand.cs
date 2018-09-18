@@ -1,8 +1,9 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.CommandLine
@@ -12,13 +13,9 @@ namespace NuGet.CommandLine
     public class ConfigCommand : Command
     {
         private const string HttpPasswordKey = "http_proxy.password";
-        private readonly Dictionary<string, string> _setValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         [Option(typeof(NuGetCommand), "ConfigCommandSetDesc")]
-        public Dictionary<string, string> Set
-        {
-            get { return _setValues; }
-        }
+        public Dictionary<string, string> Set { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         [Option(typeof(NuGetCommand), "ConfigCommandAsPathDesc")]
         public bool AsPath
@@ -34,27 +31,27 @@ namespace NuGet.CommandLine
                 throw new InvalidOperationException(LocalizedResourceManager.GetString("Error_SettingsIsNull"));
             }
 
-            string getKey = Arguments.FirstOrDefault();
+            var getKey = Arguments.FirstOrDefault();
             if (Set.Any())
             {
                 foreach (var property in Set)
                 {
-                    if (String.IsNullOrEmpty(property.Value))
+                    if (string.IsNullOrEmpty(property.Value))
                     {
                         SettingsUtility.DeleteConfigValue(Settings, property.Key);
                     }
                     else
                     {
                         // Hack: Need a nicer way for the user to say encrypt this.
-                        bool encrypt = HttpPasswordKey.Equals(property.Key, StringComparison.OrdinalIgnoreCase);
+                        var encrypt = HttpPasswordKey.Equals(property.Key, StringComparison.OrdinalIgnoreCase);
                         SettingsUtility.SetConfigValue(Settings, property.Key, property.Value, encrypt);
                     }
                 }
             }
-            else if (!String.IsNullOrEmpty(getKey))
+            else if (!string.IsNullOrEmpty(getKey))
             {
-                string value = SettingsUtility.GetConfigValue(Settings, getKey, isPath: AsPath);
-                if (String.IsNullOrEmpty(value))
+                var value = SettingsUtility.GetConfigValue(Settings, getKey, isPath: AsPath);
+                if (string.IsNullOrEmpty(value))
                 {
                     Console.WriteError(LocalizedResourceManager.GetString("ConfigCommandKeyNotFound"), getKey);
                 }

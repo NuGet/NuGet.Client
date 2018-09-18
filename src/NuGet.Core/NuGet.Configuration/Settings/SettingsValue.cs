@@ -11,15 +11,16 @@ namespace NuGet.Configuration
     /// <summary>
     /// Represents a single setting value in a settings file
     /// </summary>
+    [Obsolete("SettingValue is deprecated. Please use AddItem instead")]
     public class SettingValue
     {
-        public SettingValue(string key, 
-                            string value, 
-                            bool isMachineWide, 
+        public SettingValue(string key,
+                            string value,
+                            bool isMachineWide,
                             int priority = 0)
-            : this(key, 
-                  value, 
-                  origin: null, 
+            : this(key,
+                  value,
+                  origin: null,
                   isMachineWide: isMachineWide,
                   originalValue: value,
                   priority: priority)
@@ -29,18 +30,18 @@ namespace NuGet.Configuration
                             string value,
                             ISettings origin,
                             bool isMachineWide,
-                            int priority = 0) 
+                            int priority = 0)
             : this(key,
                    value,
                    origin: origin,
-                   isMachineWide : isMachineWide,
-                   originalValue : value,
+                   isMachineWide: isMachineWide,
+                   originalValue: value,
                    priority: priority)
         { }
 
-        public SettingValue(string key, 
-                            string value, 
-                            ISettings origin, 
+        public SettingValue(string key,
+                            string value,
+                            ISettings origin,
                             bool isMachineWide,
                             string originalValue,
                             int priority = 0)
@@ -52,7 +53,7 @@ namespace NuGet.Configuration
             Priority = priority;
             OriginalValue = originalValue;
             AdditionalData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }        
+        }
 
         /// <summary>
         /// Represents the key of the setting

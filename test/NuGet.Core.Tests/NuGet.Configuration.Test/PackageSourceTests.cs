@@ -36,5 +36,18 @@ namespace NuGet.Configuration
             result.Credentials.Username.ShouldBeEquivalentTo(source.Credentials.Username);
             result.Credentials.IsPasswordClearText.ShouldBeEquivalentTo(source.Credentials.IsPasswordClearText);
         }
+
+        [Fact]
+        public void AsSourceItem_WorksCorrectly()
+        {
+            var source = new PackageSource("Source", "SourceName", isEnabled: false)
+            {
+                ProtocolVersion = 43
+            };
+
+            var expectedItem = new SourceItem("SourceName", "Source", "43");
+
+            source.AsSourceItem().DeepEquals(expectedItem).Should().BeTrue();
+        }
     }
 }

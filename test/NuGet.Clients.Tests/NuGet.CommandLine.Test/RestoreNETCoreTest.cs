@@ -1,6 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -9,7 +11,6 @@ using System.Xml.Linq;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -5778,6 +5779,96 @@ namespace NuGet.CommandLine.Test
                 r2.Success.Should().BeTrue();
                 r2.AllOutput.Should().NotContain("brokenLocalSource");
 
+            }
+        }
+
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyOrderOfConfigsAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // create a config file, no disabled sources
+                var projectDir = Path.GetDirectoryName(projectA.ProjectPath);
+
+                var configPath = Path.Combine(pathContext.SolutionRoot, "NuGet.Config");
+
+                var doc = new XDocument();
+                var configuration = new XElement(XName.Get("configuration"));
+                doc.Add(configuration);
+
+                var packageSources = new XElement(XName.Get("packageSources"));
+                configuration.Add(packageSources);
+
+                packageSources.Add(new XElement(XName.Get("clear")));
+
+                var localSource = new XElement(XName.Get("add"));
+                localSource.Add(new XAttribute(XName.Get("key"), "localSource"));
+                localSource.Add(new XAttribute(XName.Get("value"), pathContext.PackageSource));
+                packageSources.Add(localSource);
+
+                File.WriteAllText(configPath, doc.ToString());
+
+                var solutionParent = Directory.GetParent(pathContext.SolutionRoot);
+                var configPath2 = Path.Combine(solutionParent.FullName, "NuGet.Config");
+
+                var doc2 = new XDocument();
+                var configuration2 = new XElement(XName.Get("configuration"));
+                doc2.Add(configuration2);
+
+                var packageSources2 = new XElement(XName.Get("packageSources"));
+                configuration2.Add(packageSources2);
+
+                packageSources2.Add(new XElement(XName.Get("clear")));
+
+                var brokenSource = new XElement(XName.Get("add"));
+                brokenSource.Add(new XAttribute(XName.Get("key"), "brokenLocalSource"));
+                brokenSource.Add(new XAttribute(XName.Get("value"), pathContext.PackageSource + "brokenLocalSource"));
+                packageSources2.Add(brokenSource);
+
+                // Disable that config
+                var disabledPackageSources = new XElement(XName.Get("disabledPackageSources"));
+                var disabledBrokenSource = new XElement(XName.Get("add"));
+                disabledBrokenSource.Add(new XAttribute(XName.Get("key"), "brokenLocalSource"));
+                disabledBrokenSource.Add(new XAttribute(XName.Get("value"), "true"));
+                disabledPackageSources.Add(disabledBrokenSource);
+
+                configuration2.Add(disabledPackageSources);
+
+                File.WriteAllText(configPath2, doc2.ToString());
+
+                // Act 
+                var r2 = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r2.Success.Should().BeTrue();
+
+                // Configs closer to the user should be first
+                Regex.Replace(r2.AllOutput, @"\s", "").Should().Contain($"NuGetConfigfilesused:{configPath}{configPath2}");
             }
         }
 

@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
@@ -14,7 +12,8 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(Configuration.IMachineWideSettings))]
     public class VsMachineWideSettings : Configuration.IMachineWideSettings
     {
-        private readonly AsyncLazy<Configuration.Settings[]> _settings;
+        private readonly AsyncLazy<Configuration.ISettings> _settings;
+        private readonly IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
 
         [ImportingConstructor]
         public VsMachineWideSettings(
@@ -26,7 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            _settings = new AsyncLazy<Configuration.Settings[]>(async () =>
+            _settings = new AsyncLazy<Configuration.ISettings>(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -39,11 +38,11 @@ namespace NuGet.PackageManagement.VisualStudio
                         baseDirectory,
                         "VisualStudio",
                         dte.Version,
-                        dte.GetSKU()).ToArray();
+                        dte.GetSKU());
                 }, 
                 ThreadHelper.JoinableTaskFactory);
         }
 
-        public IEnumerable<Configuration.Settings> Settings => NuGetUIThreadHelper.JoinableTaskFactory.Run(_settings.GetValueAsync);
+        public Configuration.ISettings Settings => NuGetUIThreadHelper.JoinableTaskFactory.Run(_settings.GetValueAsync);
     }
 }

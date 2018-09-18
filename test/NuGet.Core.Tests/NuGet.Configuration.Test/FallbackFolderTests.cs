@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -121,7 +121,7 @@ namespace NuGet.Configuration.Test
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-                Settings settings = new Settings(mockBaseDirectory);
+                var settings = new Settings(mockBaseDirectory);
 
                 // Act
                 var paths = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();

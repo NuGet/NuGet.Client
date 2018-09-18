@@ -91,63 +91,58 @@ namespace NuGet.PackageManagement.VisualStudio
             SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public bool DeleteSection(string section)
+        public SettingSection GetSection(string sectionName)
         {
-            return CanChangeSettings && SolutionSettings.DeleteSection(section);
+            return SolutionSettings.GetSection(sectionName);
         }
 
-        public bool DeleteValue(string section, string key)
-        {
-            return CanChangeSettings && SolutionSettings.DeleteValue(section, key);
-        }
-
-        public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
-        {
-            return SolutionSettings.GetNestedValues(section, subSection);
-        }
-
-        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection)
-        {
-            return SolutionSettings.GetNestedSettingValues(section, subSection);
-        }
-
-        public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
-        {
-            return SolutionSettings.GetSettingValues(section, isPath);
-        }
-
-        public string GetValue(string section, string key, bool isPath = false)
-        {
-            return SolutionSettings.GetValue(section, key, isPath);
-        }
-
-        public IReadOnlyList<string> GetAllSubsections(string section)
-        {
-            return SolutionSettings.GetAllSubsections(section);
-        }
-
-        public string Root => SolutionSettings.Root;
-
-        public string FileName => SolutionSettings.FileName;
-
-        public IEnumerable<ISettings> Priority => SolutionSettings.Priority;
-
-        public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values)
+        public void AddOrUpdate(string sectionName, SettingItem item)
         {
             if (CanChangeSettings)
             {
-                SolutionSettings.SetNestedValues(section, subsection, values);
+                SolutionSettings.AddOrUpdate(sectionName, item);
             }
         }
 
-        public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
+        public void Remove(string sectionName, SettingItem item)
         {
             if (CanChangeSettings)
             {
-                SolutionSettings.SetNestedSettingValues(section, subsection, values);
+                SolutionSettings.Remove(sectionName, item);
             }
         }
 
+        public void SaveToDisk()
+        {
+            if (CanChangeSettings)
+            {
+                SolutionSettings.SaveToDisk();
+            }
+        }
+
+        // The value for SolutionSettings can't possibly be null, but it could be a read-only instance
+        private bool CanChangeSettings => !ReferenceEquals(SolutionSettings, NullSettings.Instance);
+
+        //TODO: Remove deprecated methods https://github.com/NuGet/Home/issues/7294
+
+#pragma warning disable CS0618 // Type or member is obsolete
+
+        [Obsolete("GetValue(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
+        public string GetValue(string section, string key, bool isPath = false) => SolutionSettings.GetValue(section, key, isPath);
+
+        [Obsolete("GetAllSubsections(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
+        public IReadOnlyList<string> GetAllSubsections(string section) => SolutionSettings.GetAllSubsections(section);
+
+        [Obsolete("GetSettingValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
+        public IList<SettingValue> GetSettingValues(string section, bool isPath = false) => SolutionSettings.GetSettingValues(section, isPath);
+
+        [Obsolete("GetNestedValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
+        public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection) => SolutionSettings.GetNestedValues(section, subSection);
+
+        [Obsolete("GetNestedSettingValues(...) is deprecated. Please use GetSection(...) to interact with the setting values instead.")]
+        public IReadOnlyList<SettingValue> GetNestedSettingValues(string section, string subSection) => SolutionSettings.GetNestedSettingValues(section, subSection);
+
+        [Obsolete("SetValue(...) is deprecated. Please use SetItemInSection(...) to add an item to a section or interact directly with the SettingsElement you want.")]
         public void SetValue(string section, string key, string value)
         {
             if (CanChangeSettings)
@@ -156,6 +151,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        [Obsolete("SetValues(...) is deprecated. Please use SetItemInSection(...) to add an item to a section or interact directly with the SettingsElement you want.")]
         public void SetValues(string section, IReadOnlyList<SettingValue> values)
         {
             if (CanChangeSettings)
@@ -164,6 +160,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        [Obsolete("UpdateSections(...) is deprecated. Please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
         public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
         {
             if (CanChangeSettings)
@@ -172,6 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        [Obsolete("UpdateSubsections(...) is deprecated. Please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
         public void UpdateSubsections(string section, string subsection, IReadOnlyList<SettingValue> values)
         {
             if (CanChangeSettings)
@@ -180,7 +178,31 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        // The value for SolutionSettings can't possibly be null, but it could be a read-only instance
-        private bool CanChangeSettings => !ReferenceEquals(SolutionSettings, NullSettings.Instance);
+        [Obsolete("SetNestedValues(...) is deprecated. Please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        public void SetNestedValues(string section, string subsection, IList<KeyValuePair<string, string>> values)
+        {
+            if (CanChangeSettings)
+            {
+                SolutionSettings.SetNestedValues(section, subsection, values);
+            }
+        }
+
+        [Obsolete("SetNestedSettingValues(...) is deprecated. Please use SetItemInSection(...) to update an item in a section or interact directly with the SettingsElement you want.")]
+        public void SetNestedSettingValues(string section, string subsection, IList<SettingValue> values)
+        {
+            if (CanChangeSettings)
+            {
+                SolutionSettings.SetNestedSettingValues(section, subsection, values);
+            }
+        }
+
+        [Obsolete("DeleteValue(...) is deprecated. Please interact directly with the SettingsElement you want to delete.")]
+        public bool DeleteValue(string section, string key) => CanChangeSettings && SolutionSettings.DeleteValue(section, key);
+
+        [Obsolete("DeleteSection(...) is deprecated. Please interact directly with the SettingsElement you want to delete.")]
+        public bool DeleteSection(string section) => CanChangeSettings && SolutionSettings.DeleteSection(section);
+
+#pragma warning restore CS0618 // Type or member is obsolete
+
     }
 }

@@ -20,7 +20,7 @@ namespace NuGet.Configuration {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -71,11 +71,92 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Attribute &apos;{0}&apos; is not allowed in element &apos;{1}&apos;..
+        /// </summary>
+        internal static string AttributeNotAllowed {
+            get {
+                return ResourceManager.GetString("AttributeNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The attribute &apos;{0}&apos; has an unallowed value &apos;{1}&apos; in element &apos;{2}&apos;..
+        /// </summary>
+        internal static string AttributeValueNotAllowed {
+            get {
+                return ResourceManager.GetString("AttributeValueNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The item passed to the Update method cannot refer to a different item than the one being updated..
+        /// </summary>
+        internal static string CannotUpdateDifferentItems {
+            get {
+                return ResourceManager.GetString("CannotUpdateDifferentItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to update setting since it is in a machine-wide NuGet.Config..
+        /// </summary>
+        internal static string CannotUpdateMachineWide {
+            get {
+                return ResourceManager.GetString("CannotUpdateMachineWide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot update the node of a setting..
+        /// </summary>
+        internal static string CannotUpdateNode {
+            get {
+                return ResourceManager.GetString("CannotUpdateNode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot update the origin of a setting..
+        /// </summary>
+        internal static string CannotUpdateOrigin {
+            get {
+                return ResourceManager.GetString("CannotUpdateOrigin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Credentials item must have username and password..
+        /// </summary>
+        internal static string CredentialsItemMustHaveUsernamePassword {
+            get {
+                return ResourceManager.GetString("CredentialsItemMustHaveUsernamePassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Encryption is not supported on non-Windows platforms..
         /// </summary>
         internal static string Error_EncryptionUnsupported {
             get {
                 return ResourceManager.GetString("Error_EncryptionUnsupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The attribute {0}-{1} is not valid..
+        /// </summary>
+        internal static string Error_InvalidAttribute {
+            get {
+                return ResourceManager.GetString("Error_InvalidAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot merge two different sections..
+        /// </summary>
+        internal static string Error_MergeTwoDifferentSections {
+            get {
+                return ResourceManager.GetString("Error_MergeTwoDifferentSections", resourceCulture);
             }
         }
         
@@ -107,11 +188,47 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The item does not exist in the {0} section..
+        /// </summary>
+        internal static string ItemDoesNotExist {
+            get {
+                return ResourceManager.GetString("ItemDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missing required attribute &apos;{0}&apos; in element &apos;{1}&apos;..
+        /// </summary>
+        internal static string MissingRequiredAttribute {
+            get {
+                return ResourceManager.GetString("MissingRequiredAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; must contain an absolute path &apos;{1}&apos;..
         /// </summary>
         internal static string MustContainAbsolutePath {
             get {
                 return ResourceManager.GetString("MustContainAbsolutePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} item should not have any attributes and it was found with {1}..
+        /// </summary>
+        internal static string NoAttributesAllowed {
+            get {
+                return ResourceManager.GetString("NoAttributesAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There is no NuGet.Config that could be used for writing settings. Please create one at the desired location and restart the client..
+        /// </summary>
+        internal static string NoWritteableConfig {
+            get {
+                return ResourceManager.GetString("NoWritteableConfig", resourceCulture);
             }
         }
         
@@ -125,6 +242,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} cannot be null or empty..
+        /// </summary>
+        internal static string PropertyCannotBeNullOrEmpty {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Environment variable &apos;{0}&apos; must contain an absolute path, the full path of &apos;{1}&apos; cannot be determined..
         /// </summary>
         internal static string RelativeEnvVarPath {
@@ -134,11 +260,29 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parameter &apos;fileName&apos; to Settings must be just a fileName and not a path.
+        ///   Looks up a localized string similar to The section &apos;{0}&apos; does not exist in the settings..
+        /// </summary>
+        internal static string SectionDoesNotExist {
+            get {
+                return ResourceManager.GetString("SectionDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter &apos;fileName&apos; to Settings must be just a file name and not a path..
         /// </summary>
         internal static string Settings_FileName_Cannot_Be_A_Path {
             get {
                 return ResourceManager.GetString("Settings_FileName_Cannot_Be_A_Path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error parsing NuGet.Config. Element &apos;{0}&apos; cannot have descendant elements. Path: &apos;{1}&apos;..
+        /// </summary>
+        internal static string ShowError_CannotHaveChildren {
+            get {
+                return ResourceManager.GetString("ShowError_CannotHaveChildren", resourceCulture);
             }
         }
         
@@ -179,6 +323,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Text elements should not be empty..
+        /// </summary>
+        internal static string TextShouldNotBeEmpty {
+            get {
+                return ResourceManager.GetString("TextShouldNotBeEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unexpected failure reading NuGet.Config. Path: &apos;{0}&apos;..
         /// </summary>
         internal static string Unknown_Config_Exception {
@@ -206,7 +359,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to parse config file &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Unable to parse config file because: {0} Path: &apos;{1}&apos;..
         /// </summary>
         internal static string UserSettings_UnableToParseConfigFile {
             get {

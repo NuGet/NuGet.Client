@@ -16,6 +16,7 @@ using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -295,9 +296,11 @@ namespace NuGet.PackageManagement.UI
         {
             if (nugetSettings != null)
             {
-                var dependencySetting = nugetSettings.GetValue("config", "dependencyversion");
+                var configSection = nugetSettings.GetSection(ConfigurationConstants.Config);
+                var dependencySetting = configSection?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, ConfigurationConstants.DependencyVersion);
+
                 DependencyBehavior behavior;
-                var success = Enum.TryParse(dependencySetting, true, out behavior);
+                var success = Enum.TryParse(dependencySetting?.Value, ignoreCase: true, result: out behavior);
                 if (success)
                 {
                     return behavior;

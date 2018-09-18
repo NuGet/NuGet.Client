@@ -200,14 +200,14 @@ namespace NuGet.Configuration
 </configuration>";
 
                 File.WriteAllText(Path.Combine(mockBaseDirectory, "NuGet.Config"), config);
-                var settings = Settings.LoadDefaultSettings(mockBaseDirectory,
+                var settings = Settings.LoadSettings(mockBaseDirectory,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false,
+                    loadUserWideSettings: false,
                     useTestingGlobalPath: false);
                 ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent, mockBaseDirectory);
 
-                var packageSourceProvider = new PackageSourceProvider(settings, null, ConfigurationDefaults.DefaultPackageSources);
+                var packageSourceProvider = new PackageSourceProvider(settings, ConfigurationDefaults.DefaultPackageSources);
 
                 // Act
                 List<PackageSource> packageSources = packageSourceProvider.LoadPackageSources().ToList();
@@ -239,14 +239,14 @@ namespace NuGet.Configuration
 </configuration>";
 
                 File.WriteAllText(Path.Combine(mockBaseDirectory, "NuGet.Config"), config);
-                var settings = Settings.LoadDefaultSettings(mockBaseDirectory,
+                var settings = Settings.LoadSettings(mockBaseDirectory,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false,
+                    loadUserWideSettings: false,
                     useTestingGlobalPath: false);
                 ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent, mockBaseDirectory);
 
-                var packageSourceProvider = new PackageSourceProvider(settings, null, ConfigurationDefaults.DefaultPackageSources);
+                var packageSourceProvider = new PackageSourceProvider(settings, ConfigurationDefaults.DefaultPackageSources);
 
                 // Act
                 List<PackageSource> packageSources = packageSourceProvider.LoadPackageSources().ToList();
@@ -277,14 +277,14 @@ namespace NuGet.Configuration
 </configuration>";
 
                 File.WriteAllText(Path.Combine(mockBaseDirectory, "NuGet.Config"), config);
-                var settings = Settings.LoadDefaultSettings(mockBaseDirectory,
+                var settings = Settings.LoadSettings(mockBaseDirectory,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false,
+                    loadUserWideSettings: false,
                     useTestingGlobalPath: false);
                 ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent, mockBaseDirectory);
 
-                var packageSourceProvider = new PackageSourceProvider(settings, null, ConfigurationDefaults.DefaultPackageSources);
+                var packageSourceProvider = new PackageSourceProvider(settings, ConfigurationDefaults.DefaultPackageSources);
 
                 // Act
                 List<PackageSource> packageSources = packageSourceProvider.LoadPackageSources().ToList();
