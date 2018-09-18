@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using NuGet.Packaging.Licenses;
 using Xunit;
 
 namespace NuGet.Packaging.Test
