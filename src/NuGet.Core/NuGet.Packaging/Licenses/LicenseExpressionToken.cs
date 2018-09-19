@@ -25,7 +25,7 @@ namespace NuGet.Packaging
 
         public override string ToString()
         {
-            return $"Value:{Value}, Type: {TokenType}";
+            return $"Value: {Value}, Type: {TokenType}";
         }
     }
 }
