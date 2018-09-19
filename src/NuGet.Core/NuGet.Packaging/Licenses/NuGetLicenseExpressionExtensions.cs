@@ -16,20 +16,20 @@ namespace NuGet.Packaging
         {
             switch (expression.Type)
             {
-                case LicenseExpressionType.License:
+                case NuGetLicenseExpressionType.License:
 
                     return (expression as NuGetLicense).IsStandardLicense;
 
-                case LicenseExpressionType.Operator:
+                case NuGetLicenseExpressionType.Operator:
 
-                    var licenseOperator = expression as LicenseOperator;
+                    var licenseOperator = expression as NuGetLicenseOperator;
                     switch (licenseOperator.OperatorType)
                     {
-                        case OperatorType.LogicalOperator:
-                            var logicalOperator = expression as LogicalOperator;
+                        case NuGetLicenseOperatorType.LogicalOperator:
+                            var logicalOperator = expression as NuGetLicenseLogicalOperator;
                             return logicalOperator.Left.HasOnlyStandardIdentifiers() && logicalOperator.Right.HasOnlyStandardIdentifiers();
-                        case OperatorType.WithOperator:
-                            var withOperator = expression as WithOperator;
+                        case NuGetLicenseOperatorType.WithOperator:
+                            var withOperator = expression as NuGetLicenseWithOperator;
                             return withOperator.License.IsStandardLicense;
                         default:
                             return false;
@@ -50,24 +50,24 @@ namespace NuGet.Packaging
         {
             switch (expression.Type)
             {
-                case LicenseExpressionType.License:
+                case NuGetLicenseExpressionType.License:
                     var license = expression as NuGetLicense;
                     licenseProcessor(license);
                     break;
 
-                case LicenseExpressionType.Operator:
-                    var licenseOperator = expression as LicenseOperator;
+                case NuGetLicenseExpressionType.Operator:
+                    var licenseOperator = expression as NuGetLicenseOperator;
                     switch (licenseOperator.OperatorType)
                     {
-                        case OperatorType.LogicalOperator:
-                            var logicalOperator = expression as LogicalOperator;
+                        case NuGetLicenseOperatorType.LogicalOperator:
+                            var logicalOperator = expression as NuGetLicenseLogicalOperator;
 
                             logicalOperator.Left.OnEachLeafNode(licenseProcessor, exceptionProcessor);
                             logicalOperator.Right.OnEachLeafNode(licenseProcessor, exceptionProcessor);
                             break;
 
-                        case OperatorType.WithOperator:
-                            var withOperator = expression as WithOperator;
+                        case NuGetLicenseOperatorType.WithOperator:
+                            var withOperator = expression as NuGetLicenseWithOperator;
                             licenseProcessor(withOperator.License);
                             exceptionProcessor(withOperator.Exception);
                             break;

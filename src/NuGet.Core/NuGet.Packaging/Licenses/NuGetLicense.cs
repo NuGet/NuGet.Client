@@ -32,7 +32,7 @@ namespace NuGet.Packaging
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
             Plus = plus;
             IsStandardLicense = isStandardLicense;
-            Type = LicenseExpressionType.License;
+            Type = NuGetLicenseExpressionType.License;
         }
 
         /// <summary>

@@ -3,7 +3,10 @@
 
 namespace NuGet.Packaging
 {
-    public enum OperatorType
+    /// <summary>
+    /// Represents the type of <see cref="NuGetLicenseOperator"/> <see cref="NuGetLicenseExpression"/>.
+    /// </summary>
+    public enum NuGetLicenseOperatorType
     {
         WithOperator,
         LogicalOperator

@@ -7,9 +7,8 @@ using System.Globalization;
 
 namespace NuGet.Packaging
 {
-    public class LicenseExpressionParser
+    public static class NuGetLicenseExpressionParser
     {
-
         /// <summary>
         /// Parses a License Expression if valid.
         /// The expression would be parsed correct, even if non-standard exceptions are encountered. The non-standard Licenses/Exceptions have metadata on them with which the caller can make decisions.
@@ -18,7 +17,7 @@ namespace NuGet.Packaging
         /// Later the postfix expression is evaluated into an object model that represents the expression. Note that brackets are dropped in this conversion and this is not round-trippable.
         /// The token precedence helps make sure that the expression is a valid infix one. 
         /// </summary>
-        /// <param name="infixTokens"></param>
+        /// <param name="expression"></param>
         /// <returns>NuGetLicenseExpression</returns>
         /// <exception cref="ArgumentException">If the expression has invalid characters.</exception>
         /// <exception cref="ArgumentException">If the expression itself is invalid. Example: MIT OR OR Apache-2.0, or the MIT or Apache-2.0, because the expressions are case sensitive.</exception>
@@ -163,7 +162,7 @@ namespace NuGet.Packaging
                 var right = PopIfNotEmpty(operandStack);
                 var left = PopIfNotEmpty(operandStack);
 
-                var withNode = new WithOperator(NuGetLicense.Parse(left.Value), NuGetLicenseException.Parse(right.Value));
+                var withNode = new NuGetLicenseWithOperator(NuGetLicense.Parse(left.Value), NuGetLicenseException.Parse(right.Value));
 
                 if (leftHandSideExpression == null)
                 {
@@ -180,18 +179,18 @@ namespace NuGet.Packaging
             }
             else
             {
-                var logicalOperator = op.TokenType == LicenseTokenType.AND ? LogicalOperatorType.AND : LogicalOperatorType.OR;
+                var logicalOperator = op.TokenType == LicenseTokenType.AND ? NuGetLicenseLogicalOperatorType.AND : NuGetLicenseLogicalOperatorType.OR;
 
                 if (leftHandSideExpression == null && rightHandSideExpression == null)
                 {
                     var right = PopIfNotEmpty(operandStack);
                     var left = PopIfNotEmpty(operandStack);
-                    leftHandSideExpression = new LogicalOperator(logicalOperator, NuGetLicense.Parse(left.Value), NuGetLicense.Parse(right.Value));
+                    leftHandSideExpression = new NuGetLicenseLogicalOperator(logicalOperator, NuGetLicense.Parse(left.Value), NuGetLicense.Parse(right.Value));
                 }
                 else if (rightHandSideExpression == null)
                 {
                     var right = PopIfNotEmpty(operandStack);
-                    var newExpression = new LogicalOperator(logicalOperator, leftHandSideExpression, NuGetLicense.Parse(right.Value));
+                    var newExpression = new NuGetLicenseLogicalOperator(logicalOperator, leftHandSideExpression, NuGetLicense.Parse(right.Value));
                     leftHandSideExpression = newExpression;
                 }
                 else if (leftHandSideExpression == null)
@@ -200,7 +199,7 @@ namespace NuGet.Packaging
                 }
                 else
                 {
-                    var newExpression = new LogicalOperator(logicalOperator, leftHandSideExpression, rightHandSideExpression);
+                    var newExpression = new NuGetLicenseLogicalOperator(logicalOperator, leftHandSideExpression, rightHandSideExpression);
                     rightHandSideExpression = null;
                     leftHandSideExpression = newExpression;
                 }

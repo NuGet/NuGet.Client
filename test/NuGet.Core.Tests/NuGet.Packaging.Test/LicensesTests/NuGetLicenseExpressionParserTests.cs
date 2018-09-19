@@ -7,7 +7,7 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class LicenseExpressionParserTests
+    public class NuGetLicenseExpressionParserTests
     {
         [Theory]
         [InlineData("MIT OR LPL-1.0", "MIT OR LPL-1.0", "OR", true)]
@@ -33,18 +33,18 @@ namespace NuGet.Packaging.Test
         [InlineData("(And+) AND or", "And+ AND or", "AND", false)]
         public void LicenseExpressionParser_ParsesComplexExpression(string infix, string postfix, string rootOperator, bool hasStandardIdentifiers)
         {
-            var licenseExpression = LicenseExpressionParser.Parse(infix);
+            var licenseExpression = NuGetLicenseExpressionParser.Parse(infix);
             Assert.Equal(postfix, licenseExpression.ToString());
             Assert.Equal(licenseExpression.HasOnlyStandardIdentifiers(), hasStandardIdentifiers);
 
-            if (Enum.TryParse<LogicalOperatorType>(rootOperator, true, out var logicalOperator))
+            if (Enum.TryParse<NuGetLicenseLogicalOperatorType>(rootOperator, true, out var logicalOperator))
             {
-                var expression = licenseExpression as LogicalOperator;
+                var expression = licenseExpression as NuGetLicenseLogicalOperator;
                 Assert.Equal(expression.LogicalOperatorType, logicalOperator);
             }
             else if (rootOperator.Equals("WITH", StringComparison.OrdinalIgnoreCase))
             {
-                var expression = licenseExpression as WithOperator;
+                var expression = licenseExpression as NuGetLicenseWithOperator;
                 Assert.NotNull(expression);
             }
             else
@@ -59,7 +59,7 @@ namespace NuGet.Packaging.Test
         [InlineData("MyFancyLicense", false, false)]
         public void LicenseExpressionParser_ParsesSimpleExpression(string infix, bool hasStandardIdentifiers, bool hasPlus)
         {
-            var licenseExpression = LicenseExpressionParser.Parse(infix);
+            var licenseExpression = NuGetLicenseExpressionParser.Parse(infix);
             Assert.Equal(infix, licenseExpression.ToString());
             Assert.Equal(licenseExpression.HasOnlyStandardIdentifiers(), hasStandardIdentifiers);
             Assert.NotNull(licenseExpression as NuGetLicense);
@@ -72,7 +72,7 @@ namespace NuGet.Packaging.Test
         [InlineData("mif-exception WITH Classpath-exception-2.0", "mif-exception", true)] // Both identifiers are exceptions
         public void LicenseExpressionParser_ThrowsForMismatchedArguments(string infix, string badIdentifier, bool IsExceptionAsLicense)
         {
-            var ex = Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            var ex = Assert.Throws<ArgumentException>(() => NuGetLicenseExpressionParser.Parse(infix));
             if (IsExceptionAsLicense)
             {
                 Assert.Equal(ex.Message, string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_LicenseIdentifierIsException, badIdentifier));
@@ -93,7 +93,7 @@ namespace NuGet.Packaging.Test
         [InlineData("((( (LGPL-2.1) AND BSD-2-Clause)))", "LGPL-2.1")]
         public void LicenseExpressionParser_ComplexExpressionWithDeprecatedIdentifiersThrows(string infix, string deprecatedValue)
         {
-            var ex = Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            var ex = Assert.Throws<ArgumentException>(() => NuGetLicenseExpressionParser.Parse(infix));
             Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_DeprecatedIdentifier, deprecatedValue), ex.Message);
         }
 
@@ -107,7 +107,7 @@ namespace NuGet.Packaging.Test
         [InlineData("MIT OR GPL-1.0 (WITH 389-exception OR LPL-1.0)")]
         public void LicenseExpressionParser_StrictParseThrowsForInvalidExpressions(string infix)
         {
-            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            Assert.Throws<ArgumentException>(() => NuGetLicenseExpressionParser.Parse(infix));
         }
 
         [Theory]
@@ -116,14 +116,14 @@ namespace NuGet.Packaging.Test
         [InlineData("MIT with Classpath-exception-2.0")]
         public void LicenseExpressionParser_ThrowsForExpressionsWithBadCasing(string infix)
         {
-            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            Assert.Throws<ArgumentException>(() => NuGetLicenseExpressionParser.Parse(infix));
         }
 
         [Theory]
         [InlineData("MIT WITH classpath-exception-2.0", "classpath-exception-2.0")]
         public void LicenseExpressionParser_ThrowsForInvalidExceptionDueToBadCasing(string infix, string exception)
         {
-            var ex = Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            var ex = Assert.Throws<ArgumentException>(() => NuGetLicenseExpressionParser.Parse(infix));
             Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExceptionIdentifier, exception), ex.Message);
         }
 
@@ -133,9 +133,9 @@ namespace NuGet.Packaging.Test
         [InlineData("MIt OR BSD-2-Clause", false, true)]
         public void LicenseExpressionParser_CreatesNonStandardExpressionsWithBadCasing(string infix, bool isFirstOperatorStandard, bool isSecondOperatorStandard)
         {
-            var expression = LicenseExpressionParser.Parse(infix);
-            var withExpression = expression as WithOperator;
-            var logicalExpression = expression as LogicalOperator;
+            var expression = NuGetLicenseExpressionParser.Parse(infix);
+            var withExpression = expression as NuGetLicenseWithOperator;
+            var logicalExpression = expression as NuGetLicenseLogicalOperator;
 
             if (withExpression != null)
             {
@@ -162,7 +162,7 @@ namespace NuGet.Packaging.Test
         [InlineData("A( AND )B")]
         public void LicenseExpressionParser_ThrowsForInvalidExpressions(string infix)
         {
-            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            Assert.Throws<ArgumentException>(() => NuGetLicenseExpressionParser.Parse(infix));
         }
 
         [Theory]
@@ -173,7 +173,7 @@ namespace NuGet.Packaging.Test
         [InlineData("      (GPL-1.0+ WITH Classpath-exception-2.0) OR MIT[] ")]
         public void LicenseExpressionParser_ParseThrowsForInvalidCharactersInExpression(string infix)
         {
-            var ex = Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            var ex = Assert.Throws<ArgumentException>(() => NuGetLicenseExpressionParser.Parse(infix));
             Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidCharacters, infix), ex.Message);
         }
 
@@ -189,7 +189,7 @@ namespace NuGet.Packaging.Test
         [InlineData("A WITH B C WITH D")]
         public void LicenseExpressionParser_EvaluateThrowsWhenBracketsDoNotMatch(string infix)
         {
-            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            Assert.Throws<ArgumentException>(() => NuGetLicenseExpressionParser.Parse(infix));
         }
 
         [Theory]
@@ -201,7 +201,7 @@ namespace NuGet.Packaging.Test
         [InlineData("A WITH B C WITH D OR E")]
         public void LicenseExpressionParser_NotStrict_EvaluateThrowsIfExpressionIsInvalid(string infix)
         {
-            Assert.Throws<ArgumentException>(() => LicenseExpressionParser.Parse(infix));
+            Assert.Throws<ArgumentException>(() => NuGetLicenseExpressionParser.Parse(infix));
         }
     }
 }

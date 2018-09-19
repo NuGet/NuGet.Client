@@ -8,9 +8,6 @@ namespace NuGet.Packaging
 {
     internal class LicenseExpressionTokenizer
     {
-        private static Tuple<char, string> OpeningBracket = new Tuple<char, string>('(', "(");
-        private static Tuple<char, string> ClosingBracket = new Tuple<char, string>(')', ")");
-
         private readonly string _value;
         /// <summary>
         /// A tokenizer for a license expression.
@@ -114,6 +111,13 @@ namespace NuGet.Packaging
             return null;
         }
 
+        /// <summary>
+        /// Parses a token type given a string.
+        /// This method assumes that the brackets have been parsed out. 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns>LicenseExpressionToken</returns>
+        /// <remarks>This method assumes the brackets have already been parsed.</remarks>
         private LicenseExpressionToken ParseTokenType(string token)
         {
             var expressionToken = Enum.TryParse(value: token, result: out LicenseTokenType result);

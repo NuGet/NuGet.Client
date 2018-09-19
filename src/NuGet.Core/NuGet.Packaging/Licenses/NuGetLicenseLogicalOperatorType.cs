@@ -3,7 +3,10 @@
 
 namespace NuGet.Packaging
 {
-    public enum LogicalOperatorType
+    /// <summary>
+    /// Represents the logical operator type of a <see cref="NuGetLicenseLogicalOperator"/>.
+    /// </summary>
+    public enum NuGetLicenseLogicalOperatorType
     {
         AND,
         OR,

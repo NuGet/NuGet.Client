@@ -5,16 +5,27 @@ using System;
 
 namespace NuGet.Packaging
 {
-    public class WithOperator : LicenseOperator
+    /// <summary>
+    /// Represents a <see cref="NuGetLicenseExpression"/> that's a WITH operator.
+    /// It has a License and Exception.
+    /// </summary>
+    public class NuGetLicenseWithOperator : NuGetLicenseOperator
     {
-        public WithOperator(NuGetLicense license, NuGetLicenseException exception) : base()
+        public NuGetLicenseWithOperator(NuGetLicense license, NuGetLicenseException exception) : base()
         {
             License = license ?? throw new ArgumentNullException(nameof(license));
             Exception = exception ?? throw new ArgumentNullException(nameof(exception));
-            OperatorType = OperatorType.WithOperator;
+            OperatorType = NuGetLicenseOperatorType.WithOperator;
         }
 
+        /// <summary>
+        /// The license.
+        /// </summary>
         public NuGetLicense License { get; private set; }
+
+        /// <summary>
+        /// The exception.
+        /// </summary>
         public NuGetLicenseException Exception { get; private set; }
 
         public override string ToString()
