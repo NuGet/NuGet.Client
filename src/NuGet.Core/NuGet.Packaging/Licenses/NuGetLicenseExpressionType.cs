@@ -6,7 +6,7 @@ namespace NuGet.Packaging
 {
     /// <summary>
     /// Represents the expression type of a <see cref="NuGetLicenseExpression"/>.
-    /// License type means that it's a <see cref="NuGetLicense"/>. Operator means that it's a <see cref="LicenseOperator"/>
+    /// License type means that it's a <see cref="NuGetLicense"/>. Operator means that it's a <see cref="NuGetLicenseOperator"/>
     /// </summary>
     public enum NuGetLicenseExpressionType
     {
