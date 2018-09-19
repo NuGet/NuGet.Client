@@ -7,24 +7,56 @@ Downloads the SPDX License list, builds and runs the GenerateLicenseList tool an
 
 #>
 
-$licenseListDirectory = $([System.IO.Path]::Combine($env:TEMP, "NuGet", "licenseList"))
+function DownloadFileFromUrl {
+param
+(
+    [Parameter(Mandatory=$True)]
+    [string]$BaseUrl,
+    [Parameter(Mandatory=$True)]
+    [string]$Directory, 
+    [Parameter(Mandatory=$True)]
+    [string]$FileName
+)
+    $FilePath = [System.IO.Path]::Combine($Directory, $FileName)
+    $FullUrl =  "$BaseUrl$FileName"
+
+    If(!(Test-Path $Directory))
+    {
+        & New-Item -ItemType Directory -Force -Path $directory > $null
+    }
+    Write-Host "Downloading $FullUrl to $FilePath"
+
+    Invoke-WebRequest -Uri $FullUrl -UseBasicParsing -Outfile $FilePath
+}
+
 
 try {
-    $gitRepo = "https://github.com/spdx/license-list-data.git"
-    Write-Host "Downloading the license list from $gitRepo"
-    git clone -b master --single-branch https://github.com/spdx/license-list-data.git $licenseListDirectory
-    $generateLicenseList = $([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine($PSScriptRoot, "..", "..", "test\TestExtensions\GenerateLicenseList\GenerateLicenseList.csproj"))))
+    $licenseListDirectory = $([System.IO.Path]::Combine($env:TEMP, "NuGet", "licenseList"))
+    $licenseListBaseUrl = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/"
+    $licenseFileName = "licenses.json"
+    $exceptionsFileName = "exceptions.json"
 
-    $licenses = $([System.IO.Path]::Combine($licenseListDirectory, "json", "licenses.json"))
-    $exceptions = $([System.IO.Path]::Combine($licenseListDirectory, "json", "exceptions.json"))
+    DownloadFileFromUrl -BaseUrl $licenseListBaseUrl -Directory $licenseListDirectory -FileName $licenseFileName
+    DownloadFileFromUrl -BaseUrl $licenseListBaseUrl -Directory $licenseListDirectory -FileName $exceptionsFileName
+
     $targetFile = $([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine($PSScriptRoot, "..", "..", "src\NuGet.Core\NuGet.Packaging\Licenses\NuGetLicenseData.cs"))))
+    $generateLicenseList = $([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine($PSScriptRoot, "..", "..", "test\TestExtensions\GenerateLicenseList\GenerateLicenseList.csproj"))))
     
-    Write-Host "Generating the license list."
+    Write-Host "Generating the license list. Target file: $targetFile"
 
-    dotnet run --project $generateLicenseList $licenses $exceptions $targetFile
+    $licenseFile =  [System.IO.Path]::Combine($licenseListDirectory, $licenseFileName)
+    $exceptionsFile = [System.IO.Path]::Combine($licenseListDirectory, $exceptionsFileName)
+
+    dotnet run --project $generateLicenseList $licenseFile $exceptionsFile $targetFile
 }
-finally {
+catch 
+{
+    Write-Host $_ -ForegroundColor "red"
+}
+finally 
+{
     Write-Host "Cleaning up."
-    Write-Host "Removing $licenseListDirectory."
+    Write-Host "Removing $licenseListDirectory"
     Remove-Item -Force -Recurse $licenseListDirectory
 }
+
