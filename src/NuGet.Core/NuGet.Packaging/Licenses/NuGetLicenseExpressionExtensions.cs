@@ -30,7 +30,7 @@ namespace NuGet.Packaging
                             return logicalOperator.Left.HasOnlyStandardIdentifiers() && logicalOperator.Right.HasOnlyStandardIdentifiers();
                         case OperatorType.WithOperator:
                             var withOperator = expression as WithOperator;
-                            return withOperator.License.IsStandardLicense && withOperator.Exception.IsStandardException;
+                            return withOperator.License.IsStandardLicense;
                         default:
                             return false;
                     }

@@ -6,16 +6,19 @@ using System.Globalization;
 
 namespace NuGet.Packaging
 {
+    /// <summary>
+    /// NuGet's internal representation of a license exception identifier. 
+    /// </summary>
     public class NuGetLicenseException
     {
+        /// <summary>
+        /// The Exception's identifier
+        /// </summary>
         public string Identifier { get; }
 
-        public bool IsStandardException { get; }
-
-        public NuGetLicenseException(string identifier)
+        private NuGetLicenseException(string identifier)
         {
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
-            IsStandardException = true;
         }
 
         public static NuGetLicenseException Parse(string exceptionIdentifier)

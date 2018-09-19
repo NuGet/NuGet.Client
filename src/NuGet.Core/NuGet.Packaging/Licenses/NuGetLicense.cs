@@ -6,6 +6,9 @@ using System.Globalization;
 
 namespace NuGet.Packaging
 {
+    /// <summary>
+    /// NuGet's internal representation of a license identifier. 
+    /// </summary>
     public class NuGetLicense : NuGetLicenseExpression
     {
         /// <summary>
@@ -24,7 +27,7 @@ namespace NuGet.Packaging
         /// </summary>
         public bool IsStandardLicense { get; }
 
-        public NuGetLicense(string identifier, bool plus, bool isStandardLicense)
+        private NuGetLicense(string identifier, bool plus, bool isStandardLicense)
         {
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
             Plus = plus;

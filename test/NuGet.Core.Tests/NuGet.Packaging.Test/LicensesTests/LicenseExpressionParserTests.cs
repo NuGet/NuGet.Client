@@ -140,7 +140,6 @@ namespace NuGet.Packaging.Test
             if (withExpression != null)
             {
                 Assert.Equal(isFirstOperatorStandard, withExpression.License.IsStandardLicense);
-                Assert.Equal(isSecondOperatorStandard, withExpression.Exception.IsStandardException);
             }
             if (logicalExpression != null)
             {
