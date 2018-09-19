@@ -21,6 +21,13 @@ namespace NuGet.Packaging
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
         }
 
+        /// <summary>
+        /// Parse an exceptionIdentifier. If the exceptionIdentifier is deprecated, this will throw. Non-standard exception do not get parsed into an object model.
+        /// </summary>
+        /// <param name="exceptionIdentifier"></param>
+        /// <returns>NuGetLicenseException</returns>
+        // <exception cref="ArgumentException">If the identifier is deprecated</exception>
+        /// <exception cref="ArgumentException">If it's null or empty.</exception>
         public static NuGetLicenseException Parse(string exceptionIdentifier)
         {
             if (!string.IsNullOrWhiteSpace(exceptionIdentifier))

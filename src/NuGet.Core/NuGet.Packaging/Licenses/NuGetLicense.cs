@@ -39,7 +39,7 @@ namespace NuGet.Packaging
         /// Parse a licenseIdentifier. If a licenseIdentifier is deprecated, this will throw. Non-standard licenses get parsed into a object model as well.
         /// </summary>
         /// <param name="licenseIdentifier"></param>
-        /// <returns></returns>
+        /// <returns>NuGetLicense</returns>
         /// <exception cref="ArgumentException">If the identifier is deprecated</exception>
         /// <exception cref="ArgumentException">If it's null or empty.</exception>
         public static NuGetLicense Parse(string licenseIdentifier)
