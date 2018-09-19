@@ -19,8 +19,12 @@ namespace NuGet.Packaging
         /// </summary>
         /// <param name="expression"></param>
         /// <returns>NuGetLicenseExpression</returns>
-        /// <exception cref="ArgumentException">If the expression has invalid characters.</exception>
+        /// <exception cref="ArgumentException">If the expression has invalid characters</exception>
+        /// <exception cref="ArgumentException">If the expression is empty or null.</exception>
         /// <exception cref="ArgumentException">If the expression itself is invalid. Example: MIT OR OR Apache-2.0, or the MIT or Apache-2.0, because the expressions are case sensitive.</exception>
+        /// <exception cref="ArgumentException">If the expression's brackets are mismatched.</exception>
+        /// <exception cref="ArgumentException">If the licenseIdentifier is deprecated.</exception>
+        /// <exception cref="ArgumentException">If the exception identifier is deprecated.</exception>
         public static NuGetLicenseExpression Parse(string expression)
         {
             var tokens = GetTokens(expression);

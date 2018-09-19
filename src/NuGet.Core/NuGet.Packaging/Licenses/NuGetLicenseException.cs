@@ -26,7 +26,7 @@ namespace NuGet.Packaging
         /// </summary>
         /// <param name="exceptionIdentifier"></param>
         /// <returns>NuGetLicenseException</returns>
-        // <exception cref="ArgumentException">If the identifier is deprecated</exception>
+        /// <exception cref="ArgumentException">If the identifier is deprecated</exception>
         /// <exception cref="ArgumentException">If it's null or empty.</exception>
         public static NuGetLicenseException Parse(string exceptionIdentifier)
         {

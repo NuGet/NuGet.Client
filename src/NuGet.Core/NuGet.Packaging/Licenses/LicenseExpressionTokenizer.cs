@@ -18,7 +18,7 @@ namespace NuGet.Packaging
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentNullException(nameof(value));
+                throw new ArgumentException(nameof(value));
             }
             _value = value.Trim();
         }
