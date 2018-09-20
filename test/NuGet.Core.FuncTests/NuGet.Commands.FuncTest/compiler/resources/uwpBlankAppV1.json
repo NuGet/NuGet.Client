@@ -13151,10 +13151,11 @@
       ]
     },
     "System.Net.Http/4.0.0": {
-      "sha512": "mZuAl7jw/mFY8jUq4ITKECxVBh9a8SJt9BC/+lJbmo7cRKspxE3PsITz+KiaCEsexN5WYPzwBOx0oJH/0HlPyQ==",
+      "sha512": "RufQzPFmwqt1jsD6LR+TuAQJckoW8nDgKHuNZh5eZPA62BVpU58mjKrUkk8lR0tYb6T6yLC9f+b+GGI5gnOjBA==",
       "type": "package",
       "path": "system.net.http/4.0.0",
       "files": [
+        ".signature.p7s",
         "lib/DNXCore50/System.Net.Http.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Net.Http.dll",
