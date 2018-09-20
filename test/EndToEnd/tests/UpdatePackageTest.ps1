@@ -158,7 +158,7 @@ function Test-UpdatingPackageWithSharedDependencySimple {
     Assert-Package $p D 1.0
     Assert-Package $p B 1.0
     Assert-SolutionPackage D 1.0
-    Assert-SolutionPackage B 1.0
+    Assert-Sol utionPackage B 1.0
     
     Update-Package D -Source $context.RepositoryPath
     # Make sure the new package is installed
@@ -1760,4 +1760,20 @@ function Test-UpdatingBindingRedirectAfterUpdate {
     # Assert
     Assert-Package $p B 3.0
     Assert-BindingRedirect $p web.config B '0.0.0.0-3.0.0.0' '3.0.0.0'
+}
+
+function Test-CanReinstallDelistedPackage
+{
+    # Arrange
+    # using a delisted package
+    $nugetsource = "https://www.nuget.org/api/v2/"
+    $p = New-ClassLibrary
+    $p | Install-Package Rx-Core -Version 2.2.5 -Source $nugetsource
+    
+    # Act
+    Update-Package Rx-Core -Reinstall -ProjectName $p.Name -Source $nugetsource
+
+    # Assert
+    # we get here as act errored prior to fix
+    Assert-Package $p Rx-Core 2.2.5
 }
