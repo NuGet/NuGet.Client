@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -87,7 +87,7 @@ namespace NuGet.CommandLine
                     testAssembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                         .Where(attr => attr.Key == "owner")
                         .Select(attr => attr.Value)
-                        .FirstOrDefault(),
+                        .FirstOrDefault() ?? "",
                     xdoc.XPathSelectElement("/package/metadata/authors").Value);
             }
         }
