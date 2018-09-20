@@ -31,6 +31,8 @@ namespace NuGet.Packaging.Test
         [InlineData("(AMDPLPA AND BSD-2-Clause)", "AMDPLPA AND BSD-2-Clause", "AND", true)]
         [InlineData("((( (AMDPLPA) AND BSD-2-Clause)))", "AMDPLPA AND BSD-2-Clause", "AND", true)]
         [InlineData("(And+) AND or", "And+ AND or", "AND", false)]
+        [InlineData("(AMDPLPA AND BSD-2-Clause) AND (MIT OR Apache-2.0)", "AMDPLPA AND BSD-2-Clause OR Apache-2.0 AND MIT", "AND", true)]
+
         public void LicenseExpressionParser_ParsesComplexExpression(string infix, string postfix, string rootOperator, bool hasStandardIdentifiers)
         {
             var licenseExpression = NuGetLicenseExpressionParser.Parse(infix);
