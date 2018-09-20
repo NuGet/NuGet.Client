@@ -125,7 +125,7 @@
     <!-- If we aren't excluding the build number, use the release label and the build number. -->
     <When Condition="'$(BuildRTM)' != 'true' AND '$(PreReleaseVersion)' != '' AND '$(PreReleaseVersion)' != '0' ">
       <PropertyGroup>
-        <PreReleaseInformationVersion>-$(ReleaseLabel).$(PreReleaseVersion)</PreReleaseInformationVersion>
+        <PreReleaseInformationVersion>-$(ReleaseLabel)-$(PreReleaseVersion)</PreReleaseInformationVersion>
       </PropertyGroup>
     </When>
     <!-- If we are excluding the build number, show the release label unless we are RTM. -->
@@ -178,8 +178,7 @@
       <_Parameter1>$(SemanticVersion).$(PreReleaseVersion)</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="AssemblyInformationalVersion">
-      <_Parameter1 Condition="'$(BUILD_SOURCEVERSION)' == ''">$(SemanticVersion)$(PreReleaseInformationVersion)</_Parameter1>
-      <_Parameter1 Condition="'$(BUILD_SOURCEVERSION)' != ''">$(SemanticVersion)$(PreReleaseInformationVersion)+$(BUILD_SOURCEVERSION)</_Parameter1>
+      <_Parameter1>$(SemanticVersion)$(PreReleaseInformationVersion)</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="AssemblyCompany">
       <_Parameter1>Microsoft Corporation</_Parameter1>
@@ -199,8 +198,7 @@
     <!-- Assembly attributes for net core projects -->
     <AssemblyVersion>$(SemanticVersion).$(NetCoreAssemblyBuildNumber)</AssemblyVersion>
     <FileVersion>$(SemanticVersion).$(PreReleaseVersion)</FileVersion>
-    <InformationalVersion Condition="'$(BUILD_SOURCEVERSION)' == ''">$(SemanticVersion)$(PreReleaseInformationVersion)</InformationalVersion>
-    <InformationalVersion Condition="'$(BUILD_SOURCEVERSION)' != ''">$(SemanticVersion)$(PreReleaseInformationVersion)+$(BUILD_SOURCEVERSION)</InformationalVersion>
+    <InformationalVersion>$(SemanticVersion)$(PreReleaseInformationVersion)</InformationalVersion>
     <Company>Microsoft Corporation</Company>
     <Product>NuGet</Product>
     <Copyright>Microsoft Corporation. All rights reserved.</Copyright>

@@ -11,14 +11,12 @@ namespace NuGet.XPlat.FuncTest
 {
     public class XPlatRestoreTests
     {
-        [Theory(Skip = "Restore was removed! Update these tests!")]
-        // Try with config file in the project directory
-        //[InlineData(TestServers.Artifactory)]
-        [InlineData(TestServers.Klondike)]
-        [InlineData(TestServers.MyGet)]
-        [InlineData(TestServers.Nexus)]
-        [InlineData(TestServers.NuGetServer)]
-        [InlineData(TestServers.ProGet)]
+        [PackageSourceTheory]
+        [PackageSourceData(TestSources.MyGet)]
+        [PackageSourceData(TestSources.ProGet)]
+        [PackageSourceData(TestSources.Klondike)]
+        [PackageSourceData(TestSources.NuGetServer)]
+        [PackageSourceData(TestSources.Nexus)]
         public void Restore_WithConfigFileInProjectDirectory_Succeeds(string sourceUri)
         {
             using (var packagesDir = TestDirectory.Create())
@@ -58,14 +56,12 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory(Skip = "Restore was removed! Update these tests!")]
-        // Try with config file in a different directory
-        //[InlineData(TestServers.Artifactory)]
-        [InlineData(TestServers.Klondike)]
-        [InlineData(TestServers.MyGet)]
-        [InlineData(TestServers.Nexus)]
-        [InlineData(TestServers.NuGetServer)]
-        [InlineData(TestServers.ProGet)]
+        [PackageSourceTheory]
+        [PackageSourceData(TestSources.MyGet)]
+        [PackageSourceData(TestSources.ProGet)]
+        [PackageSourceData(TestSources.Klondike)]
+        [PackageSourceData(TestSources.NuGetServer)]
+        [PackageSourceData(TestSources.Nexus)]
         public void Restore_WithConfigFileInDifferentDirectory_Succeeds(string sourceUri)
         {
             using (var packagesDir = TestDirectory.Create())

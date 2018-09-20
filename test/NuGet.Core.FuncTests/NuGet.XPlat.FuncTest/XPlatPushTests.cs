@@ -11,12 +11,11 @@ namespace NuGet.XPlat.FuncTest
 {
     public class XPlatPushTests
     {
-        [Theory]
-        [InlineData(TestServers.MyGet, nameof(TestServers.MyGet), false)]
-        [InlineData(TestServers.ProGet, nameof(TestServers.ProGet), false)]
-        [InlineData(TestServers.Nexus, nameof(TestServers.Nexus), true)]
-        // [InlineData(TestServers.Klondike, nameof(TestServers.Klondike), false)] // 500 Internal Server Error pushing
-        // [InlineData(TestServers.NuGetServer, nameof(TestServers.NuGetServer), false)] // 500 - missing manifest?
+        [PackageSourceTheory]
+        [PackageSourceData(TestSources.MyGet)]
+        [PackageSourceData(TestSources.ProGet)]
+        [PackageSourceData(TestSources.Klondike, Skip = "500 Internal Server Error pushing")]
+        [PackageSourceData(TestSources.NuGetServer, Skip = "500 - missing manifest?")]
         public async Task PushToServerSucceeds(string sourceUri, string feedName, bool mustDeleteFirst)
         {
             // Arrange

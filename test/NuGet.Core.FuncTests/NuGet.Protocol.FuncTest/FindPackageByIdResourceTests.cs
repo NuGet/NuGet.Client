@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
@@ -11,11 +11,8 @@ namespace NuGet.Protocol.FuncTest
 {
     public class FindPackageByIdResourceTests
     {
-        [Theory]
-        [InlineData(TestServers.ProGet)]
-        [InlineData(TestServers.Klondike)]
-        //[InlineData(TestServers.Artifactory)]
-        [InlineData(TestServers.MyGet)]
+        [PackageSourceTheory]
+        [PackageSourceData(TestSources.ProGet, TestSources.Klondike, TestSources.Artifactory, TestSources.MyGet)]
         public async Task FindPackageByIdResource_NormalizedVersion(string packageSource)
         {
             // Arrange
@@ -40,11 +37,8 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(TestServers.ProGet)]
-        [InlineData(TestServers.Klondike)]
-        //[InlineData(TestServers.Artifactory)]
-        [InlineData(TestServers.MyGet)]
+        [PackageSourceTheory]
+        [PackageSourceData(TestSources.ProGet, TestSources.Klondike, TestSources.Artifactory, TestSources.MyGet)]
         public async Task FindPackageByIdResource_NoDependencyVersion(string packageSource)
         {
             // Arrange
@@ -69,11 +63,8 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(TestServers.ProGet)]
-        [InlineData(TestServers.Klondike)]
-        //[InlineData(TestServers.Artifactory)]
-        [InlineData(TestServers.MyGet)]
+        [PackageSourceTheory]
+        [PackageSourceData(TestSources.ProGet, TestSources.Klondike, TestSources.Artifactory, TestSources.MyGet)]
         public async Task FindPackageByIdResource_Basic(string packageSource)
         {
             // Arrange
@@ -98,9 +89,8 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(TestServers.NuGetServer, "NuGetServer")]
-        [InlineData(TestServers.Vsts, "Vsts")]
+        [PackageSourceTheory]
+        [PackageSourceData(TestSources.NuGetServer, TestSources.VSTS)]
         public async Task FindPackageByIdResource_Credential(string packageSource, string feedName)
         {
             // Arrange
@@ -129,9 +119,8 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(TestServers.NuGetServer, "NuGetServer")]
-        [InlineData(TestServers.Vsts, "Vsts")]
+        [PackageSourceTheory]
+        [PackageSourceData(TestSources.NuGetServer, TestSources.VSTS)]
         public async Task FindPackageByIdResource_CredentialNoDependencyVersion(string packageSource, string feedName)
         {
             // Arrange
@@ -160,9 +149,8 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(TestServers.NuGetServer, "NuGetServer")]
-        [InlineData(TestServers.Vsts, "Vsts")]
+        [PackageSourceTheory]
+        [PackageSourceData(TestSources.NuGetServer, TestSources.VSTS)]
         public async Task FindPackageByIdResource_CredentialNormalizedVersion(string packageSource, string feedName)
         {
             // Arrange
