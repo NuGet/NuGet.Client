@@ -158,7 +158,7 @@ function Test-UpdatingPackageWithSharedDependencySimple {
     Assert-Package $p D 1.0
     Assert-Package $p B 1.0
     Assert-SolutionPackage D 1.0
-    Assert-Sol utionPackage B 1.0
+    Assert-SolutionPackage B 1.0
     
     Update-Package D -Source $context.RepositoryPath
     # Make sure the new package is installed
