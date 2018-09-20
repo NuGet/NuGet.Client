@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -59,9 +60,57 @@ namespace NuGet.Packaging
 
         public abstract Stream GetStream(string path);
 
+        public virtual Task<PackageIdentity> GetIdentityAsync(CancellationToken cancellationToken)
+        {
+            return Task.FromResult(GetIdentity());
+        }
+
         public abstract IEnumerable<string> GetFiles();
 
         public abstract IEnumerable<string> GetFiles(string folder);
+
+        public virtual Task<IEnumerable<string>> GetFilesAsync(CancellationToken cancellationToken)
+        {
+            return Task.FromResult(GetFiles());
+        }
+
+        protected static void ValidatePackageEntries(string normalizedDestination, IEnumerable<string> packageFiles, PackageIdentity packageIdentity)
+        {
+            // Check all package entries.
+            foreach (var file in packageFiles)
+            {
+                var normalizedPath = Uri.UnescapeDataString(file.Replace('/', Path.DirectorySeparatorChar));
+                ValidatePackageEntry(normalizedDestination, normalizedPath, packageIdentity);
+            }
+        }
+
+        /// <summary>
+        /// Validate file entry in package is not traversed outside of the expected extraction path.
+        /// Eg: file entry like ../../foo.dll can get outside of the expected extraction path.
+        /// </summary>
+        protected static void ValidatePackageEntry(string normalizedDestination, string normalizedFilePath, PackageIdentity packageIdentity)
+        {
+            // Destination and filePath must be normalized.
+            var fullPath = Path.GetFullPath(Path.Combine(normalizedDestination, normalizedFilePath));
+
+            if (!fullPath.StartsWith(normalizedDestination, StringComparison.Ordinal) || fullPath.Length == normalizedDestination.Length)
+            {
+                throw new UnsafePackageEntryException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ErrorUnsafePackageEntry,
+                    packageIdentity));
+            }
+        }
+
+        protected string NormalizeDirectoryPath(string path)
+        {
+            if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            {
+                path += Path.DirectorySeparatorChar;
+            }
+
+            return Path.GetFullPath(path);
+        }
 
         public abstract IEnumerable<string> CopyFiles(
             string destination,
