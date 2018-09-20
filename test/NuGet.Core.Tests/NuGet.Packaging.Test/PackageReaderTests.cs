@@ -1,13 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -538,6 +542,197 @@ namespace NuGet.Packaging.Test
                         ex.InnerException.Message);
                 }
             }
+        }
+
+        [Fact]
+        public async Task ValidatePackageEntriesAsync_InvalidPackageFiles_Fails()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "../../A.dll",
+                   "content/net40/B.nuspec");
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act & Assert
+                    await Assert.ThrowsAsync<UnsafePackageEntryException>(() => packageReader.ValidatePackageEntriesAsync(CancellationToken.None));
+                }
+            }
+        }
+        [Fact]
+        public async Task ValidatePackageEntriesAsync_InvalidPackageFilesContainsRootPath_Fails()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var rootPath = RuntimeEnvironmentHelper.IsWindows ? @"C:" : @"/";
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                  root,
+                  identity.Id,
+                  identity.Version.ToString(),
+                  DateTimeOffset.UtcNow.LocalDateTime,
+                  $"{rootPath}/A.dll",
+                  "content/net40/B.nuspec");
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act & Assert
+                    await Assert.ThrowsAsync<UnsafePackageEntryException>(() => packageReader.ValidatePackageEntriesAsync(CancellationToken.None));
+                }
+            }
+        }
+        [Fact]
+        public async Task ValidatePackageEntriesAsync_InvalidPackageFilesContainsCurrentPath_Fails()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var rootPath = RuntimeEnvironmentHelper.IsWindows ? @"C:" : @"/";
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                  root,
+                  identity.Id,
+                  identity.Version.ToString(),
+                  DateTimeOffset.UtcNow.LocalDateTime,
+                  ".",
+                  "content/net40/B.nuspec");
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act & Assert
+                    await Assert.ThrowsAsync<UnsafePackageEntryException>(() => packageReader.ValidatePackageEntriesAsync(CancellationToken.None));
+                }
+            }
+        }
+        [Fact]
+        public async Task ValidatePackageEntriesAsync_ValidPackageFiles_Succeeds()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net40/A.dll",
+                   "content/net40/B.nuspec");
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act & Assert
+                    await packageReader.ValidatePackageEntriesAsync(CancellationToken.None);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CopyFiles_ContainsInvalidEntry_Fail()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "../../A.dll",
+                   "content/net40/B.nuspec");
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act & Assert
+                    Assert.Throws<UnsafePackageEntryException>(() => packageReader.CopyFiles(
+                        root.Path,
+                        new[] { "../../A.dll", "content/net40/B.nuspec" },
+                        ExtractFile,
+                        NullLogger.Instance,
+                        CancellationToken.None));
+                }
+            }
+        }
+        [Fact]
+        public async Task CopyFiles_ContainsRootEntry_Fail()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var rootPath = RuntimeEnvironmentHelper.IsWindows ? @"C:" : @"/";
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                  root,
+                  identity.Id,
+                  identity.Version.ToString(),
+                  DateTimeOffset.UtcNow.LocalDateTime,
+                  $"{rootPath}/A.dll",
+                  "content/net40/B.nuspec");
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act & Assert
+                    Assert.Throws<UnsafePackageEntryException>(() => packageReader.CopyFiles(
+                        root.Path,
+                        new[] { $"{rootPath}/A.dll", "content/net40/B.nuspec" },
+                        ExtractFile,
+                        NullLogger.Instance,
+                        CancellationToken.None));
+                }
+            }
+        }
+        [Fact]
+        public async Task CopyFiles_ContainsCurrentEntry_Fail()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                  root,
+                  identity.Id,
+                  identity.Version.ToString(),
+                  DateTimeOffset.UtcNow.LocalDateTime,
+                  ".",
+                  "content/net40/B.nuspec");
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act & Assert
+                    Assert.Throws<UnsafePackageEntryException>(() => packageReader.CopyFiles(
+                        root.Path,
+                        new[] { ".", "content/net40/B.nuspec" },
+                        ExtractFile,
+                        NullLogger.Instance,
+                        CancellationToken.None));
+                }
+            }
+        }
+
+        private static string ExtractFile(string sourcePath, string targetPath, Stream sourceStream)
+        {
+            using (var targetStream = File.OpenWrite(targetPath))
+            {
+                sourceStream.CopyTo(targetStream);
+            }
+
+            return targetPath;
         }
     }
 }
