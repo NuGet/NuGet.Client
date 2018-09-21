@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 
-namespace NuGet.Packaging
+namespace NuGet.Packaging.Licenses
 {
     /// <summary>
     /// NuGet's internal representation of a license identifier. 
@@ -32,7 +32,7 @@ namespace NuGet.Packaging
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
             Plus = plus;
             IsStandardLicense = isStandardLicense;
-            Type = NuGetLicenseExpressionType.License;
+            Type = LicenseExpressionType.License;
         }
 
         /// <summary>

@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 
-namespace NuGet.Packaging
+namespace NuGet.Packaging.Licenses
 {
     /// <summary>
     /// NuGet's internal representation of a license exception identifier. 

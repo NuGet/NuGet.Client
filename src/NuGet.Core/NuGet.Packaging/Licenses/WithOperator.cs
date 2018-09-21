@@ -3,19 +3,19 @@
 
 using System;
 
-namespace NuGet.Packaging
+namespace NuGet.Packaging.Licenses
 {
     /// <summary>
     /// Represents a <see cref="NuGetLicenseExpression"/> that's a WITH operator.
     /// It has a License and Exception.
     /// </summary>
-    public class NuGetLicenseWithOperator : NuGetLicenseOperator
+    public class WithOperator : LicenseOperator
     {
-        public NuGetLicenseWithOperator(NuGetLicense license, NuGetLicenseException exception) : base()
+        public WithOperator(NuGetLicense license, NuGetLicenseException exception) : base()
         {
             License = license ?? throw new ArgumentNullException(nameof(license));
             Exception = exception ?? throw new ArgumentNullException(nameof(exception));
-            OperatorType = NuGetLicenseOperatorType.WithOperator;
+            OperatorType = LicenseOperatorType.WithOperator;
         }
 
         /// <summary>

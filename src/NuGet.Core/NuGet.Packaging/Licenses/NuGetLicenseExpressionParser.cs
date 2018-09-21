@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace NuGet.Packaging
+namespace NuGet.Packaging.Licenses
 {
     public static class NuGetLicenseExpressionParser
     {
@@ -166,7 +166,7 @@ namespace NuGet.Packaging
                 var right = PopIfNotEmpty(operandStack);
                 var left = PopIfNotEmpty(operandStack);
 
-                var withNode = new NuGetLicenseWithOperator(NuGetLicense.Parse(left.Value), NuGetLicenseException.Parse(right.Value));
+                var withNode = new WithOperator(NuGetLicense.Parse(left.Value), NuGetLicenseException.Parse(right.Value));
 
                 if (leftHandSideExpression == null)
                 {
@@ -183,18 +183,18 @@ namespace NuGet.Packaging
             }
             else
             {
-                var logicalOperator = op.TokenType == LicenseTokenType.AND ? NuGetLicenseLogicalOperatorType.AND : NuGetLicenseLogicalOperatorType.OR;
+                var logicalOperator = op.TokenType == LicenseTokenType.AND ? LogicalOperatorType.And : LogicalOperatorType.Or;
 
                 if (leftHandSideExpression == null && rightHandSideExpression == null)
                 {
                     var right = PopIfNotEmpty(operandStack);
                     var left = PopIfNotEmpty(operandStack);
-                    leftHandSideExpression = new NuGetLicenseLogicalOperator(logicalOperator, NuGetLicense.Parse(left.Value), NuGetLicense.Parse(right.Value));
+                    leftHandSideExpression = new LogicalOperator(logicalOperator, NuGetLicense.Parse(left.Value), NuGetLicense.Parse(right.Value));
                 }
                 else if (rightHandSideExpression == null)
                 {
                     var right = PopIfNotEmpty(operandStack);
-                    var newExpression = new NuGetLicenseLogicalOperator(logicalOperator, leftHandSideExpression, NuGetLicense.Parse(right.Value));
+                    var newExpression = new LogicalOperator(logicalOperator, leftHandSideExpression, NuGetLicense.Parse(right.Value));
                     leftHandSideExpression = newExpression;
                 }
                 else if (leftHandSideExpression == null)
@@ -203,7 +203,7 @@ namespace NuGet.Packaging
                 }
                 else
                 {
-                    var newExpression = new NuGetLicenseLogicalOperator(logicalOperator, leftHandSideExpression, rightHandSideExpression);
+                    var newExpression = new LogicalOperator(logicalOperator, leftHandSideExpression, rightHandSideExpression);
                     rightHandSideExpression = null;
                     leftHandSideExpression = newExpression;
                 }

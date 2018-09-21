@@ -5,7 +5,7 @@ using System;
 using System.Globalization;
 using Xunit;
 
-namespace NuGet.Packaging.Test
+namespace NuGet.Packaging.Licenses.Test
 {
     public class NuGetLicenseExpressionParserTests
     {
@@ -40,14 +40,14 @@ namespace NuGet.Packaging.Test
             Assert.Equal(postfix, licenseExpression.ToString());
             Assert.Equal(licenseExpression.HasOnlyStandardIdentifiers(), hasStandardIdentifiers);
 
-            if (Enum.TryParse<NuGetLicenseLogicalOperatorType>(rootOperator, true, out var logicalOperator))
+            if (Enum.TryParse<LogicalOperatorType>(rootOperator, true, out var logicalOperator))
             {
-                var expression = licenseExpression as NuGetLicenseLogicalOperator;
+                var expression = licenseExpression as LogicalOperator;
                 Assert.Equal(expression.LogicalOperatorType, logicalOperator);
             }
             else if (rootOperator.Equals("WITH", StringComparison.OrdinalIgnoreCase))
             {
-                var expression = licenseExpression as NuGetLicenseWithOperator;
+                var expression = licenseExpression as WithOperator;
                 Assert.NotNull(expression);
             }
             else
@@ -137,8 +137,8 @@ namespace NuGet.Packaging.Test
         public void LicenseExpressionParser_CreatesNonStandardExpressionsWithBadCasing(string infix, bool isFirstOperatorStandard, bool isSecondOperatorStandard)
         {
             var expression = NuGetLicenseExpressionParser.Parse(infix);
-            var withExpression = expression as NuGetLicenseWithOperator;
-            var logicalExpression = expression as NuGetLicenseLogicalOperator;
+            var withExpression = expression as WithOperator;
+            var logicalExpression = expression as LogicalOperator;
 
             if (withExpression != null)
             {

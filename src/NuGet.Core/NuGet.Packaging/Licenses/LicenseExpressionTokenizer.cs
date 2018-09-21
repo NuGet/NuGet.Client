@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace NuGet.Packaging
+namespace NuGet.Packaging.Licenses
 {
     internal class LicenseExpressionTokenizer
     {

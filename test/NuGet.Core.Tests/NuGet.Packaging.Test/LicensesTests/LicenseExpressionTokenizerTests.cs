@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace NuGet.Packaging.Test
+namespace NuGet.Packaging.Licenses.Test
 {
     public class LicenseExpressionTokenizerTests
     {
