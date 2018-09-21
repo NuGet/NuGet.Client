@@ -7,7 +7,7 @@ using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
-    public sealed class SourceItem : AddItem, IEquatable<SourceItem>
+    public sealed class SourceItem : AddItem
     {
         public string ProtocolVersion
         {
@@ -63,23 +63,22 @@ namespace NuGet.Configuration
             return newSetting;
         }
 
-        public bool Equals(SourceItem other)
+        public override bool Equals(object other)
         {
-            if (other == null)
+            var source = other as SourceItem;
+
+            if (source == null)
             {
                 return false;
             }
 
-            if (ReferenceEquals(this, other))
+            if (ReferenceEquals(this, source))
             {
                 return true;
             }
 
-            return string.Equals(Key, other.Key, StringComparison.Ordinal) &&
-                string.Equals(ProtocolVersion, other.ProtocolVersion, StringComparison.Ordinal);
+            return string.Equals(Key, source.Key, StringComparison.Ordinal) &&
+                string.Equals(ProtocolVersion, source.ProtocolVersion, StringComparison.Ordinal);
         }
-
-        public override bool Equals(SettingBase other) => Equals(other as SourceItem);
-        public override bool Equals(object other) => Equals(other as SourceItem);
     }
 }

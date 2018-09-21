@@ -31,7 +31,7 @@ namespace NuGet.Configuration.Test
                 var srcFolder = Path.Combine(mockBaseDirectory, "src");
                 var globalFolder = Path.Combine(mockBaseDirectory, "global");
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 Settings settings = new Settings(mockBaseDirectory);
 
                 var http = SettingsUtility.GetHttpCacheFolder();

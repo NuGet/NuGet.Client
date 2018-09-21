@@ -29,7 +29,7 @@ namespace NuGet.Configuration.Test
             var configFile = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration><sectionName></configuration>");
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration><sectionName></configuration>");
 
                 // Act & Assert
                 var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
@@ -49,7 +49,7 @@ namespace NuGet.Configuration.Test
             var nugetConfigPath = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act
                 var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
@@ -76,7 +76,7 @@ namespace NuGet.Configuration.Test
     </SectionName>
 </notvalid>";
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, config);
 
                 // Act & Assert
                 var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
@@ -100,7 +100,7 @@ namespace NuGet.Configuration.Test
         <add key='key2' value='value2' />
     </SectionName>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, config);
 
                 // Act
                 var settingsFile = new SettingsFile(mockBaseDirectory);
@@ -133,7 +133,7 @@ namespace NuGet.Configuration.Test
         <add key='key2' value='value2' />
     </SectionName>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, config);
 
                 // Act
                 var settingsFile = new SettingsFile(mockBaseDirectory, configFile);
@@ -161,9 +161,9 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Assert
-                var text = ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "NuGet.Config")));
+                var text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "NuGet.Config")));
 
-                var expectedResult = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var expectedResult = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
     <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
@@ -181,7 +181,7 @@ namespace NuGet.Configuration.Test
             var configFile = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
@@ -206,7 +206,7 @@ namespace NuGet.Configuration.Test
             var nugetConfigPath = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act and Assert
                 var settingsFile = new SettingsFile(mockBaseDirectory);
@@ -231,7 +231,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
@@ -249,7 +249,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
@@ -273,8 +273,8 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-                var configFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
 
                 var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
 
@@ -289,7 +289,7 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("Section");
                 section.Items.Count.Should().Be(1);
 
-                var updatedFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                var updatedFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
                 updatedFileHash.Should().BeEquivalentTo(configFileHash);
             }
         }
@@ -309,7 +309,7 @@ namespace NuGet.Configuration.Test
     </SectionName>
 </configuration>";
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
@@ -317,7 +317,7 @@ namespace NuGet.Configuration.Test
                 settingsFile.SaveToDisk();
 
                 // Assert
-                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <SectionName>
         <add key=""key"" value=""value"" />
@@ -327,7 +327,7 @@ namespace NuGet.Configuration.Test
     </NewSectionName>
 </configuration>");
 
-                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, configFile))).Should().Be(result);
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, configFile))).Should().Be(result);
                 var section = settingsFile.GetSection("NewSectionName");
                 section.Should().NotBeNull();
                 section.Items.Count.Should().Be(1);
@@ -348,7 +348,7 @@ namespace NuGet.Configuration.Test
     </SectionName>
 </configuration>";
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
@@ -356,7 +356,7 @@ namespace NuGet.Configuration.Test
                 settingsFile.SaveToDisk();
 
                 // Assert
-                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <SectionName>
         <add key=""key"" value=""value"" />
@@ -364,7 +364,7 @@ namespace NuGet.Configuration.Test
     </SectionName>
 </configuration>");
 
-                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, configFile))).Should().Be(result);
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, configFile))).Should().Be(result);
             }
         }
 
@@ -383,7 +383,7 @@ namespace NuGet.Configuration.Test
     </SectionName>
 </configuration>";
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
@@ -391,14 +391,14 @@ namespace NuGet.Configuration.Test
                 settingsFile.SaveToDisk();
 
                 // Assert
-                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <SectionName>
         <add key=""key"" value=""NewValue"" />
     </SectionName>
 </configuration>");
 
-                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, configFile))).Should().Be(result);
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, configFile))).Should().Be(result);
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
@@ -428,14 +428,14 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
                 settingsFile.AddOrUpdate("SectionName", new AddItem("newKey", "value"));
                 settingsFile.SaveToDisk();
 
-                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <!-- Comment in nuget configuration -->
 <configuration>
     <!-- Will add an item to this section -->
@@ -449,7 +449,7 @@ namespace NuGet.Configuration.Test
     </SectionName2>
 </configuration>");
 
-                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
 
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
@@ -482,14 +482,14 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
                 settingsFile.AddOrUpdate("SectionName", new AddItem("newKey", "value"));
                 settingsFile.SaveToDisk();
 
-                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <SectionName>
         <add key=""key1"" value=""value"" />
@@ -505,7 +505,7 @@ namespace NuGet.Configuration.Test
     </UnknownSection>
 </configuration>");
 
-                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
 
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
@@ -530,8 +530,8 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-                var configFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
 
                 var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
 
@@ -553,7 +553,7 @@ namespace NuGet.Configuration.Test
                 var section1 = settingsFile.GetSection("Section");
                 section1.Items.Count.Should().Be(1);
 
-                var updatedFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                var updatedFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
                 updatedFileHash.Should().BeEquivalentTo(configFileHash);
             }
         }
@@ -572,7 +572,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 var settingsFile = new SettingsFile(Path.Combine(mockBaseDirectory));
 
@@ -587,7 +587,7 @@ namespace NuGet.Configuration.Test
                 settingsFile.Remove("SectionName", item);
                 settingsFile.SaveToDisk();
 
-                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?><configuration></configuration>"));
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?><configuration></configuration>"));
 
                 section = settingsFile.GetSection("SectionName");
                 section.Should().BeNull();
@@ -613,7 +613,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
@@ -624,7 +624,7 @@ namespace NuGet.Configuration.Test
                 settingsFile.Remove("SectionName", item);
                 settingsFile.SaveToDisk();
 
-                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <SectionName>
         <add key=""keyNotToDelete"" value=""value"" />
@@ -634,7 +634,7 @@ namespace NuGet.Configuration.Test
     </SectionName2>
 </configuration>");
 
-                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
 
                 section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
@@ -665,7 +665,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
@@ -676,7 +676,7 @@ namespace NuGet.Configuration.Test
                 settingsFile.Remove("SectionName", item);
                 settingsFile.SaveToDisk();
 
-                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <!-- Comment in nuget configuration -->
 <configuration>
     <!-- This section has the item to delete -->
@@ -689,7 +689,7 @@ namespace NuGet.Configuration.Test
     </SectionName2>
 </configuration>");
 
-                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
 
                 section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
@@ -722,7 +722,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
@@ -733,7 +733,7 @@ namespace NuGet.Configuration.Test
                 settingsFile.Remove("SectionName", item);
                 settingsFile.SaveToDisk();
 
-                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <SectionName>
         <add key=""keyNotToDelete"" value=""value"" />
@@ -748,7 +748,7 @@ namespace NuGet.Configuration.Test
     </UnknownSection>
 </configuration>");
 
-                ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);
 
                 section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
@@ -765,7 +765,7 @@ namespace NuGet.Configuration.Test
             var configFile = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
@@ -786,7 +786,7 @@ namespace NuGet.Configuration.Test
             var configFile = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
@@ -803,9 +803,9 @@ namespace NuGet.Configuration.Test
             using (var mockSubDirectory = TestDirectory.Create(mockBaseDirectory))
             using (var mockSubSubDirectory = TestDirectory.Create(mockSubDirectory))
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockSubDirectory, @"<configuration></configuration>");
-                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockSubSubDirectory, @"<configuration></configuration>");
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockSubDirectory, @"<configuration></configuration>");
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockSubSubDirectory, @"<configuration></configuration>");
 
                 var baseSettingsFile = new SettingsFile(mockBaseDirectory);
                 var subSettingsFile = new SettingsFile(mockSubDirectory);
@@ -844,7 +844,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
@@ -864,7 +864,7 @@ namespace NuGet.Configuration.Test
                 foreach (var pair in settingsDict)
                 {
                     expectedSettingsDict.TryGetValue(pair.Key, out var expectedSection).Should().BeTrue();
-                    pair.Value.DeepEquals(expectedSection).Should().BeTrue();
+                    SettingsTestUtils.DeepEquals(pair.Value, expectedSection).Should().BeTrue();
                     expectedSettingsDict.Remove(pair.Key);
                 }
                 expectedSettingsDict.Should().BeEmpty();
@@ -891,7 +891,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
@@ -913,7 +913,7 @@ namespace NuGet.Configuration.Test
                 foreach (var pair in settingsDict)
                 {
                     expectedSettingsDict.TryGetValue(pair.Key, out var expectedSection).Should().BeTrue();
-                    pair.Value.DeepEquals(expectedSection).Should().BeTrue();
+                    SettingsTestUtils.DeepEquals(pair.Value, expectedSection).Should().BeTrue();
                     expectedSettingsDict.Remove(pair.Key);
                 }
                 expectedSettingsDict.Should().BeEmpty();
@@ -937,7 +937,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
@@ -957,7 +957,7 @@ namespace NuGet.Configuration.Test
                 foreach (var pair in settingsDict)
                 {
                     expectedSettingsDict.TryGetValue(pair.Key, out var expectedSection).Should().BeTrue();
-                    pair.Value.DeepEquals(expectedSection).Should().BeTrue();
+                    SettingsTestUtils.DeepEquals(pair.Value, expectedSection).Should().BeTrue();
                     expectedSettingsDict.Remove(pair.Key);
                 }
                 expectedSettingsDict.Should().BeEmpty();

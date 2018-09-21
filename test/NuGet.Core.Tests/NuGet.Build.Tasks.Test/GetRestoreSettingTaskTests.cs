@@ -84,9 +84,9 @@ namespace NuGet.Build.Tasks.Test
                 var subFolder = Path.Combine(mockBaseDirectory, "sub");
                 var solutionDirectoryConfig = Path.Combine(mockBaseDirectory, NuGetConstants.NuGetSolutionSettingsFolder);
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(baseConfigPath, solutionDirectoryConfig, baseConfig);
-                ConfigurationFileTestUtility.CreateConfigurationFile(baseConfigPath, subFolder, subFolderConfig);
-                ConfigurationFileTestUtility.CreateConfigurationFile(baseConfigPath, machineWide, MachineWideSettingsConfig);
+                SettingsTestUtils.CreateConfigurationFile(baseConfigPath, solutionDirectoryConfig, baseConfig);
+                SettingsTestUtils.CreateConfigurationFile(baseConfigPath, subFolder, subFolderConfig);
+                SettingsTestUtils.CreateConfigurationFile(baseConfigPath, machineWide, MachineWideSettingsConfig);
                 var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide, baseConfigPath, isMachineWide: true)));
 
                 // Test
@@ -115,7 +115,7 @@ namespace NuGet.Build.Tasks.Test
             using (var workingDir = TestDirectory.CreateInTemp())
             {
                 // Arrange
-                ConfigurationFileTestUtility.CreateConfigurationFile(Settings.DefaultSettingsFileName, machineWide, MachineWideSettingsConfig);
+                SettingsTestUtils.CreateConfigurationFile(Settings.DefaultSettingsFileName, machineWide, MachineWideSettingsConfig);
                 var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide, Settings.DefaultSettingsFileName, isMachineWide: true)));
 
                 var innerConfigFile = Path.Combine(workingDir, "sub", Settings.DefaultSettingsFileName);
@@ -429,11 +429,11 @@ namespace NuGet.Build.Tasks.Test
                 Directory.CreateDirectory(unreachablePath);
                 Directory.CreateDirectory(probePath);
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(configName, mockParentDirectory, parentConfig);
-                ConfigurationFileTestUtility.CreateConfigurationFile(configName, basePath, baseConfig);
-                ConfigurationFileTestUtility.CreateConfigurationFile(configName, unreachablePath, unreachableConfig);
+                SettingsTestUtils.CreateConfigurationFile(configName, mockParentDirectory, parentConfig);
+                SettingsTestUtils.CreateConfigurationFile(configName, basePath, baseConfig);
+                SettingsTestUtils.CreateConfigurationFile(configName, unreachablePath, unreachableConfig);
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(configName, machineWide, MachineWideSettingsConfig);
+                SettingsTestUtils.CreateConfigurationFile(configName, machineWide, MachineWideSettingsConfig);
 
                 var machineWideSettings = new Lazy<IMachineWideSettings>(() => new TestMachineWideSettings(new Settings(machineWide, configName, isMachineWide: true)));
 

@@ -9,7 +9,7 @@ using System.Xml.Linq;
 
 namespace NuGet.Configuration
 {
-    public abstract class SettingSection : SettingsGroup<SettingItem>, IEquatable<SettingSection>
+    public abstract class SettingSection : SettingsGroup<SettingItem>
     {
         public IReadOnlyCollection<SettingItem> Items => ChildrenSet.Values;
 
@@ -60,35 +60,23 @@ namespace NuGet.Configuration
             return false;
         }
 
-        public bool Equals(SettingSection other)
+        public override bool Equals(object other)
         {
-            if (other == null)
+            var section = other as SettingSection;
+
+            if (section == null)
             {
                 return false;
             }
 
-            if (ReferenceEquals(this, other))
+            if (ReferenceEquals(this, section))
             {
                 return true;
             }
 
-            return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal);
+            return string.Equals(ElementName, section.ElementName, StringComparison.Ordinal);
         }
 
-        public bool DeepEquals(SettingSection other)
-        {
-            if (!Equals(other))
-            {
-                return false;
-            }
-
-            return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal) &&
-                Items.SequenceEqual(other.Items);
-        }
-
-        public override bool DeepEquals(SettingBase other) => DeepEquals(other as SettingSection);
-        public override bool Equals(SettingBase other) => Equals(other as SettingSection);
-        public override bool Equals(object other) => Equals(other as SettingSection);
         public override int GetHashCode() => ElementName.GetHashCode();
     }
 }
