@@ -1243,7 +1243,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [InlineData("packageA.1.0.0-beta.nupkg", "packageA.1", "0.0-beta", true)]
         [InlineData("packageA.1.0.0-beta-#.nupkg", "packageA", "1.0.0", false)]
         [InlineData("packageA.1.0.0-beta.txt", "packageA.1", "1.0.0", false)]
-        public void LocalFolderUtility_IsPossiblePackageMatch(string fileName, string id, string version, bool expected)
+        public void LocalFolderUtility_IsPossiblePackageWithVersionMatch(string fileName, string id, string version, bool expected)
         {
             // Arrange
             var file = new FileInfo(Path.Combine(Directory.GetCurrentDirectory(), fileName));

@@ -1,0 +1,25 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net45</TargetFrameworks>
+    <TargetFramework />
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <PackProject>false</PackProject>
+    <Shipping>false</Shipping>
+    <IncludeInVSIX>false</IncludeInVSIX>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Test.Utility\NuGet.Test.Utility.csproj" />
+    <ProjectReference Include="..\NuGet.Protocol.VisualStudio\NuGet.Protocol.VisualStudio.csproj" />
+    <ProjectReference Include="..\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
+    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.Interop" Version="1.0.0-*" PrivateAssets="all"/>
+    <PackageReference Include="Xunit" Version= "$(XunitVersion)"/>
+    <Reference Include="System.Runtime.Serialization"/>
+  </ItemGroup>
+  
+  <Import Project="$(BuildCommonDirectory)common.targets" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

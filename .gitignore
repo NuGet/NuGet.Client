@@ -6,16 +6,22 @@
 project.lock.json
 artifacts/
 
+# Tests
+.test/
+
 # VSCode
 **/.vs/
 **/.vscode/
 
 cli/
-cli_test/
+cli1.0.4/
 **/nupkgs/*.nupkg
 packages/
 .nuget/nuget.exe
 */.nuget/
+
+# ignore nuget.exe for e2e tests
+test/EndToEnd/nuget.exe
 
 # remove ilmerge log
 mergelog.txt

@@ -35,7 +35,7 @@ namespace NuGet.Configuration.Test
             Assert.Equal("password", credentials.Password);
         }
 
-        [Fact, Platform(Platform.Windows)]
+        [PlatformFact(Platform.Windows)]
         public void FromUserInput_WithStorePasswordEncrypted_OnWindows_EncryptsPassword()
         {
             var credentials = PackageSourceCredential.FromUserInput("source", "user", "password", storePasswordInClearText: false);
@@ -44,13 +44,13 @@ namespace NuGet.Configuration.Test
             Assert.Equal("password", credentials.Password);
         }
 
-        [Fact, Platform(Platform.Linux)]
+        [PlatformFact(Platform.Linux)]
         public void FromUserInput_WithStorePasswordEncrypted_OnLinux_Throws()
         {
             Assert.Throws<NuGetConfigurationException>(() => PackageSourceCredential.FromUserInput("source", "user", "password", storePasswordInClearText: false));
         }
 
-        [Fact, Platform(Platform.Linux)]
+        [PlatformFact(Platform.Linux)]
         public void Password_WithEncryptedPassword_OnLinux_Throws()
         {
             var credentials = new PackageSourceCredential("source", "user", "password", isPasswordClearText: false);
@@ -58,13 +58,13 @@ namespace NuGet.Configuration.Test
             Assert.Throws<NuGetConfigurationException>(() => credentials.Password);
         }
 
-        [Fact, Platform(Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public void FromUserInput_WithStorePasswordEncrypted_OnMacOS_Throws()
         {
             Assert.Throws<NuGetConfigurationException>(() => PackageSourceCredential.FromUserInput("source", "user", "password", storePasswordInClearText: false));
         }
 
-        [Fact, Platform(Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public void Password_WithEncryptedPassword_OnMacOS_Throws()
         {
             var credentials = new PackageSourceCredential("source", "user", "password", isPasswordClearText: false);

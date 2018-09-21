@@ -12,6 +12,9 @@ Switch to force installation of required tools.
 .PARAMETER CI
 Indicates the build script is invoked from CI
 
+.PARAMETER Test
+Indicates the Tests need to be run. Downloads the Test cli when tests are needed to run.
+
 .EXAMPLE
 .\configure.ps1 -cc -v
 Clean repo build environment configuration
@@ -28,7 +31,8 @@ Param (
     [switch]$Force,
     [switch]$CI,
     [Alias('s15')]
-    [switch]$SkipVS15
+    [switch]$SkipVS15,
+    [switch]$RunTest
 )
 
 . "$PSScriptRoot\build\common.ps1"
@@ -46,11 +50,8 @@ Invoke-BuildStep 'Installing NuGet.exe' {
 } -ev +BuildErrors
 
 Invoke-BuildStep 'Installing .NET CLI' {
-    Install-DotnetCLI -Force:$Force
-} -ev +BuildErrors
-
-Invoke-BuildStep 'Installing .NET CLI for tests' {
-    Install-DotnetCLI -Test -Force:$Force
+    Install-DotnetCLIToILMergePack -Force:$Force
+    Install-DotnetCLI -Force:$Force    
 } -ev +BuildErrors
 
 # Restoring tools required for build
@@ -175,7 +176,7 @@ if ($MSBuildExe) {
 }
 
 New-Item $Artifacts -ItemType Directory -ea Ignore | Out-Null
-$ConfigureObject | ConvertTo-Json | Set-Content $ConfigureJson
+$ConfigureObject | ConvertTo-Json -Compress | Set-Content $ConfigureJson
 
 Trace-Log "Configuration data has been written to '$ConfigureJson'"
 

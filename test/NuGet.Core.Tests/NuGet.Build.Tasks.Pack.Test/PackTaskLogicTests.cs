@@ -145,8 +145,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(null, "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
         [InlineData("", "abc.txt", "abc.txt")]
         [InlineData("folderA", "abc.txt", "folderA/abc.txt")]
@@ -190,8 +189,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
-        [Platform(Platform.Darwin)]
-        [Theory]
+        [PlatformTheory(Platform.Darwin)]
         [InlineData(null, "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
         [InlineData("", "abc.txt", "abc.txt")]
         [InlineData("folderA", "abc.txt", "folderA/abc.txt")]
@@ -234,8 +232,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
-        [Platform(Platform.Linux)]
-        [Theory]
+        [PlatformTheory(Platform.Linux)]
         [InlineData(null, "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
         [InlineData("", "abc.txt", "abc.txt")]
         [InlineData("folderA", "abc.txt", "folderA/abc.txt")]

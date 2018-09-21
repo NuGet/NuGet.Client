@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0">
+  <PropertyGroup>
+    <IsNetCoreProject>false</IsNetCoreProject>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'">
+    <PackageReference Include="PdbGit" Version="3.0.41" PrivateAssets="all"/>
+  </ItemGroup>
+  
+  <!-- Load config -->
+  <Import Project="config.props" />
+
+  <!-- Additional props -->
+  <Import Project="common.project.props"/>
+</Project>

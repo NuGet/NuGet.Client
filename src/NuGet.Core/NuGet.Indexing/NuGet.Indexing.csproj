@@ -1,0 +1,41 @@
+﻿
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <Description>NuGet.Indexing Class Library</Description>
+    <TargetFramework>net45</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591;CS1584;CS1658</NoWarn>
+    <PackProject>true</PackProject>
+    <Shipping>true</Shipping>
+    <IncludeInVsix>true</IncludeInVsix>
+    <IncludeNuGetSharedFiles>true</IncludeNuGetSharedFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/NuGetQuery.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierKeywordAnalyzer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierAnalyzer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/DescriptionAnalyzer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/DotTokenizer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TokenizingHelper.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/OwnerAnalyzer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/VersionAnalyzer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/CamelCaseFilter.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TagsAnalyzer.cs"/>
+    <Compile Include="../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/SemanticVersionFilter.cs"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.csproj" />
+    <ProjectReference Include="..\NuGet.Versioning\NuGet.Versioning.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Lucene.Net" Version="3.0.3" />
+  </ItemGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

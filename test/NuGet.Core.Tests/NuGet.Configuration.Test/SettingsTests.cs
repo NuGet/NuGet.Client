@@ -34,7 +34,7 @@ namespace NuGet.Configuration.Test
             }
         }
 
-        [Fact, Platform(Platform.Windows)]
+        [PlatformFact(Platform.Windows)]
         public void TestNuGetEnviromentPath_OnWindows()
         {
             // Arrange
@@ -69,7 +69,7 @@ namespace NuGet.Configuration.Test
             Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
         }
 
-        [Fact, Platform(Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public void TestNuGetEnviromentPath_OnMac()
         {
             // Arrange
@@ -94,7 +94,7 @@ namespace NuGet.Configuration.Test
             Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
         }
 
-        [Fact, Platform(Platform.Linux)]
+        [PlatformFact(Platform.Linux)]
         public void TestNuGetEnviromentPath_OnLinux()
         {
             // Arrange

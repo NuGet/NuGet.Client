@@ -1,0 +1,43 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+   <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <TargetFramework />
+    <NoWarn>$(NoWarn);CS1591;NU1701</NoWarn>
+    <PackProject>false</PackProject>
+    <Shipping>false</Shipping>
+    <IncludeInVSIX>false</IncludeInVSIX>
+    <XPLATProject>true</XPLATProject>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.0</NetStandardImplicitPackageVersion>
+    <AssetTargetFallback>$(AssetTargetFallback);dotnet5.6;portable-net45+win8</AssetTargetFallback>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <Reference Include="System.Runtime"/>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Security" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.ProjectModel\NuGet.ProjectModel.csproj" />
+    <ProjectReference Include="..\NuGet.Packaging\NuGet.Packaging.csproj" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" PrivateAssets="none" IncludeAssets="all"/>
+    <PackageReference Include="System.IO.Compression" Version="4.0.0"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+    <PackageReference Include="System.Diagnostics.Process" Version="4.1.0"/>
+    <PackageReference Include="System.IO.Compression.ZipFile" Version="4.0.1"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="compiler\resources\*" />
+  </ItemGroup>
+  
+  <Import Project="$(BuildCommonDirectory)common.targets" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

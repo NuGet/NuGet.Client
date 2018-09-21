@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -81,13 +81,13 @@ namespace NuGet.CommandLine
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
-                Assert.Equal("", xdoc.XPathSelectElement("/package/metadata/description").Value);
+                Assert.Equal("NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.", xdoc.XPathSelectElement("/package/metadata/description").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
                 Assert.Equal(
                     testAssembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                         .Where(attr => attr.Key == "owner")
                         .Select(attr => attr.Value)
-                        .FirstOrDefault(),
+                        .FirstOrDefault() ?? "",
                     xdoc.XPathSelectElement("/package/metadata/authors").Value);
             }
         }
@@ -158,7 +158,7 @@ namespace NuGet.CommandLine
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
-                Assert.Equal("", xdoc.XPathSelectElement("/package/metadata/description").Value);
+                Assert.Equal("NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.", xdoc.XPathSelectElement("/package/metadata/description").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
                 Assert.Equal(
                     cmdLineProperties["owner"],
@@ -232,7 +232,7 @@ namespace NuGet.CommandLine
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
-                Assert.Equal("", xdoc.XPathSelectElement("/package/metadata/description").Value);
+                Assert.Equal("NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.", xdoc.XPathSelectElement("/package/metadata/description").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
                 Assert.Equal(
                     cmdLineProperties["overriden"],
@@ -309,8 +309,7 @@ namespace NuGet.CommandLine
         }
 
         // We run this test only on windows because this relies on Microsoft.Build.dll from the GAC and mac blows up
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("1.2.9")]
         [InlineData("1.2.3-rc-12345")]
         [InlineData("1.2.3-alpha.1.8")]

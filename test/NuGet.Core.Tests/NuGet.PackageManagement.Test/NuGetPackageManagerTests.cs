@@ -1923,7 +1923,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public Task TestPacManGetInstalledPackagesByDependencyOrder()
+        public Task TestPacManGetAllInstalledPackagesByDependencyOrder()
         {
             return TestPacManGetInstalledPackagesByDependencyOrder(deletePackages: false);
         }

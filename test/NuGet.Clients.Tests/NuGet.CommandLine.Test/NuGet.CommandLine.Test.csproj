@@ -1,22 +1,13 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\..\build\Common.props" />
+﻿<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
   <PropertyGroup>
-    <PackagesPath>$(UserProfile)\.nuget\packages</PackagesPath>
+    <TargetFrameworks>net46</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' "></TargetFrameworks>
+    <TestProject>true</TestProject>
   </PropertyGroup>
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <ProjectGuid>{33294BB8-5144-4363-B02C-332F6D94C1C1}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NuGet.CommandLine.Test</RootNamespace>
-    <AssemblyName>NuGet.CommandLine.Test</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TestProjectType>UnitTest</TestProjectType>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="NuGet.Core">
       <HintPath>..\..\..\packages\NuGet.Core.2.14.0-rtm-832\lib\net40-Client\NuGet.Core.dll</HintPath>
@@ -34,55 +25,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Common\SelfUpdaterTests.cs" />
-    <Compile Include="ConsoleCredentialProviderTest.cs" />
-    <Compile Include="ConsoleTest.cs" />
-    <Compile Include="DefaultConfigurationFilePreserver.cs" />
-    <Compile Include="LocalResourceUtilsTest.cs" />
-    <Compile Include="LocalsUtil.cs" />
-    <Compile Include="MockServer.cs" />
-    <Compile Include="MockServerResource.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MockServerResource.resx</DependentUpon>
-    </Compile>
-    <Compile Include="MSBuildProjectSystemTests.cs" />
-    <Compile Include="MsBuildUtilityTest.cs" />
-    <Compile Include="NativeMethods.cs" />
-    <Compile Include="NetworkCallCountTest.cs" />
-    <Compile Include="NuGetAddCommandTests.cs" />
-    <Compile Include="NuGetConfigCommandTest.cs" />
-    <Compile Include="NuGetDeleteCommandTest.cs" />
-    <Compile Include="NuGetHelpCommandTest.cs" />
-    <Compile Include="NuGetInitCommandTests.cs" />
-    <Compile Include="NuGetInstallCommandTest.cs" />
-    <Compile Include="NuGetListCommandTest.cs" />
-    <Compile Include="NuGetLocalsCommandTest.cs" />
-    <Compile Include="NuGetPackCommandTest.cs" />
-    <Compile Include="NuGetPushCommandTest.cs" />
-    <Compile Include="NuGetRestoreCommandTest.cs" />
-    <Compile Include="NuGetSetApiKeyTests.cs" />
-    <Compile Include="NuGetUpdateCommandTests.cs" />
-    <Compile Include="PortReserver.cs" />
-    <Compile Include="RestoreUAPPackageReferenceTests.cs" />
-    <Compile Include="RestoreNETCoreTest.cs" />
-    <Compile Include="RestoreProjectJsonTest.cs" />
-    <Compile Include="NuGetSourcesCommandTest.cs" />
-    <Compile Include="PackageCreator.cs" />
-    <Compile Include="ProjectFactoryTest.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ExtensionsTests.cs" />
-    <Compile Include="RestoreRetryTests.cs" />
-    <Compile Include="Util.cs" />
-    <Compile Include="XunitAttribute.cs" />
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj">
       <Project>{957c4e99-3644-47dd-8f9a-ae36f41ebe4a}</Project>
@@ -92,22 +35,27 @@
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\SampleCommandLineExtensions\SampleCommandLineExtensions.csproj">
-      <Project>{f2f53b1a-b973-4932-80cb-5eda38f9d74c}</Project>
-      <Name>SampleCommandLineExtensions</Name>
-    </ProjectReference>
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="$(NuGetClientsSrcDirectory)SampleCommandLineExtensions\SampleCommandLineExtensions.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\TestExtensions\TestablePluginCredentialProvider\TestableCredentialProvider.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
+
   <ItemGroup>
-    <EmbeddedResource Include="MockServerResource.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>MockServerResource.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(EnlistmentRoot)\build\common.targets" />
-  <Import Project="$(EnlistmentRoot)\build\test.targets" />
+
+  <ItemGroup>
+    <None Include="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy /diy $(ArtifactRoot)\TestableCredentialProvider\$(OutDirFx). $(TestTargetDir)\TestableCredentialProvider
-xcopy /diy $(ArtifactRoot)\SampleCommandLineExtensions\$(OutDirFx)SampleCommandLineExtensions.dll $(TestTargetDir)</PostBuildEvent>
+    <PostBuildEvent>
+      xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\net46\CredentialProvider.Testable.exe $(OutputPath)TestableCredentialProvider\
+      xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\net46\*.dll $(OutputPath)TestableCredentialProvider\
+      xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\$(BuildVariationFolder)\bin\$(Configuration)\net46\SampleCommandLineExtensions.dll $(OutputPath)</PostBuildEvent>
   </PropertyGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

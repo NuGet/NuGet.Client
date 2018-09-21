@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+env
 
 while true ; do
 	case "$1" in
@@ -13,16 +14,30 @@ RESULTCODE=0
 # move up to the repo root
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR=$SCRIPTDIR/../../
-pushd DIR
+pushd $DIR
+
+NuGetExe="$DIR/.nuget/nuget.exe"
+#Get NuGet.exe
+curl -o $NuGetExe https://dist.nuget.org/win-x86-commandline/v4.4.1/nuget.exe
+
+mono --version
+
+#restore solution packages
+mono $NuGetExe restore  "$DIR/.nuget/packages.config" -SolutionDirectory "$DIR"
+if [ $? -ne 0 ]; then
+	echo "Restore failed!!"
+	exit 1
+fi
 
 # Download the CLI install script to cli
 echo "Installing dotnet CLI"
 mkdir -p cli
-curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-preview2/scripts/obtain/dotnet-install.sh
+curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/4bd9bb92cc3636421cd01baedbd8ef3e41aa1e22/scripts/obtain/dotnet-install.sh
 
 # Run install.sh
 chmod +x cli/dotnet-install.sh
-cli/dotnet-install.sh -i cli -c preview -v 1.0.0-preview2-003121
+# cli/dotnet-install.sh -i cli -c 2.0 --version 2.0.2
+cli/dotnet-install.sh -i cli -c preview --version 1.0.4
 
 # Display current version
 DOTNET="$(pwd)/cli/dotnet"
@@ -38,7 +53,7 @@ git submodule update
 # clear caches
 if [ "$CLEAR_CACHE" == "1" ]
 then
-	# echo "Clearing the nuget cache folder"
+	# echo "Clearing the nuget web cache folder"
 	# rm -r -f ~/.local/share/NuGet/*
 
 	echo "Clearing the nuget packages folder"
@@ -46,57 +61,59 @@ then
 fi
 
 # restore packages
-$DOTNET restore src/NuGet.Core test/NuGet.Core.Tests test/NuGet.Core.FuncTests --verbosity minimal
+echo "$DOTNET msbuild build/build.proj /t:RestoreTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1
 fi
 
-# run tests
-for testProject in `find test/NuGet.Core.FuncTests -type f -name project.json`
-do
-	testDir="$(pwd)/$(dirname $testProject)"
+# Unit tests
+echo "$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 
-	if grep -q netcoreapp1.0 "$testProject"; then
-		pushd $testDir
+if [ $? -ne 0 ]; then
+	echo "CoreUnitTests failed!!"
+	RESULTCODE=1
+fi
 
-		case "$(uname -s)" in
-			Linux)
-				echo "$DOTNET test $testDir --configuration release --framework netcoreapp1.0 -notrait Platform=Windows -notrait Platform=Darwin"
-				$DOTNET test $testDir --configuration release --framework netcoreapp1.0 -notrait Platform=Windows -notrait Platform=Darwin
-				;;
-			Darwin)
-				echo "$DOTNET test $testDir --configuration release --framework netcoreapp1.0 -notrait Platform=Windows -notrait Platform=Linux"
-				$DOTNET test $testDir --configuration release --framework netcoreapp1.0 -notrait Platform=Windows -notrait Platform=Linux
-				;;
-			*) ;;
-		esac
+RESULTFILE="build/TestResults/TestResults.xml"
 
-		if [ $? -ne 0 ]; then
-			echo "$testDir FAILED on CoreCLR"
-			RESULTCODE=1
-		fi
+echo "Checking if result file exists at $DIR$RESULTFILE"
+if [ -f  "$DIR$RESULTFILE" ]
+then
+	echo "Renaming $DIR$RESULTFILE"
+	mv "$RESULTFILE" "$DIR/build/TestResults/TestResults.$(date +%H%M%S).xml"
+else
+	echo "$DIR$RESULTFILE not found."
+fi
 
-		popd
-	else
-		echo "Skipping the tests in $testProject on CoreCLR"
-	fi
-done
+# Func tests
+echo "$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+
+if [ $? -ne 0 ]; then
+	RESULTCODE='1'
+	echo "CoreFuncTests failed!!"
+fi
+
+echo "Checking if result file exists at $DIR$RESULTFILE"
+if [ -f  "$DIR$RESULTFILE" ]
+then
+	echo "Renaming $DIR$RESULTFILE"
+	mv "$RESULTFILE" "$DIR/build/TestResults/TestResults.$(date +%H%M%S).xml"
+else
+	echo "$DIR$RESULTFILE not found."
+fi
+
+if [ -z "$CI" ]; then
+	popd
+	exit $RESULTCODE
+fi
 
 #run mono test
-TestDir="$DIR/artifacts/NuGet.CommandLine.Test/14.0/Release"
-XunitConsole="$DIR/packages/xunit.runner.console.2.1.0/tools/xunit.console.exe"
-NuGetExe="$DIR/.nuget/nuget.exe"
-
-#Get NuGet.exe
-wget -O $NuGetExe https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe
-
-#restore solution packages
-mono $NuGetExe restore  "$DIR/.nuget/packages.config" -SolutionDirectory "$DIR"
-if [ $? -ne 0 ]; then
-	echo "Restore failed!!"
-	exit 1
-fi
+TestDir="$DIR/artifacts/NuGet.CommandLine.Test/"
+XunitConsole="$DIR/packages/xunit.runner.console.2.3.1/tools/net452/xunit.console.exe"
 
 #Clean System dll
 rm -r -f "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSharp.dll" "$TestDir/Microsoft.Build.Engine.dll"
@@ -105,12 +122,23 @@ rm -r -f "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSha
 
 case "$(uname -s)" in
 		Linux)
-			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin"
-			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin
+			# We are not testing Mono on linux currently, so comment it out.
+			#echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin -xml build/TestResults/monoonlinux.xml"
+			#mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin -xml "build/TestResults/monoonlinux.xml"
+			if [ $RESULTCODE -ne '0' ]; then
+				RESULTCODE=$?
+				echo "Unit Tests or Core Func Tests failed on Linux"				
+				exit 1
+			fi
 			;;
 		Darwin)
-			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux"
-			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux
+			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux -xml build/TestResults/monoomac.xml"
+			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux -xml "build/TestResults/monoonmac.xml"
+			if [ $? -ne '0' ]; then
+				RESULTCODE=$?
+				echo "Mono tests failed!"				
+				exit 1
+			fi
 			;;
 		*) ;;
 esac

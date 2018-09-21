@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -2649,7 +2649,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
                 Assert.True(File.Exists(projectA.PropsOutput), r.Item2);
 
-                Assert.Equal(NuGetFramework.Parse("net45"), projectA.AssetsFile.Targets.Single().TargetFramework);
+                Assert.Equal(NuGetFramework.Parse("net45"), projectA.AssetsFile.Targets.Single(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).TargetFramework);
             }
         }
 

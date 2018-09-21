@@ -55,8 +55,7 @@ namespace NuGet.Common.Test
             Assert.Equal(expectedResult, PathResolver.IsDirectoryPath(path));
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(@"a\", true)]
         [InlineData(@"\\a", false)]
         [InlineData(@"\\a\", true)]
@@ -72,8 +71,7 @@ namespace NuGet.Common.Test
             Assert.Equal(expectedResult, PathResolver.IsDirectoryPath(path));
         }
 
-        [Platform(Platform.Darwin)]
-        [Theory]
+        [PlatformTheory(Platform.Darwin)]
         [InlineData(@"a\", false)]
         [InlineData(@"\\a", false)]
         [InlineData(@"\\a\", false)]
@@ -89,8 +87,7 @@ namespace NuGet.Common.Test
             Assert.Equal(expectedResult, PathResolver.IsDirectoryPath(path));
         }
 
-        [Platform(Platform.Linux)]
-        [Theory]
+        [PlatformTheory(Platform.Linux)]
         [InlineData(@"a\", false)]
         [InlineData(@"\\a", false)]
         [InlineData(@"\\a\", false)]
@@ -235,8 +232,7 @@ namespace NuGet.Common.Test
             });
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("dir1/dir2/")]
         [InlineData(@"dir1\dir2\")]
         public void PathResolver_PerformWildcardSearch_WithDirectoryAndTrailingSlashRecursivelyFindsAllMatchingFiles_OnWindows(string searchPath)
@@ -252,8 +248,7 @@ namespace NuGet.Common.Test
                 }, actualFullPaths);
         }
 
-        [Platform(Platform.Darwin)]
-        [Theory]
+        [PlatformTheory(Platform.Darwin)]
         [InlineData("dir1/dir2/", new[]
             {
                 "/dir1/dir2/file1.txt",
@@ -269,8 +264,7 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
-        [Platform(Platform.Linux)]
-        [Theory]
+        [PlatformTheory(Platform.Linux)]
         [InlineData("dir1/dir2/", new[]
             {
                 "/dir1/dir2/file1.txt",
@@ -325,8 +319,7 @@ namespace NuGet.Common.Test
             Verify(new string[] { }, actualFullPaths);
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("dir1/file2.txt")]
         [InlineData(@"dir1\file2.txt")]
         public void PathResolver_PerformWildcardSearch_WithDirectoryAndFileNameFindsMatchingFile_OnWindows(string searchPath)
@@ -336,8 +329,7 @@ namespace NuGet.Common.Test
             Verify(new[] { @"\dir1\file2.txt" }, actualFullPaths);
         }
 
-        [Platform(Platform.Darwin)]
-        [Theory]
+        [PlatformTheory(Platform.Darwin)]
         [InlineData("dir1/file2.txt", new[] { "/dir1/file2.txt" })]
         [InlineData(@"dir1\file2.txt", new string[] { })]
         public void PathResolver_PerformWildcardSearch_WithDirectoryAndFileNameFindsMatchingFile_OnMacOs(string searchPath, string[] expectedResults)
@@ -347,8 +339,7 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
-        [Platform(Platform.Linux)]
-        [Theory]
+        [PlatformTheory(Platform.Linux)]
         [InlineData("dir1/file2.txt", new[] { "/dir1/file2.txt" })]
         [InlineData(@"dir1\file2.txt", new string[] { })]
         public void PathResolver_PerformWildcardSearch_WithDirectoryAndFileNameFindsMatchingFile_OnLinux(string searchPath, string[] expectedResults)
@@ -358,8 +349,7 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("dir1/../file1.txt")]
         [InlineData(@"dir1\..\file1.txt")]
         public void PathResolver_PerformWildcardSearch_WithDirectoryRelativePathAndFileNameFindsMatchingFile_OnWindows(string searchPath)
@@ -369,8 +359,7 @@ namespace NuGet.Common.Test
             Verify(new[] { @"\dir1\..\file1.txt" }, actualFullPaths);
         }
 
-        [Platform(Platform.Darwin)]
-        [Theory]
+        [PlatformTheory(Platform.Darwin)]
         [InlineData("dir1/../file1.txt", new[] { "/dir1/../file1.txt" })]
         [InlineData(@"dir1\..\file1.txt", new string[] { })]
         public void PathResolver_PerformWildcardSearch_WithDirectoryRelativePathAndFileNameFindsMatchingFile_OnMacOs(string searchPath, string[] expectedResults)
@@ -380,8 +369,7 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
-        [Platform(Platform.Linux)]
-        [Theory]
+        [PlatformTheory(Platform.Linux)]
         [InlineData("dir1/../file1.txt", new[] { "/dir1/../file1.txt" })]
         [InlineData(@"dir1\..\file1.txt", new string[] { })]
         public void PathResolver_PerformWildcardSearch_WithDirectoryRelativePathAndFileNameFindsMatchingFile_OnLinux(string searchPath, string[] expectedResults)
@@ -391,8 +379,7 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("**/file1.txt")]
         [InlineData(@"**\file1.txt")]
         public void PathResolver_PerformWildcardSearch_WithGlobstarAndFileNameRecursivelyFindsAllMatchingFiles(string searchPath)
@@ -409,8 +396,7 @@ namespace NuGet.Common.Test
                 }, actualFullPaths);
         }
 
-        [Platform(Platform.Darwin)]
-        [Theory]
+        [PlatformTheory(Platform.Darwin)]
         [InlineData("**/file1.txt", new[]
             {
                 "/file1.txt",
@@ -427,8 +413,7 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
-        [Platform(Platform.Linux)]
-        [Theory]
+        [PlatformTheory(Platform.Linux)]
         [InlineData("**/file1.txt", new[]
             {
                 "/file1.txt",
@@ -445,8 +430,7 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("**/*.txt")]
         [InlineData(@"**\*.txt")]
         public void PathResolver_PerformWildcardSearch_WithGlobstarAndFileNamePatternRecursivelyFindsAllMatchingFiles_OnWindows(string searchPath)
@@ -468,8 +452,7 @@ namespace NuGet.Common.Test
                 }, actualFullPaths);
         }
 
-        [Platform(Platform.Darwin)]
-        [Theory]
+        [PlatformTheory(Platform.Darwin)]
         [InlineData("**/*.txt", new[]
             {
                 "/file1.txt",
@@ -491,8 +474,7 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
-        [Platform(Platform.Linux)]
-        [Theory]
+        [PlatformTheory(Platform.Linux)]
         [InlineData("**/*.txt", new[]
             {
                 "/file1.txt",
@@ -514,8 +496,7 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("dir1/**/file2.txt")]
         [InlineData(@"dir1\**\file2.txt")]
         public void PathResolver_PerformWildcardSearch_WithDirectoryGlobstarAndFileNameAtNonRootDirectoryRecursivelyFindsAllMatchingFiles_OnWindows(string searchPath)
@@ -531,8 +512,7 @@ namespace NuGet.Common.Test
                 }, actualFullPaths);
         }
 
-        [Platform(Platform.Darwin)]
-        [Theory]
+        [PlatformTheory(Platform.Darwin)]
         [InlineData("dir1/**/file2.txt", new[]
             {
                 "/dir1/file2.txt",
@@ -548,8 +528,7 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
-        [Platform(Platform.Linux)]
-        [Theory]
+        [PlatformTheory(Platform.Linux)]
         [InlineData("dir1/**/file2.txt", new[]
             {
                 "/dir1/file2.txt",
@@ -565,8 +544,7 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
-        [Platform(Platform.Windows)]
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("dir1/dir*/*.txt")]
         [InlineData(@"dir1\dir*\*.txt")]
         public void PathResolver_PerformWildcardSearch_WithDirectoryPatternAndFileNamePatternRecursivelyFindsAllMatchingFiles_OnWindows(string searchPath)
@@ -582,8 +560,7 @@ namespace NuGet.Common.Test
                 }, actualFullPaths);
         }
 
-        [Platform(Platform.Darwin)]
-        [Theory]
+        [PlatformTheory(Platform.Darwin)]
         [InlineData("dir1/dir*/*.txt", new[]
             {
                 "/dir1/dir2/file1.txt",
@@ -599,8 +576,7 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
-        [Platform(Platform.Linux)]
-        [Theory]
+        [PlatformTheory(Platform.Linux)]
         [InlineData("dir1/dir*/*.txt", new[]
             {
                 "/dir1/dir2/file1.txt",

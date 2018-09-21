@@ -4,9 +4,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("NuGet.VisualStudio")]
-[assembly: AssemblyDescription("APIs for invoking NuGet services in Visual Studio.")]
-
 // We're not really importing anything from a type library. This is just to make VS happy so we can embed interop types when 
 // referencing this assembly
 

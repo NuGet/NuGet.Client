@@ -1,0 +1,67 @@
+name: $(rev:rr)
+phases:
+
+- phase: NuGet_Client_Product_Construction
+  queue:
+    name: VSEng-MicroBuildVS2017
+    timeoutInMinutes: 30
+    demands: 
+      - DotNetFramework
+      - msbuild
+  
+  steps:
+
+  - task: PowerShell@1
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
+      arguments: "-Force -CI"
+    displayName: "Run Configure.ps1"
+
+  - task: PowerShell@1
+    displayName: "Find NuGet.Client Build"
+    inputs:
+      scriptType: "inlineScript"
+      arguments: "-PersonalAccessToken $(VstsPersonalAccessToken) -RootUrl $(VstsRestApiRootUrl) -DefinitionId $(NuGetClientDefinitionId)"
+      inlineScript: |
+        Param([string]$PersonalAccessToken, [string]$RootUrl, [string]$DefinitionId)
+        $branchName = $env:NUGET_CLIENT_BRANCH
+        $buildNumber = $env:NUGET_CLIENT_BUILD_NUMBER
+        $url = '{0}/build/builds?definitions={1}&statusFilter=completed&resultFilter=succeeded,partiallySucceeded&$top=1&tagFilters={2}&buildNumber={3}&api-version=2.0' -f $RootUrl, $definitionId, $branchName, $buildNumber
+        $Base64Token = [System.Convert]::ToBase64String([char[]]":$PersonalAccessToken")
+        $Headers = @{ Authorization = 'Basic {0}' -f $Base64Token; }        
+        $builds = Invoke-RestMethod -Uri $url -Method GET -Headers $Headers
+        $desiredBuild =  $builds.value
+        Write-Host $desiredBuild
+        $sourceVersion = $desiredBuild.sourceVersion
+        $buildNumber = $desiredBuild.buildNumber
+        $NupkgDirectory = "$env:DropRoot\$branchName\$buildNumber\artifacts\VS15\Nupkgs\"
+        Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_BUILD_NUMBER]$buildNumber"
+        Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_BRANCH]$branchName"
+        Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_SOURCEVERSION]$sourceVersion"
+        Write-Host "##vso[task.setvariable variable=NUGET_CLIENT_NUPKGDIRECTORY]$NupkgDirectory"
+        Write-Host $sourceVersion, $branchName, $buildNumber
+        Write-Host $NupkgDirectory
+  
+  - task: PowerShell@1
+    displayName: "Print Environment Variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        gci env:* | sort-object name
+
+  - task: MSBuild@1
+    displayName: "Publish Artifacts to BlobFeed"
+    inputs:
+      solution: 'build\\publish.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/p:FeedUrl=$(PB_PublishBlobFeedUrl) /p:FeedApiKey=$(PB_PublishBlobFeedKey) /p:ManifestBranch=$(NUGET_CLIENT_BRANCH) /p:ManifestCommit=$(NUGET_CLIENT_SOURCEVERSION) /p:ManifestBuildId=$(NUGET_CLIENT_BUILD_NUMBER)'
+
+  - task: PowerShell@1
+    displayName: "Add Build Tags"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_BUILD_NUMBER"
+        Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_BRANCH"
+        Write-Host "##vso[build.addbuildtag]$env:NUGET_CLIENT_SOURCEVERSION"

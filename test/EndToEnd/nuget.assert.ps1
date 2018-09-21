@@ -117,6 +117,28 @@ function Assert-ProjectJsonLockFilePackage {
     Assert-True $found "Package $Id $Version was not found in the lock file for $($Project.Name)"    
 }
 
+function Assert-ProjectCacheFileExists {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+
+    $cacheFile = Get-ProjectCacheFilePath $Project
+
+    Assert-PathExists $cacheFile
+}
+
+function Assert-ProjectCacheFileNotExists {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+
+    $cacheFile = Get-ProjectCacheFilePath $Project
+
+    Assert-PathNotExists $cacheFile
+}
+
 function Assert-ProjectJsonLockFilePackageNotFound {
     param(
         [parameter(Mandatory = $true)]
@@ -294,6 +316,55 @@ function Set-ProjectJsonLockFile {
 
     return $lockFileFormat.Write($projectJsonLockFilePath, $LockFile)
 }
+
+function Get-ProjectToolsCacheFilePath {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+    $node = Get-ToolsReference $Project.FullName
+
+    $includeValue = $node.Attributes['Include'].Value
+    $versionValue = $node.Attributes['Version'].Value
+
+    return "$($home)\.nuget\packages\.tools\$($includeValue)\$($versionValue)\netcoreapp2.0\$($includeValue).nuget.cache"      
+}
+
+function Get-ToolsReference {
+    param(
+        [parameter(Mandatory = $true)]
+        $projectPath
+    )
+    $doc = [xml](Get-Content $projectPath)
+    $ns = New-Object System.Xml.XmlNamespaceManager($doc.NameTable)
+    $ns.AddNamespace("ns", $doc.DocumentElement.NamespaceURI)
+    $node = $doc.SelectSingleNode("//ns:DotNetCliToolReference",$ns)
+    return $node
+}
+
+
+function Get-CacheFilePathFromProjectPath {
+        param(
+        [parameter(Mandatory = $true)]
+        $ProjectPath
+        )
+        
+    $projectCacheFilePath = Join-Path (Split-Path -parent $ProjectPath) (Join-Path "obj" "$(Split-Path -Leaf $ProjectPath).nuget.cache")
+
+    Write-Host "Evaluated cache file path:" $projectCacheFilePath
+
+    return $projectCacheFilePath
+}
+
+function Get-ProjectCacheFilePath {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+        return CacheFilePathFromProjectPath $Project.FullName
+}
+
+
 
 function Get-ProjectJsonLockFilePath {
     param(
@@ -726,8 +797,15 @@ function Assert-NetCorePackageReference {
 
     $doc = [xml](Get-Content $project.FullName)
     $references = $doc.SelectNodes("./Project/ItemGroup/PackageReference[@Include = '$id' and @Version = '$Version']")
-    
-    Assert-True ($references.Count -eq 1) "Project $($project.FullName) does not contain a reference to Package $($Id) $($Version)"
+    if($references.Count -eq 0)
+    {
+        Assert-True ($doc.SelectNodes(".//*[name()='PackageReference'][@Include=$Id]").Version -eq $Version) 
+        "Project $($project.FullName) does not contain a reference to Package $($Id) $($Version) with version as element or attribute"
+    }
+    else
+    {
+        Assert-True ($references.Count -eq 1) "Project $($project.FullName) does not contain a reference to Package $($Id) $($Version)"
+    }
 }
 
 function Assert-NetCoreProjectReference {

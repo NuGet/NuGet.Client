@@ -1,61 +1,13 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\..\build\Common.props" Condition="Exists('..\..\..\Build\Common.props')" />
+﻿<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
   <PropertyGroup>
-    <PackagesPath>$(UserProfile)\.nuget\packages</PackagesPath>
+    <TargetFrameworks>net46</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' "></TargetFrameworks>
+    <TestProject>true</TestProject>
   </PropertyGroup>
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <ProjectGuid>{DBFE233D-074A-4977-A9A0-37F6FF900475}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NuGet.CommandLine.FuncTest</RootNamespace>
-    <AssemblyName>NuGet.CommandLine.FuncTest</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Caching\CachingType.cs" />
-    <Compile Include="Caching\CachingTestContext.cs" />
-    <Compile Include="Caching\CachingTestRunner.cs" />
-    <Compile Include="Caching\CachingValidation.cs" />
-    <Compile Include="Caching\CachingTests.cs" />
-    <Compile Include="Caching\CachingValidations.cs" />
-    <Compile Include="Caching\CachingValidationType.cs" />
-    <Compile Include="Caching\Commands\ICachingCommand.cs" />
-    <Compile Include="Caching\MockResponses\MockResponse.cs" />
-    <Compile Include="Caching\MockResponses\MockResponseBuilder.cs" />
-    <Compile Include="Caching\NuGetExe\INuGetExe.cs" />
-    <Compile Include="Caching\NuGetExe\NuGetExe.cs" />
-    <Compile Include="Caching\ServerType.cs" />
-    <Compile Include="Caching\Tests\ICachingTest.cs" />
-    <Compile Include="Caching\Commands\InstallPackagesConfigCommand.cs" />
-    <Compile Include="Caching\Commands\InstallSpecificVersionCommand.cs" />
-    <Compile Include="Caching\Commands\RestorePackagesConfigCommand.cs" />
-    <Compile Include="Caching\Commands\RestoreProjectJsonCommand.cs" />
-    <Compile Include="Caching\Tests\ReadsFromHttpCacheTest.cs" />
-    <Compile Include="Caching\Tests\CleansUpDirectDownloadTest.cs" />
-    <Compile Include="Caching\Tests\WritesToHttpCacheTest.cs" />
-    <Compile Include="Caching\Tests\PopulatesGlobalPackagesFolderTest.cs" />
-    <Compile Include="Caching\Tests\PopulatesDestinationFolderTest.cs" />
-    <Compile Include="Caching\Tests\UsesGlobalPackagesFolderCopyTest.cs" />
-    <Compile Include="Caching\Tests\AllowsMissingPackageOnSourceTest.cs" />
-    <Compile Include="CommandRunnerTest.cs" />
-    <Compile Include="Commands\PushCommandTest.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj">
       <Project>{957c4e99-3644-47dd-8f9a-ae36f41ebe4a}</Project>
@@ -65,8 +17,23 @@
       <Project>{33294bb8-5144-4363-b02c-332f6d94c1c1}</Project>
       <Name>NuGet.CommandLine.Test</Name>
     </ProjectReference>
+
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)Test.Utility\Test.Utility.csproj" />
+
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(EnlistmentRoot)\build\common.targets" />
-  <Import Project="..\..\..\build\test.targets" />
+
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

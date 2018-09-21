@@ -1,140 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
-  <!-- Default project configuration -->
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
+    <IsNetCoreProject>true</IsNetCoreProject>
   </PropertyGroup>
 
-  <!--Build output setting-->
-  <PropertyGroup>
-    <EnlistmentRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'build.ps1'))</EnlistmentRoot>
-    <EnlistmentRootSrc>$(EnlistmentRoot)\src</EnlistmentRootSrc>
-
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(EnlistmentRoot)\</SolutionDir>
-
-    <ArtifactRoot>$(EnlistmentRoot)\artifacts</ArtifactRoot>
-    <ArtifactRoot>$([System.IO.Path]::GetFullPath( $(ArtifactRoot) ))</ArtifactRoot>
-
-    <OutDirFx>$(VisualStudioVersion)\$(Configuration)\</OutDirFx>
-    <OutputPath>$(ArtifactRoot)\$(MSBuildProjectName)\$(OutDirFx)</OutputPath>
-    <OutputPath>$([System.IO.Path]::GetFullPath( $(OutputPath) ))\</OutputPath>
-    <OutDir>$(OutputPath)</OutDir>
-
-    <IntermediateOutputPath>$(ArtifactRoot)\$(MSBuildProjectName)\.obj\$(OutDirFx)</IntermediateOutputPath>
-    <IntermediateOutputPath>$([System.IO.Path]::GetFullPath( $(IntermediateOutputPath) ))\</IntermediateOutputPath>
-
-    <AppxPackageDir>$(OutputPath)</AppxPackageDir>
-  </PropertyGroup>
-
-  <!-- Common project build settings -->
-  <PropertyGroup>
-    <PlatformTarget>$(Platform)</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>1762</NoWarn>
-  </PropertyGroup>
-
-  <!-- DEBUG specific configuration settings -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Mono Debug' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-  </PropertyGroup>
-
-  <!-- RELEASE specific configuration settings -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' Or '$(Configuration)' == 'Mono Release' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <DefineConstants>TRACE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
-    <DefineConstants>$(DefineConstants);VS14</DefineConstants>
-    <VSSDKRoot>$(EnlistmentRoot)\packages\Microsoft.VSSDK.BuildTools.14.3.25420</VSSDKRoot>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
-    <DefineConstants>$(DefineConstants);VS15</DefineConstants>
-    <VSSDKRoot>$(EnlistmentRoot)\packages\Microsoft.VSSDK.BuildTools.15.0.26109-RC3</VSSDKRoot>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
-  </PropertyGroup>
-
-  <!--Semantic Version-->
-  <PropertyGroup>
-    <!--
-      Semantic Version. See http://semver.org for full details.
-      Update for every public release.
-    -->
-    <SemanticVersion>4.0.0</SemanticVersion>
-    <PreReleaseVersion>0</PreReleaseVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(ExcludeBuildNumber)' == ''">
-    <ExcludeBuildNumber>false</ExcludeBuildNumber>
-  </PropertyGroup>
-
-  <!--Setting the Pre-release/Build meta-data from CI if Version is set-->
-  <PropertyGroup Condition="'$(BuildNumber)' != ''">
-    <PreReleaseVersion>$(BuildNumber)</PreReleaseVersion>
-  </PropertyGroup>
-
-  <!--Setting the product information for Beta builds-->
-  <Choose>
-    <!-- If we aren't excluding the build number, use the release label and the build number. -->
-    <When Condition="'$(ExcludeBuildNumber)' != 'true'">
-      <PropertyGroup>
-        <PreReleaseInformationVersion>-$(ReleaseLabel)-$(PreReleaseVersion)</PreReleaseInformationVersion>
-      </PropertyGroup>
-    </When>
-    <!-- If we are excluding the build number, show the release label unless we are RTM. -->
-    <When Condition="'$(ReleaseLabel)' != 'rtm'">
-      <PropertyGroup>
-        <PreReleaseInformationVersion>-$(ReleaseLabel)</PreReleaseInformationVersion>
-      </PropertyGroup>
-    </When>
-  </Choose>
-
-  <!-- Generate AssemblyFileVersion and AssemblyVersion attributes. -->
-  <PropertyGroup>
-    <!-- Turn on dynamic assembly attribute generation -->
-    <AssemblyAttributesPath>$(IntermediateOutputPath)AssemblyInfo.g.cs</AssemblyAttributesPath>
-    <GenerateAdditionalSources>true</GenerateAdditionalSources>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <!--
-      AssemblyVersion and AssemblyFileVersion attributes are generated automatically for every build.
-      NuGet package version is derived from AssemblyFileVersion.
-    -->
-    <AssemblyAttributes Include="AssemblyVersion">
-      <_Parameter1>$(SemanticVersion).$(PreReleaseVersion)</_Parameter1>
-    </AssemblyAttributes>
-    <AssemblyAttributes Include="AssemblyFileVersion">
-      <_Parameter1>$(SemanticVersion).$(PreReleaseVersion)</_Parameter1>
-    </AssemblyAttributes>
-    <AssemblyAttributes Include="AssemblyInformationalVersion">
-      <_Parameter1>$(SemanticVersion)$(PreReleaseInformationVersion)</_Parameter1>
-    </AssemblyAttributes>
-    <AssemblyAttributes Include="AssemblyCompany">
-      <_Parameter1>Microsoft Corporation</_Parameter1>
-    </AssemblyAttributes>
-    <AssemblyAttributes Include="AssemblyProduct">
-      <_Parameter1>NuGet</_Parameter1>
-    </AssemblyAttributes>
-    <AssemblyAttributes Include="AssemblyCopyright">
-      <_Parameter1>Microsoft Corporation. All rights reserved.</_Parameter1>
-    </AssemblyAttributes>
-    <AssemblyAttributes Include="System.Resources.NeutralResourcesLanguage">
-      <_Parameter1>en-US</_Parameter1>
-    </AssemblyAttributes>
+  <ItemGroup Condition="'$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'">
+    <PackageReference Include="PdbGit" Version="3.0.41" PrivateAssets="all"/>
   </ItemGroup>
+  <!-- When building on non-Windows machines, we need the reference assemblies to build full-framework assemblies. -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(DotNetBuildFromSource)' == 'true'">
+     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0-alpha-003" PrivateAssets="All" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(IsNetCoreProject)' == 'true' AND '$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <!-- Load config -->
+  <Import Project="config.props" />
+
+  <!-- Additional props -->
+  <Import Project="common.project.props"/>
 </Project>

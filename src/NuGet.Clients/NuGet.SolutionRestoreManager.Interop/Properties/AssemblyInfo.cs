@@ -1,11 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Reflection;
 using System.Runtime.InteropServices;
-
-[assembly: AssemblyTitle("NuGet.SolutionRestoreManager.Interop")]
-[assembly: AssemblyDescription("APIs for invoking NuGet Restore Manager services in Visual Studio.")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 

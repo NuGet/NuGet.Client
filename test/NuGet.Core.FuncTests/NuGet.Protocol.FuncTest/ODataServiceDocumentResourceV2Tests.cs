@@ -20,14 +20,14 @@ namespace NuGet.Protocol.FuncTest
         public async Task ODataServiceDocumentResourceV2_Valid()
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
+            var repo = Repository.Factory.GetCoreV3(TestSources.NuGetV2Uri);
 
             // Act 
             var resource = await repo.GetResourceAsync<ODataServiceDocumentResourceV2>();
 
             // Assert
             Assert.NotNull(resource);
-            Assert.Equal(TestServers.NuGetV2, resource.BaseAddress);
+            Assert.Equal(TestSources.NuGetV2Uri, resource.BaseAddress);
         }
 
         [Fact]
