@@ -319,6 +319,7 @@
   </data>
   <data name="LocalsCommand_Description" xml:space="preserve">
     <value>Clears or lists local NuGet resources such as http requests cache, packages folder, plugin operations cache  or machine-wide global packages folder.</value>
+    <comment>{Locked="http"}</comment>
   </data>
   <data name="LocalsCommand_Help" xml:space="preserve">
     <value>usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
