@@ -197,6 +197,11 @@ Function Install-DotnetCLI {
     $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
     $CliTargetBranch = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliTargetBranch
 
+    # tests depend on `dotnet list package`, which is in CLI 2.2.1xx, but hasn't yet been merged to CLI master.
+    # delete this once dotnet list package is available in CLI master
+    Trace-Log "Forcing 2.2.1xx for dotnet list package. Delete this when '$CliTargetBranch' supports dotnet list package."
+    $CliTargetBranch = "release/2.2.1xx"
+
     $cli = @{
             Root = $CLIRoot
             DotNetExe = Join-Path $CLIRoot 'dotnet.exe'

@@ -125,6 +125,7 @@ namespace Dotnet.Integration.Test
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
+                    ProjectFileUtils.ChangeProperty(xml, "TargetFramework", "netcoreapp2.1");
                     ProjectFileUtils.AddProperty(xml, "RuntimeIdentifier", "win7-x64");
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
