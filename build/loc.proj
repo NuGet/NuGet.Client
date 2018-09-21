@@ -74,7 +74,7 @@
 
   <Target Name="MoveLcgFilesToArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
     <ItemGroup>
-      <_MoveLcgFiles Include="@(LocalizedToolFiles)" Condition="'%(LocalizedToolFiles.Extension)'== '.lcg'">
+      <_MoveLcgFiles Include="@(LocalizedToolFiles)" Condition="'%(LocalizedToolFiles.Extension)'== '.lcg' OR '%(LocalizedToolFiles.Extension)'== '.lct'">
         <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedToolFiles.lang), %(LocalizedToolFiles.RootDir)%(LocalizedToolFiles.Directory)))%(LocalizedToolFiles.Culture)\%(LocalizedToolFiles.Filename)%(LocalizedToolFiles.Extension)</DestinationDir>
       </_MoveLcgFiles>
     </ItemGroup>

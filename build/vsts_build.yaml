@@ -262,9 +262,11 @@ phases:
     displayName: "Copy LCG Files"
     inputs:
       SourceFolder: "artifacts\\"
-      Contents: "**\\*.lcg"
+      Contents: |
+        **\\*.lcg
+        **\\*.lct
       TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
-    condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
+    condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
   - task: PowerShell@1
     displayName: "Publish Artifacts to MyGet"
@@ -315,7 +317,7 @@ phases:
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
       arguments: "-BuildRTM $(BuildRTM) -BuildOutputTargetPath $(BuildOutputTargetPath) -ValidateVsix"
-    condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
+    condition: "succeeded()"
   
   - task: PowerShell@1
     displayName: "Validate Repository Artifacts Localization"
@@ -323,7 +325,7 @@ phases:
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
       arguments: "-BuildRTM $(BuildRTM) -BuildOutputTargetPath $(BuildOutputTargetPath)"
-    condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
+    condition: "succeeded()"
 
   - task: MicroBuildCleanup@1
     displayName: "Perform Cleanup Tasks"
