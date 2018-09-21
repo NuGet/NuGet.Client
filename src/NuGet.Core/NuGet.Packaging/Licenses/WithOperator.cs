@@ -11,11 +11,11 @@ namespace NuGet.Packaging.Licenses
     /// </summary>
     public class WithOperator : LicenseOperator
     {
-        public WithOperator(NuGetLicense license, NuGetLicenseException exception) : base()
+        public WithOperator(NuGetLicense license, NuGetLicenseException exception) :
+            base(LicenseOperatorType.WithOperator)
         {
             License = license ?? throw new ArgumentNullException(nameof(license));
             Exception = exception ?? throw new ArgumentNullException(nameof(exception));
-            OperatorType = LicenseOperatorType.WithOperator;
         }
 
         /// <summary>

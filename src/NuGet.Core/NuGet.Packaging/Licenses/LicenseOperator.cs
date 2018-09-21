@@ -15,11 +15,12 @@ namespace NuGet.Packaging.Licenses
         /// LogicalOperator means it's AND or OR and <see cref="LogicalOperator"/>
         /// NuGetLicenseWithOperator means it's the WITH operator and <see cref="WithOperator"/>
         /// </summary>
-        public LicenseOperatorType OperatorType { get; protected set; }
+        public LicenseOperatorType OperatorType { get; }
 
-        protected LicenseOperator()
+        protected LicenseOperator(LicenseOperatorType operatorType)
         {
             Type = LicenseExpressionType.Operator;
+            OperatorType = operatorType;
         }
     }
 }

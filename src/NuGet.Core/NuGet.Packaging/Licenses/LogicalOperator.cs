@@ -12,12 +12,12 @@ namespace NuGet.Packaging.Licenses
     /// </summary>
     public class LogicalOperator : LicenseOperator
     {
-        public LogicalOperator(LogicalOperatorType logicalOperatorType, NuGetLicenseExpression left, NuGetLicenseExpression right) : base()
+        public LogicalOperator(LogicalOperatorType logicalOperatorType, NuGetLicenseExpression left, NuGetLicenseExpression right) :
+            base(LicenseOperatorType.LogicalOperator)
         {
             LogicalOperatorType = logicalOperatorType;
             Left = left ?? throw new ArgumentNullException(nameof(left));
             Right = right ?? throw new ArgumentNullException(nameof(right));
-            OperatorType = LicenseOperatorType.LogicalOperator;
         }
         /// <summary>
         /// Represents the logical operator type of NuGetLicenseExpression.

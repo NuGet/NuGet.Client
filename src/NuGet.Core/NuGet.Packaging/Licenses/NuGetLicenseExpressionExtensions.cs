@@ -26,10 +26,10 @@ namespace NuGet.Packaging.Licenses
                     switch (licenseOperator.OperatorType)
                     {
                         case LicenseOperatorType.LogicalOperator:
-                            var logicalOperator = expression as LogicalOperator;
+                            var logicalOperator = (LogicalOperator)licenseOperator;
                             return logicalOperator.Left.HasOnlyStandardIdentifiers() && logicalOperator.Right.HasOnlyStandardIdentifiers();
                         case LicenseOperatorType.WithOperator:
-                            var withOperator = expression as WithOperator;
+                            var withOperator = (WithOperator)licenseOperator;
                             return withOperator.License.IsStandardLicense;
                         default:
                             return false;
@@ -51,23 +51,23 @@ namespace NuGet.Packaging.Licenses
             switch (expression.Type)
             {
                 case LicenseExpressionType.License:
-                    var license = expression as NuGetLicense;
+                    var license = (NuGetLicense)expression;
                     licenseProcessor(license);
                     break;
 
                 case LicenseExpressionType.Operator:
-                    var licenseOperator = expression as LicenseOperator;
+                    var licenseOperator = (LicenseOperator)expression;
                     switch (licenseOperator.OperatorType)
                     {
                         case LicenseOperatorType.LogicalOperator:
-                            var logicalOperator = expression as LogicalOperator;
+                            var logicalOperator = (LogicalOperator)licenseOperator;
 
                             logicalOperator.Left.OnEachLeafNode(licenseProcessor, exceptionProcessor);
                             logicalOperator.Right.OnEachLeafNode(licenseProcessor, exceptionProcessor);
                             break;
 
                         case LicenseOperatorType.WithOperator:
-                            var withOperator = expression as WithOperator;
+                            var withOperator = (WithOperator)licenseOperator;
                             licenseProcessor(withOperator.License);
                             exceptionProcessor(withOperator.Exception);
                             break;
