@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -277,6 +277,16 @@ namespace NuGet.Versioning
         {
             return FloatBehavior == other.FloatBehavior
                    && VersionComparer.Default.Equals(MinVersion, other.MinVersion);
+        }
+
+        /// <summary>
+        /// Override Object.Equals
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as FloatRange);
         }
 
         /// <summary>
