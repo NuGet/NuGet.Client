@@ -5292,6 +5292,7 @@ nuget init \\foo\packages \\bar\packages</value>
   </data>
   <data name="LocalsCommandDescription" xml:space="preserve">
     <value>Clears or lists local NuGet resources such as http requests cache, temp cache or machine-wide global packages folder.</value>
+    <comment>{Locked="http"}</comment>
   </data>
   <data name="LocalsCommandExamples" xml:space="preserve">
     <value>nuget locals all -clear
