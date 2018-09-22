@@ -256,6 +256,16 @@ namespace NuGet.Credentials
                 throw PluginException.CreateNotStartedMessage(Path);
             }
 
+            string processName;
+            try
+            {
+                processName = process.ProcessName;
+            }
+            catch (InvalidOperationException)
+            {
+                processName = System.IO.Path.GetFileName(startInfo.FileName);
+            }
+
             process.OutputDataReceived += (object o, DataReceivedEventArgs e) => { outBuffer.AppendLine(e.Data); };
 
             // Trace and error information may be written to standard error by the provider.
@@ -264,11 +274,7 @@ namespace NuGet.Credentials
             {
                 if (!string.IsNullOrWhiteSpace(e?.Data))
                 {
-                    // This is a workaround for mono issue: https://github.com/NuGet/Home/issues/4004
-                    if (!process.HasExited)
-                    {
-                        _logger.LogInformation($"{process.ProcessName}: {e.Data}");
-                    }
+                    _logger.LogInformation($"{processName}: {e.Data}");
                 }
             };
 
