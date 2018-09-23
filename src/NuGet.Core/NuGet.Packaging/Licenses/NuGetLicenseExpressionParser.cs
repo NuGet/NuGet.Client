@@ -29,6 +29,9 @@ namespace NuGet.Packaging.Licenses
         {
             var tokens = GetTokens(expression);
             var operatorStack = new Stack<LicenseExpressionToken>();
+            // The operand stack can contain both unprocessed value and complex expressions such as MIT OR Apache-2.0.
+            // Complex expressions are valid operands for the logical operators. The first value represents whether it's value or an expression.
+            // true => LicenseExpressionToken, false => NuGetLicenseExpression
             var operandStack = new Stack<Tuple<bool, object>>();
 
             var lastTokenType = LicenseTokenType.VALUE;
@@ -154,18 +157,18 @@ namespace NuGet.Packaging.Licenses
         private static void ProcessOperators(Stack<LicenseExpressionToken> operatorStack, Stack<Tuple<bool, object>> operandStack)
         {
             var op = operatorStack.Pop();
+            var rightOperand = PopIfNotEmpty(operandStack);
+            var leftOperand = PopIfNotEmpty(operandStack);
+
             if (op.TokenType == LicenseTokenType.WITH)
             {
-                var rightExp = PopIfNotEmpty(operandStack);
-                var leftExp = PopIfNotEmpty(operandStack);
-
-                if (!(rightExp.Item1 == leftExp.Item1 == true))
+                if (!(rightOperand.Item1 == leftOperand.Item1 == true))
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
 
                 }
-                var right = rightExp.Item2 as LicenseExpressionToken;
-                var left = leftExp.Item2 as LicenseExpressionToken;
+                var right = rightOperand.Item2 as LicenseExpressionToken;
+                var left = leftOperand.Item2 as LicenseExpressionToken;
 
                 var withNode = new WithOperator(NuGetLicense.Parse(left.Value), NuGetLicenseException.Parse(right.Value));
 
@@ -175,16 +178,13 @@ namespace NuGet.Packaging.Licenses
             {
                 var logicalOperator = op.TokenType == LicenseTokenType.AND ? LogicalOperatorType.And : LogicalOperatorType.Or;
 
-                var rightExp = PopIfNotEmpty(operandStack);
-                var leftExp = PopIfNotEmpty(operandStack);
+                var right = rightOperand.Item1 ?
+                    NuGetLicense.Parse(((LicenseExpressionToken)rightOperand.Item2).Value) :
+                    (NuGetLicenseExpression)rightOperand.Item2;
 
-                var right = rightExp.Item1 ?
-                    NuGetLicense.Parse(((LicenseExpressionToken)rightExp.Item2).Value) :
-                    (NuGetLicenseExpression)rightExp.Item2;
-
-                var left = leftExp.Item1 ?
-                    NuGetLicense.Parse(((LicenseExpressionToken)leftExp.Item2).Value) :
-                    (NuGetLicenseExpression)leftExp.Item2;
+                var left = leftOperand.Item1 ?
+                    NuGetLicense.Parse(((LicenseExpressionToken)leftOperand.Item2).Value) :
+                    (NuGetLicenseExpression)leftOperand.Item2;
 
                 var newExpression = new LogicalOperator(logicalOperator, left, right);
                 operandStack.Push(new Tuple<bool, object>(false, newExpression));
