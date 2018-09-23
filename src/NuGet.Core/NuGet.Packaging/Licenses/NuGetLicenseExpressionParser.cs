@@ -29,9 +29,7 @@ namespace NuGet.Packaging.Licenses
         {
             var tokens = GetTokens(expression);
             var operatorStack = new Stack<LicenseExpressionToken>();
-            var operandStack = new Stack<LicenseExpressionToken>();
-            NuGetLicenseExpression leftHandSideExpression = null;
-            NuGetLicenseExpression rightHandSideExpression = null;
+            var operandStack = new Stack<Tuple<bool, object>>();
 
             var lastTokenType = LicenseTokenType.VALUE;
             var firstPass = true;
@@ -47,7 +45,7 @@ namespace NuGet.Packaging.Licenses
                             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidToken, token.Value));
                         }
                         // Add it to the operandstack. Only add it to the expression when you meet an operator
-                        operandStack.Push(token);
+                        operandStack.Push(new Tuple<bool, object>(true, token));
                         break;
 
                     case LicenseTokenType.OPENING_BRACKET:
@@ -67,7 +65,7 @@ namespace NuGet.Packaging.Licenses
                         // pop until we hit the opening bracket
                         while (operatorStack.Count > 0 && operatorStack.Peek().TokenType != LicenseTokenType.OPENING_BRACKET)
                         {
-                            ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression);
+                            ProcessOperators(operatorStack, operandStack);
                         }
 
                         if (operatorStack.Count > 0)
@@ -97,7 +95,7 @@ namespace NuGet.Packaging.Licenses
                         // An operator that has lower/same priority than the operator on the stack
                         else if (token.TokenType >= operatorStack.Peek().TokenType)
                         {
-                            ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression);
+                            ProcessOperators(operatorStack, operandStack);
                             operatorStack.Push(token);
                         }
                         break;
@@ -113,7 +111,7 @@ namespace NuGet.Packaging.Licenses
             {
                 if (operatorStack.Peek().TokenType != LicenseTokenType.OPENING_BRACKET)
                 {
-                    ProcessOperators(operatorStack, operandStack, ref leftHandSideExpression, ref rightHandSideExpression);
+                    ProcessOperators(operatorStack, operandStack);
                 }
                 else
                 {
@@ -123,22 +121,17 @@ namespace NuGet.Packaging.Licenses
 
             // This handles the no operators scenario. This check could be simpler, but it's dangerous to assume all scenarios have been handled by the above logic.
             // As written and as tested, you would never have more than 1 operand on the stack
-            if (operandStack.Count > 0)
+
+            if (operandStack.Count != 1)
             {
-                if (rightHandSideExpression == null && leftHandSideExpression == null)
-                {
-                    leftHandSideExpression = NuGetLicense.Parse(operandStack.Pop().Value);
-                }
-
-                if (operandStack.Count > 0)
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
-                }
-            }
-
-            return rightHandSideExpression == null && leftHandSideExpression != null ? // We cannot have 2 "dangling" expressions. While impossible to happen in the current implementation, this safeguards for future refactoring
-                leftHandSideExpression :
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
+            }
+            else
+            {
+                var value = operandStack.Pop();
+
+                return value.Item1 ? NuGetLicense.Parse(((LicenseExpressionToken)value.Item2).Value) : (NuGetLicenseExpression)value.Item2;
+            }
         }
 
         /// <summary>
@@ -158,62 +151,50 @@ namespace NuGet.Packaging.Licenses
             return tokens;
         }
 
-        private static void ProcessOperators(Stack<LicenseExpressionToken> operatorStack, Stack<LicenseExpressionToken> operandStack, ref NuGetLicenseExpression leftHandSideExpression, ref NuGetLicenseExpression rightHandSideExpression)
+        private static void ProcessOperators(Stack<LicenseExpressionToken> operatorStack, Stack<Tuple<bool, object>> operandStack)
         {
             var op = operatorStack.Pop();
             if (op.TokenType == LicenseTokenType.WITH)
             {
-                var right = PopIfNotEmpty(operandStack);
-                var left = PopIfNotEmpty(operandStack);
+                var rightExp = PopIfNotEmpty(operandStack);
+                var leftExp = PopIfNotEmpty(operandStack);
+
+                if (!(rightExp.Item1 == leftExp.Item1 == true))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
+
+                }
+                var right = rightExp.Item2 as LicenseExpressionToken;
+                var left = leftExp.Item2 as LicenseExpressionToken;
 
                 var withNode = new WithOperator(NuGetLicense.Parse(left.Value), NuGetLicenseException.Parse(right.Value));
 
-                if (leftHandSideExpression == null)
-                {
-                    leftHandSideExpression = withNode;
-                }
-                else if (rightHandSideExpression == null)
-                {
-                    rightHandSideExpression = withNode;
-                }
-                else
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
-                }
+                operandStack.Push(new Tuple<bool, object>(false, withNode));
             }
             else
             {
                 var logicalOperator = op.TokenType == LicenseTokenType.AND ? LogicalOperatorType.And : LogicalOperatorType.Or;
 
-                if (leftHandSideExpression == null && rightHandSideExpression == null)
-                {
-                    var right = PopIfNotEmpty(operandStack);
-                    var left = PopIfNotEmpty(operandStack);
-                    leftHandSideExpression = new LogicalOperator(logicalOperator, NuGetLicense.Parse(left.Value), NuGetLicense.Parse(right.Value));
-                }
-                else if (rightHandSideExpression == null)
-                {
-                    var right = PopIfNotEmpty(operandStack);
-                    var newExpression = new LogicalOperator(logicalOperator, leftHandSideExpression, NuGetLicense.Parse(right.Value));
-                    leftHandSideExpression = newExpression;
-                }
-                else if (leftHandSideExpression == null)
-                {
-                    throw new ArgumentException("Should not happen. File a bug with repro steps on NuGet/Home if seen.");
-                }
-                else
-                {
-                    var newExpression = new LogicalOperator(logicalOperator, leftHandSideExpression, rightHandSideExpression);
-                    rightHandSideExpression = null;
-                    leftHandSideExpression = newExpression;
-                }
+                var rightExp = PopIfNotEmpty(operandStack);
+                var leftExp = PopIfNotEmpty(operandStack);
+
+                var right = rightExp.Item1 ?
+                    NuGetLicense.Parse(((LicenseExpressionToken)rightExp.Item2).Value) :
+                    (NuGetLicenseExpression)rightExp.Item2;
+
+                var left = leftExp.Item1 ?
+                    NuGetLicense.Parse(((LicenseExpressionToken)leftExp.Item2).Value) :
+                    (NuGetLicenseExpression)leftExp.Item2;
+
+                var newExpression = new LogicalOperator(logicalOperator, left, right);
+                operandStack.Push(new Tuple<bool, object>(false, newExpression));
             }
         }
 
-        private static LicenseExpressionToken PopIfNotEmpty(Stack<LicenseExpressionToken> stack)
+        private static Tuple<bool, object> PopIfNotEmpty(Stack<Tuple<bool, object>> operandStack)
         {
-            return stack.Count > 0 ?
-                stack.Pop() :
+            return operandStack.Count > 0 ?
+                operandStack.Pop() :
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
         }
     }

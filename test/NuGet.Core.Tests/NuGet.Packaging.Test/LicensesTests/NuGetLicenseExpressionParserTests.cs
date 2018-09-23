@@ -12,32 +12,34 @@ namespace NuGet.Packaging.Licenses.Test
         [Theory]
         [InlineData("MIT OR LPL-1.0", "MIT OR LPL-1.0", "OR", true)]
         [InlineData("MIT AND LPL-1.0", "MIT AND LPL-1.0", "AND", true)]
-        [InlineData("MIT OR (AFL-1.1 WITH 389-exception)", "AFL-1.1 WITH 389-exception OR MIT", "OR", true)]
+        [InlineData("MIT OR (AFL-1.1 WITH 389-exception)", "MIT OR AFL-1.1 WITH 389-exception", "OR", true)]
         [InlineData("(AFL-1.1 WITH 389-exception) OR MIT", "AFL-1.1 WITH 389-exception OR MIT", "OR", true)]
-        [InlineData("MIT OR AFL-1.1 WITH 389-exception AND Apache-2.0", "AFL-1.1 WITH 389-exception AND Apache-2.0 OR MIT", "OR", true)]
-        [InlineData("MIT OR AFL-1.1 WITH 389-exception", "AFL-1.1 WITH 389-exception OR MIT", "OR", true)]
-        [InlineData("MIT OR (LPL-1.0 OR AFL-1.1 WITH 389-exception)", "AFL-1.1 WITH 389-exception OR LPL-1.0 OR MIT", "OR", true)]
-        [InlineData("MIT OR (AFL-1.1 WITH 389-exception OR LPL-1.0)", "AFL-1.1 WITH 389-exception OR LPL-1.0 OR MIT", "OR", true)]
+        [InlineData("MIT OR AFL-1.1 WITH 389-exception AND Apache-2.0", "MIT OR AFL-1.1 WITH 389-exception AND Apache-2.0", "OR", true)]
+        [InlineData("MIT OR AFL-1.1 WITH 389-exception", "MIT OR AFL-1.1 WITH 389-exception", "OR", true)]
+        [InlineData("MIT OR (LPL-1.0 OR AFL-1.1 WITH 389-exception)", "MIT OR LPL-1.0 OR AFL-1.1 WITH 389-exception", "OR", true)]
+        [InlineData("MIT OR (AFL-1.1 WITH 389-exception OR LPL-1.0)", "MIT OR AFL-1.1 WITH 389-exception OR LPL-1.0", "OR", true)]
         [InlineData("MIT WITH 389-exception AND AFL-1.1 OR LPL-1.0", "MIT WITH 389-exception AND AFL-1.1 OR LPL-1.0", "OR", true)]
-        [InlineData("MIT OR AFL-1.1 AND LPL-1.0 WITH 389-exception", "LPL-1.0 WITH 389-exception AND AFL-1.1 OR MIT", "OR", true)]
-        [InlineData("MIT OR ((AFL-1.1 WITH 389-exception) AND Apache-2.0)", "AFL-1.1 WITH 389-exception AND Apache-2.0 OR MIT", "OR", true)]
+        [InlineData("MIT OR AFL-1.1 AND LPL-1.0 WITH 389-exception", "MIT OR AFL-1.1 AND LPL-1.0 WITH 389-exception", "OR", true)]
+        [InlineData("MIT OR ((AFL-1.1 WITH 389-exception) AND Apache-2.0)", "MIT OR AFL-1.1 WITH 389-exception AND Apache-2.0", "OR", true)]
         [InlineData("((MIT) AND (LPL-1.0))", "MIT AND LPL-1.0", "AND", true)]
-        [InlineData("MIT OR (LPL-1.0 OR (AFL-1.1 WITH 389-exception))", "AFL-1.1 WITH 389-exception OR LPL-1.0 OR MIT", "OR", true)]
-        [InlineData("MIT OR (LPL-1.0 AND (AFL-1.1 WITH 389-exception) AND AMDPLPA)", "AFL-1.1 WITH 389-exception AND LPL-1.0 AND AMDPLPA OR MIT", "OR", true)]
-        [InlineData("MIT OR ((AFL-1.1 WITH 389-exception) AND LPL-1.0)", "AFL-1.1 WITH 389-exception AND LPL-1.0 OR MIT", "OR", true)]
-        [InlineData("MIT AND (AFL-1.1 WITH 389-exception OR Apache-2.0)", "AFL-1.1 WITH 389-exception OR Apache-2.0 AND MIT", "AND", true)] // This expr is a weird legal expression, but a good test for the exp parser.
+        [InlineData("MIT OR (LPL-1.0 OR (AFL-1.1 WITH 389-exception))", "MIT OR LPL-1.0 OR AFL-1.1 WITH 389-exception", "OR", true)]
+        [InlineData("MIT OR (LPL-1.0 AND (AFL-1.1 WITH 389-exception) AND AMDPLPA)", "MIT OR LPL-1.0 AND AFL-1.1 WITH 389-exception AND AMDPLPA", "OR", true)]
+        [InlineData("MIT OR ((AFL-1.1 WITH 389-exception) AND LPL-1.0)", "MIT OR AFL-1.1 WITH 389-exception AND LPL-1.0", "OR", true)]
+        [InlineData("MIT AND (AFL-1.1 WITH 389-exception OR Apache-2.0)", "MIT AND AFL-1.1 WITH 389-exception OR Apache-2.0", "AND", true)] // here. This expr is a weird legal expression, but a good test for the exp parser.
         [InlineData("(AFL-1.1+ WITH 389-exception) OR MIT", "AFL-1.1+ WITH 389-exception OR MIT", "OR", true)]
         [InlineData("MIT OR LPL-1.0+", "MIT OR LPL-1.0+", "OR", true)]
         [InlineData("(AMDPLPA AND BSD-2-Clause)", "AMDPLPA AND BSD-2-Clause", "AND", true)]
         [InlineData("((( (AMDPLPA) AND BSD-2-Clause)))", "AMDPLPA AND BSD-2-Clause", "AND", true)]
         [InlineData("(And+) AND or", "And+ AND or", "AND", false)]
         [InlineData("(AMDPLPA AND BSD-2-Clause) AND (MIT WITH 389-exception)", "AMDPLPA AND BSD-2-Clause AND MIT WITH 389-exception", "AND", true)]
-        [InlineData("(AMDPLPA AND BSD-2-Clause) AND (MIT OR Apache-2.0)", "AMDPLPA AND BSD-2-Clause OR Apache-2.0 AND MIT", "AND", true)]
+        [InlineData("(AMDPLPA AND BSD-2-Clause) AND (MIT OR Apache-2.0)", "AMDPLPA AND BSD-2-Clause AND MIT OR Apache-2.0", "AND", true)]
 
         public void LicenseExpressionParser_ParsesComplexExpression(string infix, string postfix, string rootOperator, bool hasStandardIdentifiers)
         {
             var licenseExpression = NuGetLicenseExpressionParser.Parse(infix);
             Assert.Equal(postfix, licenseExpression.ToString());
+            Assert.Equal(infix.Replace("(", "").Replace(")", "").Trim(), licenseExpression.ToString());
+
             Assert.Equal(licenseExpression.HasOnlyStandardIdentifiers(), hasStandardIdentifiers);
 
             if (Enum.TryParse<LogicalOperatorType>(rootOperator, true, out var logicalOperator))
