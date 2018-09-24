@@ -166,6 +166,6 @@ namespace NuGet.Commands
 
         public bool IsRestoreOriginalAction { get; set; } = true;
 
-        public bool ReevaluateRestoreGraph { get; set; }
+        public bool RestoreForceEvaluate { get; set; }
     }
 }
