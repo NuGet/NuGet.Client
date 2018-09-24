@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,6 +13,7 @@ using NuGet.Versioning;
 using Xunit;
 using NuGet.Protocol;
 using NuGet.Test.Utility;
+using NuGet.Packaging;
 
 namespace NuGet.Protocol.FuncTest
 {
@@ -31,17 +32,29 @@ namespace NuGet.Protocol.FuncTest
             // Act & Assert
             using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
-            using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
-                package,
-                new PackageDownloadContext(cacheContext),
-                packagesFolder,
-                NullLogger.Instance,
-                CancellationToken.None))
             {
-                var packageReader = downloadResult.PackageReader;
-                var files = packageReader.GetFiles();
+                var downloadContext = new PackageDownloadContext(cacheContext)
+                {
+                    ExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        XmlDocFileSaveMode.None,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null,
+                        signedPackageVerifierSettings: null)
+                };
 
-                Assert.Equal(11, files.Count());
+                using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
+                    package,
+                    downloadContext,
+                    packagesFolder,
+                    NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var packageReader = downloadResult.PackageReader;
+                    var files = packageReader.GetFiles();
+
+                    Assert.Equal(11, files.Count());
+                }
             }
         }
 
@@ -58,17 +71,29 @@ namespace NuGet.Protocol.FuncTest
             // Act & Assert
             using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
-            using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
-                package,
-                new PackageDownloadContext(cacheContext),
-                packagesFolder,
-                NullLogger.Instance,
-                CancellationToken.None))
             {
-                var packageReader = downloadResult.PackageReader;
-                var files = packageReader.GetFiles();
+                var downloadContext = new PackageDownloadContext(cacheContext)
+                {
+                    ExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                    XmlDocFileSaveMode.None,
+                    NullLogger.Instance,
+                    signedPackageVerifier: null,
+                    signedPackageVerifierSettings: null)
+                };
 
-                Assert.Equal(11, files.Count());
+                using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
+                    package,
+                    downloadContext,
+                    packagesFolder,
+                    NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var packageReader = downloadResult.PackageReader;
+                    var files = packageReader.GetFiles();
+
+                    Assert.Equal(11, files.Count());
+                }
             }
         }
 
