@@ -134,7 +134,6 @@ namespace NuGet.Commands
         /// </summary>
         public string MSBuildProjectExtensionsPath { get; set; }
 
-
         /// <summary>
         /// Compatibility options
         /// </summary>

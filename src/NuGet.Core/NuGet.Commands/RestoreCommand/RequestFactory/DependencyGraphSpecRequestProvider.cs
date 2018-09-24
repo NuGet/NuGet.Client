@@ -3,15 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
-using NuGet.Packaging;
-using NuGet.Packaging.PackageExtraction;
-using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
@@ -135,6 +131,7 @@ namespace NuGet.Commands
             var globalPath = GetPackagesPath(restoreArgs, projectPackageSpec);
             var settings = Settings.LoadSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths);
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
+            var extractionContext = restoreArgs.GetPackageExtractionContext(settings);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
@@ -144,14 +141,6 @@ namespace NuGet.Commands
                 restoreArgs.Log);
             
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
-            var extractionContext = new PackageExtractionContext(
-                restoreArgs.PackageSaveMode,
-                PackageExtractionBehavior.XmlDocFileSaveMode,
-                restoreArgs.Log,
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
 
             // Create request
             var request = new RestoreRequest(

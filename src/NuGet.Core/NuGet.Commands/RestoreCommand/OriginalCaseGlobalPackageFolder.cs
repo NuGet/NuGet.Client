@@ -61,7 +61,6 @@ namespace NuGet.Commands
             // Keep track of the packages we've already converted to original case.
             var converted = new HashSet<PackageIdentity>();
 
-            var originalCaseContext = _request.PackageExtractionContext;
             var versionFolderPathResolver = new VersionFolderPathResolver(_request.PackagesDirectory, _request.IsLowercasePackagesDirectory);
 
             // Iterate over every package node.
@@ -112,7 +111,7 @@ namespace NuGet.Commands
                             identity,
                             packageDependency,
                             versionFolderPathResolver,
-                            originalCaseContext,
+                            _request.PackageExtractionContext,
                             token,
                             ParentId);
 
