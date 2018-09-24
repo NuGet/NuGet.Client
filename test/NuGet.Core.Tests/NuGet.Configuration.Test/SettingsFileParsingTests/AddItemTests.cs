@@ -38,7 +38,7 @@ namespace NuGet.Configuration.Test
             var nugetConfigPath = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act and Assert
                 var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
@@ -65,7 +65,7 @@ namespace NuGet.Configuration.Test
             var nugetConfigPath = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act and Assert
                 var settingsFile = new SettingsFile(mockBaseDirectory);
@@ -79,7 +79,7 @@ namespace NuGet.Configuration.Test
                 children.Should().NotBeEmpty();
                 children.Count.Should().Be(1);
 
-                children[0].DeepEquals(expectedValue).Should().BeTrue();
+                SettingsTestUtils.DeepEquals(children[0], expectedValue).Should().BeTrue();
             }
         }
 
@@ -99,18 +99,18 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
                 var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
-                var element = section.Items.FirstOrDefault();
+                var element = section.Items.FirstOrDefault() as AddItem;
                 element.Should().NotBeNull();
 
                 // Assert
-                element.DeepEquals(expectedSetting).Should().BeTrue();
+                SettingsTestUtils.DeepEquals(element, expectedSetting).Should().BeTrue();
             }
         }
 
@@ -130,18 +130,18 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
                 var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
-                var element = section.Items.FirstOrDefault();
+                var element = section.Items.FirstOrDefault() as AddItem;
                 element.Should().NotBeNull();
 
                 // Assert
-                element.DeepEquals(expectedSetting).Should().BeTrue();
+                SettingsTestUtils.DeepEquals(element, expectedSetting).Should().BeTrue();
             }
         }
 
@@ -165,18 +165,18 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act
                 var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
-                var value = section.Items.FirstOrDefault();
+                var value = section.Items.FirstOrDefault() as AddItem;
                 value.Should().NotBeNull();
 
                 // Assert
-                value.DeepEquals(expectedSetting).Should().BeTrue();
+                SettingsTestUtils.DeepEquals(value, expectedSetting).Should().BeTrue();
             }
         }
 
@@ -196,7 +196,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act and Assert
                 var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
@@ -221,8 +221,8 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-                var configFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
 
                 // Act and Assert
                 var settingsFile = new SettingsFile(mockBaseDirectory);
@@ -254,7 +254,7 @@ namespace NuGet.Configuration.Test
                 element3.Should().NotBeNull();
                 element3.Value.Should().Be("newValue");
 
-                var updatedFileHash = ConfigurationFileTestUtility.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                var updatedFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
                 updatedFileHash.Should().NotBeEquivalentTo(configFileHash);
             }
         }
@@ -299,7 +299,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settings = new Settings(mockBaseDirectory);
 
                 // Act

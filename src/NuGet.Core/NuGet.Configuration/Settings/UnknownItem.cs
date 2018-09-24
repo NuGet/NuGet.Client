@@ -9,7 +9,7 @@ using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
-    public sealed class UnknownItem : SettingItem, ISettingsGroup, IEquatable<UnknownItem>
+    public sealed class UnknownItem : SettingItem, ISettingsGroup
     {
         public override string ElementName { get; protected set; }
 
@@ -154,37 +154,23 @@ namespace NuGet.Configuration
             return element;
         }
 
-        public bool Equals(UnknownItem other)
+        public override bool Equals(object other)
         {
-            if (other == null)
+            var unknown = other as UnknownItem;
+
+            if (unknown == null)
             {
                 return false;
             }
 
-            if (ReferenceEquals(this, other))
+            if (ReferenceEquals(this, unknown))
             {
                 return true;
             }
 
-            return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal);
+            return string.Equals(ElementName, unknown.ElementName, StringComparison.Ordinal);
         }
 
-        public bool DeepEquals(UnknownItem other)
-        {
-            if (!Equals(other))
-            {
-                return false;
-            }
-
-            return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal) &&
-                other.Attributes.Count == Attributes.Count &&
-                Attributes.OrderedEquals(other.Attributes, data => data.Key, StringComparer.OrdinalIgnoreCase) &&
-                Children.SequenceEqual(other.Children);
-        }
-
-        public override bool Equals(SettingBase other) => Equals(other as UnknownItem);
-        public override bool DeepEquals(SettingBase other) => DeepEquals(other as UnknownItem);
-        public override bool Equals(object other) => Equals(other as UnknownItem);
         public override int GetHashCode() => ElementName.GetHashCode();
 
         internal override void Update(SettingItem setting)
@@ -205,7 +191,7 @@ namespace NuGet.Configuration
                 {
                     Remove(child);
                 }
-                else if (!child.DeepEquals(otherChild) && child is SettingItem item)
+                else if (child is SettingItem item)
                 {
                     item.Update(otherChild as SettingItem);
                 }
@@ -233,7 +219,7 @@ namespace NuGet.Configuration
             {
                 if (_mutableChildren.TryGetValue(child, out var existingChild))
                 {
-                    if (!existingChild.DeepEquals(child) && existingChild is SettingItem childItem)
+                    if (existingChild is SettingItem childItem)
                     {
                         childItem.Update(child as SettingItem);
                     }

@@ -5,10 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
-    internal sealed class NuGetConfiguration : SettingsGroup<SettingSection>, IEquatable<NuGetConfiguration>, ISettingsGroup
+    internal sealed class NuGetConfiguration : SettingsGroup<SettingSection>, ISettingsGroup
     {
         public override string ElementName => ConfigurationConstants.Configuration;
 
@@ -143,25 +144,23 @@ namespace NuGet.Configuration
             return new NuGetConfiguration(Attributes, Sections.Select(s => s.Value.Clone() as SettingSection));
         }
 
-        public bool Equals(NuGetConfiguration other)
+        public override bool Equals(object other)
         {
-            if (other == null)
+            var nugetConfiguration = other as NuGetConfiguration;
+
+            if (nugetConfiguration == null)
             {
                 return false;
             }
 
-            if (ReferenceEquals(this, other))
+            if (ReferenceEquals(this, nugetConfiguration))
             {
                 return true;
             }
 
-            return Sections.SequenceEqual(other.Sections);
+            return Sections.OrderedEquals(nugetConfiguration.Sections, s => s.Key, StringComparer.Ordinal);
         }
 
-        public bool DeepEquals(NuGetConfiguration other) => Equals(other);
-        public override bool DeepEquals(SettingBase other) => Equals(other as NuGetConfiguration);
-        public override bool Equals(SettingBase other) => Equals(other as NuGetConfiguration);
-        public override bool Equals(object other) => Equals(other as NuGetConfiguration);
         public override int GetHashCode() => ChildrenSet.GetHashCode();
     }
 }

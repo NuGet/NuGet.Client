@@ -36,7 +36,7 @@ namespace NuGet.Configuration.Test
             var nugetConfigPath = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 Settings settings = new Settings(mockBaseDirectory);
 
                 // Act
@@ -65,7 +65,7 @@ namespace NuGet.Configuration.Test
                 var testFolder = Path.Combine(mockBaseDirectory, "test");
 
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, subFolder, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, subFolder, config);
                 Settings settings = new Settings(subFolder);
 
                 // Act
@@ -93,7 +93,7 @@ namespace NuGet.Configuration.Test
                 var testFolder = Path.Combine(mockBaseDirectory, "test");
 
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 Settings settings = new Settings(mockBaseDirectory);
 
                 // Act
@@ -120,7 +120,7 @@ namespace NuGet.Configuration.Test
             var nugetConfigPath = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settings = new Settings(mockBaseDirectory);
 
                 // Act
@@ -168,9 +168,9 @@ namespace NuGet.Configuration.Test
             {
                 var subFolder = Path.Combine(mockBaseDirectory, "sub");
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, subFolder, configA);
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, configB);
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, machineWide, configC);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, subFolder, configA);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, configB);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, machineWide, configC);
 
                 var machineWiderFolderSettings = new Settings(machineWide);
                 var machineWideSettings = new TestMachineWideSettings(machineWiderFolderSettings);
@@ -228,9 +228,9 @@ namespace NuGet.Configuration.Test
             {
                 var subFolder = Path.Combine(mockBaseDirectory, "sub");
 
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, subFolder, configA);
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, configB);
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, machineWide, configC);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, subFolder, configA);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, configB);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, machineWide, configC);
 
                 var machineWiderFolderSettings = new Settings(machineWide);
                 var machineWideSettings = new TestMachineWideSettings(machineWiderFolderSettings);
