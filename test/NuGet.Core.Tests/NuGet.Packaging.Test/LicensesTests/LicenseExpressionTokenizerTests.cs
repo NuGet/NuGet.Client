@@ -17,7 +17,7 @@ namespace NuGet.Packaging.Licenses.Test
 
         public void LicenseExpressionTokenizer_ThrowsForInvalidLicenseStrings(string value)
         {
-            Assert.Throws<ArgumentNullException>(() => new LicenseExpressionTokenizer(value));
+            Assert.Throws<ArgumentException>(() => new LicenseExpressionTokenizer(value));
         }
 
         [Theory]
