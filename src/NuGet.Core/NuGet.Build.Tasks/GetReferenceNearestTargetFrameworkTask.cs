@@ -35,7 +35,6 @@ namespace NuGet.Build.Tasks
 
         /// <summary>
         /// The project references for property lookup.
-        /// The project references for property lookup.
         /// </summary>
         public ITaskItem[] AnnotatedProjectReferences { get; set; }
 
