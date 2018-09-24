@@ -10,7 +10,7 @@ using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
-    public class AddItem : SettingItem, IEquatable<AddItem>
+    public class AddItem : SettingItem
     {
         public override string ElementName => ConfigurationConstants.Add;
 
@@ -28,8 +28,20 @@ namespace NuGet.Configuration
                 !string.Equals(a.Key, ConfigurationConstants.ValueAttribute, StringComparison.OrdinalIgnoreCase)
             ).ToDictionary(a => a.Key, a => a.Value));
 
+        protected override HashSet<string> RequiredAttributes => new HashSet<string>() { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute };
+
+        protected override Dictionary<string, HashSet<string>> DisallowedValues => new Dictionary<string, HashSet<string>>()
+        {
+            { ConfigurationConstants.KeyAttribute, new HashSet<string>() { string.Empty } }
+        };
+
         public AddItem(string key, string value)
             : this(key, value, additionalAttributes: null)
+        {
+        }
+
+        internal AddItem(XElement element, SettingsFile origin)
+            : base(element, origin)
         {
         }
 
@@ -86,52 +98,24 @@ namespace NuGet.Configuration
             }
         }
 
-        public bool Equals(AddItem other)
+        public override bool Equals(object other)
         {
-            if (other == null || other.GetType() != GetType())
+            var item = other as AddItem;
+
+            if (item == null || item.GetType() != GetType())
             {
                 return false;
             }
 
-            if (ReferenceEquals(this, other))
+            if (ReferenceEquals(this, item))
             {
                 return true;
             }
 
-            return string.Equals(Key, other.Key, StringComparison.Ordinal);
+            return string.Equals(Key, item.Key, StringComparison.Ordinal);
         }
 
-        public bool DeepEquals(AddItem other)
-        {
-            if (!Equals(other))
-            {
-                return false;
-            }
-
-            if (other.Attributes.Count == Attributes.Count)
-            {
-                return Attributes.OrderedEquals(other.Attributes, data => data.Key, StringComparer.OrdinalIgnoreCase);
-            }
-
-            return false;
-        }
-
-        public override bool Equals(SettingBase other) =>  Equals(other as AddItem);
-        public override bool DeepEquals(SettingBase other) => DeepEquals(other as AddItem);
-        public override bool Equals(object other) => Equals(other as AddItem);
         public override int GetHashCode() => Key.GetHashCode();
-
-        protected override HashSet<string> RequiredAttributes => new HashSet<string>() { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute };
-
-        protected override Dictionary<string, HashSet<string>> DisallowedValues => new Dictionary<string, HashSet<string>>()
-        {
-            { ConfigurationConstants.KeyAttribute, new HashSet<string>() { string.Empty } }
-        };
-
-        internal AddItem(XElement element, SettingsFile origin)
-            : base(element, origin)
-        {
-        }
 
         internal override SettingBase Clone()
         {

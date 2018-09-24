@@ -28,7 +28,7 @@ namespace NuGet.Configuration.Test
             var nugetConfigPath = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act and Assert
                 var settingsFile = new SettingsFile(mockBaseDirectory);
@@ -42,7 +42,7 @@ namespace NuGet.Configuration.Test
                 children.Should().NotBeEmpty();
                 children.Count.Should().Be(1);
 
-                children[0].DeepEquals(expectedValue).Should().BeTrue();
+                SettingsTestUtils.DeepEquals(children[0], expectedValue).Should().BeTrue();
             }
         }
 
@@ -67,7 +67,7 @@ namespace NuGet.Configuration.Test
             var nugetConfigPath = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act and Assert
                 var settingsFile = new SettingsFile(mockBaseDirectory);
@@ -83,7 +83,7 @@ namespace NuGet.Configuration.Test
 
                 for (var i = 0; i < children.Count; i++)
                 {
-                    children[i].DeepEquals(expectedValues[i]).Should().BeTrue();
+                    SettingsTestUtils.DeepEquals(children[i], expectedValues[i]).Should().BeTrue();
                 }
             }
         }
@@ -104,7 +104,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act and Assert
                 var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));

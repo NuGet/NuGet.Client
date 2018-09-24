@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace NuGet.Configuration
 {
-    public sealed class ClearItem : SettingItem, IEquatable<ClearItem>
+    public sealed class ClearItem : SettingItem
     {
         public override string ElementName => ConfigurationConstants.Clear;
 
@@ -22,11 +22,7 @@ namespace NuGet.Configuration
         }
 
         internal override SettingBase Clone() => new ClearItem();
-        public bool Equals(ClearItem other) => other != null;
-        public bool DeepEquals(ClearItem other) =>  Equals(other);
-        public override bool DeepEquals(SettingBase other) => Equals(other as ClearItem);
-        public override bool Equals(SettingBase other) => Equals(other as ClearItem);
-        public override bool Equals(object other) => Equals(other as ClearItem);
+        public override bool Equals(object other) => other is ClearItem;
         public override int GetHashCode() => ElementName.GetHashCode();
     }
 }

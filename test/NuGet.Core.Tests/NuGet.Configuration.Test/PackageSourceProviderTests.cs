@@ -146,7 +146,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
                 var settings = new Settings(mockBaseDirectory);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
@@ -198,7 +198,7 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
                 var settings = new Settings(mockBaseDirectory);
                 var provider = CreatePackageSourceProvider(settings);
 
@@ -225,7 +225,7 @@ namespace NuGet.Configuration.Test
                 // - source d is persisted in <disabledPackageSources> only since its IsPersistable is false and it's disabled.
 
                 var configFileContent = File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigFilePath));
-                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
     <add key=""a"" value=""http://a"" />
@@ -237,7 +237,7 @@ namespace NuGet.Configuration.Test
   </disabledPackageSources>
 </configuration>");
 
-                Assert.Equal(result, ConfigurationFileTestUtility.RemoveWhitespace(configFileContent));
+                Assert.Equal(result, SettingsTestUtils.RemoveWhitespace(configFileContent));
             }
         }
 
@@ -502,7 +502,7 @@ namespace NuGet.Configuration.Test
     <add key=""key2"" value=""https://test.org/2"" />
   </packageSources>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1", "dir2"), config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1", "dir2"), config);
                 config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
@@ -510,7 +510,7 @@ namespace NuGet.Configuration.Test
     <clear />
   </packageSources>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
                 var rootPath = Path.Combine(Path.Combine(mockBaseDirectory, "dir1", "dir2"), Path.GetRandomFileName());
                 var settings = Settings.LoadSettings(rootPath,
@@ -1242,8 +1242,8 @@ namespace NuGet.Configuration.Test
         <add key='a' value='http://a' />
     </packageSources>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a", "b"), configContent1);
-                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a", "b", "c"), configContent2);
+                SettingsTestUtils.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a", "b"), configContent1);
+                SettingsTestUtils.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a", "b", "c"), configContent2);
 
                 var settings = Settings.LoadSettings(
                     Path.Combine(mockBaseDirectory, "a", "b", "c"),
@@ -1282,8 +1282,8 @@ namespace NuGet.Configuration.Test
         <add key='a' value='http://a' />
     </packageSources>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a", "b"), configContent2);
-                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a", "b", "c"), configContent1);
+                SettingsTestUtils.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a", "b"), configContent2);
+                SettingsTestUtils.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a", "b", "c"), configContent1);
 
                 var settings = Settings.LoadSettings(
                     Path.Combine(mockBaseDirectory, "a", "b", "c"),
@@ -1316,7 +1316,7 @@ namespace NuGet.Configuration.Test
         <add key='nuget.org' value='https://www.nuget.org/api/v2/' />
     </packageSources>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, configContent);
+                SettingsTestUtils.CreateConfigurationFile("nuget.config", mockBaseDirectory, configContent);
 
                 var settings = Settings.LoadSettings(
                     mockBaseDirectory,
@@ -1366,7 +1366,7 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 Assert.Equal(
-                      ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                      SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""NuGet.org"" value=""https://NuGet.org"" />
@@ -1374,7 +1374,7 @@ namespace NuGet.Configuration.Test
     </packageSources>
 </configuration>
 "),
-                  ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+                  SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
             }
         }
 
@@ -1422,10 +1422,10 @@ namespace NuGet.Configuration.Test
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert - 3
-                Assert.Equal(ConfigurationFileTestUtility.RemoveWhitespace(config2Contents),
-                    ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
+                Assert.Equal(SettingsTestUtils.RemoveWhitespace(config2Contents),
+                    SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
                 Assert.Equal(
-                        ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""NuGet.org"" value=""https://NuGet.org"" />
@@ -1434,7 +1434,7 @@ namespace NuGet.Configuration.Test
         <add key=""NuGet.org"" value=""true"" />
     </disabledPackageSources>
 </configuration>
-"), ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+"), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
             }
         }
 
@@ -1497,10 +1497,10 @@ namespace NuGet.Configuration.Test
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert - 2
-                Assert.Equal(ConfigurationFileTestUtility.RemoveWhitespace(config1Contents),
-                    ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+                Assert.Equal(SettingsTestUtils.RemoveWhitespace(config1Contents),
+                    SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
 
-                Assert.Equal(ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                Assert.Equal(SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
             <add key=""test.org"" value=""https://test.org"" />
@@ -1509,7 +1509,7 @@ namespace NuGet.Configuration.Test
     <disabledPackageSources>
         <add key=""NuGet.org"" value=""true"" />
     </disabledPackageSources>
-</configuration>"), ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
+</configuration>"), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
             }
         }
 
@@ -1570,7 +1570,7 @@ namespace NuGet.Configuration.Test
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert - 2
-                Assert.Equal(ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                Assert.Equal(SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
                 <configuration>
                     <packageSources>
                         <add key=""test.org"" value=""https://test.org"" />
@@ -1580,9 +1580,9 @@ namespace NuGet.Configuration.Test
                         <add key=""test.org"" value=""true"" />
                     </disabledPackageSources>
                 </configuration>
-                "), ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+                "), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
 
-                Assert.Equal(ConfigurationFileTestUtility.RemoveWhitespace(config2Contents), ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
+                Assert.Equal(SettingsTestUtils.RemoveWhitespace(config2Contents), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
             }
         }
 
@@ -1646,7 +1646,7 @@ namespace NuGet.Configuration.Test
                 packageSourceProvider.SavePackageSources(sourcesToSave);
 
                 // Assert - 2
-                Assert.Equal(ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                Assert.Equal(SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://nuget.org"" />
@@ -1654,7 +1654,7 @@ namespace NuGet.Configuration.Test
         <add key=""test.org"" value=""https://new2.test.org"" protocolVersion=""3"" />
         <add key=""test2"" value=""https://test2.net"" />
     </packageSources>
-</configuration>"), ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+</configuration>"), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
             }
         }
 
@@ -1818,8 +1818,8 @@ namespace NuGet.Configuration.Test
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert
-                var text = ConfigurationFileTestUtility.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
-                var result = ConfigurationFileTestUtility.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
     <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
@@ -1980,7 +1980,7 @@ namespace NuGet.Configuration.Test
     </packageSources>
 </configuration>
 ";
-                ConfigurationFileTestUtility.CreateConfigurationFile(
+                SettingsTestUtils.CreateConfigurationFile(
                     "nuget.config",
                     Path.Combine(mockBaseDirectory, "TestingGlobalPath"),
                     configContents);

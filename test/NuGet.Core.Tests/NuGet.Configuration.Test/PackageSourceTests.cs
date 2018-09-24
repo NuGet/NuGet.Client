@@ -4,7 +4,7 @@
 using FluentAssertions;
 using Xunit;
 
-namespace NuGet.Configuration
+namespace NuGet.Configuration.Test
 {
     public class PackageSourceTests
     {
@@ -47,7 +47,7 @@ namespace NuGet.Configuration
 
             var expectedItem = new SourceItem("SourceName", "Source", "43");
 
-            source.AsSourceItem().DeepEquals(expectedItem).Should().BeTrue();
+            SettingsTestUtils.DeepEquals(source.AsSourceItem(), expectedItem).Should().BeTrue();
         }
     }
 }
