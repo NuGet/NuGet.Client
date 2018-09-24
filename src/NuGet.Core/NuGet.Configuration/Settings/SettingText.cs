@@ -7,7 +7,7 @@ using System.Xml.Linq;
 
 namespace NuGet.Configuration
 {
-    public sealed class SettingText : SettingBase, IEquatable<SettingText>
+    public sealed class SettingText : SettingBase
     {
         private string _value;
         public string Value
@@ -35,28 +35,22 @@ namespace NuGet.Configuration
             _value = value;
         }
 
-        public bool Equals(SettingText other)
+        public override bool Equals(object other)
         {
-            if (other == null)
+            var text = other as SettingText;
+
+            if (text == null)
             {
                 return false;
             }
 
-            if (ReferenceEquals(this, other))
+            if (ReferenceEquals(this, text))
             {
                 return true;
             }
 
-            return string.Equals(Value, other.Value, StringComparison.Ordinal);
+            return string.Equals(Value, text.Value, StringComparison.Ordinal);
         }
-
-        public bool DeepEquals(SettingText other) => Equals(other);
-
-        public override bool DeepEquals(SettingBase other) => Equals(other as SettingText);
-
-        public override bool Equals(SettingBase other) => Equals(other as SettingText);
-
-        public override bool Equals(object other) => Equals(other as SettingText);
 
         public override int GetHashCode() => Value.GetHashCode();
 

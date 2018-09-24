@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
 using FluentAssertions;
 using NuGet.Test.Utility;
 using Xunit;
@@ -158,7 +157,7 @@ namespace NuGet.Configuration.Test
 
             var expectedItem = new CredentialsItem("source", "user", "password", isPasswordClearText: false, validAuthenticationTypes: null);
 
-            credentials.AsCredentialsItem().DeepEquals(expectedItem).Should().BeTrue();
+            SettingsTestUtils.DeepEquals(credentials.AsCredentialsItem(), expectedItem).Should().BeTrue();
         }
 
         [Fact]
@@ -173,7 +172,7 @@ namespace NuGet.Configuration.Test
 
             var expectedItem = new CredentialsItem("source", "user", "password", isPasswordClearText: true, validAuthenticationTypes: null);
 
-            credentials.AsCredentialsItem().DeepEquals(expectedItem).Should().BeTrue();
+            SettingsTestUtils.DeepEquals(credentials.AsCredentialsItem(), expectedItem).Should().BeTrue();
         }
 
         [Fact]
@@ -188,7 +187,7 @@ namespace NuGet.Configuration.Test
 
             var expectedItem = new CredentialsItem("source", "user", "password", isPasswordClearText: false, validAuthenticationTypes: "basic, negotiate");
 
-            credentials.AsCredentialsItem().DeepEquals(expectedItem).Should().BeTrue();
+            SettingsTestUtils.DeepEquals(credentials.AsCredentialsItem(), expectedItem).Should().BeTrue();
         }
     }
 }

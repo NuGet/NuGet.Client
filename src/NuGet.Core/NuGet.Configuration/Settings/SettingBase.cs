@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace NuGet.Configuration
 {
-    public abstract class SettingBase : IEquatable<SettingBase>
+    public abstract class SettingBase
     {
         internal XNode Node { get; private set; }
 
@@ -24,24 +24,6 @@ namespace NuGet.Configuration
         /// Default constructor
         /// </summary>
         protected SettingBase() { }
-
-        /// <summary>
-        /// Compares two instances to see if they both match in their values for
-        /// the elements unique keys
-        /// </summary>
-        /// <remarks>Each setting defines its unique keys,
-        /// e.g. if two add items have the same key they are considered equal</remarks>
-        /// <param name="other">other instance to compare</param>
-        /// <returns>true if both instances refer to the same setting</returns>
-        public abstract bool Equals(SettingBase other);
-
-        /// <summary>
-        /// Compares two instances for exact equality,
-        /// not only checking the unique keys but also any other attributes and values
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns>true if both instances are exactly the same</returns>
-        public abstract bool DeepEquals(SettingBase other);
 
         /// <summary>
         /// Specifies if the setting is an in-memory-only setting. 

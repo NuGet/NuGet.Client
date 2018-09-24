@@ -14,7 +14,7 @@ namespace NuGet.Configuration
     ///     - [Required] Either Password or ClearTextPassword (AddItem)
     ///     - [Optional] ValidAuthenticationTypes (AddItem)
     /// </summary>
-    public sealed class CredentialsItem : SettingItem, IEquatable<CredentialsItem>
+    public sealed class CredentialsItem : SettingItem
     {
         public override string ElementName { get; protected set; }
 
@@ -217,42 +217,23 @@ namespace NuGet.Configuration
             return element;
         }
 
-        public bool Equals(CredentialsItem other)
+        public override bool Equals(object other)
         {
-            if (other == null)
+            var item = other as CredentialsItem;
+
+            if (item == null)
             {
                 return false;
             }
 
-            if (ReferenceEquals(this, other))
+            if (ReferenceEquals(this, item))
             {
                 return true;
             }
 
-            return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal);
+            return string.Equals(ElementName, item.ElementName, StringComparison.Ordinal);
         }
 
-        public bool DeepEquals(CredentialsItem other)
-        {
-            if (!Equals(other))
-            {
-                return false;
-            }
-
-            var validAutheticationTypesEquals = string.IsNullOrEmpty(ValidAuthenticationTypes) ?
-                string.IsNullOrEmpty(other.ValidAuthenticationTypes) :
-                string.Equals(ValidAuthenticationTypes, other.ValidAuthenticationTypes, StringComparison.Ordinal);
-
-            return string.Equals(ElementName, other.ElementName, StringComparison.Ordinal)
-                && string.Equals(Username, other.Username, StringComparison.Ordinal)
-                && IsPasswordClearText == other.IsPasswordClearText
-                && string.Equals(Password, other.Password, StringComparison.Ordinal)
-                && validAutheticationTypesEquals;
-        }
-
-        public override bool DeepEquals(SettingBase other) => DeepEquals(other as CredentialsItem);
-        public override bool Equals(SettingBase other) => Equals(other as CredentialsItem);
-        public override bool Equals(object other) => Equals(other as CredentialsItem);
         public override int GetHashCode() => ElementName.GetHashCode();
 
         /// <remarks>
