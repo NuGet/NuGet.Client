@@ -83,4 +83,7 @@
 
   <Target Name="AfterBuild" DependsOnTargets="LocalizeNonProjectFiles;BatchLocalize"/>
   <Import Project="$(MicroBuildDirectory)MicroBuild.Core.targets" />
+  <PropertyGroup>
+    <LsBuildWarningLevelValue>4</LsBuildWarningLevelValue>
+  </PropertyGroup>
 </Project>
