@@ -233,6 +233,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Owners item must have at least one owner..
+        /// </summary>
+        internal static string OwnersItemMustHaveAtLeastOneOwner {
+            get {
+                return ResourceManager.GetString("OwnersItemMustHaveAtLeastOneOwner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Owners item must only have text content and cannot be empty..
         /// </summary>
         internal static string OwnersMustOnlyHaveContent {
@@ -269,7 +278,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A repository item can only have one owners item in it..
+        ///   Looks up a localized string similar to The repository item with name &apos;{0}&apos; and service index &apos;{1}&apos; has more than one owners item in it..
         /// </summary>
         internal static string RepositoryMustHaveOneOwners {
             get {

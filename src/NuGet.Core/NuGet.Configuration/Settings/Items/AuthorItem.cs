@@ -5,15 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
-    public sealed class AuthorItem : TrustedSignerItem, IEquatable<AuthorItem>
+    public sealed class AuthorItem : TrustedSignerItem
     {
         public override string ElementName => ConfigurationConstants.Author;
 
-        protected override HashSet<string> RequiredAttributes => new HashSet<string>() { ConfigurationConstants.NameAttribute };
+        protected override HashSet<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.NameAttribute };
+
+        public string Name => Attributes[ConfigurationConstants.NameAttribute];
 
         public AuthorItem(string name, params CertificateItem[] certificates)
             : base(name, certificates)
@@ -27,7 +28,7 @@ namespace NuGet.Configuration
 
         internal override SettingBase Clone()
         {
-            var newItem = new AuthorItem(Name, Certificates.ToArray());
+            var newItem = new AuthorItem(Name, Certificates.Select(c => c.Clone() as CertificateItem).ToArray());
 
             if (Origin != null)
             {
@@ -39,7 +40,7 @@ namespace NuGet.Configuration
 
         internal override XNode AsXNode()
         {
-            if (Node != null && Node is XElement)
+            if (Node is XElement)
             {
                 return Node;
             }
@@ -59,45 +60,21 @@ namespace NuGet.Configuration
             return element;
         }
 
-        public bool Equals(AuthorItem other)
+        public override bool Equals(object other)
         {
-            if (other == null || other.GetType() != GetType())
+            if (other is AuthorItem author)
             {
-                return false;
-            }
+                if (ReferenceEquals(this, other))
+                {
+                    return true;
+                }
 
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return string.Equals(Name, other.Name, StringComparison.Ordinal);
-        }
-
-        public bool DeepEquals(AuthorItem other)
-        {
-            if (other == null || other.GetType() != GetType())
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            if (other.Attributes.Count == Attributes.Count)
-            {
-                return Attributes.OrderedEquals(other.Attributes, data => data.Key, StringComparer.OrdinalIgnoreCase) &&
-                    Certificates.SequenceEqual(other.Certificates);
+                return string.Equals(Name, author.Name, StringComparison.Ordinal);
             }
 
             return false;
         }
 
-        public override bool Equals(SettingBase other) => Equals(other as AuthorItem);
-        public override bool DeepEquals(SettingBase other) => DeepEquals(other as AuthorItem);
-        public override bool Equals(object other) => Equals(other as AuthorItem);
         public override int GetHashCode() => Name.GetHashCode();
     }
 }

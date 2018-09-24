@@ -6,7 +6,7 @@ namespace NuGet.Common
     public enum SignatureValidationMode
     {
         /// <summary>
-        /// Relaxed siganture verification mode.
+        /// Relaxed signature verification mode.
         /// Allows unsigned packages, and issues are treated as warnings.
         /// </summary>
         Accept,

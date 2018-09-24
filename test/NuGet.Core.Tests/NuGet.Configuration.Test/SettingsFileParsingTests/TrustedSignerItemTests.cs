@@ -29,7 +29,7 @@ namespace NuGet.Configuration.Test
             var nugetConfigPath = "NuGet.Config";
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act and Assert
                 var settingsFile = new SettingsFile(mockBaseDirectory);
@@ -41,12 +41,12 @@ namespace NuGet.Configuration.Test
                 var repositoryitem = items[0] as RepositoryItem;
                 var expectedRepositoryItem = new RepositoryItem("repositoryName", "https://api.test/index/", "test;text",
                     new CertificateItem("abcdefg", Common.HashAlgorithmName.SHA256, allowUntrustedRoot: true));
-                repositoryitem.DeepEquals(expectedRepositoryItem).Should().BeTrue();
+                SettingsTestUtils.DeepEquals(repositoryitem, expectedRepositoryItem).Should().BeTrue();
 
                 var authorItem = items[1] as AuthorItem;
                 var expectedAuthorItem = new AuthorItem("authorName",
                     new CertificateItem("abcdefg", Common.HashAlgorithmName.SHA256, allowUntrustedRoot: true));
-                authorItem.DeepEquals(expectedAuthorItem).Should().BeTrue();
+                SettingsTestUtils.DeepEquals(authorItem, expectedAuthorItem).Should().BeTrue();
             }
         }
     }

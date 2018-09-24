@@ -6,15 +6,40 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Xml.Linq;
 using NuGet.Common;
-using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
-    public sealed class CertificateItem : SettingItem, IEquatable<CertificateItem>
+    public sealed class CertificateItem : SettingItem
     {
-        public string Fingerprint => Attributes[ConfigurationConstants.Fingerprint];
+        public override string ElementName => ConfigurationConstants.Certificate;
 
-        public HashAlgorithmName HashAlgorithm => CryptoHashUtility.GetHashAlgorithmName(Attributes[ConfigurationConstants.HashAlgorithm]);
+        public string Fingerprint
+        {
+            get => Attributes[ConfigurationConstants.Fingerprint];
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.PropertyCannotBeNullOrEmpty, nameof(Fingerprint)));
+                }
+
+                UpdateAttribute(ConfigurationConstants.Fingerprint, value);
+            }
+        }
+
+        public HashAlgorithmName HashAlgorithm
+        {
+            get => CryptoHashUtility.GetHashAlgorithmName(Attributes[ConfigurationConstants.HashAlgorithm]);
+            set
+            {
+                if (value == HashAlgorithmName.Unknown)
+                {
+                    throw new ArgumentException(Resources.UnknownHashAlgorithmNotSupported);
+                }
+
+                UpdateAttribute(ConfigurationConstants.HashAlgorithm, value.ToString().ToUpper());
+            }
+        }
 
         public bool AllowUntrustedRoot
         {
@@ -27,16 +52,17 @@ namespace NuGet.Configuration
 
                 return false;
             }
+            set => UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, value.ToString().ToLower());
         }
 
-        protected override HashSet<string> RequiredAttributes => new HashSet<string>() { ConfigurationConstants.Fingerprint, ConfigurationConstants.HashAlgorithm, ConfigurationConstants.AllowUntrustedRoot };
+    protected override HashSet<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.Fingerprint, ConfigurationConstants.HashAlgorithm, ConfigurationConstants.AllowUntrustedRoot };
 
         public CertificateItem(string fingerprint, HashAlgorithmName hashAlgorithm, bool allowUntrustedRoot = false)
             : base()
         {
             if (string.IsNullOrEmpty(fingerprint))
             {
-                throw new ArgumentNullException(nameof(fingerprint));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(fingerprint));
             }
 
             if (hashAlgorithm == HashAlgorithmName.Unknown)
@@ -45,8 +71,8 @@ namespace NuGet.Configuration
             }
 
             AddAttribute(ConfigurationConstants.Fingerprint, fingerprint);
-            AddAttribute(ConfigurationConstants.HashAlgorithm, hashAlgorithm.ToString());
-            AddAttribute(ConfigurationConstants.AllowUntrustedRoot, $"{allowUntrustedRoot}");
+            AddAttribute(ConfigurationConstants.HashAlgorithm, hashAlgorithm.ToString().ToUpper());
+            AddAttribute(ConfigurationConstants.AllowUntrustedRoot, allowUntrustedRoot.ToString().ToLower());
         }
 
         internal CertificateItem(XElement element, SettingsFile origin)
@@ -58,6 +84,10 @@ namespace NuGet.Configuration
                     string.Format(CultureInfo.CurrentCulture, Resources.UnsupportedHashAlgorithm, Attributes[ConfigurationConstants.HashAlgorithm]),
                     origin.ConfigFilePath));
             }
+
+            // Update attributes with propert casing
+            UpdateAttribute(ConfigurationConstants.HashAlgorithm, HashAlgorithm.ToString().ToUpper());
+            UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, AllowUntrustedRoot.ToString().ToLower());
         }
 
         internal override SettingBase Clone()
@@ -72,44 +102,21 @@ namespace NuGet.Configuration
             return newItem;
         }
 
-        public bool Equals(CertificateItem other)
+        public override bool Equals(object other)
         {
-            if (other == null || other.GetType() != GetType())
+            if (other is CertificateItem cert)
             {
-                return false;
-            }
+                if (ReferenceEquals(this, cert))
+                {
+                    return true;
+                }
 
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return string.Equals(Fingerprint, other.Fingerprint, StringComparison.Ordinal);
-        }
-
-        public bool DeepEquals(CertificateItem other)
-        {
-            if (other == null || other.GetType() != GetType())
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            if (other.Attributes.Count == Attributes.Count)
-            {
-                return Attributes.OrderedEquals(other.Attributes, data => data.Key, StringComparer.OrdinalIgnoreCase);
+                return string.Equals(Fingerprint, cert.Fingerprint, StringComparison.Ordinal);
             }
 
             return false;
         }
 
         public override int GetHashCode() => Fingerprint.GetHashCode();
-        public override bool Equals(SettingBase other) => Equals(other as CertificateItem);
-        public override bool DeepEquals(SettingBase other) => DeepEquals(other as CertificateItem);
-        public override bool Equals(object other) => Equals(other as CertificateItem);
     }
 }

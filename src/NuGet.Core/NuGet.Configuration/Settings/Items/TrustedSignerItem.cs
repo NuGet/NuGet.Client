@@ -11,41 +11,42 @@ namespace NuGet.Configuration
 {
     public abstract class TrustedSignerItem : SettingItem
     {
-        public string Name => Attributes[ConfigurationConstants.NameAttribute];
-
         protected override bool CanHaveChildren => true;
 
-        private IList<CertificateItem> _certificates { get; }
+        public IList<CertificateItem> Certificates { get; }
 
-        public IReadOnlyList<CertificateItem> Certificates => _certificates.ToList().AsReadOnly();
+        internal readonly IEnumerable<SettingBase> _parsedDescendants;
 
         protected TrustedSignerItem(string name, IEnumerable<CertificateItem> certificates)
             : base()
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
-
-            AddAttribute(ConfigurationConstants.NameAttribute, name);
-
-            _certificates = new List<CertificateItem>();
 
             if (certificates == null || !certificates.Any())
             {
                 throw new ArgumentException(Resources.TrustedSignerMustHaveCertificates);
             }
 
+            AddAttribute(ConfigurationConstants.NameAttribute, name);
+
+            Certificates = new List<CertificateItem>();
+
             foreach (var certificate in certificates)
             {
-                _certificates.Add(certificate);
+                Certificates.Add(certificate);
             }
         }
 
         internal TrustedSignerItem(XElement element, SettingsFile origin)
             : base(element, origin)
         {
-            var parsedCertificates = element.Elements().Select(e => SettingFactory.Parse(e, origin)).OfType<CertificateItem>().ToList();
+            _parsedDescendants = element.Nodes().Where(n => n is XElement || n is XText text && !string.IsNullOrWhiteSpace(text.Value))
+                .Select(e => SettingFactory.Parse(e, origin));
+
+            var parsedCertificates = _parsedDescendants.OfType<CertificateItem>().ToList();
 
             if (parsedCertificates.Count() < 1)
             {
@@ -53,7 +54,7 @@ namespace NuGet.Configuration
                     string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, Resources.TrustedSignerMustHaveCertificates, origin.ConfigFilePath));
             }
 
-            _certificates = parsedCertificates;
+            Certificates = parsedCertificates;
         }
 
         internal override void SetOrigin(SettingsFile origin)
@@ -73,6 +74,57 @@ namespace NuGet.Configuration
             foreach (var certificate in Certificates)
             {
                 certificate.RemoveFromSettings();
+            }
+        }
+
+        internal override void Update(SettingItem other)
+        {
+            var trustedSigner = other as TrustedSignerItem;
+
+            if (!trustedSigner.Certificates.Any())
+            {
+                throw new InvalidOperationException(Resources.TrustedSignerMustHaveCertificates);
+            }
+
+            base.Update(other);
+
+            var otherCerts = trustedSigner.Certificates.ToDictionary(c => c, c => c);
+            var immutableCerts = new List<CertificateItem>(Certificates);
+            foreach (var cert in immutableCerts)
+            {
+                if (otherCerts.TryGetValue(cert, out var otherChild))
+                {
+                    otherCerts.Remove(cert);
+                }
+
+                if (otherChild == null)
+                {
+                    Certificates.Remove(cert);
+                    cert.RemoveFromSettings();
+                }
+                else if (cert is SettingItem item)
+                {
+                    item.Update(otherChild as SettingItem);
+                }
+            }
+
+            foreach (var newCert in otherCerts)
+            {
+                var certToAdd = newCert.Value;
+                Certificates.Add(certToAdd);
+
+                if (Origin != null)
+                {
+                    certToAdd.SetOrigin(Origin);
+
+                    if (Node != null)
+                    {
+                        certToAdd.SetNode(certToAdd.AsXNode());
+
+                        XElementUtility.AddIndented(Node as XElement, certToAdd.Node);
+                        Origin.IsDirty = true;
+                    }
+                }
             }
         }
     }

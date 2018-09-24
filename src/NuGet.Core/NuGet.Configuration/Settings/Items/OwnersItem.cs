@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
-    public sealed class OwnersItem : SettingItem, IEquatable<OwnersItem>
+    public sealed class OwnersItem : SettingItem
     {
         public static readonly char OwnersListSeparator = ';';
 
@@ -17,9 +18,9 @@ namespace NuGet.Configuration
 
         protected override bool CanHaveChildren => true;
 
-        public IList<string> Content => _content.Value.Split(OwnersListSeparator).Select(o => o.Trim()).ToList();
+        public IList<string> Content { get; private set; }
 
-        private readonly SettingText _content;
+        private SettingText _content;
 
         public OwnersItem(string owners)
             : base()
@@ -30,6 +31,8 @@ namespace NuGet.Configuration
             }
 
             _content = new SettingText(owners);
+
+            Content = owners.Split(OwnersListSeparator).Select(o => o.Trim()).ToList();
         }
 
         internal OwnersItem(XElement element, SettingsFile origin)
@@ -45,6 +48,8 @@ namespace NuGet.Configuration
             }
 
             _content = descendants.OfType<SettingText>().First();
+
+            Content = _content.Value.Split(OwnersListSeparator).Select(o => o.Trim()).ToList();
         }
 
         internal override SettingBase Clone()
@@ -61,10 +66,12 @@ namespace NuGet.Configuration
 
         internal override XNode AsXNode()
         {
-            if (Node != null && Node is XElement)
+            if (Node is XElement)
             {
                 return Node;
             }
+
+            _content.Value = string.Join(OwnersListSeparator.ToString(), Content);
 
             var element = new XElement(ElementName, _content.AsXNode());
 
@@ -76,25 +83,53 @@ namespace NuGet.Configuration
             return element;
         }
 
-        public bool Equals(OwnersItem other)
+        public override bool Equals(object other)
         {
-            if (other == null || other.GetType() != GetType())
+            if (other is OwnersItem owners)
             {
-                return false;
+                if (ReferenceEquals(this, owners))
+                {
+                    return true;
+                }
+
+                return Content.OrderedEquals(owners.Content, o => o, StringComparer.Ordinal, StringComparer.Ordinal);
             }
 
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return Content.SequenceEqual(other.Content, StringComparer.Ordinal);
+            return false;
         }
 
-        public bool DeepEquals(OwnersItem other) => Equals(other);
-        public override bool Equals(SettingBase other) => Equals(other as OwnersItem);
-        public override bool DeepEquals(SettingBase other) => DeepEquals(other as OwnersItem);
-        public override bool Equals(object other) => Equals(other as OwnersItem);
         public override int GetHashCode() => Content.GetHashCode();
+
+        internal override void Update(SettingItem other)
+        {
+            var owners = other as OwnersItem;
+
+            if (!owners.Content.Any())
+            {
+                throw new InvalidOperationException(Resources.OwnersItemMustHaveAtLeastOneOwner);
+            }
+
+            base.Update(other);
+
+            if (!Equals(owners))
+            {
+                XElementUtility.RemoveIndented(_content.Node);
+                Content = owners.Content;
+
+                _content = new SettingText(string.Join(OwnersListSeparator.ToString(), Content));
+
+                if (Origin != null)
+                {
+                    _content.SetOrigin(Origin);
+
+                    if (Node != null)
+                    {
+                        _content.SetNode(_content.AsXNode());
+                        (Node as XElement).Add(_content.Node);
+                        Origin.IsDirty = true;
+                    }
+                }
+            }
+        }
     }
 }

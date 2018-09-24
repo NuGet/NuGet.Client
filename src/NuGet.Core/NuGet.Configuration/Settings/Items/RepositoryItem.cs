@@ -10,17 +10,31 @@ using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
-    public sealed class RepositoryItem : TrustedSignerItem, IEquatable<RepositoryItem>
+    public sealed class RepositoryItem : TrustedSignerItem
     {
         public override string ElementName => ConfigurationConstants.Repository;
 
         public string ServiceIndex => Attributes[ConfigurationConstants.ServiceIndex];
 
-        private readonly OwnersItem _owners;
+        public string Name
+        {
+            get => Attributes[ConfigurationConstants.NameAttribute];
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.PropertyCannotBeNullOrEmpty, nameof(Name)));
+                }
 
-        public IEnumerable<string> Owners => _owners?.Content ?? Enumerable.Empty<string>();
+                UpdateAttribute(ConfigurationConstants.NameAttribute, value);
+            }
+        }
 
-        protected override HashSet<string> RequiredAttributes => new HashSet<string>() { ConfigurationConstants.NameAttribute, ConfigurationConstants.ServiceIndex };
+        private OwnersItem _owners;
+
+        public IList<string> Owners { get; private set; }
+
+        protected override HashSet<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.NameAttribute, ConfigurationConstants.ServiceIndex };
 
         public RepositoryItem(string name, string serviceIndex, params CertificateItem[] certificates)
             : this(name, serviceIndex, owners: null, certificates: certificates)
@@ -40,22 +54,36 @@ namespace NuGet.Configuration
             if (!string.IsNullOrEmpty(owners))
             {
                 _owners = new OwnersItem(owners);
+                Owners =_owners.Content;
+            }
+            else
+            {
+                Owners = new List<string>();
             }
         }
 
         internal RepositoryItem(XElement element, SettingsFile origin)
             : base(element, origin)
         {
-            var parsedOwners = element.Elements().Select(e => SettingFactory.Parse(e, origin)).OfType<OwnersItem>();
+            var parsedOwners = _parsedDescendants.OfType<OwnersItem>();
+            Owners = new List<string>();
+
             if (parsedOwners != null && parsedOwners.Any())
             {
                 if (parsedOwners.Count() > 1)
                 {
                     throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, Resources.RepositoryMustHaveOneOwners, origin.ConfigFilePath));
+                        string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile,
+                            string.Format(CultureInfo.CurrentCulture, Resources.RepositoryMustHaveOneOwners, Name, ServiceIndex),
+                            origin.ConfigFilePath));
                 }
 
                 _owners = parsedOwners.FirstOrDefault();
+                Owners = _owners.Content;
+            }
+            else
+            {
+                Owners = new List<string>();
             }
         }
 
@@ -77,7 +105,7 @@ namespace NuGet.Configuration
 
         internal override XNode AsXNode()
         {
-            if (Node != null && Node is XElement)
+            if (Node is XElement)
             {
                 return Node;
             }
@@ -102,39 +130,16 @@ namespace NuGet.Configuration
             return element;
         }
 
-        public bool Equals(RepositoryItem other)
+        public override bool Equals(object other)
         {
-            if (other == null || other.GetType() != GetType())
+            if (other is RepositoryItem repository)
             {
-                return false;
-            }
+                if (ReferenceEquals(this, repository))
+                {
+                    return true;
+                }
 
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return string.Equals(ServiceIndex, other.ServiceIndex, StringComparison.Ordinal);
-        }
-
-        public bool DeepEquals(RepositoryItem other)
-        {
-            if (other == null || other.GetType() != GetType())
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            if (other.Attributes.Count == Attributes.Count &&
-                other.Certificates.Count == Certificates.Count)
-            {
-                return Attributes.OrderedEquals(other.Attributes, data => data.Key, StringComparer.OrdinalIgnoreCase) &&
-                    Certificates.SequenceEqual(other.Certificates) &&
-                    Owners.SequenceEqual(other.Owners);
+                return string.Equals(ServiceIndex, repository.ServiceIndex, StringComparison.Ordinal);
             }
 
             return false;
@@ -150,10 +155,6 @@ namespace NuGet.Configuration
             return combiner.CombinedHash;
         }
 
-        public override bool Equals(SettingBase other) => Equals(other as RepositoryItem);
-        public override bool DeepEquals(SettingBase other) => DeepEquals(other as RepositoryItem);
-        public override bool Equals(object other) => Equals(other as RepositoryItem);
-
         internal override void SetOrigin(SettingsFile origin)
         {
             base.SetOrigin(origin);
@@ -166,6 +167,47 @@ namespace NuGet.Configuration
             base.RemoveFromSettings();
 
             _owners?.RemoveFromSettings();
+        }
+
+        internal override void Update(SettingItem other)
+        {
+            base.Update(other);
+
+            var repository = other as RepositoryItem;
+
+            if (!Owners.SequenceEqual(repository.Owners, StringComparer.Ordinal))
+            {
+                if (_owners == null || !Owners.Any())
+                {
+                    _owners = new OwnersItem(string.Join(OwnersItem.OwnersListSeparator.ToString(), repository.Owners));
+                    Owners = _owners.Content;
+
+                    if (Origin != null)
+                    {
+                        _owners.SetOrigin(Origin);
+
+                        if (Node != null)
+                        {
+                            _owners.SetNode(_owners.AsXNode());
+
+                            XElementUtility.AddIndented(Node as XElement, _owners.Node);
+                            Origin.IsDirty = true;
+                        }
+                    }
+                }
+                else if (!repository.Owners.Any())
+                {
+                    XElementUtility.RemoveIndented(_owners.Node);
+                    _owners = null;
+                    Origin.IsDirty = true;
+                    Owners.Clear();
+                }
+                else
+                {
+                    _owners.Update(repository._owners);
+                    Owners = _owners.Content;
+                }
+            }
         }
     }
 }

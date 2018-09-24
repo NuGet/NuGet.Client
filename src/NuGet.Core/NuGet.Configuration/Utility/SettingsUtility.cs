@@ -81,6 +81,11 @@ namespace NuGet.Configuration
 
         public static SignatureValidationMode GetSignatureValidationMode(ISettings settings)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             var validationMode = GetConfigValue(settings, ConfigurationConstants.SignatureValidationMode);
 
             if (!string.IsNullOrEmpty(validationMode) && Enum.TryParse(validationMode, ignoreCase: true, result: out SignatureValidationMode mode))

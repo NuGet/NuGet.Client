@@ -186,6 +186,9 @@
   <data name="NoWritteableConfig" xml:space="preserve">
     <value>There is no NuGet.Config that could be used for writing settings. Please create one at the desired location and restart the client.</value>
   </data>
+  <data name="OwnersItemMustHaveAtLeastOneOwner" xml:space="preserve">
+    <value>Owners item must have at least one owner.</value>
+  </data>
   <data name="OwnersMustOnlyHaveContent" xml:space="preserve">
     <value>Owners item must only have text content and cannot be empty.</value>
   </data>
@@ -200,7 +203,9 @@
     <value>Environment variable '{0}' must contain an absolute path, the full path of '{1}' cannot be determined.</value>
   </data>
   <data name="RepositoryMustHaveOneOwners" xml:space="preserve">
-    <value>A repository item can only have one owners item in it.</value>
+    <value>The repository item with name '{0}' and service index '{1}' has more than one owners item in it.</value>
+    <comment>0 - repository name
+1 - service index</comment>
   </data>
   <data name="SectionDoesNotExist" xml:space="preserve">
     <value>The section '{0}' does not exist in the settings.</value>
