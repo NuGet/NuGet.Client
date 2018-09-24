@@ -703,7 +703,12 @@ namespace NuGet.Common
         /// <summary>
         /// Undefined package warning
         /// </summary>
-        NU5500 = 5500
+        NU5500 = 5500,
+
+        /// <summary>
+        /// Errro_Fallback Framework DNE.
+        /// </summary>
+        NU5501 = 5501
 
     }
 }

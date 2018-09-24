@@ -62,6 +62,15 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Project {0} has no framework, cannot ignore parent framework when resolving nearest framework dependency as a referenced project in {1}..
+        /// </summary>
+        internal static string IgnoreParentFrameworkMissingSelfFramework {
+            get {
+                return ResourceManager.GetString("IgnoreParentFrameworkMissingSelfFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ProjectReference &apos;{0}&apos; was resolved using &apos;{1}&apos; instead of the project target framework &apos;{2}&apos;. This project may not be fully compatible with your project..
         /// </summary>
         internal static string ImportsFallbackWarning {
