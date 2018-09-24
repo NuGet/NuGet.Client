@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -56,7 +56,7 @@ namespace NuGet.Packaging
         /// <param name="stream">The target stream.</param>
         public void Save(Stream stream)
         {
-            Save(stream, validate: true, minimumManifestVersion: 1);
+            Save(stream, minimumManifestVersion: 1);
         }
 
         /// <summary>
@@ -66,23 +66,10 @@ namespace NuGet.Packaging
         /// <param name="minimumManifestVersion">The minimum manifest version that this class must use when saving.</param>
         public void Save(Stream stream, int minimumManifestVersion)
         {
-            Save(stream, validate: true, minimumManifestVersion: minimumManifestVersion);
-        }
 
-        public void Save(Stream stream, bool validate)
-        {
-            Save(stream, validate, minimumManifestVersion: 1);
-        }
+            Validate(this);
 
-        public void Save(Stream stream, bool validate, int minimumManifestVersion)
-        {
-            if (validate)
-            {
-                // Validate before saving
-                Validate(this);
-            }
-
-            int version = Math.Max(minimumManifestVersion, ManifestVersionUtility.GetManifestVersion(Metadata));
+            var version = Math.Max(minimumManifestVersion, ManifestVersionUtility.GetManifestVersion(Metadata));
             var schemaNamespace = (XNamespace)ManifestSchemaUtility.GetSchemaNamespace(version);
 
             new XDocument(
