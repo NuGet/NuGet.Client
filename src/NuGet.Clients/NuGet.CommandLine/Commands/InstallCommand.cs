@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -199,7 +200,6 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload);
                 var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
                 var projectContext = new ConsoleProjectContext(Console)
@@ -210,6 +210,11 @@ namespace NuGet.CommandLine
                         Console,
                         signedPackageVerifier,
                         SignedPackageVerifierSettings.GetDefault())
+                };
+
+                var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload)
+                {
+                    ExtractionContext = projectContext.PackageExtractionContext
                 };
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
@@ -372,6 +377,7 @@ namespace NuGet.CommandLine
                 else
                 {
                     var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+                    var signingVerificationSettings = SignedPackageVerifierSettings.GetDefault();
 
                     var projectContext = new ConsoleProjectContext(Console)
                     {
@@ -380,7 +386,7 @@ namespace NuGet.CommandLine
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             Console,
                             signedPackageVerifier,
-                            SignedPackageVerifierSettings.GetDefault())
+                            signingVerificationSettings)
                     };
 
                     if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
@@ -391,7 +397,15 @@ namespace NuGet.CommandLine
                     resolutionContext.SourceCacheContext.NoCache = NoCache;
                     resolutionContext.SourceCacheContext.DirectDownload = DirectDownload;
 
-                    var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload);
+                    var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload)
+                    {
+                        ExtractionContext = new PackageExtractionContext(
+                            Packaging.PackageSaveMode.Defaultv3,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
+                            Console,
+                            signedPackageVerifier,
+                            signingVerificationSettings)
+                    };
 
                     await packageManager.InstallPackageAsync(
                         project,
