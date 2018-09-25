@@ -186,6 +186,12 @@
   <data name="NoWritteableConfig" xml:space="preserve">
     <value>There is no NuGet.Config that could be used for writing settings. Please create one at the desired location and restart the client.</value>
   </data>
+  <data name="OwnersItemMustHaveAtLeastOneOwner" xml:space="preserve">
+    <value>Owners item must have at least one owner.</value>
+  </data>
+  <data name="OwnersMustOnlyHaveContent" xml:space="preserve">
+    <value>Owners item must only have text content and cannot be empty.</value>
+  </data>
   <data name="PackageSource_Invalid" xml:space="preserve">
     <value>The package source does not belong to the collection of available sources.</value>
   </data>
@@ -195,6 +201,11 @@
   </data>
   <data name="RelativeEnvVarPath" xml:space="preserve">
     <value>Environment variable '{0}' must contain an absolute path, the full path of '{1}' cannot be determined.</value>
+  </data>
+  <data name="RepositoryMustHaveOneOwners" xml:space="preserve">
+    <value>The repository item with name '{0}' and service index '{1}' has more than one owners item in it.</value>
+    <comment>0 - repository name
+1 - service index</comment>
   </data>
   <data name="SectionDoesNotExist" xml:space="preserve">
     <value>The section '{0}' does not exist in the settings.</value>
@@ -221,6 +232,12 @@
   <data name="TextShouldNotBeEmpty" xml:space="preserve">
     <value>Text elements should not be empty.</value>
   </data>
+  <data name="TrustedSignerMustHaveCertificates" xml:space="preserve">
+    <value>A trusted signer entry must have at least one certificate entry.</value>
+  </data>
+  <data name="UnknownHashAlgorithmNotSupported" xml:space="preserve">
+    <value>Unknown hash algorithm is not supported.</value>
+  </data>
   <data name="Unknown_Config_Exception" xml:space="preserve">
     <value>Unexpected failure reading NuGet.Config. Path: '{0}'.</value>
   </data>
@@ -229,6 +246,10 @@
   </data>
   <data name="UnsupportedEncryptPassword" xml:space="preserve">
     <value>Password encryption is not supported on .NET Core for this platform. The following feed try to use an encrypted password: '{0}'. You can use a clear text password as a workaround.</value>
+  </data>
+  <data name="UnsupportedHashAlgorithm" xml:space="preserve">
+    <value>Certificate entry has an unsupported hash algorithm: '{0}'.</value>
+    <comment>0 - hash algorithm</comment>
   </data>
   <data name="UserSettings_UnableToParseConfigFile" xml:space="preserve">
     <value>Unable to parse config file because: {0} Path: '{1}'.</value>
