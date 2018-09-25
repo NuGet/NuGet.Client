@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -13,7 +13,6 @@
     <XPLATProject>true</XPLATProject>
     <Description>NuGet Protocol for 3.1.0 servers</Description>
     <Copyright>Copyright .NET Foundation. All rights reserved.</Copyright>
-    <RootNamespace>NuGet.Protocol</RootNamespace>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.0</NetStandardImplicitPackageVersion>
 </PropertyGroup>
 
