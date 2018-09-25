@@ -192,10 +192,17 @@ namespace NuGet.PackageManagement
 
             using (var cacheContext = new SourceCacheContext())
             {
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
                 var downloadContext = new PackageDownloadContext(cacheContext)
                 {
                     ParentId = nuGetProjectContext.OperationId,
-                    ExtractionContext = nuGetProjectContext.PackageExtractionContext
+                    ExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        new LoggerAdapter(nuGetProjectContext),
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault())
                 };
 
                 return await RestoreMissingPackagesAsync(
@@ -229,10 +236,17 @@ namespace NuGet.PackageManagement
 
             using (var cacheContext = new SourceCacheContext())
             {
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
                 var downloadContext = new PackageDownloadContext(cacheContext)
                 {
                     ParentId = nuGetProjectContext.OperationId,
-                    ExtractionContext = nuGetProjectContext.PackageExtractionContext
+                    ExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        new LoggerAdapter(nuGetProjectContext),
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault())
                 };
 
                 return await RestoreMissingPackagesAsync(

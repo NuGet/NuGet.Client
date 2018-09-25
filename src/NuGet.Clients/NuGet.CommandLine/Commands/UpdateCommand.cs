@@ -78,11 +78,11 @@ namespace NuGet.CommandLine
             }
 
             _msbuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console).Value.Path;
-            var context = new UpdateConsoleProjectContext(Console, FileConflictAction);
 
-            var signedPackageVerifier = new PackageSignatureVerifier(
-                SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
             var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetDefault();
+
+            var context = new UpdateConsoleProjectContext(Console, FileConflictAction);
 
             context.PackageExtractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,

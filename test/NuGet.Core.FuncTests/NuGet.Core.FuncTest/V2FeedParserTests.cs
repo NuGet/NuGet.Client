@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -36,7 +37,7 @@ namespace NuGet.Core.FuncTest
                 {
                     ExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
-                    XmlDocFileSaveMode.None,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
                     NullLogger.Instance,
                     signedPackageVerifier: null,
                     signedPackageVerifierSettings: null)

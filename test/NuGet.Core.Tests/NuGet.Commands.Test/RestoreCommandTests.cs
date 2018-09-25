@@ -1084,7 +1084,23 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
+                    It.IsAny<ISignedPackageReader>(),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, _defaultSettings)),
+                    It.IsAny<CancellationToken>(),
+                    It.IsAny<Guid>())).
+                    ReturnsAsync(new VerifySignaturesResult(valid: true, signed: true));
+
+                var extractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                     PackageExtractionBehavior.XmlDocFileSaveMode,
+                     logger,
+                     signedPackageVerifier.Object,
+                     SignedPackageVerifierSettings.GetDefault());
+
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, extractionContext, logger)
                 {
                     LockFilePath = Path.Combine(project1.FullName, "project.lock.json"),
                 };

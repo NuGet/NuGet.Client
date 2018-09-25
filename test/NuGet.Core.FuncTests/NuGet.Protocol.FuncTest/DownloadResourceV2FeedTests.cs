@@ -14,6 +14,7 @@ using Xunit;
 using NuGet.Protocol;
 using NuGet.Test.Utility;
 using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
 
 namespace NuGet.Protocol.FuncTest
 {
@@ -37,7 +38,7 @@ namespace NuGet.Protocol.FuncTest
                 {
                     ExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv3,
-                        XmlDocFileSaveMode.None,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
                         NullLogger.Instance,
                         signedPackageVerifier: null,
                         signedPackageVerifierSettings: null)
@@ -76,7 +77,7 @@ namespace NuGet.Protocol.FuncTest
                 {
                     ExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
-                    XmlDocFileSaveMode.None,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
                     NullLogger.Instance,
                     signedPackageVerifier: null,
                     signedPackageVerifierSettings: null)

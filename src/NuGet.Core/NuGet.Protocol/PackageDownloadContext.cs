@@ -44,6 +44,6 @@ namespace NuGet.Protocol.Core.Types
 
         public Guid ParentId { get; set; }
 
-        public PackageExtractionContext ExtractionContext {get;set;}
+        public PackageExtractionContext ExtractionContext { get; set; }
     }
 }

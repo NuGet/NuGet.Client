@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Commands.Test;
 using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -152,7 +153,7 @@ namespace NuGet.Commands.FuncTest
                 var logger = new TestLogger();
                 var extractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
-                    Packaging.XmlDocFileSaveMode.None,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
                     logger,
                     signedPackageVerifier,
                     SignedPackageVerifierSettings.GetDefault());

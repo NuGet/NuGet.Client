@@ -15,8 +15,7 @@ namespace NuGet.Protocol.Core.Types
         public bool ThrowIfSourcePackageIsInvalid { get; }
         public bool ThrowIfPackageExistsAndInvalid { get; }
         public bool ThrowIfPackageExists { get; }
-        public bool Expand { get; }
-        public PackageExtractionContext ExtractionContext {get;}
+        public PackageExtractionContext ExtractionContext { get; }
 
         public OfflineFeedAddContext(
             string packagePath,
@@ -25,7 +24,6 @@ namespace NuGet.Protocol.Core.Types
             bool throwIfSourcePackageIsInvalid,
             bool throwIfPackageExistsAndInvalid,
             bool throwIfPackageExists,
-            bool expand,
             PackageExtractionContext extractionContext)
         {
             if (string.IsNullOrEmpty(packagePath))
@@ -48,7 +46,6 @@ namespace NuGet.Protocol.Core.Types
             ThrowIfSourcePackageIsInvalid = throwIfSourcePackageIsInvalid;
             ThrowIfPackageExists = throwIfPackageExists;
             ThrowIfPackageExistsAndInvalid = throwIfPackageExistsAndInvalid;
-            Expand = expand;
             ExtractionContext = extractionContext ?? throw new ArgumentNullException(nameof(extractionContext));
         }
     }

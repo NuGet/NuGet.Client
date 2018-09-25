@@ -16,6 +16,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -189,10 +190,17 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
                 ParentId = nuGetProjectContext.OperationId,
-                ExtractionContext = nuGetProjectContext.PackageExtractionContext
+                ExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    new LoggerAdapter(nuGetProjectContext),
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault())
             };
 
             return InstallPackageAsync(
@@ -241,10 +249,17 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext, IEnumerable<SourceRepository> primarySources,
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
                 ParentId = nuGetProjectContext.OperationId,
-                ExtractionContext = nuGetProjectContext.PackageExtractionContext
+                ExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    new LoggerAdapter(nuGetProjectContext),
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault())
             };
 
             await InstallPackageAsync(
@@ -313,10 +328,17 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
                 ParentId = nuGetProjectContext.OperationId,
-                ExtractionContext = nuGetProjectContext.PackageExtractionContext
+                ExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    new LoggerAdapter(nuGetProjectContext),
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault())
             };
 
             return InstallPackageAsync(
@@ -368,10 +390,17 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
                 ParentId = nuGetProjectContext.OperationId,
-                ExtractionContext = nuGetProjectContext.PackageExtractionContext
+                ExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    new LoggerAdapter(nuGetProjectContext),
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault())
             };
 
             await InstallPackageAsync(
@@ -2120,10 +2149,17 @@ namespace NuGet.PackageManagement
             SourceCacheContext sourceCacheContext,
             CancellationToken token)
         {
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
             var downloadContext = new PackageDownloadContext(sourceCacheContext)
             {
                 ParentId = nuGetProjectContext.OperationId,
-                ExtractionContext = nuGetProjectContext.PackageExtractionContext
+                ExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    new LoggerAdapter(nuGetProjectContext),
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault())
             };
 
             await ExecuteNuGetProjectActionsAsync(nuGetProject,

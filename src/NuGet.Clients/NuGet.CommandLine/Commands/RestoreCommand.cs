@@ -361,7 +361,6 @@ namespace NuGet.CommandLine
                          signingVerificationSettings)
                 };
 
-
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,
                     projectContext,

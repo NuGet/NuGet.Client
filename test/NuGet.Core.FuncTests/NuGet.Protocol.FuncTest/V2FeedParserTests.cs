@@ -10,6 +10,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -95,7 +96,7 @@ namespace NuGet.Protocol.FuncTest
                 {
                     ExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
-                    XmlDocFileSaveMode.None,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
                     NullLogger.Instance,
                     signedPackageVerifier: null,
                     signedPackageVerifierSettings: null)

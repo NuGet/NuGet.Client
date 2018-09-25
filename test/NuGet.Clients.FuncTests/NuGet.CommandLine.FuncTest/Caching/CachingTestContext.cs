@@ -4,10 +4,11 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Castle.Core.Logging;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -322,12 +323,12 @@ namespace NuGet.CommandLine.Test.Caching
                     globalPackagesFolder: GlobalPackagesPath,
                     parentId: Guid.Empty,
                     extractionContext: new PackageExtractionContext(
-                        packageSaveMode: PackageSaveMode.Nupkg,
-                        xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                        logger: Common.NullLogger.Instance,
+                        PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
                         signedPackageVerifier: null,
                         signedPackageVerifierSettings: null),
-                    logger: Common.NullLogger.Instance,
+                    logger: NullLogger.Instance,
                     token: CancellationToken.None))
                 {
                 }

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -214,7 +213,12 @@ namespace NuGet.CommandLine
 
                 var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload)
                 {
-                    ExtractionContext = projectContext.PackageExtractionContext
+                    ExtractionContext = new PackageExtractionContext(
+                        Packaging.PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        Console,
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault())
                 };
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
@@ -389,11 +393,6 @@ namespace NuGet.CommandLine
                             signingVerificationSettings)
                     };
 
-                    if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
-                    {
-                        projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
-                    }
-
                     resolutionContext.SourceCacheContext.NoCache = NoCache;
                     resolutionContext.SourceCacheContext.DirectDownload = DirectDownload;
 
@@ -406,6 +405,11 @@ namespace NuGet.CommandLine
                             signedPackageVerifier,
                             signingVerificationSettings)
                     };
+
+                    if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+                    {
+                        downloadContext.ExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
+                    }
 
                     await packageManager.InstallPackageAsync(
                         project,

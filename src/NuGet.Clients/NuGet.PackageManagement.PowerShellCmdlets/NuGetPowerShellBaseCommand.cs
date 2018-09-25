@@ -254,17 +254,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                         var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
-                        var packageExtractionContext = new PackageExtractionContext(
-                            PackageSaveMode.Defaultv3,
-                            PackageExtractionBehavior.XmlDocFileSaveMode,
-                            logger,
-                            signedPackageVerifier,
-                            SignedPackageVerifierSettings.GetDefault());
-
                         var downloadContext = new PackageDownloadContext(cacheContext)
                         {
                             ParentId = OperationId,
-                            ExtractionContext = packageExtractionContext
+                            ExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Defaultv3,
+                                PackageExtractionBehavior.XmlDocFileSaveMode,
+                                logger,
+                                signedPackageVerifier,
+                                SignedPackageVerifierSettings.GetDefault())
                         };
 
                         var result = await PackageRestoreManager.RestoreMissingPackagesAsync(

@@ -18,6 +18,8 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -542,13 +544,20 @@ namespace NuGet.SolutionRestoreManager
             CancellationToken token)
         {
             await TaskScheduler.Default;
-
+            
             using (var cacheContext = new SourceCacheContext())
             {
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
                 var downloadContext = new PackageDownloadContext(cacheContext)
                 {
                     ParentId = _nuGetProjectContext.OperationId,
-                    ExtractionContext = _nuGetProjectContext.PackageExtractionContext
+                    ExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        logger,
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault())
                 };
 
                 await _packageRestoreManager.RestoreMissingPackagesAsync(

@@ -431,7 +431,6 @@ namespace NuGet.Protocol.Core.Types
                     throwIfSourcePackageIsInvalid: true,
                     throwIfPackageExistsAndInvalid: false,
                     throwIfPackageExists: false,
-                    expand: true,
                     extractionContext: packageExtractionContext);
                 
                 await OfflineFeedUtility.AddPackageToSource(context, token);

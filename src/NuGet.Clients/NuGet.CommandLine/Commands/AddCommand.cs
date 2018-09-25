@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
@@ -38,14 +41,10 @@ namespace NuGet.CommandLine
             // If the Source Feed Folder does not exist, it will be created.
             OfflineFeedUtility.ThrowIfInvalid(Source);
 
-            var packageSaveMode = Expand
-                ? PackageSaveMode.Defaultv3
-                : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
-
             var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
             var packageExtractionContext = new PackageExtractionContext(
-                packageSaveMode,
+                Expand ? PackageSaveMode.Defaultv3 : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 Console,
                 signedPackageVerifier,
@@ -58,7 +57,6 @@ namespace NuGet.CommandLine
                 throwIfSourcePackageIsInvalid: true,
                 throwIfPackageExistsAndInvalid: true,
                 throwIfPackageExists: false,
-                expand: Expand,
                 extractionContext: packageExtractionContext);
 
             await OfflineFeedUtility.AddPackageToSource(offlineFeedAddContext, CancellationToken.None);
