@@ -233,6 +233,24 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Owners item must have at least one owner..
+        /// </summary>
+        internal static string OwnersItemMustHaveAtLeastOneOwner {
+            get {
+                return ResourceManager.GetString("OwnersItemMustHaveAtLeastOneOwner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owners item must only have text content and cannot be empty..
+        /// </summary>
+        internal static string OwnersMustOnlyHaveContent {
+            get {
+                return ResourceManager.GetString("OwnersMustOnlyHaveContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package source does not belong to the collection of available sources..
         /// </summary>
         internal static string PackageSource_Invalid {
@@ -256,6 +274,15 @@ namespace NuGet.Configuration {
         internal static string RelativeEnvVarPath {
             get {
                 return ResourceManager.GetString("RelativeEnvVarPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The repository item with name &apos;{0}&apos; and service index &apos;{1}&apos; has more than one owners item in it..
+        /// </summary>
+        internal static string RepositoryMustHaveOneOwners {
+            get {
+                return ResourceManager.GetString("RepositoryMustHaveOneOwners", resourceCulture);
             }
         }
         
@@ -332,11 +359,29 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A trusted signer entry must have at least one certificate entry..
+        /// </summary>
+        internal static string TrustedSignerMustHaveCertificates {
+            get {
+                return ResourceManager.GetString("TrustedSignerMustHaveCertificates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unexpected failure reading NuGet.Config. Path: &apos;{0}&apos;..
         /// </summary>
         internal static string Unknown_Config_Exception {
             get {
                 return ResourceManager.GetString("Unknown_Config_Exception", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown hash algorithm is not supported..
+        /// </summary>
+        internal static string UnknownHashAlgorithmNotSupported {
+            get {
+                return ResourceManager.GetString("UnknownHashAlgorithmNotSupported", resourceCulture);
             }
         }
         
@@ -355,6 +400,15 @@ namespace NuGet.Configuration {
         internal static string UnsupportedEncryptPassword {
             get {
                 return ResourceManager.GetString("UnsupportedEncryptPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate entry has an unsupported hash algorithm: &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnsupportedHashAlgorithm {
+            get {
+                return ResourceManager.GetString("UnsupportedHashAlgorithm", resourceCulture);
             }
         }
         

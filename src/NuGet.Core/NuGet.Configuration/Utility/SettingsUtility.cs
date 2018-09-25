@@ -79,6 +79,23 @@ namespace NuGet.Configuration
             return 0;
         }
 
+        public static SignatureValidationMode GetSignatureValidationMode(ISettings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            var validationMode = GetConfigValue(settings, ConfigurationConstants.SignatureValidationMode);
+
+            if (!string.IsNullOrEmpty(validationMode) && Enum.TryParse(validationMode, ignoreCase: true, result: out SignatureValidationMode mode))
+            {
+                return mode;
+            }
+
+            return SignatureValidationMode.Accept;
+        }
+
         [Obsolete("GetDecryptedValue is deprecated. Please use GetDecryptedValueForAddItem instead")]
         public static string GetDecryptedValue(ISettings settings, string section, string key, bool isPath = false)
         {

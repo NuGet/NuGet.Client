@@ -55,8 +55,20 @@ namespace NuGet.Configuration
                     case SettingElementType.Add:
                         return new AddItem(element, origin);
 
+                    case SettingElementType.Author:
+                        return new AuthorItem(element, origin);
+
+                    case SettingElementType.Certificate:
+                        return new CertificateItem(element, origin);
+
                     case SettingElementType.Clear:
                         return new ClearItem(element, origin);
+
+                    case SettingElementType.Owners:
+                        return new OwnersItem(element, origin);
+
+                    case SettingElementType.Repository:
+                        return new RepositoryItem(element, origin);
                 }
 
                 return new UnknownItem(element, origin);
