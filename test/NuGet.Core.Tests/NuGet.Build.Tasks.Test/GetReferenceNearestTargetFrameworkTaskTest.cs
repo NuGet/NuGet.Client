@@ -153,6 +153,68 @@ namespace NuGet.Build.Tasks.Test
             testLogger.DebugMessages.Count.Should().Be(DEBUG_MESSAGE_COUNT_INPUT_OUTPUT);
         }
 
+
+        [Fact]
+        public void GetReferenceNearestTargetFrameworkTask_IgnoreParentWhenSet()
+        {
+            var buildEngine = new TestBuildEngine();
+            var testLogger = buildEngine.TestLogger;
+
+            var references = new List<ITaskItem>();
+            var reference = new Mock<ITaskItem>();
+            reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
+            reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns("netcoreapp3.0");
+            references.Add(reference.Object);            reference.Setup(e => e.GetMetadata("HasSingleTargetFramework")).Returns("true");
+
+
+            var task = new GetReferenceNearestTargetFrameworkTask
+            {
+                BuildEngine = buildEngine,
+                CurrentProjectTargetFramework = "net46",
+                AnnotatedProjectReferences = references.ToArray(),
+                IgnoreParentFramework = true
+            };
+
+            var result = task.Execute();
+            result.Should().BeTrue();
+
+            task.AssignedProjects.Should().HaveCount(1);
+            task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be("netcoreapp3.0,Version=v0.0");
+
+            testLogger.Warnings.Should().Be(0);
+            testLogger.Errors.Should().Be(0);
+            testLogger.DebugMessages.Count.Should().Be(DEBUG_MESSAGE_COUNT_INPUT_OUTPUT);
+        }
+
+        [Fact]
+        public void GetReferenceNearestTargetFrameworkTask_IgnoreParentWhenSetButNoFramework()
+        {
+            var buildEngine = new TestBuildEngine();
+            var testLogger = buildEngine.TestLogger;
+
+            var references = new List<ITaskItem>();
+            var reference = new Mock<ITaskItem>();
+            reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
+            reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns("");
+            references.Add(reference.Object); reference.Setup(e => e.GetMetadata("HasSingleTargetFramework")).Returns("true");
+
+
+            var task = new GetReferenceNearestTargetFrameworkTask
+            {
+                BuildEngine = buildEngine,
+                CurrentProjectTargetFramework = "net46",
+                AnnotatedProjectReferences = references.ToArray(),
+                IgnoreParentFramework = true
+            };
+
+            var result = task.Execute();
+            result.Should().BeFalse();
+
+            testLogger.Warnings.Should().Be(0);
+            testLogger.Errors.Should().Be(1);
+            testLogger.DebugMessages.Count.Should().Be(DEBUG_MESSAGE_COUNT_INPUT_OUTPUT);
+        }
+
         [Fact]
         public void GetReferenceNearestTargetFrameworkTask_MultipleTargetTF()
         {

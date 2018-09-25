@@ -44,9 +44,13 @@ namespace NuGet.Build.Tasks
         [Output]
         public ITaskItem[] AssignedProjects { get; set; }
 
+        /// <summary>
+        /// Dont resolve the reference framework against the parent framework.
+        /// </summary>
+        public bool IgnoreParentFramework { get; set; }
+
         public override bool Execute()
         {
-
             var logger = new MSBuildLogger(Log);
 
             BuildTasksUtility.LogInputParam(logger, nameof(CurrentProjectTargetFramework), CurrentProjectTargetFramework);
@@ -116,14 +120,37 @@ namespace NuGet.Build.Tasks
 
             if (string.IsNullOrEmpty(referencedProjectFrameworkString))
             {
-                // No target frameworks set, nothing to do.
+                if(IgnoreParentFramework)
+                {
+                    // cant resolve against self, fail.
+                    var message = string.Format(CultureInfo.CurrentCulture,
+                    Strings.IgnoreParentFrameworkMissingSelfFramework,
+                    CurrentProjectName,
+                    referencedProjectFile);
+
+                    var error = RestoreLogMessage.CreateError(NuGetLogCode.NU1702, message);
+                    error.FilePath = referencedProjectFile;
+                    error.ProjectPath = CurrentProjectName;
+                    logger.Log(error);
+                }
+
                 return itemWithProperties;
             }
 
             var referencedProjectFrameworks = MSBuildStringUtility.Split(referencedProjectFrameworkString);
 
+            string nearestNuGetFramework = null;
+
+            if (IgnoreParentFramework)
+            {
+                nearestNuGetFramework = NuGetFramework.ParseFrameworkName(referencedProjectFrameworks[0], DefaultFrameworkNameProvider.Instance).GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
+            }
+            else
+            {
+                nearestNuGetFramework = NuGetFrameworkUtility.GetNearest(referencedProjectFrameworks, projectNuGetFramework, NuGetFramework.Parse);
+            }
+
             // try project framework
-            var nearestNuGetFramework = NuGetFrameworkUtility.GetNearest(referencedProjectFrameworks, projectNuGetFramework, NuGetFramework.Parse);
             if (nearestNuGetFramework != null)
             {
                 itemWithProperties.SetMetadata(NEAREST_TARGET_FRAMEWORK, nearestNuGetFramework);

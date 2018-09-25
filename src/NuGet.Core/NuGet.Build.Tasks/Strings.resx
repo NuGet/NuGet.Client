@@ -117,6 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="IgnoreParentFrameworkMissingSelfFramework" xml:space="preserve">
+    <value>Project {0} has no framework, cannot ignore parent framework when resolving nearest framework dependency as a referenced project in {1}.</value>
+    <comment>0 - Reference project path, 1 - parent project path.</comment>
+  </data>
   <data name="ImportsFallbackWarning" xml:space="preserve">
     <value>ProjectReference '{0}' was resolved using '{1}' instead of the project target framework '{2}'. This project may not be fully compatible with your project.</value>
     <comment>0 - referenced project path
