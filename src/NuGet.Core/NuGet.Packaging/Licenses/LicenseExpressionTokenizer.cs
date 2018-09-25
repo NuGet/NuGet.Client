@@ -9,6 +9,7 @@ namespace NuGet.Packaging.Licenses
     internal class LicenseExpressionTokenizer
     {
         private readonly string _value;
+
         /// <summary>
         /// A tokenizer for a license expression.
         /// This implementation assumes that the input has been sanitized and that there are no invalid characters.
@@ -78,6 +79,7 @@ namespace NuGet.Packaging.Licenses
                         tokensAfterValue = new List<LicenseExpressionToken>();
 
                     }
+
                     tokensAfterValue.Add(ParseBracket(processingToken[processingToken.Length - 1]));
                     processingToken = processingToken.Substring(0, processingToken.Length - 1);
                 }

@@ -12,6 +12,7 @@ namespace NuGet.Packaging.Licenses
         /// The token type
         /// </summary>
         internal LicenseTokenType TokenType { get; }
+
         /// <summary>
         /// The value of this token.
         /// </summary>
