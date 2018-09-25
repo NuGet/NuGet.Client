@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace NuGet.Packaging.Licenses
 {
@@ -32,24 +33,8 @@ namespace NuGet.Packaging.Licenses
         /// <returns></returns>
         internal bool HasValidCharacters()
         {
-            for (var i = 0; i < _value.Length; i++)
-            {
-                // If the character is not among these characters
-                if (!((_value[i] >= 'a' && _value[i] <= 'z') ||
-                    (_value[i] >= 'A' && _value[i] <= 'Z') ||
-                    (_value[i] >= '0' && _value[i] <= '9') ||
-                    _value[i] == ' ' ||
-                    _value[i] == '.' ||
-                    _value[i] == '-' ||
-                    _value[i] == '+' ||
-                    _value[i] == '(' ||
-                    _value[i] == ')'
-                    ))
-                {
-                    return false;
-                }
-            }
-            return true;
+            var regex = new Regex("^[a-zA-Z0-9\\.\\-\\s\\+\\(\\)]+$");
+            return regex.IsMatch(_value);
         }
 
         /// <summary>

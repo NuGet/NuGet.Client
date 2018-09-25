@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace NuGet.Packaging.Licenses.Test
@@ -106,14 +107,24 @@ namespace NuGet.Packaging.Licenses.Test
         }
 
         [Theory]
-        [InlineData("(GPL-1.0+ WITH E8) OR MIT!")]
-        [InlineData("(GPL-1.0+ WITH E8) OR MIT@")]
-        [InlineData("(GPL-1.0+ WITH E8) OR MIT/")]
-        [InlineData("(GPL-1.0+ WITH E8) OR MIT[]")]
-        public void LicenseExpressionTokenizer_ReturnsFalseForExpressionsWithInvalidCharacters(string infix)
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT!", false)]
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT@", false)]
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT/", false)]
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT[]", false)]
+        [InlineData("(GPL-1.0+ WITH E8) OR MIT", true)]
+        [InlineData("MIT", true)]
+        [InlineData("(MIT)", true)]
+        [InlineData("MIT+", true)]
+        [InlineData("MIT-1.0", true)]
+        [InlineData("GPL-1.0+ WITH E8 OR MIT", true)]
+        [InlineData("(", true)]
+        [InlineData(")", true)]
+        [InlineData("+-.)(dklamkdsa dkajsmdkjasn md asdna s", true)]
+
+        public void LicenseExpressionTokenizer_ReturnsFalseForExpressionsWithInvalidCharacters(string infix, bool match)
         {
             var tokenizer = new LicenseExpressionTokenizer(infix);
-            Assert.False(tokenizer.HasValidCharacters());
+            Assert.Equal(match, tokenizer.HasValidCharacters());
         }
     }
 }

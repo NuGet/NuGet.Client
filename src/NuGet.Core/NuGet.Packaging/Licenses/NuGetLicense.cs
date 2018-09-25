@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace NuGet.Packaging.Licenses
 {
@@ -82,20 +83,8 @@ namespace NuGet.Packaging.Licenses
         /// <returns></returns>
         private static bool HasValidCharacters(string value)
         {
-            for (var i = 0; i < value.Length; i++)
-            {
-                // If the character is not among these characters
-                if (!((value[i] >= 'a' && value[i] <= 'z') ||
-                    (value[i] >= 'A' && value[i] <= 'Z') ||
-                    (value[i] >= '0' && value[i] <= '9') ||
-                    value[i] == '.' ||
-                    value[i] == '-'
-                    ))
-                {
-                    return false;
-                }
-            }
-            return true;
+            var regex = new Regex("^[a-zA-Z0-9\\.\\-\\+]+$");
+            return regex.IsMatch(value);
         }
 
         private static NuGetLicense ProcessNonStandardLicense(string licenseIdentifier, bool plus)
