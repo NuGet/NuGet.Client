@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -581,6 +580,179 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(1, packages.Count);
                 Assert.Equal("myPackage", package.Identity.Id);
                 Assert.Equal("1.0.0-alpha.1.2+5", package.Identity.Version.ToFullString());
+            }
+        }
+
+        [Theory]
+        [InlineData(SearchFilterType.IsAbsoluteLatestVersion, true, "2.0.0-alpha.1.2+5")]
+        [InlineData(SearchFilterType.IsLatestVersion, false, "1.0.0")]
+        public async Task LocalPackageSearchResource_filter_results_if_requested(SearchFilterType searchFilter, bool includePrerelease, string expectedVersion)
+        {
+            using (var root = TestDirectory.Create())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+
+                var nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>myPackage</id>
+                            <version>2.0.0-alpha.1.2+5</version>
+                            <description>package description</description>
+                            <tags>a b c</tags>
+                        </metadata>
+                        </package>");
+
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "myPackage",
+                    Version = "1.0.0-alpha.1.2+5",
+                    Nuspec = nuspec
+                };
+
+                var nuspec2 = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>myPackage</id>
+                            <version>1.0.0</version>
+                            <description>package description</description>
+                            <tags>a b c</tags>
+                        </metadata>
+                        </package>");
+
+                var packageA2 = new SimpleTestPackageContext()
+                {
+                    Id = "myPackage",
+                    Version = "1.0.0",
+                    Nuspec = nuspec2
+                };
+
+                var packageContexts = new SimpleTestPackageContext[]
+                {
+                    packageA,
+                    packageA2
+                };
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
+
+                var localResource = new FindLocalPackagesResourceV2(root);
+                var resource = new LocalPackageSearchResource(localResource);
+
+                var filter = new SearchFilter(includePrerelease: includePrerelease, filter: searchFilter);
+
+                // Act
+                var packages = (await resource.SearchAsync(
+                        "mypackage",
+                        filter,
+                        skip: 0,
+                        take: 30,
+                        log: testLogger,
+                        token: CancellationToken.None))
+                        .OrderBy(p => p.Identity.Id)
+                        .ToList();
+
+                var package = packages.First();
+
+                // Assert
+                Assert.Equal(1, packages.Count);
+                Assert.Equal("myPackage", package.Identity.Id);
+                Assert.Equal(expectedVersion, package.Identity.Version.ToFullString());
+            }
+        }
+
+        [Theory]
+        [InlineData(false, new[] { "1.0.0", "1.1.0" })]
+        [InlineData(true, new[] { "2.0.0-alpha.1.2+5", "1.0.0", "1.1.0" })]
+        public async Task LocalPackageSearchResource_should_not_filter_results_if_not_requested(bool includePrerelease, string[] expected)
+        {
+            using (var root = TestDirectory.Create())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+
+                var nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>myPackage</id>
+                            <version>2.0.0-alpha.1.2+5</version>
+                            <description>package description</description>
+                            <tags>a b c</tags>
+                        </metadata>
+                        </package>");
+
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "myPackage",
+                    Version = "1.0.0-alpha.1.2+5",
+                    Nuspec = nuspec
+                };
+
+                var nuspec2 = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>myPackage</id>
+                            <version>1.0.0</version>
+                            <description>package description</description>
+                            <tags>a b c</tags>
+                        </metadata>
+                        </package>");
+
+                var packageA2 = new SimpleTestPackageContext()
+                {
+                    Id = "myPackage",
+                    Version = "1.0.0",
+                    Nuspec = nuspec2
+                };
+
+                var nuspec3 = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>myPackage</id>
+                            <version>1.1.0</version>
+                            <description>package description</description>
+                            <tags>a b c</tags>
+                        </metadata>
+                        </package>");
+
+                var packageA3 = new SimpleTestPackageContext()
+                {
+                    Id = "myPackage",
+                    Version = "1.1.0",
+                    Nuspec = nuspec3
+                };
+
+                var packageContexts = new SimpleTestPackageContext[]
+                {
+                    packageA,
+                    packageA2,
+                    packageA3
+                };
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
+
+                var localResource = new FindLocalPackagesResourceV2(root);
+                var resource = new LocalPackageSearchResource(localResource);
+
+                // Mimic setup for AllVersions request
+                // https://github.com/NuGet/NuGet.Client/blob/3803820961f4d61c06d07b179dab1d0439ec0d91/src/NuGet.Core/NuGet.Protocol/LocalRepositories/LocalPackageListResource.cs#L32
+                var filter = new SearchFilter(includePrerelease: includePrerelease, filter: null)
+                {
+                    OrderBy = SearchOrderBy.Id
+                };
+
+                // Act
+                var packages = (await resource.SearchAsync(
+                        "mypackage",
+                        filter,
+                        skip: 0,
+                        take: 30,
+                        log: testLogger,
+                        token: CancellationToken.None))
+                        .ToList();
+
+                // Assert
+                Assert.Equal(true, packages.All(p => p.Identity.Id == "myPackage"));
+                Assert.Equal(expected, packages.Select(p => p.Identity.Version.ToFullString()).ToArray());
             }
         }
     }
