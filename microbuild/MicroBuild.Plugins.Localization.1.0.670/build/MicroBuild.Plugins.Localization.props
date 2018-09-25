@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <LocalizationEnabled Condition="'$(LocType)' == 'full' OR '$(LocType)' == 'pseudo' OR '$(LocType)' == 'hybrid'">true</LocalizationEnabled>
+
+    <LSBuildRoot>$(MSBuildThisFileDirectory)\LSBuild\6.11.2218.0</LSBuildRoot>
+
+    <!-- Easily define common language sets for projects to use -->
+    <VS>ENU,CHS,CHT,DEU,ESN,FRA,ITA,JPN,KOR,RUS,CSY,PTB,PLK,TRK</VS>
+    <Ibiza>ENU,CHS,CHT,CSY,NLD,FRA,DEU,HUN,ITA,JPN,KOR,PLK,PTB,PTG,RUS,ESN,SVE,TRK</Ibiza>
+
+    <Languages Condition="'$(LocLanguages)' == 'VS'">$(VS)</Languages>
+    <Languages Condition="'$(LocLanguages)' == 'Ibiza'">$(Ibiza)</Languages>
+
+    <!-- If one of the default language sets was not used in the definition, pass the languages given as-is to lsbuild -->
+    <Languages Condition="'$(Languages)' == ''">$(LocLanguages)</Languages>
+
+    <!-- Allow users to specify either the full path, or the path relative to their sources in the MicroBuild definition-->
+    <ManifestPath>$(LocManifestPath)</ManifestPath>
+    <ManifestPath Condition="'$(ManifestPath)' != '' AND '$(BUILD_SOURCESDIRECTORY)' != '' AND !Exists('$(ManifestPath)')">$(BUILD_SOURCESDIRECTORY)\$(ManifestPath)</ManifestPath>
+
+    <!-- Force LCE generation to be turned on when running localization -->
+    <GenerateLCE Condition="'$(LocalizationEnabled)' == 'true'">true</GenerateLCE>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <FilesToLocalize>
+      <Languages>$(VS)</Languages>
+      <ProjectFile>$(MSBuildProjectFullPath)</ProjectFile>
+      <HasLceComments>true</HasLceComments>
+    </FilesToLocalize>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <SignFilesDependsOn Include="Localize" />
+  </ItemGroup>
+</Project>

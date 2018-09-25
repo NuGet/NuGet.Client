@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Schema name="CSSMetaData" xmlns="urn:schemas-microsoft-com:xml-data"
+                           xmlns:dt="urn:schemas-microsoft-com:datatypes">
+  <AttributeType name="id" dt:type="id">
+    <description>The id of the node. For property-def nodes, its the name of the attribute.</description>
+  </AttributeType>
+
+  <AttributeType name="type" dt:type="enumeration" dt:values="string composite enum length enum-length number url color font">
+    <description>The type of the property's value.</description>
+  </AttributeType>
+
+  <AttributeType name="description" dt:type="string">
+    <description>The description of the property.</description>
+  </AttributeType>
+
+  <AttributeType name="syntax" dt:type="string">
+    <description>The syntax of a property's value.</description>
+  </AttributeType>
+
+  <AttributeType name="enum" dt:type="string">
+    <description>The sorted list of space separated values applicable of the property when the type of the property is enum or enum-length.</description>
+  </AttributeType>
+
+  <ElementType name="property-def" content="empty" model="closed">
+    <attribute type="id" required="yes"/>
+    <attribute type="type" required="yes"/>
+    <attribute type="description" required="yes"/>
+    <attribute type="syntax" required="yes"/>
+    <attribute type="enum" required="no"/>
+    <description>The definition of a CSS attribute</description>
+  </ElementType>
+
+  <ElementType name="property-set" content="eltOnly" model="closed" order="one">
+    <element type="property-def" minOccurs="1" maxOccurs="*"/>
+    <description>The collection of known attributes.</description>
+  </ElementType>
+
+  <AttributeType name="version" dt:type="enumeration" dt:values="VS8">
+    <description>The version of the metadata format. Currently the only format allowed is 'VS8'</description>
+  </AttributeType>
+
+  <ElementType name="cssmd" content="eltOnly" model="closed" order="seq">
+    <attribute type="version" required="yes"/>
+    <element type="property-set" minOccurs="1" maxOccurs="1"/>
+    <description>The CSS metadata to be used.</description>
+  </ElementType>
+</Schema>

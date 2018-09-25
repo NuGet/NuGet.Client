@@ -168,7 +168,7 @@ phases:
       solution: "build\\loc.proj"
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:AfterBuild /p:LsBuildWarningLevelValue=4"
+      msbuildArguments: "/t:AfterBuild /p:MicroBuildOverridePluginDirectory=$(Build.Repository.LocalPath)\\microbuild"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
   - task: MSBuild@1

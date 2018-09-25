@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+The lsbuild files are copied from LocStudio Build Tools 6.11, which is available at following location
+http://toolbox/LSBT611
+For more information visit the following link or contact
+Kirpa Singh <kirpas@microsoft.com>; Nik Larin <nlarin@microsoft.com>; Bin Lin <bilin@microsoft.com>
+
+"http://sharepoint/sites/locstudio6/Wiki Pages/Installation and Setup for LSBuild 6.1.aspx" 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="GenerateLce" AssemblyFile="$(MSBuildThisFileDirectory)\Microsoft.Devdiv.BuildTasks.dll"/>
+
+  <PropertyGroup>
+    <ResGenDependsOn>$(ResGenDependsOn);GenerateLCE;GenerateSatelliteLCE</ResGenDependsOn>
+    <LSBuildCommand>$(LSBuildRoot)\lsbuild.exe</LSBuildCommand>
+  </PropertyGroup>
+  <ItemGroup>
+    <Clean Include="$(OutDir)$(TargetFileName).lce"/>
+  </ItemGroup>
+
+  <!-- Unfortunately we need a separate target because currently we can't batch on a target condition, ie the condition on GenerateLCE -->
+  <Target Name="CreateGenerateLCEInputs">
+    <ItemGroup>
+      <_GenerateLCEInputs Include="@(EmbeddedResource)" Condition="'%(EmbeddedResource.Type)'=='Resx' and '%(EmbeddedResource.WithCulture)'=='false'"/>
+
+      <!-- Create a list of "Satellite" LCE Inputs in the case where we are building a satellite resource dll that has a culture -->
+      <_GenerateSatelliteLCEInputs Include="@(EmbeddedResource)" Condition="'%(EmbeddedResource.Type)'=='Resx' And 
+                                                                            '%(EmbeddedResource.WithCulture)'=='true' And
+                                                                            '%(EmbeddedResource.Culture)'=='en'"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateLCE"
+      Inputs="$(MSBuildAllProjects);@(_GenerateLCEInputs)"
+      Outputs="$(OutDir)$(TargetFileName).lce"
+      Condition="('$(GenerateLCE)' == 'true' and '$(NonShipping)' != 'true')"
+
+      DependsOnTargets="CreateGenerateLCEInputs">
+
+    <!-- GenerateLCE creates a file <TargetFileName>.LCE that contains all of the developer comments
+             from the .RESX files for a managed code project for use by localization. -->
+    <GenerateLCE
+        Condition="'@(_GenerateLCEInputs)'!=''"
+        AssemblyName="$(AssemblyName)"
+        TargetFileName="$(TargetFileName)"
+        IntermediateOutputPath="$(IntermediateOutputPath)"
+        OutputPath="$(OutDir)"
+        ProjectDir="$(ProjectDir)"
+        LSBuildCommand="$(LSBuildCommand)"
+        EmbeddedResource="@(_GenerateLCEInputs)"
+        IgnorableLsBuildErrors="BL1024"
+        MaxWaitForLsBuild="1200000"
+            />
+  </Target>
+
+  <!-- For now, we assume that the Culture is going to be en only.  At this time, we would have to 
+       change the GenerateLCE task if we were to support multiple languages.  If we tried in msbuild speak, it would be a bit non-trivial -->
+  <Target Name="GenerateSatelliteLCE"
+      Inputs="$(MSBuildAllProjects);@(_GenerateSatelliteLCEInputs)"
+      Outputs="$(OutDir)en\$(TargetName).resources.dll.lce"
+      Condition="('$(GenerateLCE)' == 'true' and '$(NonShipping)' != 'true') and ('@(_GenerateSatelliteLCEInputs)' != '')"
+      DependsOnTargets="CreateGenerateLCEInputs">
+
+    <!-- .Net considers .resx files with a culture in the filename to be special and so when lsbuild.exe calls into the .Net to 
+         parse the .resx file, the comments are not parsed into the output.  We need to copy+rename the .resx file to the intermediate
+         directoy without the culture in the filename and then run lsbuild on it.
+         This "assumes" that the files are distinct.
+    -->
+
+    <ItemGroup>
+      <_NewGenerateSatelliteLCEInputs Include="@(_GenerateSatelliteLCEInputs->'$(IntermediateOutputPath)%(RelativeDir)%(Filename).tmp%(Extension)')"
+                                      Condition="$([System.String]::Concat('%(RelativeDir)').StartsWith($(IntermediateOutputPath), false, null)) == false
+                                             and $([System.IO.Path]::IsPathRooted('%(RelativeDir)')) == false"
+                                      />
+
+      <_NewGenerateSatelliteLCEInputs Include="@(_GenerateSatelliteLCEInputs->'$(IntermediateOutputPath)%(Filename).tmp%(Extension)')"
+                                      Condition="$([System.String]::Concat('%(RelativeDir)').StartsWith($(IntermediateOutputPath), false, null)) == true
+                                              or $([System.IO.Path]::IsPathRooted('%(RelativeDir)')) == true"
+                                      />
+
+    </ItemGroup>
+
+    <Copy
+        SourceFiles="@(_GenerateSatelliteLCEInputs)"
+        DestinationFiles="@(_GenerateSatelliteLCEInputs->'$(IntermediateOutputPath)%(RelativeDir)%(Filename).tmp%(Extension)')"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        Condition="$([System.String]::Concat('%(RelativeDir)').StartsWith($(IntermediateOutputPath), false, null)) == false
+               and $([System.IO.Path]::IsPathRooted('%(RelativeDir)')) == false"
+        />
+
+    <Copy
+        SourceFiles="@(_GenerateSatelliteLCEInputs)"
+        DestinationFiles="@(_GenerateSatelliteLCEInputs->'$(IntermediateOutputPath)%(Filename).tmp%(Extension)')"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        Condition="$([System.String]::Concat('%(RelativeDir)').StartsWith($(IntermediateOutputPath), false, null)) == true
+                or $([System.IO.Path]::IsPathRooted('%(RelativeDir)')) == true"
+        />
+
+    <!-- GenerateLCE creates a file <TargetFileName>.LCE that contains all of the developer comments
+             from the .RESX files for a managed code project for use by localization. -->
+    <GenerateLCE
+        Condition="'@(_NewGenerateSatelliteLCEInputs)'!=''"
+        AssemblyName="$(AssemblyName)"
+        TargetFileName="$(TargetName).resources.dll"
+        IntermediateOutputPath="$(IntermediateOutputPath)"
+        OutputPath="$(OutDir)en\"
+        ProjectDir="$(IntermediateOutputPath)"
+        LSBuildCommand="$(LSBuildCommand)"
+        EmbeddedResource="@(_NewGenerateSatelliteLCEInputs)"
+        IgnorableLsBuildErrors="BL1024"
+        MaxWaitForLsBuild="1200000"
+            />
+  </Target>
+  
+</Project>

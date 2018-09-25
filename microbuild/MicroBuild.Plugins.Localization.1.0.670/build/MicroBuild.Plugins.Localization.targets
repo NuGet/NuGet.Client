@@ -1,0 +1,498 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="LocalizeFiles" AssemblyFile="MicroBuild.Localization.dll" />
+
+  <Import Project="Microsoft.DevDiv.Toolsets.GenerateLCE.targets" Condition="'$(LocalizationEnabled)' == 'true'" />
+  <Import Project="$(ManifestPath)" Condition="'$(LocalizationEnabled)' == 'true' AND Exists('$(ManifestPath)')" />
+
+  <PropertyGroup Label="CopySatelliteDllsToStandardNETPathsAfterTargets">
+    <CopySatelliteDllsToStandardNETPathsAfterTargets Condition=" '$(CopySatelliteDllsToStandardNETPaths)' == 'true' " >
+      $(CopySatelliteDllsToStandardNETPathsAfterTargets);
+      Localize;
+    </CopySatelliteDllsToStandardNETPathsAfterTargets>
+  </PropertyGroup>
+
+  <ItemGroup Label="LocalizeDependsOn">
+    <LocalizeDependsOn Include="ValidateLocalization" />
+    <!-- The loc task itself requires that the localized file already be "binplaced",
+         so ensure that localization does not occur before files are copied to the output directory.
+         Because some project don't import Microsoft.Common.CurrentVersion.targets where CopyFilesToOutputDirectory
+         is typically defined, we heuristically condition on a property also set by that .targets file.
+         Otherwise, projects will fail to build because our target depends on a target that does not exist. -->
+    <LocalizeDependsOn Include="CopyFilesToOutputDirectory" Condition=" '$(PrepareForRunDependsOn)' != '' " />
+    <LocalizeDependsOn Include="ResolveLocalizeInputsAndOutputs" />
+  </ItemGroup>
+
+  <Target Name="ValidateLocalization">
+    <Warning Condition="'$(ManifestPath)' != ''" Text="Deprecated: A localization manifest path was specified: '$(ManifestPath)'. The Localization manifest path has been deprecated, and you should consider moving the logic contained inside the manifest file to the respective project files for the content that is being localized." />
+  </Target>
+
+  <Target Name="ResolveLocalizeInputsAndOutputs"
+          Condition="'$(LocalizationEnabled)' == 'true' AND '$(Languages)' != '' AND '@(FilesToLocalize)' != ''">
+
+    <PropertyGroup>
+      <BinplaceRoot Condition=" '$(BinplaceRoot)' == '' ">$([System.IO.Path]::GetFullPath(`$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)','$(OutDir)'))`))</BinplaceRoot>
+      <GitRefHead>refs/heads/</GitRefHead>
+    </PropertyGroup>
+
+    <ItemGroup Label="MicroBuildLocSettings">
+      <MicroBuildLocSettings Include="MicroBuild.Plugins.Localization.props">
+
+        <!-- All source files found in the include attribute of a Locproj must be found here. -->
+        <RepoRoot>$(BUILD_REPOSITORY_LOCALPATH)</RepoRoot>
+        <RepoRoot Condition="'$(BUILD_REPOSITORY_LOCALPATH)' == ''">$(MSBuildProjectDirectory)</RepoRoot>
+        <BuildSystem>Microbuild V2</BuildSystem>
+        
+        <!-- This value will be used to get relative path for localization artifact. -->
+        <DropRoot>$(BUILD_REPOSITORY_LOCALPATH)</DropRoot>
+        <DropRoot Condition="'$(BUILD_REPOSITORY_LOCALPATH)' == ''">$(MSBuildProjectDirectory)</DropRoot>
+
+        <!-- Source control information -->
+        <SourceControlUrl>$(BUILD_REPOSITORY_URI)</SourceControlUrl>
+        <SourceControlType>$(BUILD_REPOSITORY_PROVIDER)</SourceControlType>
+        <SourceControlBranch>$(BUILD_SOURCEBRANCH)</SourceControlBranch>
+        <SourceControlBranch 
+          Condition="'$(BUILD_SOURCEBRANCH)' != '' AND '$(BUILD_REPOSITORY_PROVIDER)' != '' AND $(BUILD_REPOSITORY_PROVIDER.ToLower().Contains('git'))">$(BUILD_SOURCEBRANCH.SubString($(GitRefHead.Length)))</SourceControlBranch>
+
+        <!-- This value will be inserted into the source path to generate the target path. -->
+        <!-- It cannot be empty. -->
+        <!-- Target path will be: $(BinariesRoot)\$(PathModifier-Target)\<Rest of the path>. -->
+        <PathModifier-Target>localize</PathModifier-Target>
+
+        <!-- This value will be inserted into the source path to generate the simship target path. -->
+        <!-- It can be empty if not desired. -->
+        <!-- Target path will be: $(BinariesRoot)\$(PathModifier-Target)\$(PathModifier-Simship)\<Rest of the path>. -->
+        <PathModifier-Simship>simship</PathModifier-Simship>
+
+        <!-- If this value is defined, then lcg path will be $(BinariesRoot)\$(PathModifier-Target)\$(PathModifier-ParsedSource)\<Rest of the path>. -->
+        <!-- Otherwise they will be dropped next to the binary-->
+        <PathModifier-ParsedSource></PathModifier-ParsedSource>
+
+        <!-- If this value is defined, then lct path will be $(BinariesRoot)\$(PathModifier-Target)\$(PathModifier-ParsedTarget)\<Rest of the path>. -->
+        <!-- Otherwise they will be dropped next to the binary-->
+        <PathModifier-ParsedTarget></PathModifier-ParsedTarget>
+
+        <!-- Path to executables called by custom task. -->
+        <LSBuildExe>$(LSBuildRoot)\LSBuild.exe</LSBuildExe>
+        <LSBuildExeV2>$(LSBuildRoot)\LSBuild_v2.exe</LSBuildExeV2>
+        <DetokenizerExe>$(LSBuildRoot)\detokenize.exe</DetokenizerExe>
+
+        <!-- Default LSBuild Settings that will be applied globally. -->
+        <DefaultSettings>$(LSBuildRoot)\default.lss</DefaultSettings>
+        <LsBuildWarningLevelValue>4</LsBuildWarningLevelValue>
+
+        <!-- Path where LSBuild response files are dropped. -->
+        <ResponseFileLocation Condition=" '$(ResponseFileLocation)' == '' ">%(PathModifier-Target)\ResponseFiles</ResponseFileLocation>
+        <ResponseFileLocation Condition=" '$(ResponseFileLocation)' != '' ">$(ResponseFileLocation)</ResponseFileLocation>
+
+        <!-- If this value is false, the localization task does the path parsing to get relative paths and that all files that need to be localized are local. -->
+        <!-- If this value is true, the localization task expects that the ResolveFileTask is being used for partial builds and uses the remote store. -->
+        <LocalizationTaskUseResolveFileTask>false</LocalizationTaskUseResolveFileTask>
+
+        <!-- This is so the loc task knows the name of the current running project file -->
+        <ThisProjectFile>$(MSBuildProjectFullPath)</ThisProjectFile>
+
+        <!-- The absolute path to the directory under which all files to be localized must be found. -->
+        <BinplaceRoot>$(BinplaceRoot)</BinplaceRoot>
+
+        <!--To compensate for CS# 299920 wherein Lce paths have been changed to a sub folder instead of the folder of the source binary-->
+        <LceLookupFolder>LocTmp</LceLookupFolder>
+      </MicroBuildLocSettings>
+    </ItemGroup>
+
+    <ItemGroup Label="SupportedCultures">
+      <SupportedCultures Include="ENU">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_JPN_settings.lss</PlocSetting>
+        </PlocSettings>
+        <SimShip>true</SimShip>
+        <Parse>true</Parse>
+        <Generate>false</Generate>
+        <FNCulture>en</FNCulture>
+        <NeutralLCID>9</NeutralLCID>
+        <SpecificLCID>1033</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="ARA">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_Arabic_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="CHT">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_CHT_settings.lss</PlocSetting>
+        </PlocSettings>
+        <ParserSettings>
+          <ParserSetting Parser="4">$(LSBuildRoot)\INI_For_CHx_PTx.lss</ParserSetting>
+        </ParserSettings>
+        <FNCulture>zh-Hant</FNCulture>
+        <NeutralLCID>31748</NeutralLCID>
+        <SpecificLCID>1028</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="CHS">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_CHS_settings.lss</PlocSetting>
+        </PlocSettings>
+        <ParserSettings>
+          <ParserSetting Parser="4">$(LSBuildRoot)\INI_For_CHx_PTx.lss</ParserSetting>
+        </ParserSettings>
+        <FNCulture>zh-Hans</FNCulture>
+        <NeutralLCID>4</NeutralLCID>
+        <SpecificLCID>2052</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="CSY">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_CentEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+        <FNCulture>cs</FNCulture>
+        <NeutralLCID>5</NeutralLCID>
+        <SpecificLCID>1029</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="DAN">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_WestEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="DEU">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_WestEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+        <FNCulture>de</FNCulture>
+        <NeutralLCID>7</NeutralLCID>
+        <SpecificLCID>1031</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="ELL">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_ELL_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="ESN">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_WestEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+        <FNCulture>es</FNCulture>
+        <NeutralLCID>10</NeutralLCID>
+        <SpecificLCID>3082</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="FIN">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_WestEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="FRA">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_WestEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+        <FNCulture>fr</FNCulture>
+        <NeutralLCID>12</NeutralLCID>
+        <SpecificLCID>1036</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="HEB">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_Hebrew_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="HUN">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_CentEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="ITA">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_WestEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+        <FNCulture>it</FNCulture>
+        <NeutralLCID>16</NeutralLCID>
+        <SpecificLCID>1040</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="JPN">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_JPN_settings.lss</PlocSetting>
+        </PlocSettings>
+        <ParsedTarget>true</ParsedTarget>
+        <FNCulture>ja</FNCulture>
+        <NeutralLCID>17</NeutralLCID>
+        <SpecificLCID>1041</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="KOR">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_KOR_settings.lss</PlocSetting>
+        </PlocSettings>
+        <FNCulture>ko</FNCulture>
+        <NeutralLCID>18</NeutralLCID>
+        <SpecificLCID>1042</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="NLD">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_WestEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="NOR">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_WestEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="PLK">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_CentEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+        <FNCulture>pl</FNCulture>
+        <NeutralLCID>21</NeutralLCID>
+        <SpecificLCID>1045</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="PTB">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_WestEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+        <ParserSettings>
+          <ParserSetting Parser="211">$(LSBuildRoot)\MCP_For_SpecificCulture.lss</ParserSetting>
+          <ParserSetting Parser="4">$(LSBuildRoot)\INI_For_CHx_PTx.lss</ParserSetting>
+        </ParserSettings>
+        <FNCulture>pt-BR</FNCulture>
+        <NeutralLCID>22</NeutralLCID>
+        <SpecificLCID>1046</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="PTG">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_WestEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+        <ParserSettings>
+          <ParserSetting Parser="4">$(LSBuildRoot)\INI_For_CHx_PTx.lss</ParserSetting>
+        </ParserSettings>
+        <FNCulture>pt</FNCulture>
+        <NeutralLCID>22</NeutralLCID>
+        <SpecificLCID>2070</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="RUS">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_RUS_settings.lss</PlocSetting>
+        </PlocSettings>
+        <FNCulture>ru</FNCulture>
+        <NeutralLCID>25</NeutralLCID>
+        <SpecificLCID>1049</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="SVE">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_WestEUR_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="TRK">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_TRK_settings.lss</PlocSetting>
+        </PlocSettings>
+        <FNCulture>tr</FNCulture>
+        <NeutralLCID>31</NeutralLCID>
+        <SpecificLCID>1055</SpecificLCID>
+      </SupportedCultures>
+      <SupportedCultures Include="IND">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_IND_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="BGR">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_BGR_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="CAT">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_CAT_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="ETI">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_ETI_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="EUQ">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_EUQ_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="HRV">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_HRV_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="LTH">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_LTH_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="LVI">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_LVI_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="MSL">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_MSL_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="NLD">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_NLD_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="ROM">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_ROM_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="SKY">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_SKY_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="SLV">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_SLV_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="SRO">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_SRO_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="SRM">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_SRM_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="THA">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_THA_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="UKR">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_UKR_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+      <SupportedCultures Include="VIT">
+        <PlocSettings>
+          <PlocSetting>$(LSBuildRoot)\pseudo_VIT_settings.lss</PlocSetting>
+        </PlocSettings>
+      </SupportedCultures>
+    </ItemGroup>
+
+    <LocalizeFiles Files="@(FilesToLocalize)"
+              Type="$(LocType)"
+              Languages="$(Languages)"
+              Settings="@(MicroBuildLocSettings)"
+              SupportedCultures="@(SupportedCultures)"
+              ResolvePathsOnly="true"
+              RootPath="$(OutDir)">
+      <Output ItemName="LocalizeInputs" TaskParameter="ResolvedInputs" />
+      <Output ItemName="LocalizeOutputs" TaskParameter="LocalizedFiles" />
+    </LocalizeFiles>
+
+    <ItemGroup>
+      <LocalizeOutputs>
+        <!-- Copy FNCulture metadata to Culture, where MSBuild now places it in shipping .targets -->
+        <Culture Condition=" '%(LocalizeOutputs.Culture)' == '' ">%(LocalizeOutputs.FNCulture)</Culture>
+      </LocalizeOutputs>
+      <LocalizedUserFiles Include="@(LocalizeOutputs)" Condition=" '%(LocalizeOutputs.IsLocSupportFile)' == 'false' " />
+      <LocalizedToolFiles Include="@(LocalizeOutputs)" Condition=" '%(LocalizeOutputs.IsLocSupportFile)' == 'true' " />
+      <!-- Remove support files from outputs as they will be older than signed files and cause Localization to run again  -->
+      <LocalizeOutputs Remove="%(LocalizeOutputs.Identity)" Condition=" '%(LocalizeOutputs.IsLocSupportFile)' == 'true' " />
+    </ItemGroup>
+
+    <Message Text="------Localize Inputs------" Importance="Low" />
+    <Message Text="%(LocalizeInputs.Identity)"  Importance="Low" />
+    <Message Text="------Localize Output------" Importance="Low" />
+    <Message Text="%(LocalizeOutputs.Identity)" Importance="Low" />
+
+  </Target>
+
+  <!-- Example FilesToLocalize item contains a single localizable file:
+    <ItemGroup>
+        <FilesToLocalize Include="$(OutDir)Foo.dll">
+            <TranslationFile>$(MSBuildThisFileDirectory)\localize\{Lang}\foo\foo.dll.lcl</TranslationFile>
+            <LciCommentFile>$(MSBuildThisFileDirectory)\localize\{Lang}\foo\foo.dll.lci</LciCommentFile>
+        </FilesToLocalize>
+    </ItemGroup>
+  -->
+  <Target Name="Localize" Inputs="@(LocalizeInputs)" Outputs="@(LocalizeOutputs)" AfterTargets="AfterBuild" DependsOnTargets="@(LocalizeDependsOn)"
+          Condition="'$(LocalizationEnabled)' == 'true' AND '$(Languages)' != '' AND '@(FilesToLocalize)' != ''">
+
+    <LocalizeFiles Files="@(FilesToLocalize)"
+              Type="$(LocType)"
+              Languages="$(Languages)"
+              Settings="@(MicroBuildLocSettings)"
+              SupportedCultures="@(SupportedCultures)"
+              ResolvePathsOnly="false"
+              RootPath="$(OutDir)">
+      <Output ItemName="FileWrites" TaskParameter="LocalizedFiles" />
+    </LocalizeFiles>
+
+  </Target>
+
+  <Target Name="CopySatelliteDllsToStandardNETPaths"
+          DependsOnTargets="AugmentSatelliteDllsProjectOutputGroup;Localize"
+          AfterTargets="$(CopySatelliteDllsToStandardNETPathsAfterTargets)">
+    <Copy SourceFiles="@(SatelliteDllsProjectOutputGroupOutputIntermediate)"
+          DestinationFiles="@(SatelliteDllsProjectOutputGroupOutputIntermediate->'$(OutputPath)%(TargetPath)')"
+          SkipUnchangedFiles="true"
+          UseHardlinksIfPossible="true"
+          Condition=" '%(SatelliteDllsProjectOutputGroupOutputIntermediate.TargetPath)' != '' " />
+  </Target>
+
+  <!-- Workaround bug https://devdiv.visualstudio.com/DevDiv/_workitems/edit/445542 -->
+  <Target Name="WorkaroundVSSDKBug445542"
+          BeforeTargets="GetVsixSourceItems"
+          DependsOnTargets="CopySatelliteDllsToStandardNETPaths"
+          Condition=" '$(IncludeSatelliteAssembliesInVSIXContainer)' == 'true' " />
+
+  <Target Name="AugmentSatelliteDllsProjectOutputGroup"
+          BeforeTargets="SatelliteDllsProjectOutputGroup"
+          DependsOnTargets="ResolveLocalizeInputsAndOutputs">
+    <!-- Since LSBuild-based localized files aren't produced from embeddable resources in the project file,
+         we need to help the build out to discover what localized satellite assemblies were
+         built in another way. -->
+    <ItemGroup>
+      <SatelliteDllsProjectOutputGroupOutputIntermediate Include="@(LocalizedUserFiles)" Condition=" '%(Extension)' == '.dll' ">
+        <TargetPath>%(LocalizedUserFiles.FNCulture)\%(FileName)%(Extension)</TargetPath>
+        <FinalOutputPath>%(Identity)</FinalOutputPath>
+        <WithCulture>true</WithCulture>
+      </SatelliteDllsProjectOutputGroupOutputIntermediate>
+      <IntermediateSatelliteAssembliesWithTargetPath Include="@(LocalizedUserFiles)" Condition=" '%(Extension)' == '.dll' ">
+        <TargetPath>%(LocalizedUserFiles.FNCulture)\%(FileName)%(Extension)</TargetPath>
+        <FinalOutputPath>%(Identity)</FinalOutputPath>
+        <WithCulture>true</WithCulture>
+      </IntermediateSatelliteAssembliesWithTargetPath>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AugmentSatelliteDllsProjectOutputGroupDependencies"
+          BeforeTargets="SatelliteDllsProjectOutputGroupDependencies"
+          DependsOnTargets="ResolveProjectReferences">
+
+    <MSBuild Projects="@(_MSBuildProjectReferenceExistent)"
+                Targets="SatelliteDllsProjectOutputGroup;SatelliteDllsProjectOutputGroupDependencies"
+                BuildInParallel="$(BuildInParallel)"
+                Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration); %(_MSBuildProjectReferenceExistent.SetPlatform)"
+                Condition="'%(_MSBuildProjectReferenceExistent.BuildReference)' == 'true' and '@(ProjectReferenceWithConfiguration)' != '' and '@(_MSBuildProjectReferenceExistent)' != ''"
+                ContinueOnError="WarnAndContinue"
+                RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="_AugmentSatelliteDllsProjectOutputGroupDependenciesWithDuplicates" />
+    </MSBuild>
+
+    <!-- Remove duplicates -->
+    <RemoveDuplicates Inputs="@(_AugmentSatelliteDllsProjectOutputGroupDependenciesWithDuplicates)">
+      <Output TaskParameter="Filtered"
+              ItemName="_AugmentSatelliteDllsProjectOutputGroupDependencies"/>
+    </RemoveDuplicates>
+
+    <ItemGroup>
+      <SatelliteDllsProjectOutputGroupDependency Include="@(_AugmentSatelliteDllsProjectOutputGroupDependencies)"/>
+    </ItemGroup>
+  </Target>
+
+  <!-- .NET SDK projects have a Publish target that doesn't ensure the right output group runs.
+        So inject it into the dependency chain. -->
+  <Target Name='EnsureSatelliteAssembliesGetPublished'
+          BeforeTargets="ComputeFilesToPublish"
+          DependsOnTargets="SatelliteDllsProjectOutputGroup" />
+
+</Project>

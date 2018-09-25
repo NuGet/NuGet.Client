@@ -1,0 +1,24 @@
+Why we have CLR binaries in this folder
+=======================================
+
+LSBuild is a managed tool running in the DevDiv razzle environment.
+As such, it needs a way to find the CLR assemblies located under
+%COMPLUS_InstallRoot%\%COMPLUS_Version%. 
+There are two ways to solve this: 
+1) Place LSBuild and the managed toolset in the same folder:
+	a) in the LSBuild folder;
+	b) in the %COMPLUS_InstallRoot%\%COMPLUS_Version% folder;
+2) Set developerInstallation="true" in the LSBuild config files.
+
+Option 2) seems like the better option but it has a significant drawback.
+Due to a bug in the CLR loader, Assembly.ReflectionOnlyLoadFrom respects
+DEVPATH when it should not (see VSWhidbey 601349). This means that any
+assemblies that are located under the managed toolset folder simply
+cannot be localized. Fixing the bug is a breaking change that is not
+appropriate for a QFE and while the fix will appear in V.Next of the CLR,
+it will not be ported back to Whidbey.
+
+Option 1b) is not really good because we don't want to pollute the 
+managed toolset folder with files from various products so the Loc and
+Decatur teams have decided to copy the needed framework binaries from
+the managed toolset folder to the LSBuild folder.

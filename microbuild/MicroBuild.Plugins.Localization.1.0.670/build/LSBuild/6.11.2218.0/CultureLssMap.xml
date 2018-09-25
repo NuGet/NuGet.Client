@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+<copyright file="CultureLssMap.xml" company="Microsoft">
+    Copyright (c) Microsoft Corporation.  All rights reserved.
+</copyright>
+<summary>
+    This document contains the names of Lss files for specific cultures. All the Lss files are located in Devdiv\Loc\Current folder.
+</summary>
+-->    
+<CultureLssList>
+    <Culture Name="pt-BR">
+      <Lss>MCP_For_SpecificCulture.lss</Lss>
+      <Lss>INI_For_CHx_PTx.lss</Lss>
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="pt-PT">
+      <Lss>INI_For_CHx_PTx.lss</Lss>
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="zh-CN">
+      <Lss>INI_For_CHx_PTx.lss</Lss>
+      <Lss Pseudo="Yes">pseudo_JPN_settings.lss</Lss>
+    </Culture>
+    <Culture Name="zh-TW">
+      <Lss>INI_For_CHx_PTx.lss</Lss>
+      <Lss Pseudo="Yes">pseudo_JPN_settings.lss</Lss>
+    </Culture>
+    <Culture Name="de-DE">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="fr-FR">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="it-IT">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="es-ES">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="ar-SA">
+      <Lss Pseudo="Yes">Pseudo_Arabic_Settings.LSS</Lss>
+    </Culture>
+    <Culture Name="cs-CZ">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="da-DK">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="el-GR">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="fi-FI">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="he-IL">
+      <Lss Pseudo="Yes">Pseudo_Hebrew_Settings.LSS</Lss>
+    </Culture>
+    <Culture Name="hu-HU">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="ja-JP">
+      <Lss Pseudo="Yes">pseudo_JPN_settings.lss</Lss>
+    </Culture>
+    <Culture Name="ko-KR">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="nl-NL">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="nb-NO">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="pl-PL">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="ru-RU">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="sv-SE">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+    <Culture Name="tr-TR">
+      <Lss Pseudo="Yes">pseudo_EUR_settings.lss</Lss>
+    </Culture>
+</CultureLssList>
