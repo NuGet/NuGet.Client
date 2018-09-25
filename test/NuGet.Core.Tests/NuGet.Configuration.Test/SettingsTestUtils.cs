@@ -63,15 +63,36 @@ namespace NuGet.Configuration.Test
             {
                 return text1.Equals(setting2 as SettingText);
             }
+            else if (setting1 is RepositoryItem)
+            {
+                return RepositoryItem_DeepEquals(setting1 as RepositoryItem, setting2 as RepositoryItem);
+            }
+            else if (setting1 is AuthorItem)
+            {
+                return AuthorItem_DeepEquals(setting1 as AuthorItem, setting2 as AuthorItem);
+            }
+            else if (setting1 is OwnersItem)
+            {
+                return OwnersItem_DeepEquals(setting1 as OwnersItem, setting2 as OwnersItem);
+            }
+            else if (setting1 is CertificateItem)
+            {
+                return CertificateItem_DeepEquals(setting1 as CertificateItem, setting2 as CertificateItem);
+            }
 
             return false;
         }
 
-        private static bool AddItem_DeepEquals(AddItem item1, AddItem item2)
+        private static bool ItemBase_DeepEquals(SettingItem item1, SettingItem item2)
         {
             if (item1 == null || item2 == null)
             {
                 return item1 == null && item2 == null;
+            }
+
+            if (!item1.Equals(item2))
+            {
+                return false;
             }
 
             if (item1.Attributes.Count == item2.Attributes.Count)
@@ -82,11 +103,16 @@ namespace NuGet.Configuration.Test
             return false;
         }
 
+        private static bool AddItem_DeepEquals(AddItem item1, AddItem item2)
+        {
+            return ItemBase_DeepEquals(item1, item2);
+        }
+
         private static bool CredentialsItem_DeepEquals(CredentialsItem item1, CredentialsItem item2)
         {
-            if (item1 == null || item2 == null)
+            if (!ItemBase_DeepEquals(item1, item2))
             {
-                return item1 == null && item2 == null;
+                return false;
             }
 
             return string.Equals(item1.ElementName, item2.ElementName, StringComparison.Ordinal)
@@ -94,7 +120,6 @@ namespace NuGet.Configuration.Test
                 && item1.IsPasswordClearText == item2.IsPasswordClearText
                 && string.Equals(item1.Password, item2.Password, StringComparison.Ordinal);
         }
-
 
         private static bool Section_DeepEquals(SettingSection section1, SettingSection section2)
         {
@@ -120,13 +145,12 @@ namespace NuGet.Configuration.Test
 
         private static bool UnkownItem_DeepEquals(UnknownItem item1, UnknownItem item2)
         {
-            if (item1 == null || item2 == null)
+            if (!ItemBase_DeepEquals(item1, item2))
             {
-                return item1 == null && item2 == null;
+                return false;
             }
 
-            if (item1.Attributes.Count == item2.Attributes.Count &&
-                item1.Children.Count == item2.Children.Count)
+            if (item1.Children.Count == item2.Children.Count)
             {
                 var childEquals = true;
 
@@ -138,12 +162,76 @@ namespace NuGet.Configuration.Test
                     childEquals &= DeepEquals(children1[i], children2[i]);
                 }
 
-                return string.Equals(item1.ElementName, item2.ElementName, StringComparison.Ordinal) &&
-                    item1.Attributes.OrderedEquals(item1.Attributes, data => data.Key, StringComparer.OrdinalIgnoreCase) &&
-                    childEquals;
+                return childEquals;
             }
 
             return false;
+        }
+
+        private static bool RepositoryItem_DeepEquals(RepositoryItem item1, RepositoryItem item2)
+        {
+            if (!ItemBase_DeepEquals(item1, item2))
+            {
+                return false;
+            }
+
+            if (item1.Certificates.Count == item2.Certificates.Count)
+            {
+                var ownersEquals = item1.Owners.SequenceEqual(item2.Owners);
+                var itemsEquals = true;
+
+                var certificate1 = item1.Certificates;
+                var certificate2 = item2.Certificates;
+
+                for (var i = 0; i < certificate1.Count; i++)
+                {
+                    itemsEquals &= DeepEquals(certificate1[i], certificate2[i]);
+                }
+
+                return itemsEquals && ownersEquals;
+            }
+
+            return false;
+        }
+
+        private static bool AuthorItem_DeepEquals(AuthorItem item1, AuthorItem item2)
+        {
+            if (!ItemBase_DeepEquals(item1, item2))
+            {
+                return false;
+            }
+
+            if (item1.Certificates.Count == item2.Certificates.Count)
+            {
+                var itemsEquals = true;
+
+                var certificate1 = item1.Certificates;
+                var certificate2 = item2.Certificates;
+
+                for (var i = 0; i < certificate1.Count; i++)
+                {
+                    itemsEquals &= DeepEquals(certificate1[i], certificate2[i]);
+                }
+
+                return itemsEquals;
+            }
+
+            return false;
+        }
+
+        private static bool OwnersItem_DeepEquals(OwnersItem item1, OwnersItem item2)
+        {
+            if (!ItemBase_DeepEquals(item1, item2))
+            {
+                return false;
+            }
+
+            return item1.Content.SequenceEqual(item2.Content, StringComparer.Ordinal);
+        }
+
+        private static bool CertificateItem_DeepEquals(CertificateItem item1, CertificateItem item2)
+        {
+            return ItemBase_DeepEquals(item1, item2);
         }
     }
 }

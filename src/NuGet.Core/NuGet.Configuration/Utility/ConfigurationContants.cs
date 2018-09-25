@@ -11,11 +11,17 @@ namespace NuGet.Configuration
 
         public static readonly string Add = "add";
 
+        public static readonly string AllowUntrustedRoot = "allowUntrustedRoot";
+
         public static readonly string ApiKeys = "apikeys";
+
+        public static readonly string Author = "author";
 
         public static readonly string BeginIgnoreMarker = "NUGET: BEGIN LICENSE TEXT";
 
         public static readonly string BindingRedirectsSection = "bindingRedirects";
+
+        public static readonly string Certificate = "certificate";
 
         public static readonly string Clear = "clear";
 
@@ -47,9 +53,13 @@ namespace NuGet.Configuration
 
         public static readonly string FallbackPackageFolders = "fallbackPackageFolders";
 
+        public static readonly string Fingerprint = "fingerprint";
+
         public static readonly string FingerprintAlgorithm = "fingerprintAlgorithm";
 
         public static readonly string GlobalPackagesFolder = "globalPackagesFolder";
+
+        public static readonly string HashAlgorithm = "hashAlgorithm";
 
         public static readonly string HostKey = "http_proxy";
 
@@ -57,7 +67,11 @@ namespace NuGet.Configuration
 
         public static readonly string MaxHttpRequestsPerSource = "maxHttpRequestsPerSource";
 
+        public static readonly string NameAttribute = "name";
+
         public static readonly string NoProxy = "no_proxy";
+
+        public static readonly string Owners = "owners";
 
         public static readonly string PackageManagementSection = "packageManagement";
 
@@ -71,9 +85,13 @@ namespace NuGet.Configuration
 
         public static readonly string ProtocolVersionAttribute = "protocolVersion";
 
+        public static readonly string Repository = "repository";
+
         public static readonly string RepositoryPath = "repositoryPath";
 
         public static readonly string ServiceIndex = "serviceIndex";
+
+        public static readonly string SignatureValidationMode = "signatureValidationMode";
 
         public static readonly string SkipBindingRedirectsKey = "skip";
 
