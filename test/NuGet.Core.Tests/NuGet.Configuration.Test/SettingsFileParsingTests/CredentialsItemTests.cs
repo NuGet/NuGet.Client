@@ -396,6 +396,46 @@ namespace NuGet.Configuration.Test
 
 
         [Fact]
+        public void CredentialsItem_Update_RemovingValidAuthenticationTypes_UpdatesObjectAndFile()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var origin = new SettingsFile(mockBaseDirectory);
+
+                var xelement = new XElement("name",
+                                new XElement("add", new XAttribute("key", "Username"), new XAttribute("value", "user")),
+                                new XElement("add", new XAttribute("key", "ClearTextPassword"), new XAttribute("value", "pass")),
+                                new XElement("add", new XAttribute("key", "ValidAuthenticationTypes"), new XAttribute("value", "one, two, three")));
+
+                var credentials = new CredentialsItem(xelement, origin);
+
+                // Act
+                credentials.Update(new CredentialsItem("name", "user", "pass", isPasswordClearText: true, validAuthenticationTypes: null));
+
+                // Assert
+                credentials.ValidAuthenticationTypes.Should().BeNull();
+                origin.IsDirty.Should().BeTrue();
+                origin.SaveToDisk();
+
+                var credentialElement = credentials.AsXNode() as XElement;
+                var childElements = credentialElement.Elements().ToList();
+
+                childElements.Count.Should().Be(2);
+
+                childElements[1].Name.LocalName.Should().Be("add");
+                var elattr = childElements[0].Attributes().ToList();
+                elattr.Count.Should().Be(2);
+                elattr[0].Value.Should().Be("Username");
+
+                childElements[1].Name.LocalName.Should().Be("add");
+                elattr = childElements[1].Attributes().ToList();
+                elattr.Count.Should().Be(2);
+                elattr[0].Value.Should().Be("ClearTextPassword");
+            }
+        }
+
+        [Fact]
         public void CredentialsItem_AsXNode_WithUsernameAndPassword_ReturnsCorrectElement()
         {
             // Arrange
