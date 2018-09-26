@@ -743,7 +743,7 @@ namespace NuGet.Build.Tasks.Pack
                     library => Path.GetFullPath(Path.Combine(
                         Path.GetDirectoryName(assetsFile.PackageSpec.RestoreMetadata.ProjectPath),
                         PathUtility.GetPathWithDirectorySeparator(library.MSBuildProject))),
-                    library => new PackageIdentity(library.Name, library.Version));
+                    library => new PackageIdentity(library.Name, library.Version), PathUtility.GetStringComparerBasedOnOS());
 
             // Consider all of the project references, grouped by target framework.
             foreach (var framework in assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks)
