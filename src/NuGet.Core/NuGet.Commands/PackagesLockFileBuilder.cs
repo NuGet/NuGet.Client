@@ -49,7 +49,7 @@ namespace NuGet.Commands
                     {
                         Id = library.Name,
                         ResolvedVersion = library.Version,
-                        Sha512 = libraryLookup[identity].Sha512,
+                        ContentHash = libraryLookup[identity].Sha512,
                         Dependencies = library.Dependencies
                     };
 

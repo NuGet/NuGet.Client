@@ -35,7 +35,7 @@ namespace NuGet.ProjectModel.Test
                                     Type = PackageDependencyType.Direct,
                                     RequestedVersion = VersionRange.Parse("1.0.0"),
                                     ResolvedVersion = NuGetVersion.Parse("1.0.0"),
-                                    Sha512 = "sha1",
+                                    ContentHash = "sha1",
                                     Dependencies = new List<PackageDependency>()
                                     {
                                         new PackageDependency("PackageB", VersionRange.Parse("1.0.0"))
@@ -46,7 +46,7 @@ namespace NuGet.ProjectModel.Test
                                     Id = "PackageB",
                                     Type = PackageDependencyType.Transitive,
                                     ResolvedVersion = NuGetVersion.Parse("1.0.0"),
-                                    Sha512 = "sha2"
+                                    ContentHash = "sha2"
                                 }
                             }
                         },
@@ -64,7 +64,7 @@ namespace NuGet.ProjectModel.Test
                                     Type = PackageDependencyType.Direct,
                                     RequestedVersion = VersionRange.Parse("1.0.0"),
                                     ResolvedVersion = NuGetVersion.Parse("1.0.0"),
-                                    Sha512 = "sha3",
+                                    ContentHash = "sha3",
                                     Dependencies = new List<PackageDependency>()
                                     {
                                         new PackageDependency("runtime.win10-arm.PackageA", VersionRange.Parse("1.0.0"))
@@ -75,7 +75,7 @@ namespace NuGet.ProjectModel.Test
                                     Id = "runtime.win10-arm.PackageA",
                                     Type = PackageDependencyType.Transitive,
                                     ResolvedVersion = NuGetVersion.Parse("1.0.0"),
-                                    Sha512 = "sha4"
+                                    ContentHash = "sha4"
                                 }
                             }
                         }

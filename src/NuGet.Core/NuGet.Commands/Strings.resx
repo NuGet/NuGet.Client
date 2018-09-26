@@ -708,7 +708,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>Do not localize snupkg and symbols.nupkg</comment>
   </data>
   <data name="Error_RestoreInLockedMode" xml:space="preserve">
-    <value>The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Please disable RestoreLockedMode MSBuild property or pass explicit --reevaluate flag to run restore to update the lock file.</value>
+    <value>The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Please disable RestoreLockedMode MSBuild property or pass explicit --force-evaluate flag to run restore to update the lock file.</value>
   </data>
   <data name="Error_PackageValidationFailed" xml:space="preserve">
     <value>The package {0} sha512 validation failed. The package is different than the last restore.</value>

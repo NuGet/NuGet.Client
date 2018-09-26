@@ -405,7 +405,7 @@ namespace NuGet.Commands
             var librariesLookUp = lockFile.Targets
                 .SelectMany(t => t.Dependencies.Where(dep => dep.Type != PackageDependencyType.Project))
                 .Distinct(new LockFileDependencyIdVersionComparer())
-                .ToDictionary(dep => new PackageIdentity(dep.Id, dep.ResolvedVersion), val => val.Sha512);
+                .ToDictionary(dep => new PackageIdentity(dep.Id, dep.ResolvedVersion), val => val.ContentHash);
 
             foreach (var library in assetsFile.Libraries.Where(lib => lib.Type == LibraryType.Package))
             {
@@ -457,8 +457,8 @@ namespace NuGet.Commands
                 return Tuple.Create(success, Tuple.Create(isLockFileValid, packagesLockFile));
             }
 
-            // read packages.lock.json file if exists and ReevaluateRestoreGraph flag is not set to true
-            if (!_request.ReevaluateRestoreGraph && File.Exists(packagesLockFilePath))
+            // read packages.lock.json file if exists and RestoreForceEvaluate flag is not set to true
+            if (!_request.RestoreForceEvaluate && File.Exists(packagesLockFilePath))
             {
                 lockFileTelemetry.StartIntervalMeasure();
                 packagesLockFile = PackagesLockFileFormat.Read(packagesLockFilePath, _logger);
@@ -511,10 +511,10 @@ namespace NuGet.Commands
                 NoOpRestoreUtilities.UpdateRequestBestMatchingToolPathsIfAvailable(_request);
             }
 
-            // if --reevaluate flag is passed then restore noop check will also be skipped.
+            // if --force-evaluate flag is passed then restore noop check will also be skipped.
             // this will also help us to get rid of -force flag in near future.
             if (_request.AllowNoOp &&
-                !_request.ReevaluateRestoreGraph &&
+                !_request.RestoreForceEvaluate &&
                 File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));

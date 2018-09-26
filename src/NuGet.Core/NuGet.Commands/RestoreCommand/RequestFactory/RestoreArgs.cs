@@ -64,7 +64,7 @@ namespace NuGet.Commands
 
         public bool IsRestoreOriginalAction { get; set; } = true;
 
-        public bool ReevaluateRestoreGraph { get; set; }
+        public bool RestoreForceEvaluate { get; set; }
 
         // Cache directory -> ISettings
         private ConcurrentDictionary<string, ISettings> _settingsCache
@@ -233,7 +233,7 @@ namespace NuGet.Commands
             request.HideWarningsAndErrors = HideWarningsAndErrors;
             request.ParentId = ParentId;
             request.IsRestoreOriginalAction = IsRestoreOriginalAction;
-            request.ReevaluateRestoreGraph = ReevaluateRestoreGraph;
+            request.RestoreForceEvaluate = RestoreForceEvaluate;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace NuGet.ProjectModel.Test
                             ""type"": ""Direct"",
                             ""requested"": ""[1.*, )"",
                             ""resolved"": ""1.0.0"",
-                            ""sha512"": ""sbWWhjA2/cXJHBBKAVo3m2U0KxzNuW5dQANDwx8L96V+L6SML96cM/Myvmp6fiBqIDibvF6+Ss9YC+qqclrXnw=="",
+                            ""contentHash"": ""sbWWhjA2/cXJHBBKAVo3m2U0KxzNuW5dQANDwx8L96V+L6SML96cM/Myvmp6fiBqIDibvF6+Ss9YC+qqclrXnw=="",
                             ""dependencies"": {
                                  ""PackageB"": ""1.0.0""
                             }
@@ -28,7 +28,7 @@ namespace NuGet.ProjectModel.Test
                         ""PackageB"": {
                             ""type"": ""Transitive"",
                             ""resolved"": ""1.0.0"",
-                            ""sha512"": ""Fjiywrwerewr4dgbdgbfgjkoiuiorwrwn24+8hjnnuerwrwsfsHYWD3HJYUI7NJHssxDFSFSFEWEW34DFDFCVsxv=="",
+                            ""contentHash"": ""Fjiywrwerewr4dgbdgbfgjkoiuiorwrwn24+8hjnnuerwrwsfsHYWD3HJYUI7NJHssxDFSFSFEWEW34DFDFCVsxv=="",
                         }
                     }
                 }
@@ -46,7 +46,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(PackageDependencyType.Direct, target.Dependencies[0].Type);
             Assert.Equal("[1.*, )", target.Dependencies[0].RequestedVersion.ToNormalizedString());
             Assert.Equal("1.0.0", target.Dependencies[0].ResolvedVersion.ToNormalizedString());
-            Assert.NotEmpty(target.Dependencies[0].Sha512);
+            Assert.NotEmpty(target.Dependencies[0].ContentHash);
             Assert.Equal(1, target.Dependencies[0].Dependencies.Count);
             Assert.Equal("PackageB", target.Dependencies[0].Dependencies[0].Id);
 
@@ -55,7 +55,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(PackageDependencyType.Transitive, target.Dependencies[1].Type);
             Assert.Null(target.Dependencies[1].RequestedVersion);
             Assert.Equal("1.0.0", target.Dependencies[0].ResolvedVersion.ToNormalizedString());
-            Assert.NotEmpty(target.Dependencies[1].Sha512);
+            Assert.NotEmpty(target.Dependencies[1].ContentHash);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace NuGet.ProjectModel.Test
                             ""type"": ""Direct"",
                             ""requested"": ""[1.*, )"",
                             ""resolved"": ""1.0.0"",
-                            ""sha512"": ""sbWWhjA2/cXJHBBKAVo3m2U0KxzNuW5dQANDwx8L96V+L6SML96cM/Myvmp6fiBqIDibvF6+Ss9YC+qqclrXnw=="",
+                            ""contentHash"": ""sbWWhjA2/cXJHBBKAVo3m2U0KxzNuW5dQANDwx8L96V+L6SML96cM/Myvmp6fiBqIDibvF6+Ss9YC+qqclrXnw=="",
                             ""dependencies"": {
                                  ""PackageB"": ""1.0.0""
                             }
@@ -77,7 +77,7 @@ namespace NuGet.ProjectModel.Test
                         ""PackageB"": {
                             ""type"": ""Transitive"",
                             ""resolved"": ""1.0.0"",
-                            ""sha512"": ""Fjiywrwerewr4dgbdgbfgjkoiuiorwrwn24+8hjnnuerwrwsfsHYWD3HJYUI7NJHssxDFSFSFEWEW34DFDFCVsxv==""
+                            ""contentHash"": ""Fjiywrwerewr4dgbdgbfgjkoiuiorwrwn24+8hjnnuerwrwsfsHYWD3HJYUI7NJHssxDFSFSFEWEW34DFDFCVsxv==""
                         }
                     },
                     "".NETFramework,Version=v4.5/win10-arm"": {
@@ -85,7 +85,7 @@ namespace NuGet.ProjectModel.Test
                             ""type"": ""Direct"",
                             ""requested"": ""[1.*, )"",
                             ""resolved"": ""1.0.0"",
-                            ""sha512"": ""QuiokjhjA2/cXJHBBKAVo3m2U0KxzNuW5dQANDwx8L96V+L6SML96cM/Myvmp6fiBqIDibvF6+Ss9YC+qqcfwef=="",
+                            ""contentHash"": ""QuiokjhjA2/cXJHBBKAVo3m2U0KxzNuW5dQANDwx8L96V+L6SML96cM/Myvmp6fiBqIDibvF6+Ss9YC+qqcfwef=="",
                             ""dependencies"": {
                                  ""PackageB"": ""1.0.0"",
                                  ""runtime.win10-arm.PackageA"": ""1.0.0""
@@ -94,7 +94,7 @@ namespace NuGet.ProjectModel.Test
                         ""runtime.win10-arm.PackageA"": {
                             ""type"": ""Transitive"",
                             ""resolved"": ""1.0.0"",
-                            ""sha512"": ""dfgdgdfIY434jhjkhkRARFSZSGFSDG423452bgdnuerwrwsfsHYWD3HJYUI7NJHssxDFSFSFEWEW34DFjkyuerd=="",
+                            ""contentHash"": ""dfgdgdfIY434jhjkhkRARFSZSGFSDG423452bgdnuerwrwsfsHYWD3HJYUI7NJHssxDFSFSFEWEW34DFjkyuerd=="",
                         }
                     }
                 }
@@ -112,7 +112,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(PackageDependencyType.Direct, target.Dependencies[0].Type);
             Assert.Equal("[1.*, )", target.Dependencies[0].RequestedVersion.ToNormalizedString());
             Assert.Equal("1.0.0", target.Dependencies[0].ResolvedVersion.ToNormalizedString());
-            Assert.NotEmpty(target.Dependencies[0].Sha512);
+            Assert.NotEmpty(target.Dependencies[0].ContentHash);
             Assert.Equal(2, target.Dependencies[0].Dependencies.Count);
             Assert.Equal("PackageB", target.Dependencies[0].Dependencies[0].Id);
             Assert.Equal("runtime.win10-arm.PackageA", target.Dependencies[0].Dependencies[1].Id);
@@ -123,7 +123,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(PackageDependencyType.Transitive, target.Dependencies[1].Type);
             Assert.Null(target.Dependencies[1].RequestedVersion);
             Assert.Equal("1.0.0", target.Dependencies[0].ResolvedVersion.ToNormalizedString());
-            Assert.NotEmpty(target.Dependencies[1].Sha512);
+            Assert.NotEmpty(target.Dependencies[1].ContentHash);
         }
 
         [Fact]
@@ -137,7 +137,7 @@ namespace NuGet.ProjectModel.Test
                             ""type"": ""Direct"",
                             ""requested"": ""[1.*, )"",
                             ""resolved"": ""1.0.0"",
-                            ""sha512"": ""sbWWhjA2/cXJHBBKAVo3m2U0KxzNuW5dQANDwx8L96V+L6SML96cM/Myvmp6fiBqIDibvF6+Ss9YC+qqclrXnw=="",
+                            ""contentHash"": ""sbWWhjA2/cXJHBBKAVo3m2U0KxzNuW5dQANDwx8L96V+L6SML96cM/Myvmp6fiBqIDibvF6+Ss9YC+qqclrXnw=="",
                             ""dependencies"": {
                                  ""PackageB"": ""1.0.0""
                             }
@@ -145,7 +145,7 @@ namespace NuGet.ProjectModel.Test
                         ""PackageB"": {
                             ""type"": ""Transitive"",
                             ""resolved"": ""1.0.0"",
-                            ""sha512"": ""Fjiywrwerewr4dgbdgbfgjkoiuiorwrwn24+8hjnnuerwrwsfsHYWD3HJYUI7NJHssxDFSFSFEWEW34DFDFCVsxv=="",
+                            ""contentHash"": ""Fjiywrwerewr4dgbdgbfgjkoiuiorwrwn24+8hjnnuerwrwsfsHYWD3HJYUI7NJHssxDFSFSFEWEW34DFDFCVsxv=="",
                         }
                     }
                 }

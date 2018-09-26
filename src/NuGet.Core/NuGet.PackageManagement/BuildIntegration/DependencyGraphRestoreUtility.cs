@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             // TODO: This will flow from UI once we enable UI option to trigger reevaluation
-            var reevaluateRestoreGraph = false;
+            var restoreForceEvaluate = false;
 
             // Check if there are actual projects to restore before running.
             if (dgSpec.Restore.Count > 0)
@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement
                         parentId,
                         forceRestore,
                         isRestoreOriginalAction,
-                        reevaluateRestoreGraph);
+                        restoreForceEvaluate);
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
 
@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement
                     parentId,
                     forceRestore: true,
                     isRestoreOriginalAction: false,
-                    reevaluateRestoreGraph: true);
+                    restoreForceEvaluate: true);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -253,7 +253,7 @@ namespace NuGet.PackageManagement
             Guid parentId,
             bool forceRestore,
             bool isRestoreOriginalAction,
-            bool reevaluateRestoreGraph)
+            bool restoreForceEvaluate)
         {
             var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings));
             foreach( var source in sources)
@@ -272,7 +272,7 @@ namespace NuGet.PackageManagement
                 CachingSourceProvider = caching,
                 ParentId = parentId,
                 IsRestoreOriginalAction = isRestoreOriginalAction,
-                ReevaluateRestoreGraph = reevaluateRestoreGraph
+                RestoreForceEvaluate = restoreForceEvaluate
             };
 
             return restoreContext;
