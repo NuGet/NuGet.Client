@@ -33,7 +33,9 @@ namespace NuGet.Packaging.Licenses.Test
         [InlineData("(And+) AND or", "AND", false)]
         [InlineData("(AMDPLPA AND BSD-2-Clause) AND (MIT WITH 389-exception)", "AND", true)]
         [InlineData("(AMDPLPA AND BSD-2-Clause) AND (MIT OR Apache-2.0)", "AND", true)]
-
+        [InlineData("   MIT OR LPL-1.0       ", "OR", true)]
+        [InlineData("\r\n MIT OR LPL-1.0       ", "OR", true)]
+        [InlineData("\n\n\n\n\n\n\nMIT OR LPL-1.0       ", "OR", true)]
         public void LicenseExpressionParser_ParsesComplexExpression(string expression, string rootOperator, bool hasStandardIdentifiers)
         {
             var licenseExpression = NuGetLicenseExpression.Parse(expression);
@@ -109,6 +111,11 @@ namespace NuGet.Packaging.Licenses.Test
         [InlineData("MIT (AND LPL-1.0)")]
         [InlineData("MIT () OR LPL-1.0")]
         [InlineData("MIT OR GPL-1.0 (WITH 389-exception OR LPL-1.0)")]
+        [InlineData("()")]
+        [InlineData("MIT WITH OR LPL-1.0")]
+        [InlineData("MIT++")]
+        [InlineData("MIT+ OR LPL-1.0+++")]
+        [InlineData("(MIT OR LPL-1.0)+")]
         public void LicenseExpressionParser_StrictParseThrowsForInvalidExpressions(string expression)
         {
             Assert.Throws<NuGetLicenseExpressionParsingException>(() => NuGetLicenseExpression.Parse(expression));
@@ -135,6 +142,9 @@ namespace NuGet.Packaging.Licenses.Test
         [InlineData("MIt WITH Classpath-exception-2.0", false, true)]
         [InlineData("MIt AND BSD-2-Clause", false, true)]
         [InlineData("MIt OR BSD-2-Clause", false, true)]
+        [InlineData("MIT OR BSD-2-ClausE", true, false)]
+        [InlineData("MIt AND BSD-2-ClausE", false, false)]
+        [InlineData("MIt+ OR BSD-2-Clause", false, true)]
         public void LicenseExpressionParser_CreatesNonStandardExpressionsWithBadCasing(string expression, bool isFirstOperatorStandard, bool isSecondOperatorStandard)
         {
             var licenseExpression = NuGetLicenseExpression.Parse(expression);
@@ -150,6 +160,7 @@ namespace NuGet.Packaging.Licenses.Test
                 Assert.Equal(isFirstOperatorStandard, (logicalExpression.Left as NuGetLicense).IsStandardLicense);
                 Assert.Equal(isSecondOperatorStandard, (logicalExpression.Right as NuGetLicense).IsStandardLicense);
             }
+            Assert.Equal(expression, licenseExpression.ToString());
         }
 
         [Theory]
@@ -206,6 +217,71 @@ namespace NuGet.Packaging.Licenses.Test
         public void LicenseExpressionParser_NotStrict_EvaluateThrowsIfExpressionIsInvalid(string expression)
         {
             Assert.Throws<NuGetLicenseExpressionParsingException>(() => NuGetLicenseExpression.Parse(expression));
+        }
+
+        [Fact]
+        public void LicenseExpressionParser_ComplexExpressionEvaluatesTheCorrectTree()
+        {
+            var expression = "MIT AND (AFL-1.1 WITH 389-exception OR Apache-2.0)";
+            var licenseExpression = NuGetLicenseExpression.Parse(expression);
+
+            // Validate the expression parsing
+            Assert.Equal(expression.Replace("(", "").Replace(")", "").Trim(), licenseExpression.ToString());
+            Assert.Equal(LicenseExpressionType.Operator, licenseExpression.Type);
+
+            // Validate the logical operator
+            var rootLogicalOperator = licenseExpression as LogicalOperator;
+            Assert.NotNull(rootLogicalOperator);
+            Assert.Equal(LogicalOperatorType.And, rootLogicalOperator.LogicalOperatorType);
+
+            // left should be MIT.
+            var MIT = rootLogicalOperator.Left as NuGetLicense;
+            Assert.NotNull(MIT);
+            Assert.Equal(LicenseExpressionType.License, MIT.Type);
+            Assert.Equal(MIT.ToString(), "MIT");
+
+            // right should be AFL-1.1 WITH 389-exception or Apache-2.0
+
+            var logicalOrExpression = rootLogicalOperator.Right as LogicalOperator;
+            Assert.NotNull(logicalOrExpression);
+            Assert.Equal(LogicalOperatorType.Or, logicalOrExpression.LogicalOperatorType);
+
+            // left is AFL-1.1 with 389-exception
+
+            var withExpression = logicalOrExpression.Left as WithOperator;
+            Assert.NotNull(withExpression);
+            Assert.Equal(LicenseOperatorType.WithOperator, withExpression.OperatorType);
+
+            // LIcense is AFL-1.1, Exception is 389-exception
+
+            Assert.Equal(withExpression.License.Identifier, "AFL-1.1");
+            Assert.Equal(withExpression.Exception.Identifier, "389-exception");
+
+            // right of the logical or is Apache-2.0
+            var apache = logicalOrExpression.Right as NuGetLicense;
+
+            Assert.NotNull(apache);
+            Assert.Equal(LicenseExpressionType.License, apache.Type);
+            Assert.Equal(apache.ToString(), "Apache-2.0");
+        }
+
+        [Fact]
+        public void LicenseExpressionParser_SimpleExpressionEvaluatesTheCorrectTree()
+        {
+            var expression = "MIT+";
+            var licenseExpression = NuGetLicenseExpression.Parse(expression);
+
+            // Validate the expression parsing
+            Assert.Equal(expression.Replace("(", "").Replace(")", "").Trim(), licenseExpression.ToString());
+            Assert.Equal(LicenseExpressionType.License, licenseExpression.Type);
+
+            var mit = licenseExpression as NuGetLicense;
+
+            Assert.NotNull(mit);
+            Assert.Equal(LicenseExpressionType.License, mit.Type);
+            Assert.Equal(mit.ToString(), "MIT+");
+            Assert.Equal(true, mit.Plus);
+            Assert.Equal("MIT", mit.Identifier);
         }
     }
 }
