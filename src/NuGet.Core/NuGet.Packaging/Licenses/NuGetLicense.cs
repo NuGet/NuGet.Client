@@ -41,7 +41,7 @@ namespace NuGet.Packaging.Licenses
         /// </summary>
         /// <param name="licenseIdentifier">license identifier to be parsed</param>
         /// <returns>Prased NuGetLicense object</returns>
-        /// <exception cref="ArgumentException">If the identifier is deprecated</exception>
+        /// <exception cref="NuGetLicenseExpressionParsingException">If the identifier is deprecated, contains invalid characters or is an exception identifier.</exception>
         /// <exception cref="ArgumentException">If it's null or empty.</exception>
         internal static NuGetLicense ParseIdentifier(string licenseIdentifier)
         {
@@ -51,7 +51,7 @@ namespace NuGet.Packaging.Licenses
                 {
                     return !licenseData.IsDeprecatedLicenseId ?
                         new NuGetLicense(licenseIdentifier, plus: false, isStandardLicense: true) :
-                        throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_DeprecatedIdentifier, licenseIdentifier));
+                        throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_DeprecatedIdentifier, licenseIdentifier));
                 }
                 else
                 {
@@ -63,7 +63,7 @@ namespace NuGet.Packaging.Licenses
                         {
                             return !licenseData.IsDeprecatedLicenseId ?
                                 new NuGetLicense(cleanIdentifier, plus: plus, isStandardLicense: true) :
-                                throw new ArgumentException(string.Format(Strings.NuGetLicenseExpression_DeprecatedIdentifier, licenseIdentifier));
+                                throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_DeprecatedIdentifier, licenseIdentifier));
                         }
                         return ProcessNonStandardLicense(cleanIdentifier, plus: plus);
                     }
@@ -72,7 +72,8 @@ namespace NuGet.Packaging.Licenses
                 }
             }
             // This will not happen in production code as the tokenizer takes cares of that. 
-            throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(licenseIdentifier));
+            throw new ArgumentException(
+                string.Format(CultureInfo.CurrentCulture, Strings.ArgumentCannotBeNullOrEmpty, nameof(licenseIdentifier)));
         }
 
         /// <summary>
@@ -97,10 +98,10 @@ namespace NuGet.Packaging.Licenses
                 }
                 else
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_LicenseInvalidCharacters, licenseIdentifier));
+                    throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_LicenseInvalidCharacters, licenseIdentifier));
                 }
             }
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_LicenseIdentifierIsException, licenseIdentifier));
+            throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_LicenseIdentifierIsException, licenseIdentifier));
         }
 
         public override string ToString()

@@ -26,7 +26,7 @@ namespace NuGet.Packaging.Licenses
         /// </summary>
         /// <param name="exceptionIdentifier">Exception identifier to be parsed.</param>
         /// <returns>Parsed License Exception</returns>
-        /// <exception cref="ArgumentException">If the identifier is deprecated</exception>
+        /// <exception cref="NuGetLicenseExpressionParsingException">If the identifier is deprecated, is a license or simply does not exist.</exception>
         /// <exception cref="ArgumentException">If it's null or empty.</exception>
         internal static NuGetLicenseException ParseIdentifier(string exceptionIdentifier)
         {
@@ -36,22 +36,22 @@ namespace NuGet.Packaging.Licenses
                 {
                     return !exceptionData.IsDeprecatedLicenseId ?
                         new NuGetLicenseException(exceptionIdentifier) :
-                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_DeprecatedIdentifier, exceptionIdentifier));
+                        throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_DeprecatedIdentifier, exceptionIdentifier));
                 }
                 else
                 {
                     if (NuGetLicenseData.LicenseList.TryGetValue(exceptionIdentifier, out var licenseData))
                     {
-                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_ExceptionIdentifierIsLicense, exceptionIdentifier));
+                        throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_ExceptionIdentifierIsLicense, exceptionIdentifier));
                     }
                     else
                     {
-                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExceptionIdentifier, exceptionIdentifier));
+                        throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExceptionIdentifier, exceptionIdentifier));
                     }
                 }
             }
             // This will not happen in production code as the tokenizer takes cares of that. 
-            throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(exceptionIdentifier));
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.ArgumentCannotBeNullOrEmpty, nameof(exceptionIdentifier)));
         }
 
         public override string ToString()

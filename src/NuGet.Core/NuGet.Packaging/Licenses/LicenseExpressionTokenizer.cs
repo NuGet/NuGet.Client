@@ -17,6 +17,7 @@ namespace NuGet.Packaging.Licenses
         /// This implementation assumes that the input has been sanitized and that there are no invalid characters.
         /// </summary>
         /// <param name="value">value to be tokenized</param>
+        /// <exception cref="ArgumentException">If the string is null or whitespace.</exception>
         internal LicenseExpressionTokenizer(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
