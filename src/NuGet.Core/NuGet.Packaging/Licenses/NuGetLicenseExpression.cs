@@ -16,5 +16,11 @@ namespace NuGet.Packaging.Licenses
         /// Operator means that it's a <see cref="LicenseOperator"/>
         /// </summary>
         public LicenseExpressionType Type { get; protected set; }
+
+        public static NuGetLicenseExpression Parse(string expression)
+        {
+            return NuGetLicenseExpressionParser.Parse(expression);
+        }
+
     }
 }

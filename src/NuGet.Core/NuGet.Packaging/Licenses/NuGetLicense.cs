@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Licenses
         /// <returns>Prased NuGetLicense object</returns>
         /// <exception cref="ArgumentException">If the identifier is deprecated</exception>
         /// <exception cref="ArgumentException">If it's null or empty.</exception>
-        public static NuGetLicense Parse(string licenseIdentifier)
+        internal static NuGetLicense ParseIdentifier(string licenseIdentifier)
         {
             if (!string.IsNullOrWhiteSpace(licenseIdentifier))
             {

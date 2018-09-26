@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace NuGet.Packaging.Licenses
 {
-    public static class NuGetLicenseExpressionParser
+    internal static class NuGetLicenseExpressionParser
     {
         /// <summary>
         /// Parses a License Expression if valid.
@@ -25,7 +25,7 @@ namespace NuGet.Packaging.Licenses
         /// <exception cref="ArgumentException">If the expression's brackets are mismatched.</exception>
         /// <exception cref="ArgumentException">If the licenseIdentifier is deprecated.</exception>
         /// <exception cref="ArgumentException">If the exception identifier is deprecated.</exception>
-        public static NuGetLicenseExpression Parse(string expression)
+        internal static NuGetLicenseExpression Parse(string expression)
         {
             var tokens = GetTokens(expression);
             var operatorStack = new Stack<LicenseExpressionToken>();
@@ -133,7 +133,7 @@ namespace NuGet.Packaging.Licenses
             {
                 var value = operandStack.Pop();
 
-                return value.Item1 ? NuGetLicense.Parse(((LicenseExpressionToken)value.Item2).Value) : (NuGetLicenseExpression)value.Item2;
+                return value.Item1 ? NuGetLicense.ParseIdentifier(((LicenseExpressionToken)value.Item2).Value) : (NuGetLicenseExpression)value.Item2;
             }
         }
 
@@ -167,7 +167,7 @@ namespace NuGet.Packaging.Licenses
                 var right = rightOperand.Item2 as LicenseExpressionToken;
                 var left = leftOperand.Item2 as LicenseExpressionToken;
 
-                var withNode = new WithOperator(NuGetLicense.Parse(left.Value), NuGetLicenseException.Parse(right.Value));
+                var withNode = new WithOperator(NuGetLicense.ParseIdentifier(left.Value), NuGetLicenseException.ParseIdentifier(right.Value));
 
                 operandStack.Push(new Tuple<bool, object>(false, withNode));
             }
@@ -176,11 +176,11 @@ namespace NuGet.Packaging.Licenses
                 var logicalOperator = op.TokenType == LicenseTokenType.AND ? LogicalOperatorType.And : LogicalOperatorType.Or;
 
                 var right = rightOperand.Item1 ?
-                    NuGetLicense.Parse(((LicenseExpressionToken)rightOperand.Item2).Value) :
+                    NuGetLicense.ParseIdentifier(((LicenseExpressionToken)rightOperand.Item2).Value) :
                     (NuGetLicenseExpression)rightOperand.Item2;
 
                 var left = leftOperand.Item1 ?
-                    NuGetLicense.Parse(((LicenseExpressionToken)leftOperand.Item2).Value) :
+                    NuGetLicense.ParseIdentifier(((LicenseExpressionToken)leftOperand.Item2).Value) :
                     (NuGetLicenseExpression)leftOperand.Item2;
 
                 var newExpression = new LogicalOperator(logicalOperator, left, right);
