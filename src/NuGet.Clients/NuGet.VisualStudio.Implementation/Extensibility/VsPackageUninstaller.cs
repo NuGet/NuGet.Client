@@ -73,7 +73,7 @@ namespace NuGet.VisualStudio
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         new LoggerAdapter(projectContext),
                         signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetDefault());
+                        SignedPackageVerifierSettings.GetClientPolicy(_settings));
 
                     // find the project
                     NuGetProject nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);

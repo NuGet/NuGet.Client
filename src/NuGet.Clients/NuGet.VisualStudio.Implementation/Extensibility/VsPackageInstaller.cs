@@ -71,7 +71,7 @@ namespace NuGet.VisualStudio
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     new LoggerAdapter(projectContext),
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault());
+                    SignedPackageVerifierSettings.GetClientPolicy(_settings));
 
                 return projectContext;
             });
@@ -186,7 +186,7 @@ namespace NuGet.VisualStudio
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 new LoggerAdapter(projectContext),
                 signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
+                SignedPackageVerifierSettings.GetClientPolicy(_settings));
 
             return InstallInternalAsync(project, toInstall, GetSources(sources), projectContext, includePrerelease, ignoreDependencies, CancellationToken.None);
         }
@@ -248,7 +248,7 @@ namespace NuGet.VisualStudio
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         new LoggerAdapter(projectContext),
                         signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetDefault());
+                        SignedPackageVerifierSettings.GetClientPolicy(_settings));
 
                     await InstallInternalAsync(
                         project,
@@ -307,7 +307,7 @@ namespace NuGet.VisualStudio
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         new LoggerAdapter(projectContext),
                         signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetDefault());
+                        SignedPackageVerifierSettings.GetClientPolicy(_settings));
 
                     return InstallInternalAsync(
                         project,
@@ -485,7 +485,7 @@ namespace NuGet.VisualStudio
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 new LoggerAdapter(projectContext),
                 signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
+                SignedPackageVerifierSettings.GetClientPolicy(_settings));
 
             await InstallInternalAsync(
                 project,

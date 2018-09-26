@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 new LoggerAdapter(this),
                 signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
+                SignedPackageVerifierSettings.GetClientPolicy(ConfigSettings));
 
             if (_commonOperations != null)
             {
@@ -271,7 +271,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                                 PackageExtractionBehavior.XmlDocFileSaveMode,
                                 logger,
                                 signedPackageVerifier,
-                                SignedPackageVerifierSettings.GetDefault())
+                                SignedPackageVerifierSettings.GetClientPolicy(ConfigSettings))
                         };
 
                         var result = await PackageRestoreManager.RestoreMissingPackagesAsync(

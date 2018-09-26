@@ -185,7 +185,7 @@ namespace NuGet.VisualStudio
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 new LoggerAdapter(defaultProjectContext),
                 signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
+                SignedPackageVerifierSettings.GetClientPolicy(_settings));
 
             var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, defaultProjectContext);
             if (preferPackageReferenceFormat && await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject, project, needsAPackagesConfig: false))
@@ -247,7 +247,7 @@ namespace NuGet.VisualStudio
                                 PackageExtractionBehavior.XmlDocFileSaveMode,
                                 new LoggerAdapter(projectContext),
                                 signedPackageVerifier,
-                                SignedPackageVerifierSettings.GetDefault());
+                                SignedPackageVerifierSettings.GetClientPolicy(_settings));
 
                             // This runs from the UI thread
                             await _installer.InstallInternalCoreAsync(
@@ -353,7 +353,7 @@ namespace NuGet.VisualStudio
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 new LoggerAdapter(context),
                 signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
+                SignedPackageVerifierSettings.GetClientPolicy(_settings));
 
             WebSiteProjectSystem projectSystem = new WebSiteProjectSystem(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(project), context);
 
@@ -406,7 +406,7 @@ namespace NuGet.VisualStudio
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 new LoggerAdapter(context),
                 signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
+                SignedPackageVerifierSettings.GetClientPolicy(_settings));
             var projectSystem = new VsMSBuildProjectSystem(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(project), context);
 
             foreach (var packageInfo in packageInfos)

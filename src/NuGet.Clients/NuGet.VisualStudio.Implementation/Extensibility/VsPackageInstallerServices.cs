@@ -145,7 +145,7 @@ namespace NuGet.VisualStudio
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     new LoggerAdapter(projectContext),
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault());
+                    SignedPackageVerifierSettings.GetClientPolicy(_settings));
 
                 var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
                                     project,
@@ -182,7 +182,7 @@ namespace NuGet.VisualStudio
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             new LoggerAdapter(projectContext),
                             signedPackageVerifier,
-                            SignedPackageVerifierSettings.GetDefault());
+                            SignedPackageVerifierSettings.GetClientPolicy(_settings));
 
                         var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
                                             project,

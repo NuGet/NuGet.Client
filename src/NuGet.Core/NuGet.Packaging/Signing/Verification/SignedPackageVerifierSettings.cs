@@ -222,6 +222,30 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
+        /// Gives the appropriate configuration depending on the user specified settings.
+        /// </summary>
+        /// <param name="settings">Loaded settings used to get user data</param>
+        public static SignedPackageVerifierSettings GetClientPolicy(ISettings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            var policy = SettingsUtility.GetSignatureValidationMode(settings);
+            var trustedSignersProvider = new TrustedSignersProvider(settings);
+
+            var allowList = trustedSignersProvider.GetAllowListEntries();
+
+            if (policy == SignatureValidationMode.Require)
+            {
+                return GetRequireModeDefaultPolicy(repoAllowListEntries: null, clientAllowListEntries: allowList);
+            }
+
+            return GetAcceptModeDefaultPolicy(repoAllowListEntries: null, clientAllowListEntries: allowList);
+        }
+
+        /// <summary>
         /// Default settings.
         /// </summary>
         public static SignedPackageVerifierSettings GetDefault(

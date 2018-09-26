@@ -200,7 +200,7 @@ namespace NuGet.PackageManagement
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     new LoggerAdapter(nuGetProjectContext),
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault())
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings))
             };
 
             return InstallPackageAsync(
@@ -259,7 +259,7 @@ namespace NuGet.PackageManagement
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     new LoggerAdapter(nuGetProjectContext),
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault())
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings))
             };
 
             await InstallPackageAsync(
@@ -338,7 +338,7 @@ namespace NuGet.PackageManagement
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     new LoggerAdapter(nuGetProjectContext),
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault())
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings))
             };
 
             return InstallPackageAsync(
@@ -400,7 +400,7 @@ namespace NuGet.PackageManagement
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     new LoggerAdapter(nuGetProjectContext),
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault())
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings))
             };
 
             await InstallPackageAsync(
@@ -2159,7 +2159,7 @@ namespace NuGet.PackageManagement
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     new LoggerAdapter(nuGetProjectContext),
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault())
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings))
             };
 
             await ExecuteNuGetProjectActionsAsync(nuGetProject,

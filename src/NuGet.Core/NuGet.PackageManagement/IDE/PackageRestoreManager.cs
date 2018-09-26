@@ -202,7 +202,7 @@ namespace NuGet.PackageManagement
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         new LoggerAdapter(nuGetProjectContext),
                         signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetDefault())
+                        SignedPackageVerifierSettings.GetClientPolicy(Settings))
                 };
 
                 return await RestoreMissingPackagesAsync(
@@ -246,7 +246,7 @@ namespace NuGet.PackageManagement
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         new LoggerAdapter(nuGetProjectContext),
                         signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetDefault())
+                        SignedPackageVerifierSettings.GetClientPolicy(Settings))
                 };
 
                 return await RestoreMissingPackagesAsync(
@@ -291,7 +291,7 @@ namespace NuGet.PackageManagement
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     packageRestoreContext.Logger,
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault());
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings));
             }
 
             return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);
@@ -330,7 +330,7 @@ namespace NuGet.PackageManagement
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     packageRestoreContext.Logger,
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault());
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings));
             }
 
             return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);
