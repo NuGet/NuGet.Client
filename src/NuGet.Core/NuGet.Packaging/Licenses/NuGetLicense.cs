@@ -39,8 +39,8 @@ namespace NuGet.Packaging.Licenses
         /// <summary>
         /// Parse a licenseIdentifier. If a licenseIdentifier is deprecated, this will throw. Non-standard licenses get parsed into a object model as well.
         /// </summary>
-        /// <param name="licenseIdentifier"></param>
-        /// <returns>NuGetLicense</returns>
+        /// <param name="licenseIdentifier">license identifier to be parsed</param>
+        /// <returns>Prased NuGetLicense object</returns>
         /// <exception cref="ArgumentException">If the identifier is deprecated</exception>
         /// <exception cref="ArgumentException">If it's null or empty.</exception>
         public static NuGetLicense Parse(string licenseIdentifier)
@@ -79,8 +79,8 @@ namespace NuGet.Packaging.Licenses
         /// The valid characters for a license identifier are a-zA-Z0-9.-
         /// This method assumes that the trailing + operator has been stripped out.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <param name="value">The value to be validated.</param>
+        /// <returns>whether the value has valid characters</returns>
         private static bool HasValidCharacters(string value)
         {
             var regex = new Regex("^[a-zA-Z0-9\\.\\-\\+]+$");

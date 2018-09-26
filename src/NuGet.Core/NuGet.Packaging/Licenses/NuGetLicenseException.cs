@@ -24,8 +24,8 @@ namespace NuGet.Packaging.Licenses
         /// <summary>
         /// Parse an exceptionIdentifier. If the exceptionIdentifier is deprecated, this will throw. Non-standard exception do not get parsed into an object model.
         /// </summary>
-        /// <param name="exceptionIdentifier"></param>
-        /// <returns>NuGetLicenseException</returns>
+        /// <param name="exceptionIdentifier">Exception identifier to be parsed.</param>
+        /// <returns>Parsed License Exception</returns>
         /// <exception cref="ArgumentException">If the identifier is deprecated</exception>
         /// <exception cref="ArgumentException">If it's null or empty.</exception>
         public static NuGetLicenseException Parse(string exceptionIdentifier)

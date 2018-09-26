@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace NuGet.Packaging.Licenses
@@ -15,12 +16,12 @@ namespace NuGet.Packaging.Licenses
         /// A tokenizer for a license expression.
         /// This implementation assumes that the input has been sanitized and that there are no invalid characters.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">value to be tokenized</param>
         internal LicenseExpressionTokenizer(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException(nameof(value));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.ArgumentCannotBeNullOrEmpty, nameof(value)));
             }
             _value = value.Trim();
         }
@@ -29,8 +30,7 @@ namespace NuGet.Packaging.Licenses
         /// The valid characters for a license identifier are a-zA-Z0-9.-+
         /// The valid characters for a license expression are the above whitespace and ().
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <returns>Whether the value has valid characters.</returns>
         internal bool HasValidCharacters()
         {
             var regex = new Regex("^[a-zA-Z0-9\\.\\-\\s\\+\\(\\)]+$");
@@ -40,7 +40,7 @@ namespace NuGet.Packaging.Licenses
         /// <summary>
         /// Given a string, tokenizes by space into operators and values. The considered operators are, AND, OR, WITH, (, and ). 
         /// </summary>
-        /// <returns>Tokens</returns>
+        /// <returns>tokens, <see cref="LicenseExpressionToken"/>/></returns>
         internal IEnumerable<LicenseExpressionToken> Tokenize()
         {
             var potentialTokens = _value.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -62,7 +62,6 @@ namespace NuGet.Packaging.Licenses
                     if (tokensAfterValue == null)
                     {
                         tokensAfterValue = new List<LicenseExpressionToken>();
-
                     }
 
                     tokensAfterValue.Add(ParseBracket(processingToken[processingToken.Length - 1]));
@@ -102,8 +101,8 @@ namespace NuGet.Packaging.Licenses
         /// Parses a token type given a string.
         /// This method assumes that the brackets have been parsed out. 
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns>LicenseExpressionToken</returns>
+        /// <param name="token">The token</param>
+        /// <returns>A parsed token, operator or value.</returns>
         /// <remarks>This method assumes the brackets have already been parsed.</remarks>
         private LicenseExpressionToken ParseTokenType(string token)
         {

@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Globalization;
+
 namespace NuGet.Packaging.Licenses
 {
     /// <summary>
@@ -20,7 +23,7 @@ namespace NuGet.Packaging.Licenses
 
         internal LicenseExpressionToken(string value, LicenseTokenType tokenType)
         {
-            Value = value;
+            Value = value ?? throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.ArgumentCannotBeNullOrEmpty, nameof(value)));
             TokenType = tokenType;
         }
 

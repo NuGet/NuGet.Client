@@ -10,18 +10,16 @@ namespace NuGet.Packaging.Licenses
         /// <summary>
         /// Determines whether all the licenses and exceptions are not deprecated.
         /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        /// <param name="expression">expression to be validated</param>
+        /// <returns>Whether this expression consists of licenses with standard identifiers</returns>
         public static bool HasOnlyStandardIdentifiers(this NuGetLicenseExpression expression)
         {
             switch (expression.Type)
             {
                 case LicenseExpressionType.License:
-
                     return (expression as NuGetLicense).IsStandardLicense;
 
                 case LicenseExpressionType.Operator:
-
                     var licenseOperator = expression as LicenseOperator;
                     switch (licenseOperator.OperatorType)
                     {
@@ -43,9 +41,9 @@ namespace NuGet.Packaging.Licenses
         /// <summary>
         /// A leaf node in an expression can only be a License or an Exception. Run a func on each one.
         /// </summary>
-        /// <param name="expression"></param>
-        /// <param name="licenseProcessor"></param>
-        /// <param name="exceptionProcessor"></param>
+        /// <param name="expression">The expression to be walked.</param>
+        /// <param name="licenseProcessor">A processor for the licenses.</param>
+        /// <param name="exceptionProcessor">A processor for the exceptions.</param>
         public static void OnEachLeafNode(this NuGetLicenseExpression expression, Action<NuGetLicense> licenseProcessor, Action<NuGetLicenseException> exceptionProcessor)
         {
             switch (expression.Type)

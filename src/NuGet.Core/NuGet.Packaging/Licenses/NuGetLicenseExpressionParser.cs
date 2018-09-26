@@ -17,8 +17,8 @@ namespace NuGet.Packaging.Licenses
         /// Later the postfix expression is evaluated into an object model that represents the expression. Note that brackets are dropped in this conversion and this is not round-trippable.
         /// The token precedence helps make sure that the expression is a valid infix one. 
         /// </summary>
-        /// <param name="expression"></param>
-        /// <returns>NuGetLicenseExpression</returns>
+        /// <param name="expression">The expression to be parsed.</param>
+        /// <returns>Parsed NuGet License Expression model.</returns>
         /// <exception cref="ArgumentException">If the expression has invalid characters</exception>
         /// <exception cref="ArgumentException">If the expression is empty or null.</exception>
         /// <exception cref="ArgumentException">If the expression itself is invalid. Example: MIT OR OR Apache-2.0, or the MIT or Apache-2.0, because the expressions are case sensitive.</exception>
@@ -140,8 +140,6 @@ namespace NuGet.Packaging.Licenses
         /// <summary>
         /// Tokenizes the expression as per the license expression rules. Throws if the string contains invalid characters.
         /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
         private static IEnumerable<LicenseExpressionToken> GetTokens(string expression)
         {
             var tokenizer = new LicenseExpressionTokenizer(expression);
@@ -149,7 +147,6 @@ namespace NuGet.Packaging.Licenses
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidCharacters, expression));
             }
-
             var tokens = tokenizer.Tokenize();
             return tokens;
         }
