@@ -280,6 +280,12 @@ namespace NuGet.Configuration
                 else if (credentials.ValidAuthenticationTypes == null)
                 {
                     XElementUtility.RemoveIndented(_validAuthenticationTypes.Node);
+                    _validAuthenticationTypes = null;
+
+                    if (Origin != null)
+                    {
+                        Origin.IsDirty = true;
+                    }
                 }
                 else
                 {
