@@ -30,15 +30,15 @@ namespace NuGet.Packaging.Licenses.Test
         }
 
         [Theory]
-        [InlineData("MIT", "VALUE")]
+        [InlineData("MIT", "IDENTIFIER")]
         [InlineData("(", "OPENING_BRACKET")]
         [InlineData(")", "CLOSING_BRACKET")]
         [InlineData("AND", "AND")]
         [InlineData("OR", "OR")]
         [InlineData("WITH", "WITH")]
-        [InlineData("with", "VALUE")]
-        [InlineData("Or", "VALUE")]
-        [InlineData("aND", "VALUE")]
+        [InlineData("with", "IDENTIFIER")]
+        [InlineData("Or", "IDENTIFIER")]
+        [InlineData("aND", "IDENTIFIER")]
         public void LicenseExpressionTokenizer_TokenizesSimpleExpressionCorrectly(string value, string type)
         {
             Enum.TryParse(type, out LicenseTokenType tokenType);

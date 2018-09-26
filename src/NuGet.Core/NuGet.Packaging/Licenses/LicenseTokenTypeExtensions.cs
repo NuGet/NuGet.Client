@@ -5,9 +5,9 @@ namespace NuGet.Packaging.Licenses
 {
     internal static class LicenseTokenTypeExtensions
     {
-        public static bool IsOperator(this LicenseTokenType grade)
+        public static bool IsOperator(this LicenseTokenType tokenType)
         {
-            return grade == LicenseTokenType.WITH || grade == LicenseTokenType.AND || grade == LicenseTokenType.OR;
+            return tokenType == LicenseTokenType.WITH || tokenType == LicenseTokenType.AND || tokenType == LicenseTokenType.OR;
         }
 
         public static bool IsValidPrecedingToken(this LicenseTokenType current, LicenseTokenType precedingToken)
@@ -16,14 +16,14 @@ namespace NuGet.Packaging.Licenses
             {
                 case LicenseTokenType.OPENING_BRACKET: // Legal preceding tokens: None, Operator, OpeningBracket
                     return precedingToken.IsOperator() || current == precedingToken;
-                case LicenseTokenType.CLOSING_BRACKET: // Legal preceding tokens: ClosingBracket, Value
-                    return precedingToken == LicenseTokenType.VALUE || precedingToken == LicenseTokenType.CLOSING_BRACKET;
-                case LicenseTokenType.VALUE: // Legal preceding tokens: None, Operator, OpeningBracket
+                case LicenseTokenType.CLOSING_BRACKET: // Legal preceding tokens: ClosingBracket, Identifier
+                    return precedingToken == LicenseTokenType.IDENTIFIER || precedingToken == LicenseTokenType.CLOSING_BRACKET;
+                case LicenseTokenType.IDENTIFIER: // Legal preceding tokens: None, Operator, OpeningBracket
                     return precedingToken.IsOperator() || precedingToken == LicenseTokenType.OPENING_BRACKET;
-                case LicenseTokenType.AND: // Legal preceding tokens: Value, ClosingBracket
+                case LicenseTokenType.AND: // Legal preceding tokens: Identifier, ClosingBracket
                 case LicenseTokenType.WITH:
                 case LicenseTokenType.OR:
-                    return precedingToken == LicenseTokenType.VALUE || precedingToken == LicenseTokenType.CLOSING_BRACKET;
+                    return precedingToken == LicenseTokenType.IDENTIFIER || precedingToken == LicenseTokenType.CLOSING_BRACKET;
                 default:
                     return false;
             }

@@ -34,7 +34,7 @@ namespace NuGet.Packaging.Licenses
             // true => LicenseExpressionToken, false => NuGetLicenseExpression
             var operandStack = new Stack<Tuple<bool, object>>();
 
-            var lastTokenType = LicenseTokenType.VALUE;
+            var lastTokenType = LicenseTokenType.IDENTIFIER;
             var firstPass = true;
 
             foreach (var token in tokens)
@@ -42,7 +42,7 @@ namespace NuGet.Packaging.Licenses
                 var currentTokenType = token.TokenType;
                 switch (token.TokenType)
                 {
-                    case LicenseTokenType.VALUE:
+                    case LicenseTokenType.IDENTIFIER:
                         if (!firstPass && !token.TokenType.IsValidPrecedingToken(lastTokenType))
                         {
                             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidToken, token.Value));

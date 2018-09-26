@@ -114,7 +114,7 @@ namespace NuGet.Packaging.Licenses
             }
             else // We already covered the brackets earlier, so it has to be a value.
             {
-                return new LicenseExpressionToken(token, LicenseTokenType.VALUE);
+                return new LicenseExpressionToken(token, LicenseTokenType.IDENTIFIER);
 
             }
         }
