@@ -39,6 +39,7 @@ namespace NuGet.VisualStudio
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly VsPackageInstaller _installer;
         private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
+        private readonly Configuration.ISettings _settings;
 
         public Action<string> InfoHandler { get; set; }
 
@@ -55,6 +56,7 @@ namespace NuGet.VisualStudio
             _sourceProvider = sourceProvider;
             _vsProjectAdapterProvider = vsProjectAdapterProvider;
             _installer = installer;
+            _settings = settings;
         }
 
         /// <summary>
