@@ -725,5 +725,17 @@ namespace NuGet.Versioning.Test
             Assert.Equal(versionRange.MinVersion, actual.MinVersion);
             Assert.Equal(versionRange.MaxVersion, actual.MaxVersion);
         }
+
+        [Theory]
+        [InlineData("1.0.0", "1.0.*", false)]
+        [InlineData("[1.0.0,)", "[1.0.*, )", false)]
+        [InlineData("1.1.*", "1.0.*", false)]
+        public void VersionRange_Equals(string versionString1, string versionString2, bool isEquals)
+        {
+            var range1 = VersionRange.Parse(versionString1);
+            var range2 = VersionRange.Parse(versionString2);
+
+            Assert.Equal(isEquals, range1.Equals(range2));
+        }
     }
 }
