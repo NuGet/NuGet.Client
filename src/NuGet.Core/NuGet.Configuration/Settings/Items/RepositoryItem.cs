@@ -199,8 +199,12 @@ namespace NuGet.Configuration
                 {
                     XElementUtility.RemoveIndented(_owners.Node);
                     _owners = null;
-                    Origin.IsDirty = true;
                     Owners.Clear();
+
+                    if (Origin != null)
+                    {
+                        Origin.IsDirty = true;
+                    }
                 }
                 else
                 {
