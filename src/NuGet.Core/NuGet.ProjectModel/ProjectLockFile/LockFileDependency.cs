@@ -19,7 +19,7 @@ namespace NuGet.ProjectModel
 
         public VersionRange RequestedVersion { get; set; }
 
-        public string Sha512 { get; set; }
+        public string ContentHash { get; set; }
 
         public PackageDependencyType Type { get; set; }
 
@@ -41,7 +41,7 @@ namespace NuGet.ProjectModel
                 EqualityUtility.EqualsWithNullCheck(ResolvedVersion, other.ResolvedVersion) &&
                 EqualityUtility.EqualsWithNullCheck(RequestedVersion, other.RequestedVersion) &&
                 EqualityUtility.SequenceEqualWithNullCheck(Dependencies, other.Dependencies) &&
-                Sha512 == other.Sha512 &&
+                ContentHash == other.ContentHash &&
                 Type == other.Type;
         }
 
@@ -58,7 +58,7 @@ namespace NuGet.ProjectModel
             combiner.AddObject(ResolvedVersion);
             combiner.AddObject(RequestedVersion);
             combiner.AddSequence(Dependencies);
-            combiner.AddObject(Sha512);
+            combiner.AddObject(ContentHash);
             combiner.AddObject(Type);
 
             return combiner.CombinedHash;

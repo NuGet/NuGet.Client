@@ -120,7 +120,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreForce="$(RestoreForce)"
       HideWarningsAndErrors="$(HideWarningsAndErrors)"
       Interactive="$(NuGetInteractive)"
-      ReevaluateRestoreGraph="$(ReevaluateRestoreGraph)"/>
+      RestoreForceEvaluate="$(RestoreForceEvaluate)"/>
   </Target>
 
   <!--

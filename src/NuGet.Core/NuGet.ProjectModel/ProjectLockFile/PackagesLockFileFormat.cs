@@ -22,7 +22,7 @@ namespace NuGet.ProjectModel
         private const string VersionProperty = "version";
         private const string ResolvedProperty = "resolved";
         private const string RequestedProperty = "requested";
-        private const string Sha512Property = "sha512";
+        private const string ContentHashProperty = "contentHash";
         private const string DependenciesProperty = "dependencies";
         private const string TypeProperty = "type";
 
@@ -196,7 +196,7 @@ namespace NuGet.ProjectModel
                 dependency.RequestedVersion = VersionRange.Parse(requestedString);
             }
 
-            dependency.Sha512 = JsonUtility.ReadProperty<string>(jObject, Sha512Property);
+            dependency.ContentHash = JsonUtility.ReadProperty<string>(jObject, ContentHashProperty);
 
             return dependency;
         }
@@ -227,9 +227,9 @@ namespace NuGet.ProjectModel
                 json[ResolvedProperty] = dependency.ResolvedVersion.ToNormalizedString();
             }
 
-            if (dependency.Sha512 != null)
+            if (dependency.ContentHash != null)
             {
-                json[Sha512Property] = dependency.Sha512;
+                json[ContentHashProperty] = dependency.ContentHash;
             }
 
             if (dependency.Dependencies?.Count > 0)
