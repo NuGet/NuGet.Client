@@ -571,7 +571,7 @@ namespace NuGet.Packaging
             packageFiles.ForEach(p =>
             {
                 var normalizedPath = Uri.UnescapeDataString(p.Replace('/', Path.DirectorySeparatorChar));
-                ValidatePackageEntry(normalizedDestination, p, packageIdentity);
+                ValidatePackageEntry(normalizedDestination, normalizedPath, packageIdentity);
             });
         }
 
