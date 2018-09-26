@@ -76,6 +76,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             PackageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
 
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+            PackageExtractionContext = new PackageExtractionContext(
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                new LoggerAdapter(this),
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.GetDefault());
+
             if (_commonOperations != null)
             {
                 ExecutionContext = new IDEExecutionContext(_commonOperations);
