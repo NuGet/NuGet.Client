@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Versioning
 {
@@ -205,8 +206,8 @@ namespace NuGet.Versioning
             }
 
             // If the range contains only stable versions disallow prerelease versions
-            if (!HasPrereleaseBounds 
-                && considering.IsPrerelease 
+            if (!HasPrereleaseBounds
+                && considering.IsPrerelease
                 && _floatRange?.FloatBehavior != NuGetVersionFloatBehavior.Prerelease
                 && _floatRange?.FloatBehavior != NuGetVersionFloatBehavior.AbsoluteLatest)
             {
@@ -364,6 +365,42 @@ namespace NuGet.Versioning
         public virtual string ToShortString()
         {
             return ToString("A", new VersionRangeFormatter());
+        }
+
+        /// <summary>
+        /// Equals implementation for VersionRange.
+        /// </summary>
+        public bool Equals(VersionRange other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return base.Equals(other) &&
+                IsFloating == other.IsFloating &&
+                EqualityUtility.EqualsWithNullCheck(Float, other.Float);
+        }
+
+        /// <summary>
+        /// Compare the obj as VersionRange.
+        /// </summary>
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as VersionRange);
+        }
+
+        /// <summary>
+        /// Returns the VersionRangeBase hashcode
+        /// </summary>
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }
