@@ -155,6 +155,11 @@ namespace NuGet.Commands
             await CommitCacheFileAsync(
                 log: log,
                 toolCommit : isTool);
+
+            // Commit the lock file to disk
+            await CommitLockFileAsync(
+                log: log,
+                toolCommit: isTool);
         }
 
         private async Task CommitAssetsFileAsync(
@@ -202,17 +207,6 @@ namespace NuGet.Commands
                     FileUtility.Replace(
                         (outputPath) => lockFileFormat.Write(outputPath, result.LockFile),
                         result.LockFilePath);
-
-                    if (NewPackagesLockFile != null && !string.IsNullOrEmpty(NewPackagesLockFilePath))
-                    {
-                        log.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_WritingPackagesLockFile,
-                        NewPackagesLockFilePath));
-
-                        FileUtility.Replace(
-                            (outputPath) => PackagesLockFileFormat.Write(outputPath, NewPackagesLockFile),
-                            NewPackagesLockFilePath);
-                    }
                 }
             }
             else
@@ -251,6 +245,21 @@ namespace NuGet.Commands
                 await FileUtility.ReplaceWithLock(
                    outPath => CacheFileFormat.Write(outPath, CacheFile),
                             CacheFilePath);
+            }
+        }
+
+        private async Task CommitLockFileAsync(ILogger log, bool toolCommit)
+        {
+            // write packages lock file if it's not tool commit
+            if (!toolCommit && NewPackagesLockFile != null && !string.IsNullOrEmpty(NewPackagesLockFilePath))
+            {
+                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                Strings.Log_WritingPackagesLockFile,
+                NewPackagesLockFilePath));
+
+                await FileUtility.ReplaceWithLock(
+                    (outputPath) => PackagesLockFileFormat.Write(outputPath, NewPackagesLockFile),
+                    NewPackagesLockFilePath);
             }
         }
     }
