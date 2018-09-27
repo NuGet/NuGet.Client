@@ -61,7 +61,6 @@ namespace NuGet.Commands
             // Keep track of the packages we've already converted to original case.
             var converted = new HashSet<PackageIdentity>();
 
-            var originalCaseContext = GetPathContext();
             var versionFolderPathResolver = new VersionFolderPathResolver(_request.PackagesDirectory, _request.IsLowercasePackagesDirectory);
 
             // Iterate over every package node.
@@ -112,7 +111,7 @@ namespace NuGet.Commands
                             identity,
                             packageDependency,
                             versionFolderPathResolver,
-                            originalCaseContext,
+                            _request.PackageExtractionContext,
                             token,
                             ParentId);
 
@@ -139,18 +138,6 @@ namespace NuGet.Commands
                 var path = _pathResolver.GetPackageDirectory(library.Name, library.Version);
                 library.Path = PathUtility.GetPathWithForwardSlashes(path);
             }
-        }
-
-        private PackageExtractionContext GetPathContext()
-        {
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
-            return new PackageExtractionContext(
-                _request.PackageSaveMode,
-                _request.XmlDocFileSaveMode,
-                _request.Log,
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
         }
 
         private static PackageIdentity GetPackageIdentity(RemoteMatch remoteMatch)

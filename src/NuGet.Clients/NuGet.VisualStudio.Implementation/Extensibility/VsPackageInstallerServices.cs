@@ -14,6 +14,8 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -135,9 +137,19 @@ namespace NuGet.VisualStudio
             {
                 InitializePackageManagerAndPackageFolderPath();
 
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+                var projectContext = new VSAPIProjectContext();
+
+                projectContext.PackageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    new LoggerAdapter(projectContext),
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault());
+
                 var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
                                     project,
-                                    new VSAPIProjectContext());
+                                    projectContext);
 
                 var installedPackages = await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
                 packages.AddRange(installedPackages);
@@ -162,9 +174,19 @@ namespace NuGet.VisualStudio
                     {
                         InitializePackageManagerAndPackageFolderPath();
 
+                        var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                        var projectContext = new VSAPIProjectContext();
+                        projectContext.PackageExtractionContext = new PackageExtractionContext(
+                            PackageSaveMode.Defaultv2,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
+                            new LoggerAdapter(projectContext),
+                            signedPackageVerifier,
+                            SignedPackageVerifierSettings.GetDefault());
+
                         var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
                                             project,
-                                            new VSAPIProjectContext());
+                                            projectContext);
 
                         if (nuGetProject != null)
                         {

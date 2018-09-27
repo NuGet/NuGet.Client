@@ -9,6 +9,9 @@ using EnvDTE;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 
@@ -62,6 +65,15 @@ namespace NuGet.VisualStudio
 
                     UninstallationContext uninstallContext = new UninstallationContext(removeDependencies, false);
                     VSAPIProjectContext projectContext = new VSAPIProjectContext();
+
+                    var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                    projectContext.PackageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        new LoggerAdapter(projectContext),
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault());
 
                     // find the project
                     NuGetProject nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);

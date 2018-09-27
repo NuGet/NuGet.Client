@@ -37,6 +37,7 @@ namespace NuGet.Commands
             }
 
             var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, source);
+            packageUpdateResource.Settings = settings;
             SymbolPackageUpdateResourceV3 symbolPackageUpdateResource = null;
 
             // figure out from index.json if pushing snupkg is supported

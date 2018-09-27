@@ -17,6 +17,8 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol;
@@ -37,6 +39,7 @@ namespace NuGet.VisualStudio
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly VsPackageInstaller _installer;
         private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
+        private readonly Configuration.ISettings _settings;
 
         public Action<string> InfoHandler { get; set; }
 
@@ -53,6 +56,7 @@ namespace NuGet.VisualStudio
             _sourceProvider = sourceProvider;
             _vsProjectAdapterProvider = vsProjectAdapterProvider;
             _installer = installer;
+            _settings = settings;
         }
 
         /// <summary>
@@ -174,6 +178,15 @@ namespace NuGet.VisualStudio
 
             // find the project
             var defaultProjectContext = new VSAPIProjectContext();
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+            defaultProjectContext.PackageExtractionContext = new PackageExtractionContext(
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                new LoggerAdapter(defaultProjectContext),
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.GetDefault());
+
             var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, defaultProjectContext);
             if (preferPackageReferenceFormat && await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject, project, needsAPackagesConfig: false))
             {
@@ -228,6 +241,13 @@ namespace NuGet.VisualStudio
                             var disableBindingRedirects = package.SkipAssemblyReferences;
 
                             var projectContext = new VSAPIProjectContext(package.SkipAssemblyReferences, disableBindingRedirects);
+
+                            projectContext.PackageExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Defaultv2,
+                                PackageExtractionBehavior.XmlDocFileSaveMode,
+                                new LoggerAdapter(projectContext),
+                                signedPackageVerifier,
+                                SignedPackageVerifierSettings.GetDefault());
 
                             // This runs from the UI thread
                             await _installer.InstallInternalCoreAsync(
@@ -326,6 +346,15 @@ namespace NuGet.VisualStudio
             }
 
             VSAPIProjectContext context = new VSAPIProjectContext(skipAssemblyReferences: true, bindingRedirectsDisabled: true);
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+            context.PackageExtractionContext = new PackageExtractionContext(
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                new LoggerAdapter(context),
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.GetDefault());
+
             WebSiteProjectSystem projectSystem = new WebSiteProjectSystem(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(project), context);
 
             foreach (var packageName in packageNames)
@@ -370,6 +399,14 @@ namespace NuGet.VisualStudio
         private void CopyNativeBinariesToBin(EnvDTE.Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
         {
             var context = new VSAPIProjectContext();
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+            context.PackageExtractionContext = new PackageExtractionContext(
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                new LoggerAdapter(context),
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.GetDefault());
             var projectSystem = new VsMSBuildProjectSystem(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(project), context);
 
             foreach (var packageInfo in packageInfos)

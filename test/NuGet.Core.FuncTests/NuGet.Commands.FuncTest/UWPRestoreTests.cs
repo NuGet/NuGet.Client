@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands.Test;
 using NuGet.Configuration;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -145,13 +148,19 @@ namespace NuGet.Commands.FuncTest
 
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, logger)
+                var extractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    logger,
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault());
+                var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, extractionContext, logger)
                 {
-                    XmlDocFileSaveMode = Packaging.XmlDocFileSaveMode.None
+                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);

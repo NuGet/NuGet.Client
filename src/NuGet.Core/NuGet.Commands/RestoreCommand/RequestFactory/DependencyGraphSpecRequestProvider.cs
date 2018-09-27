@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -132,6 +131,7 @@ namespace NuGet.Commands
             var globalPath = GetPackagesPath(restoreArgs, projectPackageSpec);
             var settings = Settings.LoadSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths);
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
+            var extractionContext = restoreArgs.GetPackageExtractionContext(settings);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
@@ -147,6 +147,7 @@ namespace NuGet.Commands
                 project.PackageSpec,
                 sharedCache,
                 restoreArgs.CacheContext,
+                extractionContext,
                 restoreArgs.Log)
             {
                 // Set properties from the restore metadata

@@ -12,6 +12,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -309,21 +310,33 @@ namespace NuGet.PackageManagement
 
             // Act
             using (var cacheContext = new SourceCacheContext())
-            using (var packagesDirectory = TestDirectory.Create())
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
-                v2sourceRepository,
-                packageIdentity,
-                new PackageDownloadContext(cacheContext),
-                packagesDirectory,
-                NullLogger.Instance,
-                CancellationToken.None))
             {
-                var targetPackageStream = downloadResult.PackageStream;
+                var downloadContext = new PackageDownloadContext(cacheContext)
+                {
+                    ExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null,
+                        signedPackageVerifierSettings: null)
+                };
 
-                // Assert
-                // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
-                Assert.Equal(185476, targetPackageStream.Length);
-                Assert.True(targetPackageStream.CanSeek);
+                using (var packagesDirectory = TestDirectory.Create())
+                using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
+                    v2sourceRepository,
+                    packageIdentity,
+                    downloadContext,
+                    packagesDirectory,
+                    NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var targetPackageStream = downloadResult.PackageStream;
+
+                    // Assert
+                    // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
+                    Assert.Equal(185476, targetPackageStream.Length);
+                    Assert.True(targetPackageStream.CanSeek);
+                }
             }
         }
 
@@ -337,21 +350,33 @@ namespace NuGet.PackageManagement
 
             // Act
             using (var cacheContext = new SourceCacheContext())
-            using (var packagesDirectory = TestDirectory.Create())
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
-                v3sourceRepository,
-                packageIdentity,
-                new PackageDownloadContext(cacheContext),
-                packagesDirectory,
-                NullLogger.Instance,
-                CancellationToken.None))
             {
-                var targetPackageStream = downloadResult.PackageStream;
+                var downloadContext = new PackageDownloadContext(cacheContext)
+                {
+                    ExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null,
+                        signedPackageVerifierSettings: null)
+                };
 
-                // Assert
-                // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
-                Assert.Equal(185476, targetPackageStream.Length);
-                Assert.True(targetPackageStream.CanSeek);
+                using (var packagesDirectory = TestDirectory.Create())
+                using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
+                    v3sourceRepository,
+                    packageIdentity,
+                    downloadContext,
+                    packagesDirectory,
+                    NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var targetPackageStream = downloadResult.PackageStream;
+
+                    // Assert
+                    // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
+                    Assert.Equal(185476, targetPackageStream.Length);
+                    Assert.True(targetPackageStream.CanSeek);
+                }
             }
         }
 
@@ -390,19 +415,31 @@ namespace NuGet.PackageManagement
 
             // Act
             using (var cacheContext = new SourceCacheContext())
-            using (var packagesDirectory = TestDirectory.Create())
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
-                sourceRepositoryProvider.GetRepositories(),
-                packageIdentity,
-                new PackageDownloadContext(cacheContext),
-                packagesDirectory,
-                NullLogger.Instance,
-                CancellationToken.None))
             {
-                var targetPackageStream = downloadResult.PackageStream;
+                var downloadContext = new PackageDownloadContext(cacheContext)
+                {
+                    ExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null,
+                        signedPackageVerifierSettings: null)
+                };
 
-                // Assert
-                Assert.True(targetPackageStream.CanSeek);
+                using (var packagesDirectory = TestDirectory.Create())
+                using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
+                    sourceRepositoryProvider.GetRepositories(),
+                    packageIdentity,
+                    downloadContext,
+                    packagesDirectory,
+                    NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var targetPackageStream = downloadResult.PackageStream;
+
+                    // Assert
+                    Assert.True(targetPackageStream.CanSeek);
+                }
             }
         }
 
@@ -449,19 +486,31 @@ namespace NuGet.PackageManagement
 
             // Act
             using (var cacheContext = new SourceCacheContext())
-            using (var packagesDirectory = TestDirectory.Create())
-            using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
-                sourceRepositoryProvider.GetRepositories(),
-                packageIdentity,
-                new PackageDownloadContext(cacheContext),
-                packagesDirectory,
-                NullLogger.Instance,
-                CancellationToken.None))
             {
-                var targetPackageStream = downloadResult.PackageStream;
+                var downloadContext = new PackageDownloadContext(cacheContext)
+                {
+                    ExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null,
+                        signedPackageVerifierSettings: null)
+                };
 
-                // Assert
-                Assert.True(targetPackageStream.CanSeek);
+                using (var packagesDirectory = TestDirectory.Create())
+                using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
+                    sourceRepositoryProvider.GetRepositories(),
+                    packageIdentity,
+                    downloadContext,
+                    packagesDirectory,
+                    NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var targetPackageStream = downloadResult.PackageStream;
+
+                    // Assert
+                    Assert.True(targetPackageStream.CanSeek);
+                }
             }
         }
 

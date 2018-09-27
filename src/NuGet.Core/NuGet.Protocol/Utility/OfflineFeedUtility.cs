@@ -191,19 +191,6 @@ namespace NuGet.Protocol.Core.Types
                     }
                     else
                     {
-                        var packageSaveMode = offlineFeedAddContext.Expand
-                            ? PackageSaveMode.Defaultv3
-                            : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
-
-                        var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
-                        var packageExtractionContext = new PackageExtractionContext(
-                            packageSaveMode,
-                            PackageExtractionBehavior.XmlDocFileSaveMode,
-                            logger,
-                            signedPackageVerifier,
-                            SignedPackageVerifierSettings.GetDefault());
-
                         var versionFolderPathResolver = new VersionFolderPathResolver(source);
 
                         using (var packageDownloader = new LocalPackageArchiveDownloader(
@@ -217,7 +204,7 @@ namespace NuGet.Protocol.Core.Types
                                 packageIdentity,
                                 packageDownloader,
                                 versionFolderPathResolver,
-                                packageExtractionContext,
+                                offlineFeedAddContext.ExtractionContext,
                                 token,
                                 parentId: Guid.Empty);
                         }
