@@ -10,9 +10,9 @@
     <VsTargetBranch>lab/d16.$(MinorNuGetVersion)stg</VsTargetBranch>
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d16.$(MinorNuGetVersion)</VsTargetBranch>
     <CliTargetBranch Condition="'$(OverrideCliTargetBranch)' != ''">$(OverrideCliTargetBranch)</CliTargetBranch>
-    <CliTargetBranch Condition="'$(OverrideCliTargetBranch)' == ''">release/2.1.4xx</CliTargetBranch>
+    <CliTargetBranch Condition="'$(OverrideCliTargetBranch)' == ''">master</CliTargetBranch>
     <SdkTargetBranch Condition="'$(OverrideCliTargetBranch)' != ''">$(OverrideCliTargetBranch)</SdkTargetBranch>
-    <SdkTargetBranch Condition="'$(OverrideCliTargetBranch)' == ''">release/2.1.4xx</SdkTargetBranch>
+    <SdkTargetBranch Condition="'$(OverrideCliTargetBranch)' == ''">master</SdkTargetBranch>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
