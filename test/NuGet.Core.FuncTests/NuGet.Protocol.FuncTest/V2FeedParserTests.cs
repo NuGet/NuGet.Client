@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -90,9 +92,19 @@ namespace NuGet.Protocol.FuncTest
             using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
+                var downloadContext = new PackageDownloadContext(cacheContext)
+                {
+                    ExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    NullLogger.Instance,
+                    signedPackageVerifier: null,
+                    signedPackageVerifierSettings: null)
+                };
+
                 using (var downloadResult = await parser.DownloadFromIdentity(
                     new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
-                    new PackageDownloadContext(cacheContext),
+                    downloadContext,
                     packagesFolder,
                     cacheContext,
                     NullLogger.Instance,

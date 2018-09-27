@@ -24,15 +24,6 @@ namespace NuGet.VisualStudio
 
         public VSAPIProjectContext(bool skipAssemblyReferences, bool bindingRedirectsDisabled)
         {
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
-            PackageExtractionContext = new PackageExtractionContext(
-                PackageSaveMode.Defaultv2,
-                PackageExtractionBehavior.XmlDocFileSaveMode,
-                new LoggerAdapter(this),
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
-
             SourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
             SkipAssemblyReferences = skipAssemblyReferences;
             BindingRedirectsDisabled = bindingRedirectsDisabled;

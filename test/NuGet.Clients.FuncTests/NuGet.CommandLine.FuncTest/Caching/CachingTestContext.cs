@@ -4,9 +4,11 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -320,7 +322,13 @@ namespace NuGet.CommandLine.Test.Caching
                     packageStream: fileStream,
                     globalPackagesFolder: GlobalPackagesPath,
                     parentId: Guid.Empty,
-                    logger: Common.NullLogger.Instance,
+                    extractionContext: new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        NullLogger.Instance,
+                        signedPackageVerifier: null,
+                        signedPackageVerifierSettings: null),
+                    logger: NullLogger.Instance,
                     token: CancellationToken.None))
                 {
                 }

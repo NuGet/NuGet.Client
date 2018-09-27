@@ -88,6 +88,7 @@ namespace NuGet.Protocol
             Stream packageStream,
             string globalPackagesFolder,
             Guid parentId,
+            PackageExtractionContext extractionContext,
             ILogger logger,
             CancellationToken token)
         {
@@ -106,18 +107,9 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(globalPackagesFolder));
             }
 
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
             // The following call adds it to the global packages folder.
             // Addition is performed using ConcurrentUtils, such that,
             // multiple processes may add at the same time
-
-            var packageExtractionContext = new PackageExtractionContext(
-                PackageSaveMode.Defaultv3,
-                PackageExtractionBehavior.XmlDocFileSaveMode,
-                logger,
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
 
             var versionFolderPathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 
@@ -126,7 +118,7 @@ namespace NuGet.Protocol
                 packageIdentity,
                 stream => packageStream.CopyToAsync(stream, BufferSize, token),
                 versionFolderPathResolver,
-                packageExtractionContext,
+                extractionContext,
                 token,
                 parentId);
 

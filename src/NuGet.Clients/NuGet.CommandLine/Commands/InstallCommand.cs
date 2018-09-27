@@ -198,11 +198,31 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload);
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                var projectContext = new ConsoleProjectContext(Console)
+                {
+                    PackageExtractionContext = new PackageExtractionContext(
+                        Packaging.PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        Console,
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault())
+                };
+
+                var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload)
+                {
+                    ExtractionContext = new PackageExtractionContext(
+                        Packaging.PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        Console,
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault())
+                };
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,
-                    new ConsoleProjectContext(Console),
+                    projectContext,
                     downloadContext);
 
                 if (downloadContext.DirectDownload)
@@ -360,6 +380,7 @@ namespace NuGet.CommandLine
                 else
                 {
                     var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+                    var signingVerificationSettings = SignedPackageVerifierSettings.GetDefault();
 
                     var projectContext = new ConsoleProjectContext(Console)
                     {
@@ -368,18 +389,26 @@ namespace NuGet.CommandLine
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             Console,
                             signedPackageVerifier,
-                            SignedPackageVerifierSettings.GetDefault())
+                            signingVerificationSettings)
                     };
-
-                    if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
-                    {
-                        projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
-                    }
 
                     resolutionContext.SourceCacheContext.NoCache = NoCache;
                     resolutionContext.SourceCacheContext.DirectDownload = DirectDownload;
 
-                    var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload);
+                    var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload)
+                    {
+                        ExtractionContext = new PackageExtractionContext(
+                            Packaging.PackageSaveMode.Defaultv3,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
+                            Console,
+                            signedPackageVerifier,
+                            signingVerificationSettings)
+                    };
+
+                    if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+                    {
+                        downloadContext.ExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
+                    }
 
                     await packageManager.InstallPackageAsync(
                         project,

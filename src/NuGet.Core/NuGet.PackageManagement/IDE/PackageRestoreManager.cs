@@ -192,9 +192,60 @@ namespace NuGet.PackageManagement
 
             using (var cacheContext = new SourceCacheContext())
             {
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
                 var downloadContext = new PackageDownloadContext(cacheContext)
                 {
-                    ParentId = nuGetProjectContext.OperationId
+                    ParentId = nuGetProjectContext.OperationId,
+                    ExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        new LoggerAdapter(nuGetProjectContext),
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault())
+                };
+
+                return await RestoreMissingPackagesAsync(
+                    solutionDirectory,
+                    packages,
+                    nuGetProjectContext,
+                    downloadContext,
+                    token);
+            }
+        }
+
+        /// <summary>
+        /// Restores missing packages for the entire solution
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(
+            string solutionDirectory,
+            INuGetProjectContext nuGetProjectContext,
+            ILogger logger,
+            CancellationToken token)
+        {
+            var packageReferencesDictionary = await GetPackagesReferencesDictionaryAsync(token);
+
+            // When this method is called, the step to compute if a package is missing is implicit. Assume it is true
+            var packages = packageReferencesDictionary.Select(p =>
+            {
+                Debug.Assert(p.Value != null);
+                return new PackageRestoreData(p.Key, p.Value, isMissing: true);
+            });
+
+            using (var cacheContext = new SourceCacheContext())
+            {
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                var downloadContext = new PackageDownloadContext(cacheContext)
+                {
+                    ParentId = nuGetProjectContext.OperationId,
+                    ExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        new LoggerAdapter(nuGetProjectContext),
+                        signedPackageVerifier,
+                        SignedPackageVerifierSettings.GetDefault())
                 };
 
                 return await RestoreMissingPackagesAsync(
@@ -227,6 +278,18 @@ namespace NuGet.PackageManagement
                 PackageRestoreFailedEvent,
                 sourceRepositories: null,
                 maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism);
+
+            if (nuGetProjectContext.PackageExtractionContext == null)
+            {
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+                nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    NullLogger.Instance,
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault());
+            }
 
             return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);
         }
@@ -278,21 +341,6 @@ namespace NuGet.PackageManagement
             // So, just to be sure, create a hashset with the keys from the dictionary using the PackageReferenceComparer
             // Now, we are guaranteed to not restore the same package more than once
             var hashSetOfMissingPackageReferences = new HashSet<PackageReference>(missingPackages.Select(p => p.PackageReference), new PackageReferenceComparer());
-
-            // Before starting to restore package, set the nuGetProjectContext such that satellite files are not copied yet
-            // Satellite files will be copied as a post operation. This helps restore packages in parallel
-            // and not have to determine if the package is a satellite package beforehand
-            if (nuGetProjectContext.PackageExtractionContext == null)
-            {
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
-                nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv2,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    new LoggerAdapter(nuGetProjectContext),
-                    signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault());
-            }
 
             nuGetProjectContext.PackageExtractionContext.CopySatelliteFiles = false;
 

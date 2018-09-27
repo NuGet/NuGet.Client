@@ -16,6 +16,8 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -33,9 +35,21 @@ namespace NuGet.VisualStudio
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<NuGet.Common.ILogger> _logger;
         private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
-
         private readonly AsyncLazy<EnvDTE.DTE> _dte;
-        private readonly Lazy<INuGetProjectContext> _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext());
+        private readonly Lazy<INuGetProjectContext> _projectContext = new Lazy<INuGetProjectContext>(() => {
+            var projectContext = new VSAPIProjectContext();
+
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+            projectContext.PackageExtractionContext = new PackageExtractionContext(
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                new LoggerAdapter(projectContext),
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.GetDefault());
+
+            return projectContext;
+        });
 
         [ImportingConstructor]
         public VsPathContextProvider(

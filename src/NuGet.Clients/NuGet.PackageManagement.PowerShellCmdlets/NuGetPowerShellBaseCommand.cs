@@ -22,6 +22,8 @@ using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -73,6 +75,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             _commonOperations = ServiceLocator.GetInstance<ICommonOperations>();
             PackageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
+            PackageExtractionContext = new PackageExtractionContext(
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                new LoggerAdapter(this),
+                signedPackageVerifier,
+                SignedPackageVerifierSettings.GetDefault());
 
             if (_commonOperations != null)
             {
@@ -248,9 +259,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     using (var cacheContext = new SourceCacheContext())
                     {
+                        var logger = new LoggerAdapter(this);
+
+                        var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+
                         var downloadContext = new PackageDownloadContext(cacheContext)
                         {
-                            ParentId = OperationId
+                            ParentId = OperationId,
+                            ExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Defaultv3,
+                                PackageExtractionBehavior.XmlDocFileSaveMode,
+                                logger,
+                                signedPackageVerifier,
+                                SignedPackageVerifierSettings.GetDefault())
                         };
 
                         var result = await PackageRestoreManager.RestoreMissingPackagesAsync(

@@ -328,15 +328,15 @@ namespace NuGet.CommandLine
             var collectorLogger = new RestoreCollectorLogger(Console);
 
             var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
+            var signingVerificationSettings = SignedPackageVerifierSettings.GetDefault();
             var projectContext = new ConsoleProjectContext(collectorLogger)
             {
                 PackageExtractionContext = new PackageExtractionContext(
-                        Packaging.PackageSaveMode.Defaultv2,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        collectorLogger,
-                        signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetDefault())
+                    Packaging.PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    collectorLogger,
+                    signedPackageVerifier,
+                    signingVerificationSettings)
             };
 
             if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
@@ -349,7 +349,15 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload);
+                var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload)
+                {
+                    ExtractionContext = new PackageExtractionContext(
+                         Packaging.PackageSaveMode.Defaultv3,
+                         PackageExtractionBehavior.XmlDocFileSaveMode,
+                         collectorLogger,
+                         signedPackageVerifier,
+                         signingVerificationSettings)
+                };
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,

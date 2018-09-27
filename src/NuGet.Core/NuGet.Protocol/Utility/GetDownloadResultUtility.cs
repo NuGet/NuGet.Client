@@ -93,6 +93,7 @@ namespace NuGet.Protocol
                                     packageStream,
                                     globalPackagesFolder,
                                     downloadContext.ParentId,
+                                    downloadContext.ExtractionContext,
                                     logger,
                                     token);
                             }
