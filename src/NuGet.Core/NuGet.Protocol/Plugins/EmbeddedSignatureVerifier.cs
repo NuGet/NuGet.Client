@@ -27,14 +27,14 @@ namespace NuGet.Protocol.Plugins
         /// <returns>An embedded signature verifier.</returns>
         public static EmbeddedSignatureVerifier Create()
         {
-            if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMono)
+            if (RuntimeEnvironmentHelper.IsWindows)
             {
                 return new WindowsEmbeddedSignatureVerifier();
             }
 
-            if (RuntimeEnvironmentHelper.IsLinux || RuntimeEnvironmentHelper.IsMacOSX)
+            if (RuntimeEnvironmentHelper.IsLinux || RuntimeEnvironmentHelper.IsMacOSX || RuntimeEnvironmentHelper.IsMono)
             {
-                return new UnixPlatformsEmbeddedSignatureVerifier();
+                return new UnixAndMonoPlatformsEmbeddedSignatureVerifier();
             }
 
             return new FallbackEmbeddedSignatureVerifier();
