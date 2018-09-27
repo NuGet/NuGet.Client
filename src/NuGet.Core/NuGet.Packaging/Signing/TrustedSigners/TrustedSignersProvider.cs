@@ -28,9 +28,9 @@ namespace NuGet.Packaging.Signing
             return trustedSignersSection.Items.OfType<TrustedSignerItem>().SelectMany(s => ToAllowListEntries(s)).ToList();
         }
 
-        private IReadOnlyList<VerificationAllowListEntry> ToAllowListEntries(TrustedSignerItem item)
+        private IReadOnlyCollection<VerificationAllowListEntry> ToAllowListEntries(TrustedSignerItem item)
         {
-            var entries = new List<VerificationAllowListEntry>();
+            var entries = new HashSet<VerificationAllowListEntry>();
             if (item is RepositoryItem repositoryItem)
             {
                 foreach(var certificate in repositoryItem.Certificates)
