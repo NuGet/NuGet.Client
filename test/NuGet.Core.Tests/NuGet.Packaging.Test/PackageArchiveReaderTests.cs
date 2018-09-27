@@ -1661,6 +1661,33 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public async Task ValidatePackageEntriesAsync_PackageFilesWithSpecialCharacters_DoesNotThrow()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                   root,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "C++.dll",
+                   "content/net40/B&#A.txt",
+                   "content/net40/B.nuspec");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    // Act & Assert
+                    // This shouldn't throw
+                    await packageReader.ValidatePackageEntriesAsync(CancellationToken.None);
+                }
+            }
+        }
+
+        [Fact]
         public async Task ValidatePackageEntriesAsync_ValidPackageFiles_Succeeds()
         {
             // Arrange
