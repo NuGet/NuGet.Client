@@ -313,7 +313,7 @@ namespace NuGet.Packaging.Signing
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
                 reportUnknownRevocation: true,
-                allowNoRepositoryCertificateList: false,
+                allowNoRepositoryCertificateList: true,
                 allowNoClientCertificateList: false,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,

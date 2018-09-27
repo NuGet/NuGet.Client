@@ -147,7 +147,7 @@ namespace NuGet.Packaging.Signing
             allowedOwners = null;
             actualOwners = null;
 
-            if ((entry != null && entry.Owners != null || entry.Owners.Any()) && repoSignature != null)
+            if (entry != null && entry.Owners != null && entry.Owners.Any() && repoSignature != null)
             {
                 allowedOwners = entry.Owners ?? Enumerable.Empty<string>().ToList();
                 actualOwners = repoSignature.PackageOwners ?? Enumerable.Empty<string>().ToList();
