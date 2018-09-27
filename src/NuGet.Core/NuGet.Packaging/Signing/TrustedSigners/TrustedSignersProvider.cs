@@ -25,12 +25,28 @@ namespace NuGet.Packaging.Signing
                 return Enumerable.Empty<VerificationAllowListEntry>().ToList();
             }
 
-            return trustedSignersSection.Items.OfType<TrustedSignerItem>().Select(s => ToAllowListEntry(s)).ToList();
+            return trustedSignersSection.Items.OfType<TrustedSignerItem>().SelectMany(s => ToAllowListEntries(s)).ToList();
         }
 
-        private VerificationAllowListEntry ToAllowListEntry(TrustedSignerItem item)
+        private IReadOnlyList<VerificationAllowListEntry> ToAllowListEntries(TrustedSignerItem item)
         {
-            return null;
+            var entries = new List<VerificationAllowListEntry>();
+            if (item is RepositoryItem repositoryItem)
+            {
+                foreach(var certificate in repositoryItem.Certificates)
+                {
+                    entries.Add(new TrustedRepositoryAllowListEntry(certificate.Fingerprint, certificate.HashAlgorithm, repositoryItem.Owners));
+                }
+            }
+            else if (item is AuthorItem authorItem)
+            {
+                foreach (var certificate in authorItem.Certificates)
+                {
+                    entries.Add(new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, certificate.Fingerprint, certificate.HashAlgorithm));
+                }
+            }
+
+            return entries;
         }
     }
 }
