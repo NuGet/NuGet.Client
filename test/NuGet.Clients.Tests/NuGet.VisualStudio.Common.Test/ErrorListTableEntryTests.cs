@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using FluentAssertions;
 using Microsoft.VisualStudio.Shell.TableManager;
 using NuGet.Common;
@@ -18,6 +19,11 @@ namespace NuGet.VisualStudio.Common.Test
         private const string _testProjectName = "project";
         private const int _testLineNumber = 100;
         private const int _testColumnNumber = 50;
+
+        public ErrorListTableEntryTests()
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("en-US");
+        }
 
         [Fact]
         public void LogMessageConstructor_KeepsLogMessage()
