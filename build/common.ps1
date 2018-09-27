@@ -194,6 +194,8 @@ Function Install-DotnetCLI {
     param(
         [switch]$Force
     )
+    $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
+    $CliTargetBranch = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliTargetBranch
 
     $cli = @{
             Root = $CLIRoot
@@ -212,8 +214,8 @@ Function Install-DotnetCLI {
         $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
 
         Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
-
-        & $DotNetInstall -Channel release/2.1.4xx -i $cli.Root
+        $channel = $CliTargetBranch.Trim()
+        & $DotNetInstall -Channel $channel  -i $cli.Root
     }
 
     if (-not (Test-Path $cli.DotNetExe)) {
