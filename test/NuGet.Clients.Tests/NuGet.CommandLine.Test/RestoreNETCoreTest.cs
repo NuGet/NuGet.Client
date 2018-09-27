@@ -1998,9 +1998,10 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
-                // This is a more complex scenario, since when we dedup 2.0.0 and 2.0.* we only look for 2.0.*...if 2.0.0 package exists, the 2.0.* would resolve to 2.0.0 so both cases would be covered
-                // The issue is ofc when you have 2.5 package in your local, and a package with 2.0.0 was added remotely. Then we re-download
-                Assert.Contains($"The restore inputs for 'z-netcoreapp1.0-[2.0.*, )' have not changed. No further actions are required to complete the restore.", r2.Item2);
+                
+                // This is expected, because despite the fact that both projects resolve to the same tool, the version range they request is different so they will keep overwriting each other
+                // Basically, it is impossible for both tools to no-op.
+                Assert.Contains($"Writing tool lock file to disk", r2.Item2);
             }
         }
 
