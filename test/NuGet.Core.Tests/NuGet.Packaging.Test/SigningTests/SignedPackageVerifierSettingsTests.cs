@@ -483,7 +483,7 @@ namespace NuGet.Packaging.Test
             settings.AllowNoTimestamp.Should().Be(true);
             settings.AllowUnknownRevocation.Should().Be(true);
             settings.ReportUnknownRevocation.Should().Be(true);
-            settings.AllowNoRepositoryCertificateList.Should().Be(false);
+            settings.AllowNoRepositoryCertificateList.Should().Be(true);
             settings.AllowNoClientCertificateList.Should().Be(false);
             settings.VerificationTarget.Should().Be(VerificationTarget.All);
             settings.SignaturePlacement.Should().Be(SignaturePlacement.Any);
