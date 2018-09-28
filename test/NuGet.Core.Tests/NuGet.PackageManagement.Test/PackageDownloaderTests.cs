@@ -317,7 +317,6 @@ namespace NuGet.PackageManagement
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         NullLogger.Instance,
-                        signedPackageVerifier: null,
                         signedPackageVerifierSettings: null)
                 };
 
@@ -357,7 +356,6 @@ namespace NuGet.PackageManagement
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         NullLogger.Instance,
-                        signedPackageVerifier: null,
                         signedPackageVerifierSettings: null)
                 };
 
@@ -422,7 +420,6 @@ namespace NuGet.PackageManagement
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         NullLogger.Instance,
-                        signedPackageVerifier: null,
                         signedPackageVerifierSettings: null)
                 };
 
@@ -493,7 +490,6 @@ namespace NuGet.PackageManagement
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         NullLogger.Instance,
-                        signedPackageVerifier: null,
                         signedPackageVerifierSettings: null)
                 };
 

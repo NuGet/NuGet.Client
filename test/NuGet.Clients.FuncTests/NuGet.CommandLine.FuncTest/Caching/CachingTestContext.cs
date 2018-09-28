@@ -326,7 +326,6 @@ namespace NuGet.CommandLine.Test.Caching
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         NullLogger.Instance,
-                        signedPackageVerifier: null,
                         signedPackageVerifierSettings: null),
                     logger: NullLogger.Instance,
                     token: CancellationToken.None))

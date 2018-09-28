@@ -137,7 +137,6 @@ namespace NuGet.VisualStudio
             {
                 InitializePackageManagerAndPackageFolderPath();
 
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
                 var projectContext = new VSAPIProjectContext();
                 var logger = new LoggerAdapter(projectContext);
                 projectContext.PackageExtractionContext = new PackageExtractionContext(
@@ -173,8 +172,6 @@ namespace NuGet.VisualStudio
                         && !string.IsNullOrEmpty(_solutionManager.SolutionDirectory))
                     {
                         InitializePackageManagerAndPackageFolderPath();
-
-                        var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
                         var projectContext = new VSAPIProjectContext();
                         var logger = new LoggerAdapter(projectContext);

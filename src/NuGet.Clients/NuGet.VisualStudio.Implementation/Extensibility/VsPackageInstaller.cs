@@ -64,7 +64,6 @@ namespace NuGet.VisualStudio
 
             _projectContext = new Lazy<INuGetProjectContext>(() => {
                 var projectContext = new VSAPIProjectContext();
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
                 var logger = new LoggerAdapter(projectContext);
                 projectContext.PackageExtractionContext = new PackageExtractionContext(

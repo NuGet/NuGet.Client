@@ -148,14 +148,12 @@ namespace NuGet.Commands.FuncTest
 
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
                 var logger = new TestLogger();
                 var extractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     logger,
-                    signedPackageVerifier,
                     SignedPackageVerifierSettings.GetDefault());
                 var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, extractionContext, logger)
                 {

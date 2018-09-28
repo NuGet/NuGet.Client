@@ -65,6 +65,11 @@ namespace NuGet.Packaging.Signing
         public bool AllowNoClientCertificateList { get; }
 
         /// <summary>
+        /// Allow an empty or null AllowList
+        /// </summary>
+        public bool AllowEmptyAllowList { get; }
+
+        /// <summary>
         /// Gets the verification target(s).
         /// </summary>
         public VerificationTarget VerificationTarget { get; }
@@ -93,6 +98,11 @@ namespace NuGet.Packaging.Signing
         /// Allowlist of client side certificate hashes.
         /// </summary>
         public IReadOnlyList<VerificationAllowListEntry> ClientCertificateList { get; }
+
+        /// <summary>
+        /// List of signatures allowed in verification.
+        /// </summary>
+        public IReadOnlyCollection<VerificationAllowListEntry> AllowList { get; }
 
         public SignedPackageVerifierSettings(
             bool allowUnsigned,
@@ -124,7 +134,7 @@ namespace NuGet.Packaging.Signing
                   signaturePlacement,
                   repositoryCountersignatureVerificationBehavior,
                   revocationMode,
-                  repoAllowListEntries: null,
+                  allowListEntries: null,
                   clientAllowListEntries: null)
         {
         }
@@ -144,7 +154,7 @@ namespace NuGet.Packaging.Signing
             SignaturePlacement signaturePlacement,
             SignatureVerificationBehavior repositoryCountersignatureVerificationBehavior,
             RevocationMode revocationMode,
-            IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries,
+            IReadOnlyCollection<VerificationAllowListEntry> allowListEntries,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries)
         {
             if (!Enum.IsDefined(typeof(VerificationTarget), verificationTarget))
@@ -217,7 +227,7 @@ namespace NuGet.Packaging.Signing
             SignaturePlacement = signaturePlacement;
             RepositoryCountersignatureVerificationBehavior = repositoryCountersignatureVerificationBehavior;
             RevocationMode = revocationMode;
-            RepositoryCertificateList = repoAllowListEntries;
+            AllowList = allowListEntries;
             ClientCertificateList = clientAllowListEntries;
         }
 
@@ -248,7 +258,7 @@ namespace NuGet.Packaging.Signing
         /// Default settings.
         /// </summary>
         public static SignedPackageVerifierSettings GetDefault(
-            IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,
+            IReadOnlyCollection<VerificationAllowListEntry> allowListEntries = null,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries = null)
         {
             return new SignedPackageVerifierSettings(
@@ -266,7 +276,7 @@ namespace NuGet.Packaging.Signing
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
                 revocationMode: SettingsUtility.GetRevocationMode(),
-                repoAllowListEntries: repoAllowListEntries,
+                allowListEntries: allowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
 
@@ -274,7 +284,7 @@ namespace NuGet.Packaging.Signing
         /// The accept mode policy.
         /// </summary>
         public static SignedPackageVerifierSettings GetAcceptModeDefaultPolicy(
-            IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,
+            IReadOnlyCollection<VerificationAllowListEntry> allowListEntries = null,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries = null)
         {
             return new SignedPackageVerifierSettings(
@@ -292,7 +302,7 @@ namespace NuGet.Packaging.Signing
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
                 revocationMode: SettingsUtility.GetRevocationMode(),
-                repoAllowListEntries: repoAllowListEntries,
+                allowListEntries: allowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
 
@@ -300,7 +310,7 @@ namespace NuGet.Packaging.Signing
         /// The require mode policy.
         /// </summary>
         public static SignedPackageVerifierSettings GetRequireModeDefaultPolicy(
-            IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,
+            IReadOnlyCollection<VerificationAllowListEntry> allowListEntries = null,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries = null)
         {
             return new SignedPackageVerifierSettings(
@@ -318,7 +328,7 @@ namespace NuGet.Packaging.Signing
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
                 revocationMode: SettingsUtility.GetRevocationMode(),
-                repoAllowListEntries: repoAllowListEntries,
+                allowListEntries: allowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
 
@@ -326,7 +336,7 @@ namespace NuGet.Packaging.Signing
         /// Default policy for nuget.exe verify --signatures command.
         /// </summary>
         public static SignedPackageVerifierSettings GetVerifyCommandDefaultPolicy(
-            IReadOnlyList<VerificationAllowListEntry> repoAllowListEntries = null,
+            IReadOnlyCollection<VerificationAllowListEntry> allowListEntries = null,
             IReadOnlyList<VerificationAllowListEntry> clientAllowListEntries = null)
         {
             return new SignedPackageVerifierSettings(
@@ -344,7 +354,7 @@ namespace NuGet.Packaging.Signing
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
                 revocationMode: SettingsUtility.GetRevocationMode(),
-                repoAllowListEntries: repoAllowListEntries,
+                allowListEntries: allowListEntries,
                 clientAllowListEntries: clientAllowListEntries);
         }
     }

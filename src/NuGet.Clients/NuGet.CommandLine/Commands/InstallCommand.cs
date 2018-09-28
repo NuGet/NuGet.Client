@@ -390,7 +390,6 @@ namespace NuGet.CommandLine
                             Packaging.PackageSaveMode.Defaultv2,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             Console,
-                            signedPackageVerifier,
                             signingVerificationSettings)
                     };
 
@@ -403,7 +402,6 @@ namespace NuGet.CommandLine
                             Packaging.PackageSaveMode.Defaultv3,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             Console,
-                            signedPackageVerifier,
                             signingVerificationSettings)
                     };
 

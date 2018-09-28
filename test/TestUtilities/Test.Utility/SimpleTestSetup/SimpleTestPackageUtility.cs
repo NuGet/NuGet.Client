@@ -482,7 +482,6 @@ namespace NuGet.Test.Utility
                                 saveMode,
                                 XmlDocFileSaveMode.None,
                                 NullLogger.Instance,
-                                signedPackageVerifier: null,
                                 signedPackageVerifierSettings: null),
                             CancellationToken.None);
                     }
@@ -523,7 +522,6 @@ namespace NuGet.Test.Utility
                         PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         NullLogger.Instance,
-                        signedPackageVerifier: null,
                         signedPackageVerifierSettings: null);
 
             foreach (var path in nupkgPaths)

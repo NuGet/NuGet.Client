@@ -286,8 +286,6 @@ namespace NuGet.PackageManagement
 
             if (nuGetProjectContext.PackageExtractionContext == null)
             {
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
                 nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
@@ -325,8 +323,6 @@ namespace NuGet.PackageManagement
 
             if (nuGetProjectContext.PackageExtractionContext == null)
             {
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
                 nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,

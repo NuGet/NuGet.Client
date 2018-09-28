@@ -92,7 +92,6 @@ namespace NuGet.Protocol.Tests
                 PackageSaveMode.Defaultv3,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 NullLogger.Instance,
-                signedPackageVerifier: null,
                 signedPackageVerifierSettings: null);
 
             await Assert.ThrowsAsync<OperationCanceledException>(
@@ -156,7 +155,6 @@ namespace NuGet.Protocol.Tests
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     NullLogger.Instance,
-                    signedPackageVerifier: null,
                     signedPackageVerifierSettings: null);
 
                 var context = new OfflineFeedAddContext(

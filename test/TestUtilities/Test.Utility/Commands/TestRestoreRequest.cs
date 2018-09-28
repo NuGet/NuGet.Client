@@ -118,7 +118,6 @@ namespace NuGet.Commands.Test
                     PackageSaveMode.Defaultv3,
                      PackageExtractionBehavior.XmlDocFileSaveMode,
                      log,
-                     new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders()),
                      SignedPackageVerifierSettings.GetDefault()),
                   log)
         {
@@ -139,7 +138,6 @@ namespace NuGet.Commands.Test
                     PackageSaveMode.Defaultv3,
                      PackageExtractionBehavior.XmlDocFileSaveMode,
                      log,
-                     new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders()),
                      SignedPackageVerifierSettings.GetDefault()),
                 log)
         {

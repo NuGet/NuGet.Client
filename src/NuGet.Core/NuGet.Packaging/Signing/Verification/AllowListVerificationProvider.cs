@@ -12,6 +12,20 @@ namespace NuGet.Packaging.Signing
 {
     public class AllowListVerificationProvider : ISignatureVerificationProvider
     {
+        private readonly IReadOnlyCollection<VerificationAllowListEntry> _allowList;
+        private readonly string _emptyListErrorMessage;
+        private readonly string _noMatchErrorMessage;
+        private readonly bool _requireAllowList;
+
+        public AllowListVerificationProvider(IReadOnlyCollection<VerificationAllowListEntry> allowList, bool requireAllowList = false, string emptyListErrorMessage = "", string noMatchErrorMessage = "")
+        {
+            _allowList = allowList ?? throw new ArgumentNullException(nameof(allowList));
+            _requireAllowList = requireAllowList;
+
+            _emptyListErrorMessage = string.IsNullOrEmpty(emptyListErrorMessage) ? Strings.DefaultError_EmptyAllowList : emptyListErrorMessage;
+            _noMatchErrorMessage = string.IsNullOrEmpty(noMatchErrorMessage) ? Strings.DefaultError_NoMatchInAllowList : noMatchErrorMessage;
+        }
+
         public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
             return VerifyAllowListAsync(package, signature, settings);
@@ -21,6 +35,7 @@ namespace NuGet.Packaging.Signing
         private async Task<PackageVerificationResult> VerifyAllowListAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             var treatIssuesAsErrors = !settings.AllowUntrusted;
+
 
             var certificateListVertificationRequests = new List<CertificateListVerificationRequest>()
             {
@@ -35,8 +50,8 @@ namespace NuGet.Packaging.Signing
                 },
                 new CertificateListVerificationRequest()
                 {
-                    CertificateList = settings.RepositoryCertificateList,
-                    RequireCertificateList = !settings.AllowNoRepositoryCertificateList,
+                    CertificateList = settings.AllowList,
+                    RequireCertificateList = _requireAllowList,
                     NoListErrorMessage = Strings.Error_NoRepoAllowList,
                     NoMatchErrorMessage = Strings.Error_NoMatchingRepositoryCertificate,
                     Signature = signature,

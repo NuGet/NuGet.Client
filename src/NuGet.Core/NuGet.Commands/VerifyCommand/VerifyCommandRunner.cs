@@ -23,6 +23,7 @@ namespace NuGet.Commands
         private const int SuccessCode = 0;
         private const int FailureCode = 1;
         private const HashAlgorithmName _defaultFingerprintAlgorithm = HashAlgorithmName.SHA256;
+        private const bool RequireAllowList = false;
 
         public async Task<int> ExecuteCommandAsync(VerifyArgs verifyArgs)
         {
@@ -46,8 +47,19 @@ namespace NuGet.Commands
                         fingerprint,
                         _defaultFingerprintAlgorithm)).ToList();
 
-                var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(clientAllowListEntries: allowListEntries);
-                var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders();
+                var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
+                var verificationProviders = SignatureVerificationProviderFactory.GetDefaultSignatureVerificationProviders();
+
+                if (allowListEntries != null && !allowListEntries.Any())
+                {
+                    verificationProviders.Add(
+                        new AllowListVerificationProvider(
+                            allowListEntries,
+                            RequireAllowList,
+                            emptyListErrorMessage: Strings.Error_NoProvidedAllowList,
+                            noMatchErrorMessage: Strings.Error_NoMatchingCertificate));
+                }
+
                 var verifier = new PackageSignatureVerifier(verificationProviders);
 
                 foreach (var package in packagesToVerify)

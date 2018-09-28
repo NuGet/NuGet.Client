@@ -562,11 +562,10 @@ namespace Test.Utility.Signing
                 first.VerificationTarget == second.VerificationTarget &&
                 first.SignaturePlacement == second.SignaturePlacement &&
                 first.RepositoryCountersignatureVerificationBehavior == second.RepositoryCountersignatureVerificationBehavior &&
-                AreCertificateHashAllowListEqual(first.ClientCertificateList, second.ClientCertificateList) &&
-                AreCertificateHashAllowListEqual(first.RepositoryCertificateList, second.RepositoryCertificateList);
+                AreCertificateHashAllowListEqual(first.AllowList, second.AllowList);
         }
 
-        private static bool AreCertificateHashAllowListEqual(IReadOnlyList<VerificationAllowListEntry> first, IReadOnlyList<VerificationAllowListEntry> second)
+        private static bool AreCertificateHashAllowListEqual(IReadOnlyCollection<VerificationAllowListEntry> first, IReadOnlyCollection<VerificationAllowListEntry> second)
         {
             return (first as IEnumerable<CertificateHashAllowListEntry>).
                 SequenceEqualWithNullCheck((second as IEnumerable<CertificateHashAllowListEntry>), new CertificateHashAllowListEntryComparer());

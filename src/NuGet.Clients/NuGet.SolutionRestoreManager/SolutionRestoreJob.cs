@@ -547,8 +547,6 @@ namespace NuGet.SolutionRestoreManager
             
             using (var cacheContext = new SourceCacheContext())
             {
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
                 var downloadContext = new PackageDownloadContext(cacheContext)
                 {
                     ParentId = _nuGetProjectContext.OperationId,

@@ -337,7 +337,6 @@ namespace NuGet.CommandLine
                     Packaging.PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     collectorLogger,
-                    signedPackageVerifier,
                     signingVerificationSettings)
             };
 
@@ -357,7 +356,6 @@ namespace NuGet.CommandLine
                          Packaging.PackageSaveMode.Defaultv3,
                          PackageExtractionBehavior.XmlDocFileSaveMode,
                          collectorLogger,
-                         signedPackageVerifier,
                          signingVerificationSettings)
                 };
 

@@ -216,7 +216,6 @@ namespace NuGet.Packaging.Test
                         PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         NullLogger.Instance,
-                        signedPackageVerifier: null,
                         signedPackageVerifierSettings: null),
                     CancellationToken.None);
 
@@ -348,7 +347,6 @@ namespace NuGet.Packaging.Test
                                 PackageSaveMode.Defaultv2,
                                 PackageExtractionBehavior.XmlDocFileSaveMode,
                                 NullLogger.Instance,
-                                signedPackageVerifier: null,
                                 signedPackageVerifierSettings: null),
                             CancellationToken.None);
                     }
@@ -401,7 +399,6 @@ namespace NuGet.Packaging.Test
                             PackageSaveMode.Defaultv2,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             NullLogger.Instance,
-                            signedPackageVerifier: null,
                             signedPackageVerifierSettings: null),
                         CancellationToken.None);
                 }
@@ -419,7 +416,6 @@ namespace NuGet.Packaging.Test
                             PackageSaveMode.Defaultv2,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             NullLogger.Instance,
-                            signedPackageVerifier: null,
                             signedPackageVerifierSettings: null),
                         CancellationToken.None);
                 }

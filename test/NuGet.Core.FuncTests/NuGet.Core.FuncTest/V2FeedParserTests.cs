@@ -39,7 +39,6 @@ namespace NuGet.Core.FuncTest
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     NullLogger.Instance,
-                    signedPackageVerifier: null,
                     signedPackageVerifierSettings: null)
                 };
 

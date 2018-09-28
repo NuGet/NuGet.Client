@@ -1022,8 +1022,10 @@ namespace NuGet.Commands.Test
                     PackageSaveMode.Defaultv3,
                      PackageExtractionBehavior.XmlDocFileSaveMode,
                      logger,
-                     signedPackageVerifier.Object,
-                     SignedPackageVerifierSettings.GetDefault());
+                     SignedPackageVerifierSettings.GetDefault())
+                {
+                    SignedPackageVerifier = signedPackageVerifier.Object
+                };
 
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, extractionContext, logger)
                 {
@@ -1097,8 +1099,10 @@ namespace NuGet.Commands.Test
                     PackageSaveMode.Defaultv3,
                      PackageExtractionBehavior.XmlDocFileSaveMode,
                      logger,
-                     signedPackageVerifier.Object,
-                     SignedPackageVerifierSettings.GetDefault());
+                     SignedPackageVerifierSettings.GetDefault())
+                {
+                    SignedPackageVerifier = signedPackageVerifier.Object
+                };
 
                 var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, extractionContext, logger)
                 {

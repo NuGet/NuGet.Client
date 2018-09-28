@@ -454,7 +454,6 @@ namespace NuGet.Commands.FuncTest
                             PackageSaveMode.Defaultv3,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             logger,
-                            signedPackageVerifier: null,
                             signedPackageVerifierSettings: null),
                         CancellationToken.None);
                 }
@@ -2013,7 +2012,6 @@ namespace NuGet.Commands.FuncTest
                          PackageSaveMode.Defaultv3,
                          PackageExtractionBehavior.XmlDocFileSaveMode,
                          logger,
-                         signedPackageVerifier: null,
                          signedPackageVerifierSettings: null);
 
                     var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
@@ -2069,7 +2067,6 @@ namespace NuGet.Commands.FuncTest
                          PackageSaveMode.Defaultv3,
                          PackageExtractionBehavior.XmlDocFileSaveMode,
                          logger,
-                         signedPackageVerifier: null,
                          signedPackageVerifierSettings: null);
                     var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
@@ -2124,7 +2121,6 @@ namespace NuGet.Commands.FuncTest
                          PackageSaveMode.Defaultv3,
                          PackageExtractionBehavior.XmlDocFileSaveMode,
                          logger,
-                         signedPackageVerifier: null,
                          signedPackageVerifierSettings: null);
                     var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
@@ -2179,7 +2175,6 @@ namespace NuGet.Commands.FuncTest
                          PackageSaveMode.Defaultv3,
                          PackageExtractionBehavior.XmlDocFileSaveMode,
                          logger,
-                         signedPackageVerifier: null,
                          signedPackageVerifierSettings: null);
                     var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
@@ -2234,7 +2229,6 @@ namespace NuGet.Commands.FuncTest
                          PackageSaveMode.Defaultv3,
                          PackageExtractionBehavior.XmlDocFileSaveMode,
                          logger,
-                         signedPackageVerifier: null,
                          signedPackageVerifierSettings: null);
                     var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
@@ -2289,7 +2283,6 @@ namespace NuGet.Commands.FuncTest
                          PackageSaveMode.Defaultv3,
                          PackageExtractionBehavior.XmlDocFileSaveMode,
                          logger,
-                         signedPackageVerifier: null,
                          signedPackageVerifierSettings: null);
                     var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
@@ -2344,7 +2337,6 @@ namespace NuGet.Commands.FuncTest
                          PackageSaveMode.Defaultv3,
                          PackageExtractionBehavior.XmlDocFileSaveMode,
                          logger,
-                         signedPackageVerifier: null,
                          signedPackageVerifierSettings: null);
                     var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {
@@ -2400,7 +2392,6 @@ namespace NuGet.Commands.FuncTest
                          PackageSaveMode.Defaultv3,
                          PackageExtractionBehavior.XmlDocFileSaveMode,
                          logger,
-                         signedPackageVerifier: null,
                          signedPackageVerifierSettings: null);
                     var request = new RestoreRequest(spec, provider, context, packageExtractionContext, logger)
                     {

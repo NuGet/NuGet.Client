@@ -261,8 +261,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     {
                         var logger = new LoggerAdapter(this);
 
-                        var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
                         var downloadContext = new PackageDownloadContext(cacheContext)
                         {
                             ParentId = OperationId,

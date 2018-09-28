@@ -15,24 +15,25 @@ namespace NuGet.Packaging
 
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; }
 
-        public IPackageSignatureVerifier SignedPackageVerifier { get; set; }
-
-        public SignedPackageVerifierSettings SignedPackageVerifierSettings { get; set; }
+        public ClientPolicyContext ClientPolicyContext { get; }
 
         public bool CopySatelliteFiles { get; set; } = true;
+
+        /// <remarks>
+        /// This property should only be used to override the default verifier on tests.
+        /// </remarks>
+        internal IPackageSignatureVerifier SignedPackageVerifier { get; set; }
 
         public PackageExtractionContext(
             PackageSaveMode packageSaveMode,
             XmlDocFileSaveMode xmlDocFileSaveMode,
             ILogger logger,
-            IPackageSignatureVerifier signedPackageVerifier,
-            SignedPackageVerifierSettings signedPackageVerifierSettings)
+            ClientPolicyContext clientPolicyContext)
         {
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             PackageSaveMode = packageSaveMode;
             XmlDocFileSaveMode = xmlDocFileSaveMode;
-            SignedPackageVerifier = signedPackageVerifier;
-            SignedPackageVerifierSettings = signedPackageVerifierSettings;
+            ClientPolicyContext = clientPolicyContext;
         }
     }
 }

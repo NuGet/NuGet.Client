@@ -416,14 +416,11 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
                 var packageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    log,
-                    signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetClientPolicy(Settings, log));
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings, log),
+                    log);
 
                 var context = new OfflineFeedAddContext(pathToPackage,
                     root,

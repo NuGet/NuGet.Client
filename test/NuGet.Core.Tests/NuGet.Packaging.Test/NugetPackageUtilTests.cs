@@ -38,7 +38,6 @@ namespace Commands.Test
                    packageSaveMode: PackageSaveMode.Defaultv3,
                    xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                    logger: logger,
-                   signedPackageVerifier: null,
                    signedPackageVerifierSettings: null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
@@ -88,7 +87,6 @@ namespace Commands.Test
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                     logger: logger,
-                    signedPackageVerifier: null,
                     signedPackageVerifierSettings: null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
@@ -138,7 +136,6 @@ namespace Commands.Test
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                     logger: logger,
-                    signedPackageVerifier: null,
                     signedPackageVerifierSettings: null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
@@ -199,7 +196,6 @@ namespace Commands.Test
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                     logger: logger,
-                    signedPackageVerifier: null,
                     signedPackageVerifierSettings: null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
@@ -264,7 +260,6 @@ namespace Commands.Test
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                     logger: logger,
-                    signedPackageVerifier: null,
                     signedPackageVerifierSettings: null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
@@ -333,7 +328,6 @@ namespace Commands.Test
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                     logger: logger,
-                    signedPackageVerifier: null,
                     signedPackageVerifierSettings: null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
@@ -414,7 +408,6 @@ namespace Commands.Test
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                     logger: NullLogger.Instance,
-                    signedPackageVerifier: null,
                     signedPackageVerifierSettings: null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(packagesDirectory);
@@ -460,7 +453,6 @@ namespace Commands.Test
                     packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Nupkg,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                     logger: NullLogger.Instance,
-                    signedPackageVerifier: null,
                     signedPackageVerifierSettings: null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(packagesDirectory);
@@ -510,7 +502,6 @@ namespace Commands.Test
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                     logger: NullLogger.Instance,
-                    signedPackageVerifier: null,
                     signedPackageVerifierSettings: null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(packagesDirectory);
@@ -571,7 +562,6 @@ namespace Commands.Test
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                     logger: NullLogger.Instance,
-                    signedPackageVerifier: null,
                     signedPackageVerifierSettings: null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(packagesDirectory);
@@ -631,7 +621,6 @@ namespace Commands.Test
                      packageSaveMode: PackageSaveMode.Defaultv3,
                      xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                      logger: NullLogger.Instance,
-                     signedPackageVerifier: null,
                     signedPackageVerifierSettings: null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(packagesDirectory);
@@ -676,7 +665,6 @@ namespace Commands.Test
                      packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Nupkg,
                      xmlDocFileSaveMode: XmlDocFileSaveMode.None,
                      logger: NullLogger.Instance,
-                     signedPackageVerifier: null,
                     signedPackageVerifierSettings: null);
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(packagesDirectory);
