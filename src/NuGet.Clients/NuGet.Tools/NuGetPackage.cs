@@ -523,6 +523,11 @@ namespace NuGetVSExtension
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (ShouldMEFBeInitialized())
+            {
+                await InitializeMEFAsync();
+            }
+
             var project = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
 
             if (!await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(null, project))
