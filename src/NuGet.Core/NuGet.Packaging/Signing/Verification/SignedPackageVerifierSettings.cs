@@ -239,10 +239,10 @@ namespace NuGet.Packaging.Signing
 
             if (policy == SignatureValidationMode.Require)
             {
-                return GetRequireModeDefaultPolicy(repoAllowListEntries: null, clientAllowListEntries: allowList);
+                return GetRequireModeDefaultPolicy(clientAllowListEntries: allowList);
             }
 
-            return GetAcceptModeDefaultPolicy(repoAllowListEntries: null, clientAllowListEntries: allowList);
+            return GetAcceptModeDefaultPolicy(clientAllowListEntries: allowList);
         }
 
         /// <summary>
