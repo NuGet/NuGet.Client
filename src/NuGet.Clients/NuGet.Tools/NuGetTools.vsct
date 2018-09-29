@@ -83,6 +83,7 @@
       <Button guid="guidDialogCmdSet" id="cmdidUpgradeNuGetProject" priority="0x0400" type="Button">
         <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
         <Icon guid="guidToolbarImages" id="bmpUpgradeNuGetProject" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <CommandName>cmdidUpgradeNuGetProject</CommandName>
@@ -93,6 +94,7 @@
       <Button guid="guidDialogCmdSet" id="cmdidUpgradePackagesConfig" priority="0x0410" type="Button">
         <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
         <Icon guid="guidToolbarImages" id="bmpUpgradeNuGetProject" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <CommandName>cmdidUpgradePackagesConfig</CommandName>
@@ -163,8 +165,8 @@
     <VisibilityItem guid="guidDialogCmdSet" id="cmdidAddPackages" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
     <VisibilityItem guid="guidDialogCmdSet" id="cmdidAddPackagesForSolution" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
     <VisibilityItem guid="guidDialogCmdSet" id="cmdidRestorePackages" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
-    <VisibilityItem guid="guidDialogCmdSet" id="cmdidUpgradePackagesConfig" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
-    <VisibilityItem guid="guidDialogCmdSet" id="cmdidUpgradeNuGetProject" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
+    <VisibilityItem guid="guidDialogCmdSet" id="cmdidUpgradePackagesConfig" context="UICONTEXT_UpgradeableProjectLoaded" />
+    <VisibilityItem guid="guidDialogCmdSet" id="cmdidUpgradeNuGetProject" context="UICONTEXT_UpgradeableProjectLoaded" />
   </VisibilityConstraints>
 
   <CommandPlacements>
@@ -213,6 +215,7 @@
   </CommandPlacements>
 
   <Symbols>
+    <GuidSymbol name="UICONTEXT_UpgradeableProjectLoaded" value="{1837160D-723F-43CD-8185-97758295A859}" /> 
     <GuidSymbol name="guidNuGetPackage" value="{5fcc8577-4feb-4d04-ad72-d6c629b083cc}" />
     <GuidSymbol name="guidRestoreManagerPackage" value="{2b52ac92-4551-426d-bd34-c6d7d9fdd1c5}" />
     <GuidSymbol name="guidPowerConsoleCmdSet" value="{1E8A55F6-C18D-407F-91C8-94B02AE1CED6}">

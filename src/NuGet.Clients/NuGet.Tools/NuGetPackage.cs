@@ -46,6 +46,16 @@ namespace NuGetVSExtension
     [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)]
     [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
     [ProvideBindingPath] // Definition dll needs to be on VS binding path
+    // UI Context rule for a project that could be upgraded to PackageReference from packages.config based project.
+    // Only exception is this UI context doesn't get enabled for right-click on Reference since there is no extension point on references
+    // to know if there is packages.config file in this project hierarchy. So first-time right click on reference in a new VS instance
+    // will not show Migrator option.
+    [ProvideUIContextRule(GuidList.guidUpgradeableProjectLoadedString,
+        "UpgradeableProjectLoaded",
+        "SolutionExistsAndFullyLoaded & PackagesConfigBasedProjectLoaded",
+        new[] { "SolutionExistsAndFullyLoaded", "PackagesConfigBasedProjectLoaded" },
+        new[] { VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string,
+            "HierSingleSelectionName:packages.config"})]
     [ProvideAutoLoad(GuidList.guidUpgradeableProjectLoadedString, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string, PackageAutoLoadFlags.BackgroundLoad)]
@@ -836,8 +846,8 @@ namespace NuGetVSExtension
                 {
                     isConsoleBusy = ConsoleStatus.Value.IsBusy;
                 }
-                
-                command.Visible = IsSolutionOpen;
+
+                command.Visible = IsSolutionOpen && await IsPackagesConfigBasedProjectAsync();
                 command.Enabled = !isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
             });
         }
@@ -865,8 +875,32 @@ namespace NuGetVSExtension
                 command.Visible = IsSolutionOpen && IsPackagesConfigSelected();
                 command.Enabled = !isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
             });
-
         }
+
+        private async Task<bool> IsPackagesConfigBasedProjectAsync()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var dteProject = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
+
+            var uniqueName = EnvDTEProjectInfoUtility.GetUniqueName(dteProject);
+            var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
+
+            if (nuGetProject == null)
+            {
+                return false;
+            }
+
+            var msBuildNuGetProject = nuGetProject as MSBuildNuGetProject;
+
+            if (msBuildNuGetProject == null || !msBuildNuGetProject.PackagesConfigNuGetProject.PackagesConfigExists())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
 
         private bool IsSolutionOpen => _dte?.Solution != null && _dte.Solution.IsOpen;
 
