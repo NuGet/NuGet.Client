@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using System.Text;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
@@ -13,9 +14,8 @@ namespace NuGet.Packaging
     /// </summary>
     public class PackagePathResolver
     {
-        private readonly string _rootDirectory;
-
         public bool UseSideBySidePaths { get; }
+        protected internal string Root { get; }
 
         public PackagePathResolver(string rootDirectory, bool useSideBySidePaths = true)
         {
@@ -25,13 +25,11 @@ namespace NuGet.Packaging
                     string.Format(Strings.StringCannotBeNullOrEmpty, nameof(rootDirectory)),
                     nameof(rootDirectory));
             }
-            _rootDirectory = rootDirectory;
-            UseSideBySidePaths = useSideBySidePaths;
-        }
 
-        protected internal string Root
-        {
-            get { return _rootDirectory; }
+            Root = Path.IsPathRooted(rootDirectory) ?
+                rootDirectory :
+                PathUtility.GetAbsolutePath(Directory.GetCurrentDirectory(), rootDirectory);
+            UseSideBySidePaths = useSideBySidePaths;
         }
 
         public virtual string GetPackageDirectoryName(PackageIdentity packageIdentity)
@@ -67,7 +65,7 @@ namespace NuGet.Packaging
 
         public virtual string GetInstallPath(PackageIdentity packageIdentity)
         {
-            return Path.Combine(_rootDirectory, GetPackageDirectoryName(packageIdentity));
+            return Path.Combine(Root, GetPackageDirectoryName(packageIdentity));
         }
 
         public virtual string GetInstalledPath(PackageIdentity packageIdentity)

@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -109,7 +110,7 @@ namespace NuGet.Packaging.Test
             var target = new PackagePathResolver(
                 rootDirectory: InMemoryRootDirectory,
                 useSideBySidePaths: useSideBySidePaths);
-            expected = Path.Combine(InMemoryRootDirectory, expected);
+            expected = PathUtility.GetAbsolutePath(Directory.GetCurrentDirectory(), Path.Combine(InMemoryRootDirectory, expected));
 
             // Act
             var actual = target.GetInstallPath(PackageIdentity);
@@ -268,6 +269,22 @@ namespace NuGet.Packaging.Test
                 var actualFilePath = target.GetInstalledPackageFilePath(PackageIdentity);
 
                 Assert.Equal("", actualFilePath);
+            }
+        }
+
+        [Fact]
+        public void Root_ReturnsAbsolutePath()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var expectedPath = testDirectory.Path;
+                var relativePath = PathUtility.GetRelativePath(Directory.GetCurrentDirectory(), expectedPath);
+
+                var target = new PackagePathResolver(relativePath);
+
+                var actualPath = target.Root;
+
+                Assert.Equal(expectedPath, actualPath);
             }
         }
     }
