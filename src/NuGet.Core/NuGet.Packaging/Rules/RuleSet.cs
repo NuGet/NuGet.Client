@@ -24,7 +24,9 @@ namespace NuGet.Packaging.Rules
                 new InvalidPrereleaseDependencyRule(AnalysisResources.InvalidPrereleaseDependencyWarning),
                 new UnspecifiedDependencyVersionRule(AnalysisResources.UnspecifiedDependencyVersionWarning),
                 new UnrecognizedScriptFileRule(AnalysisResources.UnrecognizedScriptWarning),
-                new PathTooLongRule(AnalysisResources.FilePathTooLongWarning)
+                new PathTooLongRule(AnalysisResources.FilePathTooLongWarning),
+                new UnrecognizedLicenseIdentifierRule(AnalysisResources.UnrecognizedLicenseIdentifier),
+                new LicenseUrlDeprecationWarning(AnalysisResources.LicenseUrlDeprecationWarning),
             }
         );
 

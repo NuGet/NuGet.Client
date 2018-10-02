@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Manifest_RequireLicenseAcceptanceRequiresLicenseUrl" xml:space="preserve">
-    <value>Enabling license acceptance requires a license url.</value>
+    <value>Enabling license acceptance requires a license or a licenseUrl to be specified. The licenseUrl will be deprecated, consider using the license metadata.</value>
   </data>
   <data name="Manifest_UriCannotBeEmpty" xml:space="preserve">
     <value>{0} cannot be empty.</value>
@@ -182,5 +182,15 @@
   </data>
   <data name="Manifest_PropertyValueReadFailure" xml:space="preserve">
     <value>An error occured while trying to parse the value '{0}' of property '{1}' in the manifest file.</value>
+  </data>
+  <data name="Manifest_LicenseFileIsNotInNupkg" xml:space="preserve">
+    <value>The license file '{0}' does not exist in the package.</value>
+    <comment>0 - the license file</comment>
+  </data>
+  <data name="Manifest_LicenseFileExtensionIsInvalid" xml:space="preserve">
+    <value>The license file '{0}' has an invalid extension. Valid options are .txt, .md or none.</value>
+  </data>
+  <data name="Manifest_LicenseUrlCannotBeUsedWithLicenseMetadata" xml:space="preserve">
+    <value>The licenseUrl and license elements cannot be used together.</value>
   </data>
 </root>

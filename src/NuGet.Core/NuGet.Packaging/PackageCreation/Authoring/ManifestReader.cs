@@ -12,6 +12,8 @@ using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Versioning;
 using NuGet.Packaging.Core;
 using NuGet.Frameworks;
+using NuGet.Common;
+using NuGet.Packaging.Licenses;
 
 namespace NuGet.Packaging
 {
@@ -51,7 +53,7 @@ namespace NuGet.Packaging
             // now check for required elements, which include <id>, <version>, <authors> and <description>
             foreach (var requiredElement in RequiredElements)
             {
-                if(requiredElement.Equals("authors") && manifestMetadata.PackageTypes.Contains(PackageType.SymbolsPackage))
+                if (requiredElement.Equals("authors") && manifestMetadata.PackageTypes.Contains(PackageType.SymbolsPackage))
                 {
                     continue;
                 }
@@ -146,6 +148,9 @@ namespace NuGet.Packaging
                     case "repository":
                         manifestMetadata.Repository = ReadRepository(element);
                         break;
+                    case "license":
+                        manifestMetadata.LicenseMetadata = ReadLicenseMetadata(element);
+                        break;
                 }
             }
             catch (Exception ex)
@@ -160,7 +165,71 @@ namespace NuGet.Packaging
                 {
                     throw new InvalidDataException(string.Format(NuGetResources.Manifest_PropertyValueReadFailure, value, element.Name.LocalName), ex);
                 }
-                
+            }
+        }
+
+        private static LicenseMetadata ReadLicenseMetadata(XElement licenseNode)
+        {
+
+            var type = licenseNode.Attribute(NuspecUtility.Type).Value;
+            var license = licenseNode.Value;
+            var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value;
+
+
+            if (!Enum.TryParse(type, true, out LicenseType licenseType))
+            {
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicense_InvalidLicenseType, type));
+            }
+
+            if (string.IsNullOrWhiteSpace(license))
+            {
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicense_MissingRequiredValue));
+            }
+
+            Version version = null;
+            if (versionValue != null)
+            {
+                if (!Version.TryParse(versionValue, out version))
+                {
+                    throw new PackagingException(NuGetLogCode.NU5034, string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.NuGetLicense_InvalidLicenseExpressionVersion,
+                        versionValue));
+                }
+            }
+            else
+            {
+                version = LicenseMetadata.EmptyVersion;
+            }
+
+            switch (licenseType)
+            {
+                case LicenseType.Expression:
+
+                    if (version.CompareTo(LicenseMetadata.CurrentVersion) <= 0)
+                    {
+                        try
+                        {
+                            var expression = NuGetLicenseExpression.Parse(license);
+                            return new LicenseMetadata(licenseType, license, expression, version);
+                        }
+                        catch (NuGetLicenseExpressionParsingException e)
+                        {
+                            throw new PackagingException(NuGetLogCode.NU5032, e.Message);
+                        }
+
+                    }
+                    throw new PackagingException(NuGetLogCode.NU5034, string.Format(
+                                   CultureInfo.CurrentCulture,
+                                   Strings.InvalidLicenseExppressionVersion_VersionTooHigh,
+                                   versionValue,
+                                   LicenseMetadata.CurrentVersion));
+
+                case LicenseType.File:
+                    return new LicenseMetadata(licenseType, license, null, LicenseMetadata.EmptyVersion);
+
+                default:
+                    throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicense_InvalidLicenseType, type));
             }
         }
 
@@ -341,7 +410,7 @@ namespace NuGet.Packaging
                 var exclude = file.GetOptionalAttributeValue("exclude").SafeTrim();
 
                 // Multiple sources can be specified by using semi-colon separated values. 
-                files.AddRange(srcElement.Value.Trim(';').Split(';').Select(s => 
+                files.AddRange(srcElement.Value.Trim(';').Split(';').Select(s =>
                     new ManifestFile
                     {
                         Source = s.SafeTrim(),

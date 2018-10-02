@@ -764,4 +764,20 @@ Valid from:</comment>
   <data name="DefaultError_NoMatchInAllowList" xml:space="preserve">
     <value>The package signature certificate fingerprint does not match any certificate fingerprint in the allow list.</value>
   </data>
+  <data name="NuGetLicense_InvalidLicenseExpression" xml:space="preserve">
+    <value>The license expression '{0}' cannot be parsed succesfully.</value>
+  </data>
+  <data name="NuGetLicense_InvalidLicenseExpressionVersion" xml:space="preserve">
+    <value>The license version string '{0}'  is invalid.</value>
+    <comment>0 - version string, 1 - the metadata</comment>
+  </data>
+  <data name="InvalidLicenseExppressionVersion_VersionTooHigh" xml:space="preserve">
+    <value>The version string '{0}' is not supported by this toolset. The highest supported version is '{1}'. Either use a lower version or upgrade your toolset.</value>
+  </data>
+  <data name="NuGetLicense_InvalidLicenseType" xml:space="preserve">
+    <value>Unrecognized license type '{0}'</value>
+  </data>
+  <data name="NuGetLicense_MissingRequiredValue" xml:space="preserve">
+    <value>The element 'license' cannot be empty. </value>
+  </data>
 </root>

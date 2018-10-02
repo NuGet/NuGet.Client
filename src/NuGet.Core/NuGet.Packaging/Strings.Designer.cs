@@ -557,6 +557,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The version string &apos;{0}&apos; is not supported by this toolset. The highest supported version is &apos;{1}&apos;. Either use a lower version or upgrade your toolset..
+        /// </summary>
+        internal static string InvalidLicenseExppressionVersion_VersionTooHigh {
+            get {
+                return ResourceManager.GetString("InvalidLicenseExppressionVersion_VersionTooHigh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} This validation error occurred in a &apos;{1}&apos; element..
         /// </summary>
         internal static string InvalidNuspecElement {
@@ -760,6 +769,42 @@ namespace NuGet.Packaging {
         internal static string NoRepositoryCountersignature {
             get {
                 return ResourceManager.GetString("NoRepositoryCountersignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license expression &apos;{0}&apos; cannot be parsed succesfully..
+        /// </summary>
+        internal static string NuGetLicense_InvalidLicenseExpression {
+            get {
+                return ResourceManager.GetString("NuGetLicense_InvalidLicenseExpression", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license version string &apos;{0}&apos;  is invalid..
+        /// </summary>
+        internal static string NuGetLicense_InvalidLicenseExpressionVersion {
+            get {
+                return ResourceManager.GetString("NuGetLicense_InvalidLicenseExpressionVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unrecognized license type &apos;{0}&apos;.
+        /// </summary>
+        internal static string NuGetLicense_InvalidLicenseType {
+            get {
+                return ResourceManager.GetString("NuGetLicense_InvalidLicenseType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The element &apos;license&apos; cannot be empty. .
+        /// </summary>
+        internal static string NuGetLicense_MissingRequiredValue {
+            get {
+                return ResourceManager.GetString("NuGetLicense_MissingRequiredValue", resourceCulture);
             }
         }
         

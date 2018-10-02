@@ -134,6 +134,15 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The &apos;licenseUrl&apos; element will be deprecated. Consider using the &apos;license&apos; element instead..
+        /// </summary>
+        public static string LicenseUrlDeprecationWarning {
+            get {
+                return ResourceManager.GetString("LicenseUrlDeprecationWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The assembly &apos;lib\{0}&apos; will be ignored when the package is installed after the migration..
         /// </summary>
         public static string Migrator_AssemblyDirectlyUnderLibWarning {
@@ -202,6 +211,15 @@ namespace NuGet.Packaging.Rules {
         public static string ScriptOutsideToolsWarning {
             get {
                 return ResourceManager.GetString("ScriptOutsideToolsWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license identifier &apos;{0}&apos; is not recognized by the current toolset..
+        /// </summary>
+        public static string UnrecognizedLicenseIdentifier {
+            get {
+                return ResourceManager.GetString("UnrecognizedLicenseIdentifier", resourceCulture);
             }
         }
         

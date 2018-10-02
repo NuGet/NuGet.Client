@@ -7,8 +7,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Licenses;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging
@@ -411,12 +413,68 @@ namespace NuGet.Packaging
             return repository;
         }
 
+        public LicenseMetadata GetLicenseMetadata()
+        {
+            var ns = MetadataNode.GetDefaultNamespace().NamespaceName;
+            var licenseNode = MetadataNode.Elements(XName.Get(NuspecUtility.License, ns)).FirstOrDefault();
+
+            if (licenseNode != null)
+            {
+                var type = licenseNode.Attribute(NuspecUtility.Type).Value;
+                var license = licenseNode.Value;
+                var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value;
+
+                var isKnownType = Enum.TryParse(type, true, out LicenseType licenseType);
+
+                if (isKnownType)
+                {
+                    Version version = null;
+                    if (versionValue != null)
+                    {
+                        if (!System.Version.TryParse(versionValue, out version))
+                        {
+                            throw new PackagingException(NuGetLogCode.NU5034, string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.NuGetLicense_InvalidLicenseExpressionVersion,
+                                versionValue));
+                        }
+                    }
+                    else
+                    {
+                        version = LicenseMetadata.EmptyVersion;
+                    }
+
+                    if (licenseType == LicenseType.Expression)
+                    {
+                        if (version.CompareTo(LicenseMetadata.CurrentVersion) <= 0)
+                        {
+                            try
+                            {
+                                var expression = NuGetLicenseExpression.Parse(license);
+                                return new LicenseMetadata(licenseType, license, expression, version);
+                            }
+                            catch (NuGetLicenseExpressionParsingException e)
+                            {
+                                throw new PackagingException(NuGetLogCode.NU5032, e.Message, e);
+                            }
+                        }
+                        else
+                        {
+                            return new LicenseMetadata(licenseType, license, null, version);
+                        }
+                    }
+                    return new LicenseMetadata(licenseType, license, null, LicenseMetadata.EmptyVersion);
+                }
+            }
+            return null;
+        }
+
         /// <summary>
         /// Require license acceptance when installing the package.
         /// </summary>
         public bool GetRequireLicenseAcceptance()
         {
-            return StringComparer.OrdinalIgnoreCase.Equals(Boolean.TrueString, GetMetadataValue("requireLicenseAcceptance"));
+            return StringComparer.OrdinalIgnoreCase.Equals(bool.TrueString, GetMetadataValue("requireLicenseAcceptance"));
         }
 
         private static bool? AttributeAsNullableBool(XElement element, string attributeName)
@@ -427,11 +485,11 @@ namespace NuGet.Packaging
 
             if (attributeValue != null)
             {
-                if (Boolean.TrueString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
+                if (bool.TrueString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
                 {
                     result = true;
                 }
-                else if (Boolean.FalseString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
+                else if (bool.FalseString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
                 {
                     result = false;
                 }

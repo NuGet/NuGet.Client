@@ -12,6 +12,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Licenses;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 
@@ -171,6 +172,62 @@ namespace NuGet.Build.Tasks.Pack
                     request.RepositoryBranch,
                     request.RepositoryCommit);
             }
+
+            var hasLicenseExpression = !string.IsNullOrEmpty(request.PackageLicenseExpression);
+            var hasLicenseFile = !string.IsNullOrEmpty(request.PackageLicenseFile);
+            if (hasLicenseExpression || hasLicenseFile)
+            {
+                if (request.LicenseUrl != null)
+                {
+                    throw new PackagingException(NuGetLogCode.NU5035, string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Licenses_LicenseUrlCannotBeUsedInConjuctionWithLicense));
+                }
+
+                if (hasLicenseExpression && hasLicenseFile)
+                {
+                    throw new PackagingException(NuGetLogCode.NU5033, string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidLicenseCombination,
+                        request.PackageLicenseExpression));
+                }
+
+                var version = GetLicenseExpressionVersion(request);
+
+                if (hasLicenseExpression)
+                {
+                    if (version.CompareTo(LicenseMetadata.CurrentVersion) <= 0)
+                    {
+                        try
+                        {
+                            var expression = NuGetLicenseExpression.Parse(request.PackageLicenseExpression);
+                            builder.LicenseMetadata = new LicenseMetadata(LicenseType.Expression, request.PackageLicenseExpression, expression, version);
+                        }
+                        catch (NuGetLicenseExpressionParsingException e)
+                        {
+                            throw new PackagingException(NuGetLogCode.NU5032, string.Format(
+                                   CultureInfo.CurrentCulture,
+                                   Strings.InvalidLicenseExpression,
+                                   request.PackageLicenseExpression, e.Message) ,
+                                   e);
+                        }
+                    }
+                    else
+                    {
+                        throw new PackagingException(NuGetLogCode.NU5034, string.Format(
+                                   CultureInfo.CurrentCulture,
+                                   Strings.InvalidLicenseExppressionVersion_VersionTooHigh,
+                                   request.PackageLicenseExpressionVersion,
+                                   LicenseMetadata.CurrentVersion));
+                    }
+                }
+
+                if (hasLicenseFile)
+                {
+                    builder.LicenseMetadata = new LicenseMetadata(LicenseType.File, request.PackageLicenseFile, null, version);
+                }
+            }
+
             if (request.MinClientVersion != null)
             {
                 Version version;
@@ -224,6 +281,27 @@ namespace NuGet.Build.Tasks.Pack
             PopulateFrameworkAssemblyReferences(builder, request);
 
             return builder;
+        }
+
+        private static Version GetLicenseExpressionVersion(IPackTaskRequest<IMSBuildItem> request)
+        {
+            Version version;
+            if (!string.IsNullOrEmpty(request.PackageLicenseExpressionVersion))
+            {
+                if (!Version.TryParse(request.PackageLicenseExpressionVersion, out version))
+                {
+                    throw new PackagingException(NuGetLogCode.NU5034, string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidLicenseExpressionVersion,
+                        request.PackageLicenseExpressionVersion));
+                }
+            }
+            else
+            {
+                version = LicenseMetadata.EmptyVersion;
+            }
+
+            return version;
         }
 
         private void PopulateFrameworkAssemblyReferences(PackageBuilder builder, IPackTaskRequest<IMSBuildItem> request)

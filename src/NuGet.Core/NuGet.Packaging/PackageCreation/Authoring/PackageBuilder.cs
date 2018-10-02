@@ -94,6 +94,8 @@ namespace NuGet.Packaging
 
         public RepositoryMetadata Repository { get; set; }
 
+        public LicenseMetadata LicenseMetadata { get; set; }
+
         public bool HasSnapshotVersion
         {
             get;
@@ -334,6 +336,7 @@ namespace NuGet.Packaging
 
             ValidateDependencies(Version, DependencyGroups);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
+            ValidateLicenseFile(Files, LicenseMetadata);
 
             using (var package = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
@@ -476,6 +479,25 @@ namespace NuGet.Packaging
             }
         }
 
+        public static void ValidateLicenseFile(IEnumerable<IPackageFile> files, LicenseMetadata licenseMetadata)
+        {
+            if (licenseMetadata?.Type == LicenseType.File)
+            {
+                var ext = Path.GetExtension(licenseMetadata.License);
+                if (!string.IsNullOrEmpty(ext) &&
+                        !ext.Equals(".txt", StringComparison.OrdinalIgnoreCase) &&
+                        !ext.Equals(".md", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new PackagingException(NuGetLogCode.NU5031, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileExtensionIsInvalid, licenseMetadata.License));
+                }
+                var count = files.Where(e => e.Path.Equals(licenseMetadata.License)).Count();
+                if (count == 0)
+                {
+                    throw new PackagingException(NuGetLogCode.NU5030, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileIsNotInNupkg, licenseMetadata.License));
+                }
+            }
+        }
+
         private void ReadManifest(Stream stream, string basePath, Func<string, string> propertyProvider)
         {
             // Deserialize the document and extract the metadata
@@ -519,6 +541,7 @@ namespace NuGet.Packaging
             MinClientVersion = metadata.MinClientVersion;
             Repository = metadata.Repository;
             ContentFiles = new Collection<ManifestContentFiles>(manifestMetadata.ContentFiles.ToList());
+            LicenseMetadata = metadata.LicenseMetadata;
 
             if (metadata.Tags != null)
             {
@@ -549,15 +572,15 @@ namespace NuGet.Packaging
 
         private void WriteManifest(ZipArchive package, int minimumManifestVersion, string psmdcpPath)
         {
-            string path = Id + PackagingConstants.ManifestExtension;
+            var path = Id + PackagingConstants.ManifestExtension;
 
             WriteOpcManifestRelationship(package, path, psmdcpPath);
 
-            ZipArchiveEntry entry = package.CreateEntry(path, CompressionLevel.Optimal);
+            var entry = package.CreateEntry(path, CompressionLevel.Optimal);
 
-            using (Stream stream = entry.Open())
+            using (var stream = entry.Open())
             {
-                Manifest manifest = Manifest.Create(this);
+                var manifest = Manifest.Create(this);
                 manifest.Save(stream, minimumManifestVersion);
             }
         }

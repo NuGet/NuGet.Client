@@ -129,6 +129,20 @@
     <value>The file '{0}' to be packed was not found on disk.</value>
     <comment>{0} is the file being packed.</comment>
   </data>
+  <data name="InvalidLicenseCombination" xml:space="preserve">
+    <value>Invalid metadata. Cannot specify both a License Expression and a License File.</value>
+  </data>
+  <data name="InvalidLicenseExppressionVersion_VersionTooHigh" xml:space="preserve">
+    <value>The version string '{0}' is not supported by this toolset. The highest supported version is '{1}'. Either use a lower version or upgrade your toolset.</value>
+  </data>
+  <data name="InvalidLicenseExpression" xml:space="preserve">
+    <value>The license expression '{0}' cannot be parsed succesfully. {1}</value>
+    <comment>0 - the license expression, 1 further details</comment>
+  </data>
+  <data name="InvalidLicenseExpressionVersion" xml:space="preserve">
+    <value>The version string '{0}' for the License Expression is invalid.</value>
+    <comment>{0} version string</comment>
+  </data>
   <data name="InvalidMinClientVersion" xml:space="preserve">
     <value>MinClientVersion string specified '{0}' is invalid.</value>
     <comment>{0} is the version.</comment>
@@ -149,6 +163,9 @@
   </data>
   <data name="IsPackableFalseError" xml:space="preserve">
     <value>Cannot generate a package from a project which has IsPackable property set to false.</value>
+  </data>
+  <data name="Licenses_LicenseUrlCannotBeUsedInConjuctionWithLicense" xml:space="preserve">
+    <value>The PackageLicenseUrl cannot be used cannot be used in conjunction with the PackageLicenseFile and PackageLicenseExpression.</value>
   </data>
   <data name="NoPackItemProvided" xml:space="preserve">
     <value>No project was provided to the PackTask.</value>

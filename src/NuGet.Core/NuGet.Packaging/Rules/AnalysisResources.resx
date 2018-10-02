@@ -142,6 +142,9 @@
   <data name="LegacyVersionWarning" xml:space="preserve">
     <value>The package version '{0}' uses SemVer 2.0.0 or components of SemVer 1.0.0 that are not supported on legacy clients. Change the package version to a SemVer 1.0.0 string. If the version contains a release label it must start with a letter. This message can be ignored if the package is not intended for older clients.</value>
   </data>
+  <data name="LicenseUrlDeprecationWarning" xml:space="preserve">
+    <value>The 'licenseUrl' element will be deprecated. Consider using the 'license' element instead.</value>
+  </data>
   <data name="Migrator_AssemblyDirectlyUnderLibWarning" xml:space="preserve">
     <value>The assembly 'lib\{0}' will be ignored when the package is installed after the migration.</value>
   </data>
@@ -165,6 +168,9 @@
   </data>
   <data name="ScriptOutsideToolsWarning" xml:space="preserve">
     <value>The script file '{0}' is outside the 'tools' folder and hence will not be executed during installation of this package. Move it into the 'tools' folder.</value>
+  </data>
+  <data name="UnrecognizedLicenseIdentifier" xml:space="preserve">
+    <value>The license identifier '{0}' is not recognized by the current toolset.</value>
   </data>
   <data name="UnrecognizedScriptWarning" xml:space="preserve">
     <value>The script file '{0}' is not recognized by NuGet and hence will not be executed during installation of this package. Rename it to install.ps1, uninstall.ps1 or init.ps1 and place it directly under 'tools'.</value>
