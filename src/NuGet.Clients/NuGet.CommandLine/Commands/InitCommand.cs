@@ -43,7 +43,7 @@ namespace NuGet.CommandLine
             if (packagePaths.Count > 0)
             {
                 var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-                var signingSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings);
+                var signingSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings, Console);
 
                 var packageExtractionContext = new PackageExtractionContext(
                     Expand ? PackageSaveMode.Defaultv3 : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg,

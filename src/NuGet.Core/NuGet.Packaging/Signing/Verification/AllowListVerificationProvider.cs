@@ -106,7 +106,7 @@ namespace NuGet.Packaging.Signing
                         if (IsSignatureTargeted(certificateHashEntry.Target, signature) &&
                             StringComparer.OrdinalIgnoreCase.Equals(certificateHashEntry.Fingerprint, primarySignatureCertificateFingerprint))
                         {
-                            if (ShouldVerifyOwners(certificateHashEntry as TrustedRepositoryAllowListEntry, signature as IRepositorySignature, out var allowedOwners, out var actualOwners))
+                            if (ShouldVerifyOwners(certificateHashEntry as TrustedSignerAllowListEntry, signature as IRepositorySignature, out var allowedOwners, out var actualOwners))
                             {
                                 return allowedOwners.Intersect(actualOwners).Any();
                             }
@@ -127,7 +127,7 @@ namespace NuGet.Packaging.Signing
                             if (IsSignatureTargeted(certificateHashEntry.Target, repositoryCountersignature.Value) &&
                                 StringComparer.OrdinalIgnoreCase.Equals(certificateHashEntry.Fingerprint, countersignatureCertificateFingerprint))
                             {
-                                if (ShouldVerifyOwners(certificateHashEntry as TrustedRepositoryAllowListEntry, repositoryCountersignature.Value as IRepositorySignature, out var allowedOwners, out var actualOwners))
+                                if (ShouldVerifyOwners(certificateHashEntry as TrustedSignerAllowListEntry, repositoryCountersignature.Value as IRepositorySignature, out var allowedOwners, out var actualOwners))
                                 {
                                     return allowedOwners.Intersect(actualOwners).Any();
                                 }
@@ -142,12 +142,12 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-        private static bool ShouldVerifyOwners(TrustedRepositoryAllowListEntry entry, IRepositorySignature repoSignature, out IReadOnlyList<string> allowedOwners, out IReadOnlyList<string> actualOwners)
+        private static bool ShouldVerifyOwners(TrustedSignerAllowListEntry entry, IRepositorySignature repoSignature, out IReadOnlyList<string> allowedOwners, out IReadOnlyList<string> actualOwners)
         {
             allowedOwners = null;
             actualOwners = null;
 
-            if (entry != null && entry.Owners != null && entry.Owners.Any() && repoSignature != null)
+            if (entry != null && entry.Target.HasFlag(VerificationTarget.Repository) && entry.Owners != null && entry.Owners.Any() && repoSignature != null)
             {
                 allowedOwners = entry.Owners ?? Enumerable.Empty<string>().ToList();
                 actualOwners = repoSignature.PackageOwners ?? Enumerable.Empty<string>().ToList();

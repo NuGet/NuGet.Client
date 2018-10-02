@@ -557,7 +557,7 @@ namespace NuGet.SolutionRestoreManager
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         logger,
                         signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetClientPolicy(_settings))
+                        SignedPackageVerifierSettings.GetClientPolicy(_settings, logger))
                 };
 
                 await _packageRestoreManager.RestoreMissingPackagesAsync(

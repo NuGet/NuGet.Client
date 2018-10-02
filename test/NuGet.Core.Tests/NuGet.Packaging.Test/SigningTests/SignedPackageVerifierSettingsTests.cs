@@ -553,7 +553,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings);
+                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
 
                 verifierSettings.AllowUnsigned.Should().Be(true);
                 verifierSettings.AllowIllegal.Should().Be(true);
@@ -594,7 +594,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings);
+                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
 
                 verifierSettings.AllowUnsigned.Should().Be(true);
                 verifierSettings.AllowIllegal.Should().Be(true);
@@ -635,7 +635,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings);
+                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
 
                 verifierSettings.AllowUnsigned.Should().Be(false);
                 verifierSettings.AllowIllegal.Should().Be(false);
@@ -686,11 +686,11 @@ namespace NuGet.Packaging.Test
 
                 var expectedAllowList = new List<VerificationAllowListEntry>()
                 {
-                    new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "abc", HashAlgorithmName.SHA256),
-                    new TrustedRepositoryAllowListEntry("def", HashAlgorithmName.SHA256, owners: new List<string>())
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "abc", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any,"def", HashAlgorithmName.SHA256)
                 };
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings);
+                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
 
                 verifierSettings.AllowUnsigned.Should().Be(false);
                 verifierSettings.AllowIllegal.Should().Be(false);

@@ -48,7 +48,7 @@ namespace NuGet.CommandLine
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 Console,
                 signedPackageVerifier,
-                SignedPackageVerifierSettings.GetClientPolicy(Settings));
+                SignedPackageVerifierSettings.GetClientPolicy(Settings, Console));
 
             var offlineFeedAddContext = new OfflineFeedAddContext(
                 packagePath,

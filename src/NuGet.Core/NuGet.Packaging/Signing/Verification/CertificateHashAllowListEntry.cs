@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.Packaging.Signing
 {
@@ -15,7 +17,39 @@ namespace NuGet.Packaging.Signing
         public CertificateHashAllowListEntry(VerificationTarget target, SignaturePlacement placement, string fingerprint, HashAlgorithmName algorithm)
             : base(target, placement)
         {
-            Fingerprint = fingerprint;
+            if (!Enum.IsDefined(typeof(SignaturePlacement), placement))
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.UnrecognizedEnumValue,
+                        placement),
+                    nameof(placement));
+            }
+
+            if (!Enum.IsDefined(typeof(HashAlgorithmName), algorithm))
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.UnrecognizedEnumValue,
+                        algorithm),
+                    nameof(algorithm));
+            }
+
+            if ((placement.HasFlag(SignaturePlacement.Countersignature) && !target.HasFlag(VerificationTarget.Repository)) ||
+                (placement == SignaturePlacement.Countersignature && target != VerificationTarget.Repository))
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidArgumentCombination,
+                        nameof(target),
+                        nameof(placement)),
+                    nameof(placement));
+            }
+
+            Fingerprint = fingerprint ?? throw new ArgumentNullException(nameof(fingerprint));
             FingerprintAlgorithm = algorithm;
         }
 
@@ -23,7 +57,10 @@ namespace NuGet.Packaging.Signing
         {
             if (obj is CertificateHashAllowListEntry hashEntry)
             {
-                return string.Equals(Fingerprint, hashEntry.Fingerprint, StringComparison.Ordinal);
+                return Placement == hashEntry.Placement &&
+                    Target == hashEntry.Target &&
+                    string.Equals(Fingerprint, hashEntry.Fingerprint, StringComparison.Ordinal) &&
+                    FingerprintAlgorithm == hashEntry.FingerprintAlgorithm;
             }
 
             return false;
@@ -31,7 +68,14 @@ namespace NuGet.Packaging.Signing
 
         public override int GetHashCode()
         {
-            return Fingerprint.GetHashCode();
+            var combiner = new HashCodeCombiner();
+
+            combiner.AddObject(Placement);
+            combiner.AddObject(Target);
+            combiner.AddObject(Fingerprint);
+            combiner.AddObject(FingerprintAlgorithm);
+
+            return combiner.GetHashCode();
         }
     }
 }

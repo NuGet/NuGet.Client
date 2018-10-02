@@ -200,7 +200,7 @@ namespace NuGet.CommandLine
                 cacheContext.DirectDownload = DirectDownload;
 
                 var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-                var signingSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings);
+                var signingSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings, Console);
 
                 var projectContext = new ConsoleProjectContext(Console)
                 {
@@ -382,7 +382,7 @@ namespace NuGet.CommandLine
                 else
                 {
                     var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-                    var signingVerificationSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings);
+                    var signingVerificationSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings, Console);
 
                     var projectContext = new ConsoleProjectContext(Console)
                     {

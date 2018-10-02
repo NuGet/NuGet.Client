@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.Packaging.Signing
@@ -17,7 +19,7 @@ namespace NuGet.Packaging.Signing
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public IReadOnlyList<VerificationAllowListEntry> GetAllowListEntries()
+        public IReadOnlyList<VerificationAllowListEntry> GetAllowListEntries(ILogger logger)
         {
             var trustedSignersSection = _settings.GetSection(ConfigurationConstants.TrustedSigners);
             if (trustedSignersSection == null)
@@ -25,28 +27,87 @@ namespace NuGet.Packaging.Signing
                 return Enumerable.Empty<VerificationAllowListEntry>().ToList();
             }
 
-            return trustedSignersSection.Items.OfType<TrustedSignerItem>().SelectMany(s => ToAllowListEntries(s)).ToList();
+            // We will dedup certificates based on fingerprint and hash algorithm, therefore
+            // the key to this lookup will be hashAlgorithm-fingerprint
+            var certificateLookup = new Dictionary<string, CertificateEntryLookupEntry>();
+
+            foreach (var item in trustedSignersSection.Items.OfType<TrustedSignerItem>())
+            {
+                var itemTarget = GetItemTarget(item, out var itemPlacement);
+
+                foreach (var certificate in item.Certificates)
+                {
+                    if (certificateLookup.TryGetValue($"{certificate.HashAlgorithm.ToString()}-{certificate.Fingerprint}", out var existingEntry))
+                    {
+                        if (existingEntry.Certificate.AllowUntrustedRoot != certificate.AllowUntrustedRoot)
+                        {
+                            // warn and take the most restrictive setting
+                            logger.Log(new LogMessage(LogLevel.Warning,
+                                string.Format(CultureInfo.CurrentCulture, Strings.ConflictingAllowUntrustedRoot, certificate.HashAlgorithm.ToString(), certificate.Fingerprint),
+                                NuGetLogCode.NU3040));
+                            existingEntry.Certificate.AllowUntrustedRoot = false;
+                        }
+
+                        existingEntry.Target |= itemTarget;
+                        existingEntry.Placement |= itemPlacement;
+
+                        if (itemTarget == VerificationTarget.Repository)
+                        {
+                            var owners = (item as RepositoryItem).Owners;
+                            if (existingEntry.Owners == null)
+                            {
+                                existingEntry.Owners = new List<string>(owners);
+                            }
+                            else
+                            {
+                                existingEntry.Owners.AddRange(owners);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        certificateLookup.Add($"{certificate.HashAlgorithm.ToString()}-{certificate.Fingerprint}", new CertificateEntryLookupEntry(itemTarget, itemPlacement, certificate));
+                    }
+                }
+            }
+
+            return certificateLookup.Select(e => e.Value.ToAllowListEntry()).ToList();
         }
 
-        private IReadOnlyCollection<VerificationAllowListEntry> ToAllowListEntries(TrustedSignerItem item)
+        private VerificationTarget GetItemTarget(TrustedSignerItem item, out SignaturePlacement placement)
         {
-            var entries = new HashSet<VerificationAllowListEntry>();
-            if (item is RepositoryItem repositoryItem)
+            if (item is RepositoryItem)
             {
-                foreach(var certificate in repositoryItem.Certificates)
-                {
-                    entries.Add(new TrustedRepositoryAllowListEntry(certificate.Fingerprint, certificate.HashAlgorithm, repositoryItem.Owners));
-                }
-            }
-            else if (item is AuthorItem authorItem)
-            {
-                foreach (var certificate in authorItem.Certificates)
-                {
-                    entries.Add(new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, certificate.Fingerprint, certificate.HashAlgorithm));
-                }
+                placement = SignaturePlacement.Any;
+                return VerificationTarget.Repository;
             }
 
-            return entries;
+            placement = SignaturePlacement.PrimarySignature;
+            return VerificationTarget.Author;
+        }
+
+        private class CertificateEntryLookupEntry
+        {
+            public VerificationTarget Target { get; set; }
+
+            public SignaturePlacement Placement { get; set; }
+
+            public IList<string> Owners { get; set; }
+
+            public CertificateItem Certificate { get; }
+
+            public CertificateEntryLookupEntry(VerificationTarget target, SignaturePlacement placement, CertificateItem certificate, IList<string> owners = null)
+            {
+                Target = target;
+                Placement = placement;
+                Certificate = certificate ?? throw new ArgumentNullException(nameof(certificate));
+                Owners = owners;
+            }
+
+            public CertificateHashAllowListEntry ToAllowListEntry()
+            {
+                return new TrustedSignerAllowListEntry(Target, Placement, Certificate.Fingerprint, Certificate.HashAlgorithm, Owners?.ToList());
+            }
         }
     }
 }

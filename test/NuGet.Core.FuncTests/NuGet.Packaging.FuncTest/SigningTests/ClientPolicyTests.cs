@@ -65,7 +65,7 @@ namespace NuGet.Packaging.FuncTest
                 // Act and Assert
                 var settings = new Settings(dir);
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings);
+                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
                 var trustProviders = new[]
                 {
                     new AllowListVerificationProvider()
@@ -126,7 +126,7 @@ namespace NuGet.Packaging.FuncTest
                 // Act and Assert
                 var settings = new Settings(dir);
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings);
+                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
                 var trustProviders = new[]
                 {
                     new AllowListVerificationProvider()
@@ -197,7 +197,7 @@ namespace NuGet.Packaging.FuncTest
                 // Act and Assert
                 var settings = new Settings(dir);
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings);
+                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
                 var trustProviders = new[]
                 {
                     new AllowListVerificationProvider()
@@ -257,7 +257,7 @@ namespace NuGet.Packaging.FuncTest
                 // Act and Assert
                 var settings = new Settings(dir);
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings);
+                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
                 var trustProviders = new[]
                 {
                     new AllowListVerificationProvider()
@@ -317,7 +317,7 @@ namespace NuGet.Packaging.FuncTest
                 // Act and Assert
                 var settings = new Settings(dir);
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings);
+                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
                 var trustProviders = new[]
                 {
                     new AllowListVerificationProvider()
@@ -377,7 +377,7 @@ namespace NuGet.Packaging.FuncTest
                 // Act and Assert
                 var settings = new Settings(dir);
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings);
+                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
                 var trustProviders = new[]
                 {
                     new AllowListVerificationProvider()

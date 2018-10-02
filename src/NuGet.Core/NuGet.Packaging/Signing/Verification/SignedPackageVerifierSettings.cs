@@ -225,7 +225,7 @@ namespace NuGet.Packaging.Signing
         /// Gives the appropriate configuration depending on the user specified settings.
         /// </summary>
         /// <param name="settings">Loaded settings used to get user data</param>
-        public static SignedPackageVerifierSettings GetClientPolicy(ISettings settings)
+        public static SignedPackageVerifierSettings GetClientPolicy(ISettings settings, ILogger logger)
         {
             if (settings == null)
             {
@@ -235,7 +235,7 @@ namespace NuGet.Packaging.Signing
             var policy = SettingsUtility.GetSignatureValidationMode(settings);
             var trustedSignersProvider = new TrustedSignersProvider(settings);
 
-            var allowList = trustedSignersProvider.GetAllowListEntries();
+            var allowList = trustedSignersProvider.GetAllowListEntries(logger);
 
             if (policy == SignatureValidationMode.Require)
             {

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using FluentAssertions;
+using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Configuration.Test;
@@ -43,7 +44,7 @@ namespace NuGet.Packaging.Test
                 settings.Should().NotBeNull();
 
                 var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries();
+                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Should().BeEmpty();
             }
@@ -69,7 +70,7 @@ namespace NuGet.Packaging.Test
                 settings.Should().NotBeNull();
 
                 var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries();
+                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Should().BeEmpty();
             }
@@ -101,14 +102,14 @@ namespace NuGet.Packaging.Test
                 settings.Should().NotBeNull();
 
                 var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries();
+                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(2);
 
                 var expectedEntries = new List<VerificationAllowListEntry>()
                 {
-                    new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "abc", HashAlgorithmName.SHA256),
-                    new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "def", HashAlgorithmName.SHA256)
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "abc", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "def", HashAlgorithmName.SHA256)
                 };
 
                 entries.Should().BeEquivalentTo(expectedEntries);
@@ -144,17 +145,17 @@ namespace NuGet.Packaging.Test
                 settings.Should().NotBeNull();
 
                 var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries();
+                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(5);
 
                 var expectedEntries = new List<VerificationAllowListEntry>()
                 {
-                    new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "abc", HashAlgorithmName.SHA256),
-                    new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "def", HashAlgorithmName.SHA256),
-                    new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "ghi", HashAlgorithmName.SHA256),
-                    new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "jkl", HashAlgorithmName.SHA256),
-                    new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "mno", HashAlgorithmName.SHA256)
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "abc", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "def", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "ghi", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "jkl", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "mno", HashAlgorithmName.SHA256)
                 };
 
                 entries.Should().BeEquivalentTo(expectedEntries);
@@ -187,15 +188,15 @@ namespace NuGet.Packaging.Test
                 settings.Should().NotBeNull();
 
                 var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries();
+                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(2);
 
                 var expectedEntries = new List<VerificationAllowListEntry>()
                 {
-                    new TrustedRepositoryAllowListEntry("abc", HashAlgorithmName.SHA256, owners: null),
-                    new TrustedRepositoryAllowListEntry("def", HashAlgorithmName.SHA256, owners: null)
-                };
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "def", HashAlgorithmName.SHA256)
+                }; 
 
                 entries.Should().BeEquivalentTo(expectedEntries);
             }
@@ -230,17 +231,17 @@ namespace NuGet.Packaging.Test
                 settings.Should().NotBeNull();
 
                 var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries();
+                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(5);
 
                 var expectedEntries = new List<VerificationAllowListEntry>()
                 {
-                    new TrustedRepositoryAllowListEntry("abc", HashAlgorithmName.SHA256, owners: null),
-                    new TrustedRepositoryAllowListEntry("def", HashAlgorithmName.SHA256, owners: null),
-                    new TrustedRepositoryAllowListEntry("ghi", HashAlgorithmName.SHA256, owners: null),
-                    new TrustedRepositoryAllowListEntry("jkl", HashAlgorithmName.SHA256, owners: null),
-                    new TrustedRepositoryAllowListEntry("mno", HashAlgorithmName.SHA256, owners: null)
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "def", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "ghi", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "jkl", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "mno", HashAlgorithmName.SHA256)
                 };
 
                 entries.Should().BeEquivalentTo(expectedEntries);
@@ -278,17 +279,17 @@ namespace NuGet.Packaging.Test
                 settings.Should().NotBeNull();
 
                 var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries();
+                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(5);
 
                 var expectedEntries = new List<VerificationAllowListEntry>()
                 {
-                    new TrustedRepositoryAllowListEntry("abc", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
-                    new TrustedRepositoryAllowListEntry("def", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
-                    new TrustedRepositoryAllowListEntry("ghi", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
-                    new TrustedRepositoryAllowListEntry("jkl", HashAlgorithmName.SHA256, owners: new List<string>() { "anotherOwner", "owner3" }),
-                    new TrustedRepositoryAllowListEntry("mno", HashAlgorithmName.SHA256, owners: new List<string>() { "anotherOwner", "owner3" })
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "def", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "ghi", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "jkl", HashAlgorithmName.SHA256, owners: new List<string>() { "anotherOwner", "owner3" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "mno", HashAlgorithmName.SHA256, owners: new List<string>() { "anotherOwner", "owner3" })
                 };
 
                 entries.Should().BeEquivalentTo(expectedEntries);
@@ -333,20 +334,251 @@ namespace NuGet.Packaging.Test
                 settings.Should().NotBeNull();
 
                 var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries();
+                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(8);
 
                 var expectedEntries = new List<VerificationAllowListEntry>()
                 {
-                    new TrustedRepositoryAllowListEntry("abc", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
-                    new TrustedRepositoryAllowListEntry("def", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
-                    new TrustedRepositoryAllowListEntry("ghi", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
-                    new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "xyz", HashAlgorithmName.SHA256),
-                    new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "pqr", HashAlgorithmName.SHA256),
-                    new CertificateHashAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "stu", HashAlgorithmName.SHA256),
-                    new TrustedRepositoryAllowListEntry("jkl", HashAlgorithmName.SHA256, owners: new List<string>() { "anotherOwner", "owner3" }),
-                    new TrustedRepositoryAllowListEntry("mno", HashAlgorithmName.SHA256, owners: new List<string>() { "anotherOwner", "owner3" })
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "def", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "ghi", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "xyz", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "pqr", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "stu", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "jkl", HashAlgorithmName.SHA256, owners: new List<string>() { "anotherOwner", "owner3" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "mno", HashAlgorithmName.SHA256, owners: new List<string>() { "anotherOwner", "owner3" })
+                };
+
+                entries.Should().BeEquivalentTo(expectedEntries);
+            }
+        }
+
+        [Fact]
+        public void GetAllowListEntries_WithDuplicateEntries_IgnoresDuplicates()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <trustedSigners>
+        <repository name=""repository1"" serviceIndex=""api.v3ServiceIndex.test/json"">
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <owners>nuget;randomOwner</owners>
+        </repository>
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignersProvider = new TrustedSignersProvider(settings);
+                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                entries.Should().NotBeNull();
+                entries.Count.Should().Be(2);
+
+                var expectedEntries = new List<VerificationAllowListEntry>()
+                {
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "def", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                };
+
+                entries.Should().BeEquivalentTo(expectedEntries);
+            }
+        }
+
+        [Fact]
+        public void GetAllowListEntries_WithDuplicateEntries_UpdatesVerificationTarget()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <trustedSigners>
+        <repository name=""repository1"" serviceIndex=""api.v3ServiceIndex.test/json"">
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <owners>nuget;randomOwner</owners>
+        </repository>
+        <author name=""author1"">
+            <certificate fingerprint=""jkl"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignersProvider = new TrustedSignersProvider(settings);
+                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                entries.Should().NotBeNull();
+                entries.Count.Should().Be(3);
+
+                var expectedEntries = new List<VerificationAllowListEntry>()
+                {
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author|VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "def", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "jkl", HashAlgorithmName.SHA256),
+                };
+
+                entries.Should().BeEquivalentTo(expectedEntries);
+            }
+        }
+
+        [Fact]
+        public void GetAllowListEntries_WithDuplicateEntries_AppendsOwners()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <trustedSigners>
+        <repository name=""repository1"" serviceIndex=""api.v3ServiceIndex.test/json"">
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <owners>nuget;randomOwner</owners>
+        </repository>
+        <repository name=""repository2"" serviceIndex=""api.v3ServiceIndex2.test/json"">
+            <certificate fingerprint=""jkl"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <owners>otherOwner</owners>
+        </repository>
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignersProvider = new TrustedSignersProvider(settings);
+                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                entries.Should().NotBeNull();
+                entries.Count.Should().Be(3);
+
+                var expectedEntries = new List<VerificationAllowListEntry>()
+                {
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner", "otherOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "def", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "jkl", HashAlgorithmName.SHA256, owners: new List<string>() { "otherOwner" }),
+                };
+
+                entries.Should().BeEquivalentTo(expectedEntries);
+            }
+        }
+
+
+        [Fact]
+        public void GetAllowListEntries_WithDuplicateFingerprints_DifferentHashAlgorithm_TakesThemAsDifferentEntries()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <trustedSigners>
+        <repository name=""repository1"" serviceIndex=""api.v3ServiceIndex.test/json"">
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA512"" allowUntrustedRoot=""false"" />
+            <owners>nuget;randomOwner</owners>
+        </repository>
+        <author name=""author1"">
+            <certificate fingerprint=""jkl"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignersProvider = new TrustedSignersProvider(settings);
+                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                entries.Should().NotBeNull();
+                entries.Count.Should().Be(4);
+
+                var expectedEntries = new List<VerificationAllowListEntry>()
+                {
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA512, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author|VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "def", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "jkl", HashAlgorithmName.SHA256),
+                };
+
+                entries.Should().BeEquivalentTo(expectedEntries);
+            }
+        }
+
+        [Fact]
+        public void GetAllowListEntries_WithDuplicateEntries_ConflictingAllowUntrustedRoot_WarnsAndSetsToFalse()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <trustedSigners>
+        <repository name=""repository1"" serviceIndex=""api.v3ServiceIndex.test/json"">
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA512"" allowUntrustedRoot=""false"" />
+            <owners>nuget;randomOwner</owners>
+        </repository>
+        <author name=""author1"">
+            <certificate fingerprint=""jkl"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""true"" />
+        </author>
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignersProvider = new TrustedSignersProvider(settings);
+                var logger = new Mock<ILogger>();
+
+                var entries = trustedSignersProvider.GetAllowListEntries(logger.Object);
+                entries.Should().NotBeNull();
+                entries.Count.Should().Be(4);
+
+                logger.Verify(l =>
+                    l.Log(It.Is<ILogMessage>(m =>
+                        m.Level == LogLevel.Warning &&
+                        m.Code == NuGetLogCode.NU3040)));
+
+                var expectedEntries = new List<VerificationAllowListEntry>()
+                {
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA512, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author|VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "def", HashAlgorithmName.SHA256, owners: new List<string>() { "nuget", "randomOwner" }),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "jkl", HashAlgorithmName.SHA256),
                 };
 
                 entries.Should().BeEquivalentTo(expectedEntries);
