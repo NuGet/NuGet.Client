@@ -233,9 +233,8 @@ namespace NuGet.Packaging.Signing
             }
 
             var policy = SettingsUtility.GetSignatureValidationMode(settings);
-            var trustedSignersProvider = new TrustedSignersProvider(settings);
 
-            var allowList = trustedSignersProvider.GetAllowListEntries(logger);
+            var allowList = TrustedSignersProvider.GetAllowListEntries(settings, logger);
 
             if (policy == SignatureValidationMode.Require)
             {

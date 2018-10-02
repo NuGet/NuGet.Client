@@ -17,10 +17,20 @@ namespace NuGet.Packaging.Test
     public class TrustedSignersProviderTests
     {
         [Fact]
-        public void Constructor_WithNullArgument_Throws()
+        public void GetAllowListEntries_WithNullSettings_Throws()
         {
             // Act and Assert
-            var ex = Record.Exception(() => new TrustedSignersProvider(settings: null));
+            var ex = Record.Exception(() => TrustedSignersProvider.GetAllowListEntries(settings: null, logger: NullLogger.Instance));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetAllowListEntries_WithNullLogger_Throws()
+        {
+            // Act and Assert
+            var ex = Record.Exception(() => TrustedSignersProvider.GetAllowListEntries(settings: NullSettings.Instance, logger: null));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -43,8 +53,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Should().BeEmpty();
             }
@@ -69,8 +78,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Should().BeEmpty();
             }
@@ -101,8 +109,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(2);
 
@@ -144,8 +151,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(5);
 
@@ -187,8 +193,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(2);
 
@@ -230,8 +235,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(5);
 
@@ -278,8 +282,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(5);
 
@@ -333,8 +336,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(8);
 
@@ -379,8 +381,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(2);
 
@@ -423,8 +424,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(3);
 
@@ -469,8 +469,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(3);
 
@@ -515,8 +514,7 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
-                var entries = trustedSignersProvider.GetAllowListEntries(NullLogger.Instance);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, NullLogger.Instance);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(4);
 
@@ -561,10 +559,9 @@ namespace NuGet.Packaging.Test
                 var settings = new Settings(mockBaseDirectory);
                 settings.Should().NotBeNull();
 
-                var trustedSignersProvider = new TrustedSignersProvider(settings);
                 var logger = new Mock<ILogger>();
 
-                var entries = trustedSignersProvider.GetAllowListEntries(logger.Object);
+                var entries = TrustedSignersProvider.GetAllowListEntries(settings, logger.Object);
                 entries.Should().NotBeNull();
                 entries.Count.Should().Be(4);
 

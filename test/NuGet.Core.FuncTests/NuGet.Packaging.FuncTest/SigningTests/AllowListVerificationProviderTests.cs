@@ -1166,7 +1166,7 @@ namespace NuGet.Packaging.FuncTest
 
                 var clientAllowList = new List<CertificateHashAllowListEntry>()
                 {
-                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, new List<string>() { "owner1", "owner2", "owner3" })
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>() { "owner1", "owner2", "owner3" })
                 };
 
                 var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(clientAllowListEntries: clientAllowList);
@@ -1216,7 +1216,7 @@ namespace NuGet.Packaging.FuncTest
 
                 var clientAllowList = new List<CertificateHashAllowListEntry>()
                 {
-                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, new List<string>() { "owner1", "owner2", "owner3" })
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>() { "owner1", "owner2", "owner3" })
                 };
 
                 var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(clientAllowListEntries: clientAllowList);
@@ -1265,7 +1265,7 @@ namespace NuGet.Packaging.FuncTest
 
                 var clientAllowList = new List<CertificateHashAllowListEntry>()
                 {
-                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, new List<string>() { "owner1", "owner2", "owner3" })
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>() { "owner1", "owner2", "owner3" })
                 };
 
                 var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(clientAllowListEntries: clientAllowList);
@@ -1318,7 +1318,7 @@ namespace NuGet.Packaging.FuncTest
 
                 var clientAllowList = new List<CertificateHashAllowListEntry>()
                 {
-                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, new List<string>() { "owner1", "owner2", "owner3" })
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>() { "owner1", "owner2", "owner3" })
                 };
 
                 var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(clientAllowListEntries: clientAllowList);
@@ -1370,7 +1370,7 @@ namespace NuGet.Packaging.FuncTest
 
                 var clientAllowList = new List<CertificateHashAllowListEntry>()
                 {
-                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, new List<string>() { "owner1", "owner2", "owner3" })
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>() { "owner1", "owner2", "owner3" })
                 };
 
                 var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(clientAllowListEntries: clientAllowList);
@@ -1421,7 +1421,7 @@ namespace NuGet.Packaging.FuncTest
 
                 var clientAllowList = new List<CertificateHashAllowListEntry>()
                 {
-                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, new List<string>() { "owner1", "owner2", "owner3" })
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>() { "owner1", "owner2", "owner3" })
                 };
 
                 var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(clientAllowListEntries: clientAllowList);
@@ -1473,7 +1473,7 @@ namespace NuGet.Packaging.FuncTest
 
                 var clientAllowList = new List<CertificateHashAllowListEntry>()
                 {
-                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, new List<string>())
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>())
                 };
 
                 var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(clientAllowListEntries: clientAllowList);

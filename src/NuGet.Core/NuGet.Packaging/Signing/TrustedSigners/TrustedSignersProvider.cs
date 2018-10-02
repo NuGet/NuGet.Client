@@ -10,18 +10,21 @@ using NuGet.Configuration;
 
 namespace NuGet.Packaging.Signing
 {
-    public class TrustedSignersProvider
+    public static class TrustedSignersProvider
     {
-        private readonly ISettings _settings;
-
-        public TrustedSignersProvider(ISettings settings)
+        public static IReadOnlyList<VerificationAllowListEntry> GetAllowListEntries(ISettings settings, ILogger logger)
         {
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        }
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
 
-        public IReadOnlyList<VerificationAllowListEntry> GetAllowListEntries(ILogger logger)
-        {
-            var trustedSignersSection = _settings.GetSection(ConfigurationConstants.TrustedSigners);
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            var trustedSignersSection = settings.GetSection(ConfigurationConstants.TrustedSigners);
             if (trustedSignersSection == null)
             {
                 return Enumerable.Empty<VerificationAllowListEntry>().ToList();
@@ -74,7 +77,7 @@ namespace NuGet.Packaging.Signing
             return certificateLookup.Select(e => e.Value.ToAllowListEntry()).ToList();
         }
 
-        private VerificationTarget GetItemTarget(TrustedSignerItem item, out SignaturePlacement placement)
+        private static VerificationTarget GetItemTarget(TrustedSignerItem item, out SignaturePlacement placement)
         {
             if (item is RepositoryItem)
             {
@@ -106,7 +109,7 @@ namespace NuGet.Packaging.Signing
 
             public CertificateHashAllowListEntry ToAllowListEntry()
             {
-                return new TrustedSignerAllowListEntry(Target, Placement, Certificate.Fingerprint, Certificate.HashAlgorithm, Owners?.ToList());
+                return new TrustedSignerAllowListEntry(Target, Placement, Certificate.Fingerprint, Certificate.HashAlgorithm, Certificate.AllowUntrustedRoot, Owners?.ToList());
             }
         }
     }

@@ -16,14 +16,21 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public IReadOnlyList<string> Owners { get; }
 
+        /// <summary>
+        /// Describe if the certificate should be allowed to chain to an untrusted certificate
+        /// </summary>
+        public bool AllowUntrustedRoot { get; }
+
         public TrustedSignerAllowListEntry(
             VerificationTarget target,
             SignaturePlacement placement,
             string fingerprint,
             HashAlgorithmName algorithm,
+            bool allowUntrustedRoot = false,
             IReadOnlyList<string> owners = null)
             : base(target, placement, fingerprint, algorithm)
         {
+            AllowUntrustedRoot = allowUntrustedRoot;
             Owners = owners;
         }
 
@@ -31,7 +38,8 @@ namespace NuGet.Packaging.Signing
         {
             if (base.Equals(obj) && obj is TrustedSignerAllowListEntry trustedSigner)
             {
-                return Owners?.OrderBy(o => o).SequenceEqual(trustedSigner.Owners?.OrderBy(o => o)) ?? true;
+                return AllowUntrustedRoot == trustedSigner.AllowUntrustedRoot &&
+                    (Owners?.OrderBy(o => o).SequenceEqual(trustedSigner.Owners?.OrderBy(o => o)) ?? true);
             }
 
             return false;
