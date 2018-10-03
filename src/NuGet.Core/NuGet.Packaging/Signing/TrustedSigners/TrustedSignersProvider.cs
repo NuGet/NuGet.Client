@@ -40,13 +40,13 @@ namespace NuGet.Packaging.Signing
 
                 foreach (var certificate in item.Certificates)
                 {
-                    IList<string> owners = null;
+                    ICollection<string> owners = null;
                     if (itemTarget == VerificationTarget.Repository)
                     {
-                        owners = new List<string>((item as RepositoryItem).Owners);
+                        owners = new HashSet<string>((item as RepositoryItem).Owners);
                     }
 
-                    if (certificateLookup.TryGetValue($"{certificate.HashAlgorithm.ToString()}-{certificate.Fingerprint}", out var existingEntry))
+                    if (certificateLookup.TryGetValue(GetCertLookupKey(certificate), out var existingEntry))
                     {
                         if (existingEntry.Certificate.AllowUntrustedRoot != certificate.AllowUntrustedRoot)
                         {
@@ -64,7 +64,7 @@ namespace NuGet.Packaging.Signing
                         {
                             if (existingEntry.Owners == null)
                             {
-                                existingEntry.Owners = new List<string>(owners);
+                                existingEntry.Owners = owners;
                             }
                             else
                             {
@@ -74,12 +74,17 @@ namespace NuGet.Packaging.Signing
                     }
                     else
                     {
-                        certificateLookup.Add($"{certificate.HashAlgorithm.ToString()}-{certificate.Fingerprint}", new CertificateEntryLookupEntry(itemTarget, itemPlacement, certificate, owners));
+                        certificateLookup.Add(GetCertLookupKey(certificate), new CertificateEntryLookupEntry(itemTarget, itemPlacement, certificate, owners));
                     }
                 }
             }
 
             return certificateLookup.Select(e => e.Value.ToAllowListEntry()).ToList();
+        }
+
+        private static string GetCertLookupKey(CertificateItem certificate)
+        {
+            return $"{certificate.HashAlgorithm.ToString()}-{certificate.Fingerprint}";
         }
 
         private static VerificationTarget GetItemTarget(TrustedSignerItem item, out SignaturePlacement placement)
@@ -100,11 +105,11 @@ namespace NuGet.Packaging.Signing
 
             public SignaturePlacement Placement { get; set; }
 
-            public IList<string> Owners { get; set; }
+            public ICollection<string> Owners { get; set; }
 
             public CertificateItem Certificate { get; }
 
-            public CertificateEntryLookupEntry(VerificationTarget target, SignaturePlacement placement, CertificateItem certificate, IList<string> owners = null)
+            public CertificateEntryLookupEntry(VerificationTarget target, SignaturePlacement placement, CertificateItem certificate, ICollection<string> owners = null)
             {
                 Target = target;
                 Placement = placement;

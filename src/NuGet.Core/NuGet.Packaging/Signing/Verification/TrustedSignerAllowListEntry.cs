@@ -38,8 +38,15 @@ namespace NuGet.Packaging.Signing
         {
             if (base.Equals(obj) && obj is TrustedSignerAllowListEntry trustedSigner)
             {
-                return AllowUntrustedRoot == trustedSigner.AllowUntrustedRoot &&
-                    (Owners?.OrderBy(o => o).SequenceEqual(trustedSigner.Owners?.OrderBy(o => o)) ?? true);
+                var ownersEquals = (Owners == null || !Owners.Any()) &&
+                    (trustedSigner.Owners == null || !trustedSigner.Owners.Any());
+
+                if (Owners != null && trustedSigner.Owners != null)
+                {
+                    ownersEquals = Owners.OrderBy(o => o).SequenceEqual(trustedSigner.Owners.OrderBy(o => o));
+                }
+
+                return AllowUntrustedRoot == trustedSigner.AllowUntrustedRoot && ownersEquals;
             }
 
             return false;

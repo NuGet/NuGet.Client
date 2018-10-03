@@ -179,7 +179,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There are two certificates with conflicting allowUntrustedRoot in the computed settings. AllowUntrustedRoot is going to be set to false. Certificate: {0}-{1}.
+        ///   Looks up a localized string similar to There are two certificates with conflicting allowUntrustedRoot attributes in the computed settings. The allowUntrustedRoot attribute is going to be set to false. Certificate: {0}-{1}.
         /// </summary>
         internal static string ConflictingAllowUntrustedRoot {
             get {
