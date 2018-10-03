@@ -40,6 +40,12 @@ namespace NuGet.Packaging.Signing
 
                 foreach (var certificate in item.Certificates)
                 {
+                    IList<string> owners = null;
+                    if (itemTarget == VerificationTarget.Repository)
+                    {
+                        owners = new List<string>((item as RepositoryItem).Owners);
+                    }
+
                     if (certificateLookup.TryGetValue($"{certificate.HashAlgorithm.ToString()}-{certificate.Fingerprint}", out var existingEntry))
                     {
                         if (existingEntry.Certificate.AllowUntrustedRoot != certificate.AllowUntrustedRoot)
@@ -54,9 +60,8 @@ namespace NuGet.Packaging.Signing
                         existingEntry.Target |= itemTarget;
                         existingEntry.Placement |= itemPlacement;
 
-                        if (itemTarget == VerificationTarget.Repository)
+                        if (owners != null)
                         {
-                            var owners = (item as RepositoryItem).Owners;
                             if (existingEntry.Owners == null)
                             {
                                 existingEntry.Owners = new List<string>(owners);
@@ -69,7 +74,7 @@ namespace NuGet.Packaging.Signing
                     }
                     else
                     {
-                        certificateLookup.Add($"{certificate.HashAlgorithm.ToString()}-{certificate.Fingerprint}", new CertificateEntryLookupEntry(itemTarget, itemPlacement, certificate));
+                        certificateLookup.Add($"{certificate.HashAlgorithm.ToString()}-{certificate.Fingerprint}", new CertificateEntryLookupEntry(itemTarget, itemPlacement, certificate, owners));
                     }
                 }
             }
