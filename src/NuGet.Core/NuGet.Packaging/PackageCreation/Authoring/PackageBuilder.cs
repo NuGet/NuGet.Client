@@ -490,7 +490,8 @@ namespace NuGet.Packaging
                 {
                     throw new PackagingException(NuGetLogCode.NU5031, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileExtensionIsInvalid, licenseMetadata.License));
                 }
-                var count = files.Where(e => e.Path.Equals(licenseMetadata.License)).Count();
+                var strippedLicenseFileLocation = PathUtility.StripLeadingDirectorySeparators(licenseMetadata.License);
+                var count = files.Where(e => PathUtility.StripLeadingDirectorySeparators(e.Path).Equals(strippedLicenseFileLocation)).Count();
                 if (count == 0)
                 {
                     throw new PackagingException(NuGetLogCode.NU5030, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileIsNotInNupkg, licenseMetadata.License));

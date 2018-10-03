@@ -3143,10 +3143,10 @@ namespace ClassLibrary
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("LICENSE")]
-        [InlineData("LICENSE.md")]
-        [InlineData("LICENSE.txt")]
-        public void PackCommand_PackLicense_PackBasicLicenseFile(string licenseFileName)
+        [InlineData(@"LICENSE", "." )]
+        [InlineData("LICENSE.md", ".")]
+        [InlineData("LICENSE.txt", "LICENSE.txt")]
+        public void PackCommand_PackLicense_PackBasicLicenseFile(string licenseFileName, string packagesPath)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -3171,7 +3171,7 @@ namespace ClassLibrary
 
                     var attributes = new Dictionary<string, string>();
                     attributes["Pack"] = "true";
-                    attributes["PackagesPath"] = licenseFileName;
+                    attributes["PackagePath"] = packagesPath;
                     var properties = new Dictionary<string, string>();
                     ProjectFileUtils.AddItem(
                         xml,
@@ -3329,6 +3329,7 @@ namespace ClassLibrary
             {
                 // Set up
                 var projectName = "ClassLibrary1";
+                var projectUrl = new Uri("https://www.coolproject.com/license.txt");
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
@@ -3337,7 +3338,7 @@ namespace ClassLibrary
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.AddProperty(xml, "PackageLicenseUrl", "https:///www.coolproject.com/license.txt");
+                    ProjectFileUtils.AddProperty(xml, "PackageLicenseUrl", projectUrl.ToString());
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
@@ -3346,11 +3347,23 @@ namespace ClassLibrary
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
-                Assert.False(File.Exists(nupkgPath));
-                Assert.False(File.Exists(nuspecPath));
+                Assert.True(File.Exists(nupkgPath));
+                Assert.True(File.Exists(nuspecPath));
 
-                Assert.False(result.Success);
                 Assert.True(result.AllOutput.Contains("NU5125"));
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the output .nuspec.
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetId());
+                    Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+                    Assert.Equal(projectUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    var licenseMetadata = nuspecReader.GetLicenseMetadata();
+                    Assert.Null(licenseMetadata);
+                }
             }
         }
 
