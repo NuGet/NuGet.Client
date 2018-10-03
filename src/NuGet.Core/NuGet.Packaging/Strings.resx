@@ -758,4 +758,10 @@ Valid from:</comment>
     <comment>0 - nupkg metadata file path
 1 - error message</comment>
   </data>
+  <data name="DefaultError_EmptyAllowList" xml:space="preserve">
+    <value>A list of trusted signers is required but none was found.</value>
+  </data>
+  <data name="DefaultError_NoMatchInAllowList" xml:space="preserve">
+    <value>The package signature certificate fingerprint does not match any certificate fingerprint in allow list.</value>
+  </data>
 </root>

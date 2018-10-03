@@ -44,9 +44,8 @@ namespace NuGet.CommandLine
             var packageExtractionContext = new PackageExtractionContext(
                 Expand ? PackageSaveMode.Defaultv3 : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                Console,
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetClientPolicy(Settings, Console));
+                ClientPolicyContext.GetClientPolicy(Settings, Console),
+                Console);
 
             var offlineFeedAddContext = new OfflineFeedAddContext(
                 packagePath,

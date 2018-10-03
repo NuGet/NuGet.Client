@@ -15,12 +15,12 @@ namespace NuGet.Packaging.Signing
         private readonly IReadOnlyCollection<VerificationAllowListEntry> _allowList;
         private readonly string _emptyListErrorMessage;
         private readonly string _noMatchErrorMessage;
-        private readonly bool _requireAllowList;
+        private readonly bool _requireNonEmptyAllowList;
 
-        public AllowListVerificationProvider(IReadOnlyCollection<VerificationAllowListEntry> allowList, bool requireAllowList = false, string emptyListErrorMessage = "", string noMatchErrorMessage = "")
+        public AllowListVerificationProvider(IReadOnlyCollection<VerificationAllowListEntry> allowList, bool requireNonEmptyAllowList = false, string emptyListErrorMessage = "", string noMatchErrorMessage = "")
         {
-            _allowList = allowList ?? throw new ArgumentNullException(nameof(allowList));
-            _requireAllowList = requireAllowList;
+            _allowList = allowList;
+            _requireNonEmptyAllowList = requireNonEmptyAllowList;
 
             _emptyListErrorMessage = string.IsNullOrEmpty(emptyListErrorMessage) ? Strings.DefaultError_EmptyAllowList : emptyListErrorMessage;
             _noMatchErrorMessage = string.IsNullOrEmpty(noMatchErrorMessage) ? Strings.DefaultError_NoMatchInAllowList : noMatchErrorMessage;
@@ -28,77 +28,40 @@ namespace NuGet.Packaging.Signing
 
         public Task<PackageVerificationResult> GetTrustResultAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings, CancellationToken token)
         {
-            return VerifyAllowListAsync(package, signature, settings);
+            return Task.FromResult(VerifyAllowList(package, signature, settings));
         }
 
 #if IS_DESKTOP
-        private async Task<PackageVerificationResult> VerifyAllowListAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifyAllowList(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             var treatIssuesAsErrors = !settings.AllowUntrusted;
-
-
-            var certificateListVertificationRequests = new List<CertificateListVerificationRequest>()
-            {
-                new CertificateListVerificationRequest()
-                {
-                    CertificateList = settings.ClientCertificateList,
-                    RequireCertificateList = !settings.AllowNoClientCertificateList,
-                    NoListErrorMessage = Strings.Error_NoClientAllowList,
-                    NoMatchErrorMessage = Strings.Error_NoMatchingClientCertificate,
-                    Signature = signature,
-                    TreatIssuesAsErrors = treatIssuesAsErrors
-                },
-                new CertificateListVerificationRequest()
-                {
-                    CertificateList = settings.AllowList,
-                    RequireCertificateList = _requireAllowList,
-                    NoListErrorMessage = Strings.Error_NoRepoAllowList,
-                    NoMatchErrorMessage = Strings.Error_NoMatchingRepositoryCertificate,
-                    Signature = signature,
-                    TreatIssuesAsErrors = treatIssuesAsErrors
-                }
-            };
-
-            var allowListResults = await Task.WhenAll(certificateListVertificationRequests.Select(r => VerifyAllowList(r, settings.AllowUntrusted)));
-
-            return new SignedPackageVerificationResult(GetValidity(allowListResults), signature, allowListResults.SelectMany(r => r.Issues));
-        }
-
-        /// <summary>
-        /// Verify an allow list with a given request
-        /// </summary>
-        /// <param name="request">Information about the allow list verification to perform</param>
-        /// <remarks>This method should never return a status unknown. Min is used to take the most severe status in <see cref="GetValidity"/>
-        /// therefore, if unknown is returned the verification process will return an unknown status for the whole operation</remarks>
-        private Task<SignedPackageVerificationResult> VerifyAllowList(CertificateListVerificationRequest request, bool allowUntrusted)
-        {
             var status = SignatureVerificationStatus.Valid;
             var issues = new List<SignatureLog>();
 
-            if (request.CertificateList == null || request.CertificateList.Count == 0)
+            if (_allowList == null || _allowList.Count == 0)
             {
-                if (request.RequireCertificateList)
+                if (_requireNonEmptyAllowList)
                 {
                     status = SignatureVerificationStatus.Disallowed;
-                    issues.Add(SignatureLog.Error(code: NuGetLogCode.NU3034, message: request.NoListErrorMessage));
+                    issues.Add(SignatureLog.Error(code: NuGetLogCode.NU3034, message: _emptyListErrorMessage));
                 }
             }
-            else if (!IsSignatureAllowed(request.Signature, request.CertificateList))
+            else if (!IsSignatureAllowed(signature, _allowList))
             {
-                if (!allowUntrusted)
+                if (!settings.AllowUntrusted)
                 {
                     status = SignatureVerificationStatus.Disallowed;
                 }
 
-                issues.Add(SignatureLog.Issue(fatal: request.TreatIssuesAsErrors, code: NuGetLogCode.NU3034, message: request.NoMatchErrorMessage));
+                issues.Add(SignatureLog.Issue(fatal: treatIssuesAsErrors, code: NuGetLogCode.NU3034, message: _noMatchErrorMessage));
             }
 
-            return Task.FromResult(new SignedPackageVerificationResult(status, request.Signature, issues));
+            return new SignedPackageVerificationResult(status, signature, issues);
         }
 
         private bool IsSignatureAllowed(
             PrimarySignature signature,
-            IReadOnlyList<VerificationAllowListEntry> allowList)
+            IReadOnlyCollection<VerificationAllowListEntry> allowList)
         {
             var primarySignatureCertificateFingerprintLookUp = new Dictionary<HashAlgorithmName, string>();
             var countersignatureCertificateFingerprintLookUp = new Dictionary<HashAlgorithmName, string>();
@@ -129,6 +92,7 @@ namespace NuGet.Packaging.Signing
                             return true;
                         }
                     }
+
                     if (certificateHashEntry.Placement.HasFlag(SignaturePlacement.Countersignature))
                     {
                         if (repositoryCountersignature.Value != null)
@@ -195,28 +159,8 @@ namespace NuGet.Packaging.Signing
             return fingerprintString;
         }
 
-        private static SignatureVerificationStatus GetValidity(IEnumerable<PackageVerificationResult> verificationResults)
-        {
-            return verificationResults.Min(e => e.Trust);
-        }
-
-        private class CertificateListVerificationRequest
-        {
-            public PrimarySignature Signature { get; set; }
-
-            public IReadOnlyList<VerificationAllowListEntry> CertificateList { get; set; }
-
-            public bool TreatIssuesAsErrors { get; set; }
-
-            public bool RequireCertificateList { get; set; }
-
-            public string NoListErrorMessage { get; set; }
-
-            public string NoMatchErrorMessage { get; set; }
-        }
-
 #else
-        private Task<PackageVerificationResult> VerifyAllowListAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
+        private PackageVerificationResult VerifyAllowList(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             throw new NotSupportedException();
         }

@@ -188,6 +188,24 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A list of trusted signers is required but none was found..
+        /// </summary>
+        internal static string DefaultError_EmptyAllowList {
+            get {
+                return ResourceManager.GetString("DefaultError_EmptyAllowList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any certificate fingerprint in allow list..
+        /// </summary>
+        internal static string DefaultError_NoMatchInAllowList {
+            get {
+                return ResourceManager.GetString("DefaultError_NoMatchInAllowList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unsupported targetFramework value &apos;{0}&apos;..
         /// </summary>
         internal static string Error_InvalidTargetFramework {

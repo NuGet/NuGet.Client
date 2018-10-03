@@ -68,14 +68,12 @@ namespace NuGet.VisualStudio
             _projectContext = new Lazy<INuGetProjectContext>(() => {
                 var projectContext = new VSAPIProjectContext();
 
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
                 var adapterLogger = new LoggerAdapter(projectContext);
                 projectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    adapterLogger,
-                    signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetClientPolicy(_settings.Value, adapterLogger));
+                    ClientPolicyContext.GetClientPolicy(_settings.Value, adapterLogger),
+                    adapterLogger);
 
                 return projectContext;
             });
@@ -113,14 +111,12 @@ namespace NuGet.VisualStudio
             _projectContext = new Lazy<INuGetProjectContext>(() => {
                 var projectContext = new VSAPIProjectContext();
 
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
                 var adapterLogger = new LoggerAdapter(projectContext);
                 projectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    adapterLogger,
-                    signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetClientPolicy(settings, adapterLogger));
+                    ClientPolicyContext.GetClientPolicy(_settings.Value, adapterLogger),
+                    adapterLogger);
 
                 return projectContext;
             });

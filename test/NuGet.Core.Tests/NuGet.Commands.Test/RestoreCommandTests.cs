@@ -1021,8 +1021,8 @@ namespace NuGet.Commands.Test
                 var extractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                      PackageExtractionBehavior.XmlDocFileSaveMode,
-                     logger,
-                     SignedPackageVerifierSettings.GetDefault())
+                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
+                     logger)
                 {
                     SignedPackageVerifier = signedPackageVerifier.Object
                 };
@@ -1098,8 +1098,8 @@ namespace NuGet.Commands.Test
                 var extractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                      PackageExtractionBehavior.XmlDocFileSaveMode,
-                     logger,
-                     SignedPackageVerifierSettings.GetDefault())
+                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
+                     logger)
                 {
                     SignedPackageVerifier = signedPackageVerifier.Object
                 };

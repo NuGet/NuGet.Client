@@ -1042,9 +1042,14 @@ namespace NuGet.Packaging
             ISignedPackageReader signedPackageReader,
             CancellationToken token)
         {
-            if (packageExtractionContext.SignedPackageVerifierSettings != null)
+            if (packageExtractionContext.ClientPolicyContext != null)
             {
-                var verifierSettings = packageExtractionContext.SignedPackageVerifierSettings;
+                var clientPolicyContext = packageExtractionContext.ClientPolicyContext;
+                var repositorySignatureInfo = GetRepositorySignatureInfo(source);
+
+                var verificationSettings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(
+                    repositorySignatureInfo,
+                    clientPolicyContext.VerifierSettings);
 
                 IPackageSignatureVerifier signedPackageVerifier = null;
                 if (packageExtractionContext.SignedPackageVerifier != null)
@@ -1054,28 +1059,28 @@ namespace NuGet.Packaging
                 }
                 else
                 {
-                    var repositorySignatureInfo = GetRepositorySignatureInfo(source);
-                    //var verifierSettings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(
-                    //    repositorySignatureInfo,
-                    //    packageExtractionContext.SignedPackageVerifierSettings);
-
                     var verificationProviders = SignatureVerificationProviderFactory.GetDefaultSignatureVerificationProviders();
+                    var clientAllowList = clientPolicyContext.AllowList;
 
-                    if (verifierSettings.ClientCertificateList != null && !verifierSettings.ClientCertificateList.Any())
+                    if (clientAllowList != null && clientAllowList.Any())
                     {
                         verificationProviders.Add(
                             new AllowListVerificationProvider(
-                                verifierSettings.AllowList,
-                                !verifierSettings.AllowEmptyAllowList,
+                                clientAllowList,
+                                clientPolicyContext.RequireNonEmptyAllowList,
                                 Strings.Error_NoClientAllowList,
                                 Strings.Error_NoMatchingClientCertificate));
                     }
 
                     if (repositorySignatureInfo != null && repositorySignatureInfo.RepositoryCertificateInfos != null)
                     {
-                        verificationProviders.Add(new AllowListVerificationProvider(allowListEntries));
-                        NoListErrorMessage = Strings.Error_NoRepoAllowList,
-                    NoMatchErrorMessage = Strings.Error_NoMatchingRepositoryCertificate,
+                        var repositoryAllowList = RepositorySignatureInfoUtility.GetRepositoryAllowList(repositorySignatureInfo.RepositoryCertificateInfos);
+
+                        verificationProviders.Add(new AllowListVerificationProvider(
+                            repositoryAllowList,
+                            repositorySignatureInfo.AllRepositorySigned,
+                            Strings.Error_NoRepoAllowList,
+                            Strings.Error_NoMatchingRepositoryCertificate));
                     }
 
                     signedPackageVerifier = new PackageSignatureVerifier(verificationProviders);
@@ -1083,7 +1088,7 @@ namespace NuGet.Packaging
 
                 var verifyResult = await signedPackageVerifier.VerifySignaturesAsync(
                        signedPackageReader,
-                       verifierSettings,
+                       verificationSettings,
                        token,
                        parentId);
 

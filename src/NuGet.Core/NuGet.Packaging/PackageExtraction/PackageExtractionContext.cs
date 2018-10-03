@@ -27,8 +27,8 @@ namespace NuGet.Packaging
         public PackageExtractionContext(
             PackageSaveMode packageSaveMode,
             XmlDocFileSaveMode xmlDocFileSaveMode,
-            ILogger logger,
-            ClientPolicyContext clientPolicyContext)
+            ClientPolicyContext clientPolicyContext,
+            ILogger logger)
         {
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             PackageSaveMode = packageSaveMode;

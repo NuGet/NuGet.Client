@@ -69,9 +69,8 @@ namespace NuGet.VisualStudio
                 projectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    logger,
-                    signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetClientPolicy(_settings, logger));
+                    ClientPolicyContext.GetClientPolicy(_settings, logger),
+                    logger);
 
                 return projectContext;
             });
@@ -179,14 +178,12 @@ namespace NuGet.VisualStudio
 
             var projectContext = new VSAPIProjectContext();
             var logger = new LoggerAdapter(projectContext);
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
             projectContext.PackageExtractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                logger,
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetClientPolicy(_settings, logger));
+                ClientPolicyContext.GetClientPolicy(_settings, logger),
+                logger);
 
             return InstallInternalAsync(project, toInstall, GetSources(sources), projectContext, includePrerelease, ignoreDependencies, CancellationToken.None);
         }
@@ -241,15 +238,13 @@ namespace NuGet.VisualStudio
                     var disableBindingRedirects = skipAssemblyReferences;
 
                     var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
-                    var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
                     var logger = new LoggerAdapter(projectContext);
 
                     projectContext.PackageExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        logger,
-                        signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetClientPolicy(_settings, logger));
+                        ClientPolicyContext.GetClientPolicy(_settings, logger),
+                        logger);
 
                     await InstallInternalAsync(
                         project,
@@ -301,14 +296,12 @@ namespace NuGet.VisualStudio
                     var disableBindingRedirects = skipAssemblyReferences;
 
                     var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
-                    var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
                     var logger = new LoggerAdapter(projectContext);
                     projectContext.PackageExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        logger,
-                        signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetClientPolicy(_settings, logger));
+                        ClientPolicyContext.GetClientPolicy(_settings, logger),
+                        logger);
 
                     return InstallInternalAsync(
                         project,
@@ -479,15 +472,13 @@ namespace NuGet.VisualStudio
             var disableBindingRedirects = skipAssemblyReferences;
 
             var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
             var logger = new LoggerAdapter(projectContext);
 
             projectContext.PackageExtractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                logger,
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetClientPolicy(_settings, logger));
+                ClientPolicyContext.GetClientPolicy(_settings, logger),
+                logger);
 
             await InstallInternalAsync(
                 project,

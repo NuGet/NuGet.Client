@@ -719,4 +719,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Writing packages lock file at disk. Path: {0}</value>
     <comment>{0} - Path to packages lock file</comment>
   </data>
+  <data name="Error_NoMatchingCertificate" xml:space="preserve">
+    <value>The package signature did not match any of the allowed certificate fingerprints.</value>
+  </data>
 </root>

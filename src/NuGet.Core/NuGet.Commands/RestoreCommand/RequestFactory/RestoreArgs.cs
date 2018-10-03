@@ -183,9 +183,8 @@ namespace NuGet.Commands
             return new PackageExtractionContext(
                 PackageSaveMode,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                Log,
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetClientPolicy(settings, Log));
+                ClientPolicyContext.GetClientPolicy(settings, Log),
+                Log);
         }
 
         public void ApplyStandardProperties(RestoreRequest request)

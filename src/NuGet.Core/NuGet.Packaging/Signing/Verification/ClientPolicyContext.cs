@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Common;
+using NuGet.Configuration;
 
 namespace NuGet.Packaging.Signing
 {
@@ -11,7 +13,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Current policy the client is on.
         /// </summary>
-        //public SignatureRevocationMode Policy { get; }
+        public SignatureValidationMode Policy { get; }
 
         /// <summary>
         /// Verification settings corresponding the current client policy.
@@ -28,11 +30,39 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public bool RequireNonEmptyAllowList { get; }
 
-        public ClientPolicyContext(SignedPackageVerifierSettings verifierSettings, IReadOnlyCollection<VerificationAllowListEntry> allowList = null, bool requireNonEmptyAllowList = false)
+        internal ClientPolicyContext(SignatureValidationMode policy, IReadOnlyCollection<VerificationAllowListEntry> allowList)
         {
-            VerifierSettings = verifierSettings ?? throw new ArgumentNullException(nameof(verifierSettings));
+            Policy = policy;
+
+            if (policy == SignatureValidationMode.Require)
+            {
+                VerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+            }
+            else
+            {
+                VerifierSettings = SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy();
+            }
+
             AllowList = allowList;
-            RequireNonEmptyAllowList = requireNonEmptyAllowList;
+            RequireNonEmptyAllowList = policy == SignatureValidationMode.Require;
+        }
+
+        public static ClientPolicyContext GetClientPolicy(ISettings settings, ILogger logger)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            var policy = SettingsUtility.GetSignatureValidationMode(settings);
+            var allowList = TrustedSignersProvider.GetAllowListEntries(settings, logger);
+
+            return new ClientPolicyContext(policy, allowList);
         }
     }
 }

@@ -419,7 +419,7 @@ namespace NuGet.Protocol.Core.Types
                 var packageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    SignedPackageVerifierSettings.GetClientPolicy(Settings, log),
+                    ClientPolicyContext.GetClientPolicy(Settings, log),
                     log);
 
                 var context = new OfflineFeedAddContext(pathToPackage,

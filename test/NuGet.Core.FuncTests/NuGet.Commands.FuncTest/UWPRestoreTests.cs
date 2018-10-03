@@ -153,8 +153,8 @@ namespace NuGet.Commands.FuncTest
                 var extractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    logger,
-                    SignedPackageVerifierSettings.GetDefault());
+                    ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
+                    logger);
                 var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, extractionContext, logger)
                 {
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")

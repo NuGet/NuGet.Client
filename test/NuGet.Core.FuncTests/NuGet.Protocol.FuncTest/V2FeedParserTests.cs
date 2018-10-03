@@ -97,8 +97,8 @@ namespace NuGet.Protocol.FuncTest
                     ExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    NullLogger.Instance,
-                    signedPackageVerifierSettings: null)
+                    clientPolicyContext: null,
+                    logger: NullLogger.Instance)
                 };
 
                 using (var downloadResult = await parser.DownloadFromIdentity(

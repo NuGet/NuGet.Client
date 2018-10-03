@@ -557,54 +557,9 @@ namespace Test.Utility.Signing
                 first.ReportUnknownRevocation == second.ReportUnknownRevocation &&
                 first.AllowUnsigned == second.AllowUnsigned &&
                 first.AllowUntrusted == second.AllowUntrusted &&
-                first.AllowNoRepositoryCertificateList == second.AllowNoRepositoryCertificateList &&
-                first.AllowNoClientCertificateList == second.AllowNoClientCertificateList &&
                 first.VerificationTarget == second.VerificationTarget &&
                 first.SignaturePlacement == second.SignaturePlacement &&
-                first.RepositoryCountersignatureVerificationBehavior == second.RepositoryCountersignatureVerificationBehavior &&
-                AreCertificateHashAllowListEqual(first.AllowList, second.AllowList);
-        }
-
-        private static bool AreCertificateHashAllowListEqual(IReadOnlyCollection<VerificationAllowListEntry> first, IReadOnlyCollection<VerificationAllowListEntry> second)
-        {
-            return (first as IEnumerable<CertificateHashAllowListEntry>).
-                SequenceEqualWithNullCheck((second as IEnumerable<CertificateHashAllowListEntry>), new CertificateHashAllowListEntryComparer());
-        }
-
-        private class CertificateHashAllowListEntryComparer : IEqualityComparer<CertificateHashAllowListEntry>
-        {
-            public bool Equals(CertificateHashAllowListEntry x, CertificateHashAllowListEntry y)
-            {
-                if (ReferenceEquals(x, y))
-                {
-                    return true;
-                }
-
-                if (x == null || y == null)
-                {
-                    return false;
-                }
-
-                return x.Target == y.Target &&
-                    x.FingerprintAlgorithm == y.FingerprintAlgorithm &&
-                    string.Equals(x.Fingerprint, y.Fingerprint, StringComparison.OrdinalIgnoreCase);
-            }
-
-            public int GetHashCode(CertificateHashAllowListEntry obj)
-            {
-                if (obj == null)
-                {
-                    return 0;
-                }
-
-                var combiner = new HashCodeCombiner();
-
-                combiner.AddObject(obj.Target);
-                combiner.AddObject(obj.Fingerprint);
-                combiner.AddObject(obj.FingerprintAlgorithm);
-
-                return combiner.CombinedHash;
-            }
+                first.RepositoryCountersignatureVerificationBehavior == second.RepositoryCountersignatureVerificationBehavior;
         }
 
 #if IS_DESKTOP

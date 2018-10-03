@@ -38,8 +38,8 @@ namespace Test.Utility
         public PackageExtractionContext PackageExtractionContext { get; set; } = new PackageExtractionContext(
                         PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        NullLogger.Instance,
-                        signedPackageVerifierSettings: null);
+                        clientPolicyContext: null,
+                        logger: NullLogger.Instance);
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; set; }
 

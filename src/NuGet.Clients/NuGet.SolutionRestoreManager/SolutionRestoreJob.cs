@@ -553,9 +553,8 @@ namespace NuGet.SolutionRestoreManager
                     ExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        logger,
-                        signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetClientPolicy(_settings, logger))
+                        ClientPolicyContext.GetClientPolicy(_settings, logger),
+                        logger)
                 };
 
                 await _packageRestoreManager.RestoreMissingPackagesAsync(

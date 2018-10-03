@@ -325,8 +325,8 @@ namespace NuGet.CommandLine.Test.Caching
                     extractionContext: new PackageExtractionContext(
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        NullLogger.Instance,
-                        signedPackageVerifierSettings: null),
+                        clientPolicyContext: null,
+                        logger: NullLogger.Instance),
                     logger: NullLogger.Instance,
                     token: CancellationToken.None))
                 {

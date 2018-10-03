@@ -65,17 +65,17 @@ namespace NuGet.Packaging.FuncTest
                 // Act and Assert
                 var settings = new Settings(dir);
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, NullLogger.Instance);
                 var trustProviders = new[]
                 {
-                    new AllowListVerificationProvider()
+                    new AllowListVerificationProvider(clientPolicyContext.AllowList, requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require)
                 };
                 var verifier = new PackageSignatureVerifier(trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, clientPolicyContext.VerifierSettings, CancellationToken.None);
                     var resultsWithWarnings = result.Results.Where(r => r.GetWarningIssues().Any());
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
@@ -126,17 +126,17 @@ namespace NuGet.Packaging.FuncTest
                 // Act and Assert
                 var settings = new Settings(dir);
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, NullLogger.Instance);
                 var trustProviders = new[]
                 {
-                    new AllowListVerificationProvider()
+                    new AllowListVerificationProvider(clientPolicyContext.AllowList, requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require)
                 };
                 var verifier = new PackageSignatureVerifier(trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, clientPolicyContext.VerifierSettings, CancellationToken.None);
                     var resultsWithWarnings = result.Results.Where(r => r.GetWarningIssues().Any());
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
@@ -197,17 +197,17 @@ namespace NuGet.Packaging.FuncTest
                 // Act and Assert
                 var settings = new Settings(dir);
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, NullLogger.Instance);
                 var trustProviders = new[]
                 {
-                    new AllowListVerificationProvider()
+                    new AllowListVerificationProvider(clientPolicyContext.AllowList, requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require)
                 };
                 var verifier = new PackageSignatureVerifier(trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, clientPolicyContext.VerifierSettings, CancellationToken.None);
                     var resultsWithWarnings = result.Results.Where(r => r.GetWarningIssues().Any());
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
@@ -257,17 +257,17 @@ namespace NuGet.Packaging.FuncTest
                 // Act and Assert
                 var settings = new Settings(dir);
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, NullLogger.Instance);
                 var trustProviders = new[]
                 {
-                    new AllowListVerificationProvider()
+                    new AllowListVerificationProvider(clientPolicyContext.AllowList, requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require)
                 };
                 var verifier = new PackageSignatureVerifier(trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, clientPolicyContext.VerifierSettings, CancellationToken.None);
                     var resultsWithWarnings = result.Results.Where(r => r.GetWarningIssues().Any());
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
@@ -317,17 +317,17 @@ namespace NuGet.Packaging.FuncTest
                 // Act and Assert
                 var settings = new Settings(dir);
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, NullLogger.Instance);
                 var trustProviders = new[]
                 {
-                    new AllowListVerificationProvider()
+                    new AllowListVerificationProvider(clientPolicyContext.AllowList, requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require)
                 };
                 var verifier = new PackageSignatureVerifier(trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, clientPolicyContext.VerifierSettings, CancellationToken.None);
                     var resultsWithWarnings = result.Results.Where(r => r.GetWarningIssues().Any());
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
@@ -377,17 +377,17 @@ namespace NuGet.Packaging.FuncTest
                 // Act and Assert
                 var settings = new Settings(dir);
 
-                var verifierSettings = SignedPackageVerifierSettings.GetClientPolicy(settings, NullLogger.Instance);
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, NullLogger.Instance);
                 var trustProviders = new[]
                 {
-                    new AllowListVerificationProvider()
+                    new AllowListVerificationProvider(clientPolicyContext.AllowList, requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require)
                 };
                 var verifier = new PackageSignatureVerifier(trustProviders);
 
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, verifierSettings, CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, clientPolicyContext.VerifierSettings, CancellationToken.None);
                     var resultsWithWarnings = result.Results.Where(r => r.GetWarningIssues().Any());
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());

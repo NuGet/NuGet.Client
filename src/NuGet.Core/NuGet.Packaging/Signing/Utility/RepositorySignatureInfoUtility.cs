@@ -31,13 +31,8 @@ namespace NuGet.Packaging.Signing
             }
             else
             {
-                var repositoryAllowList = GetRepositoryAllowList(repoSignatureInfo.RepositoryCertificateInfos);
-
                 // Allow unsigned only if the common settings allow it and repository does not have all packages signed
                 var allowUnsigned = fallbackSettings.AllowUnsigned && !repoSignatureInfo.AllRepositorySigned;
-
-                // Allow an empty repository certificate list only if the repository does not have all packages signed
-                var allowNoRepositoryCertificateList = !repoSignatureInfo.AllRepositorySigned;
 
                 // Allow untrusted only if the common settings allow it and repository does not have all packages signed
                 var allowUntrusted = fallbackSettings.AllowUntrusted && !repoSignatureInfo.AllRepositorySigned;
@@ -51,53 +46,36 @@ namespace NuGet.Packaging.Signing
                     fallbackSettings.AllowNoTimestamp,
                     fallbackSettings.AllowUnknownRevocation,
                     fallbackSettings.ReportUnknownRevocation,
-                    allowNoRepositoryCertificateList,
-                    fallbackSettings.AllowNoClientCertificateList,
                     fallbackSettings.VerificationTarget,
                     fallbackSettings.SignaturePlacement,
                     fallbackSettings.RepositoryCountersignatureVerificationBehavior,
-                    fallbackSettings.RevocationMode,
-                    repositoryAllowList?.AsReadOnly(),
-                    fallbackSettings.ClientCertificateList);
+                    fallbackSettings.RevocationMode);
             }
         }
 
-        private static List<CertificateHashAllowListEntry> GetRepositoryAllowList(IEnumerable<IRepositoryCertificateInfo> repositoryCertificateInfos)
+        public static IReadOnlyCollection<CertificateHashAllowListEntry> GetRepositoryAllowList(IEnumerable<IRepositoryCertificateInfo> repositoryCertificateInfos)
         {
-            List<CertificateHashAllowListEntry> repositoryAllowList = null;
+            HashSet<CertificateHashAllowListEntry> repositoryAllowList = null;
 
             if (repositoryCertificateInfos != null)
             {
-                repositoryAllowList = new List<CertificateHashAllowListEntry>();
+                repositoryAllowList = new HashSet<CertificateHashAllowListEntry>();
 
                 foreach (var certInfo in repositoryCertificateInfos)
                 {
-                    var verificationTarget = VerificationTarget.Repository;
-                    var signaturePlacement = SignaturePlacement.PrimarySignature | SignaturePlacement.Countersignature;
-
                     foreach (var hashAlgorithm in SigningSpecifications.V1.AllowedHashAlgorithms)
                     {
-                        AddCertificateFingerprintIntoAllowList(verificationTarget, signaturePlacement, hashAlgorithm, certInfo, repositoryAllowList);
+                        var fingerprint = certInfo.Fingerprints[hashAlgorithm.ConvertToOidString()];
+
+                        if (!string.IsNullOrEmpty(fingerprint))
+                        {
+                            repositoryAllowList.Add(new CertificateHashAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithm));
+                        }
                     }
                 }
             }
 
             return repositoryAllowList;
-        }
-
-        private static void AddCertificateFingerprintIntoAllowList(
-            VerificationTarget target,
-            SignaturePlacement placement,
-            HashAlgorithmName algorithm,
-            IRepositoryCertificateInfo certInfo,
-            List<CertificateHashAllowListEntry> allowList)
-        {
-            var fingerprint = certInfo.Fingerprints[algorithm.ConvertToOidString()];
-
-            if (!string.IsNullOrEmpty(fingerprint))
-            {
-                allowList.Add(new CertificateHashAllowListEntry(target, placement, fingerprint, algorithm));
-            }
         }
     }
 }
