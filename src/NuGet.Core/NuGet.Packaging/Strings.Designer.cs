@@ -197,7 +197,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error parsing hash file {0} : {1}.
+        ///   Looks up a localized string similar to Error parsing nupkg metadata file {0} : {1}.
         /// </summary>
         internal static string Error_LoadingHashFile {
             get {
