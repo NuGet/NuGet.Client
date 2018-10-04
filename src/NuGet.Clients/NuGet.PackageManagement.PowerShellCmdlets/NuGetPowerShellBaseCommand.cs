@@ -77,13 +77,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
 
             var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
+            var logger = new LoggerAdapter(this);
             PackageExtractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                new LoggerAdapter(this),
+                logger,
                 signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
+                SignedPackageVerifierSettings.GetClientPolicy(ConfigSettings, logger));
 
             if (_commonOperations != null)
             {
@@ -271,7 +271,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                                 PackageExtractionBehavior.XmlDocFileSaveMode,
                                 logger,
                                 signedPackageVerifier,
-                                SignedPackageVerifierSettings.GetDefault())
+                                SignedPackageVerifierSettings.GetClientPolicy(ConfigSettings, logger))
                         };
 
                         var result = await PackageRestoreManager.RestoreMissingPackagesAsync(

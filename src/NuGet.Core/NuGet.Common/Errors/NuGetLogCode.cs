@@ -441,6 +441,11 @@ namespace NuGet.Common
         NU3039 = 3039,
 
         /// <summary>
+        /// There where two equal certificate entries with conflicting attributes in the nuget.config
+        /// </summary>
+        NU3040 = 3040,
+
+        /// <summary>
         /// Undefined Package Error.
         /// </summary>
         NU5000 = 5000,

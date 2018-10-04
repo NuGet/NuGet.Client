@@ -747,4 +747,10 @@ Valid from:</comment>
   <data name="NuGetLicenseExpression_LicenseInvalidCharacters" xml:space="preserve">
     <value>The license identifier '{0}' contains invalid characters.</value>
   </data>
+  <data name="ConflictingAllowUntrustedRoot" xml:space="preserve">
+    <value>There are two certificates with conflicting allowUntrustedRoot attributes in the computed settings. The allowUntrustedRoot attribute is going to be set to false. Certificate: {0}-{1}</value>
+    <comment>0 - Hash algorithm
+1 - Fingerprint
+'allowUntrustedRoot' should not be localized</comment>
+  </data>
 </root>

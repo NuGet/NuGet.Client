@@ -330,7 +330,7 @@ namespace NuGet.CommandLine
             CheckRequireConsent();
 
             var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-            var signingVerificationSettings = SignedPackageVerifierSettings.GetDefault();
+            var signingVerificationSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings, collectorLogger);
             var projectContext = new ConsoleProjectContext(collectorLogger)
             {
                 PackageExtractionContext = new PackageExtractionContext(

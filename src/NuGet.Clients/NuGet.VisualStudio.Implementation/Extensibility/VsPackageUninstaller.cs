@@ -67,13 +67,13 @@ namespace NuGet.VisualStudio
                     VSAPIProjectContext projectContext = new VSAPIProjectContext();
 
                     var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
+                    var logger = new LoggerAdapter(projectContext);
                     projectContext.PackageExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        new LoggerAdapter(projectContext),
+                        logger,
                         signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetDefault());
+                        SignedPackageVerifierSettings.GetClientPolicy(_settings, logger));
 
                     // find the project
                     NuGetProject nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);

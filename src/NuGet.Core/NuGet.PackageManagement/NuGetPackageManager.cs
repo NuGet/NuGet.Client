@@ -192,15 +192,17 @@ namespace NuGet.PackageManagement
         {
             var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
+            var logger = new LoggerAdapter(nuGetProjectContext);
+
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
                 ParentId = nuGetProjectContext.OperationId,
                 ExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    new LoggerAdapter(nuGetProjectContext),
+                    logger,
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault())
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings, logger))
             };
 
             return InstallPackageAsync(
@@ -250,6 +252,7 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
             var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+            var logger = new LoggerAdapter(nuGetProjectContext);
 
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
@@ -257,9 +260,9 @@ namespace NuGet.PackageManagement
                 ExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    new LoggerAdapter(nuGetProjectContext),
+                    logger,
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault())
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings, logger))
             };
 
             await InstallPackageAsync(
@@ -329,6 +332,7 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+            var logger = new LoggerAdapter(nuGetProjectContext);
 
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
@@ -336,9 +340,9 @@ namespace NuGet.PackageManagement
                 ExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    new LoggerAdapter(nuGetProjectContext),
+                    logger,
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault())
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings, logger))
             };
 
             return InstallPackageAsync(
@@ -391,6 +395,7 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+            var logger = new LoggerAdapter(nuGetProjectContext);
 
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
@@ -398,9 +403,9 @@ namespace NuGet.PackageManagement
                 ExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    new LoggerAdapter(nuGetProjectContext),
+                    logger,
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault())
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings, logger))
             };
 
             await InstallPackageAsync(
@@ -2150,6 +2155,7 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+            var logger = new LoggerAdapter(nuGetProjectContext);
 
             var downloadContext = new PackageDownloadContext(sourceCacheContext)
             {
@@ -2157,9 +2163,9 @@ namespace NuGet.PackageManagement
                 ExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    new LoggerAdapter(nuGetProjectContext),
+                    logger,
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault())
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings, logger))
             };
 
             await ExecuteNuGetProjectActionsAsync(nuGetProject,

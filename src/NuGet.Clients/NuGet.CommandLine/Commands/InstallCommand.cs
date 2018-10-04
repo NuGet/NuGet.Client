@@ -200,6 +200,7 @@ namespace NuGet.CommandLine
                 cacheContext.DirectDownload = DirectDownload;
 
                 var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+                var signingSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings, Console);
 
                 var projectContext = new ConsoleProjectContext(Console)
                 {
@@ -208,7 +209,7 @@ namespace NuGet.CommandLine
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         Console,
                         signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetDefault())
+                        signingSettings)
                 };
 
                 var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload)
@@ -218,7 +219,7 @@ namespace NuGet.CommandLine
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         Console,
                         signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetDefault())
+                        signingSettings)
                 };
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
@@ -381,7 +382,7 @@ namespace NuGet.CommandLine
                 else
                 {
                     var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-                    var signingVerificationSettings = SignedPackageVerifierSettings.GetDefault();
+                    var signingVerificationSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings, Console);
 
                     var projectContext = new ConsoleProjectContext(Console)
                     {

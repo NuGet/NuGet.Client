@@ -187,7 +187,7 @@ namespace NuGet.Commands
                 PackageExtractionBehavior.XmlDocFileSaveMode,
                 Log,
                 signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
+                SignedPackageVerifierSettings.GetClientPolicy(settings, Log));
         }
 
         public void ApplyStandardProperties(RestoreRequest request)

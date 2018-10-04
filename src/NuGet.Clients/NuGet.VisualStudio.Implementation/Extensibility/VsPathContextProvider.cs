@@ -38,20 +38,7 @@ namespace NuGet.VisualStudio
         private readonly Lazy<NuGet.Common.ILogger> _logger;
         private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
 
-        private readonly Lazy<INuGetProjectContext> _projectContext = new Lazy<INuGetProjectContext>(() => {
-            var projectContext = new VSAPIProjectContext();
-
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
-            projectContext.PackageExtractionContext = new PackageExtractionContext(
-                PackageSaveMode.Defaultv2,
-                PackageExtractionBehavior.XmlDocFileSaveMode,
-                new LoggerAdapter(projectContext),
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetDefault());
-
-            return projectContext;
-        });
+        private readonly Lazy<INuGetProjectContext> _projectContext;
         
 
         [ImportingConstructor]
@@ -77,6 +64,21 @@ namespace NuGet.VisualStudio
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
+
+            _projectContext = new Lazy<INuGetProjectContext>(() => {
+                var projectContext = new VSAPIProjectContext();
+
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+                var adapterLogger = new LoggerAdapter(projectContext);
+                projectContext.PackageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    adapterLogger,
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetClientPolicy(_settings.Value, adapterLogger));
+
+                return projectContext;
+            });
         }
 
         /// <summary>
@@ -107,6 +109,21 @@ namespace NuGet.VisualStudio
             _solutionManager = new Lazy<IVsSolutionManager>(() => solutionManager);
             _logger = new Lazy<NuGet.Common.ILogger>(() => logger);
             _getLockFileOrNullAsync = getLockFileOrNullAsync ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
+
+            _projectContext = new Lazy<INuGetProjectContext>(() => {
+                var projectContext = new VSAPIProjectContext();
+
+                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
+                var adapterLogger = new LoggerAdapter(projectContext);
+                projectContext.PackageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    adapterLogger,
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetClientPolicy(settings, adapterLogger));
+
+                return projectContext;
+            });
         }
 
         public bool TryCreateContext(string projectUniqueName, out IVsPathContext outputPathContext)
