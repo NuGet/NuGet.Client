@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,9 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
@@ -60,10 +63,18 @@ namespace NuGetVSExtension
             INuGetUILogger logger,
             ISourceControlManagerProvider sourceControlManagerProvider)
         {
+            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
             ProjectContext = new NuGetUIProjectContext(
                 commonOperations,
                 logger,
                 sourceControlManagerProvider);
+
+            ProjectContext.PackageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    new LoggerAdapter(ProjectContext),
+                    signedPackageVerifier,
+                    SignedPackageVerifierSettings.GetDefault());
         }
 
         /// <summary>
