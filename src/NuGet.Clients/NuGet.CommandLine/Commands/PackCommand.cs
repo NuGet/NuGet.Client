@@ -77,6 +77,12 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandSymbolPackageFormat")]
         public string SymbolPackageFormat { get; set; }
 
+        [Option(typeof(NuGetCommand), "PackageCommandPackagesDirectory")]
+        public string PackagesDirectory { get; set; }
+
+        [Option(typeof(NuGetCommand), "PackageCommandSolutionDirectory")]
+        public string SolutionDirectory { get; set; }
+
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
         public string MSBuildVersion { get; set; }
 
@@ -103,6 +109,8 @@ namespace NuGet.CommandLine
             packArgs.OutputDirectory = OutputDirectory;
             packArgs.BasePath = BasePath;
             packArgs.MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console).Value.Path);
+            packArgs.PackagesDirectory = String.IsNullOrEmpty(PackagesDirectory) ? null : Path.GetFullPath(PackagesDirectory);
+            packArgs.SolutionDirectory = String.IsNullOrEmpty(SolutionDirectory) ? null : Path.GetFullPath(SolutionDirectory);
 
             // Get the input file
             packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
