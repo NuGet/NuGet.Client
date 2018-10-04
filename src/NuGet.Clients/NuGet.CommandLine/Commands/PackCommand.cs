@@ -62,7 +62,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandIncludeReferencedProjects")]
         public bool IncludeReferencedProjects { get; set; }
 
-        [Option(typeof(NuGetCommand), "PackageCommandPropertiesDescription")]
+        [Option(typeof(NuGetCommand), "PackageCommandPropertiesDescription", AltName = "p")]
         public Dictionary<string, string> Properties
         {
             get
