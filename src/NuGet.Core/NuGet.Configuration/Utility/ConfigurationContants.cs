@@ -95,6 +95,8 @@ namespace NuGet.Configuration
 
         public static readonly string SkipBindingRedirectsKey = "skip";
 
+        public static readonly string TrustedSigners = "trustedSigners";
+
         public static readonly string UserKey = "http_proxy.user";
 
         public static readonly string UsernameToken = "Username";

@@ -423,7 +423,7 @@ namespace NuGet.Protocol.Core.Types
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     log,
                     signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault());
+                    SignedPackageVerifierSettings.GetClientPolicy(Settings, log));
 
                 var context = new OfflineFeedAddContext(pathToPackage,
                     root,

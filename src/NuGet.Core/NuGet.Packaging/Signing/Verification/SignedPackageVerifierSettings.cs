@@ -222,6 +222,29 @@ namespace NuGet.Packaging.Signing
         }
 
         /// <summary>
+        /// Gives the appropriate configuration depending on the user specified settings.
+        /// </summary>
+        /// <param name="settings">Loaded settings used to get user data</param>
+        public static SignedPackageVerifierSettings GetClientPolicy(ISettings settings, ILogger logger)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            var policy = SettingsUtility.GetSignatureValidationMode(settings);
+
+            var allowList = TrustedSignersProvider.GetAllowListEntries(settings, logger);
+
+            if (policy == SignatureValidationMode.Require)
+            {
+                return GetRequireModeDefaultPolicy(clientAllowListEntries: allowList);
+            }
+
+            return GetAcceptModeDefaultPolicy(clientAllowListEntries: allowList);
+        }
+
+        /// <summary>
         /// Default settings.
         /// </summary>
         public static SignedPackageVerifierSettings GetDefault(
@@ -289,7 +312,7 @@ namespace NuGet.Packaging.Signing
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
                 reportUnknownRevocation: true,
-                allowNoRepositoryCertificateList: false,
+                allowNoRepositoryCertificateList: true,
                 allowNoClientCertificateList: false,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
