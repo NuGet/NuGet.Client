@@ -5671,6 +5671,119 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 Assert.Equal(packageBytes[0], packageBytes[1]);
             }
         }
+
+        [Fact]
+        public void PackCommand_ExplicitSolutionDir()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var solutionDirectory = Path.Combine(workingDirectory, "solution");
+                var packagesFolder = Path.Combine(workingDirectory, "pkgs");
+
+                Directory.CreateDirectory(solutionDirectory);
+                // create nuget.config with custom packages folder
+                Util.CreateFile(
+                    solutionDirectory,
+                    "nuget.config",
+@"<configuration>
+  <config>
+    <add key='repositoryPath' value='../pkgs' />
+  </config>
+</configuration>
+");
+
+                Directory.CreateDirectory(packagesFolder);
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+
+                Util.CreateFile(
+                    proj1Directory,
+                    "packages.config",
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id=""testPackage1"" version=""1.1.0"" targetFramework=""net45"" />
+</packages>");
+                Util.CreateTestPackage("testPackage1", "1.1.0", Path.Combine(packagesFolder, "testPackage1.1.1.0"));
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "decoy.sln",
+                    "# decoy solution, nuget.exe should ignore this");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack proj1.csproj -build -solutionDir ../solution",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_ExplicitPackagesDir()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var packagesFolder = Path.Combine(workingDirectory, "pkgs");
+
+                Directory.CreateDirectory(packagesFolder);
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+
+                Util.CreateFile(
+                    proj1Directory,
+                    "packages.config",
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id=""testPackage1"" version=""1.1.0"" targetFramework=""net45"" />
+</packages>");
+                Util.CreateTestPackage("testPackage1", "1.1.0", Path.Combine(packagesFolder, "testPackage1.1.1.0"));
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "decoy.sln",
+                    "# decoy solution, nuget.exe should ignore this");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack proj1.csproj -build -packagesDir ../pkgs",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+            }
+        }
     }
 
     internal static class PackageArchiveReaderTestExtensions
