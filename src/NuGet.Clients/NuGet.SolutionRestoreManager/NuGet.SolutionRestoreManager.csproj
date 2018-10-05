@@ -56,7 +56,6 @@
     <Compile Include="SolutionRestoreJob.cs" />
     <Compile Include="SolutionRestoreJobContext.cs" />
     <Compile Include="SolutionRestoreWorker.cs" />
-    <Compile Include="SourceTelemetry.cs" />
     <Compile Include="VerbosityLevel.cs" />
     <Compile Include="VsSolutionRestoreService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -14,7 +14,9 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -754,6 +756,8 @@ namespace NuGet.PackageManagement.UI
                 _packageDetail.Visibility = Visibility.Visible;
                 _packageDetail.DataContext = _detailModel;
 
+                EmitSearchSelectionTelemetry(selectedPackage);
+
                 await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter, () => _packageList.SelectedItem);
 
                 _packageDetail.ScrollToHome();
@@ -764,13 +768,32 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void EmitSearchSelectionTelemetry(PackageItemListViewModel selectedPackage)
+        {
+            var operationId = _packageList.OperationId;
+            var selectedIndex = _packageList.SelectedIndex;
+            if (_topPanel.Filter == ItemFilter.All
+                && operationId.HasValue
+                && selectedIndex >= 0)
+            {
+                TelemetryActivity.EmitTelemetryEvent(new SearchSelectionTelemetryEvent(
+                    operationId.Value,
+                    selectedIndex,
+                    selectedPackage.Id,
+                    selectedPackage.Version));
+            }
+        }
+
         private static async Task<IPackageFeed> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger)
         {
             var logger = new VisualStudioActivityLogger();
 
             if (filter == ItemFilter.All)
             {
-                return new MultiSourcePackageFeed(context.SourceRepositories, uiLogger);
+                return new MultiSourcePackageFeed(
+                    context.SourceRepositories,
+                    uiLogger,
+                    TelemetryActivity.NuGetTelemetryService);
             }
 
             var metadataProvider = CreatePackageMetadataProvider(context);

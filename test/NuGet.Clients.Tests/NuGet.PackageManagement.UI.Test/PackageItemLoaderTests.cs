@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -37,7 +38,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             var context = new PackageLoadContext(repositories, false, uiContext);
 
-            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null);
+            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
             var loader = new PackageItemLoader(context, packageFeed, "nuget");
 
             var loaded = new List<PackageItemListViewModel>();
@@ -69,6 +70,71 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
+        public async Task EmitsSearchTelemetryEvents()
+        {
+            // Arrange
+            var solutionManager = Mock.Of<IVsSolutionManager>();
+            var uiContext = Mock.Of<INuGetUIContext>();
+            Mock.Get(uiContext)
+                .Setup(x => x.SolutionManager)
+                .Returns(solutionManager);
+
+            var telemetryService = new Mock<INuGetTelemetryService>();
+            var events = new List<TelemetryEvent>();
+            telemetryService
+                .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(e => events.Add(e));
+
+            var source = new Configuration.PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
+
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source });
+            var repositories = sourceRepositoryProvider.GetRepositories();
+
+            var context = new PackageLoadContext(repositories, false, uiContext);
+
+            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: telemetryService.Object);
+
+            // Act
+            var loader = new PackageItemLoader(context, packageFeed, searchText: "nuget", includePrerelease: true);
+            await loader.LoadNextAsync(null, CancellationToken.None);
+            await loader.LoadNextAsync(null, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(4, events.Count);
+
+            var search = events[0];
+            Assert.Equal("Search", search.Name);
+            Assert.Equal(true, search["IncludePrerelease"]);
+            Assert.Equal("nuget", search.GetPiiData().First(p => p.Key == "Query").Value);
+            var operationId = Assert.IsType<string>(search["OperationId"]);
+            var parsedOperationId = Guid.ParseExact(operationId, "D");
+
+            var sources = events[1];
+            Assert.Equal("SearchPackageSourceSummary", sources.Name);
+            Assert.Equal(1, sources["NumHTTPv3Feeds"]);
+            Assert.Equal("YesV3", sources["NuGetOrg"]);
+            Assert.Equal(operationId, sources["ParentId"]);
+
+            var page0 = events[2];
+            Assert.Equal("SearchPage", page0.Name);
+            Assert.Equal("Ready", page0["LoadingStatus"]);
+            Assert.Equal(0, page0["PageIndex"]);
+            Assert.Equal(operationId, page0["ParentId"]);
+            Assert.IsType<int>(page0["ResultCount"]);
+            Assert.IsType<double>(page0["Duration"]);
+
+            var page1 = events[3];
+            Assert.Equal("SearchPage", page1.Name);
+            Assert.Equal("Ready", page1["LoadingStatus"]);
+            Assert.Equal(1, page1["PageIndex"]);
+            Assert.Equal(operationId, page1["ParentId"]);
+            Assert.IsType<int>(page1["ResultCount"]);
+            Assert.IsType<double>(page1["Duration"]);
+
+            Assert.Equal(parsedOperationId, loader.State.OperationId);
+        }
+
+        [Fact]
         public async Task GetTotalCountAsync_Works()
         {
             var solutionManager = Mock.Of<IVsSolutionManager>();
@@ -85,7 +151,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             var context = new PackageLoadContext(repositories, false, uiContext);
 
-            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null);
+            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
             var loader = new PackageItemLoader(context, packageFeed, "nuget");
 
             var totalCount = await loader.GetTotalCountAsync(100, CancellationToken.None);

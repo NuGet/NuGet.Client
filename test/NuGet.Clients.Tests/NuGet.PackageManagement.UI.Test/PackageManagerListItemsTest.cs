@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             var context = new PackageLoadContext(repositories, false, uiContext);
 
-            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null);
+            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
             var loader = new PackageItemLoader(context, packageFeed, "EntityFramework", false);
 
             var loaded = new List<PackageItemListViewModel>();
@@ -100,7 +100,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             var context = new PackageLoadContext(repositories, false, uiContext);
 
-            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null);
+            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
             var loader = new PackageItemLoader(context, packageFeed, "EntityFramework", false);
 
             var loaded = new List<PackageItemListViewModel>();

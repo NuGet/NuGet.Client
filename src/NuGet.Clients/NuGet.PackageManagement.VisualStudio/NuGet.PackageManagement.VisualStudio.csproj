@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -100,6 +100,7 @@
     <Compile Include="Common\PackageCollectionExtensions.cs" />
     <Compile Include="Common\PackageCollectionItem.cs" />
     <Compile Include="Common\PackageCollectionItemExtensions.cs" />
+    <Compile Include="PackageFeeds\LoadingStatusExtensionMethods.cs" />
     <Compile Include="ProjectServices\DeferredProjectCapabilities.cs" />
     <Compile Include="ProjectServices\GlobalProjectServiceProvider.cs" />
     <Compile Include="ProjectServices\NetCoreProjectSystemServices.cs" />
@@ -178,6 +179,10 @@
     <Compile Include="SourceControl\VsSourceControlTracker.cs" />
     <Compile Include="Telemetry\NuGetProjectType.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
+    <Compile Include="Telemetry\SearchPageTelemetryEvent.cs" />
+    <Compile Include="Telemetry\SearchSelectionTelemetryEvent.cs" />
+    <Compile Include="Telemetry\SearchTelemetryEvent.cs" />
+    <Compile Include="Telemetry\SourceTelemetry.cs" />
     <Compile Include="Telemetry\VSTelemetryServiceUtility.cs" />
     <Compile Include="Utility\EnvDTEProjectUtility.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
