@@ -173,60 +173,7 @@ namespace NuGet.Build.Tasks.Pack
                     request.RepositoryCommit);
             }
 
-            var hasLicenseExpression = !string.IsNullOrEmpty(request.PackageLicenseExpression);
-            var hasLicenseFile = !string.IsNullOrEmpty(request.PackageLicenseFile);
-            if (hasLicenseExpression || hasLicenseFile)
-            {
-                if (string.IsNullOrEmpty(request.LicenseUrl))
-                {
-                    throw new PackagingException(NuGetLogCode.NU5035, string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Licenses_LicenseUrlCannotBeUsedInConjuctionWithLicense));
-                }
-
-                if (hasLicenseExpression && hasLicenseFile)
-                {
-                    throw new PackagingException(NuGetLogCode.NU5033, string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.InvalidLicenseCombination,
-                        request.PackageLicenseExpression));
-                }
-
-                var version = GetLicenseExpressionVersion(request);
-
-                if (hasLicenseExpression)
-                {
-                    if (version.CompareTo(LicenseMetadata.CurrentVersion) <= 0)
-                    {
-                        try
-                        {
-                            var expression = NuGetLicenseExpression.Parse(request.PackageLicenseExpression);
-                            builder.LicenseMetadata = new LicenseMetadata(LicenseType.Expression, request.PackageLicenseExpression, expression, version);
-                        }
-                        catch (NuGetLicenseExpressionParsingException e)
-                        {
-                            throw new PackagingException(NuGetLogCode.NU5032, string.Format(
-                                   CultureInfo.CurrentCulture,
-                                   Strings.InvalidLicenseExpression,
-                                   request.PackageLicenseExpression, e.Message) ,
-                                   e);
-                        }
-                    }
-                    else
-                    {
-                        throw new PackagingException(NuGetLogCode.NU5034, string.Format(
-                                   CultureInfo.CurrentCulture,
-                                   Strings.InvalidLicenseExppressionVersion_VersionTooHigh,
-                                   request.PackageLicenseExpressionVersion,
-                                   LicenseMetadata.CurrentVersion));
-                    }
-                }
-
-                if (hasLicenseFile)
-                {
-                    builder.LicenseMetadata = new LicenseMetadata(type: LicenseType.File, license: request.PackageLicenseFile, expression: null, version: version);
-                }
-            }
+            builder.LicenseMetadata = BuildLicenseMetadata(request);
 
             if (request.MinClientVersion != null)
             {
@@ -281,6 +228,64 @@ namespace NuGet.Build.Tasks.Pack
             PopulateFrameworkAssemblyReferences(builder, request);
 
             return builder;
+        }
+
+        private LicenseMetadata BuildLicenseMetadata(IPackTaskRequest<IMSBuildItem> request)
+        {
+            var hasLicenseExpression = !string.IsNullOrEmpty(request.PackageLicenseExpression);
+            var hasLicenseFile = !string.IsNullOrEmpty(request.PackageLicenseFile);
+            if (hasLicenseExpression || hasLicenseFile)
+            {
+                if (!string.IsNullOrEmpty(request.LicenseUrl))
+                {
+                    throw new PackagingException(NuGetLogCode.NU5035, string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Licenses_LicenseUrlCannotBeUsedInConjuctionWithLicense));
+                }
+
+                if (hasLicenseExpression && hasLicenseFile)
+                {
+                    throw new PackagingException(NuGetLogCode.NU5033, string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidLicenseCombination,
+                        request.PackageLicenseExpression));
+                }
+
+                var version = GetLicenseExpressionVersion(request);
+
+                if (hasLicenseExpression)
+                {
+                    if (version.CompareTo(LicenseMetadata.CurrentVersion) <= 0)
+                    {
+                        try
+                        {
+                            var expression = NuGetLicenseExpression.Parse(request.PackageLicenseExpression);
+                            return new LicenseMetadata(LicenseType.Expression, request.PackageLicenseExpression, expression, version);
+                        }
+                        catch (NuGetLicenseExpressionParsingException e)
+                        {
+                            throw new PackagingException(NuGetLogCode.NU5032, string.Format(
+                                   CultureInfo.CurrentCulture,
+                                   Strings.InvalidLicenseExpression,
+                                   request.PackageLicenseExpression, e.Message),
+                                   e);
+                        }
+                    }
+                    else
+                    {
+                        throw new PackagingException(NuGetLogCode.NU5034, string.Format(
+                                   CultureInfo.CurrentCulture,
+                                   Strings.InvalidLicenseExppressionVersion_VersionTooHigh,
+                                   request.PackageLicenseExpressionVersion,
+                                   LicenseMetadata.CurrentVersion));
+                    }
+                }
+                if (hasLicenseFile)
+                {
+                    return new LicenseMetadata(type: LicenseType.File, license: request.PackageLicenseFile, expression: null, version: version);
+                }
+            }
+            return null;
         }
 
         private static Version GetLicenseExpressionVersion(IPackTaskRequest<IMSBuildItem> request)

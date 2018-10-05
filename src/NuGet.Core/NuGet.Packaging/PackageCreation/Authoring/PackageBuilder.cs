@@ -491,7 +491,7 @@ namespace NuGet.Packaging
                     throw new PackagingException(NuGetLogCode.NU5031, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileExtensionIsInvalid, licenseMetadata.License));
                 }
                 var strippedLicenseFileLocation = PathUtility.StripLeadingDirectorySeparators(licenseMetadata.License);
-                var count = files.Where(e => PathUtility.StripLeadingDirectorySeparators(e.Path).Equals(strippedLicenseFileLocation)).Count();
+                var count = files.Where(e => PathUtility.StripLeadingDirectorySeparators(e.Path).Equals(strippedLicenseFileLocation, PathUtility.GetStringComparisonBasedOnOS())).Count();
                 if (count == 0)
                 {
                     throw new PackagingException(NuGetLogCode.NU5030, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileIsNotInNupkg, licenseMetadata.License));

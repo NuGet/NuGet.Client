@@ -9,9 +9,9 @@ namespace NuGet.Packaging
 {
     public class LicenseMetadata : IEquatable<LicenseMetadata>
     {
-        public static Version EmptyVersion = new Version(1, 0, 0);
-        public static Version CurrentVersion = new Version(1, 0, 0);
-        public static Uri DeprecateUrl = new Uri("https://aka.ms/deprecateLicenseUrl");
+        public static readonly Version EmptyVersion = new Version(1, 0, 0);
+        public static readonly Version CurrentVersion = new Version(1, 0, 0);
+        public static readonly Uri DeprecateUrl = new Uri("https://aka.ms/deprecateLicenseUrl");
 
         public LicenseType Type { get; }
         public string License { get; }

@@ -470,7 +470,8 @@ namespace NuGet.Common
 
         public static string StripLeadingDirectorySeparators(string filename)
         {
-            var currentDirectoryPath = $".{Path.DirectorySeparatorChar}";
+            filename = GetPathWithForwardSlashes(filename);
+            var currentDirectoryPath = $"./";
 
             if (filename.StartsWith(currentDirectoryPath))
             {
