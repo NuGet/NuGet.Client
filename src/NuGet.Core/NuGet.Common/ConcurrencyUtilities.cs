@@ -147,6 +147,10 @@ namespace NuGet.Common
                         Thread.Sleep(SleepDuration);
                         continue;
                     }
+                    catch (FileLoadException)
+                    {
+                        throw;
+                    }
                     catch (IOException)
                     {
                         Thread.Sleep(SleepDuration);
