@@ -176,7 +176,7 @@ namespace NuGet.Packaging
             var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value;
 
 
-            if (!Enum.TryParse(type, true, out LicenseType licenseType))
+            if (!Enum.TryParse(type, ignoreCase: true, result: out LicenseType licenseType))
             {
                 throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicense_InvalidLicenseType, type));
             }
@@ -187,7 +187,11 @@ namespace NuGet.Packaging
             }
 
             Version version = null;
-            if (versionValue != null)
+            if (string.IsNullOrWhiteSpace(versionValue))
+            {
+                version = LicenseMetadata.EmptyVersion;
+            }
+            else
             {
                 if (!Version.TryParse(versionValue, out version))
                 {
@@ -196,10 +200,6 @@ namespace NuGet.Packaging
                         Strings.NuGetLicense_InvalidLicenseExpressionVersion,
                         versionValue));
                 }
-            }
-            else
-            {
-                version = LicenseMetadata.EmptyVersion;
             }
 
             switch (licenseType)
@@ -226,7 +226,7 @@ namespace NuGet.Packaging
                                    LicenseMetadata.CurrentVersion));
 
                 case LicenseType.File:
-                    return new LicenseMetadata(licenseType, license, null, LicenseMetadata.EmptyVersion);
+                    return new LicenseMetadata(type: licenseType, license: license, expression: null, version: LicenseMetadata.EmptyVersion);
 
                 default:
                     throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicense_InvalidLicenseType, type));

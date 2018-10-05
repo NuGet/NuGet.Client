@@ -177,7 +177,7 @@ namespace NuGet.Build.Tasks.Pack
             var hasLicenseFile = !string.IsNullOrEmpty(request.PackageLicenseFile);
             if (hasLicenseExpression || hasLicenseFile)
             {
-                if (request.LicenseUrl != null)
+                if (string.IsNullOrEmpty(request.LicenseUrl))
                 {
                     throw new PackagingException(NuGetLogCode.NU5035, string.Format(
                         CultureInfo.CurrentCulture,
@@ -224,7 +224,7 @@ namespace NuGet.Build.Tasks.Pack
 
                 if (hasLicenseFile)
                 {
-                    builder.LicenseMetadata = new LicenseMetadata(LicenseType.File, request.PackageLicenseFile, null, version);
+                    builder.LicenseMetadata = new LicenseMetadata(type: LicenseType.File, license: request.PackageLicenseFile, expression: null, version: version);
                 }
             }
 
@@ -286,7 +286,11 @@ namespace NuGet.Build.Tasks.Pack
         private static Version GetLicenseExpressionVersion(IPackTaskRequest<IMSBuildItem> request)
         {
             Version version;
-            if (!string.IsNullOrEmpty(request.PackageLicenseExpressionVersion))
+            if (string.IsNullOrEmpty(request.PackageLicenseExpressionVersion))
+            {
+                version = LicenseMetadata.EmptyVersion;
+            }
+            else
             {
                 if (!Version.TryParse(request.PackageLicenseExpressionVersion, out version))
                 {
@@ -295,10 +299,6 @@ namespace NuGet.Build.Tasks.Pack
                         Strings.InvalidLicenseExpressionVersion,
                         request.PackageLicenseExpressionVersion));
                 }
-            }
-            else
-            {
-                version = LicenseMetadata.EmptyVersion;
             }
 
             return version;

@@ -415,8 +415,7 @@ namespace NuGet.Packaging
 
         public LicenseMetadata GetLicenseMetadata()
         {
-            var ns = MetadataNode.GetDefaultNamespace().NamespaceName;
-            var licenseNode = MetadataNode.Elements(XName.Get(NuspecUtility.License, ns)).FirstOrDefault();
+            var licenseNode = MetadataNode.Elements(XName.Get(NuspecUtility.License, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
 
             if (licenseNode != null)
             {
@@ -424,7 +423,7 @@ namespace NuGet.Packaging
                 var license = licenseNode.Value;
                 var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value;
 
-                var isKnownType = Enum.TryParse(type, true, out LicenseType licenseType);
+                var isKnownType = Enum.TryParse(type, ignoreCase: true, result: out LicenseType licenseType);
 
                 if (isKnownType)
                 {
@@ -460,10 +459,10 @@ namespace NuGet.Packaging
                         }
                         else
                         {
-                            return new LicenseMetadata(licenseType, license, null, version);
+                            return new LicenseMetadata(type: licenseType, license: license, expression: null, version: version);
                         }
                     }
-                    return new LicenseMetadata(licenseType, license, null, LicenseMetadata.EmptyVersion);
+                    return new LicenseMetadata(type: licenseType, license: license, expression: null, version: LicenseMetadata.EmptyVersion);
                 }
             }
             return null;

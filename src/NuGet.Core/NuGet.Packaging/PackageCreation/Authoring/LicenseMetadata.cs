@@ -13,12 +13,12 @@ namespace NuGet.Packaging
         public static Version CurrentVersion = new Version(1, 0, 0);
         public static Uri DeprecateUrl = new Uri("https://aka.ms/deprecateLicenseUrl");
 
-        public LicenseType? Type { get; }
+        public LicenseType Type { get; }
         public string License { get; }
         public NuGetLicenseExpression LicenseExpression { get; }
         public Version Version { get; }
 
-        public LicenseMetadata(LicenseType? type, string license, NuGetLicenseExpression expression, Version version)
+        public LicenseMetadata(LicenseType type, string license, NuGetLicenseExpression expression, Version version)
         {
             Type = type;
             License = license ?? throw new ArgumentNullException(nameof(license));
@@ -37,7 +37,7 @@ namespace NuGet.Packaging
             return metadata != null &&
                    Type == metadata.Type &&
                    License.Equals(metadata.License) &&
-                   LicenseExpression.Equals(metadata.License) &&
+                   Equals(LicenseExpression, metadata.LicenseExpression) &&
                    Version == metadata.Version;
         }
 
