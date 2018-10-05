@@ -753,4 +753,9 @@ Valid from:</comment>
 1 - Fingerprint
 'allowUntrustedRoot' should not be localized</comment>
   </data>
+  <data name="Error_LoadingHashFile" xml:space="preserve">
+    <value>Error parsing nupkg metadata file {0} : {1}</value>
+    <comment>0 - nupkg metadata file path
+1 - error message</comment>
+  </data>
 </root>

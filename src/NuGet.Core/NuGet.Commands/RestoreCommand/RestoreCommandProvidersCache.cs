@@ -35,7 +35,8 @@ namespace NuGet.Commands
             SourceCacheContext cacheContext,
             ILogger log)
         {
-            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, (path) => new NuGetv3LocalRepository(path, _fileCache));
+            var isFallbackFolder = false;
+            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, (path) => new NuGetv3LocalRepository(path, _fileCache, isFallbackFolder));
 
             var local = _localProvider.GetOrAdd(globalPackagesPath, (path) =>
             {
@@ -49,15 +50,18 @@ namespace NuGet.Commands
                     cacheContext,
                     ignoreFailedSources: true,
                     ignoreWarning: true,
-                    fileCache: _fileCache);
+                    fileCache: _fileCache,
+                    isFallbackFolderSource: isFallbackFolder);
             });
 
             var localProviders = new List<IRemoteDependencyProvider>() { local };
             var fallbackFolders = new List<NuGetv3LocalRepository>();
 
+            isFallbackFolder = true;
+
             foreach (var fallbackPath in fallbackPackagesPaths)
             {
-                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path, _fileCache));
+                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path, _fileCache, isFallbackFolder));
                 fallbackFolders.Add(cache);
 
                 var localProvider = _localProvider.GetOrAdd(fallbackPath, (path) =>
@@ -72,13 +76,16 @@ namespace NuGet.Commands
                         cacheContext,
                         ignoreFailedSources: false,
                         ignoreWarning: false,
-                        fileCache: _fileCache);
+                        fileCache: _fileCache,
+                        isFallbackFolderSource: isFallbackFolder);
                 });
 
                 localProviders.Add(localProvider);
             }
 
             var remoteProviders = new List<IRemoteDependencyProvider>(sources.Count);
+
+            isFallbackFolder = false;
 
             foreach (var source in sources)
             {
@@ -88,7 +95,8 @@ namespace NuGet.Commands
                     cacheContext,
                     cacheContext.IgnoreFailedSources,
                     ignoreWarning: false,
-                    fileCache: _fileCache));
+                    fileCache: _fileCache,
+                    isFallbackFolderSource: isFallbackFolder));
 
                 remoteProviders.Add(remoteProvider);
             }

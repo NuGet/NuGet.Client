@@ -119,6 +119,19 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
+        /// Gets the new hash file path which represents the original hash of the package.
+        /// </summary>
+        /// <param name="packageId">The package ID.</param>
+        /// <param name="version">The package version.</param>
+        /// <returns>The hash file path.</returns>
+        public string GetNupkgMetadataPath(string packageId, NuGetVersion version)
+        {
+            return Path.Combine(
+                GetInstallPath(packageId, version),
+                PackagingCoreConstants.NupkgMetadataFileExtension);
+        }
+
+        /// <summary>
         /// Gets the version list directory.
         /// </summary>
         /// <param name="packageId">The package ID.</param>

@@ -9,6 +9,7 @@ namespace NuGet.Packaging.Core
         public static readonly string NupkgExtension = ".nupkg";
         public static readonly string NuspecExtension = ".nuspec";
         public static readonly string PackageDownloadMarkerFileExtension = ".packagedownload.marker";
+        public static readonly string NupkgMetadataFileExtension = ".nupkg.metadata";
 
         /// <summary>
         /// _._ denotes an empty folder since OPC does not allow an

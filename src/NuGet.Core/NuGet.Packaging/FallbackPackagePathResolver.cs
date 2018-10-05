@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -120,7 +120,7 @@ namespace NuGet.Packaging
             // Check each folder for the package.
             foreach (var resolver in _pathResolvers)
             {
-                var hashPath = resolver.GetHashPath(packageId, version);
+                var hashPath = resolver.GetNupkgMetadataPath(packageId, version);
 
                 if (File.Exists(hashPath))
                 {

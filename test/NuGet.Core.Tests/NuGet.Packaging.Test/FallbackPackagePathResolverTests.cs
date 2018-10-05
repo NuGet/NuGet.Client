@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -249,7 +249,7 @@ namespace NuGet.Packaging.Test
                 foreach (var root in new[] { userFolder, fallbackFolders[0] })
                 {
                     var localResolver = new VersionFolderPathResolver(root);
-                    File.Delete(localResolver.GetHashPath("a", NuGetVersion.Parse("1.0.0")));
+                    File.Delete(localResolver.GetNupkgMetadataPath("a", NuGetVersion.Parse("1.0.0")));
                 }
 
                 var expected = Path.Combine(targetFolder, "a", "1.0.0");

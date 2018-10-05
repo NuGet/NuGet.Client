@@ -33,6 +33,7 @@ namespace NuGet.Commands
         private FindPackageByIdResource _findPackagesByIdResource;
         private bool _ignoreFailedSources;
         private bool _ignoreWarning;
+        private bool _isFallbackFolderSource;
 
         private readonly ConcurrentDictionary<LibraryRangeCacheKey, AsyncLazy<LibraryDependencyInfo>> _dependencyInfoCache
             = new ConcurrentDictionary<LibraryRangeCacheKey, AsyncLazy<LibraryDependencyInfo>>();
@@ -68,7 +69,7 @@ namespace NuGet.Commands
             SourceCacheContext cacheContext,
             bool ignoreFailedSources,
             bool ignoreWarning)
-            : this(sourceRepository, logger, cacheContext, ignoreFailedSources, ignoreWarning, fileCache: null)
+            : this(sourceRepository, logger, cacheContext, ignoreFailedSources, ignoreWarning, fileCache: null, isFallbackFolderSource: false)
         {
         }
 
@@ -91,7 +92,8 @@ namespace NuGet.Commands
         SourceCacheContext cacheContext,
         bool ignoreFailedSources,
         bool ignoreWarning,
-        LocalPackageFileCache fileCache)
+        LocalPackageFileCache fileCache,
+        bool isFallbackFolderSource)
         {
             if (sourceRepository == null)
             {
@@ -114,6 +116,7 @@ namespace NuGet.Commands
             _ignoreFailedSources = ignoreFailedSources;
             _ignoreWarning = ignoreWarning;
             _packageFileCache = fileCache;
+            _isFallbackFolderSource = isFallbackFolderSource;
         }
 
         /// <summary>
@@ -472,7 +475,7 @@ namespace NuGet.Commands
                 {
                     if (_findPackagesByIdResource == null)
                     {
-                        AddNuspecCache(resource);
+                        AddLocalV3ResourceOptions(resource);
 
                         _findPackagesByIdResource = resource;
                     }
@@ -480,16 +483,18 @@ namespace NuGet.Commands
             }
         }
 
-        private void AddNuspecCache(FindPackageByIdResource resource)
+        private void AddLocalV3ResourceOptions(FindPackageByIdResource resource)
         {
-            // Link the nuspec cache to the new resource if it exists.
-            if (_packageFileCache != null)
+            var localV3 = resource as LocalV3FindPackageByIdResource;
+            if (localV3 != null)
             {
-                var localV3 = resource as LocalV3FindPackageByIdResource;
-                if (localV3 != null)
+                // Link the nuspec cache to the new resource if it exists.
+                if (_packageFileCache != null)
                 {
                     localV3.PackageFileCache = _packageFileCache;
                 }
+
+                localV3.IsFallbackFolder = _isFallbackFolderSource;
             }
         }
 

@@ -45,6 +45,7 @@ namespace NuGet.Packaging.Test
                 var sem = new ManualResetEventSlim(false);
                 var installedBag = new ConcurrentBag<bool>();
                 var hashBag = new ConcurrentBag<bool>();
+                var nupkgMetadataBag = new ConcurrentBag<bool>();
                 var tasks = new List<Task>();
 
                 var limit = 100;
@@ -64,6 +65,7 @@ namespace NuGet.Packaging.Test
 
                             var pathResolver = new VersionFolderPathResolver(packagesPath);
                             var hashPath = pathResolver.GetHashPath(identity.Id, identity.Version);
+                            var nupkgMetadataPath = pathResolver.GetNupkgMetadataPath(identity.Id, identity.Version);
 
                             sem.Wait();
 
@@ -84,6 +86,7 @@ namespace NuGet.Packaging.Test
 
                                 installedBag.Add(installed);
                                 hashBag.Add(exists);
+                                nupkgMetadataBag.Add(File.Exists(nupkgMetadataPath));
                             }
                         }
                     });
@@ -98,8 +101,10 @@ namespace NuGet.Packaging.Test
                 // Assert
                 Assert.Equal(limit, installedBag.Count);
                 Assert.Equal(limit, hashBag.Count);
+                Assert.Equal(limit, nupkgMetadataBag.Count);
                 Assert.Equal(1, installedBag.Count(b => b == true));
                 Assert.Equal(limit, hashBag.Count(b => b == true));
+                Assert.Equal(limit, nupkgMetadataBag.Count(b => b == true));
             }
         }
 
@@ -1921,6 +1926,9 @@ namespace NuGet.Packaging.Test
                     })
                 .ReturnsAsync(() => copiedFilePaths);
 
+            signedReader.Setup(x => x.GetContentHashForSignedPackage(It.IsAny<CancellationToken>()))
+                .Returns(string.Empty);
+
             var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
 
             using (var testDirectory = TestDirectory.Create())
@@ -1993,6 +2001,9 @@ namespace NuGet.Packaging.Test
                         copiedFilePaths = new[] { copiedFilePath };
                     })
                 .ReturnsAsync(() => copiedFilePaths);
+
+            signedReader.Setup(x => x.GetContentHashForSignedPackage(It.IsAny<CancellationToken>()))
+                .Returns(string.Empty);
 
             var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
 
@@ -2225,6 +2236,7 @@ namespace NuGet.Packaging.Test
                     Assert.False(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should not exist.");
                     Assert.True(File.Exists(resolver.GetManifestFilePath(identity.Id, identity.Version)), "The .nuspec should exist.");
                     Assert.True(File.Exists(Path.Combine(resolver.GetInstallPath(identity.Id, identity.Version), "lib", "net45", "a.dll")), "The asset should exist.");
+                    Assert.True(File.Exists(resolver.GetNupkgMetadataPath(identity.Id, identity.Version)), "The .nupkg.metadata should exist.");
                 }
             }
         }

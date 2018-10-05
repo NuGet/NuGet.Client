@@ -1149,6 +1149,11 @@ namespace NuGet.Protocol.Plugins
             throw new NotImplementedException();
         }
 
+        public override string GetContentHashForSignedPackage(CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
         private sealed class FileStreamCreator : IDisposable
         {
             private readonly string _filePath;

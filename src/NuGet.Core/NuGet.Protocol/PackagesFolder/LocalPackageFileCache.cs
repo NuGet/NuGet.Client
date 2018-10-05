@@ -62,13 +62,17 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Read the .sha512 file from disk.
+        /// Read the .metadata.json file from disk.
         /// </summary>
-        /// <remarks>Throws if the file is not found.</remarks>
+        /// <remarks>Throws if the file is not found or corrupted.</remarks>
         public Lazy<string> GetOrAddSha512(string sha512Path)
         {
             return _sha512Cache.GetOrAdd(sha512Path,
-                e => new Lazy<string>(() => File.ReadAllText(e)));
+                e => new Lazy<string>(() =>
+                {
+                    var metadataFile = NupkgMetadataFileFormat.Read(e);
+                    return metadataFile.ContentHash;
+                }));
         }
 
         /// <summary>
