@@ -31,6 +31,7 @@ namespace NuGet.Protocol
         private readonly VersionFolderPathResolver _resolver;
         private LocalPackageFileCache _packageFileCache;
         private readonly Lazy<bool> _rootExists;
+        private bool _isFallbackFolder;
 
         /// <summary>
         /// Nuspec files read from disk.
@@ -50,6 +51,16 @@ namespace NuGet.Protocol
             }
 
             set => _packageFileCache = value;
+        }
+
+        public bool IsFallbackFolder
+        {
+            get
+            {
+                return _isFallbackFolder;
+            }
+
+            set => _isFallbackFolder = value;
         }
 
         /// <summary>
@@ -385,16 +396,18 @@ namespace NuGet.Protocol
                         continue;
                     }
 
+                    var nupkgMetadataPath = _resolver.GetNupkgMetadataPath(id, version);
                     var hashPath = _resolver.GetHashPath(id, version);
 
-                    if (!File.Exists(hashPath))
+                    // for fallback folders as feed, new nupkg.metadata file should exists
+                    // but for global packages folder, either of old hash file or new nupkg.metadata file is fine
+                    if ((_isFallbackFolder && File.Exists(nupkgMetadataPath)) ||
+                        (!_isFallbackFolder && (File.Exists(hashPath) || File.Exists(nupkgMetadataPath))))
                     {
                         // Writing the marker file is the last operation performed by NuGetPackageUtils.InstallFromStream. We'll use the
                         // presence of the file to denote the package was successfully installed.
-                        continue;
+                        versions.Add(version);
                     }
-
-                    versions.Add(version);
                 }
             }
             else if (!_rootExists.Value)

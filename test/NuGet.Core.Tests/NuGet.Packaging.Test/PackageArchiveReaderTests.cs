@@ -1712,6 +1712,17 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [Fact]
+        public void GetContentHashForSignedPackage_WhenPackageNotSigned_ReturnsNull()
+        {
+            using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
+            {
+                var result = test.Reader.GetContentHashForSignedPackage(CancellationToken.None);
+
+                Assert.Null(result);
+            }
+        }
+
         private static Zip CreateZipWithNestedStoredZipArchives()
         {
             var zip = new Zip();

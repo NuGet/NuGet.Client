@@ -12241,6 +12241,7 @@
       "type": "package",
       "path": "microsoft.csharp/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/Microsoft.CSharp.dll",
@@ -12281,16 +12282,19 @@
       "type": "package",
       "path": "microsoft.netcore/5.0.0",
       "files": [
+        ".nupkg.metadata",
         "_._",
         "microsoft.netcore.5.0.0.nupkg.sha512",
         "microsoft.netcore.nuspec"
       ]
     },
     "Microsoft.NETCore.Platforms/1.0.0": {
-      "sha512": "0N77OwGZpXqUco2C/ynv1os7HqdFYifvNIbveLDKqL5PZaz05Rl9enCwVBjF61aumHKueLWIJ3prnmdAXxww4A==",
+      "sha512": "7fQNS0TGcZ3ICt7wwkxtbOURvTEkFxBg7zDpxUqcghGj1Mg1cO8COme08TglCREo6AlqlxWaxvGxt9i6SZ1EMA==",
       "type": "package",
       "path": "microsoft.netcore.platforms/1.0.0",
       "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
         "microsoft.netcore.platforms.1.0.0.nupkg.sha512",
         "microsoft.netcore.platforms.nuspec",
         "runtime.json"
@@ -12301,6 +12305,7 @@
       "type": "package",
       "path": "microsoft.netcore.portable.compatibility/1.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/dnxcore50/System.ComponentModel.DataAnnotations.dll",
         "lib/dnxcore50/System.Core.dll",
         "lib/dnxcore50/System.Net.dll",
@@ -12381,6 +12386,7 @@
       "type": "package",
       "path": "microsoft.netcore.runtime/1.0.0",
       "files": [
+        ".nupkg.metadata",
         "microsoft.netcore.runtime.1.0.0.nupkg.sha512",
         "microsoft.netcore.runtime.nuspec",
         "runtime.json"
@@ -12391,6 +12397,7 @@
       "type": "package",
       "path": "microsoft.netcore.runtime.coreclr-arm/1.0.0",
       "files": [
+        ".nupkg.metadata",
         "microsoft.netcore.runtime.coreclr-arm.1.0.0.nupkg.sha512",
         "microsoft.netcore.runtime.coreclr-arm.nuspec",
         "ref/dotnet/_._",
@@ -12409,6 +12416,7 @@
       "type": "package",
       "path": "microsoft.netcore.runtime.coreclr-x64/1.0.0",
       "files": [
+        ".nupkg.metadata",
         "microsoft.netcore.runtime.coreclr-x64.1.0.0.nupkg.sha512",
         "microsoft.netcore.runtime.coreclr-x64.nuspec",
         "ref/dotnet/_._",
@@ -12427,6 +12435,7 @@
       "type": "package",
       "path": "microsoft.netcore.runtime.coreclr-x86/1.0.0",
       "files": [
+        ".nupkg.metadata",
         "microsoft.netcore.runtime.coreclr-x86.1.0.0.nupkg.sha512",
         "microsoft.netcore.runtime.coreclr-x86.nuspec",
         "ref/dotnet/_._",
@@ -12445,6 +12454,7 @@
       "type": "package",
       "path": "microsoft.netcore.runtime.native/1.0.0",
       "files": [
+        ".nupkg.metadata",
         "_._",
         "microsoft.netcore.runtime.native.1.0.0.nupkg.sha512",
         "microsoft.netcore.runtime.native.nuspec"
@@ -12455,6 +12465,7 @@
       "type": "package",
       "path": "microsoft.netcore.targets/1.0.0",
       "files": [
+        ".nupkg.metadata",
         "microsoft.netcore.targets.1.0.0.nupkg.sha512",
         "microsoft.netcore.targets.nuspec",
         "runtime.json"
@@ -12465,6 +12476,7 @@
       "type": "package",
       "path": "microsoft.netcore.targets.universalwindowsplatform/5.0.0",
       "files": [
+        ".nupkg.metadata",
         "microsoft.netcore.targets.universalwindowsplatform.5.0.0.nupkg.sha512",
         "microsoft.netcore.targets.universalwindowsplatform.nuspec",
         "runtime.json"
@@ -12475,6 +12487,7 @@
       "type": "package",
       "path": "microsoft.netcore.universalwindowsplatform/5.0.0",
       "files": [
+        ".nupkg.metadata",
         "_._",
         "microsoft.netcore.universalwindowsplatform.5.0.0.nupkg.sha512",
         "microsoft.netcore.universalwindowsplatform.nuspec"
@@ -12485,6 +12498,7 @@
       "type": "package",
       "path": "microsoft.netcore.windows.apisets-x64/1.0.0",
       "files": [
+        ".nupkg.metadata",
         "microsoft.netcore.windows.apisets-x64.1.0.0.nupkg.sha512",
         "microsoft.netcore.windows.apisets-x64.nuspec",
         "runtimes/win10-x64/native/_._",
@@ -12651,6 +12665,7 @@
       "type": "package",
       "path": "microsoft.netcore.windows.apisets-x86/1.0.0",
       "files": [
+        ".nupkg.metadata",
         "microsoft.netcore.windows.apisets-x86.1.0.0.nupkg.sha512",
         "microsoft.netcore.windows.apisets-x86.nuspec",
         "runtimes/win10-x86/native/_._",
@@ -12817,6 +12832,7 @@
       "type": "package",
       "path": "microsoft.visualbasic/10.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/dotnet/Microsoft.VisualBasic.dll",
         "lib/net45/_._",
         "lib/netcore50/Microsoft.VisualBasic.dll",
@@ -12847,6 +12863,7 @@
       "type": "package",
       "path": "microsoft.win32.primitives/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/Microsoft.Win32.Primitives.dll",
@@ -12878,6 +12895,7 @@
       "type": "package",
       "path": "system.appcontext/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.AppContext.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -12910,6 +12928,7 @@
       "type": "package",
       "path": "system.collections/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Collections.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -12943,6 +12962,7 @@
       "type": "package",
       "path": "system.collections.concurrent/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Collections.Concurrent.dll",
@@ -12974,6 +12994,7 @@
       "type": "package",
       "path": "system.collections.immutable/1.1.37",
       "files": [
+        ".nupkg.metadata",
         "lib/dotnet/System.Collections.Immutable.dll",
         "lib/dotnet/System.Collections.Immutable.xml",
         "lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.dll",
@@ -12987,6 +13008,7 @@
       "type": "package",
       "path": "system.collections.nongeneric/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Collections.NonGeneric.dll",
@@ -13018,6 +13040,7 @@
       "type": "package",
       "path": "system.collections.specialized/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Collections.Specialized.dll",
@@ -13049,6 +13072,7 @@
       "type": "package",
       "path": "system.componentmodel/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/dotnet/System.ComponentModel.dll",
         "lib/net45/_._",
         "lib/netcore50/System.ComponentModel.dll",
@@ -13081,6 +13105,7 @@
       "type": "package",
       "path": "system.componentmodel.annotations/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.ComponentModel.Annotations.dll",
@@ -13112,6 +13137,7 @@
       "type": "package",
       "path": "system.componentmodel.eventbasedasync/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.ComponentModel.EventBasedAsync.dll",
@@ -13143,6 +13169,7 @@
       "type": "package",
       "path": "system.data.common/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Data.Common.dll",
@@ -13174,6 +13201,7 @@
       "type": "package",
       "path": "system.diagnostics.contracts/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Diagnostics.Contracts.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Diagnostics.Contracts.dll",
@@ -13207,6 +13235,7 @@
       "type": "package",
       "path": "system.diagnostics.debug/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Diagnostics.Debug.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -13240,6 +13269,7 @@
       "type": "package",
       "path": "system.diagnostics.stacktrace/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Diagnostics.StackTrace.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -13273,6 +13303,7 @@
       "type": "package",
       "path": "system.diagnostics.tools/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Diagnostics.Tools.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Diagnostics.Tools.dll",
@@ -13306,6 +13337,7 @@
       "type": "package",
       "path": "system.diagnostics.tracing/4.0.20",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Diagnostics.Tracing.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -13339,6 +13371,7 @@
       "type": "package",
       "path": "system.dynamic.runtime/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Dynamic.Runtime.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -13373,6 +13406,7 @@
       "type": "package",
       "path": "system.globalization/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Globalization.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -13406,6 +13440,7 @@
       "type": "package",
       "path": "system.globalization.calendars/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Globalization.Calendars.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -13439,6 +13474,7 @@
       "type": "package",
       "path": "system.globalization.extensions/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Globalization.Extensions.dll",
@@ -13470,6 +13506,7 @@
       "type": "package",
       "path": "system.io/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.IO.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -13503,6 +13540,7 @@
       "type": "package",
       "path": "system.io.compression/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.IO.Compression.dll",
@@ -13542,6 +13580,7 @@
       "type": "package",
       "path": "system.io.compression.clrcompression-arm/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "runtimes/win10-arm/native/ClrCompression.dll",
         "runtimes/win7-arm/native/clrcompression.dll",
         "system.io.compression.clrcompression-arm.4.0.0.nupkg.sha512",
@@ -13553,6 +13592,7 @@
       "type": "package",
       "path": "system.io.compression.clrcompression-x64/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "runtimes/win10-x64/native/ClrCompression.dll",
         "runtimes/win7-x64/native/clrcompression.dll",
         "system.io.compression.clrcompression-x64.4.0.0.nupkg.sha512",
@@ -13564,6 +13604,7 @@
       "type": "package",
       "path": "system.io.compression.clrcompression-x86/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "runtimes/win10-x86/native/ClrCompression.dll",
         "runtimes/win7-x86/native/clrcompression.dll",
         "system.io.compression.clrcompression-x86.4.0.0.nupkg.sha512",
@@ -13575,6 +13616,7 @@
       "type": "package",
       "path": "system.io.compression.zipfile/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.IO.Compression.ZipFile.dll",
@@ -13606,6 +13648,7 @@
       "type": "package",
       "path": "system.io.filesystem/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.IO.FileSystem.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -13638,6 +13681,7 @@
       "type": "package",
       "path": "system.io.filesystem.primitives/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.IO.FileSystem.Primitives.dll",
@@ -13669,6 +13713,7 @@
       "type": "package",
       "path": "system.io.isolatedstorage/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/netcore50/System.IO.IsolatedStorage.dll",
@@ -13698,6 +13743,7 @@
       "type": "package",
       "path": "system.io.unmanagedmemorystream/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.IO.UnmanagedMemoryStream.dll",
@@ -13729,6 +13775,7 @@
       "type": "package",
       "path": "system.linq/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/dotnet/System.Linq.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Linq.dll",
@@ -13761,6 +13808,7 @@
       "type": "package",
       "path": "system.linq.expressions/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Linq.Expressions.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -13795,6 +13843,7 @@
       "type": "package",
       "path": "system.linq.parallel/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/dotnet/System.Linq.Parallel.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Linq.Parallel.dll",
@@ -13825,6 +13874,7 @@
       "type": "package",
       "path": "system.linq.queryable/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/dotnet/System.Linq.Queryable.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Linq.Queryable.dll",
@@ -13853,10 +13903,12 @@
       ]
     },
     "System.Net.Http/4.0.0": {
-      "sha512": "mZuAl7jw/mFY8jUq4ITKECxVBh9a8SJt9BC/+lJbmo7cRKspxE3PsITz+KiaCEsexN5WYPzwBOx0oJH/0HlPyQ==",
+      "sha512": "RufQzPFmwqt1jsD6LR+TuAQJckoW8nDgKHuNZh5eZPA62BVpU58mjKrUkk8lR0tYb6T6yLC9f+b+GGI5gnOjBA==",
       "type": "package",
       "path": "system.net.http/4.0.0",
       "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
         "lib/DNXCore50/System.Net.Http.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Net.Http.dll",
@@ -13887,6 +13939,7 @@
       "type": "package",
       "path": "system.net.http.rtc/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/netcore50/System.Net.Http.Rtc.dll",
         "lib/win8/_._",
         "ref/dotnet/System.Net.Http.Rtc.dll",
@@ -13912,6 +13965,7 @@
       "type": "package",
       "path": "system.net.networkinformation/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/net45/_._",
@@ -13951,6 +14005,7 @@
       "type": "package",
       "path": "system.net.primitives/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Net.Primitives.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -13983,6 +14038,7 @@
       "type": "package",
       "path": "system.net.requests/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Net.Requests.dll",
@@ -14014,6 +14070,7 @@
       "type": "package",
       "path": "system.net.sockets/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/net46/System.Net.Sockets.dll",
@@ -14045,6 +14102,7 @@
       "type": "package",
       "path": "system.net.webheadercollection/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Net.WebHeaderCollection.dll",
@@ -14076,6 +14134,7 @@
       "type": "package",
       "path": "system.numerics.vectors/4.1.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Numerics.Vectors.dll",
@@ -14097,6 +14156,7 @@
       "type": "package",
       "path": "system.numerics.vectors.windowsruntime/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/dotnet/System.Numerics.Vectors.WindowsRuntime.dll",
         "system.numerics.vectors.windowsruntime.4.0.0.nupkg.sha512",
         "system.numerics.vectors.windowsruntime.nuspec"
@@ -14107,6 +14167,7 @@
       "type": "package",
       "path": "system.objectmodel/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.ObjectModel.dll",
@@ -14138,6 +14199,7 @@
       "type": "package",
       "path": "system.private.datacontractserialization/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Private.DataContractSerialization.dll",
         "lib/netcore50/System.Private.DataContractSerialization.dll",
         "ref/dnxcore50/_._",
@@ -14153,6 +14215,7 @@
       "type": "package",
       "path": "system.private.networking/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Private.Networking.dll",
         "lib/netcore50/System.Private.Networking.dll",
         "ref/dnxcore50/_._",
@@ -14166,6 +14229,7 @@
       "type": "package",
       "path": "system.private.servicemodel/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Private.ServiceModel.dll",
         "lib/netcore50/System.Private.ServiceModel.dll",
         "ref/dnxcore50/_._",
@@ -14179,6 +14243,7 @@
       "type": "package",
       "path": "system.private.uri/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Private.Uri.dll",
         "lib/netcore50/System.Private.Uri.dll",
         "ref/dnxcore50/_._",
@@ -14193,6 +14258,7 @@
       "type": "package",
       "path": "system.reflection/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Reflection.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -14226,6 +14292,7 @@
       "type": "package",
       "path": "system.reflection.context/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/net45/_._",
         "lib/netcore50/System.Reflection.Context.dll",
         "lib/win8/_._",
@@ -14253,6 +14320,7 @@
       "type": "package",
       "path": "system.reflection.dispatchproxy/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Reflection.DispatchProxy.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -14286,6 +14354,7 @@
       "type": "package",
       "path": "system.reflection.emit/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Reflection.Emit.dll",
         "lib/MonoAndroid10/_._",
         "lib/net45/_._",
@@ -14314,6 +14383,7 @@
       "type": "package",
       "path": "system.reflection.emit.ilgeneration/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Reflection.Emit.ILGeneration.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Reflection.Emit.ILGeneration.dll",
@@ -14340,6 +14410,7 @@
       "type": "package",
       "path": "system.reflection.emit.lightweight/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Reflection.Emit.Lightweight.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Reflection.Emit.Lightweight.dll",
@@ -14366,6 +14437,7 @@
       "type": "package",
       "path": "system.reflection.extensions/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Reflection.Extensions.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Reflection.Extensions.dll",
@@ -14399,6 +14471,7 @@
       "type": "package",
       "path": "system.reflection.metadata/1.0.22",
       "files": [
+        ".nupkg.metadata",
         "lib/dotnet/System.Reflection.Metadata.dll",
         "lib/dotnet/System.Reflection.Metadata.xml",
         "lib/portable-net45+win8/System.Reflection.Metadata.dll",
@@ -14412,6 +14485,7 @@
       "type": "package",
       "path": "system.reflection.primitives/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Reflection.Primitives.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Reflection.Primitives.dll",
@@ -14445,6 +14519,7 @@
       "type": "package",
       "path": "system.reflection.typeextensions/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Reflection.TypeExtensions.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -14478,6 +14553,7 @@
       "type": "package",
       "path": "system.resources.resourcemanager/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Resources.ResourceManager.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Resources.ResourceManager.dll",
@@ -14507,10 +14583,12 @@
       ]
     },
     "System.Runtime/4.0.20": {
-      "sha512": "X7N/9Bz7jVPorqdVFO86ns1sX6MlQM+WTxELtx+Z4VG45x9+LKmWH0GRqjgKprUnVuwmfB9EJ9DQng14Z7/zwg==",
+      "sha512": "EOEXLfDu3ALx4jh4BtVXICbbYfXqn1x4ddHRV7CphI1tuzlgVlwQ9bNoliaarDRTDXePYy0l8MNl338uvI0KuQ==",
       "type": "package",
       "path": "system.runtime/4.0.20",
       "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
         "lib/DNXCore50/System.Runtime.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -14544,6 +14622,7 @@
       "type": "package",
       "path": "system.runtime.extensions/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Runtime.Extensions.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -14577,6 +14656,7 @@
       "type": "package",
       "path": "system.runtime.handles/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Runtime.Handles.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -14610,6 +14690,7 @@
       "type": "package",
       "path": "system.runtime.interopservices/4.0.20",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Runtime.InteropServices.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -14643,6 +14724,7 @@
       "type": "package",
       "path": "system.runtime.interopservices.windowsruntime/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/net45/_._",
         "lib/netcore50/System.Runtime.InteropServices.WindowsRuntime.dll",
         "lib/win8/_._",
@@ -14675,6 +14757,7 @@
       "type": "package",
       "path": "system.runtime.numerics/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/dotnet/System.Runtime.Numerics.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Runtime.Numerics.dll",
@@ -14705,6 +14788,7 @@
       "type": "package",
       "path": "system.runtime.serialization.json/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Runtime.Serialization.Json.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Runtime.Serialization.Json.dll",
@@ -14738,6 +14822,7 @@
       "type": "package",
       "path": "system.runtime.serialization.primitives/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Runtime.Serialization.Primitives.dll",
@@ -14769,6 +14854,7 @@
       "type": "package",
       "path": "system.runtime.serialization.xml/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Runtime.Serialization.Xml.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -14802,6 +14888,7 @@
       "type": "package",
       "path": "system.runtime.windowsruntime/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/netcore50/System.Runtime.WindowsRuntime.dll",
         "lib/win81/_._",
         "lib/wpa81/_._",
@@ -14830,6 +14917,7 @@
       "type": "package",
       "path": "system.runtime.windowsruntime.ui.xaml/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/netcore50/System.Runtime.WindowsRuntime.UI.Xaml.dll",
         "lib/win8/_._",
         "lib/wpa81/_._",
@@ -14857,6 +14945,7 @@
       "type": "package",
       "path": "system.security.claims/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Security.Claims.dll",
@@ -14888,6 +14977,7 @@
       "type": "package",
       "path": "system.security.principal/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/dotnet/System.Security.Principal.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Security.Principal.dll",
@@ -14920,6 +15010,7 @@
       "type": "package",
       "path": "system.servicemodel.duplex/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.ServiceModel.Duplex.dll",
         "lib/net45/_._",
         "lib/netcore50/System.ServiceModel.Duplex.dll",
@@ -14948,6 +15039,7 @@
       "type": "package",
       "path": "system.servicemodel.http/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.ServiceModel.Http.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -14980,6 +15072,7 @@
       "type": "package",
       "path": "system.servicemodel.nettcp/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.ServiceModel.NetTcp.dll",
         "lib/net45/_._",
         "lib/netcore50/System.ServiceModel.NetTcp.dll",
@@ -15008,6 +15101,7 @@
       "type": "package",
       "path": "system.servicemodel.primitives/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.ServiceModel.Primitives.dll",
         "lib/net45/_._",
         "lib/netcore50/System.ServiceModel.Primitives.dll",
@@ -15036,6 +15130,7 @@
       "type": "package",
       "path": "system.servicemodel.security/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.ServiceModel.Security.dll",
         "lib/net45/_._",
         "lib/netcore50/System.ServiceModel.Security.dll",
@@ -15064,6 +15159,7 @@
       "type": "package",
       "path": "system.text.encoding/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Text.Encoding.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -15097,6 +15193,7 @@
       "type": "package",
       "path": "system.text.encoding.codepages/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Text.Encoding.CodePages.dll",
@@ -15126,6 +15223,7 @@
       "type": "package",
       "path": "system.text.encoding.extensions/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Text.Encoding.Extensions.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -15159,6 +15257,7 @@
       "type": "package",
       "path": "system.text.regularexpressions/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Text.RegularExpressions.dll",
@@ -15190,6 +15289,7 @@
       "type": "package",
       "path": "system.threading/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Threading.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -15223,6 +15323,7 @@
       "type": "package",
       "path": "system.threading.overlapped/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Threading.Overlapped.dll",
         "lib/net46/System.Threading.Overlapped.dll",
         "lib/netcore50/System.Threading.Overlapped.dll",
@@ -15247,6 +15348,7 @@
       "type": "package",
       "path": "system.threading.tasks/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Threading.Tasks.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -15280,6 +15382,7 @@
       "type": "package",
       "path": "system.threading.tasks.dataflow/4.5.25",
       "files": [
+        ".nupkg.metadata",
         "lib/dotnet/System.Threading.Tasks.Dataflow.XML",
         "lib/dotnet/System.Threading.Tasks.Dataflow.dll",
         "lib/portable-net45+win8+wp8+wpa81/System.Threading.Tasks.Dataflow.XML",
@@ -15295,6 +15398,7 @@
       "type": "package",
       "path": "system.threading.tasks.parallel/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/dotnet/System.Threading.Tasks.Parallel.dll",
         "lib/net45/_._",
         "lib/netcore50/System.Threading.Tasks.Parallel.dll",
@@ -15325,6 +15429,7 @@
       "type": "package",
       "path": "system.threading.timer/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Threading.Timer.dll",
         "lib/net451/_._",
         "lib/netcore50/System.Threading.Timer.dll",
@@ -15356,6 +15461,7 @@
       "type": "package",
       "path": "system.xml.readerwriter/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Xml.ReaderWriter.dll",
@@ -15387,6 +15493,7 @@
       "type": "package",
       "path": "system.xml.xdocument/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Xml.XDocument.dll",
@@ -15418,6 +15525,7 @@
       "type": "package",
       "path": "system.xml.xmldocument/4.0.0",
       "files": [
+        ".nupkg.metadata",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/dotnet/System.Xml.XmlDocument.dll",
@@ -15449,6 +15557,7 @@
       "type": "package",
       "path": "system.xml.xmlserializer/4.0.10",
       "files": [
+        ".nupkg.metadata",
         "lib/DNXCore50/System.Xml.XmlSerializer.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",

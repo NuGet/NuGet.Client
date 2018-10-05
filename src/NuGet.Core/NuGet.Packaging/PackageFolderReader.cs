@@ -239,5 +239,10 @@ namespace NuGet.Packaging
         {
             throw new NotImplementedException();
         }
+
+        public override string GetContentHashForSignedPackage(CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

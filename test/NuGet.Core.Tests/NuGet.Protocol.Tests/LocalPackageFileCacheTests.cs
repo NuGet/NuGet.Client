@@ -47,7 +47,7 @@ namespace NuGet.Protocol.Tests
                 var pathResolver = new VersionFolderPathResolver(pathContext.PackageSource);
 
                 var identity = new PackageIdentity("X", NuGetVersion.Parse("1.0.0"));
-                var shaPath = pathResolver.GetHashPath(identity.Id, identity.Version);
+                var shaPath = pathResolver.GetNupkgMetadataPath(identity.Id, identity.Version);
 
                 var exists1 = cache.Sha512Exists(shaPath);
 

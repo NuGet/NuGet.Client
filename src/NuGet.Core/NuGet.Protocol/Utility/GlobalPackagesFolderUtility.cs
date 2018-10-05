@@ -34,43 +34,52 @@ namespace NuGet.Protocol
 
             var defaultPackagePathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 
+            var nupkgMetadataPath = defaultPackagePathResolver.GetNupkgMetadataPath(packageIdentity.Id, packageIdentity.Version);
             var hashPath = defaultPackagePathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
+            var installPath = defaultPackagePathResolver.GetInstallPath(
+                    packageIdentity.Id,
+                    packageIdentity.Version);
+            var nupkgPath = defaultPackagePathResolver.GetPackageFilePath(
+                packageIdentity.Id,
+                packageIdentity.Version);
 
-            if (File.Exists(hashPath))
+            if (File.Exists(nupkgMetadataPath))
             {
-                var installPath = defaultPackagePathResolver.GetInstallPath(
-                    packageIdentity.Id,
-                    packageIdentity.Version);
-
-                var nupkgPath = defaultPackagePathResolver.GetPackageFilePath(
-                    packageIdentity.Id,
-                    packageIdentity.Version);
-
-                Stream stream = null;
-                PackageReaderBase packageReader = null;
-                try
-                {
-                    stream = File.Open(nupkgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    packageReader = new PackageFolderReader(installPath);
-                    return new DownloadResourceResult(stream, packageReader, source: null) { SignatureVerified = true };
-                }
-                catch
-                {
-                    if (stream != null)
-                    {
-                        stream.Dispose();
-                    }
-
-                    if (packageReader != null)
-                    {
-                        packageReader.Dispose();
-                    }
-
-                    throw;
-                }
+                return CreateDownloadResourceResult(nupkgPath, installPath);
+            }
+            else if (File.Exists(hashPath))
+            {
+                LocalFolderUtility.GenerateNupkgMetadataFile(nupkgPath, installPath, hashPath, nupkgMetadataPath);
+                return CreateDownloadResourceResult(nupkgPath, installPath);
             }
 
             return null;
+        }
+
+        private static DownloadResourceResult CreateDownloadResourceResult(string nupkgPath, string installPath)
+        {
+            Stream stream = null;
+            PackageReaderBase packageReader = null;
+            try
+            {
+                stream = File.Open(nupkgPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                packageReader = new PackageFolderReader(installPath);
+                return new DownloadResourceResult(stream, packageReader, source: null) { SignatureVerified = true };
+            }
+            catch
+            {
+                if (stream != null)
+                {
+                    stream.Dispose();
+                }
+
+                if (packageReader != null)
+                {
+                    packageReader.Dispose();
+                }
+
+                throw;
+            }
         }
 
         public static async Task<DownloadResourceResult> AddPackageAsync(

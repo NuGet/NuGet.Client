@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -81,6 +82,24 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
+#if DEBUG
+            var debugPackTask = Environment.GetEnvironmentVariable("DEBUG_RESTORE_TASK");
+            if (!string.IsNullOrEmpty(debugPackTask) && debugPackTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            {
+#if IS_CORECLR
+                Console.WriteLine("Waiting for debugger to attach.");
+                Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+
+                while (!Debugger.IsAttached)
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                Debugger.Break();
+#else
+            Debugger.Launch();
+#endif
+            }
+#endif
             var log = new MSBuildLogger(Log);
 
             // Log inputs

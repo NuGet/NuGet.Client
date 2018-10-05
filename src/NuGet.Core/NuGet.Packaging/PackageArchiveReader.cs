@@ -338,6 +338,31 @@ namespace NuGet.Packaging
 #endif
         }
 
+        public override string GetContentHashForSignedPackage(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            ThrowIfZipReadStreamIsNull();
+
+            using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
+            {
+                var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
+
+                if (signatureEntry == null ||
+                    !string.Equals(signatureEntry.Name, SigningSpecifications.SignaturePath, StringComparison.Ordinal))
+                {
+                    return null;
+                }
+            }
+
+            using (var bufferedStream = new ReadOnlyBufferedStream(ZipReadStream, leaveOpen: true))
+            using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
+            {
+                return SignedPackageArchiveUtility.GetPackageContentHash(reader);
+            }
+
+        }
+
         public override Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithmName, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();

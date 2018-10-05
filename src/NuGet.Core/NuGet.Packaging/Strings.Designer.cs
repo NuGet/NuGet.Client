@@ -188,6 +188,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error parsing nupkg metadata file {0} : {1}.
+        /// </summary>
+        internal static string Error_LoadingHashFile {
+            get {
+                return ResourceManager.GetString("Error_LoadingHashFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A list of trusted signers is required by the client but none was found..
         /// </summary>
         internal static string Error_NoClientAllowList {
