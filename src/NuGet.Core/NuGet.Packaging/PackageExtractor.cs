@@ -496,8 +496,9 @@ namespace NuGet.Packaging
                                             var nupkgFileName = Path.GetFileName(targetNupkg);
                                             var nuspecFileName = Path.GetFileName(targetNuspec);
                                             var hashFileName = Path.GetFileName(hashPath);
+                                            var nupkgMetadataFileName = Path.GetFileName(nupkgMetadataFilePath);
                                             var packageFiles = packageReader.GetFiles()
-                                                .Where(file => ShouldInclude(file, hashFileName));
+                                                .Where(file => ShouldInclude(file, hashFileName, nupkgMetadataFileName));
                                             var packageFileExtractor = new PackageFileExtractor(
                                                 packageFiles,
                                                 packageExtractionContext.XmlDocFileSaveMode);
@@ -807,8 +808,9 @@ namespace NuGet.Packaging
                             if (packageSaveMode.HasFlag(PackageSaveMode.Files))
                             {
                                 var hashFileName = Path.GetFileName(hashPath);
+                                var nupkgMetadataFileName = Path.GetFileName(nupkgMetadataFilePath);
                                 var packageFiles = (await packageDownloader.CoreReader.GetFilesAsync(cancellationToken))
-                                    .Where(file => ShouldInclude(file, hashFileName));
+                                    .Where(file => ShouldInclude(file, hashFileName, nupkgMetadataFileName));
                                 var packageFileExtractor = new PackageFileExtractor(
                                     packageFiles,
                                     packageExtractionContext.XmlDocFileSaveMode);
@@ -903,7 +905,8 @@ namespace NuGet.Packaging
 
         private static bool ShouldInclude(
             string fullName,
-            string hashFileName)
+            string hashFileName,
+            string nupkgMetadataFileName)
         {
             // Not all the files from a zip file are needed
             // So, files such as '.rels' and '[Content_Types].xml' are not extracted
@@ -935,6 +938,12 @@ namespace NuGet.Packaging
             if (PackageHelper.IsRoot(fullName)
                 && (PackageHelper.IsNuspec(fullName)
                     || fullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)))
+            {
+                return false;
+            }
+
+            // skip .nupkg.metadata file
+            if (string.Equals(fullName, nupkgMetadataFileName, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
