@@ -54,7 +54,7 @@ namespace NuGet.Core.FuncTest
                     var packageReader = downloadResult.PackageReader;
                     var files = packageReader.GetFiles();
 
-                    Assert.Equal(12, files.Count());
+                    Assert.Equal(13, files.Count());
                 }
             }
         }
