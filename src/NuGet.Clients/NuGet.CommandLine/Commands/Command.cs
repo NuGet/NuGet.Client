@@ -221,7 +221,7 @@ namespace NuGet.CommandLine
             {
                 if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
                 {
-                    providers.Add(new DefaultCredentialsCredentialProvider());
+                    providers.Add(new DefaultNetworkCredentialsCredentialProvider());
                 }
             }
             providers.Add(new ConsoleCredentialProvider(Console));

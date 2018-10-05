@@ -40,7 +40,7 @@ namespace NuGet.Credentials
             {
                 if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
                 {
-                    providers.Add(new DefaultCredentialsCredentialProvider());
+                    providers.Add(new DefaultNetworkCredentialsCredentialProvider());
                 }
             }
             return providers;

@@ -14,7 +14,7 @@ namespace NuGet.Credentials
             = "NUGET_CREDENTIAL_PROVIDER_OVERRIDE_DEFAULT";
 
         /// <summary>
-        /// Use DefaultCredentialsCredentialProvider after plugin credential providers to handle using the user's
+        /// Use DefaultNetworkCredentialsCredentialProvider after plugin credential providers to handle using the user's
         /// ambient Windows credentials, instead of support baked into HttpSourceCredentials
         /// </summary>
         public static bool DefaultCredentialsAfterCredentialProviders { get; set; }

@@ -81,7 +81,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 () =>
                 {
                     return new ICredentialProvider[] {
-                        new DefaultCredentialsCredentialProvider()
+                        new DefaultNetworkCredentialsCredentialProvider()
                     };
                 });
             }
