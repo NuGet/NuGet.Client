@@ -109,8 +109,16 @@ namespace NuGet.CommandLine
             packArgs.OutputDirectory = OutputDirectory;
             packArgs.BasePath = BasePath;
             packArgs.MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console).Value.Path);
-            packArgs.PackagesDirectory = String.IsNullOrEmpty(PackagesDirectory) ? null : Path.GetFullPath(PackagesDirectory);
-            packArgs.SolutionDirectory = String.IsNullOrEmpty(SolutionDirectory) ? null : Path.GetFullPath(SolutionDirectory);
+
+            if (!String.IsNullOrEmpty(PackagesDirectory))
+            {
+                packArgs.PackagesDirectory = Path.GetFullPath(PackagesDirectory);
+            }
+
+            if (!String.IsNullOrEmpty(SolutionDirectory))
+            {
+                packArgs.SolutionDirectory = String.IsNullOrEmpty(SolutionDirectory) ? null : Path.GetFullPath(SolutionDirectory);
+            }
 
             // Get the input file
             packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
