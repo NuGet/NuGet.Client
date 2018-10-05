@@ -1060,17 +1060,13 @@ namespace NuGet.Packaging
                 else
                 {
                     var verificationProviders = SignatureVerificationProviderFactory.GetDefaultSignatureVerificationProviders();
-                    var clientAllowList = clientPolicyContext.AllowList;
 
-                    if (clientAllowList != null && clientAllowList.Any())
-                    {
-                        verificationProviders.Add(
-                            new AllowListVerificationProvider(
-                                clientAllowList,
-                                clientPolicyContext.RequireNonEmptyAllowList,
-                                Strings.Error_NoClientAllowList,
-                                Strings.Error_NoMatchingClientCertificate));
-                    }
+                    verificationProviders.Add(
+                      new AllowListVerificationProvider(
+                          clientPolicyContext.AllowList,
+                          clientPolicyContext.RequireNonEmptyAllowList,
+                          Strings.Error_NoClientAllowList,
+                          Strings.Error_NoMatchingClientCertificate));
 
                     if (repositorySignatureInfo != null && repositorySignatureInfo.RepositoryCertificateInfos != null)
                     {

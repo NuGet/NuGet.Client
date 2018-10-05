@@ -49,14 +49,11 @@ namespace NuGet.Commands
                 var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
                 var verificationProviders = SignatureVerificationProviderFactory.GetDefaultSignatureVerificationProviders();
 
-                if (allowListEntries != null && allowListEntries.Any())
-                {
-                    verificationProviders.Add(
-                        new AllowListVerificationProvider(
-                            allowListEntries,
-                            requireNonEmptyAllowList: false,
-                            noMatchErrorMessage: Strings.Error_NoMatchingCertificate));
-                }
+                verificationProviders.Add(
+                    new AllowListVerificationProvider(
+                        allowListEntries,
+                        requireNonEmptyAllowList: false,
+                        noMatchErrorMessage: Strings.Error_NoMatchingCertificate));
 
                 var verifier = new PackageSignatureVerifier(verificationProviders);
 
