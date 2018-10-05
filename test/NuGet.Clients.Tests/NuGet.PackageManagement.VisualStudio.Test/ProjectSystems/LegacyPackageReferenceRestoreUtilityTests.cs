@@ -12,6 +12,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -889,6 +890,105 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         Assert.True(restoreSummary.Errors.Count > 0);
                         Assert.NotNull(restoreSummary.Errors.FirstOrDefault(message => (message as RestoreLogMessage).Code == NuGetLogCode.NU1403));
                     }
+                }
+            }
+        }
+
+        [Fact]
+        public async void TestPacMan_InstallPackageAsync_LegacyPackageRefProjects_Duality()
+        {
+            using (var packageSource = TestDirectory.Create())
+            {
+                // Arrange
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<Configuration.PackageSource>()
+                    {
+                        new Configuration.PackageSource(packageSource.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var randomProjectFolderPath = TestDirectory.Create())
+                {
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+
+                    // set up projects
+                    var projectTargetFrameworkStr = "net45";
+                    var fullProjectPathB = Path.Combine(randomProjectFolderPath, "ProjectB", "ProjectB.csproj");
+                    var projectNamesB = new ProjectNames(
+                        fullName: fullProjectPathB,
+                        uniqueName: Path.GetFileName(fullProjectPathB),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
+                        customUniqueName: Path.GetFileName(fullProjectPathB));
+                    var vsProjectAdapterB = new TestVSProjectAdapter(
+                        fullProjectPathB,
+                        projectNamesB,
+                        projectTargetFrameworkStr);
+
+                    var projectServicesB = new TestProjectSystemServices();
+
+                    var legacyPRProjectB = new LegacyPackageReferenceProject(
+                        vsProjectAdapterB,
+                        Guid.NewGuid().ToString(),
+                        projectServicesB,
+                        _threadingService);
+
+                    var projectPathA = Path.Combine(randomProjectFolderPath, "ProjectA");
+                    var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
+                    var projectNamesA = new ProjectNames(
+                        fullName: fullProjectPathA,
+                        uniqueName: Path.GetFileName(fullProjectPathA),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
+                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                    var vsProjectAdapterA = new TestVSProjectAdapter(
+                        fullProjectPathA,
+                        projectNamesA,
+                        projectTargetFrameworkStr);
+
+                    var projectServicesA = new TestProjectSystemServices();
+                    
+                    projectServicesA.SetupProjectDependencies(
+                        new ProjectRestoreReference
+                        {
+                            ProjectUniqueName = fullProjectPathB,
+                            ProjectPath = fullProjectPathB
+                        });
+
+                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                        vsProjectAdapterA,
+                        Guid.NewGuid().ToString(),
+                        projectServicesA,
+                        _threadingService);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
+
+                    var testLogger = new TestLogger();
+                    var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+                    var providersCache = new RestoreCommandProvidersCache();
+
+                    var packageContextA = new SimpleTestPackageContext("ProjectB", "1.0.0");
+                    packageContextA.AddFile("lib/net45/a.dll");
+                    var packages = new List<SimpleTestPackageContext>() { packageContextA };
+                    SimpleTestPackageUtility.CreateOPCPackages(packages, packageSource);
+
+                    var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+
+                    var packageIdentity = new PackageIdentity("ProjectB", NuGetVersion.Parse("1.0.0"));
+
+                    // Act
+                    await nuGetPackageManager.InstallPackageAsync(legacyPRProjectA, packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
+                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                    // Assert
+                    var lockFilePath = Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project.assets.json");
+                    Assert.True(File.Exists(lockFilePath));
+
                 }
             }
         }

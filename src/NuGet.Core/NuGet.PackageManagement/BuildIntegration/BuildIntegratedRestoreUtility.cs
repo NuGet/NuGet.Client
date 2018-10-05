@@ -152,7 +152,14 @@ namespace NuGet.PackageManagement
             PackageIdentity package)
         {
             var info = pathResolver.GetPackageInfo(package.Id, package.Version);
-            var nuspecFilePath = info?.PathResolver.GetManifestFilePath(package.Id, package.Version);
+
+            if (info == null)
+            {
+                // don't do anything if package was not resolved on disk
+                return;
+            }
+
+            var nuspecFilePath = info.PathResolver.GetManifestFilePath(package.Id, package.Version);
             var nuspecReader = new NuspecReader(nuspecFilePath);
             var developmentDependency = nuspecReader.GetDevelopmentDependency();
 
