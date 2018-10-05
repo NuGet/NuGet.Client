@@ -38,6 +38,8 @@ namespace NuGet.Packaging.Signing
 
         public abstract byte[] GetSignatureValue();
 
+        private IDictionary<HashAlgorithmName, string> _signingCertificateFingerprintLookup;
+
         protected Signature(SignerInfo signerInfo, SignatureType type)
         {
             SignerInfo = signerInfo;
@@ -240,7 +242,10 @@ namespace NuGet.Packaging.Signing
 
                         if (CertificateChainUtility.TryGetStatusMessage(chainStatuses, X509ChainStatusFlags.UntrustedRoot, out messages))
                         {
-                            issues.Add(SignatureLog.Issue(!settings.AllowUntrusted, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, FriendlyName, messages.First())));
+                            if (settings.ReportUntrustedRoot)
+                            {
+                                issues.Add(SignatureLog.Issue(!settings.AllowUntrusted, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, FriendlyName, messages.First())));
+                            }
 
                             if (!settings.AllowUntrusted)
                             {
@@ -330,6 +335,42 @@ namespace NuGet.Packaging.Signing
             status = VerificationUtility.GetSignatureVerificationStatus(flags);
 
             return new SignatureVerificationSummary(Type, status, flags, timestamp, expirationTime, issues);
+        }
+
+        public string GetSigningCertificateFingerprint(HashAlgorithmName algorithm)
+        {
+            if (!Enum.IsDefined(typeof(HashAlgorithmName), algorithm))
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.UnrecognizedEnumValue,
+                        algorithm),
+                    nameof(algorithm));
+            }
+
+            var certificate = SignerInfo.Certificate;
+            if (certificate == null)
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Verify_ErrorNoCertificate, FriendlyName));
+            }
+
+            if (_signingCertificateFingerprintLookup == null)
+            {
+                _signingCertificateFingerprintLookup = new Dictionary<HashAlgorithmName, string>();
+            }
+
+            if (_signingCertificateFingerprintLookup.TryGetValue(algorithm, out var fingerprint))
+            {
+                return fingerprint;
+            }
+
+            var certificateFingerprint = CertificateUtility.GetHash(certificate, algorithm);
+            fingerprint = BitConverter.ToString(certificateFingerprint).Replace("-", "");
+
+            _signingCertificateFingerprintLookup.Add(algorithm, fingerprint);
+
+            return fingerprint;
         }
 
         private void VerifySigningTimeAttribute(SignerInfo signerInfo)

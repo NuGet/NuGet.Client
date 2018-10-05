@@ -15,10 +15,12 @@ namespace NuGet.Packaging.Signing
     public sealed class SignatureTrustAndValidityVerificationProvider : ISignatureVerificationProvider
     {
         private readonly HashAlgorithmName _fingerprintAlgorithm;
+        private readonly IEnumerable<KeyValuePair<string, HashAlgorithmName>> _allowUntrustedRootList;
 
-        public SignatureTrustAndValidityVerificationProvider()
+        public SignatureTrustAndValidityVerificationProvider(IEnumerable<KeyValuePair<string, HashAlgorithmName>> allowUntrustedRootList = null)
         {
             _fingerprintAlgorithm = HashAlgorithmName.SHA256;
+            _allowUntrustedRootList = allowUntrustedRootList;
         }
 
         public Task<PackageVerificationResult> GetTrustResultAsync(
@@ -62,12 +64,14 @@ namespace NuGet.Packaging.Signing
                 repositoryCountersignatureExists;
             var status = SignatureVerificationStatus.Unknown;
             var issues = Enumerable.Empty<SignatureLog>();
+            var isUntrustedRootAllowed = IsUntrustedRootAllowed(signature);
 
             var verifySettings = new SignatureVerifySettings(
                 allowIllegal: settings.AllowIllegal,
-                allowUntrusted: settings.AllowUntrusted,
+                allowUntrusted: settings.AllowUntrusted || isUntrustedRootAllowed,
                 allowUnknownRevocation: settings.AllowUnknownRevocation,
                 reportUnknownRevocation: settings.ReportUnknownRevocation,
+                reportUntrustedRoot: !isUntrustedRootAllowed,
                 revocationMode: settings.RevocationMode);
 
             SignatureVerificationSummary primarySummary = null;
@@ -130,11 +134,14 @@ namespace NuGet.Packaging.Signing
                 }
                 else
                 {
+                    isUntrustedRootAllowed = IsUntrustedRootAllowed(countersignature);
+
                     verifySettings = new SignatureVerifySettings(
                         allowIllegal: settings.AllowIllegal,
-                        allowUntrusted: settings.AllowUntrusted,
+                        allowUntrusted: settings.AllowUntrusted || isUntrustedRootAllowed,
                         allowUnknownRevocation: settings.AllowUnknownRevocation,
                         reportUnknownRevocation: settings.ReportUnknownRevocation,
+                        reportUntrustedRoot: !isUntrustedRootAllowed,
                         revocationMode: settings.RevocationMode);
 
                     var countersignatureSummary = VerifyValidityAndTrust(countersignature, settings, verifySettings, certificateExtraStore);
@@ -234,6 +241,34 @@ namespace NuGet.Packaging.Signing
                 status.Timestamp,
                 status.ExpirationTime,
                 timestampSummary.Issues.Concat(status.Issues));
+        }
+
+        private bool IsUntrustedRootAllowed(Signature signature)
+        {
+            if (_allowUntrustedRootList != null)
+            {
+                foreach (var allowUntrustedRoot in _allowUntrustedRootList)
+                {
+                    try
+                    {
+                        var signingCertificateFingerprint = signature.GetSigningCertificateFingerprint(allowUntrustedRoot.Value);
+
+                        if (string.Equals(allowUntrustedRoot.Key, signingCertificateFingerprint, StringComparison.Ordinal))
+                        {
+                            return true;
+                        }
+                    }
+                    // if the exception is InvalidOperationException it means the signature is invalid
+                    catch (InvalidOperationException)
+                    {
+                        return false;
+                    }
+                    // any other exception means the entry is invalid, therefore we just skip it
+                    catch { }
+                }
+            }
+
+            return false;
         }
 
         private static bool HasUntrustedRoot(SignatureVerificationSummary summary)

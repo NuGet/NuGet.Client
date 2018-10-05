@@ -1059,7 +1059,10 @@ namespace NuGet.Packaging
                 }
                 else
                 {
-                    var verificationProviders = SignatureVerificationProviderFactory.GetDefaultSignatureVerificationProviders();
+                    var verificationProviders = new List<ISignatureVerificationProvider>()
+                    {
+                        new IntegrityVerificationProvider(),
+                    };
 
                     verificationProviders.Add(
                       new AllowListVerificationProvider(
@@ -1067,6 +1070,16 @@ namespace NuGet.Packaging
                           requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require,
                           emptyListErrorMessage: Strings.Error_NoClientAllowList,
                           noMatchErrorMessage: Strings.Error_NoMatchingClientCertificate));
+
+                    IEnumerable<KeyValuePair<string, HashAlgorithmName>> allowUntrustedRootList = null;
+                    if (clientPolicyContext.AllowList != null && clientPolicyContext.AllowList.Any())
+                    {
+                        allowUntrustedRootList = clientPolicyContext.AllowList
+                            .Where(e => e.AllowUntrustedRoot)
+                            .Select(e => new KeyValuePair<string, HashAlgorithmName>(e.Fingerprint, e.FingerprintAlgorithm));
+                    }
+
+                    verificationProviders.Add(new SignatureTrustAndValidityVerificationProvider(allowUntrustedRootList));
 
                     if (repositorySignatureInfo != null && repositorySignatureInfo.RepositoryCertificateInfos != null)
                     {

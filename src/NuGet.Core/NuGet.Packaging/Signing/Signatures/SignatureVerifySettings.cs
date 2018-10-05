@@ -32,6 +32,11 @@ namespace NuGet.Packaging.Signing
         public bool ReportUnknownRevocation { get; }
 
         /// <summary>
+        /// Indicates if a signing certificate's chain that chains to an untrusted root should be reported.
+        /// </summary>
+        public bool ReportUntrustedRoot { get; }
+
+        /// <summary>
         /// Gets how the revocation verification should be performed.
         /// </summary>
         public RevocationMode RevocationMode { get; }
@@ -41,12 +46,14 @@ namespace NuGet.Packaging.Signing
             bool allowUntrusted,
             bool allowUnknownRevocation,
             bool reportUnknownRevocation,
+            bool reportUntrustedRoot,
             RevocationMode revocationMode)
         {
             AllowIllegal = allowIllegal;
             AllowUntrusted = allowUntrusted;
             AllowUnknownRevocation = allowUnknownRevocation;
             ReportUnknownRevocation = reportUnknownRevocation;
+            ReportUntrustedRoot = reportUntrustedRoot;
             RevocationMode = revocationMode;
         }
 
@@ -58,6 +65,7 @@ namespace NuGet.Packaging.Signing
             allowUntrusted: true,
             allowUnknownRevocation: true,
             reportUnknownRevocation: true,
+            reportUntrustedRoot: true,
             revocationMode: RevocationMode.Online);
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -47,7 +48,11 @@ namespace NuGet.Commands
                         _defaultFingerprintAlgorithm)).ToList();
 
                 var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
-                var verificationProviders = SignatureVerificationProviderFactory.GetDefaultSignatureVerificationProviders();
+                var verificationProviders = new List<ISignatureVerificationProvider>()
+                {
+                    new IntegrityVerificationProvider(),
+                    new SignatureTrustAndValidityVerificationProvider()
+                };
 
                 verificationProviders.Add(
                     new AllowListVerificationProvider(
