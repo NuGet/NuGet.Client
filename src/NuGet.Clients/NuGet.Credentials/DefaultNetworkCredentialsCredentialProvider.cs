@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,12 +13,12 @@ namespace NuGet.Credentials
     /// <summary>
     /// A credential provider which supplies <see cref="CredentialCache.DefaultNetworkCredentials"/>
     /// </summary>
-    public class DefaultCredentialsCredentialProvider : ICredentialProvider
+    public class DefaultNetworkCredentialsCredentialProvider : ICredentialProvider
     {
         /// <summary>
         /// Unique identifier of this credential provider
         /// </summary>
-        public string Id { get; } = $"{nameof(DefaultCredentialsCredentialProvider)}_{Guid.NewGuid()}";
+        public string Id { get; } = $"{nameof(DefaultNetworkCredentialsCredentialProvider)}_{Guid.NewGuid()}";
 
         /// <summary>
         /// Returns <see cref="CredentialCache.DefaultNetworkCredentials"/>, or 
