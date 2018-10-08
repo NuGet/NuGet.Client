@@ -67,21 +67,43 @@ namespace NuGet.Protocol
             // The update of a cached file is divided into two steps:
             // 1) Delete the old file.
             // 2) Create a new file with the same name.
+
+            // Some FileStream operations on Windows are synchronous even though it may not seem so.
+            // The HTTP stack rewrite in .NET Core 2.1 introduced circumstances whereby these
+            // synchronous FileStream calls will keep an IO completion thread busy and block other
+            // HTTP requests from completing.  The immediate solution is to perform write and read
+            // operations on separate streams, but only on .NET Core where the problem exists.
+            // See https://github.com/dotnet/corefx/issues/31914 for details.
+            const int writeBufferSize =
+#if IS_CORECLR
+                1;  // This disables write buffering.
+#else
+                BufferSize;
+#endif
+
             using (var fileStream = new FileStream(
                 result.NewFile,
                 FileMode.Create,
-                FileAccess.ReadWrite,
+                FileAccess.Write,
                 FileShare.None,
-                BufferSize,
+                writeBufferSize,
                 useAsync: true))
             {
                 using (var networkStream = await response.Content.ReadAsStreamAsync())
                 {
                     await networkStream.CopyToAsync(fileStream, BufferSize, cancellationToken);
                 }
+            }
 
+            using (var fileStream = new FileStream(
+                result.NewFile,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None,
+                BufferSize,
+                useAsync: true))
+            {
                 // Validate the content before putting it into the cache.
-                fileStream.Seek(0, SeekOrigin.Begin);
                 ensureValidContents?.Invoke(fileStream);
             }
 
