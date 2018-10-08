@@ -197,7 +197,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any certificate fingerprint in allow list..
+        ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any certificate fingerprint in the allow list..
         /// </summary>
         internal static string DefaultError_NoMatchInAllowList {
             get {

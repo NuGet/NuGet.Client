@@ -762,6 +762,6 @@ Valid from:</comment>
     <value>A list of trusted signers is required but none was found.</value>
   </data>
   <data name="DefaultError_NoMatchInAllowList" xml:space="preserve">
-    <value>The package signature certificate fingerprint does not match any certificate fingerprint in allow list.</value>
+    <value>The package signature certificate fingerprint does not match any certificate fingerprint in the allow list.</value>
   </data>
 </root>

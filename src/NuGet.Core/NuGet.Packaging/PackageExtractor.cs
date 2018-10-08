@@ -1064,7 +1064,7 @@ namespace NuGet.Packaging
                     verificationProviders.Add(
                       new AllowListVerificationProvider(
                           clientPolicyContext.AllowList,
-                          clientPolicyContext.RequireNonEmptyAllowList,
+                          clientPolicyContext.Policy == SignatureValidationMode.Require,
                           Strings.Error_NoClientAllowList,
                           Strings.Error_NoMatchingClientCertificate));
 

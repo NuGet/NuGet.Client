@@ -25,11 +25,6 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public IReadOnlyCollection<VerificationAllowListEntry> AllowList { get; }
 
-        /// <summary>
-        /// Require AllowList to not be null or empty
-        /// </summary>
-        public bool RequireNonEmptyAllowList { get; }
-
         internal ClientPolicyContext(SignatureValidationMode policy, IReadOnlyCollection<VerificationAllowListEntry> allowList)
         {
             Policy = policy;
@@ -44,7 +39,6 @@ namespace NuGet.Packaging.Signing
             }
 
             AllowList = allowList;
-            RequireNonEmptyAllowList = policy == SignatureValidationMode.Require;
         }
 
         public static ClientPolicyContext GetClientPolicy(ISettings settings, ILogger logger)

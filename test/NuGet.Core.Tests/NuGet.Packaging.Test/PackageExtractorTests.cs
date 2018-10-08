@@ -1824,7 +1824,7 @@ namespace NuGet.Packaging.Test
                     // allowListVerificationProvider result is the only one that throws NU3034
                     var issues = exception.Results.Where(r => r.Issues.Select(i => i.Code).Contains(NuGetLogCode.NU3034)).SelectMany(r => r.Issues);
 
-                    if (!clientPolicy.RequireNonEmptyAllowList)
+                    if (clientPolicy.Policy != SignatureValidationMode.Require)
                     {
                         issues.Count().Should().Be(1);
                         issues.First().Code.Should().Be(NuGetLogCode.NU3034);

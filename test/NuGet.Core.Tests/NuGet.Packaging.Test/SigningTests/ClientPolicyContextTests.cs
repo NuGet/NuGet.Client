@@ -35,7 +35,6 @@ namespace NuGet.Packaging.Test
                 var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, NullLogger.Instance);
 
                 clientPolicyContext.Policy.Should().Be(SignatureValidationMode.Accept);
-                clientPolicyContext.RequireNonEmptyAllowList.Should().BeFalse();
                 clientPolicyContext.AllowList.Should().BeEmpty();
 
                 var verifierSettings = clientPolicyContext.VerifierSettings;
@@ -78,7 +77,6 @@ namespace NuGet.Packaging.Test
                 var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, NullLogger.Instance);
 
                 clientPolicyContext.Policy.Should().Be(SignatureValidationMode.Accept);
-                clientPolicyContext.RequireNonEmptyAllowList.Should().BeFalse();
                 clientPolicyContext.AllowList.Should().BeEmpty();
 
                 var verifierSettings = clientPolicyContext.VerifierSettings;
@@ -121,7 +119,6 @@ namespace NuGet.Packaging.Test
                 var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, NullLogger.Instance);
 
                 clientPolicyContext.Policy.Should().Be(SignatureValidationMode.Require);
-                clientPolicyContext.RequireNonEmptyAllowList.Should().BeTrue();
                 clientPolicyContext.AllowList.Should().BeEmpty();
 
                 var verifierSettings = clientPolicyContext.VerifierSettings;
@@ -178,7 +175,6 @@ namespace NuGet.Packaging.Test
                 var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, NullLogger.Instance);
 
                 clientPolicyContext.Policy.Should().Be(SignatureValidationMode.Require);
-                clientPolicyContext.RequireNonEmptyAllowList.Should().BeTrue();
                 clientPolicyContext.AllowList.Count.Should().Be(2);
                 clientPolicyContext.AllowList.Should().BeEquivalentTo(expectedAllowList);
 

@@ -55,11 +55,11 @@ namespace NuGet.Packaging.Signing
 
         public static IReadOnlyCollection<CertificateHashAllowListEntry> GetRepositoryAllowList(IEnumerable<IRepositoryCertificateInfo> repositoryCertificateInfos)
         {
-            HashSet<CertificateHashAllowListEntry> repositoryAllowList = null;
+            HashSet<CertificateHashAllowListEntry> repositoryAllowedCertificates = null;
 
             if (repositoryCertificateInfos != null)
             {
-                repositoryAllowList = new HashSet<CertificateHashAllowListEntry>();
+                repositoryAllowedCertificates = new HashSet<CertificateHashAllowListEntry>();
 
                 foreach (var certInfo in repositoryCertificateInfos)
                 {
@@ -69,13 +69,13 @@ namespace NuGet.Packaging.Signing
 
                         if (!string.IsNullOrEmpty(fingerprint))
                         {
-                            repositoryAllowList.Add(new CertificateHashAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithm));
+                            repositoryAllowedCertificates.Add(new CertificateHashAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithm));
                         }
                     }
                 }
             }
 
-            return repositoryAllowList;
+            return repositoryAllowedCertificates;
         }
     }
 }
