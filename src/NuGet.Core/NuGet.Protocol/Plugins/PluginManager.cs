@@ -30,6 +30,7 @@ namespace NuGet.Protocol.Core.Types
 
         private const string _idleTimeoutEnvironmentVariable = "NUGET_PLUGIN_IDLE_TIMEOUT_IN_SECONDS";
         private const string _pluginPathsEnvironmentVariable = "NUGET_PLUGIN_PATHS";
+        private const string _downloadPluginsEnabledEnvironmentVariable = "NUGET_DOWNLOAD_PLUGINS_ENABLED";
 
         private ConnectionOptions _connectionOptions;
         private Lazy<IPluginDiscoverer> _discoverer;
@@ -131,7 +132,7 @@ namespace NuGet.Protocol.Core.Types
             var pluginCreationResults = new List<PluginCreationResult>();
 
             // Fast path
-            if (source.PackageSource.IsHttp && IsPluginPossiblyAvailable())
+            if (source.PackageSource.IsHttp && IsPluginPossiblyAvailable() && AreDownloadPlugingsEnabled())
             {
                 var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(cancellationToken);
 
@@ -334,6 +335,18 @@ namespace NuGet.Protocol.Core.Types
             var verifier = EmbeddedSignatureVerifier.Create();
 
             return new PluginDiscoverer(_rawPluginPaths, verifier);
+        }
+
+        private bool AreDownloadPlugingsEnabled()
+        {
+            var variableValue = EnvironmentVariableReader.GetEnvironmentVariable(_downloadPluginsEnabledEnvironmentVariable);
+
+            if (bool.TryParse(variableValue, out var result))
+            {
+                return result;
+            }
+
+            return false;
         }
 
         private bool IsPluginPossiblyAvailable()
