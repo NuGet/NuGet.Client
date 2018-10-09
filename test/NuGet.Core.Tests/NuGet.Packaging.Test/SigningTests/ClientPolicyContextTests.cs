@@ -194,5 +194,97 @@ namespace NuGet.Packaging.Test
                 verifierSettings.RevocationMode.Should().Be(RevocationMode.Online);
             }
         }
+
+        [Fact]
+        public void GetClientPolicy_MutipleConfigs_ReadsParsesAndMergesTrustedSigners()
+        {
+            // Arrange
+            var config1 = @"
+<configuration>
+    <config>
+        <add key=""signatureValidationMode"" value=""require"" />
+    </config>
+    <trustedSigners>
+        <author name=""author1"">
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <repository name=""repository1"" serviceIndex=""https://v3serviceIndex.test/api/json"">
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </repository>
+    </trustedSigners>
+</configuration>";
+
+            var config2 = @"
+<configuration>
+    <config>
+        <add key=""signatureValidationMode"" value=""require"" />
+    </config>
+    <trustedSigners>
+        <author name=""author1"">
+            <certificate fingerprint=""xyz"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <repository name=""repository2"" serviceIndex=""https://v3serviceIndex2.test/api/json"">
+            <certificate fingerprint=""rst"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </repository>
+    </trustedSigners>
+</configuration>";
+
+            var config3 = @"
+<configuration>
+    <config>
+        <add key=""signatureValidationMode"" value=""require"" />
+    </config>
+    <trustedSigners>
+        <author name=""author2"">
+            <certificate fingerprint=""xyz"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <repository name=""repository1"" serviceIndex=""https://v3serviceIndex.test/api/json"">
+            <certificate fingerprint=""opq"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </repository>
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var innerMockDirectory = TestDirectory.Create(mockBaseDirectory))
+            using (var closerDirectory = TestDirectory.Create(innerMockDirectory))
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config1);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, innerMockDirectory, config2);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, closerDirectory, config3);
+
+                // Act and Assert
+                var settings = Settings.LoadDefaultSettings(closerDirectory);
+                settings.Should().NotBeNull();
+
+                var expectedAllowList = new List<VerificationAllowListEntry>()
+                {
+                    new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "xyz", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any,"rst", HashAlgorithmName.SHA256),
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any,"opq", HashAlgorithmName.SHA256)
+                };
+
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, NullLogger.Instance);
+
+                clientPolicyContext.Policy.Should().Be(SignatureValidationMode.Require);
+                clientPolicyContext.AllowList.Count.Should().Be(3);
+                clientPolicyContext.AllowList.Should().BeEquivalentTo(expectedAllowList);
+
+                var verifierSettings = clientPolicyContext.VerifierSettings;
+
+                verifierSettings.AllowUnsigned.Should().BeFalse();
+                verifierSettings.AllowIllegal.Should().BeFalse();
+                verifierSettings.AllowUntrusted.Should().BeFalse();
+                verifierSettings.AllowIgnoreTimestamp.Should().BeTrue();
+                verifierSettings.AllowMultipleTimestamps.Should().BeTrue();
+                verifierSettings.AllowNoTimestamp.Should().BeTrue();
+                verifierSettings.AllowUnknownRevocation.Should().BeTrue();
+                verifierSettings.ReportUnknownRevocation.Should().BeTrue();
+                verifierSettings.VerificationTarget.Should().Be(VerificationTarget.All);
+                verifierSettings.SignaturePlacement.Should().Be(SignaturePlacement.Any);
+                verifierSettings.RepositoryCountersignatureVerificationBehavior.Should().Be(SignatureVerificationBehavior.IfExistsAndIsNecessary);
+                verifierSettings.RevocationMode.Should().Be(RevocationMode.Online);
+            }
+        }
     }
 }

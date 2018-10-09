@@ -1064,9 +1064,9 @@ namespace NuGet.Packaging
                     verificationProviders.Add(
                       new AllowListVerificationProvider(
                           clientPolicyContext.AllowList,
-                          clientPolicyContext.Policy == SignatureValidationMode.Require,
-                          Strings.Error_NoClientAllowList,
-                          Strings.Error_NoMatchingClientCertificate));
+                          requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require,
+                          emptyListErrorMessage: Strings.Error_NoClientAllowList,
+                          noMatchErrorMessage: Strings.Error_NoMatchingClientCertificate));
 
                     if (repositorySignatureInfo != null && repositorySignatureInfo.RepositoryCertificateInfos != null)
                     {
