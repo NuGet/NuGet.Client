@@ -210,6 +210,9 @@ namespace NuGet.Credentials.Test
             _reader.Setup(x => x.GetEnvironmentVariable(
                     It.Is<string>(value => value == CredentialTestConstants.PluginHandshakeTimeoutEnvironmentVariable)))
                         .Returns("HandshakeTimeout");
+            _reader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == CredentialTestConstants.DownloadPluginsEnabledEnvironmentVariable)))
+                        .Returns("true");
         }
 
         private void EnsureDiscovererIsCalled(string pluginFilePath, PluginFileState pluginFileState)
