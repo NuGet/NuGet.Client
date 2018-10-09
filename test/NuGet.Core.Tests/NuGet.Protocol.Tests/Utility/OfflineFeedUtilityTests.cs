@@ -91,9 +91,8 @@ namespace NuGet.Protocol.Tests
             var extractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv3,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                NullLogger.Instance,
-                signedPackageVerifier: null,
-                signedPackageVerifierSettings: null);
+                clientPolicyContext: null,
+                logger: NullLogger.Instance);
 
             await Assert.ThrowsAsync<OperationCanceledException>(
                 () => OfflineFeedUtility.AddPackageToSource(
@@ -155,9 +154,8 @@ namespace NuGet.Protocol.Tests
                 var extractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    NullLogger.Instance,
-                    signedPackageVerifier: null,
-                    signedPackageVerifierSettings: null);
+                    clientPolicyContext: null,
+                    logger: NullLogger.Instance);
 
                 var context = new OfflineFeedAddContext(
                     sourcePackageFilePath,

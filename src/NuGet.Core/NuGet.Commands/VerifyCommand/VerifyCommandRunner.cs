@@ -46,8 +46,15 @@ namespace NuGet.Commands
                         fingerprint,
                         _defaultFingerprintAlgorithm)).ToList();
 
-                var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(clientAllowListEntries: allowListEntries);
-                var verificationProviders = SignatureVerificationProviderFactory.GetSignatureVerificationProviders();
+                var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
+                var verificationProviders = SignatureVerificationProviderFactory.GetDefaultSignatureVerificationProviders();
+
+                verificationProviders.Add(
+                    new AllowListVerificationProvider(
+                        allowListEntries,
+                        requireNonEmptyAllowList: false,
+                        noMatchErrorMessage: Strings.Error_NoMatchingCertificate));
+
                 var verifier = new PackageSignatureVerifier(verificationProviders);
 
                 foreach (var package in packagesToVerify)

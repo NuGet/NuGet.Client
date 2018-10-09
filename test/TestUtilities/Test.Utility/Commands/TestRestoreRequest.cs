@@ -117,9 +117,8 @@ namespace NuGet.Commands.Test
                   new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                      PackageExtractionBehavior.XmlDocFileSaveMode,
-                     log,
-                     new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders()),
-                     SignedPackageVerifierSettings.GetDefault()),
+                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, log),
+                     log),
                   log)
         {
         }
@@ -138,9 +137,8 @@ namespace NuGet.Commands.Test
                 new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                      PackageExtractionBehavior.XmlDocFileSaveMode,
-                     log,
-                     new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders()),
-                     SignedPackageVerifierSettings.GetDefault()),
+                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, log),
+                     log),
                 log)
         {
         }

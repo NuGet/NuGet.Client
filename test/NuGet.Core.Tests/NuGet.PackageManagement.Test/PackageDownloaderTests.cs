@@ -316,9 +316,8 @@ namespace NuGet.PackageManagement
                     ExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        NullLogger.Instance,
-                        signedPackageVerifier: null,
-                        signedPackageVerifierSettings: null)
+                        clientPolicyContext: null,
+                        logger: NullLogger.Instance)
                 };
 
                 using (var packagesDirectory = TestDirectory.Create())
@@ -356,9 +355,8 @@ namespace NuGet.PackageManagement
                     ExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        NullLogger.Instance,
-                        signedPackageVerifier: null,
-                        signedPackageVerifierSettings: null)
+                        clientPolicyContext: null,
+                        logger: NullLogger.Instance)
                 };
 
                 using (var packagesDirectory = TestDirectory.Create())
@@ -421,9 +419,8 @@ namespace NuGet.PackageManagement
                     ExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        NullLogger.Instance,
-                        signedPackageVerifier: null,
-                        signedPackageVerifierSettings: null)
+                        clientPolicyContext: null,
+                        logger: NullLogger.Instance)
                 };
 
                 using (var packagesDirectory = TestDirectory.Create())
@@ -492,9 +489,8 @@ namespace NuGet.PackageManagement
                     ExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        NullLogger.Instance,
-                        signedPackageVerifier: null,
-                        signedPackageVerifierSettings: null)
+                        clientPolicyContext: null,
+                        logger: NullLogger.Instance)
                 };
 
                 using (var packagesDirectory = TestDirectory.Create())

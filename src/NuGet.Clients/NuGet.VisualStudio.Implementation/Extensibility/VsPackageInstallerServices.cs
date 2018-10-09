@@ -137,15 +137,13 @@ namespace NuGet.VisualStudio
             {
                 InitializePackageManagerAndPackageFolderPath();
 
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
                 var projectContext = new VSAPIProjectContext();
                 var logger = new LoggerAdapter(projectContext);
                 projectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    logger,
-                    signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetClientPolicy(_settings, logger));
+                    ClientPolicyContext.GetClientPolicy(_settings, logger),
+                    logger);
 
                 var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
                                     project,
@@ -174,16 +172,13 @@ namespace NuGet.VisualStudio
                     {
                         InitializePackageManagerAndPackageFolderPath();
 
-                        var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
                         var projectContext = new VSAPIProjectContext();
                         var logger = new LoggerAdapter(projectContext);
                         projectContext.PackageExtractionContext = new PackageExtractionContext(
                             PackageSaveMode.Defaultv2,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
-                            logger,
-                            signedPackageVerifier,
-                            SignedPackageVerifierSettings.GetClientPolicy(_settings, logger));
+                            ClientPolicyContext.GetClientPolicy(_settings, logger),
+                            logger);
 
                         var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
                                             project,

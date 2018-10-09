@@ -198,17 +198,15 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-                var signingSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings, Console);
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, Console);
 
                 var projectContext = new ConsoleProjectContext(Console)
                 {
                     PackageExtractionContext = new PackageExtractionContext(
                         Packaging.PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        Console,
-                        signedPackageVerifier,
-                        signingSettings)
+                        clientPolicyContext,
+                        Console)
                 };
 
                 var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload)
@@ -216,9 +214,8 @@ namespace NuGet.CommandLine
                     ExtractionContext = new PackageExtractionContext(
                         Packaging.PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        Console,
-                        signedPackageVerifier,
-                        signingSettings)
+                        clientPolicyContext,
+                        Console)
                 };
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
@@ -380,17 +377,15 @@ namespace NuGet.CommandLine
                 }
                 else
                 {
-                    var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-                    var signingVerificationSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings, Console);
+                    var clientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, Console);
 
                     var projectContext = new ConsoleProjectContext(Console)
                     {
                         PackageExtractionContext = new PackageExtractionContext(
                             Packaging.PackageSaveMode.Defaultv2,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
-                            Console,
-                            signedPackageVerifier,
-                            signingVerificationSettings)
+                            clientPolicyContext,
+                            Console)
                     };
 
                     resolutionContext.SourceCacheContext.NoCache = NoCache;
@@ -401,9 +396,8 @@ namespace NuGet.CommandLine
                         ExtractionContext = new PackageExtractionContext(
                             Packaging.PackageSaveMode.Defaultv3,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
-                            Console,
-                            signedPackageVerifier,
-                            signingVerificationSettings)
+                            clientPolicyContext,
+                            Console)
                     };
 
                     if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)

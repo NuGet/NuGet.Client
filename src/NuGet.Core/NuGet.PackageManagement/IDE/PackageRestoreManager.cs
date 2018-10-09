@@ -192,7 +192,6 @@ namespace NuGet.PackageManagement
 
             using (var cacheContext = new SourceCacheContext())
             {
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
                 var logger = new LoggerAdapter(nuGetProjectContext);
 
                 var downloadContext = new PackageDownloadContext(cacheContext)
@@ -201,9 +200,8 @@ namespace NuGet.PackageManagement
                     ExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        logger,
-                        signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetClientPolicy(Settings, logger))
+                        ClientPolicyContext.GetClientPolicy(Settings, logger),
+                        logger)
                 };
 
                 return await RestoreMissingPackagesAsync(
@@ -236,7 +234,6 @@ namespace NuGet.PackageManagement
 
             using (var cacheContext = new SourceCacheContext())
             {
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
                 var adapterLogger = new LoggerAdapter(nuGetProjectContext);
 
                 var downloadContext = new PackageDownloadContext(cacheContext)
@@ -245,9 +242,8 @@ namespace NuGet.PackageManagement
                     ExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        adapterLogger,
-                        signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetClientPolicy(Settings, adapterLogger))
+                        ClientPolicyContext.GetClientPolicy(Settings, adapterLogger),
+                        adapterLogger)
                 };
 
                 return await RestoreMissingPackagesAsync(
@@ -284,14 +280,12 @@ namespace NuGet.PackageManagement
             if (nuGetProjectContext.PackageExtractionContext == null)
             {
                 var logger = new LoggerAdapter(nuGetProjectContext);
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
 
                 nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    logger,
-                    signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetClientPolicy(Settings, logger));
+                    ClientPolicyContext.GetClientPolicy(Settings, logger),
+                    logger);
             }
 
             return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);

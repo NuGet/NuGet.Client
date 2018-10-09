@@ -76,14 +76,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             PackageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
 
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
             var logger = new LoggerAdapter(this);
             PackageExtractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                logger,
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetClientPolicy(ConfigSettings, logger));
+                ClientPolicyContext.GetClientPolicy(ConfigSettings, logger),
+                logger);
 
             if (_commonOperations != null)
             {
@@ -261,17 +259,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     {
                         var logger = new LoggerAdapter(this);
 
-                        var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
                         var downloadContext = new PackageDownloadContext(cacheContext)
                         {
                             ParentId = OperationId,
                             ExtractionContext = new PackageExtractionContext(
                                 PackageSaveMode.Defaultv3,
                                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                                logger,
-                                signedPackageVerifier,
-                                SignedPackageVerifierSettings.GetClientPolicy(ConfigSettings, logger))
+                                ClientPolicyContext.GetClientPolicy(ConfigSettings, logger),
+                                logger)
                         };
 
                         var result = await PackageRestoreManager.RestoreMissingPackagesAsync(

@@ -53,8 +53,6 @@ namespace NuGet.Packaging.FuncTest
                 allowNoTimestamp: true,
                 allowUnknownRevocation: true,
                 reportUnknownRevocation: true,
-                allowNoClientCertificateList: true,
-                allowNoRepositoryCertificateList: true,
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,

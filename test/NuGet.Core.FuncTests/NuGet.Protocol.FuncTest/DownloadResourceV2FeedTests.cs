@@ -39,9 +39,8 @@ namespace NuGet.Protocol.FuncTest
                     ExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        NullLogger.Instance,
-                        signedPackageVerifier: null,
-                        signedPackageVerifierSettings: null)
+                        clientPolicyContext: null,
+                        logger: NullLogger.Instance)
                 };
 
                 using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
@@ -79,9 +78,8 @@ namespace NuGet.Protocol.FuncTest
                     ExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    NullLogger.Instance,
-                    signedPackageVerifier: null,
-                    signedPackageVerifierSettings: null)
+                    clientPolicyContext: null,
+                    logger: NullLogger.Instance)
                 };
 
                 using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(

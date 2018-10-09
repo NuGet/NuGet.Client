@@ -84,15 +84,13 @@ namespace NuGet.CommandLine
             var context = new UpdateConsoleProjectContext(Console, FileConflictAction);
 
             var logger = new LoggerAdapter(context);
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-            var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings, logger);
+            var clientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger);
 
             context.PackageExtractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                logger,
-                signedPackageVerifier,
-                signedPackageVerifierSettings);
+                clientPolicyContext,
+                logger);
 
             string inputFileName = Path.GetFileName(inputFile);
             // update with packages.config as parameter

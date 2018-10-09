@@ -224,6 +224,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package signature did not match any of the allowed certificate fingerprints..
+        /// </summary>
+        internal static string Error_NoMatchingCertificate {
+            get {
+                return ResourceManager.GetString("Error_NoMatchingCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to find package {0}. No packages exist with this id in source(s): {1}.
         /// </summary>
         internal static string Error_NoPackageVersionsExist {
