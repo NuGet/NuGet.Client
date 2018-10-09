@@ -240,7 +240,7 @@ namespace NuGet.Build.Tasks.Pack
                 {
                     throw new PackagingException(NuGetLogCode.NU5035, string.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.Licenses_LicenseUrlCannotBeUsedInConjuctionWithLicense));
+                        Strings.NuGetLicenses_LicenseUrlCannotBeUsedInConjuctionWithLicense));
                 }
 
                 if (hasLicenseExpression && hasLicenseFile)
