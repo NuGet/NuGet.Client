@@ -164,10 +164,11 @@
   <data name="IsPackableFalseError" xml:space="preserve">
     <value>Cannot generate a package from a project which has IsPackable property set to false.</value>
   </data>
-  <data name="Licenses_LicenseUrlCannotBeUsedInConjuctionWithLicense" xml:space="preserve">
-    <value>The PackageLicenseUrl cannot be used cannot be used in conjunction with the PackageLicenseFile and PackageLicenseExpression.</value>
-  </data>
   <data name="NoPackItemProvided" xml:space="preserve">
     <value>No project was provided to the PackTask.</value>
+  </data>
+  <data name="NuGetLicenses_LicenseUrlCannotBeUsedInConjuctionWithLicense" xml:space="preserve">
+    <value>The PackageLicenseUrl cannot be used cannot be used in conjunction with the PackageLicenseFile and PackageLicenseExpression.</value>
+    <comment>Please don't localize PackageLicenseUrl, PackageLicenseFile and PackageLicenseExpression.</comment>
   </data>
 </root>

@@ -780,4 +780,10 @@ Valid from:</comment>
   <data name="NuGetLicense_MissingRequiredValue" xml:space="preserve">
     <value>The element 'license' cannot be empty. </value>
   </data>
+  <data name="NuGetLicense_LicenseExpressionVersionTooHigh" xml:space="preserve">
+    <value>The license version string '{0}' is higher than the one supported by this toolset '{1}'.</value>
+  </data>
+  <data name="NuGetLicense_LicenseElementMissingValue" xml:space="preserve">
+    <value>The license element value is empty. This is likely due to an authoring error. </value>
+  </data>
 </root>

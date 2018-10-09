@@ -377,7 +377,21 @@ namespace NuGet.Packaging.Test
                     <description>package A description.</description>
                     <license type=""expression"">MIT oR Apache-2.0</license>
                   </metadata>
-                </package>"; 
+                </package>";
+
+        private const string LicenseExpressionBasicBadVersionValue = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                    <license version=""NotAVersion"" type=""expression"">MIT</license>
+                  </metadata>
+                </package>";
+        
 
         public static IEnumerable<object[]> GetValidVersions()
         {
@@ -806,9 +820,10 @@ namespace NuGet.Packaging.Test
 
             // Assert
             licenseMetadata.Type.Should().Be(LicenseType.File);
-            licenseMetadata.LicenseExpression.Should().Be(null);
+            licenseMetadata.LicenseExpression.Should().BeNull();
             licenseMetadata.License.Should().Be("LICENSE.txt");
             licenseMetadata.Version.Should().Be(LicenseMetadata.EmptyVersion);
+            licenseMetadata.WarningsAndErrors.Should().BeNull();
         }
 
         [Fact]
@@ -826,6 +841,7 @@ namespace NuGet.Packaging.Test
             licenseMetadata.License.Should().Be("MIT");
             Assert.Equal(licenseMetadata.License, licenseMetadata.LicenseExpression.ToString());
             licenseMetadata.Version.Should().Be(LicenseMetadata.EmptyVersion);
+            licenseMetadata.WarningsAndErrors.Should().BeNull();
         }
 
         [Fact]
@@ -843,49 +859,79 @@ namespace NuGet.Packaging.Test
             licenseMetadata.License.Should().Be("MIT");
             Assert.Equal(licenseMetadata.License, licenseMetadata.LicenseExpression.ToString());
             licenseMetadata.Version.Should().Be(LicenseMetadata.EmptyVersion);
+            licenseMetadata.WarningsAndErrors.Should().BeNull();
         }
 
         [Fact]
-        public void NuspecReaderTests_LicenseExpressionBasicExplicitHighVersion()
+        public void NuspecReaderTests_LicenseExpressionBasicExplicitHighVersionAddsMessage()
         {
             // Arrange
             var reader = GetReader(LicenseExpressionBasicExplicitHighVersion);
+            var versionSpecified = new Version(10, 0);
+            // Act
+            var licenseMetadata = reader.GetLicenseMetadata();
+
+            // Assert
+            licenseMetadata.Type.Should().Be(LicenseType.Expression);
+            licenseMetadata.LicenseExpression.Should().BeNull();
+            licenseMetadata.License.Should().Be("MIT");
+            licenseMetadata.Version.Should().Be(versionSpecified);
+            licenseMetadata.WarningsAndErrors.Count().Should().Be(1);
+            licenseMetadata.WarningsAndErrors[0].Should().Be(string.Format(Strings.NuGetLicense_LicenseExpressionVersionTooHigh, versionSpecified, LicenseMetadata.CurrentVersion));
+        }
+
+        [Fact]
+        public void NuspecReaderTests_LicenseExpressionMissingValueAddsMessage()
+        {
+            // Arrange
+            var reader = GetReader(LicenseExpressionBasicMissingValue);
 
             // Act
             var licenseMetadata = reader.GetLicenseMetadata();
 
             // Assert
             licenseMetadata.Type.Should().Be(LicenseType.Expression);
-            licenseMetadata.LicenseExpression.Should().Be(null);
-            licenseMetadata.License.Should().Be("MIT");
-            licenseMetadata.Version.Should().Be(new Version(10,0));
+            licenseMetadata.LicenseExpression.Should().BeNull();
+            licenseMetadata.License.Should().Be(string.Empty);
+            licenseMetadata.Version.Should().Be(LicenseMetadata.EmptyVersion);
+            licenseMetadata.WarningsAndErrors.Count().Should().Be(1);
+            licenseMetadata.WarningsAndErrors[0].Should().Be(Strings.NuGetLicense_LicenseElementMissingValue);
         }
 
         [Fact]
-        public void NuspecReaderTests_LicenseExpressionMissingValueThrows()
-        {
-            // Arrange
-            var reader = GetReader(LicenseExpressionBasicMissingValue);
-
-            // Act
-           Action action = () => reader.GetLicenseMetadata();
-
-            // Assert
-            Assert.Throws<PackagingException>(action);
-        }
-
-        [Fact]
-        public void NuspecReaderTests_LicenseExpressionBadExpressionThrows()
+        public void NuspecReaderTests_LicenseExpressionBadAddsMessage()
         {
             // Arrange
             var reader = GetReader(LicenseExpressionBadExpression);
 
             // Act
-            Action action = () => reader.GetLicenseMetadata();
+            var licenseMetadata = reader.GetLicenseMetadata();
 
             // Assert
-            var exception = Assert.Throws<PackagingException>(action);
-            Assert.Contains("Invalid element 'oR'.", exception.AsLogMessage().Message);
+            licenseMetadata.Type.Should().Be(LicenseType.Expression);
+            licenseMetadata.LicenseExpression.Should().BeNull();
+            licenseMetadata.License.Should().Be("MIT oR Apache-2.0");
+            licenseMetadata.Version.Should().Be(LicenseMetadata.EmptyVersion);
+            licenseMetadata.WarningsAndErrors.Count().Should().Be(1);
+            licenseMetadata.WarningsAndErrors[0].Should().Contain("Invalid element 'oR'.");
+        }
+
+        [Fact]
+        public void NuspecReaderTests_BadLicenseVersionAddsMessage()
+        {
+            // Arrange
+            var reader = GetReader(LicenseExpressionBasicBadVersionValue);
+
+            // Act
+            var licenseMetadata = reader.GetLicenseMetadata();
+
+            // Assert
+            licenseMetadata.Type.Should().Be(LicenseType.Expression);
+            licenseMetadata.LicenseExpression.Should().BeAssignableTo<NuGetLicense>("Because it is a simple license expression");
+            licenseMetadata.License.Should().Be("MIT");
+            licenseMetadata.Version.Should().Be(LicenseMetadata.EmptyVersion);
+            licenseMetadata.WarningsAndErrors.Count().Should().Be(1);
+            licenseMetadata.WarningsAndErrors[0].Should().Contain(string.Format(Strings.NuGetLicense_InvalidLicenseExpressionVersion, "NotAVersion"));
         }
 
         private static NuspecReader GetReader(string nuspec)

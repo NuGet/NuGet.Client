@@ -170,11 +170,9 @@ namespace NuGet.Packaging
 
         private static LicenseMetadata ReadLicenseMetadata(XElement licenseNode)
         {
-
-            var type = licenseNode.Attribute(NuspecUtility.Type).Value;
-            var license = licenseNode.Value;
-            var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value;
-
+            var type = licenseNode.Attribute(NuspecUtility.Type).Value.SafeTrim();
+            var license = licenseNode.Value.SafeTrim();
+            var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value.SafeTrim();
 
             if (!Enum.TryParse(type, ignoreCase: true, result: out LicenseType licenseType))
             {
@@ -211,7 +209,7 @@ namespace NuGet.Packaging
                         try
                         {
                             var expression = NuGetLicenseExpression.Parse(license);
-                            return new LicenseMetadata(licenseType, license, expression, version);
+                            return new LicenseMetadata(licenseType, license, expression, warningsAndErrors: null, version: version);
                         }
                         catch (NuGetLicenseExpressionParsingException e)
                         {
@@ -226,7 +224,7 @@ namespace NuGet.Packaging
                                    LicenseMetadata.CurrentVersion));
 
                 case LicenseType.File:
-                    return new LicenseMetadata(type: licenseType, license: license, expression: null, version: LicenseMetadata.EmptyVersion);
+                    return new LicenseMetadata(type: licenseType, license: license, expression: null, warningsAndErrors: null, version: LicenseMetadata.EmptyVersion);
 
                 default:
                     throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicense_InvalidLicenseType, type));

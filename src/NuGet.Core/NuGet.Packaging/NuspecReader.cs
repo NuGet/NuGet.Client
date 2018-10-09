@@ -419,11 +419,13 @@ namespace NuGet.Packaging
 
             if (licenseNode != null)
             {
-                var type = licenseNode.Attribute(NuspecUtility.Type).Value;
-                var license = licenseNode.Value;
-                var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value;
+                var type = licenseNode.Attribute(NuspecUtility.Type).Value.SafeTrim();
+                var license = licenseNode.Value.SafeTrim();
+                var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value.SafeTrim();
 
                 var isKnownType = Enum.TryParse(type, ignoreCase: true, result: out LicenseType licenseType);
+
+                IList<string> errors = null;
 
                 if (isKnownType)
                 {
@@ -432,37 +434,68 @@ namespace NuGet.Packaging
                     {
                         if (!System.Version.TryParse(versionValue, out version))
                         {
-                            throw new PackagingException(NuGetLogCode.NU5034, string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.NuGetLicense_InvalidLicenseExpressionVersion,
-                                versionValue));
+                            errors = new List<string>
+                            {
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.NuGetLicense_InvalidLicenseExpressionVersion,
+                                    versionValue)
+                            };
                         }
+                    }
+                    version = version ?? LicenseMetadata.EmptyVersion;
+
+                    if (string.IsNullOrEmpty(license))
+                    {
+                        if (errors == null)
+                        {
+                            errors = new List<string>();
+                        }
+                        errors.Add(
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.NuGetLicense_LicenseElementMissingValue));
                     }
                     else
                     {
-                        version = LicenseMetadata.EmptyVersion;
-                    }
+                        if (licenseType == LicenseType.Expression)
+                        {
+                            if (version.CompareTo(LicenseMetadata.CurrentVersion) <= 0)
+                            {
+                                try
+                                {
+                                    var expression = NuGetLicenseExpression.Parse(license);
+                                    return new LicenseMetadata(type: licenseType, license: license, expression: expression, warningsAndErrors: errors, version: version);
+                                }
+                                catch (NuGetLicenseExpressionParsingException e)
+                                {
+                                    if (errors == null)
+                                    {
+                                        errors = new List<string>();
+                                    }
+                                    errors.Add(e.Message);
+                                }
+                                return new LicenseMetadata(type: licenseType, license: license, expression: null, warningsAndErrors: errors, version: version);
+                            }
+                            else
+                            {
+                                if (errors == null)
+                                {
+                                    errors = new List<string>();
+                                }
 
-                    if (licenseType == LicenseType.Expression)
-                    {
-                        if (version.CompareTo(LicenseMetadata.CurrentVersion) <= 0)
-                        {
-                            try
-                            {
-                                var expression = NuGetLicenseExpression.Parse(license);
-                                return new LicenseMetadata(licenseType, license, expression, version);
+                                errors.Add(
+                                    string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.NuGetLicense_LicenseExpressionVersionTooHigh,
+                                        version,
+                                        LicenseMetadata.CurrentVersion));
+
+                                return new LicenseMetadata(type: licenseType, license: license, expression: null, warningsAndErrors: errors, version: version);
                             }
-                            catch (NuGetLicenseExpressionParsingException e)
-                            {
-                                throw new PackagingException(NuGetLogCode.NU5032, e.Message, e);
-                            }
-                        }
-                        else
-                        {
-                            return new LicenseMetadata(type: licenseType, license: license, expression: null, version: version);
                         }
                     }
-                    return new LicenseMetadata(type: licenseType, license: license, expression: null, version: LicenseMetadata.EmptyVersion);
+                    return new LicenseMetadata(type: licenseType, license: license, expression: null, warningsAndErrors: errors, version: version);
                 }
             }
             return null;

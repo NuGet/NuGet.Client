@@ -144,6 +144,7 @@
   </data>
   <data name="LicenseUrlDeprecationWarning" xml:space="preserve">
     <value>The 'licenseUrl' element will be deprecated. Consider using the 'license' element instead.</value>
+    <comment>Please don't localize the items in the ''. license and licenseUrl</comment>
   </data>
   <data name="Migrator_AssemblyDirectlyUnderLibWarning" xml:space="preserve">
     <value>The assembly 'lib\{0}' will be ignored when the package is installed after the migration.</value>

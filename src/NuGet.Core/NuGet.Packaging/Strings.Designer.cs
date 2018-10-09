@@ -800,6 +800,24 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The license element value is empty. This is likely due to an authoring error. .
+        /// </summary>
+        internal static string NuGetLicense_LicenseElementMissingValue {
+            get {
+                return ResourceManager.GetString("NuGetLicense_LicenseElementMissingValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license version string &apos;{0}&apos; is higher than the one supported by this toolset &apos;{1}&apos;..
+        /// </summary>
+        internal static string NuGetLicense_LicenseExpressionVersionTooHigh {
+            get {
+                return ResourceManager.GetString("NuGetLicense_LicenseExpressionVersionTooHigh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The element &apos;license&apos; cannot be empty. .
         /// </summary>
         internal static string NuGetLicense_MissingRequiredValue {

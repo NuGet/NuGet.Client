@@ -179,20 +179,20 @@ namespace NuGet.Build.Tasks.Pack {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The PackageLicenseUrl cannot be used cannot be used in conjunction with the PackageLicenseFile and PackageLicenseExpression..
-        /// </summary>
-        internal static string Licenses_LicenseUrlCannotBeUsedInConjuctionWithLicense {
-            get {
-                return ResourceManager.GetString("Licenses_LicenseUrlCannotBeUsedInConjuctionWithLicense", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to No project was provided to the PackTask..
         /// </summary>
         internal static string NoPackItemProvided {
             get {
                 return ResourceManager.GetString("NoPackItemProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The PackageLicenseUrl cannot be used cannot be used in conjunction with the PackageLicenseFile and PackageLicenseExpression..
+        /// </summary>
+        internal static string NuGetLicenses_LicenseUrlCannotBeUsedInConjuctionWithLicense {
+            get {
+                return ResourceManager.GetString("NuGetLicenses_LicenseUrlCannotBeUsedInConjuctionWithLicense", resourceCulture);
             }
         }
     }
