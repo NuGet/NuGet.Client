@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,8 +21,8 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            var nuspecReader = builder.NuspecReader;
-            var licenseMetadata = nuspecReader.GetLicenseMetadata();
+            var nuspecReader = builder?.NuspecReader;
+            var licenseMetadata = nuspecReader?.GetLicenseMetadata();
             if (licenseMetadata != null && licenseMetadata.Type == LicenseType.Expression && licenseMetadata.LicenseExpression != null)
             {
                 var warnings = new List<PackagingLogMessage>();
