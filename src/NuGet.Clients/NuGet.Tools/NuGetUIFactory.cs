@@ -63,18 +63,17 @@ namespace NuGetVSExtension
             INuGetUILogger logger,
             ISourceControlManagerProvider sourceControlManagerProvider)
         {
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
             ProjectContext = new NuGetUIProjectContext(
                 commonOperations,
                 logger,
                 sourceControlManagerProvider);
 
+            var adapterLogger = new LoggerAdapter(ProjectContext);
             ProjectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    new LoggerAdapter(ProjectContext),
-                    signedPackageVerifier,
-                    SignedPackageVerifierSettings.GetDefault());
+                    ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
+                    adapterLogger);
         }
 
         /// <summary>

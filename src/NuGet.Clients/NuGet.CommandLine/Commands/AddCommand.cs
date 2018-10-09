@@ -41,14 +41,11 @@ namespace NuGet.CommandLine
             // If the Source Feed Folder does not exist, it will be created.
             OfflineFeedUtility.ThrowIfInvalid(Source);
 
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
             var packageExtractionContext = new PackageExtractionContext(
                 Expand ? PackageSaveMode.Defaultv3 : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                Console,
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetClientPolicy(Settings, Console));
+                ClientPolicyContext.GetClientPolicy(Settings, Console),
+                Console);
 
             var offlineFeedAddContext = new OfflineFeedAddContext(
                 packagePath,

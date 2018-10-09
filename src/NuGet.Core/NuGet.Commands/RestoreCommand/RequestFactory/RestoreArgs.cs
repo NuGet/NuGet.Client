@@ -180,14 +180,11 @@ namespace NuGet.Commands
 
         internal PackageExtractionContext GetPackageExtractionContext(ISettings settings)
         {
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
             return new PackageExtractionContext(
                 PackageSaveMode,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                Log,
-                signedPackageVerifier,
-                SignedPackageVerifierSettings.GetClientPolicy(settings, Log));
+                ClientPolicyContext.GetClientPolicy(settings, Log),
+                Log);
         }
 
         public void ApplyStandardProperties(RestoreRequest request)

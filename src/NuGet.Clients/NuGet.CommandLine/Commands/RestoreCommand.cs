@@ -329,16 +329,14 @@ namespace NuGet.CommandLine
 
             CheckRequireConsent();
 
-            var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-            var signingVerificationSettings = SignedPackageVerifierSettings.GetClientPolicy(Settings, collectorLogger);
+            var clientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, collectorLogger);
             var projectContext = new ConsoleProjectContext(collectorLogger)
             {
                 PackageExtractionContext = new PackageExtractionContext(
                     Packaging.PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    collectorLogger,
-                    signedPackageVerifier,
-                    signingVerificationSettings)
+                    clientPolicyContext,
+                    collectorLogger)
             };
 
             if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
@@ -356,9 +354,8 @@ namespace NuGet.CommandLine
                     ExtractionContext = new PackageExtractionContext(
                          Packaging.PackageSaveMode.Defaultv3,
                          PackageExtractionBehavior.XmlDocFileSaveMode,
-                         collectorLogger,
-                         signedPackageVerifier,
-                         signingVerificationSettings)
+                         clientPolicyContext,
+                         collectorLogger)
                 };
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(

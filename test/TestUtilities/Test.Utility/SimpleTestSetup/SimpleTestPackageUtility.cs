@@ -481,9 +481,8 @@ namespace NuGet.Test.Utility
                             new PackageExtractionContext(
                                 saveMode,
                                 XmlDocFileSaveMode.None,
-                                NullLogger.Instance,
-                                signedPackageVerifier: null,
-                                signedPackageVerifierSettings: null),
+                                clientPolicyContext: null,
+                                logger: NullLogger.Instance),
                             CancellationToken.None);
                     }
                 }
@@ -522,9 +521,8 @@ namespace NuGet.Test.Utility
             var context = new PackageExtractionContext(
                         PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        NullLogger.Instance,
-                        signedPackageVerifier: null,
-                        signedPackageVerifierSettings: null);
+                        clientPolicyContext: null,
+                        logger: NullLogger.Instance);
 
             foreach (var path in nupkgPaths)
             {

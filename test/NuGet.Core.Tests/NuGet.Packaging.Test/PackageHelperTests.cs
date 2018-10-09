@@ -215,9 +215,8 @@ namespace NuGet.Packaging.Test
                     new PackageExtractionContext(
                         PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        NullLogger.Instance,
-                        signedPackageVerifier: null,
-                        signedPackageVerifierSettings: null),
+                        clientPolicyContext: null,
+                        logger: NullLogger.Instance),
                     CancellationToken.None);
 
                 var packageIdentity = test.Reader.GetIdentity();
@@ -347,9 +346,8 @@ namespace NuGet.Packaging.Test
                             new PackageExtractionContext(
                                 PackageSaveMode.Defaultv2,
                                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                                NullLogger.Instance,
-                                signedPackageVerifier: null,
-                                signedPackageVerifierSettings: null),
+                                clientPolicyContext: null,
+                                logger: NullLogger.Instance),
                             CancellationToken.None);
                     }
 
@@ -400,9 +398,8 @@ namespace NuGet.Packaging.Test
                         new PackageExtractionContext(
                             PackageSaveMode.Defaultv2,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
-                            NullLogger.Instance,
-                            signedPackageVerifier: null,
-                            signedPackageVerifierSettings: null),
+                            clientPolicyContext: null,
+                            logger: NullLogger.Instance),
                         CancellationToken.None);
                 }
 
@@ -418,9 +415,8 @@ namespace NuGet.Packaging.Test
                         new PackageExtractionContext(
                             PackageSaveMode.Defaultv2,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
-                            NullLogger.Instance,
-                            signedPackageVerifier: null,
-                            signedPackageVerifierSettings: null),
+                            clientPolicyContext: null,
+                            logger: NullLogger.Instance),
                         CancellationToken.None);
                 }
 

@@ -1042,17 +1042,49 @@ namespace NuGet.Packaging
             ISignedPackageReader signedPackageReader,
             CancellationToken token)
         {
-            if (packageExtractionContext.SignedPackageVerifier != null)
+            if (packageExtractionContext.ClientPolicyContext != null)
             {
+                var clientPolicyContext = packageExtractionContext.ClientPolicyContext;
                 var repositorySignatureInfo = GetRepositorySignatureInfo(source);
 
-                var verifierSettings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(
+                var verificationSettings = RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(
                     repositorySignatureInfo,
-                    packageExtractionContext.SignedPackageVerifierSettings);
+                    clientPolicyContext.VerifierSettings);
 
-                var verifyResult = await packageExtractionContext.SignedPackageVerifier.VerifySignaturesAsync(
+                IPackageSignatureVerifier signedPackageVerifier = null;
+                if (packageExtractionContext.SignedPackageVerifier != null)
+                {
+                    // If we have a verifier in the extraction context it means is a test that wants to override it, so we take it blindly.
+                    signedPackageVerifier = packageExtractionContext.SignedPackageVerifier;
+                }
+                else
+                {
+                    var verificationProviders = SignatureVerificationProviderFactory.GetDefaultSignatureVerificationProviders();
+
+                    verificationProviders.Add(
+                      new AllowListVerificationProvider(
+                          clientPolicyContext.AllowList,
+                          requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require,
+                          emptyListErrorMessage: Strings.Error_NoClientAllowList,
+                          noMatchErrorMessage: Strings.Error_NoMatchingClientCertificate));
+
+                    if (repositorySignatureInfo != null && repositorySignatureInfo.RepositoryCertificateInfos != null)
+                    {
+                        var repositoryAllowList = RepositorySignatureInfoUtility.GetRepositoryAllowList(repositorySignatureInfo.RepositoryCertificateInfos);
+
+                        verificationProviders.Add(new AllowListVerificationProvider(
+                            repositoryAllowList,
+                            repositorySignatureInfo.AllRepositorySigned,
+                            Strings.Error_NoRepoAllowList,
+                            Strings.Error_NoMatchingRepositoryCertificate));
+                    }
+
+                    signedPackageVerifier = new PackageSignatureVerifier(verificationProviders);
+                }
+
+                var verifyResult = await signedPackageVerifier.VerifySignaturesAsync(
                        signedPackageReader,
-                       verifierSettings,
+                       verificationSettings,
                        token,
                        parentId);
 

@@ -547,17 +547,14 @@ namespace NuGet.SolutionRestoreManager
             
             using (var cacheContext = new SourceCacheContext())
             {
-                var signedPackageVerifier = new PackageSignatureVerifier(SignatureVerificationProviderFactory.GetSignatureVerificationProviders());
-
                 var downloadContext = new PackageDownloadContext(cacheContext)
                 {
                     ParentId = _nuGetProjectContext.OperationId,
                     ExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        logger,
-                        signedPackageVerifier,
-                        SignedPackageVerifierSettings.GetClientPolicy(_settings, logger))
+                        ClientPolicyContext.GetClientPolicy(_settings, logger),
+                        logger)
                 };
 
                 await _packageRestoreManager.RestoreMissingPackagesAsync(

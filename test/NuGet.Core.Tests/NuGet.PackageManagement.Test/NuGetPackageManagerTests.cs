@@ -4926,9 +4926,8 @@ namespace NuGet.Test
                         ExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv3,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                        NullLogger.Instance,
-                        signedPackageVerifier: null,
-                        signedPackageVerifierSettings: null)
+                        clientPolicyContext: null,
+                        logger: NullLogger.Instance)
                     };
 
                     await nuGetPackageManager.RestorePackageAsync(
