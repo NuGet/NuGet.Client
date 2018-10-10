@@ -13,6 +13,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.Packaging.Licenses;
 using NuGet.Packaging.Rules;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -4423,6 +4424,611 @@ namespace Proj1
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 var expectedWarning = string.Format("Error " + NuGetLogCode.NU5105 + ": " + AnalysisResources.LegacyVersionWarning, semver2Version);
                 Assert.Equal(r.AllOutput.Contains(expectedWarning), expectToError);
+            }
+        }
+
+        [Theory]
+        [InlineData("MIT", true)]
+        [InlineData("MIT OR Apache-2.0", false)]
+        public void PackCommand_PackLicense_SimpleExpression_StandardLicense(string licenseExpr, bool requireLicenseAcceptance)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "packageA";
+            var version = "1.0.0";
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>{packageName}</id>
+    <version>{version}</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <license type=""expression"">{licenseExpr}</license>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+                    // Validate the output .nuspec.
+                    Assert.Equal(packageName, nuspecReader.GetId());
+                    Assert.Equal(version, nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal(requireLicenseAcceptance, nuspecReader.GetRequireLicenseAcceptance());
+                    Assert.Equal(LicenseMetadata.DeprecateUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    var licenseMetadata = nuspecReader.GetLicenseMetadata();
+                    Assert.NotNull(licenseMetadata);
+                    Assert.Equal(licenseMetadata.Type, LicenseType.Expression);
+                    Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
+                    Assert.Equal(licenseMetadata.License, licenseExpr);
+                    Assert.Equal(licenseExpr, licenseMetadata.LicenseExpression.ToString());
+                }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackLicense_ComplexExpression_WithNonStandardLicense()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "packageA";
+            var version = "1.0.0";
+            var requireLicenseAcceptance = true;
+            var customLicenseName = "LicenseRef-NikolchesLicense";
+            var licenseExpr = $"MIT OR {customLicenseName}";
+            
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>{packageName}</id>
+    <version>{version}</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <license type=""expression"">{licenseExpr}</license>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+                    // Validate the output .nuspec.
+                    Assert.Equal(packageName, nuspecReader.GetId());
+                    Assert.Equal(version, nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal(requireLicenseAcceptance, nuspecReader.GetRequireLicenseAcceptance());
+                    Assert.Equal(LicenseMetadata.DeprecateUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    var licenseMetadata = nuspecReader.GetLicenseMetadata();
+                    Assert.NotNull(licenseMetadata);
+                    Assert.Equal(licenseMetadata.Type, LicenseType.Expression);
+                    Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
+                    Assert.Equal(licenseMetadata.License, licenseExpr);
+                    Assert.False(licenseMetadata.LicenseExpression.HasOnlyStandardIdentifiers());
+                    Assert.Equal(licenseExpr, licenseMetadata.LicenseExpression.ToString());
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("Cant Parse This")]
+        [InlineData("Tanana AND nana nana")]
+        public void PackCommand_PackLicense_NonParsableExpressionFailsErrorWithCode(string licenseExpr)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "packageA";
+            var version = "1.0.0";
+            var requireLicenseAcceptance = true;
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>{packageName}</id>
+    <version>{version}</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <license type=""expression"">{licenseExpr}</license>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                // This should fail.
+                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+                Assert.False(File.Exists(nupkgPath));
+                Assert.Contains($"An error occured while trying to parse the value '{licenseExpr}' of property 'license' in the manifest file.", r.Item3);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackLicense_NonParsableVersionFailsErrorWithCode()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "packageA";
+            var version = "1.0.0";
+            var expressionVersion = "1.0.0-banana";
+            var requireLicenseAcceptance = true;
+            var licenseExpr = "MIT";
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>{packageName}</id>
+    <version>{version}</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <license type=""expression"" version=""{expressionVersion}"">{licenseExpr}</license>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                // This should fail.
+                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+                Assert.False(File.Exists(nupkgPath));
+                Assert.Contains($"An error occured while trying to parse the value '{licenseExpr}' of property 'license' in the manifest file.", r.Item3);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackLicense_ExpressionVersionHigherFailsWithErrorCode()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "packageA";
+            var version = "1.0.0";
+            var expressionVersion = "2.0.0";
+            var requireLicenseAcceptance = true;
+            var licenseExpr = "MIT";
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>{packageName}</id>
+    <version>{version}</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <license type=""expression"" version=""{expressionVersion}"">{licenseExpr}</license>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                // This should fail.
+                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+                Assert.False(File.Exists(nupkgPath));
+                Assert.Contains($"An error occured while trying to parse the value '{licenseExpr}' of property 'license' in the manifest file.", r.Item3);
+                Assert.Contains("is not supported by this toolset. The highest supported version is", r.Item3);
+            }
+        }
+
+        [Theory]
+        [InlineData("LICENSE")]
+        [InlineData("LICENSE.md")]
+        [InlineData("LICENSE.txt")]
+        public void PackCommand_PackLicense_PackBasicLicenseFile(string licenseFileName)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "packageA";
+            var version = "1.0.0";
+            var requireLicenseAcceptance = true;
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    licenseFileName,
+                    "The best license ever.");
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>{packageName}</id>
+    <version>{version}</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <license type=""file"">{licenseFileName}</license>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+                    // Validate the output .nuspec.
+                    Assert.Equal(packageName, nuspecReader.GetId());
+                    Assert.Equal(version, nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal(requireLicenseAcceptance, nuspecReader.GetRequireLicenseAcceptance());
+                    Assert.Equal(LicenseMetadata.DeprecateUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    var licenseMetadata = nuspecReader.GetLicenseMetadata();
+                    Assert.NotNull(licenseMetadata);
+                    Assert.Equal(licenseMetadata.Type, LicenseType.File);
+                    Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
+                    Assert.Equal(licenseMetadata.License, licenseFileName);
+                    Assert.Null(licenseMetadata.LicenseExpression);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackLicense_PackBasicLicenseFile_FileNotInPackage()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "packageA";
+            var version = "1.0.0";
+            var requireLicenseAcceptance = true;
+            var licenseFileName = "LICENSE.txt";
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                Util.CreateFile(
+                    workingDirectory,
+                    licenseFileName,
+                    "The best license ever.");
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>{packageName}</id>
+    <version>{version}</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <license type=""file"">{licenseFileName}</license>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src=""LICENSE.txt"" target=""licenses""/>
+  </files>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                // This should fail.
+                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+                Assert.False(File.Exists(nupkgPath));
+                // file not found.
+                Assert.Contains("NU5030", r.Item3);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackLicense_PackBasicLicenseFile_FileExtensionNotValid()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "packageA";
+            var version = "1.0.0";
+            var requireLicenseAcceptance = true;
+            var licenseFileName = "LICENSE.badextension";
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                Util.CreateFile(
+                    workingDirectory,
+                    licenseFileName,
+                    "The best license ever.");
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>{packageName}</id>
+    <version>{version}</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <license type=""file"">{licenseFileName}</license>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                // This should fail.
+                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+                Assert.False(File.Exists(nupkgPath));
+                // file not found.
+                Assert.Contains("NU5031", r.Item3);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackLicense_PackBasicLicenseFile_LicenseTypeIsNotValid()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "packageA";
+            var version = "1.0.0";
+            var requireLicenseAcceptance = true;
+            var licenseFileName = "LICENSE.txt";
+            var licenseType = "nonexistentType";
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                Util.CreateFile(
+                    workingDirectory,
+                    licenseFileName,
+                    "The best license ever.");
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>{packageName}</id>
+    <version>{version}</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <license type=""{licenseType}"">{licenseFileName}</license>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                // This should fail.
+                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+                Assert.False(File.Exists(nupkgPath));
+                // file not found.
+                Assert.Contains("Unrecognized license type", r.Item3);
+            }
+        }
+
+        [Theory]
+        [InlineData("file")]
+        [InlineData("expression")]
+        public void PackCommand_PackLicense_PackBasicLicense_LicenseValueIsEmpty(string licenseType)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "packageA";
+            var version = "1.0.0";
+            var requireLicenseAcceptance = true;
+            var licenseFileName = "  ";
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>{packageName}</id>
+    <version>{version}</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <license type=""{licenseType}"">{licenseFileName}</license>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                // This should fail.
+                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+                Assert.False(File.Exists(nupkgPath));
+                // file not found.
+                Assert.Contains("The element 'license' cannot be empty", r.Item3);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackLicense_LicenseUrlIsBeingDeprecated()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "packageA";
+            var version = "1.0.0";
+            var requireLicenseAcceptance = true;
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>{packageName}</id>
+    <version>{version}</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <licenseUrl>https://www.mycoolproject.com/license.txt</licenseUrl>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                Assert.Contains("NU5125", r.Item2);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+                    // Validate the output .nuspec.
+                    Assert.Equal(packageName, nuspecReader.GetId());
+                    Assert.Equal(version, nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal(requireLicenseAcceptance, nuspecReader.GetRequireLicenseAcceptance());
+                    var licenseMetadata = nuspecReader.GetLicenseMetadata();
+                    Assert.Null(nuspecReader.GetLicenseMetadata());
+                    Assert.NotNull(nuspecReader.GetLicenseUrl());
+                }
             }
         }
 

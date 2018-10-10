@@ -12,6 +12,8 @@ using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Versioning;
 using NuGet.Packaging.Core;
 using NuGet.Frameworks;
+using NuGet.Common;
+using NuGet.Packaging.Licenses;
 
 namespace NuGet.Packaging
 {
@@ -51,7 +53,7 @@ namespace NuGet.Packaging
             // now check for required elements, which include <id>, <version>, <authors> and <description>
             foreach (var requiredElement in RequiredElements)
             {
-                if(requiredElement.Equals("authors") && manifestMetadata.PackageTypes.Contains(PackageType.SymbolsPackage))
+                if (requiredElement.Equals("authors") && manifestMetadata.PackageTypes.Contains(PackageType.SymbolsPackage))
                 {
                     continue;
                 }
@@ -143,6 +145,72 @@ namespace NuGet.Packaging
                 case "repository":
                     manifestMetadata.Repository = ReadRepository(element);
                     break;
+                case "license":
+                    manifestMetadata.LicenseMetadata = ReadLicenseMetadata(element);
+                    break;
+                }
+        }
+
+        private static LicenseMetadata ReadLicenseMetadata(XElement licenseNode)
+        {
+            var type = licenseNode.Attribute(NuspecUtility.Type).Value.SafeTrim();
+            var license = licenseNode.Value.SafeTrim();
+            var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value.SafeTrim();
+
+            if (!Enum.TryParse(type, ignoreCase: true, result: out LicenseType licenseType))
+            {
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicense_InvalidLicenseType, type));
+            }
+
+            if (string.IsNullOrWhiteSpace(license))
+            {
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicense_MissingRequiredValue));
+            }
+
+            Version version = null;
+            if (string.IsNullOrWhiteSpace(versionValue))
+            {
+                version = LicenseMetadata.EmptyVersion;
+            }
+            else
+            {
+                if (!Version.TryParse(versionValue, out version))
+                {
+                    throw new PackagingException(NuGetLogCode.NU5034, string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.NuGetLicense_InvalidLicenseExpressionVersion,
+                        versionValue));
+                }
+            }
+
+            switch (licenseType)
+            {
+                case LicenseType.Expression:
+
+                    if (version.CompareTo(LicenseMetadata.CurrentVersion) <= 0)
+                    {
+                        try
+                        {
+                            var expression = NuGetLicenseExpression.Parse(license);
+                            return new LicenseMetadata(licenseType, license, expression, warningsAndErrors: null, version: version);
+                        }
+                        catch (NuGetLicenseExpressionParsingException e)
+                        {
+                            throw new PackagingException(NuGetLogCode.NU5032, e.Message);
+                        }
+
+                    }
+                    throw new PackagingException(NuGetLogCode.NU5034, string.Format(
+                                   CultureInfo.CurrentCulture,
+                                   Strings.InvalidLicenseExppressionVersion_VersionTooHigh,
+                                   versionValue,
+                                   LicenseMetadata.CurrentVersion));
+
+                case LicenseType.File:
+                    return new LicenseMetadata(type: licenseType, license: license, expression: null, warningsAndErrors: null, version: LicenseMetadata.EmptyVersion);
+
+                default:
+                    throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicense_InvalidLicenseType, type));
             }
         }
 
@@ -323,7 +391,7 @@ namespace NuGet.Packaging
                 string exclude = file.GetOptionalAttributeValue("exclude").SafeTrim();
 
                 // Multiple sources can be specified by using semi-colon separated values. 
-                files.AddRange(srcElement.Value.Trim(';').Split(';').Select(s => 
+                files.AddRange(srcElement.Value.Trim(';').Split(';').Select(s =>
                     new ManifestFile
                     {
                         Source = s.SafeTrim(),

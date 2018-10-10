@@ -35,18 +35,27 @@ namespace NuGet.Packaging.Xml
             elem.Add(new XElement(ns + "id", metadata.Id));
             AddElementIfNotNull(elem, ns, "version", metadata.Version?.ToFullString());
             AddElementIfNotNull(elem, ns, "title", metadata.Title);
-            if(!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
+            if (!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
             {
                 AddElementIfNotNull(elem, ns, "authors", metadata.Authors, authors => string.Join(",", authors));
                 AddElementIfNotNull(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
             }
-            
             elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
             if (metadata.DevelopmentDependency)
             {
                 elem.Add(new XElement(ns + "developmentDependency", metadata.DevelopmentDependency));
             }
-            AddElementIfNotNull(elem, ns, "licenseUrl", metadata.LicenseUrl);
+            var licenseUrlToWrite = metadata.LicenseUrl;
+            if (metadata.LicenseMetadata != null)
+            {
+                var licenseElement = GetXElementFromLicenseMetadata(ns, metadata.LicenseMetadata);
+                if (licenseElement != null)
+                {
+                    elem.Add(licenseElement);
+                }
+                licenseUrlToWrite = LicenseMetadata.DeprecateUrl;
+            }
+            AddElementIfNotNull(elem, ns, "licenseUrl", licenseUrlToWrite);
             AddElementIfNotNull(elem, ns, "projectUrl", metadata.ProjectUrl);
             AddElementIfNotNull(elem, ns, "iconUrl", metadata.IconUrl);
             AddElementIfNotNull(elem, ns, "description", metadata.Description);
@@ -234,12 +243,26 @@ namespace NuGet.Packaging.Xml
             return new XElement(ns + Files, attributes);
         }
 
+        private static XElement GetXElementFromLicenseMetadata(XNamespace ns, LicenseMetadata metadata)
+        {
+            var attributes = new List<XAttribute>();
+
+            attributes.Add(GetXAttributeFromNameAndValue(NuspecUtility.Type, metadata.Type.ToString().ToLowerInvariant()));
+            if (!metadata.Version.Equals(LicenseMetadata.EmptyVersion))
+            {
+                attributes.Add(GetXAttributeFromNameAndValue(NuspecUtility.Version, metadata.Version));
+            }
+            attributes = attributes.Where(xAtt => xAtt != null).ToList();
+
+            return new XElement(ns + NuspecUtility.License, metadata.License, attributes);
+        }
+
         private static XElement GetXElementFromManifestRepository(XNamespace ns, RepositoryMetadata repository)
         {
             var attributeList = new List<XAttribute>();
             if (repository != null && !string.IsNullOrEmpty(repository.Type))
             {
-                attributeList.Add(new XAttribute(NuspecUtility.RepositoryType, repository.Type));
+                attributeList.Add(new XAttribute(NuspecUtility.Type, repository.Type));
             }
 
             if (repository != null && !string.IsNullOrEmpty(repository.Url))
@@ -284,7 +307,7 @@ namespace NuGet.Packaging.Xml
             attributes.Add(GetXAttributeFromNameAndValue(NuspecUtility.PackageTypeName, packageType.Name));
             if (packageType.Version != PackageType.EmptyVersion)
             {
-                attributes.Add(GetXAttributeFromNameAndValue(NuspecUtility.PackageTypeVersion, packageType.Version));
+                attributes.Add(GetXAttributeFromNameAndValue(NuspecUtility.Version, packageType.Version));
             }
 
             attributes = attributes.Where(xAtt => xAtt != null).ToList();

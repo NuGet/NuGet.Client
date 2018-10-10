@@ -164,15 +164,18 @@ namespace Dotnet.Integration.Test
             return result;
         }
 
-        internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath = "obj")
+        internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath = "obj", bool validateSuccess = true)
         {
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"pack {projectName}.csproj {args} /p:NuspecOutputPath={nuspecOutputPath}",
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
-            Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.AllOutput}");
-            Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.AllOutput}");
+            if (validateSuccess)
+            {
+                Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.AllOutput}");
+                Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.AllOutput}");
+            }
             return result;
         }
 

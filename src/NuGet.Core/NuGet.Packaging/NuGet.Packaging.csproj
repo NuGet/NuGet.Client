@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -58,6 +58,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Update="PackageCreation\Resources\NuGetResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>NuGetResources.resx</DependentUpon>
+    </Compile>
     <Compile Update="Rules\AnalysisResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -78,9 +83,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="Rules\AnalysisResoruces.resx">
+    <EmbeddedResource Update="PackageCreation\Resources\NuGetResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>AnalysisResources.Designer.cs</LastGenOutput>
+      <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   

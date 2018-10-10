@@ -7,8 +7,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Licenses;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging
@@ -412,11 +414,106 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
+        /// Parses the license object if specified.
+        /// The metadata can be of 2 types, Expression and File.
+        /// The method will not fail if it sees values that invalid (empty/unparseable license etc), but it will rather add validation errors/warnings. 
+        /// </summary>
+        /// <remarks>This method never throws. Bad data is still parsed. </remarks>
+        /// <returns>The licensemetadata if specified</returns>
+        public LicenseMetadata GetLicenseMetadata()
+        {
+            var licenseNode = MetadataNode.Elements(XName.Get(NuspecUtility.License, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
+
+            if (licenseNode != null)
+            {
+                var type = licenseNode.Attribute(NuspecUtility.Type).Value.SafeTrim();
+                var license = licenseNode.Value.SafeTrim();
+                var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value.SafeTrim();
+
+                var isKnownType = Enum.TryParse(type, ignoreCase: true, result: out LicenseType licenseType);
+
+                IList<string> errors = null;
+
+                if (isKnownType)
+                {
+                    Version version = null;
+                    if (versionValue != null)
+                    {
+                        if (!System.Version.TryParse(versionValue, out version))
+                        {
+                            errors = new List<string>
+                            {
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.NuGetLicense_InvalidLicenseExpressionVersion,
+                                    versionValue)
+                            };
+                        }
+                    }
+                    version = version ?? LicenseMetadata.EmptyVersion;
+
+                    if (string.IsNullOrEmpty(license))
+                    {
+                        if (errors == null)
+                        {
+                            errors = new List<string>();
+                        }
+                        errors.Add(
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.NuGetLicense_LicenseElementMissingValue));
+                    }
+                    else
+                    {
+                        if (licenseType == LicenseType.Expression)
+                        {
+                            if (version.CompareTo(LicenseMetadata.CurrentVersion) <= 0)
+                            {
+                                try
+                                {
+                                    var expression = NuGetLicenseExpression.Parse(license);
+                                    return new LicenseMetadata(type: licenseType, license: license, expression: expression, warningsAndErrors: errors, version: version);
+                                }
+                                catch (NuGetLicenseExpressionParsingException e)
+                                {
+                                    if (errors == null)
+                                    {
+                                        errors = new List<string>();
+                                    }
+                                    errors.Add(e.Message);
+                                }
+                                return new LicenseMetadata(type: licenseType, license: license, expression: null, warningsAndErrors: errors, version: version);
+                            }
+                            else
+                            {
+                                if (errors == null)
+                                {
+                                    errors = new List<string>();
+                                }
+
+                                errors.Add(
+                                    string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.NuGetLicense_LicenseExpressionVersionTooHigh,
+                                        version,
+                                        LicenseMetadata.CurrentVersion));
+
+                                return new LicenseMetadata(type: licenseType, license: license, expression: null, warningsAndErrors: errors, version: version);
+                            }
+                        }
+                    }
+                    return new LicenseMetadata(type: licenseType, license: license, expression: null, warningsAndErrors: errors, version: version);
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Require license acceptance when installing the package.
         /// </summary>
         public bool GetRequireLicenseAcceptance()
         {
-            return StringComparer.OrdinalIgnoreCase.Equals(Boolean.TrueString, GetMetadataValue("requireLicenseAcceptance"));
+            return StringComparer.OrdinalIgnoreCase.Equals(bool.TrueString, GetMetadataValue("requireLicenseAcceptance"));
         }
 
         private static bool? AttributeAsNullableBool(XElement element, string attributeName)
@@ -427,11 +524,11 @@ namespace NuGet.Packaging
 
             if (attributeValue != null)
             {
-                if (Boolean.TrueString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
+                if (bool.TrueString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
                 {
                     result = true;
                 }
-                else if (Boolean.FalseString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
+                else if (bool.FalseString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
                 {
                     result = false;
                 }

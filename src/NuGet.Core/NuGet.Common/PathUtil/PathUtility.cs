@@ -467,5 +467,17 @@ namespace NuGet.Common
             }
             return false;
         }
+
+        public static string StripLeadingDirectorySeparators(string filename)
+        {
+            filename = GetPathWithForwardSlashes(filename);
+            var currentDirectoryPath = $"./";
+
+            if (filename.StartsWith(currentDirectoryPath))
+            {
+                filename = filename.Substring(currentDirectoryPath.Length);
+            }
+            return filename.TrimStart(Path.DirectorySeparatorChar);
+        }
     }
 }
