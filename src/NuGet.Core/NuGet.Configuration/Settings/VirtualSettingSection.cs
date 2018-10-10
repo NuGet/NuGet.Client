@@ -38,27 +38,28 @@ namespace NuGet.Configuration
                 {
                     if (CanBeCleared)
                     {
-                        ChildrenSet.Clear();
+                        Children.Clear();
                     }
 
-                    ChildrenSet.Add(item, item);
+                    Children.Add(item);
 
                     continue;
                 }
 
-                if (ChildrenSet.ContainsKey(item))
+                if (TryGetChild(item, out var currentItem))
                 {
                     if (item is UnknownItem unknown)
                     {
-                        unknown.Merge(ChildrenSet[item] as UnknownItem);
+                        unknown.Merge(currentItem as UnknownItem);
                     }
 
-                    item.MergedWith = ChildrenSet[item];
-                    ChildrenSet[item] = item;
+                    item.MergedWith = currentItem;
+                    Children.Remove(currentItem);
+                    Children.Add(item);
                 }
                 else
                 {
-                    ChildrenSet.Add(item, item);
+                    Children.Add(item);
                 }
             }
 
@@ -72,9 +73,9 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(setting));
             }
 
-            if (!ChildrenSet.ContainsKey(setting) && !setting.IsEmpty())
+            if (!Children.Contains(setting) && !setting.IsEmpty())
             {
-                ChildrenSet.Add(setting, setting);
+                Children.Add(setting);
 
                 return true;
             }
@@ -89,7 +90,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(setting));
             }
 
-            if (ChildrenSet.TryGetValue(setting, out var currentSetting))
+            if (TryGetChild(setting, out var currentSetting))
             {
                 Debug.Assert(!currentSetting.IsAbstract());
 
@@ -98,7 +99,7 @@ namespace NuGet.Configuration
                     throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
                 }
 
-                if (ChildrenSet.Remove(currentSetting))
+                if (Children.Remove(currentSetting))
                 {
                     // Remove it from the appropriate config
                     if (currentSetting.Parent != null && currentSetting.Parent != this)
@@ -112,7 +113,7 @@ namespace NuGet.Configuration
                     // Add that back to the set since, we should leave the machine wide setting intact.
                     if (!TryRemoveAllMergedWith(currentSetting, out var undeletedItem))
                     {
-                        ChildrenSet.Add(undeletedItem, undeletedItem);
+                        Children.Add(undeletedItem);
                     }
                 }
             }

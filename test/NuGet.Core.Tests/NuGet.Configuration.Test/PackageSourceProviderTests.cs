@@ -1480,20 +1480,20 @@ namespace NuGet.Configuration.Test
                 // Assert - 1
                 Assert.Collection(sources,
                     source =>
-                        {
-                            Assert.Equal("NuGet.org", source.Name);
-                            Assert.Equal("https://NuGet.org", source.Source);
-                            Assert.True(source.IsEnabled);
-                        },
+                    {
+                        Assert.Equal("test.org", source.Name);
+                        Assert.Equal("https://test.org", source.Source);
+                        Assert.True(source.IsEnabled);
+                    },
                     source =>
-                        {
-                            Assert.Equal("test.org", source.Name);
-                            Assert.Equal("https://test.org", source.Source);
-                            Assert.True(source.IsEnabled);
-                        });
+                    {
+                        Assert.Equal("NuGet.org", source.Name);
+                        Assert.Equal("https://NuGet.org", source.Source);
+                        Assert.True(source.IsEnabled);
+                    });
 
                 // Act - 2
-                sources.First().IsEnabled = false;
+                sources.Last().IsEnabled = false;
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert - 2
@@ -1551,20 +1551,21 @@ namespace NuGet.Configuration.Test
                 // Assert - 1
                 Assert.Collection(sources,
                     source =>
-                        {
-                            Assert.Equal("test.org", source.Name);
-                            Assert.Equal("https://test.org", source.Source);
-                            Assert.True(source.IsEnabled);
-                        },
+                    {
+                        Assert.Equal("NuGet.org", source.Name);
+                        Assert.Equal("https://NuGet.org", source.Source);
+                        Assert.True(source.IsEnabled);
+                    },
                     source =>
-                        {
-                            Assert.Equal("NuGet.org", source.Name);
-                            Assert.Equal("https://NuGet.org", source.Source);
-                            Assert.True(source.IsEnabled);
-                        });
+                    {
+                        Assert.Equal("test.org", source.Name);
+                        Assert.Equal("https://test.org", source.Source);
+                        Assert.True(source.IsEnabled);
+                    }
+                    );
 
                 // Act - 2
-                sources[0].IsEnabled = false;
+                sources[1].IsEnabled = false;
                 sources.Add(new PackageSource("http://newsource", "NewSourceName"));
 
                 packageSourceProvider.SavePackageSources(sources);
@@ -1691,16 +1692,16 @@ namespace NuGet.Configuration.Test
                 var sources = packageSourceProvider.LoadPackageSources().ToList();
 
                 // Act
-                sources[1].IsEnabled = false;
+                sources[2].IsEnabled = false;
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert
                 var newSources = packageSourceProvider.LoadPackageSources().ToList();
-                Assert.True(newSources[0].IsEnabled);
-                Assert.Equal("Microsoft and .NET", newSources[0].Name);
+                Assert.True(newSources[1].IsEnabled);
+                Assert.Equal("Microsoft and .NET", newSources[1].Name);
 
-                Assert.False(newSources[1].IsEnabled);
-                Assert.Equal("test1", newSources[1].Name);
+                Assert.False(newSources[2].IsEnabled);
+                Assert.Equal("test1", newSources[2].Name);
             }
         }
 
