@@ -89,6 +89,42 @@ namespace NuGet.Build.Tasks.Pack {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid metadata. Cannot specify both a License Expression and a License File..
+        /// </summary>
+        internal static string InvalidLicenseCombination {
+            get {
+                return ResourceManager.GetString("InvalidLicenseCombination", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The version string &apos;{0}&apos; is not supported by this toolset. The highest supported version is &apos;{1}&apos;. Either use a lower version or upgrade your toolset..
+        /// </summary>
+        internal static string InvalidLicenseExppressionVersion_VersionTooHigh {
+            get {
+                return ResourceManager.GetString("InvalidLicenseExppressionVersion_VersionTooHigh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license expression &apos;{0}&apos; cannot be parsed succesfully. {1}.
+        /// </summary>
+        internal static string InvalidLicenseExpression {
+            get {
+                return ResourceManager.GetString("InvalidLicenseExpression", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The version string &apos;{0}&apos; for the License Expression is invalid..
+        /// </summary>
+        internal static string InvalidLicenseExpressionVersion {
+            get {
+                return ResourceManager.GetString("InvalidLicenseExpressionVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to MinClientVersion string specified &apos;{0}&apos; is invalid..
         /// </summary>
         internal static string InvalidMinClientVersion {
@@ -148,6 +184,15 @@ namespace NuGet.Build.Tasks.Pack {
         internal static string NoPackItemProvided {
             get {
                 return ResourceManager.GetString("NoPackItemProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The PackageLicenseUrl cannot be used cannot be used in conjunction with the PackageLicenseFile and PackageLicenseExpression..
+        /// </summary>
+        internal static string NuGetLicenses_LicenseUrlCannotBeUsedInConjuctionWithLicense {
+            get {
+                return ResourceManager.GetString("NuGetLicenses_LicenseUrlCannotBeUsedInConjuctionWithLicense", resourceCulture);
             }
         }
     }

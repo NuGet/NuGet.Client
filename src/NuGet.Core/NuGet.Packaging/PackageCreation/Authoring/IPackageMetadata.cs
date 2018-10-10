@@ -54,5 +54,7 @@ namespace NuGet.Packaging
         IEnumerable<PackageType> PackageTypes { get; }
 
         RepositoryMetadata Repository { get; }
+
+        LicenseMetadata LicenseMetadata { get; }
     }
 }

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
-using NuGet.Packaging;
 
 namespace NuGet.Packaging.Core
 {
@@ -19,13 +18,14 @@ namespace NuGet.Packaging.Core
         public static readonly string PackageTypes = "packageTypes";
         public static readonly string PackageType = "packageType";
         public static readonly string PackageTypeName = "name";
-        public static readonly string PackageTypeVersion = "version";
+        public static readonly string Version = "version";
         public static readonly string Serviceable = "serviceable";
         public static readonly string Repository = "repository";
-        public static readonly string RepositoryType = "type";
+        public static readonly string Type = "type";
         public static readonly string RepositoryUrl = "url";
         public static readonly string RepositoryBranch = "branch";
         public static readonly string RepositoryCommit = "commit";
+        public static readonly string License = "license";
 
         /// <summary>
         /// Gets the package types from a .nuspec metadata XML element.
@@ -74,12 +74,12 @@ namespace NuGet.Packaging.Core
                 var name = nameAttribute.Value.Trim();
 
                 // Get the optional package type version.
-                var versionAttribute = node.Attribute(XName.Get(PackageTypeVersion));
+                var versionAttribute = node.Attribute(XName.Get(Version));
                 Version version;
 
                 if (versionAttribute != null)
                 {
-                    if (!Version.TryParse(versionAttribute.Value, out version))
+                    if (!System.Version.TryParse(versionAttribute.Value, out version))
                     {
                         throw new PackagingException(string.Format(
                             CultureInfo.CurrentCulture,

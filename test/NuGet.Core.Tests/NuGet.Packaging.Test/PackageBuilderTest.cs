@@ -2066,7 +2066,28 @@ Description is required.");
 
             // Act
             ExceptionAssert.Throws<Exception>(() => new PackageBuilder(spec.AsStream(), null), @"LicenseUrl cannot be empty.
-Enabling license acceptance requires a license url.");
+Enabling license acceptance requires a license or a licenseUrl to be specified. The licenseUrl will be deprecated, consider using the license metadata.");
+        }
+
+        [Fact]
+        public void PackageBuilderRequireLicenseAcceptedWithLicenseDoesNotThrow()
+        {
+            // Arrange
+            string spec = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<package>
+  <metadata>
+    <id>Artem.XmlProviders</id>
+    <version>2.5</version>
+    <authors>Velio Ivanov</authors>
+    <description>This is the Description (With, Comma-Separated, Words, in Parentheses).</description>
+    <language>en-US</language>
+    <license type=""expression"">MIT</license>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+  </metadata>
+</package>";
+
+            // Act
+            new PackageBuilder(spec.AsStream(), null);
         }
 
         [Fact]

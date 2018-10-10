@@ -249,7 +249,11 @@ Copyright (c) .NET Foundation. All rights reserved.
               TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
               OutputFileNamesWithoutVersion="$(OutputFileNamesWithoutVersion)"
               InstallPackageToOutputPath="$(InstallPackageToOutputPath)"
-              SymbolPackageFormat="$(SymbolPackageFormat)"/>
+              SymbolPackageFormat="$(SymbolPackageFormat)"
+              PackageLicenseFile="$(PackageLicenseFile)"
+              PackageLicenseExpression="$(PackageLicenseExpression)"
+              PackageLicenseExpressionVersion="$(PackageLicenseExpressionVersion)"
+              />
   </Target>
 
   <!--

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -459,6 +459,27 @@ namespace NuGet.Packaging.Test
                 () => Manifest.ReadFrom(content.AsStream(), validateSchema: true));
             Assert.Equal("Nuspec file contains a package type that is missing the name attribute.", exception.Message);
 #endif
+        }
+
+        [Fact]
+        public void RejectsInvalidCombinationOfLicenseUrlAndLicense()
+        {
+            // Arrange
+            string content = @"<?xml version=""1.0""?>
+<package xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
+  <metadata>
+    <id>A</id>
+    <version>1.0</version>
+    <authors>Luan</authors>
+    <description>Descriptions</description>
+    <license type=""expression"">MIT</license>
+    <licenseUrl>https://www.mycoolproject.org/license.txt</licenseUrl>
+  </metadata>
+</package>";
+            // Act & Assert
+            var exception = Assert.Throws<Exception>(
+                () => Manifest.ReadFrom(content.AsStream(), validateSchema: false));
+            Assert.Equal("The licenseUrl and license elements cannot be used together.", exception.Message);
         }
 
         [Fact]
@@ -990,7 +1011,7 @@ namespace NuGet.Packaging.Test
                     packageTypeNode.SetAttributeValue(NuspecUtility.PackageTypeName, packageType.Name);
                     if (packageType.Version != PackageType.EmptyVersion)
                     {
-                        packageTypeNode.SetAttributeValue(NuspecUtility.PackageTypeVersion, packageType.Version);
+                        packageTypeNode.SetAttributeValue(NuspecUtility.Version, packageType.Version);
                     }
 
                     packageTypesNode.Add(packageTypeNode);

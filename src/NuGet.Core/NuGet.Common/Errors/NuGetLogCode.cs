@@ -591,6 +591,36 @@ namespace NuGet.Common
         NU5029 = 5029,
 
         /// <summary>
+        /// Error_Manifest_LicenseFileNotInNupkg
+        /// </summary>
+        NU5030 = 5030,
+
+        /// <summary>
+        /// Error_Manifest_LicenseFileExtensionIsInvalid
+        /// </summary>
+        NU5031 = 5031,
+
+        /// <summary>
+        /// Error_Manifest_LicenseExpressionIsUnparseable
+        /// </summary>
+        NU5032 = 5032,
+
+        /// <summary>
+        /// Error_Manifest_InvalidLicenseMetadata
+        /// </summary>
+        NU5033 = 5033,
+
+        /// <summary>
+        /// Error_Manifest_InvalidLicenseExpressionVersion
+        /// </summary>
+        NU5034 = 5034,
+
+        /// <summary>
+        /// Error_Manifest_LicenseUrlCannotBeUsedWithLicenses
+        /// </summary>
+        NU5035 = 5035,
+
+        /// <summary>
         /// AssemblyOutsideLibWarning
         /// </summary>
         NU5100 = 5100,
@@ -706,9 +736,19 @@ namespace NuGet.Common
         NU5123 = 5123,
 
         /// <summary>
+        /// Warning_UnrecognizedLicenseIdentifier
+        /// </summary>
+        NU5124 = 5124,
+
+        /// <summary>
+        /// LicenseUrlDeprecated
+        /// </summary>
+        NU5125 = 5125,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
-        NU5500 = 5500
+        NU5500 = 5500,
 
     }
 }
