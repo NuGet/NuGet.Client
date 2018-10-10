@@ -16,6 +16,28 @@
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
       <nuget:DateTimeConverter x:Key="DateFormatConverter" />
+      <DataTemplate DataType="{x:Type nuget:LicenseText}">
+        <TextBlock
+            Margin="8,8,0,0"
+            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
+            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}">
+                <Hyperlink
+                    AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
+                    Style="{StaticResource HyperlinkStyle}"
+                    Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+                    NavigateUri="{Binding Link}">
+                    <Run Text="{Binding Text}"></Run>
+                </Hyperlink>
+        </TextBlock>
+      </DataTemplate>
+
+      <DataTemplate DataType="{x:Type nuget:FreeText}">
+        <TextBlock
+            Margin="8,8,0,0"
+            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseOperator}"
+            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseOperator_{0}'}"
+            Text="{Binding Text}" />
+      </DataTemplate>
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
@@ -142,22 +164,14 @@
         x:Name="_licenseLabel"
         AutomationProperties.Name="{Binding Text}"
         Text="{x:Static nuget:Resources.Label_License}"/>
-      <TextBlock
-        Visibility="{Binding Path=LicenseUrl,Converter={StaticResource NullToVisibilityConverter}}"
-        TextWrapping="Wrap"
-        Margin="8,8,0,0"
-        Grid.Row="3"
-        Grid.Column="1"
-        AutomationProperties.LabeledBy="{Binding ElementName=_licenseLabel}">
-        <Hyperlink
-          NavigateUri="{Binding Path=LicenseUrl}"
-          Style="{StaticResource HyperlinkStyle}"
-          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
-          <Run Text="{Binding Path=LicenseUrl}" />
-        </Hyperlink>
-      </TextBlock>
 
-
+      <ItemsControl Grid.Row="3" Grid.Column="1" ItemsSource="{Binding LicenseLinks}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+      </ItemsControl>
 
       <!-- downloads -->
       <TextBlock

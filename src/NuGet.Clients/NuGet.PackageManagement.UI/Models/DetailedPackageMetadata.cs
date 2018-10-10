@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -35,6 +36,7 @@ namespace NuGet.PackageManagement.UI
             HasDependencies = DependencySets.Any(
                 dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
             PrefixReserved = serverData.PrefixReserved;
+            LicenseMetadata = serverData.LicenseMetadata;
         }
 
         public NuGetVersion Version { get; set; }
@@ -66,5 +68,15 @@ namespace NuGet.PackageManagement.UI
 
         // This property is used by data binding to display text "No dependencies"
         public bool HasDependencies { get; set; }
+
+        public LicenseMetadata LicenseMetadata { get; set; }
+
+        public IList<IText> LicenseLinks
+        {
+            get
+            {
+                return PackageLicenseUtilities.GenerateLicenseLinks(this);
+            }
+        }
     }
 }

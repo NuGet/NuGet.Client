@@ -32,12 +32,10 @@ namespace NuGet.Packaging
         /// The license expression, could be null if the version is higher than the current supported or if the expression is not parseable.
         /// </summary>
         public NuGetLicenseExpression LicenseExpression { get; }
-
         /// <summary>
         /// Non-null when the expression parsing yielded some issues. This will be used to display the errors/warnings in the UI. Only populated when the metadata element is returned by the nuspec reader;
         /// </summary>
         public IList<string> WarningsAndErrors { get; }
-
         /// <summary>
         /// LicenseMetadata (expression) version. Never null.
         /// </summary>

@@ -19,6 +19,9 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
+using NuGet.Packaging;
+using NuGet.Packaging.Licenses;
+using System.Collections.Specialized;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -542,11 +545,19 @@ namespace NuGet.PackageManagement.UI
             {
                 var licenseInfoItems = licenseMetadata
                     .Where(p => p.RequireLicenseAcceptance)
-                    .Select(e => new PackageLicenseInfo(e.Identity.Id, e.LicenseUrl, e.Authors));
+                    .Select(e => GeneratePackageLicenseInfo(e));
                 return uiService.PromptForLicenseAcceptance(licenseInfoItems);
             }
 
             return true;
+        }
+
+        private PackageLicenseInfo GeneratePackageLicenseInfo(IPackageSearchMetadata metadata)
+        {
+            return new PackageLicenseInfo(
+                metadata.Identity.Id,
+                PackageLicenseUtilities.GenerateLicenseLinks(metadata),
+                metadata.Authors);
         }
 
         /// <summary>

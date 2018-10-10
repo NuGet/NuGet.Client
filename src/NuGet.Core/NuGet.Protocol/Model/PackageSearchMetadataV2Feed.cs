@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -117,6 +117,8 @@ namespace NuGet.Protocol
             get { return !string.IsNullOrEmpty(_titleValue) ? _titleValue : PackageId; }
             private set { _titleValue = value; }
         }
+
+        public LicenseMetadata LicenseMetadata { get; } = null; // The LicenseExpression is not added to the V2 feed.
 
         public NuGetVersion Version { get; private set; }
 

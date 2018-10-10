@@ -108,6 +108,7 @@
     <Compile Include="Options\PackageSourcesOptionsControl.Designer.cs">
       <DependentUpon>PackageSourcesOptionsControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="PackageLicenseUtilities.cs" />
     <Compile Include="PackageManagerWindowPane.cs" />
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>

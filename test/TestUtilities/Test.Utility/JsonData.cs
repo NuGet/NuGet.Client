@@ -4651,5 +4651,111 @@ namespace Test.Utility
         #endregion
 
 
+        #region PackageARegisteration
+
+        public static string PackageARegistration = @"{{
+  ""@id"": ""https://api.nuget.org/v3/registration0/PackageA/index.json"",
+  ""@type"": [
+    ""catalog:CatalogRoot"",
+    ""PackageRegistration"",
+    ""catalog:Permalink""
+  ],
+  ""commitId"": ""cb8b5792-c3e1-43ff-857f-9e3c1f92b0d1"",
+  ""commitTimeStamp"": ""2015-02-02T23:04:00.0649617Z"",
+  ""count"": 1,
+  ""items"": [
+    {{
+      ""@id"": ""https://api.nuget.org/v3/registration0/PackageA/index.json#page/0.5.0/1.0.0"",
+      ""@type"": ""catalog:CatalogPage"",
+      ""commitId"": ""cb8b5792-c3e1-43ff-857f-9e3c1f92b0d1"",
+      ""commitTimeStamp"": ""2015-02-02T23:04:00.0649617Z"",
+      ""count"": 1,
+      ""items"": [
+        {{
+          ""@id"": ""https://api.nuget.org/v3/registration0/PackageA/1.0.0.json"",
+          ""@type"": ""Package"",
+          ""commitId"": ""cb8b5792-c3e1-43ff-857f-9e3c1f92b0d1"",
+          ""commitTimeStamp"": ""2015-02-02T23:04:00.0649617Z"",
+          ""catalogEntry"": {{
+            ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.02.19.38.08/PackageA.1.0.0.json"",
+            ""@type"": ""PackageDetails"",
+            ""authors"": ""PackageA startup components contributors"",
+            ""description"": ""PackageA IAppBuilder startup interface"",
+            ""iconUrl"": """",
+            ""id"": ""PackageA"",
+            ""language"": """",
+            ""licenseUrl"": ""https://github.com/PackageA-contrib/PackageA-hosting/blob/master/LICENSE.txt"",
+            {0}
+            ""minClientVersion"": """",
+            ""projectUrl"": ""https://github.com/PackageA-contrib/PackageA-hosting/"",
+            ""published"": ""2012-11-13T20:19:39.207Z"",
+            ""requireLicenseAcceptance"": false,
+            ""summary"": """",
+            ""tags"": [
+              ""PackageA""
+            ],
+            ""title"": ""PackageA"",
+            ""version"": ""1.0.0""
+          }},
+          ""packageContent"": ""https://api.nuget.org/packages/PackageA.1.0.0.nupkg"",
+          ""registration"": ""https://api.nuget.org/v3/registration0/PackageA/index.json""
+        }}
+      ],
+      ""parent"": ""https://api.nuget.org/v3/registration0/PackageA/index.json"",
+      ""lower"": ""0.5.0"",
+      ""upper"": ""1.0.0""
+    }}
+  ],
+  ""@context"": {{
+    ""@vocab"": ""http://schema.nuget.org/schema#"",
+    ""catalog"": ""http://schema.nuget.org/catalog#"",
+    ""xsd"": ""http://www.w3.org/2001/XMLSchema#"",
+    ""items"": {{
+      ""@id"": ""catalog:item"",
+      ""@container"": ""@set""
+    }},
+    ""commitTimeStamp"": {{
+      ""@id"": ""catalog:commitTimeStamp"",
+      ""@type"": ""xsd:dateTime""
+    }},
+    ""commitId"": {{
+      ""@id"": ""catalog:commitId""
+    }},
+    ""count"": {{
+      ""@id"": ""catalog:count""
+    }},
+    ""parent"": {{
+      ""@id"": ""catalog:parent"",
+      ""@type"": ""@id""
+    }},
+    ""tags"": {{
+      ""@container"": ""@set"",
+      ""@id"": ""tag""
+    }},
+    ""packageTargetFrameworks"": {{
+      ""@container"": ""@set"",
+      ""@id"": ""packageTargetFramework""
+    }},
+    ""dependencyGroups"": {{
+      ""@container"": ""@set"",
+      ""@id"": ""dependencyGroup""
+    }},
+    ""dependencies"": {{
+      ""@container"": ""@set"",
+      ""@id"": ""dependency""
+    }},
+    ""packageContent"": {{
+      ""@type"": ""@id""
+    }},
+    ""published"": {{
+      ""@type"": ""xsd:dateTime""
+    }},
+    ""registration"": {{
+      ""@type"": ""@id""
+    }}
+  }}
+}}";
+
+        #endregion
     }
 }
