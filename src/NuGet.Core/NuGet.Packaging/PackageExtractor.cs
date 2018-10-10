@@ -1088,7 +1088,7 @@ namespace NuGet.Packaging
                        token,
                        parentId);
 
-                if (verifyResult.Signed)
+                if (verifyResult.Signed || !verifyResult.Valid)
                 {
                     await LogPackageSignatureVerificationAsync(source, package, packageExtractionContext.Logger, verifyResult);
 

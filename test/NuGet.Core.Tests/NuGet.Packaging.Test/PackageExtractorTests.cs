@@ -32,6 +32,7 @@ namespace NuGet.Packaging.Test
 
         private const string _noMatchInRepoAllowList = "The package signature certificate fingerprint does not match any certificate fingerprint in repository allow list.";
         private const string _noClientAllowList = "A list of trusted signers is required by the client but none was found.";
+        private const string _notSignedPackage = "The package is not signed.";
 
         [Fact]
         public async Task InstallFromSourceAsync_StressTestAsync()
@@ -1729,6 +1730,52 @@ namespace NuGet.Packaging.Test
         }
 
 #if IS_DESKTOP
+        [Fact]
+        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_ErrorAsync()
+        {
+            var extractionContext = new PackageExtractionContext(
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                new ClientPolicyContext(SignatureValidationMode.Accept, new List<VerificationAllowListEntry>()),
+                logger: NullLogger.Instance);
+
+            using (var test = new ExtractPackageAsyncTest(extractionContext))
+            {
+                await test.CreatePackageAsync();
+
+                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2>(), allSigned: true);
+                var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
+
+                repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(test.Source, repositorySignatureInfo);
+                test.Context.PackageSaveMode = PackageSaveMode.Defaultv3;
+
+                SignatureException exception = null;
+
+                try
+                {
+                    await PackageExtractor.ExtractPackageAsync(
+                         test.Source,
+                         test.Reader,
+                         test.Resolver,
+                         test.Context,
+                         CancellationToken.None);
+                }
+                catch (SignatureException e)
+                {
+                    exception = e;
+                }
+
+                // Assert
+                exception.Should().NotBeNull();
+                exception.Results.Count.Should().Be(1);
+
+                exception.Results.First().Issues.Count().Should().Be(1);
+                exception.Results.First().Issues.First().Code.Should().Be(NuGetLogCode.NU3004);
+                exception.Results.First().Issues.First().Message.Should()
+                    .Be(SigningTestUtility.AddSignatureLogPrefix(_notSignedPackage, test.Reader.GetIdentity(), test.Source));
+            }
+        }
+
         [CIOnlyTheory]
         [MemberData(nameof(KnownClientPolicyModesList))]
         public async Task ExtractPackageAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertFromRepositoryAllowList_SuccessAsync(SignatureValidationMode clientPolicyMode)
@@ -3107,12 +3154,17 @@ namespace NuGet.Packaging.Test
             internal string Source { get; }
 
             internal ExtractPackageAsyncTest()
-            {
-                Context = new PackageExtractionContext(
+                : this(new PackageExtractionContext(
                         PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         clientPolicyContext: null,
-                        logger: NullLogger.Instance);
+                        logger: NullLogger.Instance))
+            {
+            }
+
+            internal ExtractPackageAsyncTest(PackageExtractionContext extractionContext)
+            {
+                Context = extractionContext ?? throw new ArgumentNullException(nameof(extractionContext));
                 PackageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
                 _testDirectory = TestDirectory.Create();
 
