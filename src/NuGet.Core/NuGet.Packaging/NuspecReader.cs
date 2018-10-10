@@ -413,6 +413,13 @@ namespace NuGet.Packaging
             return repository;
         }
 
+        /// <summary>
+        /// Parses the license object if specified.
+        /// The metadata can be of 2 types, Expression and File.
+        /// The method will not fail if it sees values that invalid (empty/unparseable license etc), but it will rather add validation errors/warnings. 
+        /// </summary>
+        /// <remarks>This method never throws. Bad data is still parsed. </remarks>
+        /// <returns>The licensemetadata if specified</returns>
         public LicenseMetadata GetLicenseMetadata()
         {
             var licenseNode = MetadataNode.Elements(XName.Get(NuspecUtility.License, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
