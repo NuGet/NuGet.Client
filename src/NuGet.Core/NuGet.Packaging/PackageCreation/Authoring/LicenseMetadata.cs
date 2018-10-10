@@ -32,10 +32,12 @@ namespace NuGet.Packaging
         /// The license expression, could be null if the version is higher than the current supported or if the expression is not parseable.
         /// </summary>
         public NuGetLicenseExpression LicenseExpression { get; }
+
         /// <summary>
         /// Non-null when the expression parsing yielded some issues. This will be used to display the errors/warnings in the UI. Only populated when the metadata element is returned by the nuspec reader;
         /// </summary>
         public IList<string> WarningsAndErrors { get; }
+
         /// <summary>
         /// LicenseMetadata (expression) version. Never null.
         /// </summary>
@@ -50,20 +52,30 @@ namespace NuGet.Packaging
             Version = version ?? throw new ArgumentNullException(nameof(version));
         }
 
+
+
         public bool Equals(LicenseMetadata other)
         {
-            return Equals(other);
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (other == null)
+            {
+                return false;
+            }
+
+            return Type == other.Type &&
+                   License.Equals(other.License) &&
+                   Equals(LicenseExpression, other.LicenseExpression) &&
+                   EqualityUtility.SequenceEqualWithNullCheck(WarningsAndErrors, other.WarningsAndErrors) &&
+                   Version == other.Version;
         }
 
         public override bool Equals(object obj)
         {
-            var metadata = obj as LicenseMetadata;
-            return metadata != null &&
-                   Type == metadata.Type &&
-                   License.Equals(metadata.License) &&
-                   Equals(LicenseExpression, metadata.LicenseExpression) &&
-                   EqualityUtility.SequenceEqualWithNullCheck(WarningsAndErrors, metadata.WarningsAndErrors) &&
-                   Version == metadata.Version;
+            return Equals(obj as LicenseMetadata);
         }
 
         public override int GetHashCode()

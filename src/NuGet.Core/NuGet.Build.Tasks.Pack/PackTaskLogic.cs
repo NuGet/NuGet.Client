@@ -260,7 +260,12 @@ namespace NuGet.Build.Tasks.Pack
                         try
                         {
                             var expression = NuGetLicenseExpression.Parse(request.PackageLicenseExpression);
-                            return new LicenseMetadata(type: LicenseType.Expression, license: request.PackageLicenseExpression, expression: expression, warningsAndErrors: null, version: version);
+                            return new LicenseMetadata(
+                                type: LicenseType.Expression,
+                                license: request.PackageLicenseExpression,
+                                expression: expression,
+                                warningsAndErrors: null,
+                                version: version);
                         }
                         catch (NuGetLicenseExpressionParsingException e)
                         {
@@ -282,7 +287,12 @@ namespace NuGet.Build.Tasks.Pack
                 }
                 if (hasLicenseFile)
                 {
-                    return new LicenseMetadata(type: LicenseType.File, license: request.PackageLicenseFile, expression: null, warningsAndErrors: null, version: version);
+                    return new LicenseMetadata(
+                        type: LicenseType.File,
+                        license: request.PackageLicenseFile,
+                        expression: null,
+                        warningsAndErrors: null,
+                        version: version);
                 }
             }
             return null;
