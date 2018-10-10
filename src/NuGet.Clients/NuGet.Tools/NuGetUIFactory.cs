@@ -61,7 +61,8 @@ namespace NuGetVSExtension
         public NuGetUIFactory(
             ICommonOperations commonOperations,
             INuGetUILogger logger,
-            ISourceControlManagerProvider sourceControlManagerProvider)
+            ISourceControlManagerProvider sourceControlManagerProvider,
+            ISettings settings)
         {
             ProjectContext = new NuGetUIProjectContext(
                 commonOperations,
@@ -72,7 +73,7 @@ namespace NuGetVSExtension
             ProjectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
+                    ClientPolicyContext.GetClientPolicy(settings, adapterLogger),
                     adapterLogger);
         }
 
