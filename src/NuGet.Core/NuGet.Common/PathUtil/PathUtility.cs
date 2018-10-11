@@ -477,7 +477,7 @@ namespace NuGet.Common
             {
                 filename = filename.Substring(currentDirectoryPath.Length);
             }
-            return filename.TrimStart(Path.DirectorySeparatorChar);
+            return filename.TrimStart('/');
         }
     }
 }
