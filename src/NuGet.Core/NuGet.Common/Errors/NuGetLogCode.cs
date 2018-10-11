@@ -446,6 +446,11 @@ namespace NuGet.Common
         NU3040 = 3040,
 
         /// <summary>
+        /// Downloading a package with a plugin is not supported since unsigned packages are not allowed.
+        /// </summary>
+        NU3041 = 3041,
+
+        /// <summary>
         /// Undefined Package Error.
         /// </summary>
         NU5000 = 5000,

@@ -244,5 +244,10 @@ namespace NuGet.Packaging
         {
             throw new NotImplementedException();
         }
+
+        public override bool SkipPackageSignatureVerification(SignedPackageVerifierSettings verifierSettings)
+        {
+            return true;
+        }
     }
 }

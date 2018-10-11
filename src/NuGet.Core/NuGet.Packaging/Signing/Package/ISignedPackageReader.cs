@@ -43,5 +43,14 @@ namespace NuGet.Packaging.Signing
         /// <param name="token">Cancellation token</param>
         /// <returns>hash of the unsigned content of the signed package. but return null for unsigned package.</returns>
         string GetContentHashForSignedPackage(CancellationToken token);
+
+        /// <summary>
+        /// Indicates if the signature verification should be skipped. This could be because of it being unsupported or
+        /// because a package should not be verified.
+        /// </summary>
+        /// <param name="verifierSettings">Package verification settings. Include information about what is allowed.</param>
+        /// <throws>SignatureException if the ISignedPackageReader does not support either verifing or skipping the signature verification.</throws>
+        /// <returns>boolean indicating if the verification of the signature should be skipped.</returns>
+        bool SkipPackageSignatureVerification(SignedPackageVerifierSettings verifierSettings);
     }
 }

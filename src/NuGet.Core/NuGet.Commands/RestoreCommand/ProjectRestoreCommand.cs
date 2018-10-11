@@ -310,7 +310,11 @@ namespace NuGet.Commands
                         await _logger.LogAsync(e.AsLogMessage());
                     }
 
-                    await _logger.LogMessagesAsync(e.Results.SelectMany(p => p.Issues));
+                    if (e.Results != null)
+                    {
+                        await _logger.LogMessagesAsync(e.Results.SelectMany(p => p.Issues));
+                    }
+
                     return false;
                 }
             }

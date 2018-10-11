@@ -1051,6 +1051,11 @@ namespace NuGet.Packaging
                     repositorySignatureInfo,
                     clientPolicyContext.VerifierSettings);
 
+                if (signedPackageReader.SkipPackageSignatureVerification(verificationSettings))
+                {
+                    return;
+                }
+
                 IPackageSignatureVerifier signedPackageVerifier = null;
                 if (packageExtractionContext.SignedPackageVerifier != null)
                 {

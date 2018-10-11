@@ -379,6 +379,11 @@ namespace NuGet.Packaging
             }
         }
 
+        public override bool SkipPackageSignatureVerification(SignedPackageVerifierSettings verifierSettings)
+        {
+            return false;
+        }
+
         protected void ThrowIfZipReadStreamIsNull()
         {
             if (ZipReadStream == null)
