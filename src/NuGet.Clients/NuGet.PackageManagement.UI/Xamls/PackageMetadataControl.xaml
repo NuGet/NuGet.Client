@@ -5,7 +5,9 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
-  Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
+  xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+  xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
+Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
   d:DesignHeight="300"
@@ -31,6 +33,19 @@
         </TextBlock>
       </DataTemplate>
 
+      <DataTemplate DataType="{x:Type nuget:WarningText}">
+        <imaging:CrispImage
+                        x:Name="_prefixReservedMark"
+                        Grid.Row="0"
+                        Margin="5,5,0,0"
+                        Width="13"
+                        Height="13"
+                        VerticalAlignment="Top"
+                        Visibility="{Binding Text, Converter={StaticResource NullToVisibilityConverter}}"
+                        ToolTip="{Binding Text}"
+                        Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
+      </DataTemplate>
+      
       <DataTemplate DataType="{x:Type nuget:FreeText}">
         <TextBlock
             Margin="8,8,0,0"

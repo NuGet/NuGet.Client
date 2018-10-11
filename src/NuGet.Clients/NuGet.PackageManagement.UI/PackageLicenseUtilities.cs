@@ -25,44 +25,74 @@ namespace NuGet.PackageManagement.UI
         private static IList<IText> GenerateLicenseLinks(LicenseMetadata licenseMetadata, Uri licenseUrl)
         {
             IList<IText> list = new List<IText>();
-            if (licenseMetadata != null && licenseMetadata.Type == LicenseType.Expression)
+            if (licenseMetadata != null)
             {
                 list = GenerateLicenseLinks(licenseMetadata);
             }
             else
             {
-                list.Add(new LicenseText(Resources.Text_LicenseAcceptance, licenseUrl));
+                if (licenseUrl != null)
+                {
+                    list.Add(new LicenseText(Resources.Text_LicenseAcceptance, licenseUrl));
+                }
             }
             return list;
         }
 
-        // Internal for testing purposes.
+        // Internal for testing purposes. // TODO NK - Add tests for file. 
         internal static IList<IText> GenerateLicenseLinks(LicenseMetadata metadata)
         {
+
             var list = new List<IText>();
-
-            var identifiers = new List<string>();
-            GetLicenseIdentifiers(metadata.LicenseExpression, identifiers);
-
-            var licenseToBeProcessed = metadata.License;
-
-            foreach (var identifier in identifiers)
+            switch (metadata.Type)
             {
-                var licenseStart = licenseToBeProcessed.IndexOf(identifier);
-                if (licenseStart != 0)
-                {
-                    list.Add(new FreeText(licenseToBeProcessed.Substring(0, licenseStart)));
-                }
-                var license = licenseToBeProcessed.Substring(licenseStart, identifier.Length);
-                list.Add(new LicenseText(license, new Uri($"https://spdx.org/licenses/{license}.html")));
+                case LicenseType.Expression:
 
-                licenseToBeProcessed = licenseToBeProcessed.Substring(licenseStart + identifier.Length);
+                    if (metadata.LicenseExpression != null)
+                    {
+                        var identifiers = new List<string>();
+                        GetLicenseIdentifiers(metadata.LicenseExpression, identifiers);
+
+                        var licenseToBeProcessed = metadata.License;
+
+                        foreach (var identifier in identifiers)
+                        {
+                            var licenseStart = licenseToBeProcessed.IndexOf(identifier);
+                            if (licenseStart != 0)
+                            {
+                                list.Add(new FreeText(licenseToBeProcessed.Substring(0, licenseStart)));
+                            }
+                            var license = licenseToBeProcessed.Substring(licenseStart, identifier.Length);
+                            list.Add(new LicenseText(license, new Uri($"https://spdx.org/licenses/{license}.html")));
+
+                            licenseToBeProcessed = licenseToBeProcessed.Substring(licenseStart + identifier.Length);
+                        }
+
+                        if (licenseToBeProcessed.Length != 0)
+                        {
+                            list.Add(new FreeText(licenseToBeProcessed));
+                        }
+                    }
+                    else
+                    {
+                        list.Add(new FreeText(metadata.License));
+                    }
+
+                    break;
+                case LicenseType.File:
+
+                    list.Add(new FreeText($"License '{metadata.License}' is embedded in the package."));
+                    break;
+
+                default:
+                    break;
             }
 
-            if (licenseToBeProcessed.Length != 0)
+            if (metadata.WarningsAndErrors != null)
             {
-                list.Add(new FreeText(licenseToBeProcessed));
+                list.Add(new WarningText(string.Join(Environment.NewLine, metadata.WarningsAndErrors)));
             }
+
             return list;
         }
 

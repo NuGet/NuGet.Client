@@ -47,6 +47,17 @@ namespace NuGet.PackageManagement.UI
         public string Text { get; }
     }
 
+    public class WarningText : IText
+    {
+        public WarningText(string text)
+        {
+            Text = text;
+        }
+
+        public string Text { get; }
+    }
+
+
     public interface IText
     {
         string Text { get; }

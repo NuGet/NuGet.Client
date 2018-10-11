@@ -471,7 +471,30 @@ namespace NuGet.Packaging
                             {
                                 try
                                 {
+                                    IList<string> invalidLicenseIdentifiers = null;
                                     var expression = NuGetLicenseExpression.Parse(license);
+                                    Action<NuGetLicense> licenseProcessor = delegate (NuGetLicense nugetLicense)
+                                    {
+                                        if (nugetLicense.IsStandardLicense)
+                                        {
+                                            if (invalidLicenseIdentifiers == null)
+                                            {
+                                                invalidLicenseIdentifiers = new List<string>();
+                                            }
+                                            invalidLicenseIdentifiers.Add(nugetLicense.Identifier);
+                                        }
+                                    };
+                                    expression.OnEachLeafNode(licenseProcessor, null);
+
+                                    if(invalidLicenseIdentifiers != null) { 
+                                        var message = "The license identifier(s) '{0}' is(are) not recognized by the current toolset.";
+                                        if (errors == null)
+                                        {
+                                            errors = new List<string>();
+                                        }
+                                        errors.Add(string.Format(CultureInfo.CurrentCulture, message, string.Join(", ", invalidLicenseIdentifiers)));
+                                    }
+
                                     return new LicenseMetadata(type: licenseType, license: license, expression: expression, warningsAndErrors: errors, version: version);
                                 }
                                 catch (NuGetLicenseExpressionParsingException e)
