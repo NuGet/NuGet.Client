@@ -33,7 +33,5 @@
       <Source Uri="$(Resources)/Xamls/MigratorHelpIcon.xaml" />
     </Image>
   </Images>
-  
   <ImageLists />
-  
 </ImageManifest>
