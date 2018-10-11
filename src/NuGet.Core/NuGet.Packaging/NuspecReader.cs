@@ -487,12 +487,11 @@ namespace NuGet.Packaging
                                     expression.OnEachLeafNode(licenseProcessor, null);
 
                                     if(invalidLicenseIdentifiers != null) { // TODO NK - Do it here and in the PackageSearchMetadata
-                                        var message = "The license identifier(s) '{0}' is(are) not recognized by the current toolset.";
                                         if (errors == null)
                                         {
                                             errors = new List<string>();
                                         }
-                                        errors.Add(string.Format(CultureInfo.CurrentCulture, message, string.Join(", ", invalidLicenseIdentifiers)));
+                                        errors.Add(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_NonStandardIdentifier, string.Join(", ", invalidLicenseIdentifiers)));
                                     }
 
                                     return new LicenseMetadata(type: licenseType, license: license, expression: expression, warningsAndErrors: errors, version: version);
