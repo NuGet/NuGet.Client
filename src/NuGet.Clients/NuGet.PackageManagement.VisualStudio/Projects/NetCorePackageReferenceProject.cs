@@ -85,6 +85,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return await GetAssetsFilePathAsync(shouldThrow: false);
         }
 
+        public override Task AddFileToProjectAsync(string filePath)
+        {
+            return Task.CompletedTask;
+        }
+
         private Task<string> GetAssetsFilePathAsync(bool shouldThrow)
         {
             var packageSpec = GetPackageSpec();
