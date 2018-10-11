@@ -475,7 +475,7 @@ namespace NuGet.Packaging
                                     var expression = NuGetLicenseExpression.Parse(license);
                                     Action<NuGetLicense> licenseProcessor = delegate (NuGetLicense nugetLicense)
                                     {
-                                        if (nugetLicense.IsStandardLicense)
+                                        if (!nugetLicense.IsStandardLicense)
                                         {
                                             if (invalidLicenseIdentifiers == null)
                                             {
@@ -486,7 +486,7 @@ namespace NuGet.Packaging
                                     };
                                     expression.OnEachLeafNode(licenseProcessor, null);
 
-                                    if(invalidLicenseIdentifiers != null) { 
+                                    if(invalidLicenseIdentifiers != null) { // TODO NK - Do it here and in the PackageSearchMetadata
                                         var message = "The license identifier(s) '{0}' is(are) not recognized by the current toolset.";
                                         if (errors == null)
                                         {

@@ -35,12 +35,10 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
 
       <DataTemplate DataType="{x:Type nuget:WarningText}">
         <imaging:CrispImage
-                        x:Name="_prefixReservedMark"
-                        Grid.Row="0"
-                        Margin="5,5,0,0"
+                        x:Name="_licenseWarning"
+                        Margin="8,8,0,0"
                         Width="13"
                         Height="13"
-                        VerticalAlignment="Top"
                         Visibility="{Binding Text, Converter={StaticResource NullToVisibilityConverter}}"
                         ToolTip="{Binding Text}"
                         Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />

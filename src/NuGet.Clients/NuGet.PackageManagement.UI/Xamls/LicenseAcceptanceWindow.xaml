@@ -6,6 +6,7 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"  
+  xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
   x:Name="_self"
   MinWidth="450"
   MinHeight="450"
@@ -48,16 +49,14 @@
       </DataTemplate>
 
       <DataTemplate DataType="{x:Type nuget:WarningText}">
-        <imaging:CrispImage
-                        x:Name="_prefixReservedMark"
-                        Grid.Row="0"
-                        Margin="5,5,0,0"
+          <imaging:CrispImage
+                        x:Name="_licenseWarning"
+                        Margin="5,0,5,5"
                         Width="13"
                         Height="13"
-                        VerticalAlignment="Top"
                         Visibility="{Binding Text, Converter={StaticResource NullToVisibilityConverter}}"
                         ToolTip="{Binding Text}"
-                        Moniker="{x:Static nuget:PackageIconMonikers.PrefixReservedIndicator}" />
+                        Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
       </DataTemplate>
 
       <DataTemplate x:Key="LicenseItemTemplate">
