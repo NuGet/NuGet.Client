@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             // Setup
             var expression = NuGetLicenseExpression.Parse(license);
-            IList<string> warnings = null;
+            IReadOnlyList<string> warnings = null;
             if (hasWarnings)
             {
                 warnings = new List<string> { "Random warning" };

@@ -9,7 +9,7 @@ namespace NuGet.PackageManagement.UI
     {
         public PackageLicenseInfo(
             string id,
-            IList<IText> license,
+            IReadOnlyList<IText> license,
             string authors)
         {
             Id = id;
@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI
 
         public string Id { get; }
 
-        public IList<IText> License { get; }
+        public IReadOnlyList<IText> License { get; }
 
         public string Authors { get; }
     }
