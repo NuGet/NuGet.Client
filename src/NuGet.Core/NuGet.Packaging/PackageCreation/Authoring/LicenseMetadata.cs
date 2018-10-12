@@ -36,14 +36,14 @@ namespace NuGet.Packaging
         /// <summary>
         /// Non-null when the expression parsing yielded some issues. This will be used to display the errors/warnings in the UI. Only populated when the metadata element is returned by the nuspec reader;
         /// </summary>
-        public IList<string> WarningsAndErrors { get; }
+        public IReadOnlyList<string> WarningsAndErrors { get; }
 
         /// <summary>
         /// LicenseMetadata (expression) version. Never null.
         /// </summary>
         public Version Version { get; }
         
-        public LicenseMetadata(LicenseType type, string license, NuGetLicenseExpression expression, IList<string> warningsAndErrors, Version version)
+        public LicenseMetadata(LicenseType type, string license, NuGetLicenseExpression expression, IReadOnlyList<string> warningsAndErrors, Version version)
         {
             Type = type;
             License = license ?? throw new ArgumentNullException(nameof(license));

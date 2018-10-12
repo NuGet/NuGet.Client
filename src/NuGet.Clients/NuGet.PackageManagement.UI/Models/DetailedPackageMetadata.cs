@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -71,7 +72,7 @@ namespace NuGet.PackageManagement.UI
 
         public LicenseMetadata LicenseMetadata { get; set; }
 
-        public IList<IText> LicenseLinks
+        public IReadOnlyList<IText> LicenseLinks
         {
             get
             {

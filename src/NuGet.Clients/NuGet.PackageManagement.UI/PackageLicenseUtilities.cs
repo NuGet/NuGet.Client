@@ -12,35 +12,34 @@ namespace NuGet.PackageManagement.UI
 {
     internal class PackageLicenseUtilities
     {
+        private static string LicenseFormat = "https://licenses.nuget.org/licenses/{0}";
 
-        internal static IList<IText> GenerateLicenseLinks(DetailedPackageMetadata metadata)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(DetailedPackageMetadata metadata)
         {
             return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl);
         }
 
-        internal static IList<IText> GenerateLicenseLinks(IPackageSearchMetadata metadata)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(IPackageSearchMetadata metadata)
         {
             return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl);
         }
 
-        private static IList<IText> GenerateLicenseLinks(LicenseMetadata licenseMetadata, Uri licenseUrl)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata licenseMetadata, Uri licenseUrl)
         {
-            IList<IText> list = new List<IText>();
             if (licenseMetadata != null)
             {
-                list = GenerateLicenseLinks(licenseMetadata);
+                return GenerateLicenseLinks(licenseMetadata);
             }
             else if (licenseUrl != null)
             {
-                list.Add(new LicenseText(Resources.Text_LicenseAcceptance, licenseUrl));
+                return new List<IText>() { new LicenseText(Resources.Text_LicenseAcceptance, licenseUrl) };
             }
-            return list;
+            return new List<IText>();
         }
 
         // Internal for testing purposes.
-        internal static IList<IText> GenerateLicenseLinks(LicenseMetadata metadata)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata metadata)
         {
-
             var list = new List<IText>();
             switch (metadata.Type)
             {
@@ -61,8 +60,7 @@ namespace NuGet.PackageManagement.UI
                                 list.Add(new FreeText(licenseToBeProcessed.Substring(0, licenseStart)));
                             }
                             var license = licenseToBeProcessed.Substring(licenseStart, identifier.Length);
-                            list.Add(new LicenseText(license, new Uri($"https://spdx.org/licenses/{license}.html")));
-
+                            list.Add(new LicenseText(license, new Uri(string.Format(LicenseFormat, license))));
                             licenseToBeProcessed = licenseToBeProcessed.Substring(licenseStart + identifier.Length);
                         }
 

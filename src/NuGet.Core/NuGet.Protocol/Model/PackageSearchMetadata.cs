@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
@@ -123,7 +122,7 @@ namespace NuGet.Protocol
                 System.Version.TryParse(LicenseExpressionVersion, out var effectiveVersion);
                 effectiveVersion = effectiveVersion ?? LicenseMetadata.EmptyVersion;
 
-                IList<string> errors = null;
+                List<string> errors = null;
                 NuGetLicenseExpression parsedExpression = null;
 
                 if (effectiveVersion.CompareTo(LicenseMetadata.CurrentVersion) <= 0)
@@ -132,21 +131,7 @@ namespace NuGet.Protocol
                     {
                         parsedExpression = NuGetLicenseExpression.Parse(LicenseExpression);
 
-                        IList<string> invalidLicenseIdentifiers = null;
-
-                        Action<NuGetLicense> licenseProcessor = delegate (NuGetLicense nugetLicense)
-                        {
-                            if (!nugetLicense.IsStandardLicense)
-                            {
-                                if (invalidLicenseIdentifiers == null)
-                                {
-                                    invalidLicenseIdentifiers = new List<string>();
-                                }
-                                invalidLicenseIdentifiers.Add(nugetLicense.Identifier);
-                            }
-                        };
-                        parsedExpression.OnEachLeafNode(licenseProcessor, null);
-
+                        var invalidLicenseIdentifiers = GetNonStandardLicenseIdentifiers(parsedExpression);
                         if (invalidLicenseIdentifiers != null)
                         {
                             if (errors == null)
@@ -185,6 +170,24 @@ namespace NuGet.Protocol
             }
         }
 
+        private static IList<string> GetNonStandardLicenseIdentifiers(NuGetLicenseExpression expression)
+        {
+            IList<string> invalidLicenseIdentifiers = null;
+            Action<NuGetLicense> licenseProcessor = delegate (NuGetLicense nugetLicense)
+            {
+                if (!nugetLicense.IsStandardLicense)
+                {
+                    if (invalidLicenseIdentifiers == null)
+                    {
+                        invalidLicenseIdentifiers = new List<string>();
+                    }
+                    invalidLicenseIdentifiers.Add(nugetLicense.Identifier);
+                }
+            };
+            expression.OnEachLeafNode(licenseProcessor, null);
+
+            return invalidLicenseIdentifiers;
+        }
 
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions);
 

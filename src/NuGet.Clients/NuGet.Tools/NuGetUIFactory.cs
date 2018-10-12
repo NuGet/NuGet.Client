@@ -61,8 +61,7 @@ namespace NuGetVSExtension
         public NuGetUIFactory(
             ICommonOperations commonOperations,
             INuGetUILogger logger,
-            ISourceControlManagerProvider sourceControlManagerProvider,
-            ISettings settings)
+            ISourceControlManagerProvider sourceControlManagerProvider)
         {
             ProjectContext = new NuGetUIProjectContext(
                 commonOperations,
