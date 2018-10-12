@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
 using NuGet.Protocol.Core.Types;
@@ -29,17 +30,14 @@ namespace NuGet.PackageManagement.UI
             {
                 list = GenerateLicenseLinks(licenseMetadata);
             }
-            else
+            else if (licenseUrl != null)
             {
-                if (licenseUrl != null)
-                {
-                    list.Add(new LicenseText(Resources.Text_LicenseAcceptance, licenseUrl));
-                }
+                list.Add(new LicenseText(Resources.Text_LicenseAcceptance, licenseUrl));
             }
             return list;
         }
 
-        // Internal for testing purposes. // TODO NK - Add tests for file. 
+        // Internal for testing purposes.
         internal static IList<IText> GenerateLicenseLinks(LicenseMetadata metadata)
         {
 
@@ -51,7 +49,7 @@ namespace NuGet.PackageManagement.UI
                     if (metadata.LicenseExpression != null)
                     {
                         var identifiers = new List<string>();
-                        GetLicenseIdentifiers(metadata.LicenseExpression, identifiers);
+                        PopulateLicenseIdentifiers(metadata.LicenseExpression, identifiers);
 
                         var licenseToBeProcessed = metadata.License;
 
@@ -81,7 +79,7 @@ namespace NuGet.PackageManagement.UI
                     break;
                 case LicenseType.File:
 
-                    list.Add(new FreeText($"License '{metadata.License}' is embedded in the package."));
+                    list.Add(new FreeText(string.Format(CultureInfo.CurrentCulture, Resources.License_FileEmbeddedInPackage, metadata.License)));
                     break;
 
                 default:
@@ -96,7 +94,7 @@ namespace NuGet.PackageManagement.UI
             return list;
         }
 
-        private static void GetLicenseIdentifiers(NuGetLicenseExpression expression, IList<string> identifiers)
+        private static void PopulateLicenseIdentifiers(NuGetLicenseExpression expression, ref IList<string> identifiers)
         {
             switch (expression.Type)
             {
@@ -111,8 +109,8 @@ namespace NuGet.PackageManagement.UI
                     {
                         case LicenseOperatorType.LogicalOperator:
                             var logicalOperator = (LogicalOperator)licenseOperator;
-                            GetLicenseIdentifiers(logicalOperator.Left, identifiers);
-                            GetLicenseIdentifiers(logicalOperator.Right, identifiers);
+                            PopulateLicenseIdentifiers(logicalOperator.Left, ref identifiers);
+                            PopulateLicenseIdentifiers(logicalOperator.Right, ref identifiers);
                             break;
 
                         case LicenseOperatorType.WithOperator:

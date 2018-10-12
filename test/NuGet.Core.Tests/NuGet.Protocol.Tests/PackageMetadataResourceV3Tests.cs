@@ -182,6 +182,7 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData("MIT OR Apache-2.0 BLA", null, 1, "Invalid element 'BLA'.")]
         [InlineData("MIT OR Apache-2.0", "15.0", 1, "The license version string '15.0' is higher than the one supported by this toolset")]
+        [InlineData("CoolLicense OR CoolerLicense", null, 1, "The license identifier(s) CoolLicense, CoolerLicense is(are) not recognized by the current toolset.")]
         public async Task PackageMetadataResourceV3_GetMetadataAsync_ParsesLicenseExpressionWithWarnings(string expression, string version, int errorCount, string errorMessage)
         {
 
@@ -223,7 +224,7 @@ namespace NuGet.Protocol.Tests
                 }
 
                 Assert.Equal(errorCount, result.LicenseMetadata.WarningsAndErrors.Count);
-                Assert.Contains(result.LicenseMetadata.WarningsAndErrors[0], errorMessage);
+                Assert.Contains(errorMessage, result.LicenseMetadata.WarningsAndErrors[0]);
             }
         }
     }

@@ -15,13 +15,9 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
-using NuGet.Packaging;
-using NuGet.Packaging.Licenses;
-using System.Collections.Specialized;
 
 namespace NuGet.PackageManagement.UI
 {

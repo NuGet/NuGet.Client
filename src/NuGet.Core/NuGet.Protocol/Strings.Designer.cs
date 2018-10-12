@@ -485,6 +485,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The license identifier(s) {0} is(are) not recognized by the current toolset..
+        /// </summary>
+        internal static string NuGetLicenseExpression_NonStandardIdentifier {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_NonStandardIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot create a NuGet Repository from the Aggregate Source.
         /// </summary>
         internal static string NuGetRepository_CannotCreateAggregateRepo {

@@ -473,6 +473,7 @@ namespace NuGet.Packaging
                                 {
                                     IList<string> invalidLicenseIdentifiers = null;
                                     var expression = NuGetLicenseExpression.Parse(license);
+
                                     Action<NuGetLicense> licenseProcessor = delegate (NuGetLicense nugetLicense)
                                     {
                                         if (!nugetLicense.IsStandardLicense)
@@ -486,7 +487,8 @@ namespace NuGet.Packaging
                                     };
                                     expression.OnEachLeafNode(licenseProcessor, null);
 
-                                    if(invalidLicenseIdentifiers != null) { // TODO NK - Do it here and in the PackageSearchMetadata
+                                    if (invalidLicenseIdentifiers != null)
+                                    {
                                         if (errors == null)
                                         {
                                             errors = new List<string>();

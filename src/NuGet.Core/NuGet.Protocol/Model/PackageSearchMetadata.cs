@@ -131,6 +131,30 @@ namespace NuGet.Protocol
                     try
                     {
                         parsedExpression = NuGetLicenseExpression.Parse(LicenseExpression);
+
+                        IList<string> invalidLicenseIdentifiers = null;
+
+                        Action<NuGetLicense> licenseProcessor = delegate (NuGetLicense nugetLicense)
+                        {
+                            if (!nugetLicense.IsStandardLicense)
+                            {
+                                if (invalidLicenseIdentifiers == null)
+                                {
+                                    invalidLicenseIdentifiers = new List<string>();
+                                }
+                                invalidLicenseIdentifiers.Add(nugetLicense.Identifier);
+                            }
+                        };
+                        parsedExpression.OnEachLeafNode(licenseProcessor, null);
+
+                        if (invalidLicenseIdentifiers != null)
+                        {
+                            if (errors == null)
+                            {
+                                errors = new List<string>();
+                            }
+                            errors.Add(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_NonStandardIdentifier, string.Join(", ", invalidLicenseIdentifiers)));
+                        }
                     }
                     catch (NuGetLicenseExpressionParsingException e)
                     {

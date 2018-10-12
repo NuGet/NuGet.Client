@@ -11,20 +11,25 @@ namespace NuGet.PackageManagement.UI.Test
 {
     public class PackageLicenseUtilitiesTests
     {
-        // TODO NK - Add warnings for the scenarios in which a license is unknown.
         [Theory]
-        [InlineData("MIT", 1, new string[] { "MIT" })]
-        [InlineData("(MIT)", 3, new string[] { "MIT" })]
-        [InlineData("MIT OR Apache-2.0", 3, new string[] { "MIT", "Apache-2.0" })]
-        [InlineData("(MIT OR Apache-2.0)", 5, new string[] { "MIT", "Apache-2.0" })]
-        [InlineData("(MIT OR RandomLicenseRefStillGetsLinkGenerated)", 5, new string[] { "MIT", "RandomLicenseRefStillGetsLinkGenerated" })]
-        [InlineData("((MIT WITH 389-exception) AND Apache-2.0)", 7, new string[] { "MIT", "389-exception", "Apache-2.0" })]
-        [InlineData("((( (AMDPLPA) AND BSD-2-Clause)))", 5, new string[] { "AMDPLPA", "BSD-2-Clause" })]
-        public void PackageLicenseUtility_GeneratesBasicLink(string license, int partsCount, string[] linkedText)
+        [InlineData("MIT", 1, new string[] { "MIT" }, false)]
+        [InlineData("(MIT)", 3, new string[] { "MIT" }, false)]
+        [InlineData("MIT OR Apache-2.0", 3, new string[] { "MIT", "Apache-2.0" }, false)]
+        [InlineData("(MIT OR Apache-2.0)", 5, new string[] { "MIT", "Apache-2.0" }, false)]
+        [InlineData("(MIT OR RandomLicenseRefStillGetsLinkGenerated)", 6, new string[] { "MIT", "RandomLicenseRefStillGetsLinkGenerated" }, true)]
+        [InlineData("((MIT WITH 389-exception) AND Apache-2.0)", 7, new string[] { "MIT", "389-exception", "Apache-2.0" }, false)]
+        [InlineData("((( (AMDPLPA) AND BSD-2-Clause)))", 5, new string[] { "AMDPLPA", "BSD-2-Clause" }, false)]
+        public void PackageLicenseUtility_GeneratesBasicLink(string license, int partsCount, string[] linkedText, bool hasWarnings)
         {
             // Setup
             var expression = NuGetLicenseExpression.Parse(license);
-            var licenseData = new LicenseMetadata(LicenseType.Expression, license, expression, null, LicenseMetadata.EmptyVersion);
+            IList<string> warnings = null;
+            if (hasWarnings)
+            {
+                warnings = new List<string> { "Random warning" };
+            }
+
+            var licenseData = new LicenseMetadata(LicenseType.Expression, license, expression, warnings, LicenseMetadata.EmptyVersion);
 
             // Act
             var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData);
@@ -45,7 +50,11 @@ namespace NuGet.PackageManagement.UI.Test
             {
                 Assert.Equal(linkedText[i], partsWithLinks[i].Text);
             }
-            Assert.Equal(license, string.Join("", links.Select(e => e.Text)));
+            Assert.Equal(license, string.Join("", links.Where(e => !(e is WarningText)).Select(e => e.Text)));
+            if (hasWarnings)
+            {
+                Assert.NotNull(links[links.Count - 1] as WarningText);
+            }
         }
 
         [Fact]
@@ -53,11 +62,28 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var license = "Not so random unparsed license";
             // Setup
-            var licenseData = new LicenseMetadata(LicenseType.Expression, license, null, null, new System.Version(LicenseMetadata.CurrentVersion.Major + 1, 0, 0));
+            var licenseData = new LicenseMetadata(LicenseType.Expression, license, null, new List<string> { "bad license warning"}, new System.Version(LicenseMetadata.CurrentVersion.Major + 1, 0, 0));
 
             // Act
-            // TODO NK - The link generated here should contain a warning icon.
             var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData);
+
+            Assert.True(links[links.Count - 1] is WarningText);
+            Assert.Empty(links.Where(e => e is LicenseText));
+        }
+
+        [Fact]
+        public void PackageLicenseUtility_GeneratesLinkForFiles()
+        {
+            // Setup
+            var licenseData = new LicenseMetadata(LicenseType.File, "License.txt", null, null, LicenseMetadata.CurrentVersion);
+
+            // Act
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData);
+
+            Assert.Equal(1, links.Count);
+            Assert.True(links[0] is FreeText);
+            Assert.Equal(string.Format(Resources.License_FileEmbeddedInPackage, "License.txt"), links[0].Text);
+            Assert.Empty(links.Where(e => e is LicenseText));
         }
     }
 }
