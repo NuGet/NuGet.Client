@@ -82,7 +82,7 @@ namespace NuGet.CommandLine
             Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe"), version); // SemanticVersion is the problem
 
             // Check to see if an update is needed
-            if (package == null || version >= package.Version)
+            if (package == null)
             {
                 Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandNuGetUpToDate"));
             }
