@@ -544,7 +544,7 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Create packages with PackageBuilder, this includes OPC support.
         /// </summary>
-        public static void CreateOPCPackages(List<SimpleTestPackageContext> packages, string repositoryPath)
+        public static void CreateOPCPackages(List<SimpleTestPackageContext> packages, string repositoryPath, bool developmentDependency = false)
         {
             foreach (var package in packages)
             {
@@ -553,6 +553,7 @@ namespace NuGet.Test.Utility
                     Id = package.Id,
                     Version = NuGetVersion.Parse(package.Version),
                     Description = "Description.",
+                    DevelopmentDependency = developmentDependency
                 };
 
                 builder.Authors.Add("testAuthor");
