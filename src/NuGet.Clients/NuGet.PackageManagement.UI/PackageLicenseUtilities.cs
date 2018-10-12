@@ -48,8 +48,8 @@ namespace NuGet.PackageManagement.UI
 
                     if (metadata.LicenseExpression != null)
                     {
-                        var identifiers = new List<string>();
-                        PopulateLicenseIdentifiers(metadata.LicenseExpression, identifiers);
+                        IList<string> identifiers = new List<string>();
+                        PopulateLicenseIdentifiers(metadata.LicenseExpression, ref identifiers);
 
                         var licenseToBeProcessed = metadata.License;
 
