@@ -67,13 +67,6 @@ namespace NuGetVSExtension
                 commonOperations,
                 logger,
                 sourceControlManagerProvider);
-
-            var adapterLogger = new LoggerAdapter(ProjectContext);
-            ProjectContext.PackageExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv2,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
-                    adapterLogger);
         }
 
         /// <summary>
@@ -82,6 +75,14 @@ namespace NuGetVSExtension
         public INuGetUI Create(params NuGetProject[] projects)
         {
             var uiContext = CreateUIContext(projects);
+
+            var adapterLogger = new LoggerAdapter(ProjectContext);
+            ProjectContext.PackageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
+                    adapterLogger);
+
             return new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLogger);
         }
 
