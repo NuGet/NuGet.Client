@@ -17,6 +17,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
@@ -248,7 +249,7 @@ namespace NuGet.SolutionRestoreManager
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
 
             var sources = _sourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().ToList();
-            var sourceEvent = SourceTelemetry.GetSourceSummaryEvent(_nuGetProjectContext.OperationId, sources);
+            var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, sources);
 
             TelemetryActivity.EmitTelemetryEvent(sourceEvent);
         }

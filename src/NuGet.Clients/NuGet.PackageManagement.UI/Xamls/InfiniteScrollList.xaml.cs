@@ -108,6 +108,10 @@ namespace NuGet.PackageManagement.UI
 
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
 
+        public int SelectedIndex => _list.SelectedIndex;
+
+        public Guid? OperationId => _loader?.State.OperationId;
+
         // Load items using the specified loader
         internal async Task LoadItemsAsync(
             IPackageItemLoader loader,

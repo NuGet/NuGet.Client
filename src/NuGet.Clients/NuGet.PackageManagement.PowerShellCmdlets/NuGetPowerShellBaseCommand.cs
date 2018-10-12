@@ -610,7 +610,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             var searchFilter = new SearchFilter(includePrerelease: includePrerelease);
             searchFilter.IncludeDelisted = false;
-            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, logger: null);
+            var packageFeed = new MultiSourcePackageFeed(
+                PrimarySourceRepositories,
+                logger: null,
+                telemetryService: null);
             var searchTask = packageFeed.SearchAsync(searchString, searchFilter, Token);
 
             return PackageFeedEnumerator.Enumerate(

@@ -55,6 +55,8 @@ namespace NuGet.PackageManagement.UI
 
             public SearchResult<IPackageSearchMetadata> Results => _results;
 
+            public Guid? OperationId => _results?.OperationId;
+
             public LoadingStatus LoadingStatus
             {
                 get
@@ -65,7 +67,7 @@ namespace NuGet.PackageManagement.UI
                         return LoadingStatus.Unknown;
                     }
 
-                    return AggregateLoadingStatus(SourceLoadingStatus?.Values);
+                    return (SourceLoadingStatus?.Values).Aggregate();
                 }
             }
 
@@ -74,54 +76,6 @@ namespace NuGet.PackageManagement.UI
             public int ItemsCount => _results?.RawItemsCount ?? 0;
 
             public IDictionary<string, LoadingStatus> SourceLoadingStatus => _results?.SourceSearchStatus;
-
-            private static LoadingStatus AggregateLoadingStatus(IEnumerable<LoadingStatus> statuses)
-            {
-                var count = statuses?.Count() ?? 0;
-
-                if (count == 0)
-                {
-                    return LoadingStatus.Loading;
-                }
-
-                var first = statuses.First();
-                if (count == 1 || statuses.All(x => x == first))
-                {
-                    return first;
-                }
-
-                if (statuses.Contains(LoadingStatus.Loading))
-                {
-                    return LoadingStatus.Loading;
-                }
-
-                if (statuses.Contains(LoadingStatus.ErrorOccurred))
-                {
-                    return LoadingStatus.ErrorOccurred;
-                }
-
-                if (statuses.Contains(LoadingStatus.Cancelled))
-                {
-                    return LoadingStatus.Cancelled;
-                }
-
-                if (statuses.Contains(LoadingStatus.Ready))
-                {
-                    return LoadingStatus.Ready;
-                }
-
-                if (statuses.Contains(LoadingStatus.NoMoreItems))
-                {
-                    return LoadingStatus.NoMoreItems;
-                }
-
-                if (statuses.Contains(LoadingStatus.NoItemsFound))
-                {
-                    return LoadingStatus.NoItemsFound;
-                }
-
-                return first;
-            }
         }
 
         public PackageItemLoader(

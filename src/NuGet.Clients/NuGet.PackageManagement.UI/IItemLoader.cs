@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,7 @@ namespace NuGet.PackageManagement.UI
         LoadingStatus LoadingStatus { get; }
         int ItemsCount { get; }
         IDictionary<string, LoadingStatus> SourceLoadingStatus { get; }
+        Guid? OperationId { get; }
     }
 
     /// <summary>
