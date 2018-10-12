@@ -1151,7 +1151,8 @@ namespace NuGet.Protocol.Plugins
 
         public override string GetContentHashForSignedPackage(CancellationToken token)
         {
-            throw new NotImplementedException();
+            // Plugin Download doesn't support signed packages so simply return null.
+            return null;
         }
 
         private sealed class FileStreamCreator : IDisposable
