@@ -119,6 +119,8 @@ namespace NuGet.Protocol
                     return null;
                 }
 
+                var trimmedLicenseExpression = LicenseExpression.Trim();
+
                 System.Version.TryParse(LicenseExpressionVersion, out var effectiveVersion);
                 effectiveVersion = effectiveVersion ?? LicenseMetadata.EmptyVersion;
 
@@ -129,7 +131,7 @@ namespace NuGet.Protocol
                 {
                     try
                     {
-                        parsedExpression = NuGetLicenseExpression.Parse(LicenseExpression);
+                        parsedExpression = NuGetLicenseExpression.Parse(trimmedLicenseExpression);
 
                         var invalidLicenseIdentifiers = GetNonStandardLicenseIdentifiers(parsedExpression);
                         if (invalidLicenseIdentifiers != null)
@@ -166,7 +168,7 @@ namespace NuGet.Protocol
                             LicenseMetadata.CurrentVersion));
                 }
 
-                return new LicenseMetadata(LicenseType.Expression, license: LicenseExpression, expression: parsedExpression, warningsAndErrors: errors, version: effectiveVersion);
+                return new LicenseMetadata(LicenseType.Expression, license: trimmedLicenseExpression, expression: parsedExpression, warningsAndErrors: errors, version: effectiveVersion);
             }
         }
 
