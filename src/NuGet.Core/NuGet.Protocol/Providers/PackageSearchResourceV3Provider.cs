@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,9 +24,8 @@ namespace NuGet.Protocol
             if (serviceIndex != null)
             {
                 var rawSearch = await source.GetResourceAsync<RawSearchResourceV3>(token);
-                var metadataResource = await source.GetResourceAsync<PackageMetadataResource>(token);
 
-                curResource = new PackageSearchResourceV3(rawSearch, metadataResource);
+                curResource = new PackageSearchResourceV3(rawSearch);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);
