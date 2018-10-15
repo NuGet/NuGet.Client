@@ -80,7 +80,7 @@ namespace NuGet.Packaging.FuncTest
                     var result = await verifier.VerifySignaturesAsync(packageReader, policy, CancellationToken.None);
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                 }
             }
         }
@@ -110,7 +110,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
@@ -155,7 +155,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
@@ -199,7 +199,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
@@ -240,7 +240,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
@@ -284,7 +284,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3008);
@@ -325,7 +325,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                     // Assert
-                    result.Valid.Should().Be(expectedValidity);
+                    result.IsValid.Should().Be(expectedValidity);
                     if (!expectedValidity)
                     {
                         resultsWithErrors.Count().Should().Be(1);
@@ -363,7 +363,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                     // Assert
-                    result.Valid.Should().Be(expectedValidity);
+                    result.IsValid.Should().Be(expectedValidity);
                     if (!expectedValidity)
                     {
                         resultsWithErrors.Count().Should().Be(1);
