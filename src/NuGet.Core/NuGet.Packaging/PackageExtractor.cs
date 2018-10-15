@@ -458,12 +458,11 @@ namespace NuGet.Packaging
                             {
                                 // Extract the nupkg
                                 using (var nupkgStream = new FileStream(
-                                        targetTempNupkg,
-                                        FileMode.Create,
-                                        FileAccess.ReadWrite,
-                                        FileShare.ReadWrite | FileShare.Delete,
-                                        bufferSize: 4096,
-                                        useAsync: true))
+                                    targetTempNupkg,
+                                    FileMode.Create,
+                                    FileAccess.ReadWrite,
+                                    FileShare.ReadWrite | FileShare.Delete,
+                                    bufferSize: 4096))
                                 {
                                     await copyToAsync(nupkgStream);
                                     nupkgStream.Seek(0, SeekOrigin.Begin);

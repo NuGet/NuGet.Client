@@ -55,7 +55,7 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             NuspecReader reader = null;
-            
+
             lock (_nuspecReadersLock)
             {
                 if (_nuspecReaders.TryGetValue(url, out reader))
@@ -76,7 +76,7 @@ namespace NuGet.Protocol
                 cacheContext,
                 logger,
                 token);
-            
+
             if (reader == null)
             {
                 // The package was not found on the feed. This typically means
@@ -245,7 +245,7 @@ namespace NuGet.Protocol
                 logger,
                 token);
         }
-        
+
         private async Task<T> ProcessHttpSourceResultAsync<T>(
             PackageIdentity identity,
             string url,
@@ -336,8 +336,7 @@ namespace NuGet.Protocol
                         FileMode.Open,
                         FileAccess.Read,
                         FileShare.ReadWrite | FileShare.Delete,
-                        StreamExtensions.BufferSize,
-                        useAsync: true));
+                        StreamExtensions.BufferSize));
                 },
                 token))
             {
@@ -354,7 +353,7 @@ namespace NuGet.Protocol
                 CacheFile = cacheFile;
                 AlreadyProcessed = alreadyProcessed;
             }
-            
+
             public string CacheFile { get; }
             public bool AlreadyProcessed { get; }
         }

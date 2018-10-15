@@ -87,8 +87,7 @@ namespace NuGet.Protocol.Plugins
                     FileMode.Create,
                     FileAccess.ReadWrite,
                     FileShare.None,
-                    CachingUtility.BufferSize,
-                    useAsync: true))
+                    CachingUtility.BufferSize))
                 {
                     var json = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(OperationClaims, Formatting.Indented));
                     await fileStream.WriteAsync(json, 0, json.Length);

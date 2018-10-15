@@ -45,8 +45,7 @@ namespace NuGet.Protocol
                         FileMode.Open,
                         FileAccess.Read,
                         FileShare.Read | FileShare.Delete,
-                        BufferSize,
-                        useAsync: true);
+                        BufferSize);
 
                     return stream;
                 }
@@ -63,7 +62,7 @@ namespace NuGet.Protocol
             {
                 stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
             }
-            catch(FileNotFoundException)
+            catch (FileNotFoundException)
             {
                 return false;
             }
