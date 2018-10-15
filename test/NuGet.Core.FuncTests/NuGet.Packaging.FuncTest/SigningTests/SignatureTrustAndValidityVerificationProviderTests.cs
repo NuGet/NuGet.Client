@@ -64,7 +64,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -93,7 +93,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -121,7 +121,7 @@ namespace NuGet.Packaging.FuncTest
                     var result = await verifier.VerifySignaturesAsync(packageReader, _verifyCommandSettings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -171,7 +171,7 @@ namespace NuGet.Packaging.FuncTest
 
                     var trustProvider = result.Results.Single();
 
-                    Assert.True(result.Valid);
+                    Assert.True(result.IsValid);
                     Assert.Equal(SignatureVerificationStatus.Valid, trustProvider.Trust);
                     Assert.Equal(0, trustProvider.Issues.Count(issue => issue.Level == LogLevel.Error));
                     Assert.Equal(0, trustProvider.Issues.Count(issue => issue.Level == LogLevel.Warning));
@@ -228,7 +228,7 @@ namespace NuGet.Packaging.FuncTest
                     var results = await verifier.VerifySignaturesAsync(packageReader, _verifyCommandSettings, CancellationToken.None);
                     var result = results.Results.Single();
 
-                    Assert.False(results.Valid);
+                    Assert.False(results.IsValid);
                     Assert.Equal(SignatureVerificationStatus.Disallowed, result.Trust);
                     Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Error));
                     Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
@@ -324,7 +324,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3027);
@@ -372,7 +372,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -418,7 +418,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                 }
             }
@@ -464,7 +464,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -512,7 +512,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -561,7 +561,7 @@ namespace NuGet.Packaging.FuncTest
                     var result = await verifier.VerifySignaturesAsync(packageReader, settings, CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -609,7 +609,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                 }
             }
@@ -725,7 +725,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -764,7 +764,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -938,7 +938,7 @@ namespace NuGet.Packaging.FuncTest
                 var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                 // Assert
-                result.Valid.Should().BeFalse();
+                result.IsValid.Should().BeFalse();
                 resultsWithErrors.Count().Should().Be(1);
                 totalErrorIssues.Count().Should().Be(1);
                 totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3028);

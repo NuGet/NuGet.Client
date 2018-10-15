@@ -87,7 +87,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -114,7 +114,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -148,7 +148,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -182,7 +182,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -217,7 +217,7 @@ namespace NuGet.Packaging.FuncTest
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                 }
             }
@@ -253,7 +253,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
@@ -317,7 +317,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(1);
                     totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
@@ -415,7 +415,7 @@ namespace NuGet.Packaging.FuncTest
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                         // Assert
-                        result.Valid.Should().BeFalse();
+                        result.IsValid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
                         totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
@@ -523,7 +523,7 @@ namespace NuGet.Packaging.FuncTest
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                         // Assert
-                        result.Valid.Should().BeFalse();
+                        result.IsValid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
                         totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
@@ -599,7 +599,7 @@ namespace NuGet.Packaging.FuncTest
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                         // Assert
-                        result.Valid.Should().BeFalse();
+                        result.IsValid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
                         totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
@@ -675,7 +675,7 @@ namespace NuGet.Packaging.FuncTest
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                         // Assert
-                        result.Valid.Should().BeFalse();
+                        result.IsValid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
                         totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
@@ -751,7 +751,7 @@ namespace NuGet.Packaging.FuncTest
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                         // Assert
-                        result.Valid.Should().BeFalse();
+                        result.IsValid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
                         totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
@@ -827,7 +827,7 @@ namespace NuGet.Packaging.FuncTest
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                         // Assert
-                        result.Valid.Should().BeFalse();
+                        result.IsValid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
                         totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
@@ -906,7 +906,7 @@ namespace NuGet.Packaging.FuncTest
                         var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
                         // Assert
-                        result.Valid.Should().BeFalse();
+                        result.IsValid.Should().BeFalse();
                         resultsWithErrors.Count().Should().Be(1);
                         totalErrorIssues.Count().Should().Be(1);
                         totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3005);
