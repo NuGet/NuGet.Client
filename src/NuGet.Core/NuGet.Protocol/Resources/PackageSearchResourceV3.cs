@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -12,13 +12,11 @@ namespace NuGet.Protocol
     public class PackageSearchResourceV3 : PackageSearchResource
     {
         private readonly RawSearchResourceV3 _rawSearchResource;
-        private readonly PackageMetadataResource _metadataResource;
 
-        public PackageSearchResourceV3(RawSearchResourceV3 searchResource, PackageMetadataResource metadataResource)
+        public PackageSearchResourceV3(RawSearchResourceV3 searchResource)
             : base()
         {
             _rawSearchResource = searchResource;
-            _metadataResource = metadataResource;
         }
 
         public override async Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filter, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
