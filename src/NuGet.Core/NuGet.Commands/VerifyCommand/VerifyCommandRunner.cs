@@ -101,7 +101,7 @@ namespace NuGet.Commands
                     result = errors;
                 }
 
-                if (verificationResult.Valid)
+                if (verificationResult.IsValid)
                 {
                     logger.LogInformation(Environment.NewLine + string.Format(CultureInfo.CurrentCulture, Strings.VerifyCommand_Success, packageIdentity.ToString()));
                 }

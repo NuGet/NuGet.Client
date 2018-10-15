@@ -1088,7 +1088,7 @@ namespace NuGet.Packaging
                        token,
                        parentId);
 
-                if (verifyResult.Signed)
+                if (verifyResult.IsSigned || !verifyResult.IsValid)
                 {
                     await LogPackageSignatureVerificationAsync(source, package, packageExtractionContext.Logger, verifyResult);
 
@@ -1097,7 +1097,7 @@ namespace NuGet.Packaging
                         .SelectMany(r => r.Issues)
                         .ForEach(e => AddPackageIdentityToSignatureLog(source, package, e));
 
-                    if (verifyResult.Valid)
+                    if (verifyResult.IsValid)
                     {
                         // log any warnings
                         var warnings = verifyResult.Results.SelectMany(r => r.GetWarningIssues());
@@ -1135,7 +1135,7 @@ namespace NuGet.Packaging
         {
             await logger.LogAsync(
                 LogLevel.Verbose,
-                string.Format(CultureInfo.CurrentCulture, Strings.PackageSignatureVerificationLog, package, source, verifyResult.Valid));
+                string.Format(CultureInfo.CurrentCulture, Strings.PackageSignatureVerificationLog, package, source, verifyResult.IsValid));
         }
 
         private static RepositorySignatureInfo GetRepositorySignatureInfo(string source)

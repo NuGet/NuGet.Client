@@ -73,7 +73,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     totalWarningIssues.Count().Should().Be(0);
                 }
             }
@@ -114,7 +114,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalErrors = resultsWithErrors.SelectMany(r => r.GetErrorIssues()).OrderByDescending(i => i.Message.Length).ToList();
 
                     // Assert
-                    result.Valid.Should().Be(valid);
+                    result.IsValid.Should().Be(valid);
                     resultsWithErrors.Count().Should().Be(resultsWithErrorsCount);
                     totalErrors.Count().Should().Be(totalErrorsCount);
 
@@ -162,7 +162,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                     resultsWithWarnings.Count().Should().Be(1);
                     totalErrorIssues.Count().Should().Be(0);
@@ -208,7 +208,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(1);
@@ -256,7 +256,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(1);
@@ -304,7 +304,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(1);
@@ -352,7 +352,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(0);
@@ -400,7 +400,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(1);
@@ -450,7 +450,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(1);
@@ -500,7 +500,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(0);
@@ -544,7 +544,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(0);
@@ -590,7 +590,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalWarningIssues.Count().Should().Be(0);
@@ -643,7 +643,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(0);
@@ -693,7 +693,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(1);
@@ -742,7 +742,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(1);
@@ -795,7 +795,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(0);
@@ -847,7 +847,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(1);
@@ -898,7 +898,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeFalse();
+                    result.IsValid.Should().BeFalse();
                     resultsWithErrors.Count().Should().Be(1);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(1);
@@ -950,7 +950,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(0);
@@ -1000,7 +1000,7 @@ namespace NuGet.Packaging.FuncTest
                     var totalWarningIssues = resultsWithWarnings.SelectMany(r => r.GetWarningIssues());
 
                     // Assert
-                    result.Valid.Should().BeTrue();
+                    result.IsValid.Should().BeTrue();
                     resultsWithErrors.Count().Should().Be(0);
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(0);
