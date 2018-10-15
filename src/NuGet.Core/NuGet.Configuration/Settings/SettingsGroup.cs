@@ -10,15 +10,14 @@ namespace NuGet.Configuration
 {
     public abstract class SettingsGroup<T> : SettingElement, ISettingsGroup where T : SettingElement
     {
-        // Until HashSet<T>TryGetValue(...) is available, we will use a dictionary to enable efficient element retrieval.
-        protected Dictionary<T, T> ChildrenSet { get; private set; }
+        protected IList<T> Children { get; private set; }
 
         protected virtual bool CanBeCleared => true;
 
         protected SettingsGroup()
             : base()
         {
-            ChildrenSet = new Dictionary<T, T>();
+            Children = new List<T>();
         }
 
         protected SettingsGroup(IReadOnlyDictionary<string, string> attributes, IEnumerable<T> children)
@@ -26,26 +25,26 @@ namespace NuGet.Configuration
         {
             if (children == null)
             {
-                ChildrenSet = new Dictionary<T, T>();
+                Children = new List<T>();
             }
             else
             {
-                ChildrenSet = new Dictionary<T, T>(children.ToDictionary(c => c, c => c));
+                Children = new List<T>(children);
             }
         }
 
-        internal override bool IsEmpty() => !ChildrenSet.Any() || ChildrenSet.All(c => c.Value.IsEmpty());
+        internal override bool IsEmpty() => !Children.Any() || Children.All(c => c.IsEmpty());
 
         internal SettingsGroup(XElement element, SettingsFile origin)
             : base(element, origin)
         {
             ElementName = element.Name.LocalName;
 
-            ChildrenSet = SettingFactory.ParseChildren<T>(element, origin, CanBeCleared).ToDictionary(c => c, c => c);
+            Children = SettingFactory.ParseChildren<T>(element, origin, CanBeCleared).ToList();
 
-            foreach (var child in ChildrenSet)
+            foreach (var child in Children)
             {
-                child.Value.Parent = this;
+                child.Parent = this;
             }
         }
 
@@ -56,7 +55,7 @@ namespace NuGet.Configuration
                 return Node;
             }
 
-            var element = new XElement(ElementName, ChildrenSet.Select(c => c.Value.AsXNode()));
+            var element = new XElement(ElementName, Children.Select(c => c.AsXNode()));
 
             foreach (var attr in Attributes)
             {
@@ -70,9 +69,9 @@ namespace NuGet.Configuration
         {
             base.SetOrigin(origin);
 
-            foreach (var child in ChildrenSet)
+            foreach (var child in Children)
             {
-                child.Value.SetOrigin(origin);
+                child.SetOrigin(origin);
             }
         }
 
@@ -80,9 +79,9 @@ namespace NuGet.Configuration
         {
             base.RemoveFromSettings();
 
-            foreach (var child in ChildrenSet)
+            foreach (var child in Children)
             {
-                child.Value.RemoveFromSettings();
+                child.RemoveFromSettings();
             }
         }
 
@@ -98,9 +97,9 @@ namespace NuGet.Configuration
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
-            if (!ChildrenSet.ContainsKey(setting) && !setting.IsEmpty())
+            if (!Children.Contains(setting) && !setting.IsEmpty())
             {
-                ChildrenSet.Add(setting, setting);
+                Children.Add(setting);
 
                 setting.SetOrigin(Origin);
                 setting.SetNode(setting.AsXNode());
@@ -128,7 +127,7 @@ namespace NuGet.Configuration
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
-            if (ChildrenSet.TryGetValue(setting, out var currentSetting) && ChildrenSet.Remove(currentSetting))
+            if (TryGetChild(setting, out var currentSetting) && Children.Remove(currentSetting))
             {
                 currentSetting.RemoveFromSettings();
 
@@ -137,6 +136,23 @@ namespace NuGet.Configuration
                     Parent.Remove(this);
                 }
             }
+        }
+
+        protected bool TryGetChild(T expectedChild, out T currentChild)
+        {
+            currentChild = null;
+
+            foreach (var child in Children)
+            {
+                if (child.Equals(expectedChild))
+                {
+                    currentChild = child;
+
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         void ISettingsGroup.Remove(SettingElement setting)

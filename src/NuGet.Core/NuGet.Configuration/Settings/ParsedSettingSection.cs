@@ -17,9 +17,9 @@ namespace NuGet.Configuration
         internal ParsedSettingSection(string name, params SettingItem[] children)
             : base(name, attributes: null, children: new HashSet<SettingItem>(children))
         {
-            foreach (var child in ChildrenSet)
+            foreach (var child in Children)
             {
-                child.Value.Parent = this;
+                child.Parent = this;
             }
         }
 

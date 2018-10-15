@@ -11,7 +11,7 @@ namespace NuGet.Configuration
 {
     public abstract class SettingSection : SettingsGroup<SettingItem>
     {
-        public IReadOnlyCollection<SettingItem> Items => ChildrenSet.Values;
+        public IReadOnlyCollection<SettingItem> Items => Children.ToList();
 
         public T GetFirstItemWithAttribute<T>(string attributeName, string expectedAttributeValue) where T : SettingItem
         {
@@ -43,10 +43,8 @@ namespace NuGet.Configuration
                 return false;
             }
 
-            if (ChildrenSet.ContainsKey(item))
+            if (TryGetChild(item, out var currentChild))
             {
-                var currentChild = ChildrenSet[item];
-
                 if (currentChild.Origin != null && currentChild.Origin.IsMachineWide)
                 {
                     return false;
