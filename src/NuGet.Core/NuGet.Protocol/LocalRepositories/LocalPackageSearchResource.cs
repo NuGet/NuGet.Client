@@ -45,17 +45,21 @@ namespace NuGet.Protocol
                         _localResource.Root));
                 }
 
-                var query = _localResource.GetPackages(log, token);
-
-                // Filter on prerelease
-                query = query.Where(package => filters.IncludePrerelease || !package.Identity.Version.IsPrerelease);
+                IEnumerable<LocalPackageInfo> query;
 
                 // Filter on search terms
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
                     var terms = searchTerm.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    query = query.Where(package => ContainsAnyTerm(terms, package));
+                    query = terms.SelectMany(term => _localResource.FindPackagesById(term, log, token)); // further parallelization is possible, but this is good enough for now
                 }
+                else
+                {
+                    query = _localResource.GetPackages(log, token);
+                }
+
+                // Filter on prerelease
+                query = query.Where(package => filters.IncludePrerelease || !package.Identity.Version.IsPrerelease);
 
                 // Collapse to the highest version per id
                 var collapsedQuery = CollapseToHighestVersion(query);
