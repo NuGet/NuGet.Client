@@ -23,6 +23,7 @@ namespace NuGet.Protocol.Plugins.Tests
         private const string _pluginIdleTimeoutEnvironmentVariable = "NUGET_PLUGIN_IDLE_TIMEOUT_IN_SECONDS";
         private const string _pluginPathsEnvironmentVariable = "NUGET_PLUGIN_PATHS";
         private const string _pluginRequestTimeoutEnvironmentVariable = "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS";
+        private const string _downloadPluginsEnabledEnvironmentVariable = "NUGET_DOWNLOAD_PLUGINS_ENABLED";
         private const string _sourceUri = "https://unit.test";
 
         [Fact]
@@ -301,6 +302,9 @@ namespace NuGet.Protocol.Plugins.Tests
                 reader.Setup(x => x.GetEnvironmentVariable(
                         It.Is<string>(value => value == _pluginHandshakeTimeoutEnvironmentVariable)))
                     .Returns("d");
+                reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == _downloadPluginsEnabledEnvironmentVariable)))
+                    .Returns("true");
 
                 var pluginDiscoverer = new Mock<IPluginDiscoverer>(MockBehavior.Strict);
                 var pluginDiscoveryResults = GetPluginDiscoveryResults(pluginsPath);
@@ -371,6 +375,9 @@ namespace NuGet.Protocol.Plugins.Tests
                 _reader.Setup(x => x.GetEnvironmentVariable(
                         It.Is<string>(value => value == _pluginHandshakeTimeoutEnvironmentVariable)))
                     .Returns("HandshakeTimeout");
+                _reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == _downloadPluginsEnabledEnvironmentVariable)))
+                    .Returns("true");
 
                 _pluginDiscoverer = new Mock<IPluginDiscoverer>(MockBehavior.Strict);
 

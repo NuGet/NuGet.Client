@@ -9,5 +9,6 @@ namespace NuGet.Credentials.Test
         public static string PluginIdleTimeoutEnvironmentVariable = "NUGET_PLUGIN_IDLE_TIMEOUT_IN_SECONDS";
         public static string PluginPathsEnvironmentVariable = "NUGET_PLUGIN_PATHS";
         public static string PluginRequestTimeoutEnvironmentVariable = "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS";
+        public static string DownloadPluginsEnabledEnvironmentVariable = "NUGET_DOWNLOAD_PLUGINS_ENABLED";
     }
 }

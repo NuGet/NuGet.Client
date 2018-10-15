@@ -116,6 +116,9 @@ namespace NuGet.Credentials.Test
                 reader.Setup(x => x.GetEnvironmentVariable(
                         It.Is<string>(value => value == CredentialTestConstants.PluginHandshakeTimeoutEnvironmentVariable)))
                     .Returns("d");
+                reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == CredentialTestConstants.DownloadPluginsEnabledEnvironmentVariable)))
+                    .Returns("true");
 
                 var pluginDiscoverer = new Mock<IPluginDiscoverer>(MockBehavior.Strict);
                 var pluginDiscoveryResults = GetPluginDiscoveryResults(plugins);
