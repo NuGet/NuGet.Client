@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -51,7 +51,7 @@ namespace NuGet.Protocol
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
                     var terms = searchTerm.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    query = terms.SelectMany(term => _localResource.FindPackagesById(term, log, token));
+                    query = terms.SelectMany(term => _localResource.FindPackagesById(term, log, token)); // further parallelization is possible, but this is good enough for now
                 }
                 else
                 {
