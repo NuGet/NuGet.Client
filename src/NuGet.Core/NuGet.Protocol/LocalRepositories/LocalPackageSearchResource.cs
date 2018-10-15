@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -45,17 +45,21 @@ namespace NuGet.Protocol
                         _localResource.Root));
                 }
 
-                var query = _localResource.GetPackages(log, token);
-
-                // Filter on prerelease
-                query = query.Where(package => filters.IncludePrerelease || !package.Identity.Version.IsPrerelease);
+                IEnumerable<LocalPackageInfo> query;
 
                 // Filter on search terms
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
                     var terms = searchTerm.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    query = query.Where(package => ContainsAnyTerm(terms, package));
+                    query = terms.SelectMany(term => _localResource.FindPackagesById(term, log, token));
                 }
+                else
+                {
+                    query = _localResource.GetPackages(log, token);
+                }
+
+                // Filter on prerelease
+                query = query.Where(package => filters.IncludePrerelease || !package.Identity.Version.IsPrerelease);
 
                 // Collapse to the highest version per id
                 var collapsedQuery = CollapseToHighestVersion(query);
