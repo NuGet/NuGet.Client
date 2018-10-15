@@ -57,7 +57,10 @@ namespace NuGet.Configuration
         private Dictionary<string, IndexedPackageSource> LoadPackageSourceLookup(bool byName)
         {
             var packageSourcesSection = Settings.GetSection(ConfigurationConstants.PackageSources);
-            var sources = packageSourcesSection?.Items.OfType<SourceItem>();
+            var sourcesItems = packageSourcesSection?.Items.OfType<SourceItem>();
+
+            // Order the list so that the closer to the user appear first
+            var sources = sourcesItems?.OrderByDescending(item => item.Origin?.Priority ?? 0);
 
             // get list of disabled packages
             var disabledSourcesSection = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);

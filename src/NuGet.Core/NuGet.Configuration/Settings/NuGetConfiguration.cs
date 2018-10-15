@@ -13,7 +13,7 @@ namespace NuGet.Configuration
     {
         public override string ElementName => ConfigurationConstants.Configuration;
 
-        internal IReadOnlyDictionary<string, SettingSection> Sections => ChildrenSet.Select(c => c.Value).ToDictionary(c => c.ElementName);
+        internal IReadOnlyDictionary<string, SettingSection> Sections => Children.ToDictionary(c => c.ElementName);
 
         protected override bool CanBeCleared => false;
 
@@ -36,7 +36,7 @@ namespace NuGet.Configuration
             foreach (var section in sections)
             {
                 section.Parent = this;
-                ChildrenSet.Add(section, section);
+                Children.Add(section);
             }
         }
 
@@ -54,7 +54,7 @@ namespace NuGet.Configuration
 
             defaultSection.SetNode(defaultSection.AsXNode());
 
-            ChildrenSet.Add(defaultSection, defaultSection);
+            Children.Add(defaultSection);
 
             SetNode(AsXNode());
             SetOrigin(origin);
@@ -161,6 +161,6 @@ namespace NuGet.Configuration
             return Sections.OrderedEquals(nugetConfiguration.Sections, s => s.Key, StringComparer.Ordinal);
         }
 
-        public override int GetHashCode() => ChildrenSet.GetHashCode();
+        public override int GetHashCode() => Children.GetHashCode();
     }
 }
