@@ -602,7 +602,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Downloading a package from a plugin is not supported since unsigned packages are not allowed and plugings do not support package signing..
+        ///   Looks up a localized string similar to Downloading a package from a plugin is not supported since unsigned packages are not allowed and package download plugins do not support signed package verification..
         /// </summary>
         internal static string Plugin_DownloadNotSupportedSinceUnsignedNotAllowed {
             get {

@@ -379,7 +379,7 @@ namespace NuGet.Packaging
             }
         }
 
-        public override bool SkipPackageSignatureVerification(SignedPackageVerifierSettings verifierSettings)
+        public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
             return false;
         }

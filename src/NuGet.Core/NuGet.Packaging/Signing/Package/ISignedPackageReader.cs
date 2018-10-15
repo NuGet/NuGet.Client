@@ -49,8 +49,8 @@ namespace NuGet.Packaging.Signing
         /// because a package should not be verified.
         /// </summary>
         /// <param name="verifierSettings">Package verification settings. Include information about what is allowed.</param>
-        /// <throws>SignatureException if the ISignedPackageReader does not support either verifing or skipping the signature verification.</throws>
+        /// <exception cref="SignatureException">if the ISignedPackageReader does not support either verifing or skipping the signature verification.</exception>
         /// <returns>boolean indicating if the verification of the signature should be skipped.</returns>
-        bool SkipPackageSignatureVerification(SignedPackageVerifierSettings verifierSettings);
+        bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings);
     }
 }

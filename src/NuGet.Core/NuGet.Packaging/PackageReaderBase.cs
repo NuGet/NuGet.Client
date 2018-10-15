@@ -595,6 +595,6 @@ namespace NuGet.Packaging
 
         public abstract string GetContentHashForSignedPackage(CancellationToken token);
 
-        public abstract bool SkipPackageSignatureVerification(SignedPackageVerifierSettings verifierSettings);
+        public abstract bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings);
     }
 }
