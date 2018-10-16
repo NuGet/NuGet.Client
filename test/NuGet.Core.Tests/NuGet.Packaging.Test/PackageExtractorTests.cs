@@ -3020,8 +3020,9 @@ namespace NuGet.Packaging.Test
                             new PackageExtractionContext(
                                 packageSaveMode: PackageSaveMode.Nupkg,
                                 xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                                clientPolicyContext: null,
-                                logger: NullLogger.Instance),
+                                logger: NullLogger.Instance,
+                                signedPackageVerifier: null,
+                                signedPackageVerifierSettings: null),
                             CancellationToken.None);
 
                     // Assert
