@@ -24,6 +24,11 @@ namespace NuGet.Configuration
 
         public static string GetValueForAddItem(ISettings settings, string section, string key, bool isPath = false)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             var sectionElement = settings.GetSection(section);
             var item = sectionElement?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
 
@@ -42,6 +47,11 @@ namespace NuGet.Configuration
 
         public static bool DeleteValue(ISettings settings, string section, string attributeKey, string attributeValue)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             var sectionElement = settings.GetSection(section);
             var element = sectionElement?.GetFirstItemWithAttribute<SettingItem>(attributeKey, attributeValue);
 
@@ -93,6 +103,11 @@ namespace NuGet.Configuration
 
         public static string GetDecryptedValueForAddItem(ISettings settings, string section, string key, bool isPath = false)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             if (string.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
@@ -130,6 +145,11 @@ namespace NuGet.Configuration
 
         public static void SetEncryptedValueForAddItem(ISettings settings, string section, string key, string value)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             if (string.IsNullOrEmpty(section))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(section));
@@ -178,6 +198,11 @@ namespace NuGet.Configuration
         /// <param name="encrypt">Determines if the value needs to be encrypted prior to storing.</param>
         public static void SetConfigValue(ISettings settings, string key, string value, bool encrypt = false)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             if (encrypt == true)
             {
                 SetEncryptedValueForAddItem(settings, ConfigurationConstants.Config, key, value);
@@ -329,6 +354,11 @@ namespace NuGet.Configuration
 
         public static IEnumerable<PackageSource> GetEnabledSources(ISettings settings)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             var provider = new PackageSourceProvider(settings);
             return provider.LoadPackageSources().Where(e => e.IsEnabled == true).ToList();
         }
@@ -385,6 +415,11 @@ namespace NuGet.Configuration
         /// </summary>
         public static IEnumerable<string> GetConfigFilePaths(ISettings settings)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             if (settings is Settings settingsImpl)
             {
                 return settingsImpl.Priority.Select(config => Path.GetFullPath(Path.Combine(config.DirectoryPath, config.FileName)));
@@ -398,37 +433,17 @@ namespace NuGet.Configuration
         /// </summary>
         public static IEnumerable<string> GetConfigRoots(ISettings settings)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             if (settings is Settings settingsImpl)
             {
                 return settingsImpl.Priority.Select(config => config.DirectoryPath);
             }
 
             return Enumerable.Empty<string>();
-        }
-
-        private static string GetPathFromEnvOrConfig(string envVarName, string configKey, ISettings settings)
-        {
-            var path = Environment.GetEnvironmentVariable(envVarName);
-
-            if (!string.IsNullOrEmpty(path))
-            {
-                if (!Path.IsPathRooted(path))
-                {
-                    var message = string.Format(CultureInfo.CurrentCulture, Resources.RelativeEnvVarPath, envVarName, path);
-                    throw new NuGetConfigurationException(message);
-                }
-            }
-            else
-            {
-                path = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetHome), DefaultGlobalPackagesFolderPath);
-            }
-
-            if (!string.IsNullOrEmpty(path))
-            {
-                path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
-            }
-
-            return path;
         }
 
         /// <summary>

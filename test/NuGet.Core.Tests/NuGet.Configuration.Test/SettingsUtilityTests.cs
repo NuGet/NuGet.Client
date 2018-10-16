@@ -163,5 +163,140 @@ namespace NuGet.Configuration.Test
                 result.Should().BeNull();
             }
         }
+
+        [Fact]
+        public void GetValueForAddItem_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetValueForAddItem(settings: null, section: "randomSection", key: "randomKey"));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void DeleteValue_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.DeleteValue(settings: null, section: "randomSection", attributeKey: "randomKey", attributeValue: "randomValue"));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetRepositoryPath_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetRepositoryPath(settings: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetSignatureValidationMode_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetSignatureValidationMode(settings: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetDecryptedValueForAddItem_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetDecryptedValueForAddItem(settings: null, section: "randomSection", key: "randomKey"));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void SetEncryptedValueForAddItem_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.SetEncryptedValueForAddItem(settings: null, section: "randomSection", key: "randomKey", value: "value"));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetConfigValue_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetConfigValue(settings: null, key: "randomKey"));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void SetConfigValue_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.SetConfigValue(settings: null, key: "randomKey", value: "value"));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void DeleteConfigValue_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.DeleteConfigValue(settings: null, key: "randomKey"));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetGlobalPackagesFolder_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetGlobalPackagesFolder(settings: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetFallbackPackageFolders_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetFallbackPackageFolders(settings: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetEnabledSources_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetEnabledSources(settings: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetDefaultPushSource_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetDefaultPushSource(settings: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetConfigFilePaths_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetConfigFilePaths(settings: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetConfigRoots_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetConfigRoots(settings: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
     }
 }
