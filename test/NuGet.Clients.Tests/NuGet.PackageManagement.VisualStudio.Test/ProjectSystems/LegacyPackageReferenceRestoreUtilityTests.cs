@@ -1088,6 +1088,113 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        public async void TestPacMan_LegacyPackageRefProjects_UpdatePackage_KeepExistingMetadata()
+        {
+            using (var packageSource = TestDirectory.Create())
+            {
+                // Arrange
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<Configuration.PackageSource>()
+                    {
+                        new Configuration.PackageSource(packageSource.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var randomProjectFolderPath = TestDirectory.Create())
+                {
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+
+                    // set up projects
+                    var projectTargetFrameworkStr = "net45";
+                    var projectPathA = Path.Combine(randomProjectFolderPath, "ProjectA");
+                    var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
+                    var projectNamesA = new ProjectNames(
+                        fullName: fullProjectPathA,
+                        uniqueName: Path.GetFileName(fullProjectPathA),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
+                        customUniqueName: Path.GetFileName(fullProjectPathA));
+
+                    var vsProjectAdapterA = new TestVSProjectAdapter(
+                        fullProjectPathA,
+                        projectNamesA,
+                        projectTargetFrameworkStr);
+
+                    var projectServicesA = new TestProjectSystemServices();
+                    projectServicesA.SetupInstalledPackages(
+                        NuGetFramework.Parse(projectTargetFrameworkStr),
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "packageA",
+                                VersionRange.Parse("1.0.0"),
+                                LibraryDependencyTarget.Package),
+                            SuppressParent = LibraryIncludeFlags.None
+                        });
+
+                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                        vsProjectAdapterA,
+                        Guid.NewGuid().ToString(),
+                        projectServicesA,
+                        _threadingService);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
+
+                    var testLogger = new TestLogger();
+                    var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+                    var providersCache = new RestoreCommandProvidersCache();
+
+                    var packageContextA = new SimpleTestPackageContext("packageA", "1.0.0");
+                    packageContextA.AddFile("lib/net45/a.dll");
+                    var packageContextB = new SimpleTestPackageContext("packageA", "2.0.0");
+                    packageContextB.AddFile("lib/net45/a2.dll");
+                    var packages = new List<SimpleTestPackageContext>() { packageContextA, packageContextB };
+                    SimpleTestPackageUtility.CreateOPCPackages(packages, packageSource, developmentDependency: true);
+
+                    var packageIdentity = new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0"));
+
+                    // Act
+                    var actions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                        packageIdentity,
+                        new List<NuGetProject> { legacyPRProjectA },
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None)).ToList();
+
+                    Assert.Equal(1, actions.Count);
+
+                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                        new List<NuGetProject> { legacyPRProjectA },
+                        actions,
+                        new TestNuGetProjectContext(),
+                        NullSourceCacheContext.Instance,
+                        CancellationToken.None);
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project.assets.json");
+                    Assert.True(File.Exists(assetsFilePath));
+
+                    var assetsFile = new LockFileFormat().Read(assetsFilePath);
+
+                    // asserts target dependencies under packageSpec which flows to pack
+                    foreach (var fwTarget in assetsFile.PackageSpec.TargetFrameworks)
+                    {
+                        var dependency = fwTarget.Dependencies.FirstOrDefault(lib => lib.Name.Equals("packageA", StringComparison.OrdinalIgnoreCase));
+                        Assert.NotNull(dependency);
+                        Assert.Equal(LibraryIncludeFlags.None, dependency.SuppressParent);
+                    }
+                }
+            }
+        }
+
         private ISettings PopulateSettingsWithSources(SourceRepositoryProvider sourceRepositoryProvider, TestDirectory settingsDirectory)
         {
             var Settings = new Settings(settingsDirectory);
