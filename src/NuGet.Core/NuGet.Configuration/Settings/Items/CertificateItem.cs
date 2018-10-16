@@ -55,7 +55,7 @@ namespace NuGet.Configuration
             set => UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, value.ToString().ToLower());
         }
 
-    protected override HashSet<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.Fingerprint, ConfigurationConstants.HashAlgorithm, ConfigurationConstants.AllowUntrustedRoot };
+    protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.Fingerprint, ConfigurationConstants.HashAlgorithm, ConfigurationConstants.AllowUntrustedRoot };
 
         public CertificateItem(string fingerprint, HashAlgorithmName hashAlgorithm, bool allowUntrustedRoot = false)
             : base()

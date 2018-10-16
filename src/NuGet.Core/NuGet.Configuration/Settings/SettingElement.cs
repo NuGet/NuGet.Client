@@ -21,27 +21,27 @@ namespace NuGet.Configuration
         /// Specifies the keys for the attributes that the element can have
         /// </summary>
         /// <remarks>If null then all attributes are allowed</remarks>
-        protected virtual HashSet<string> AllowedAttributes => null;
+        protected virtual IReadOnlyCollection<string> AllowedAttributes { get; } = null;
 
         /// <summary>
         /// Specifies the keys for the attributes that the element should have
         /// </summary>
         /// <remarks>If null or empty then no attributes are required</remarks>
-        protected virtual HashSet<string> RequiredAttributes => null;
+        protected virtual IReadOnlyCollection<string> RequiredAttributes { get; } = null;
 
         /// <summary>
         /// Specifies which values are allowed for a specific attribute.
         /// If an attribute is not defined every value is allowed.
         /// Having allowed values does not imply that the attribute is required.
         /// </summary>
-        protected virtual Dictionary<string, HashSet<string>> AllowedValues => null;
+        protected virtual IReadOnlyDictionary<string, IReadOnlyCollection<string>> AllowedValues { get; } = null;
 
         /// <summary>
         /// Specifies values that are explicitely disallowed for a specific attribute.
         /// If an attribute is not defined no value is disallowed.
         /// Having disallowed values does not imply that the attribute is required.
         /// </summary>
-        protected virtual Dictionary<string, HashSet<string>> DisallowedValues => null;
+        protected virtual IReadOnlyDictionary<string, IReadOnlyCollection<string>> DisallowedValues { get; } = null;
 
         /// <summary>
         ///  Key-value pairs that give more information about the element
