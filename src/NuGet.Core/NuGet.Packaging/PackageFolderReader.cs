@@ -247,7 +247,7 @@ namespace NuGet.Packaging
 
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
-            return true;
+            return false;
         }
     }
 }

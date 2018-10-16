@@ -270,7 +270,7 @@ namespace NuGet.Protocol.Tests
 
             public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
             {
-                return true;
+                return false;
             }
 
             protected override void Dispose(bool disposing)

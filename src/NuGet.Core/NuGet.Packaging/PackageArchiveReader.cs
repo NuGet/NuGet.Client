@@ -381,7 +381,7 @@ namespace NuGet.Packaging
 
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
-            return false;
+            return true;
         }
 
         protected void ThrowIfZipReadStreamIsNull()

@@ -1051,7 +1051,7 @@ namespace NuGet.Packaging
                     repositorySignatureInfo,
                     clientPolicyContext.VerifierSettings);
 
-                if (signedPackageReader.CanVerifySignedPackages(verificationSettings))
+                if (!signedPackageReader.CanVerifySignedPackages(verificationSettings))
                 {
                     return;
                 }

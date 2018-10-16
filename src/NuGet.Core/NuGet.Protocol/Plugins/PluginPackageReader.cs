@@ -1162,7 +1162,7 @@ namespace NuGet.Protocol.Plugins
                 throw new SignatureException(NuGetLogCode.NU3041, Strings.Plugin_DownloadNotSupportedSinceUnsignedNotAllowed);
             }
 
-            return true;
+            return false;
         }
 
         private sealed class FileStreamCreator : IDisposable
