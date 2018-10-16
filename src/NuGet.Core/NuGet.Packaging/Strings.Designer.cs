@@ -224,7 +224,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A list of trusted signers is required by the client but none was found..
+        ///   Looks up a localized string similar to If in require mode, the user must to have a list of trusted signers but none was found. Please add trusted signers to the configuration file..
         /// </summary>
         internal static string Error_NoClientAllowList {
             get {
@@ -233,7 +233,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any certificate fingerprint in client allow list..
+        ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any certificate fingerprint from the user&apos;s trusted signers. You need to trust the signer..
         /// </summary>
         internal static string Error_NoMatchingClientCertificate {
             get {
@@ -242,7 +242,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any certificate fingerprint in repository allow list..
+        ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any trusted signer given from the repository where the package was downloaded from. This package is untrusted..
         /// </summary>
         internal static string Error_NoMatchingRepositoryCertificate {
             get {
@@ -251,7 +251,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A repository announced that their packages should be signed but an empty list of trusted certificates was found..
+        ///   Looks up a localized string similar to The repository where this package was downloaded announced that their packages should be signed but an empty list of trusted signers was found. No package downloaded from this repository can be trusted..
         /// </summary>
         internal static string Error_NoRepoAllowList {
             get {
@@ -278,11 +278,29 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The repository announced that all their packages where signed and the package was found unsigned..
+        /// </summary>
+        internal static string Error_RepositorySettings_UnsignedPackage {
+            get {
+                return ResourceManager.GetString("Error_RepositorySettings_UnsignedPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A repository primary signature must not have a repository countersignature..
         /// </summary>
         internal static string Error_RepositorySignatureMustNotHaveARepositoryCountersignature {
             get {
                 return ResourceManager.GetString("Error_RepositorySignatureMustNotHaveARepositoryCountersignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package is unsigned and require mode does not allow installation of unsigned packages..
+        /// </summary>
+        internal static string Error_RequireMode_UnsignedPackage {
+            get {
+                return ResourceManager.GetString("Error_RequireMode_UnsignedPackage", resourceCulture);
             }
         }
         

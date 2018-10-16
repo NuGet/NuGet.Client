@@ -1092,10 +1092,10 @@ namespace NuGet.Packaging
                 {
                     await LogPackageSignatureVerificationAsync(source, package, packageExtractionContext.Logger, verifyResult);
 
-                    // Update errors and warnings with package id and source
+                    // Update errors and warnings
                     verifyResult.Results
                             .SelectMany(r => r.Issues)
-                            .ForEach(e => AddPackageIdentityToSignatureLog(source, package, e));
+                            .ForEach(e => UpdateSignatureLog(source, package, clientPolicyContext, e));
 
                     if (verifyResult.IsValid)
                     {
@@ -1121,8 +1121,13 @@ namespace NuGet.Packaging
         /// <param name="source">package source.</param>
         /// <param name="package">package identity.</param>
         /// <param name="message">ILogMessage to be modified.</param>
-        private static void AddPackageIdentityToSignatureLog(string source, PackageIdentity package, SignatureLog message)
+        private static void UpdateSignatureLog(string source, PackageIdentity package, ClientPolicyContext policyContext, SignatureLog message)
         {
+            if (message.Code == NuGetLogCode.NU3004)
+            {
+                message.Message = policyContext.Policy == SignatureValidationMode.Require ? Strings.Error_RequireMode_UnsignedPackage : Strings.Error_RepositorySettings_UnsignedPackage;
+            }
+
             message.LibraryId = package.Id;
             message.Message = string.Format(CultureInfo.CurrentCulture, Strings.ExtractionLog_InformationPrefix, package.Id, package.Version, source, message.Message);
         }
