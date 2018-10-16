@@ -3,8 +3,13 @@
 
 namespace NuGet.PackageManagement.UI
 {
-    public interface IText
+    internal class WarningText : IText
     {
-        string Text { get; }
+        public WarningText(string text)
+        {
+            Text = text;
+        }
+
+        public string Text { get; }
     }
 }

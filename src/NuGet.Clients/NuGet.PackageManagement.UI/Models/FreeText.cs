@@ -3,8 +3,13 @@
 
 namespace NuGet.PackageManagement.UI
 {
-    public interface IText
+    internal class FreeText : IText
     {
-        string Text { get; }
+        public FreeText(string text)
+        {
+            Text = text;
+        }
+
+        public string Text { get; }
     }
 }

@@ -50,10 +50,11 @@ namespace NuGet.PackageManagement.UI.Test
             {
                 Assert.Equal(linkedText[i], partsWithLinks[i].Text);
             }
+
             Assert.Equal(license, string.Join("", links.Where(e => !(e is WarningText)).Select(e => e.Text)));
             if (hasWarnings)
             {
-                Assert.NotNull(links[links.Count - 1] as WarningText);
+                Assert.NotNull(links[0] as WarningText);
             }
         }
 
@@ -67,7 +68,7 @@ namespace NuGet.PackageManagement.UI.Test
             // Act
             var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData);
 
-            Assert.True(links[links.Count - 1] is WarningText);
+            Assert.True(links[0] is WarningText);
             Assert.Empty(links.Where(e => e is LicenseText));
         }
 

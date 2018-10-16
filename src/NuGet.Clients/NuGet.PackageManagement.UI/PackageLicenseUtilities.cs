@@ -41,14 +41,20 @@ namespace NuGet.PackageManagement.UI
         internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata metadata)
         {
             var list = new List<IText>();
+
+            if (metadata.WarningsAndErrors != null)
+            {
+                list.Add(new WarningText(string.Join(Environment.NewLine, metadata.WarningsAndErrors)));
+            }
+
             switch (metadata.Type)
             {
                 case LicenseType.Expression:
 
                     if (metadata.LicenseExpression != null)
                     {
-                        IList<string> identifiers = new List<string>();
-                        PopulateLicenseIdentifiers(metadata.LicenseExpression, ref identifiers);
+                        var identifiers = new List<string>();
+                        PopulateLicenseIdentifiers(metadata.LicenseExpression, identifiers);
 
                         var licenseToBeProcessed = metadata.License;
 
@@ -84,15 +90,10 @@ namespace NuGet.PackageManagement.UI
                     break;
             }
 
-            if (metadata.WarningsAndErrors != null)
-            {
-                list.Add(new WarningText(string.Join(Environment.NewLine, metadata.WarningsAndErrors)));
-            }
-
             return list;
         }
 
-        private static void PopulateLicenseIdentifiers(NuGetLicenseExpression expression, ref IList<string> identifiers)
+        private static void PopulateLicenseIdentifiers(NuGetLicenseExpression expression, IList<string> identifiers)
         {
             switch (expression.Type)
             {
@@ -107,8 +108,8 @@ namespace NuGet.PackageManagement.UI
                     {
                         case LicenseOperatorType.LogicalOperator:
                             var logicalOperator = (LogicalOperator)licenseOperator;
-                            PopulateLicenseIdentifiers(logicalOperator.Left, ref identifiers);
-                            PopulateLicenseIdentifiers(logicalOperator.Right, ref identifiers);
+                            PopulateLicenseIdentifiers(logicalOperator.Left, identifiers);
+                            PopulateLicenseIdentifiers(logicalOperator.Right, identifiers);
                             break;
 
                         case LicenseOperatorType.WithOperator:

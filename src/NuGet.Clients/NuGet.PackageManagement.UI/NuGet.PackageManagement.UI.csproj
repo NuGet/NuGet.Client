@@ -73,13 +73,16 @@
     <Compile Include="Converters\NotNullOrTrueToBooleanConverter.cs" />
     <Compile Include="DisplayVersion.cs" />
     <Compile Include="IPackageItemLoader.cs" />
+    <Compile Include="Models\FreeText.cs" />
     <Compile Include="Models\IText.cs" />
+    <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LoadingStatusViewModel.cs" />
     <Compile Include="Models\NuGetProjectUpgradeDependencyItem.cs" />
     <Compile Include="Models\NuGetProjectUpgradeWindowModel.cs" />
     <Compile Include="Models\PackageSearchStatus.cs" />
     <Compile Include="Models\ProjectVersionConstraint.cs" />
     <Compile Include="Models\PackageIconMonikers.cs" />
+    <Compile Include="Models\WarningText.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="NuGetPackageManagerControlSearchTask.cs" />
     <Compile Include="Options\CheckedListBoxAccessibleObject.cs" />
