@@ -841,8 +841,6 @@ namespace NuGet.PackageManagement
 
                         if (resolvedPackage != null && resolvedPackage.LatestVersion != null && resolvedPackage.LatestVersion > installedPackage.PackageIdentity.Version)
                         {
-                            lowLevelActions.Add(NuGetProjectAction.CreateUninstallProjectAction(installedPackage.PackageIdentity,
-                                nuGetProject));
                             lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(
                                 new PackageIdentity(installedPackage.PackageIdentity.Id, resolvedPackage.LatestVersion),
                                 primarySources.FirstOrDefault(),
@@ -927,7 +925,6 @@ namespace NuGet.PackageManagement
                     //  if the package is not currently installed, or the installed one is auto referenced ignore it
                     if (installed != null && !autoReferenced)
                     {
-                        lowLevelActions.Add(NuGetProjectAction.CreateUninstallProjectAction(installed.PackageIdentity, nuGetProject));
                         lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity,
                             primarySources.FirstOrDefault(), nuGetProject));
                     }
