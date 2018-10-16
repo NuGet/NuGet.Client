@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml.Linq;
-using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -28,12 +27,13 @@ namespace NuGet.Configuration
                 !string.Equals(a.Key, ConfigurationConstants.ValueAttribute, StringComparison.OrdinalIgnoreCase)
             ).ToDictionary(a => a.Key, a => a.Value));
 
-        protected override HashSet<string> RequiredAttributes => new HashSet<string>() { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute };
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute };
 
-        protected override Dictionary<string, HashSet<string>> DisallowedValues => new Dictionary<string, HashSet<string>>()
-        {
-            { ConfigurationConstants.KeyAttribute, new HashSet<string>() { string.Empty } }
-        };
+        protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> DisallowedValues { get; } = new ReadOnlyDictionary<string, IReadOnlyCollection<string>>(
+            new Dictionary<string, IReadOnlyCollection<string>>()
+            {
+                { ConfigurationConstants.KeyAttribute, new HashSet<string>() { string.Empty } }
+            });
 
         public AddItem(string key, string value)
             : this(key, value, additionalAttributes: null)
