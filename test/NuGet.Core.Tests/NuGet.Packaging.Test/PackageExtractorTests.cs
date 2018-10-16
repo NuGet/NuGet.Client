@@ -19,6 +19,7 @@ using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
+using NuGet.Protocol.Plugins;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility.Signing;
@@ -3122,6 +3123,59 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(1, files.Length);
                 Assert.Equal(Path.Combine(testDirectory.Path, "lib", "net45", "fr", "A.resources.dll"), files[0]);
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsync_PluginPackageDownloader()
+        {
+            // Arrange
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                var packagesPath = Path.Combine(root, "packages");
+                var pathResolver = new VersionFolderPathResolver(packagesPath);
+                var identity = new PackageIdentity("PackageA", new NuGetVersion("1.0.0"));
+                var packageSourceRepository = "https://unit.test";
+
+                var connection = new Mock<IConnection>();
+                connection.Setup(x => x.SendRequestAndReceiveResponseAsync<CopyNupkgFileRequest, CopyNupkgFileResponse>(
+                        It.Is<MessageMethod>(m => m == MessageMethod.CopyNupkgFile),
+                        It.Is<CopyNupkgFileRequest>(c => c.PackageId == identity.Id &&
+                            c.PackageVersion == identity.Version.ToNormalizedString() &&
+                            c.PackageSourceRepository == packageSourceRepository &&
+                            c.DestinationFilePath == pathResolver.GetPackageDirectory(identity.Id, identity.Version)),
+                        It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new CopyNupkgFileResponse(MessageResponseCode.Success));
+
+                var plugin = new Mock<IPlugin>();
+                plugin.Setup(x => x.Dispose());
+                plugin.SetupGet(x => x.Connection)
+                    .Returns(connection.Object);
+
+                var packageReader = new PluginPackageReader(plugin.Object, identity, packageSourceRepository);
+
+                using (var pluginDownloader = new PluginPackageDownloader(
+                    plugin.Object,
+                    identity,
+                    packageReader,
+                    packageSourceRepository))
+                {
+                    // Act
+                    var installed = await PackageExtractor.InstallFromSourceAsync(
+                            identity,
+                            pluginDownloader,
+                            pathResolver,
+                            new PackageExtractionContext(
+                                packageSaveMode: PackageSaveMode.Nupkg,
+                                xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                                clientPolicyContext: null,
+                                logger: NullLogger.Instance),
+                            CancellationToken.None);
+
+                    // Assert
+                    Assert.True(installed);
+                }
             }
         }
 
