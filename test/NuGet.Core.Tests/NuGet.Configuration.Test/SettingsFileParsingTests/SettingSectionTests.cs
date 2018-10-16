@@ -409,5 +409,85 @@ namespace NuGet.Configuration.Test
             ex.Should().BeOfType<ArgumentException>();
             ex.Message.Should().Be("Cannot merge two different sections.");
         }
+
+        [Fact]
+        public void SettingSection_Equals_WithSameElementName_ReturnsTrue()
+        {
+            var section1 = new VirtualSettingSection("section", new AddItem("key1", "val"));
+            var section2 = new VirtualSettingSection("section");
+
+            section1.Equals(section2).Should().BeTrue();
+        }
+
+        [Fact]
+        public void SettingSection_Equals_WithDifferentElementName_ReturnsFalse()
+        {
+            var section1 = new VirtualSettingSection("section", new AddItem("key1", "val"));
+            var section2 = new VirtualSettingSection("section1", new AddItem("key1", "val"));
+
+            section1.Equals(section2).Should().BeFalse();
+        }
+
+        [Fact]
+        public void VirtualSection_ElementName_IsCorrect()
+        {
+            var settingSection = new VirtualSettingSection("section", new AddItem("key1", "val"));
+
+            settingSection.ElementName.Should().Be("section");
+        }
+
+        [Fact]
+        public void ParsedSection_ElementName_IsCorrect()
+        {
+            var settingSection = new ParsedSettingSection("section", new AddItem("key1", "val"));
+
+            settingSection.ElementName.Should().Be("section");
+        }
+
+        [Fact]
+        public void AddItem_Clone_CopiesTheSameItem()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""val"" meta=""data"" />
+    </SectionName>
+</configuration>";
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.TryGetSection("SectionName", out var section).Should().BeTrue();
+                section.Should().NotBeNull();
+                section.Should().BeOfType<ParsedSettingSection>();
+
+                section.IsCopy().Should().BeFalse();
+                section.Origin.Should().NotBeNull();
+
+                var clone = section.Clone() as SettingSection;
+                clone.IsAbstract().Should().BeTrue();
+                clone.Origin.Should().BeNull();
+                clone.Should().BeOfType<VirtualSettingSection>();
+
+                SettingsTestUtils.DeepEquals(clone, section).Should().BeTrue();
+
+                var virtualSection = new VirtualSettingSection("SectionName",
+                    new AddItem("key1", "val",
+                        new Dictionary<string, string>() { { "meta", "data" } }));
+                virtualSection.Origin.Should().BeNull();
+                virtualSection.IsAbstract().Should().BeTrue();
+
+                var virtualClone = virtualSection.Clone() as SettingSection;
+                virtualClone.IsAbstract().Should().BeTrue();
+                virtualClone.Origin.Should().BeNull();
+                virtualClone.Should().BeOfType<VirtualSettingSection>();
+
+                SettingsTestUtils.DeepEquals(virtualClone, virtualSection).Should().BeTrue();
+            }
+        }
     }
 }

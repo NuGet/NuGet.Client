@@ -46,5 +46,31 @@ namespace NuGet.Configuration.Test
                 settingsFile.Should().NotBeNull();
             }
         }
+
+        [Fact]
+        public void NuGetConfiguration_Equals_WithSameSections_ReturnsTrue()
+        {
+            var configuration1 = new NuGetConfiguration(new VirtualSettingSection("section1"), new VirtualSettingSection("section2"));
+            var configuration2 = new NuGetConfiguration(new VirtualSettingSection("section1"), new VirtualSettingSection("section2"));
+
+            configuration1.Equals(configuration2).Should().BeTrue();
+        }
+
+        [Fact]
+        public void NuGetConfiguration_Equals_WithDifferentSections_ReturnsFalse()
+        {
+            var configuration1 = new NuGetConfiguration(new VirtualSettingSection("section1"), new VirtualSettingSection("section2"));
+            var configuration2 = new NuGetConfiguration(new VirtualSettingSection("section1"));
+
+            configuration1.Equals(configuration2).Should().BeFalse();
+        }
+
+        [Fact]
+        public void NuGetConfiguration_ElementName_IsCorrect()
+        {
+            var nugetConfiguration = new NuGetConfiguration();
+
+            nugetConfiguration.ElementName.Should().Be("configuration");
+        }
     }
 }

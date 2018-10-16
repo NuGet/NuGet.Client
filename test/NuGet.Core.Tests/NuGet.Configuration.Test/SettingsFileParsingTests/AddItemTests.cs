@@ -358,5 +358,63 @@ namespace NuGet.Configuration.Test
                 }
             }
         }
+
+        [Fact]
+        public void AddItem_Equals_WithSameKey_ReturnsTrue()
+        {
+            var add1 = new AddItem("key1", "value1", new Dictionary<string, string>() { { "meta", "data" } });
+            var add2 = new AddItem("key1", "valueN");
+
+            add1.Equals(add2).Should().BeTrue();
+        }
+
+        [Fact]
+        public void AddItem_Equals_WithDifferentKey_ReturnsFalse()
+        {
+            var add1 = new AddItem("key1", "value1");
+            var add2 = new AddItem("keyN", "value1");
+
+            add1.Equals(add2).Should().BeFalse();
+        }
+
+        [Fact]
+        public void AddItem_ElementName_IsCorrect()
+        {
+            var addItem = new AddItem("key1", "value1");
+
+            addItem.ElementName.Should().Be("add");
+        }
+
+        [Fact]
+        public void AddItem_Clone_CopiesTheSameItem()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""val"" meta=""data"" />
+    </SectionName>
+</configuration>";
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.TryGetSection("SectionName", out var section).Should().BeTrue();
+                section.Should().NotBeNull();
+
+                section.Items.Count.Should().Be(1);
+                var item = section.Items.First();
+                item.IsCopy().Should().BeFalse();
+                item.Origin.Should().NotBeNull();
+
+                var clone = item.Clone() as AddItem;
+                clone.IsCopy().Should().BeTrue();
+                clone.Origin.Should().NotBeNull();
+                SettingsTestUtils.DeepEquals(clone, item).Should().BeTrue();
+            }
+        }
     }
 }

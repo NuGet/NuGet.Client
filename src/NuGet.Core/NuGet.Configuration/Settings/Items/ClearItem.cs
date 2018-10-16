@@ -21,7 +21,18 @@ namespace NuGet.Configuration
         {
         }
 
-        internal override SettingBase Clone() => new ClearItem();
+        internal override SettingBase Clone()
+        {
+            var newItem = new ClearItem();
+
+            if (Origin != null)
+            {
+                newItem.SetOrigin(Origin);
+            }
+
+            return newItem;
+        }
+
         public override bool Equals(object other) => other is ClearItem;
         public override int GetHashCode() => ElementName.GetHashCode();
     }

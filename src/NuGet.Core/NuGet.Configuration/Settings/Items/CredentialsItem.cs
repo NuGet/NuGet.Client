@@ -190,6 +190,11 @@ namespace NuGet.Configuration
                 newSetting.SetOrigin(Origin);
             }
 
+            foreach(var attr in Attributes)
+            {
+                newSetting.AddAttribute(attr.Key, attr.Value);
+            }
+
             return newSetting;
         }
 

@@ -95,5 +95,60 @@ namespace NuGet.Configuration.Test
                 text.Value.Should().Be("This is another test");
             }
         }
+
+        [Fact]
+        public void SettingText_Equals_WithSameText_ReturnsTrue()
+        {
+            var text1 = new SettingText("some text");
+            var text2 = new SettingText("some text");
+
+            text1.Equals(text2).Should().BeTrue();
+        }
+
+        [Fact]
+        public void SettingText_Equals_WithDifferentText_ReturnsFalse()
+        {
+            var text1 = new SettingText("some text");
+            var text2 = new SettingText("other text");
+
+            text1.Equals(text2).Should().BeFalse();
+        }
+
+        [Fact]
+        public void SettingText_Clone_CopiesTheSameItem()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <SectionName>
+        <item>Some text</item>
+    </SectionName>
+</configuration>";
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.TryGetSection("SectionName", out var section).Should().BeTrue();
+                section.Should().NotBeNull();
+
+                section.Items.Count.Should().Be(1);
+                var item = section.Items.First() as UnknownItem;
+                item.IsCopy().Should().BeFalse();
+                item.Origin.Should().NotBeNull();
+
+                item.Children.Count.Should().Be(1);
+                var text = item.Children.First();
+                text.IsCopy().Should().BeFalse();
+                text.Origin.Should().NotBeNull();
+
+                var clone = text.Clone() as SettingText;
+                clone.IsCopy().Should().BeTrue();
+                clone.Origin.Should().NotBeNull();
+                SettingsTestUtils.DeepEquals(clone, text).Should().BeTrue();
+            }
+        }
     }
 }
