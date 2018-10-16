@@ -35,11 +35,11 @@ namespace NuGet.Packaging.Signing
 
         private static void X509Certificate2ToString(X509Certificate2 cert, StringBuilder certStringBuilder, HashAlgorithmName fingerprintAlgorithm, string indentation)
         {
-            var certificateFingerprint = GetHash(cert, fingerprintAlgorithm);
+            var certificateFingerprint = GetHashString(cert, fingerprintAlgorithm);
 
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateSubjectName, cert.Subject)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHashSha1, cert.Thumbprint)}");
-            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(), BitConverter.ToString(certificateFingerprint).Replace("-", ""))}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(),certificateFingerprint)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter)}");
         }
@@ -246,6 +246,24 @@ namespace NuGet.Packaging.Signing
             }
 
             return hashAlgorithm.ComputeHash(certificate.RawData);
+        }
+
+
+        /// <summary>
+        /// Gets the certificate fingerprint string with the given hashing algorithm
+        /// </summary>
+        /// <param name="certificate">X509Certificate2 to be compute fingerprint</param>
+        /// <param name="hashAlgorithm">Hash algorithm for fingerprint</param>
+        /// <returns>A string representing the certificate hash.</returns>
+        public static string GetHashString(X509Certificate2 certificate, HashAlgorithmName hashAlgorithm)
+        {
+            if (certificate == null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+
+            var certificateFingerprint = GetHash(certificate, hashAlgorithm);
+            return BitConverter.ToString(certificateFingerprint).Replace("-", "");
         }
 
         /// <summary>

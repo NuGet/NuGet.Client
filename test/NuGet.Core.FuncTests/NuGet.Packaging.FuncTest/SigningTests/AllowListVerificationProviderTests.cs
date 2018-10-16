@@ -1050,8 +1050,7 @@ namespace NuGet.Packaging.FuncTest
 
             foreach (var cert in certificates)
             {
-                var certificateFingerprint = CertificateUtility.GetHash(cert, HashAlgorithmName.SHA256);
-                var fingerprintString = BitConverter.ToString(certificateFingerprint).Replace(" - ", "");
+                var fingerprintString = CertificateUtility.GetHashString(cert, HashAlgorithmName.SHA256);
 
                 repoCertificateInfo.Add(new TestRepositoryCertificateInfo()
                 {

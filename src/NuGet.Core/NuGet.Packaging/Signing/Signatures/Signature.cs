@@ -365,8 +365,7 @@ namespace NuGet.Packaging.Signing
                 return fingerprint;
             }
 
-            var certificateFingerprint = CertificateUtility.GetHash(certificate, algorithm);
-            fingerprint = BitConverter.ToString(certificateFingerprint).Replace("-", "");
+            fingerprint = CertificateUtility.GetHashString(certificate, algorithm);
 
             _signingCertificateFingerprintLookup.Add(algorithm, fingerprint);
 
