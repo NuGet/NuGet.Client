@@ -32,10 +32,10 @@ namespace NuGet.Packaging.Test
         private static ClientPolicyContext _defaultContext = ClientPolicyContext.GetClientPolicy(NullSettings.Instance, NullLogger.Instance);
 
         private const string _emptyTrustedSignersList = "A list of trusted signers is required by the client but none was found.";
-        private const string _emptyRepoAllowList = "The repository where this package was downloaded announced that their packages should be signed but an empty list of trusted signers was found. No package downloaded from this repository can be trusted.";
+        private const string _emptyRepoAllowList = "The repository this package was downloaded from announced that their packages are signed but an empty list of trusted signers was found. This is likely an issue with the repository.";
         private const string _noMatchInTrustedSignersList = "The package signature certificate fingerprint does not match any certificate fingerprint from the user's trusted signers. You need to trust the signer.";
         private const string _noMatchInRepoAllowList = "The package signature certificate fingerprint does not match any trusted signer given from the repository where the package was downloaded from. This package is untrusted.";
-        private const string _notSignedPackageRepo = "The repository announced that all their packages where signed and the package was found unsigned.";
+        private const string _notSignedPackageRepo = "The repository announced that all their packages are signed, but the package is not.";
         private const string _notSignedPackageRequire = "The package is unsigned and require mode does not allow installation of unsigned packages.";
 
         [Fact]

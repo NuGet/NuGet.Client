@@ -590,7 +590,7 @@ Valid from:</comment>
     <value>The primary signature and repository countersignature are unrelated.</value>
   </data>
   <data name="Error_NoRepoAllowList" xml:space="preserve">
-    <value>The repository where this package was downloaded announced that their packages should be signed but an empty list of trusted signers was found. No package downloaded from this repository can be trusted.</value>
+    <value>The repository this package was downloaded from announced that their packages are signed but an empty list of trusted signers was found. This is likely an issue with the repository.</value>
   </data>
   <data name="Error_NoClientAllowList" xml:space="preserve">
     <value>If in require mode, the user must to have a list of trusted signers but none was found. Please add trusted signers to the configuration file.</value>
@@ -791,7 +791,7 @@ Valid from:</comment>
     <comment>0 - semicolon delimited list of identifiers</comment>
   </data>
   <data name="Error_RepositorySettings_UnsignedPackage" xml:space="preserve">
-    <value>The repository announced that all their packages where signed and the package was found unsigned.</value>
+    <value>The repository announced that all their packages are signed, but the package is not.</value>
   </data>
   <data name="Error_RequireMode_UnsignedPackage" xml:space="preserve">
     <value>The package is unsigned and require mode does not allow installation of unsigned packages.</value>

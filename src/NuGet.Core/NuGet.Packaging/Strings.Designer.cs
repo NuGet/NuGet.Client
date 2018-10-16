@@ -251,7 +251,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The repository where this package was downloaded announced that their packages should be signed but an empty list of trusted signers was found. No package downloaded from this repository can be trusted..
+        ///   Looks up a localized string similar to The repository this package was downloaded from announced that their packages are signed but an empty list of trusted signers was found. This is likely an issue with the repository..
         /// </summary>
         internal static string Error_NoRepoAllowList {
             get {
@@ -278,7 +278,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The repository announced that all their packages where signed and the package was found unsigned..
+        ///   Looks up a localized string similar to The repository announced that all their packages are signed, but the package is not..
         /// </summary>
         internal static string Error_RepositorySettings_UnsignedPackage {
             get {
