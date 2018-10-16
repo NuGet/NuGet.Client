@@ -426,7 +426,7 @@ namespace NuGet.Packaging
 
             if (licenseNode != null)
             {
-                var type = licenseNode.Attribute(NuspecUtility.Type).Value.SafeTrim();
+                var type = licenseNode.Attribute(NuspecUtility.Type)?.Value.SafeTrim();
                 var license = licenseNode.Value.SafeTrim();
                 var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value.SafeTrim();
 
