@@ -31,12 +31,12 @@ namespace NuGet.Packaging.Test
     {
         private static ClientPolicyContext _defaultContext = ClientPolicyContext.GetClientPolicy(NullSettings.Instance, NullLogger.Instance);
 
-        private const string _emptyTrustedSignersList = "A list of trusted signers is required by the client but none was found.";
-        private const string _emptyRepoAllowList = "The repository this package was downloaded from announced that their packages are signed but an empty list of trusted signers was found. This is likely an issue with the repository.";
-        private const string _noMatchInTrustedSignersList = "The package signature certificate fingerprint does not match any certificate fingerprint from the user's trusted signers. You need to trust the signer.";
-        private const string _noMatchInRepoAllowList = "The package signature certificate fingerprint does not match any trusted signer given from the repository where the package was downloaded from. This package is untrusted.";
-        private const string _notSignedPackageRepo = "The repository announced that all their packages are signed, but the package is not.";
-        private const string _notSignedPackageRequire = "The package is unsigned and require mode does not allow installation of unsigned packages.";
+        private const string _emptyTrustedSignersList = "signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified.";
+        private const string _emptyRepoAllowList = "This repository indicated that all its packages are repository signed; however, it listed no signing certificates.";
+        private const string _noMatchInTrustedSignersList = "This package is signed but not by a trusted signer.";
+        private const string _noMatchInRepoAllowList = "This package was not repository signed with a certificate listed by this repository.";
+        private const string _notSignedPackageRepo = "This repository indicated that all its packages are repository signed; however, this package is unsigned.";
+        private const string _notSignedPackageRequire = "signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.";
 
         [Fact]
         public async Task InstallFromSourceAsync_StressTestAsync()

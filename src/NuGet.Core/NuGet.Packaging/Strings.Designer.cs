@@ -224,7 +224,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If in require mode, the user must to have a list of trusted signers but none was found. Please add trusted signers to the configuration file..
+        ///   Looks up a localized string similar to signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified..
         /// </summary>
         internal static string Error_NoClientAllowList {
             get {
@@ -233,7 +233,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any certificate fingerprint from the user&apos;s trusted signers. You need to trust the signer..
+        ///   Looks up a localized string similar to This package is signed but not by a trusted signer..
         /// </summary>
         internal static string Error_NoMatchingClientCertificate {
             get {
@@ -242,7 +242,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any trusted signer given from the repository where the package was downloaded from. This package is untrusted..
+        ///   Looks up a localized string similar to This package was not repository signed with a certificate listed by this repository..
         /// </summary>
         internal static string Error_NoMatchingRepositoryCertificate {
             get {
@@ -251,7 +251,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The repository this package was downloaded from announced that their packages are signed but an empty list of trusted signers was found. This is likely an issue with the repository..
+        ///   Looks up a localized string similar to This repository indicated that all its packages are repository signed; however, it listed no signing certificates..
         /// </summary>
         internal static string Error_NoRepoAllowList {
             get {
@@ -278,7 +278,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The repository announced that all their packages are signed, but the package is not..
+        ///   Looks up a localized string similar to This repository indicated that all its packages are repository signed; however, this package is unsigned..
         /// </summary>
         internal static string Error_RepositorySettings_UnsignedPackage {
             get {
@@ -296,7 +296,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package is unsigned and require mode does not allow installation of unsigned packages..
+        ///   Looks up a localized string similar to signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned..
         /// </summary>
         internal static string Error_RequireMode_UnsignedPackage {
             get {

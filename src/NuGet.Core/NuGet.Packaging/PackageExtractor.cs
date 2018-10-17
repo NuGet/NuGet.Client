@@ -1115,12 +1115,6 @@ namespace NuGet.Packaging
             }
         }
 
-        /// <summary>
-        /// Adds a package ID and package source as a prefix to log messages and adds package ID to the message.LibraryId.
-        /// </summary>
-        /// <param name="source">package source.</param>
-        /// <param name="package">package identity.</param>
-        /// <param name="message">ILogMessage to be modified.</param>
         private static void UpdateSignatureLog(string source, PackageIdentity package, ClientPolicyContext policyContext, SignatureLog message)
         {
             if (message.Code == NuGetLogCode.NU3004)

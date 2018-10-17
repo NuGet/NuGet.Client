@@ -519,7 +519,7 @@ Valid from:</comment>
     <value>The argument is invalid.</value>
   </data>
   <data name="Error_NoMatchingClientCertificate" xml:space="preserve">
-    <value>The package signature certificate fingerprint does not match any certificate fingerprint from the user's trusted signers. You need to trust the signer.</value>
+    <value>This package is signed but not by a trusted signer.</value>
   </data>
   <data name="CertUtilityCertificateHash" xml:space="preserve">
     <value>{0} hash: {1}</value>
@@ -590,13 +590,13 @@ Valid from:</comment>
     <value>The primary signature and repository countersignature are unrelated.</value>
   </data>
   <data name="Error_NoRepoAllowList" xml:space="preserve">
-    <value>The repository this package was downloaded from announced that their packages are signed but an empty list of trusted signers was found. This is likely an issue with the repository.</value>
+    <value>This repository indicated that all its packages are repository signed; however, it listed no signing certificates.</value>
   </data>
   <data name="Error_NoClientAllowList" xml:space="preserve">
-    <value>If in require mode, the user must to have a list of trusted signers but none was found. Please add trusted signers to the configuration file.</value>
+    <value>signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified.</value>
   </data>
   <data name="Error_NoMatchingRepositoryCertificate" xml:space="preserve">
-    <value>The package signature certificate fingerprint does not match any trusted signer given from the repository where the package was downloaded from. This package is untrusted.</value>
+    <value>This package was not repository signed with a certificate listed by this repository.</value>
   </data>
   <data name="VerifyChainBuildingIssue" xml:space="preserve">
     <value>The {0} found a chain building issue: {1}</value>
@@ -791,9 +791,9 @@ Valid from:</comment>
     <comment>0 - semicolon delimited list of identifiers</comment>
   </data>
   <data name="Error_RepositorySettings_UnsignedPackage" xml:space="preserve">
-    <value>The repository announced that all their packages are signed, but the package is not.</value>
+    <value>This repository indicated that all its packages are repository signed; however, this package is unsigned.</value>
   </data>
   <data name="Error_RequireMode_UnsignedPackage" xml:space="preserve">
-    <value>The package is unsigned and require mode does not allow installation of unsigned packages.</value>
+    <value>signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.</value>
   </data>
 </root>
