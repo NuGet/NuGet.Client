@@ -1016,7 +1016,7 @@ namespace NuGet.Commands.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, _defaultSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(valid: false, signed: true));
+                    ReturnsAsync(new VerifySignaturesResult(isValid: false, isSigned: true));
 
                 var extractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
@@ -1093,7 +1093,7 @@ namespace NuGet.Commands.Test
                     It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, _defaultSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
-                    ReturnsAsync(new VerifySignaturesResult(valid: true, signed: true));
+                    ReturnsAsync(new VerifySignaturesResult(isValid: true, isSigned: true));
 
                 var extractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
