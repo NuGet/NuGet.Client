@@ -73,12 +73,16 @@
     <Compile Include="Converters\NotNullOrTrueToBooleanConverter.cs" />
     <Compile Include="DisplayVersion.cs" />
     <Compile Include="IPackageItemLoader.cs" />
+    <Compile Include="Models\FreeText.cs" />
+    <Compile Include="Models\IText.cs" />
+    <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LoadingStatusViewModel.cs" />
     <Compile Include="Models\NuGetProjectUpgradeDependencyItem.cs" />
     <Compile Include="Models\NuGetProjectUpgradeWindowModel.cs" />
     <Compile Include="Models\PackageSearchStatus.cs" />
     <Compile Include="Models\ProjectVersionConstraint.cs" />
     <Compile Include="Models\PackageIconMonikers.cs" />
+    <Compile Include="Models\WarningText.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="NuGetPackageManagerControlSearchTask.cs" />
     <Compile Include="Options\CheckedListBoxAccessibleObject.cs" />
@@ -108,6 +112,7 @@
     <Compile Include="Options\PackageSourcesOptionsControl.Designer.cs">
       <DependentUpon>PackageSourcesOptionsControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="PackageLicenseUtilities.cs" />
     <Compile Include="PackageManagerWindowPane.cs" />
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>
@@ -525,6 +530,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.ImageCatalog">
+      <Version>15.8.28010</Version>
+    </PackageReference>
     <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.4.0" PrivateAssets="all" />
   </ItemGroup>
   <PropertyGroup>

@@ -786,4 +786,8 @@ Valid from:</comment>
   <data name="NuGetLicense_LicenseElementMissingValue" xml:space="preserve">
     <value>The license element value is empty. This is likely due to an authoring error. </value>
   </data>
+  <data name="NuGetLicenseExpression_NonStandardIdentifier" xml:space="preserve">
+    <value>The license identifier(s) {0} is(are) not recognized by the current toolset.</value>
+    <comment>0 - semicolon delimited list of identifiers</comment>
+  </data>
 </root>

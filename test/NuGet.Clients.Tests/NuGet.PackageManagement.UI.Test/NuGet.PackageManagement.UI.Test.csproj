@@ -29,6 +29,7 @@
     <Compile Include="ConverterTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageItemLoaderTests.cs" />
+    <Compile Include="PackageLicenseUtilitiesTests.cs" />
     <Compile Include="PackageManagerListItemsTest.cs" />
     <Compile Include="PackageManagerProviderTest.cs" />
     <Compile Include="TestPackageManagerProviders.cs" />
@@ -63,6 +64,6 @@
     </None>
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

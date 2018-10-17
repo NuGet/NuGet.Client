@@ -1015,6 +1015,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The license file &apos;{0}&apos; is embedded in the package..
+        /// </summary>
+        public static string License_FileEmbeddedInPackage {
+            get {
+                return ResourceManager.GetString("License_FileEmbeddedInPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Don&apos;t show again.
         /// </summary>
         public static string Link_DoNotShowAgain {

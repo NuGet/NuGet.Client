@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Licenses;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -100,6 +102,94 @@ namespace NuGet.Protocol
 
         [JsonProperty(PropertyName = JsonProperties.PrefixReserved)]
         public bool PrefixReserved { get; private set; }
+
+        [JsonProperty(PropertyName = JsonProperties.LicenseExpression)]
+        public string LicenseExpression { get; private set; }
+
+        [JsonProperty(PropertyName = JsonProperties.LicenseExpressionVersion)]
+        public string LicenseExpressionVersion { get; private set; }
+
+        [JsonIgnore]
+        public LicenseMetadata LicenseMetadata
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(LicenseExpression))
+                {
+                    return null;
+                }
+
+                var trimmedLicenseExpression = LicenseExpression.Trim();
+
+                System.Version.TryParse(LicenseExpressionVersion, out var effectiveVersion);
+                effectiveVersion = effectiveVersion ?? LicenseMetadata.EmptyVersion;
+
+                List<string> errors = null;
+                NuGetLicenseExpression parsedExpression = null;
+
+                if (effectiveVersion.CompareTo(LicenseMetadata.CurrentVersion) <= 0)
+                {
+                    try
+                    {
+                        parsedExpression = NuGetLicenseExpression.Parse(trimmedLicenseExpression);
+
+                        var invalidLicenseIdentifiers = GetNonStandardLicenseIdentifiers(parsedExpression);
+                        if (invalidLicenseIdentifiers != null)
+                        {
+                            if (errors == null)
+                            {
+                                errors = new List<string>();
+                            }
+                            errors.Add(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_NonStandardIdentifier, string.Join(", ", invalidLicenseIdentifiers)));
+                        }
+                    }
+                    catch (NuGetLicenseExpressionParsingException e)
+                    {
+                        if (errors == null)
+                        {
+                            errors = new List<string>();
+                        }
+                        errors.Add(e.Message);
+                    }
+                }
+                else
+                {
+                    // We can't parse it, add an error 
+                    if (errors == null)
+                    {
+                        errors = new List<string>();
+                    }
+
+                    errors.Add(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.NuGetLicense_LicenseExpressionVersionTooHigh,
+                            effectiveVersion,
+                            LicenseMetadata.CurrentVersion));
+                }
+
+                return new LicenseMetadata(LicenseType.Expression, license: trimmedLicenseExpression, expression: parsedExpression, warningsAndErrors: errors, version: effectiveVersion);
+            }
+        }
+
+        private static IList<string> GetNonStandardLicenseIdentifiers(NuGetLicenseExpression expression)
+        {
+            IList<string> invalidLicenseIdentifiers = null;
+            Action<NuGetLicense> licenseProcessor = delegate (NuGetLicense nugetLicense)
+            {
+                if (!nugetLicense.IsStandardLicense)
+                {
+                    if (invalidLicenseIdentifiers == null)
+                    {
+                        invalidLicenseIdentifiers = new List<string>();
+                    }
+                    invalidLicenseIdentifiers.Add(nugetLicense.Identifier);
+                }
+            };
+            expression.OnEachLeafNode(licenseProcessor, null);
+
+            return invalidLicenseIdentifiers;
+        }
 
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions);
 

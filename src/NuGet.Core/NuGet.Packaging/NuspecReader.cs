@@ -426,13 +426,13 @@ namespace NuGet.Packaging
 
             if (licenseNode != null)
             {
-                var type = licenseNode.Attribute(NuspecUtility.Type).Value.SafeTrim();
+                var type = licenseNode.Attribute(NuspecUtility.Type)?.Value.SafeTrim();
                 var license = licenseNode.Value.SafeTrim();
                 var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value.SafeTrim();
 
                 var isKnownType = Enum.TryParse(type, ignoreCase: true, result: out LicenseType licenseType);
 
-                IList<string> errors = null;
+                List<string> errors = null;
 
                 if (isKnownType)
                 {
@@ -472,6 +472,17 @@ namespace NuGet.Packaging
                                 try
                                 {
                                     var expression = NuGetLicenseExpression.Parse(license);
+
+                                    var invalidLicenseIdentifiers = GetNonStandardLicenseIdentifiers(expression);
+                                    if (invalidLicenseIdentifiers != null)
+                                    {
+                                        if (errors == null)
+                                        {
+                                            errors = new List<string>();
+                                        }
+                                        errors.Add(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_NonStandardIdentifier, string.Join(", ", invalidLicenseIdentifiers)));
+                                    }
+
                                     return new LicenseMetadata(type: licenseType, license: license, expression: expression, warningsAndErrors: errors, version: version);
                                 }
                                 catch (NuGetLicenseExpressionParsingException e)
@@ -506,6 +517,25 @@ namespace NuGet.Packaging
                 }
             }
             return null;
+        }
+
+        private static IList<string> GetNonStandardLicenseIdentifiers(NuGetLicenseExpression expression)
+        {
+            IList<string> invalidLicenseIdentifiers = null;
+            Action<NuGetLicense> licenseProcessor = delegate (NuGetLicense nugetLicense)
+            {
+                if (!nugetLicense.IsStandardLicense)
+                {
+                    if (invalidLicenseIdentifiers == null)
+                    {
+                        invalidLicenseIdentifiers = new List<string>();
+                    }
+                    invalidLicenseIdentifiers.Add(nugetLicense.Identifier);
+                }
+            };
+            expression.OnEachLeafNode(licenseProcessor, null);
+
+            return invalidLicenseIdentifiers;
         }
 
         /// <summary>

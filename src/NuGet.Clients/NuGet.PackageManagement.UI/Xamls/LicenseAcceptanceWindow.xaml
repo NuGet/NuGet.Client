@@ -5,6 +5,8 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"  
+  xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
   x:Name="_self"
   MinWidth="450"
   MinHeight="450"
@@ -25,8 +27,39 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
-      <DataTemplate
-        x:Key="LicenseItemTemplate">
+      <DataTemplate DataType="{x:Type nuget:LicenseText}">
+        <TextBlock
+            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
+            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}">
+                <Hyperlink
+                    AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
+                    Style="{StaticResource HyperlinkStyle}"
+                    RequestNavigate="OnViewLicenseTermsRequestNavigate"
+                    NavigateUri="{Binding Link}">
+                    <Run Text="{Binding Text}"></Run>
+                </Hyperlink>
+        </TextBlock>
+      </DataTemplate>
+
+      <DataTemplate DataType="{x:Type nuget:FreeText}">
+        <TextBlock
+            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseOperator}"
+            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseOperator_{0}'}"
+            Text="{Binding Text}" />
+      </DataTemplate>
+
+      <DataTemplate DataType="{x:Type nuget:WarningText}">
+          <imaging:CrispImage
+                        x:Name="_licenseWarning"
+                        Margin="5,0,5,5"
+                        Width="13"
+                        Height="13"
+                        Visibility="{Binding Text, Converter={StaticResource NullToVisibilityConverter}}"
+                        ToolTip="{Binding Text}"
+                        Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
+      </DataTemplate>
+
+      <DataTemplate x:Key="LicenseItemTemplate">
         <StackPanel
           Margin="2,0,2,5">
           <TextBlock
@@ -43,18 +76,13 @@
                     <Run
               Text="{Binding Authors, Mode=OneTime}" />
           </TextBlock>
-          <TextBlock
-            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
-            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}">
-                    <Hyperlink
-              AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
-              NavigateUri="{Binding LicenseUrl, Mode=OneTime}"
-              Style="{StaticResource HyperlinkStyle}"
-              RequestNavigate="OnViewLicenseTermsRequestNavigate">
-                        <Run
-                Text="{x:Static nuget:Resources.Text_ViewLicense}" />
-                    </Hyperlink>
-          </TextBlock>
+          <ItemsControl ItemsSource="{Binding License}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+          </ItemsControl>
         </StackPanel>
       </DataTemplate>
     </ResourceDictionary>
