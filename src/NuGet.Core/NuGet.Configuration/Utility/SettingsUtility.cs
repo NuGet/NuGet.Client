@@ -12,8 +12,6 @@ namespace NuGet.Configuration
 {
     public static class SettingsUtility
     {
-        //TODO: Delete all obsolete APIs. https://github.com/NuGet/Home/issues/7294
-
         private const string GlobalPackagesFolderKey = "globalPackagesFolder";
         private const string GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES";
         private const string FallbackPackagesFolderEnvironmentKey = "NUGET_FALLBACK_PACKAGES";
@@ -106,12 +104,6 @@ namespace NuGet.Configuration
             return SignatureValidationMode.Accept;
         }
 
-        [Obsolete("GetDecryptedValue is deprecated. Please use GetDecryptedValueForAddItem instead")]
-        public static string GetDecryptedValue(ISettings settings, string section, string key, bool isPath = false)
-        {
-            return GetDecryptedValueForAddItem(settings, section, key, isPath);
-        }
-
         public static string GetDecryptedValueForAddItem(ISettings settings, string section, string key, bool isPath = false)
         {
             if (settings == null)
@@ -146,12 +138,6 @@ namespace NuGet.Configuration
             }
 
             return decryptedString;
-        }
-
-        [Obsolete("SetEncryptedValue is deprecated. Please use SetEncryptedValueForAddItem instead")]
-        public static void SetEncryptedValue(ISettings settings, string section, string key, string value)
-        {
-            SetEncryptedValueForAddItem(settings, section, key, value);
         }
 
         public static void SetEncryptedValueForAddItem(ISettings settings, string section, string key, string value)

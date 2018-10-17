@@ -8,8 +8,6 @@ namespace NuGet.Configuration
 {
     public interface IPackageSourceProvider
     {
-        //TODO: Delete all obsolete APIs. https://github.com/NuGet/Home/issues/7294
-
         /// <summary>
         /// Gets an enumerable of all of the package sources
         /// </summary>
@@ -83,21 +81,6 @@ namespace NuGet.Configuration
         /// <param name="name">Name of the source to be queried</param>
         /// <returns>true if the source with the given name is not part of the disabled sources</returns>
         bool IsPackageSourceEnabled(string name);
-
-        /// <summary>
-        /// Disables the given package source
-        /// </summary>
-        /// <param name="source">PackageSource to disable</param>
-        [Obsolete("DisablePackageSource(PackageSource source) is deprecated. Please use DisablePackageSource(string name) instead.")]
-        void DisablePackageSource(PackageSource source);
-
-        /// <summary>
-        /// Checks if a package source is part of the disabled sources configuration.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns>true if the source is not part of the disabled sources</returns>
-        [Obsolete("IsPackageSourceEnabled(PackageSource source) is deprecated. Please use IsPackageSourceEnabled(string name) instead.")]
-        bool IsPackageSourceEnabled(PackageSource source);
 
         /// <summary>
         /// Gets the name of the active PackageSource
