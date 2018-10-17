@@ -297,6 +297,41 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [Fact]
+        public void GetHashString_ReturnsCorrectHashForSupportedAlgorithms()
+        {
+            using (var certificate = SigningTestUtility.GetCertificate("leaf.crt"))
+            {
+                var sha256Fingerprint = CertificateUtility.GetHashString(certificate, Common.HashAlgorithmName.SHA256);
+                var sha384Fingerprint = CertificateUtility.GetHashString(certificate, Common.HashAlgorithmName.SHA384);
+                var sha512Fingerprint = CertificateUtility.GetHashString(certificate, Common.HashAlgorithmName.SHA512);
+
+                Assert.Equal("9893F4B40FD236F16C189AD8F01D8B92FE682DFA6E768354ED25F4741BF51C73", sha256Fingerprint);
+                Assert.Equal("6471116F2B2A4DBA7B021A208408F53FBA2BCA1661ED006112E82850AA9DFD06EC9B5C9A50B4D2E6890B756781503FE5", sha384Fingerprint);
+                Assert.Equal("5B00A6B778AF9DC19BB62BFA688556FEC0A35AEFFB63DACD8D4EF2F227EC0EF43DA8B27F3E12F8C3485D128F32E4E7CA20136AF3BB3DF21A4B47AE54137698F3", sha512Fingerprint);
+            }
+        }
+
+        [Fact]
+        public void GetHashString_UnknownHashAlgorithm_Throws()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                Assert.Throws(typeof(ArgumentException),
+                    () => CertificateUtility.GetHashString(certificate, Common.HashAlgorithmName.Unknown));
+            }
+        }
+
+        [Fact]
+        public void GetHashString_UnsupportedHashAlgorithm_Throws()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            {
+                Assert.Throws(typeof(ArgumentException),
+                    () => CertificateUtility.GetHashString(certificate, (Common.HashAlgorithmName)46));
+            }
+        }
+
         private static int GetExtendedKeyUsageCount(X509Certificate2 certificate)
         {
             foreach (var extension in certificate.Extensions)

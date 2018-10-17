@@ -32,7 +32,7 @@ namespace NuGet.Packaging.Signing
         public bool ReportUnknownRevocation { get; }
 
         /// <summary>
-        /// Indicates if a signing certificate's chain that chains to an untrusted root should be reported.
+        /// Indicates if a signing certificate that chains to an untrusted root should be reported.
         /// </summary>
         public bool ReportUntrustedRoot { get; }
 

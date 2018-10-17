@@ -1740,7 +1740,7 @@ namespace NuGet.Packaging.Test
             var extractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                new ClientPolicyContext(SignatureValidationMode.Accept, new List<VerificationAllowListEntry>()),
+                new ClientPolicyContext(SignatureValidationMode.Accept, new List<TrustedSignerAllowListEntry>()),
                 logger: NullLogger.Instance);
 
             using (var test = new ExtractPackageAsyncTest(extractionContext))
@@ -1786,7 +1786,7 @@ namespace NuGet.Packaging.Test
             var extractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
-                new ClientPolicyContext(SignatureValidationMode.Require, new List<VerificationAllowListEntry>()
+                new ClientPolicyContext(SignatureValidationMode.Require, new List<TrustedSignerAllowListEntry>()
                 {
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256)
                 }),
@@ -1841,14 +1841,14 @@ namespace NuGet.Packaging.Test
 
                 var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2>(), allSigned: true);
                 var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
-                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(new X509Certificate2(repoCertificate), nupkg, dir, new Uri(@"https://v3serviceIndex.test/api"));
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoCertificate, nupkg, dir, new Uri(@"https://v3serviceIndex.test/api"));
 
                 repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(dir, repositorySignatureInfo);
 
                 var extractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    new ClientPolicyContext(SignatureValidationMode.Require, new List<VerificationAllowListEntry>()
+                    new ClientPolicyContext(SignatureValidationMode.Require, new List<TrustedSignerAllowListEntry>()
                     {
                         new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, certificateFingerprint, HashAlgorithmName.SHA256)
                     }),
@@ -1898,14 +1898,14 @@ namespace NuGet.Packaging.Test
 
                 var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2>() { repoCertificate }, allSigned: true);
                 var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
-                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(new X509Certificate2(repoCertificate), nupkg, dir, new Uri(@"https://v3serviceIndex.test/api"));
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoCertificate, nupkg, dir, new Uri(@"https://v3serviceIndex.test/api"));
 
                 repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(dir, repositorySignatureInfo);
 
                 var extractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv3,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    new ClientPolicyContext(SignatureValidationMode.Require, new List<VerificationAllowListEntry>()
+                    new ClientPolicyContext(SignatureValidationMode.Require, new List<TrustedSignerAllowListEntry>()
                     {
                         new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256)
                     }),
@@ -1962,7 +1962,7 @@ namespace NuGet.Packaging.Test
                 var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2> { repoCertificate }, allSigned: true);
                 var repositorySignatureInfoContentUrl = repositorySignatureInfo.RepositoryCertificateInfos.Select(c => c.ContentUrl).First();
                 var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
-                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(new X509Certificate2(repoCertificate), nupkg, dir, new Uri(repositorySignatureInfoContentUrl));
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoCertificate, nupkg, dir, new Uri(repositorySignatureInfoContentUrl));
 
                 repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(dir, repositorySignatureInfo);
 
@@ -2001,7 +2001,7 @@ namespace NuGet.Packaging.Test
                 var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2> { repoCertificate }, allSigned: true);
                 var repositorySignatureInfoContentUrl = repositorySignatureInfo.RepositoryCertificateInfos.Select(c => c.ContentUrl).First();
                 var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
-                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(new X509Certificate2(packageSignatureCertificate), nupkg, dir, new Uri(repositorySignatureInfoContentUrl));
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(packageSignatureCertificate, nupkg, dir, new Uri(repositorySignatureInfoContentUrl));
 
                 repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(dir, repositorySignatureInfo);
 
@@ -2068,7 +2068,7 @@ namespace NuGet.Packaging.Test
                 var fingerprintString = SignatureTestUtility.GetFingerprint(repoCertificate, HashAlgorithmName.SHA256);
 
                 var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
-                    new X509Certificate2(repoCertificate), nupkg, dir, new Uri(@"https://api.serviceindex.test/json"));
+                    repoCertificate, nupkg, dir, new Uri(@"https://api.serviceindex.test/json"));
 
                 var allowList = new List<TrustedSignerAllowListEntry>()
                 {
