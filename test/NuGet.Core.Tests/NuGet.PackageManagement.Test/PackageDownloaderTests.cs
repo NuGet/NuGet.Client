@@ -320,9 +320,14 @@ namespace NuGet.PackageManagement
             {
                 var targetPackageStream = downloadResult.PackageStream;
 
+                // calculate contentHash to verify we got the package correctly.
+                var packageArchiveReader = new PackageArchiveReader(targetPackageStream);
+                var contentHash = packageArchiveReader.GetContentHashForPackage(new CancellationToken());
+
                 // Assert
-                // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
-                Assert.Equal(185476, targetPackageStream.Length);
+                // jQuery.1.8.2 has the following contentHash:
+                Assert.Equal("cXOJxYC6ccYDP5FW1iOXhZww+7CyKdpiJbkR0YZxILNJ2zvM4VsrqOVKNRHnIWF78IixUfo/cw7Hz4M70MUbGg==",
+                    contentHash);
                 Assert.True(targetPackageStream.CanSeek);
             }
         }
@@ -348,10 +353,15 @@ namespace NuGet.PackageManagement
             {
                 var targetPackageStream = downloadResult.PackageStream;
 
+                // calculate contentHash to verify we got the package correctly.
+                var packageArchiveReader = new PackageArchiveReader(targetPackageStream);
+                var contentHash = packageArchiveReader.GetContentHashForSignedPackage(new CancellationToken());
+
                 // Assert
-                // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
-                Assert.Equal(185476, targetPackageStream.Length);
-                Assert.True(targetPackageStream.CanSeek);
+                // jQuery.1.8.2 has the following contentHash:
+                Assert.Equal("cXOJxYC6ccYDP5FW1iOXhZww+7CyKdpiJbkR0YZxILNJ2zvM4VsrqOVKNRHnIWF78IixUfo/cw7Hz4M70MUbGg==",
+                    contentHash);
+                Assert.True(targetPackageStream.CanSeek);}
             }
         }
 
@@ -575,9 +585,14 @@ namespace NuGet.PackageManagement
                 {
                     var targetPackageStream = downloadResult.PackageStream;
 
+                    // calculate contentHash to verify we got the package correctly.
+                    var packageArchiveReader = new PackageArchiveReader(targetPackageStream);
+                    var contentHash = packageArchiveReader.GetContentHashForPackage(new CancellationToken());
+
                     // Assert
-                    // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
-                    Assert.Equal(185476, targetPackageStream.Length);
+                    // jQuery.1.8.2 has the following contentHash:
+                    Assert.Equal("cXOJxYC6ccYDP5FW1iOXhZww+7CyKdpiJbkR0YZxILNJ2zvM4VsrqOVKNRHnIWF78IixUfo/cw7Hz4M70MUbGg==",
+                        contentHash);
                     Assert.True(targetPackageStream.CanSeek);
                 }
 

@@ -360,7 +360,17 @@ namespace NuGet.Packaging
             {
                 return SignedPackageArchiveUtility.GetPackageContentHash(reader);
             }
+        }
 
+        public override string GetContentHashForPackage(CancellationToken token)
+        {
+            var contentHash = GetContentHashForSignedPackage(token);
+            if (contentHash == null)
+            {
+                contentHash =  Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(ZipReadStream));
+            }
+
+            return contentHash;
         }
 
         public override Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithmName, CancellationToken token)
