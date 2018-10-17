@@ -151,8 +151,7 @@ namespace NuGet.Packaging.Signing
         {
             if (!CertificateFingerprintLookUp.TryGetValue(fingerprintAlgorithm, out var fingerprintString))
             {
-                var primarySignatureCertificateFingerprint = CertificateUtility.GetHash(signature.SignerInfo.Certificate, fingerprintAlgorithm);
-                fingerprintString = BitConverter.ToString(primarySignatureCertificateFingerprint).Replace("-", "");
+                fingerprintString = CertificateUtility.GetHashString(signature.SignerInfo.Certificate, fingerprintAlgorithm);
                 CertificateFingerprintLookUp[fingerprintAlgorithm] = fingerprintString;
             }
             
