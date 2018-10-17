@@ -31,9 +31,12 @@ namespace NuGet.Packaging.Test
     {
         private static ClientPolicyContext _defaultContext = ClientPolicyContext.GetClientPolicy(NullSettings.Instance, NullLogger.Instance);
 
-        private const string _noMatchInRepoAllowList = "The package signature certificate fingerprint does not match any certificate fingerprint in repository allow list.";
-        private const string _noClientAllowList = "A list of trusted signers is required by the client but none was found.";
-        private const string _notSignedPackage = "The package is not signed.";
+        private const string _emptyTrustedSignersList = "signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified.";
+        private const string _emptyRepoAllowList = "This repository indicated that all its packages are repository signed; however, it listed no signing certificates.";
+        private const string _noMatchInTrustedSignersList = "This package is signed but not by a trusted signer.";
+        private const string _noMatchInRepoAllowList = "This package was not repository signed with a certificate listed by this repository.";
+        private const string _notSignedPackageRepo = "This repository indicated that all its packages are repository signed; however, this package is unsigned.";
+        private const string _notSignedPackageRequire = "signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.";
 
         [Fact]
         public async Task InstallFromSourceAsync_StressTestAsync()
@@ -1773,7 +1776,171 @@ namespace NuGet.Packaging.Test
                 exception.Results.First().Issues.Count().Should().Be(1);
                 exception.Results.First().Issues.First().Code.Should().Be(NuGetLogCode.NU3004);
                 exception.Results.First().Issues.First().Message.Should()
-                    .Be(SigningTestUtility.AddSignatureLogPrefix(_notSignedPackage, test.Reader.GetIdentity(), test.Source));
+                    .Be(SigningTestUtility.AddSignatureLogPrefix(_notSignedPackageRepo, test.Reader.GetIdentity(), test.Source));
+            }
+        }
+
+        [Fact]
+        public async Task ExtractPackageAsync_UnsignedPackage_RequireMode_ErrorAsync()
+        {
+            var extractionContext = new PackageExtractionContext(
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                new ClientPolicyContext(SignatureValidationMode.Require, new List<VerificationAllowListEntry>()
+                {
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256)
+                }),
+                logger: NullLogger.Instance);
+
+            using (var test = new ExtractPackageAsyncTest(extractionContext))
+            {
+                await test.CreatePackageAsync();
+
+                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2>(), allSigned: true);
+                var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
+
+                repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(test.Source, repositorySignatureInfo);
+                test.Context.PackageSaveMode = PackageSaveMode.Defaultv3;
+
+                SignatureException exception = null;
+
+                try
+                {
+                    await PackageExtractor.ExtractPackageAsync(
+                         test.Source,
+                         test.Reader,
+                         test.Resolver,
+                         test.Context,
+                         CancellationToken.None);
+                }
+                catch (SignatureException e)
+                {
+                    exception = e;
+                }
+
+                // Assert
+                exception.Should().NotBeNull();
+                exception.Results.Count.Should().Be(1);
+
+                exception.Results.First().Issues.Count().Should().Be(1);
+                exception.Results.First().Issues.First().Code.Should().Be(NuGetLogCode.NU3004);
+                exception.Results.First().Issues.First().Message.Should()
+                    .Be(SigningTestUtility.AddSignatureLogPrefix(_notSignedPackageRequire, test.Reader.GetIdentity(), test.Source));
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task ExtractPackageAsync_RequireMode_EmptyRepoAllowList_ErrorAsync()
+        {
+            using (var dir = TestDirectory.Create())
+            using (var repoCertificate = new X509Certificate2(SigningTestUtility.GenerateTrustedTestCertificate().Source.Cert))
+            {
+                var nupkg = new SimpleTestPackageContext();
+                var resolver = new PackagePathResolver(dir);
+                var certificateFingerprint = SignatureTestUtility.GetFingerprint(repoCertificate, HashAlgorithmName.SHA256);
+
+                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2>(), allSigned: true);
+                var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(new X509Certificate2(repoCertificate), nupkg, dir, new Uri(@"https://v3serviceIndex.test/api"));
+
+                repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(dir, repositorySignatureInfo);
+
+                var extractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    new ClientPolicyContext(SignatureValidationMode.Require, new List<VerificationAllowListEntry>()
+                    {
+                        new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, certificateFingerprint, HashAlgorithmName.SHA256)
+                    }),
+                    logger: NullLogger.Instance);
+
+                using (var packageStream = File.OpenRead(repoSignedPackagePath))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    SignatureException exception = null;
+
+                    try
+                    {
+                        await PackageExtractor.ExtractPackageAsync(
+                             dir,
+                             packageReader,
+                             resolver,
+                             extractionContext,
+                             CancellationToken.None);
+                    }
+                    catch (SignatureException e)
+                    {
+                        exception = e;
+                    }
+
+                    // Assert
+                    exception.Should().NotBeNull();
+                    exception.Results.Count.Should().Be(4);
+
+                    // allowListVerificationProvider result is the only one that throws NU3034
+                    var issues = exception.Results.SelectMany(r => r.Issues.Where(i => i.Code == NuGetLogCode.NU3034));
+
+                    issues.Count().Should().Be(1);
+                    issues.First().Code.Should().Be(NuGetLogCode.NU3034);
+                    issues.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_emptyRepoAllowList, packageReader.GetIdentity(), dir));
+                }
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_ErrorAsync()
+        {
+            using (var dir = TestDirectory.Create())
+            using (var repoCertificate = new X509Certificate2(SigningTestUtility.GenerateTrustedTestCertificate().Source.Cert))
+            {
+                var nupkg = new SimpleTestPackageContext();
+                var resolver = new PackagePathResolver(dir);
+
+                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2>() { repoCertificate }, allSigned: true);
+                var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(new X509Certificate2(repoCertificate), nupkg, dir, new Uri(@"https://v3serviceIndex.test/api"));
+
+                repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(dir, repositorySignatureInfo);
+
+                var extractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv3,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    new ClientPolicyContext(SignatureValidationMode.Require, new List<VerificationAllowListEntry>()
+                    {
+                        new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256)
+                    }),
+                    logger: NullLogger.Instance);
+
+                using (var packageStream = File.OpenRead(repoSignedPackagePath))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    SignatureException exception = null;
+
+                    try
+                    {
+                        await PackageExtractor.ExtractPackageAsync(
+                             dir,
+                             packageReader,
+                             resolver,
+                             extractionContext,
+                             CancellationToken.None);
+                    }
+                    catch (SignatureException e)
+                    {
+                        exception = e;
+                    }
+
+                    // Assert
+                    exception.Should().NotBeNull();
+                    exception.Results.Count.Should().Be(4);
+
+                    // allowListVerificationProvider result is the only one that throws NU3034
+                    var issues = exception.Results.SelectMany(r => r.Issues.Where(i => i.Code == NuGetLogCode.NU3034));
+
+                    issues.Count().Should().Be(1);
+                    issues.First().Code.Should().Be(NuGetLogCode.NU3034);
+                    issues.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_noMatchInTrustedSignersList, packageReader.GetIdentity(), dir));
+                }
             }
         }
 
@@ -1883,7 +2050,7 @@ namespace NuGet.Packaging.Test
                         issues.Count().Should().Be(2);
                         issues.All(e => e.Code == NuGetLogCode.NU3034).Should().BeTrue();
                         issues.All(e => e.Message.Equals(SigningTestUtility.AddSignatureLogPrefix(_noMatchInRepoAllowList, packageReader.GetIdentity(), dir)) ||
-                                                                  e.Message.Equals(SigningTestUtility.AddSignatureLogPrefix(_noClientAllowList, packageReader.GetIdentity(), dir)));
+                                                                  e.Message.Equals(SigningTestUtility.AddSignatureLogPrefix(_emptyTrustedSignersList, packageReader.GetIdentity(), dir)));
                     }
                 }
             }
