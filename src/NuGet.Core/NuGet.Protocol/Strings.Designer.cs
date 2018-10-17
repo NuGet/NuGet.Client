@@ -584,6 +584,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Downloading a package from a plugin is not supported since unsigned packages are not allowed and package download plugins do not support signed package verification..
+        /// </summary>
+        internal static string Plugin_DownloadNotSupportedSinceUnsignedNotAllowed {
+            get {
+                return ResourceManager.GetString("Plugin_DownloadNotSupportedSinceUnsignedNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Plugin &apos;{0}&apos; failed with the exception:  {1}.
         /// </summary>
         internal static string Plugin_Exception {

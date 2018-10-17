@@ -27,8 +27,8 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public IReadOnlyList<PackageVerificationResult> Results { get; }
 
-        public VerifySignaturesResult(bool valid, bool signed)
-            : this(valid, signed, results: Enumerable.Empty<PackageVerificationResult>())
+        public VerifySignaturesResult(bool isValid, bool isSigned)
+            : this(isValid, isSigned, results: Enumerable.Empty<PackageVerificationResult>())
         {
         }
 
