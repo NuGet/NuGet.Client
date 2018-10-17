@@ -87,6 +87,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override Task AddFileToProjectAsync(string filePath)
         {
+            // sdk-style project system uses globbing to dynamically add files from project root into project
+            // so we dont need to do anything explicitly here.
             return Task.CompletedTask;
         }
 
