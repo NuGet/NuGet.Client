@@ -4,20 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-#if IS_DESKTOP
-using System.Security.Cryptography.Pkcs;
-#endif
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
-using Xunit;
 
 namespace Test.Utility.Signing
 {
@@ -35,8 +27,7 @@ namespace Test.Utility.Signing
         /// <returns></returns>
         public static string GetFingerprint(X509Certificate2 cert, HashAlgorithmName hashAlgorithm)
         {
-            var certificateFingerprint = CertificateUtility.GetHash(cert, hashAlgorithm);
-            return BitConverter.ToString(certificateFingerprint).Replace("-", "");
+            return CertificateUtility.GetHashString(cert, hashAlgorithm);
         }
 
         public static Task WaitForCertificateExpirationAsync(X509Certificate2 certificate)

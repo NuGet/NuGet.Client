@@ -12,7 +12,7 @@ namespace NuGet.Packaging.Signing
 {
     public static class TrustedSignersProvider
     {
-        public static IReadOnlyList<VerificationAllowListEntry> GetAllowListEntries(ISettings settings, ILogger logger)
+        public static IReadOnlyList<TrustedSignerAllowListEntry> GetAllowListEntries(ISettings settings, ILogger logger)
         {
             if (settings == null)
             {
@@ -27,7 +27,7 @@ namespace NuGet.Packaging.Signing
             var trustedSignersSection = settings.GetSection(ConfigurationConstants.TrustedSigners);
             if (trustedSignersSection == null)
             {
-                return Enumerable.Empty<VerificationAllowListEntry>().ToList();
+                return Enumerable.Empty<TrustedSignerAllowListEntry>().ToList();
             }
 
             // We will dedup certificates based on fingerprint and hash algorithm, therefore
@@ -117,7 +117,7 @@ namespace NuGet.Packaging.Signing
                 Owners = owners;
             }
 
-            public CertificateHashAllowListEntry ToAllowListEntry()
+            public TrustedSignerAllowListEntry ToAllowListEntry()
             {
                 return new TrustedSignerAllowListEntry(Target, Placement, Certificate.Fingerprint, Certificate.HashAlgorithm, Certificate.AllowUntrustedRoot, Owners?.ToList());
             }

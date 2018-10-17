@@ -152,7 +152,7 @@ namespace NuGet.Packaging.Test
             <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
         </author>
         <repository name=""repository1"" serviceIndex=""https://v3serviceIndex.test/api/json"">
-            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""true"" />
         </repository>
     </trustedSigners>
 </configuration>";
@@ -169,7 +169,7 @@ namespace NuGet.Packaging.Test
                 var expectedAllowList = new List<VerificationAllowListEntry>()
                 {
                     new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, "abc", HashAlgorithmName.SHA256),
-                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any,"def", HashAlgorithmName.SHA256)
+                    new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any,"def", HashAlgorithmName.SHA256, allowUntrustedRoot: true)
                 };
 
                 var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, NullLogger.Instance);

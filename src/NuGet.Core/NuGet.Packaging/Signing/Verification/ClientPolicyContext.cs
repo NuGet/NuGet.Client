@@ -23,9 +23,9 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// List of signatures allowed in verification.
         /// </summary>
-        public IReadOnlyCollection<VerificationAllowListEntry> AllowList { get; }
+        public IReadOnlyCollection<TrustedSignerAllowListEntry> AllowList { get; }
 
-        internal ClientPolicyContext(SignatureValidationMode policy, IReadOnlyCollection<VerificationAllowListEntry> allowList)
+        internal ClientPolicyContext(SignatureValidationMode policy, IReadOnlyCollection<TrustedSignerAllowListEntry> allowList)
         {
             Policy = policy;
 
