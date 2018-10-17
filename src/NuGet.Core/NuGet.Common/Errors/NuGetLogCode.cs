@@ -446,7 +446,7 @@ namespace NuGet.Common
         NU3040 = 3040,
 
         /// <summary>
-        /// Downloading a package with a plugin is not supported since unsigned packages are not allowed.
+        /// Downloading a package from a plugin is not supported since unsigned packages are not allowed and package download plugins do not support signed package verification.
         /// </summary>
         NU3041 = 3041,
 
