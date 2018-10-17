@@ -803,4 +803,8 @@ Valid from:</comment>
   <data name="Error_RequireMode_UnsignedPackage" xml:space="preserve">
     <value>signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.</value>
   </data>
+  <data name="NuGetLicenseExpression_NonStandardIdentifier" xml:space="preserve">
+    <value>The license identifier(s) {0} is(are) not recognized by the current toolset.</value>
+    <comment>0 - semicolon delimited list of identifiers</comment>
+  </data>
 </root>

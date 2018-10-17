@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,12 +18,7 @@ namespace NuGet.Protocol
 
         public LocalPackageSearchMetadata(LocalPackageInfo package)
         {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
-            _package = package;
+            _package = package ?? throw new ArgumentNullException(nameof(package));
             _nuspec = package.Nuspec;
         }
 
@@ -87,5 +82,7 @@ namespace NuGet.Protocol
 
         // The prefix reservation is not applicable to local packages
         public bool PrefixReserved => false;
+
+        public LicenseMetadata LicenseMetadata => _nuspec.GetLicenseMetadata();
     }
 }

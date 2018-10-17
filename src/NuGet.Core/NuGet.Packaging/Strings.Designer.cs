@@ -926,6 +926,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The license identifier(s) {0} is(are) not recognized by the current toolset..
+        /// </summary>
+        internal static string NuGetLicenseExpression_NonStandardIdentifier {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_NonStandardIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to nuget-package-owners: {0}.
         /// </summary>
         internal static string NuGetPackageOwners {

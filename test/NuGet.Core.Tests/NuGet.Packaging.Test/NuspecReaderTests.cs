@@ -391,7 +391,58 @@ namespace NuGet.Packaging.Test
                     <license version=""NotAVersion"" type=""expression"">MIT</license>
                   </metadata>
                 </package>";
-        
+
+        private const string LicenseExpressionBasicNonStandardLicense= @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                    <license type=""expression"">MIT OR CoolLicense</license>
+                  </metadata>
+                </package>";
+
+        private const string EmptyLicense = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                    <license></license>
+                  </metadata>
+                </package>";
+
+        private const string SelfClosingLicense = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                    <license />
+                  </metadata>
+                </package>";
+
+        private const string LicenseNoType = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+            <license>license.txt</license>
+                  </metadata>
+                </package>";
 
         public static IEnumerable<object[]> GetValidVersions()
         {
@@ -932,6 +983,63 @@ namespace NuGet.Packaging.Test
             licenseMetadata.Version.Should().Be(LicenseMetadata.EmptyVersion);
             licenseMetadata.WarningsAndErrors.Count().Should().Be(1);
             licenseMetadata.WarningsAndErrors[0].Should().Contain(string.Format(Strings.NuGetLicense_InvalidLicenseExpressionVersion, "NotAVersion"));
+        }
+
+        [Fact]
+        public void NuspecReaderTests_LicenseExpressionNonStandardLicenseAddsMessage()
+        {
+            // Arrange
+            var reader = GetReader(LicenseExpressionBasicNonStandardLicense);
+
+            // Act
+            var licenseMetadata = reader.GetLicenseMetadata();
+
+            // Assert
+            licenseMetadata.Type.Should().Be(LicenseType.Expression);
+            licenseMetadata.LicenseExpression.Should().NotBeNull();
+            licenseMetadata.License.Should().Be("MIT OR CoolLicense");
+            licenseMetadata.Version.Should().Be(LicenseMetadata.EmptyVersion);
+            licenseMetadata.WarningsAndErrors.Count().Should().Be(1);
+            licenseMetadata.WarningsAndErrors[0].Should().Be(string.Format(Strings.NuGetLicenseExpression_NonStandardIdentifier, "CoolLicense"));
+        }
+
+        [Fact]
+        public void NuspecReaderTests_EmptyLicenseAddsMessage()
+        {
+            // Arrange
+            var reader = GetReader(EmptyLicense);
+
+            // Act
+            var licenseMetadata = reader.GetLicenseMetadata();
+
+            // Assert
+            Assert.Null(licenseMetadata);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_SelfClosingLicenseAddsMessage()
+        {
+            // Arrange
+            var reader = GetReader(SelfClosingLicense);
+
+            // Act
+            var licenseMetadata = reader.GetLicenseMetadata();
+
+            // Assert
+            Assert.Null(licenseMetadata);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_LicenseNoTypeAddsMessage()
+        {
+            // Arrange
+            var reader = GetReader(LicenseNoType);
+
+            // Act
+            var licenseMetadata = reader.GetLicenseMetadata();
+
+            // Assert
+            Assert.Null(licenseMetadata);
         }
 
         private static NuspecReader GetReader(string nuspec)

@@ -33,6 +33,8 @@ namespace NuGet.Protocol
         public const string Owners = "owners";
         public const string IconUrl = "iconUrl";
         public const string LicenseUrl = "licenseUrl";
+        public const string LicenseExpression = "licenseExpression";
+        public const string LicenseExpressionVersion = "licenseExpressionVersion";
         public const string ProjectUrl = "projectUrl";
         public const string Tags = "tags";
         public const string DownloadCount = "totalDownloads";

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -37,6 +37,7 @@ namespace NuGet.Protocol.Core.Types
             public string Tags { get; set; }
             public string Title { get; set; }
             public bool PrefixReserved { get; set; }
+            public LicenseMetadata LicenseMetadata { get; set; }
 
             public AsyncLazy<IEnumerable<VersionInfo>> LazyVersionsFactory { get; set; }
 
@@ -81,7 +82,8 @@ namespace NuGet.Protocol.Core.Types
                 Title = _metadata.Title,
                 LazyVersionsFactory = _lazyVersionsFactory,
                 IsListed = _metadata.IsListed,
-                PrefixReserved = _metadata.PrefixReserved
+                PrefixReserved = _metadata.PrefixReserved,
+                LicenseMetadata = _metadata.LicenseMetadata,
             };
 
             return clonedMetadata;

@@ -476,6 +476,24 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The license version string &apos;{0}&apos; is higher than the one supported by this toolset &apos;{1}&apos;..
+        /// </summary>
+        internal static string NuGetLicense_LicenseExpressionVersionTooHigh {
+            get {
+                return ResourceManager.GetString("NuGetLicense_LicenseExpressionVersionTooHigh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license identifier(s) {0} is(are) not recognized by the current toolset..
+        /// </summary>
+        internal static string NuGetLicenseExpression_NonStandardIdentifier {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_NonStandardIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot create a NuGet Repository from the Aggregate Source.
         /// </summary>
         internal static string NuGetRepository_CannotCreateAggregateRepo {

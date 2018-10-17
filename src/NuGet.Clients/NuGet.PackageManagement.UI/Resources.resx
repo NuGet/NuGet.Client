@@ -832,4 +832,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Accessibility_PromoteToTopLevel" xml:space="preserve">
     <value>Promote to a top level dependency</value>
   </data>
+  <data name="License_FileEmbeddedInPackage" xml:space="preserve">
+    <value>The license file '{0}' is embedded in the package.</value>
+    <comment>0 - Path relative to the nuspec root</comment>
+  </data>
 </root>

@@ -50,7 +50,7 @@ namespace NuGet.Packaging.Licenses
             {
                 case LicenseExpressionType.License:
                     var license = (NuGetLicense)expression;
-                    licenseProcessor(license);
+                    licenseProcessor?.Invoke(license);
                     break;
 
                 case LicenseExpressionType.Operator:
@@ -66,9 +66,10 @@ namespace NuGet.Packaging.Licenses
 
                         case LicenseOperatorType.WithOperator:
                             var withOperator = (WithOperator)licenseOperator;
-                            licenseProcessor(withOperator.License);
-                            exceptionProcessor(withOperator.Exception);
+                            licenseProcessor?.Invoke(withOperator.License);
+                            exceptionProcessor?.Invoke(withOperator.Exception);
                             break;
+
                         default:
                             break;
                     }
