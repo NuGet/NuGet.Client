@@ -1013,7 +1013,7 @@ namespace NuGet.Packaging.Test
             var licenseMetadata = reader.GetLicenseMetadata();
 
             // Assert
-            Assert.NotNull(licenseMetadata);
+            Assert.Null(licenseMetadata);
         }
 
         [Fact]
@@ -1026,7 +1026,7 @@ namespace NuGet.Packaging.Test
             var licenseMetadata = reader.GetLicenseMetadata();
 
             // Assert
-            Assert.NotNull(licenseMetadata);
+            Assert.Null(licenseMetadata);
         }
 
         [Fact]
@@ -1039,7 +1039,7 @@ namespace NuGet.Packaging.Test
             var licenseMetadata = reader.GetLicenseMetadata();
 
             // Assert
-            Assert.NotNull(licenseMetadata);
+            Assert.Null(licenseMetadata);
         }
 
         private static NuspecReader GetReader(string nuspec)
