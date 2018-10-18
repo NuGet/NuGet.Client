@@ -111,15 +111,21 @@ namespace NuGet.CommandLine
                 return null;
             }
 
-            // Enumerate all versions of MSBuild present, take the highest
-            string msBuildDirectory = string.Empty;
-            var highestVersionRoot = Directory.EnumerateDirectories(msBuildRoot)
-                .OrderByDescending(ToFloatValue)
-                .FirstOrDefault(dir =>
-                {
-                    msBuildDirectory = SysPath.Combine(dir, "bin");
-                    return File.Exists(SysPath.Combine(msBuildDirectory, "msbuild.exe"));
-                });
+            // If "Current" MSBuild is available, it is the version to use
+            // see https://github.com/Microsoft/msbuild/issues/3778
+            string msBuildDirectory = SysPath.Combine(msBuildRoot, "Current", "bin");
+
+            if (!File.Exists(SysPath.Combine(msBuildDirectory, "msbuild.exe")))
+            {
+                // Enumerate all versions of MSBuild present, take the highest
+                var highestVersionRoot = Directory.EnumerateDirectories(msBuildRoot)
+                    .OrderByDescending(ToFloatValue)
+                    .FirstOrDefault(dir =>
+                    {
+                        msBuildDirectory = SysPath.Combine(dir, "bin");
+                        return File.Exists(SysPath.Combine(msBuildDirectory, "msbuild.exe"));
+                    });
+            }
 
             return msBuildDirectory;
         }
