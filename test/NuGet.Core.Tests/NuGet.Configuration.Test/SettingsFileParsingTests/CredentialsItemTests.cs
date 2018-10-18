@@ -520,7 +520,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void CredentialsItem_Clone_CopiesTheSameItem()
+        public void CredentialsItem_Clone_ReturnsItemClone()
         {
             // Arrange
             var config = @"

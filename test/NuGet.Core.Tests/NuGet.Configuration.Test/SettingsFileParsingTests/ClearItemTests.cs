@@ -137,9 +137,9 @@ namespace NuGet.Configuration.Test
         public void ClearItem_Equals_WithDifferentItem_ReturnsFalse()
         {
             var clear1 = new ClearItem();
-            var randomItem = new AddItem("keyN", "value1");
+            var differentItem = new AddItem("keyN", "value1");
 
-            clear1.Equals(randomItem).Should().BeFalse();
+            clear1.Equals(differentItem).Should().BeFalse();
         }
 
         [Fact]
@@ -151,7 +151,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void ClearItem_Clone_CopiesTheSameItem()
+        public void ClearItem_Clone_ReturnsItemClone()
         {
             // Arrange
             var config = @"

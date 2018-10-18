@@ -151,7 +151,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SourceItem_Clone_CopiesTheSameItem()
+        public void SourceItem_Clone_ReturnsItemClone()
         {
             // Arrange
             var config = @"

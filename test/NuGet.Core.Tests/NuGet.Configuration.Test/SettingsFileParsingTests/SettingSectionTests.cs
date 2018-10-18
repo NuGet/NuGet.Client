@@ -445,7 +445,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void AddItem_Clone_CopiesTheSameItem()
+        public void SettingSection_Clone_ReturnsSectionClone()
         {
             // Arrange
             var config = @"
