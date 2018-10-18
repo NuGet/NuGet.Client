@@ -86,7 +86,7 @@ namespace NuGet.Protocol
 
         public LicenseMetadata LicenseMetadata => _nuspec.GetLicenseMetadata();
 
-        public Stream LicenseFile()
+        public Stream GetLicenseFile()
         {
 
             var stream = new MemoryStream();

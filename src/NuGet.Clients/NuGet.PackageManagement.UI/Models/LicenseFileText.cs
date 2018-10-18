@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NuGet.PackageManagement.UI.Models
+namespace NuGet.PackageManagement.UI
 {
     internal class LicenseFileText : IText
     {

@@ -77,6 +77,7 @@
     <Compile Include="Models\FreeText.cs" />
     <Compile Include="Models\IText.cs" />
     <Compile Include="Models\LicenseText.cs" />
+    <Compile Include="Models\LicenseFileText.cs" />
     <Compile Include="Models\LoadingStatusViewModel.cs" />
     <Compile Include="Models\NuGetProjectUpgradeDependencyItem.cs" />
     <Compile Include="Models\NuGetProjectUpgradeWindowModel.cs" />
@@ -276,6 +277,9 @@
     <Compile Include="Xamls\LicenseAcceptanceWindow.xaml.cs">
       <DependentUpon>LicenseAcceptanceWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\LicenseFileWindow.xaml.cs">
+      <DependentUpon>LicenseFileWindow.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <DesignDataWithDesignTimeCreatableTypes Include="Design\LoadingStatusViewModelSampleData.xaml">
@@ -413,6 +417,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Xamls\UpdateAvailableIndicator.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\LicenseFileWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

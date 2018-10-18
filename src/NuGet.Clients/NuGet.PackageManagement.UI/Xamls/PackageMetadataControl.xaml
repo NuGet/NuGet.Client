@@ -56,9 +56,8 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
                     Style="{StaticResource HyperlinkStyle}"
-                  <!-- OPEN FILE -->
                     Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
-                    <Run Text="{Binding Text}"></Run>
+                  <Run Text="{Binding Text}"/>
                 </Hyperlink>
         </TextBlock>
       </DataTemplate>

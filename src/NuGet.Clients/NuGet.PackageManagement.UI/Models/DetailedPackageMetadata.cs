@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 using NuGet.Packaging;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -38,6 +40,10 @@ namespace NuGet.PackageManagement.UI
                 dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
             PrefixReserved = serverData.PrefixReserved;
             LicenseMetadata = serverData.LicenseMetadata;
+            if(serverData is LocalPackageSearchMetadata localPackage)
+            {
+                LicenseFile = localPackage.GetLicenseFile();
+            }
         }
 
         public NuGetVersion Version { get; set; }
@@ -73,5 +79,7 @@ namespace NuGet.PackageManagement.UI
         public LicenseMetadata LicenseMetadata { get; set; }
 
         public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
+
+        public Stream LicenseFile { get; }
     }
 }

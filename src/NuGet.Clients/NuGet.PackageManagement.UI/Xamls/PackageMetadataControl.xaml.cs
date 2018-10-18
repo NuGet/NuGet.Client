@@ -19,6 +19,24 @@ namespace NuGet.PackageManagement.UI
             DataContextChanged += PackageMetadataControl_DataContextChanged;
         }
 
+        private void Hyperlink_Click(object sender, RoutedEventArgs e)
+        {
+            if(DataContext is DetailedPackageMetadata packageMetadata)
+            {
+                var licenseWindow = new LicenseAcceptanceWindow
+                {
+                    DataContext = packageMetadata.LicenseFile
+                };
+
+                using (NuGetEventTrigger.TriggerEventBeginEnd(
+                    NuGetEvent.LicenseWindowBegin,
+                    NuGetEvent.LicenseWindowEnd))
+                {
+                    licenseWindow.ShowModal();
+                }
+            }
+        }
+
         private void PackageMetadataControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (DataContext is DetailedPackageMetadata)
