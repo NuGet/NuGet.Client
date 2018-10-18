@@ -176,8 +176,7 @@ namespace NuGet.Packaging
                     FileMode.Create,
                     FileAccess.ReadWrite,
                     FileShare.ReadWrite | FileShare.Delete,
-                    bufferSize: 4096,
-                    useAsync: false))
+                    bufferSize: 4096))
                 {
                     // This value comes from NuGet.Protocol.StreamExtensions.CopyToAsync(...).
                     // While 8K may or may not be the optimal buffer size for copy performance,
@@ -285,8 +284,7 @@ namespace NuGet.Packaging
                FileMode.Open,
                FileAccess.Read,
                FileShare.Read,
-               bufferSize: 4096,
-               useAsync: true);
+               bufferSize: 4096);
         }
 
         private void ThrowIfDisposed()
