@@ -73,6 +73,7 @@
     <Compile Include="Converters\NotNullOrTrueToBooleanConverter.cs" />
     <Compile Include="DisplayVersion.cs" />
     <Compile Include="IPackageItemLoader.cs" />
+    <Compile Include="MarkdownFileContentParser.cs" />
     <Compile Include="Models\FreeText.cs" />
     <Compile Include="Models\IText.cs" />
     <Compile Include="Models\LicenseText.cs" />
@@ -530,6 +531,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Markdig.Signed">
+      <Version>0.15.4</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.ImageCatalog">
       <Version>15.8.28010</Version>
     </PackageReference>

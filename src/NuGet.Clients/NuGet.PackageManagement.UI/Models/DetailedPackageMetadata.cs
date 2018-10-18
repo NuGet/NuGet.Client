@@ -72,12 +72,6 @@ namespace NuGet.PackageManagement.UI
 
         public LicenseMetadata LicenseMetadata { get; set; }
 
-        public IReadOnlyList<IText> LicenseLinks
-        {
-            get
-            {
-                return PackageLicenseUtilities.GenerateLicenseLinks(this);
-            }
-        }
+        public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
     }
 }

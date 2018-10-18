@@ -5,12 +5,12 @@ using Markdig;
 using Markdig.Parsers;
 using Markdig.Parsers.Inlines;
 
-namespace NuGet.Packaging
+namespace NuGet.PackageManagement.UI
 {
     public static class MarkdownFileContentParser
     {
 #pragma warning disable CS3002 // Return type is not CLS-compliant
-        public static MarkdownPipeline CreateMarkdownPipeline(bool useDefaultParsers = false, bool disableHtml)
+        public static MarkdownPipeline CreateMarkdownPipeline(bool useDefaultParsers = false, bool disableHtml = true)
 #pragma warning restore CS3002 // Return type is not CLS-compliant
         {
             var builder = new MarkdownPipelineBuilder();
@@ -23,26 +23,26 @@ namespace NuGet.Packaging
 
                 builder.BlockParsers.AddRange(new BlockParser[]
                 {
-                new ThematicBreakParser(),
-                new HeadingBlockParser(),
-                new QuoteBlockParser(),
-                new ListBlockParser(),
+                    new ThematicBreakParser(),
+                    new HeadingBlockParser(),
+                    new QuoteBlockParser(),
+                    new ListBlockParser(),
 
-                new HtmlBlockParser(),
-                new FencedCodeBlockParser(),
-                new IndentedCodeBlockParser(),
-                new ParagraphBlockParser(),
+                    new HtmlBlockParser(),
+                    new FencedCodeBlockParser(),
+                    new IndentedCodeBlockParser(),
+                    new ParagraphBlockParser(),
                 });
 
                 builder.InlineParsers.AddRange(new InlineParser[]
                 {
-                new HtmlEntityParser(),
-                new LinkInlineParser(),
-                new EscapeInlineParser(),
-                new EmphasisInlineParser(),
-                new CodeInlineParser(),
-                new AutolineInlineParser(),
-                new LineBreakInlineParser(),
+                    new HtmlEntityParser(),
+                    new LinkInlineParser(),
+                    new EscapeInlineParser(),
+                    new EmphasisInlineParser(),
+                    new CodeInlineParser(),
+                    new AutolineInlineParser(),
+                    new LineBreakInlineParser(),
                 });
             }
 

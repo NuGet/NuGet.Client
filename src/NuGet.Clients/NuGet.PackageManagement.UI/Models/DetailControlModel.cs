@@ -369,6 +369,7 @@ namespace NuGet.PackageManagement.UI
             // First try to load the metadata from the version info. This will happen if we already fetched metadata
             // about each version at the same time as fetching the version list (that it, V2). This also acts as a
             // means to cache version metadata.
+            // TODO NK - For local feeds, is this empty?
             _metadataDict = versions
                 .Where(v => v.PackageSearchMetadata != null)
                 .ToDictionary(

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Packaging;
@@ -84,5 +85,16 @@ namespace NuGet.Protocol
         public bool PrefixReserved => false;
 
         public LicenseMetadata LicenseMetadata => _nuspec.GetLicenseMetadata();
+
+        public Stream LicenseFile()
+        {
+
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+
+            writer.Write("Best license ever");
+
+            return stream;
+        }
     }
 }
