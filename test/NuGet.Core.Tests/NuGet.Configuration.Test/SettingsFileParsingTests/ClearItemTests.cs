@@ -123,5 +123,63 @@ namespace NuGet.Configuration.Test
                 ex.Message.Should().Be(string.Format("Error parsing NuGet.Config. Element '{0}' cannot have descendant elements. Path: '{1}'.", "clear", Path.Combine(mockBaseDirectory, nugetConfigPath)));
             }
         }
+
+        [Fact]
+        public void ClearItem_Equals_WithAnotherClearItem_ReturnsTrue()
+        {
+            var clear1 = new ClearItem();
+            var clear2 = new ClearItem();
+
+            clear1.Equals(clear2).Should().BeTrue();
+        }
+
+        [Fact]
+        public void ClearItem_Equals_WithDifferentItem_ReturnsFalse()
+        {
+            var clear1 = new ClearItem();
+            var differentItem = new AddItem("keyN", "value1");
+
+            clear1.Equals(differentItem).Should().BeFalse();
+        }
+
+        [Fact]
+        public void ClearItem_ElementName_IsCorrect()
+        {
+            var clearItem = new ClearItem();
+
+            clearItem.ElementName.Should().Be("clear");
+        }
+
+        [Fact]
+        public void ClearItem_Clone_ReturnsItemClone()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <SectionName>
+        <clear />
+    </SectionName>
+</configuration>";
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.TryGetSection("SectionName", out var section).Should().BeTrue();
+                section.Should().NotBeNull();
+
+                section.Items.Count.Should().Be(1);
+                var item = section.Items.First();
+                item.IsCopy().Should().BeFalse();
+                item.Origin.Should().NotBeNull();
+
+                var clone = item.Clone() as ClearItem;
+                clone.IsCopy().Should().BeTrue();
+                clone.Origin.Should().NotBeNull();
+                SettingsTestUtils.DeepEquals(clone, item).Should().BeTrue();
+            }
+        }
     }
 }

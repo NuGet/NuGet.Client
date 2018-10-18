@@ -492,5 +492,67 @@ namespace NuGet.Configuration.Test
             elattr[0].Value.Should().Be("ClearTextPassword");
             elattr[1].Value.Should().Be("password");
         }
+
+        [Fact]
+        public void CredentialsItem_Equals_WithSameElementName_ReturnsTrue()
+        {
+            var credentials1 = new CredentialsItem("source", "user", "pass", isPasswordClearText: true, validAuthenticationTypes: "one,two,three");
+            var credentials2 = new CredentialsItem("source", "user2", "pass", isPasswordClearText: false, validAuthenticationTypes: null);
+
+            credentials1.Equals(credentials2).Should().BeTrue();
+        }
+
+        [Fact]
+        public void CredentialsItem_Equals_WithDifferentElemenName_ReturnsFalse()
+        {
+            var credentials1 = new CredentialsItem("source1", "user", "pass", isPasswordClearText: true, validAuthenticationTypes: "one,two,three");
+            var credentials2 = new CredentialsItem("source2", "user", "pass", isPasswordClearText: true, validAuthenticationTypes: "one,two,three");
+
+            credentials1.Equals(credentials2).Should().BeFalse();
+        }
+
+        [Fact]
+        public void CredentialsItem_ElementName_IsCorrect()
+        {
+            var credentialsItem = new CredentialsItem("source", "user", "pass", isPasswordClearText: false, validAuthenticationTypes: null);
+
+            credentialsItem.ElementName.Should().Be("source");
+        }
+
+        [Fact]
+        public void CredentialsItem_Clone_ReturnsItemClone()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <packageSourceCredentials>
+        <NuGet.Org meta1='data1'>
+            <add key='Username' value='username' />
+            <add key='Password' value='password' />
+            <add key='ValidAuthenticationTypes' value='one,two,three' />
+        </NuGet.Org>
+    </packageSourceCredentials>
+</configuration>";
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.TryGetSection("packageSourceCredentials", out var section).Should().BeTrue();
+                section.Should().NotBeNull();
+
+                section.Items.Count.Should().Be(1);
+                var item = section.Items.First();
+                item.IsCopy().Should().BeFalse();
+                item.Origin.Should().NotBeNull();
+
+                var clone = item.Clone() as CredentialsItem;
+                clone.IsCopy().Should().BeTrue();
+                clone.Origin.Should().NotBeNull();
+                SettingsTestUtils.DeepEquals(clone, item).Should().BeTrue();
+            }
+        }
     }
 }

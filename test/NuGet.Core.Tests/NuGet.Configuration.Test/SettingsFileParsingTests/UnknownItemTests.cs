@@ -873,5 +873,65 @@ namespace NuGet.Configuration.Test
 
             SettingsTestUtils.DeepEquals(originalSetting, expectedSetting).Should().BeTrue();
         }
+
+        [Fact]
+        public void UnknownItem_Equals_WithSameElementName_ReturnsTrue()
+        {
+            var unkown1 = new UnknownItem("item1", attributes: new Dictionary<string, string>() { { "meta1", "data1" } }, children: new List<SettingBase>() { new AddItem("key", "val") });
+            var unkown2 = new UnknownItem("item1", attributes: new Dictionary<string, string>() { { "meta2", "data2" }, { "meta3", "data4" } }, children: new List<SettingBase>() { new ClearItem() });
+
+            unkown1.Equals(unkown2).Should().BeTrue();
+        }
+
+        [Fact]
+        public void UnknownItem_Equals_WithDifferentElementName_ReturnsFalse()
+        {
+            var unkown1 = new UnknownItem("item1", attributes: new Dictionary<string, string>() { { "meta1", "data1" } }, children: new List<SettingBase>() { new AddItem("key", "val") });
+            var unkown2 = new UnknownItem("item2", attributes: new Dictionary<string, string>() { { "meta1", "data1" } }, children: new List<SettingBase>() { new AddItem("key", "val") });
+
+            unkown1.Equals(unkown2).Should().BeFalse();
+        }
+
+        [Fact]
+        public void UnknownItem_ElementName_IsCorrect()
+        {
+            var unkownItem = new UnknownItem("item", attributes: null, children: null);
+
+            unkownItem.ElementName.Should().Be("item");
+        }
+
+        [Fact]
+        public void UnknownItem_Clone_ReturnsItemClone()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <SectionName>
+        <item meta=""data"">
+            <add key=""key1"" value=""val"" meta=""data"" />
+        </item>
+    </SectionName>
+</configuration>";
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.TryGetSection("SectionName", out var section).Should().BeTrue();
+                section.Should().NotBeNull();
+
+                section.Items.Count.Should().Be(1);
+                var item = section.Items.First();
+                item.IsCopy().Should().BeFalse();
+                item.Origin.Should().NotBeNull();
+
+                var clone = item.Clone() as UnknownItem;
+                clone.IsCopy().Should().BeTrue();
+                clone.Origin.Should().NotBeNull();
+                SettingsTestUtils.DeepEquals(clone, item).Should().BeTrue();
+            }
+        }
     }
 }
