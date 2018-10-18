@@ -88,6 +88,11 @@
     </ResourceDictionary>
   </Window.Resources>
   <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="Auto"/>
+    </Grid.ColumnDefinitions>
+    
     <Grid.RowDefinitions>
       <RowDefinition
         Height="Auto" />
@@ -140,6 +145,30 @@
         </ControlTemplate>
       </ItemsControl.Template>
     </ItemsControl>
+
+    <Border
+      Visibility="Collapsed"
+      Margin="12,8"
+      MinHeight="130"
+      BorderThickness="1"
+      Grid.Column="1"
+      Grid.Row="2"
+      BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
+      <ScrollViewer
+              Padding="3"
+              CanContentScroll="True"
+              VerticalScrollBarVisibility="Visible"
+              HorizontalScrollBarVisibility="Disabled"
+              AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}">
+        <TextBlock
+          Margin="12,0,12,12"
+          x:Name="_licenseFileText"
+          AutomationProperties.Name="licenseFile_{0}"
+          Text="Embedded license file"
+          TextWrapping="Wrap" />
+      </ScrollViewer>
+    </Border>
+
     <TextBlock
       Grid.Row="3"
       Margin="12,0,12,12"
