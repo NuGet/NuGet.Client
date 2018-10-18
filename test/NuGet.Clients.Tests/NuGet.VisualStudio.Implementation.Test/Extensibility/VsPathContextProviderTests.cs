@@ -474,6 +474,11 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 throw new NotImplementedException();
             }
 
+            public override Task AddFileToProjectAsync(string filePath)
+            {
+                throw new NotImplementedException();
+            }
+
             public override Task<string> GetCacheFilePathAsync()
             {
                 throw new NotImplementedException();

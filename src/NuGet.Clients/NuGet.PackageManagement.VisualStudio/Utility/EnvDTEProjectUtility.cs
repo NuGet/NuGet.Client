@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return envDTEProject.Kind != null && envDTEProject.Kind.Equals(VsProjectTypes.VsProjectItemKindSolutionFolder, StringComparison.OrdinalIgnoreCase);
         }
 
-        internal static async Task<bool> ContainsFile(EnvDTE.Project envDTEProject, string path)
+        public static async Task<bool> ContainsFile(EnvDTE.Project envDTEProject, string path)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

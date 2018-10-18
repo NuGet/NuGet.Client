@@ -52,6 +52,13 @@ namespace NuGet.ProjectManagement.Projects
         /// </summary>
         public abstract Task<string> GetAssetsFilePathOrNullAsync();
 
+        /// <summary>
+        /// Add specified file to Project system
+        /// </summary>
+        /// <param name="filePath">file to be added</param>
+        /// <returns></returns>
+        public abstract Task AddFileToProjectAsync(string filePath);
+
         public abstract Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context);
 
         public abstract Task<bool> InstallPackageAsync(

@@ -749,6 +749,19 @@ function Get-NetCorePackageInLockFile {
     }
 }
 
+function Get-PackagesLockFilePath {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+    
+    $dir = Split-Path -parent $Project.FullName
+
+    $packagesLockFilePath = Join-Path $dir "packages.lock.json"
+
+    return $packagesLockFilePath
+}
+
 function Assert-NetCoreProjectCreation {
     param(
         [parameter(Mandatory = $true)]
@@ -892,4 +905,17 @@ function Assert-NetCoreLockFileLocked{
 function Get-PackagesDir {
     # TODO: Handle when the package location changes
     Join-Path (Get-SolutionDir) packages
+}
+
+function Assert-PackagesLockFile {
+    param(
+        [parameter(Mandatory = $true)]
+        $project
+    )
+
+    $lockFilePath = Get-PackagesLockFilePath $project
+
+    $result = [API.Test.InternalAPITestHook]::IsFileExistsInProject($project.FullName,$lockFilePath)
+
+    Assert-True $result
 }

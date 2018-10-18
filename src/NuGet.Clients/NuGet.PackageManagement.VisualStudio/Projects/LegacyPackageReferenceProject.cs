@@ -156,6 +156,46 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
+        public override async Task AddFileToProjectAsync(string filePath)
+        {
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            EnvDTEProjectUtility.EnsureCheckedOutIfExists(_vsProjectAdapter.Project, _vsProjectAdapter.ProjectDirectory, filePath);
+
+            var isFileExistsInProject = await EnvDTEProjectUtility.ContainsFile(_vsProjectAdapter.Project, filePath);
+
+            if (!isFileExistsInProject)
+            {
+                await AddProjectItemAsync(filePath);
+            }
+        }
+
+        private async Task AddProjectItemAsync(string filePath)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var folderPath = Path.GetDirectoryName(filePath);
+            var fullPath = filePath;
+
+            if (filePath.Contains(_vsProjectAdapter.ProjectDirectory))
+            {
+                // folderPath should always be relative to ProjectDirectory so if filePath already contains
+                // ProjectDirectory then get a relative path and construct folderPath to get the appropriate
+                // ProjectItems from dte where you have to add this file.
+                var relativeLockFilePath = FileSystemUtility.GetRelativePath(_vsProjectAdapter.ProjectDirectory, filePath);
+                folderPath = Path.GetDirectoryName(relativeLockFilePath);
+            }
+            else
+            {
+                // get the fullPath wrt ProjectDirectory
+                fullPath = FileSystemUtility.GetFullPath(_vsProjectAdapter.ProjectDirectory, filePath);
+            }
+
+            var container = await EnvDTEProjectUtility.GetProjectItemsAsync(_vsProjectAdapter.Project, folderPath, createIfNotExists:true);
+
+            container.AddFromFileCopy(fullPath);
+        }
+
         public override async Task<bool> UninstallPackageAsync(
             PackageIdentity packageIdentity, INuGetProjectContext _, CancellationToken token)
         {

@@ -2849,6 +2849,14 @@ namespace NuGet.PackageManagement
                     await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
                 }
 
+                // add packages lock file into project
+                if (PackagesLockFileUtilities.IsNuGetLockFileSupported(projectAction.RestoreResult.LockFile.PackageSpec))
+                {
+                    var lockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(projectAction.RestoreResult.LockFile.PackageSpec);
+
+                    await buildIntegratedProject.AddFileToProjectAsync(lockFilePath);
+                }
+
                 // Write out a message for each action
                 foreach (var action in actions)
                 {
