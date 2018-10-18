@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -158,6 +160,30 @@ namespace API.Test
         {
             var migrator = ServiceLocator.GetComponent<IVsProjectJsonToPackageReferenceMigrator>();
             return (IVsProjectJsonToPackageReferenceMigrateResult)await migrator.MigrateProjectJsonToPackageReferenceAsync(projectName);
+        }
+
+        public static bool IsFileExistsInProject(string projectUniqueName, string filePath)
+        {
+            return ThreadHelper.JoinableTaskFactory.Run(
+                async () =>
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    var dte = ServiceLocator.GetDTE();
+
+                    foreach (EnvDTE.Project project in dte.Solution.Projects)
+                    {
+                        var solutionProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(project);
+
+                        if (!string.IsNullOrEmpty(solutionProjectPath) &&
+                            PathUtility.GetStringComparerBasedOnOS().Equals(solutionProjectPath, projectUniqueName))
+                        {
+                            return await EnvDTEProjectUtility.ContainsFile(project, filePath);
+                        }
+                    }
+
+                    return false;
+                });
         }
     }
 }

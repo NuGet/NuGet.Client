@@ -491,6 +491,11 @@ namespace NuGet.ProjectManagement
             return fullPath.Substring(root.Length).TrimStart(Path.DirectorySeparatorChar);
         }
 
+        public static string GetRelativePath(string root, string fullPath)
+        {
+            return fullPath.Substring(root.Length).TrimStart(Path.DirectorySeparatorChar);
+        }
+
         internal static void DeleteFileSafe(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
             DoSafeAction(() => DeleteFile(fullPath, nuGetProjectContext), nuGetProjectContext);
