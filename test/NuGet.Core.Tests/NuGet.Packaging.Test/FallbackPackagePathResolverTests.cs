@@ -228,8 +228,6 @@ namespace NuGet.Packaging.Test
 
                 var saveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files | PackageSaveMode.Nupkg;
 
-                var targetFolder = fallbackFolders[1];
-
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     userFolder,
                     saveMode,
@@ -251,6 +249,51 @@ namespace NuGet.Packaging.Test
                     var localResolver = new VersionFolderPathResolver(root);
                     File.Delete(localResolver.GetNupkgMetadataPath("a", NuGetVersion.Parse("1.0.0")));
                 }
+
+                var expected = Path.Combine(userFolder, "a", "1.0.0");
+
+                var resolver = new FallbackPackagePathResolver(userFolder, fallbackFolders);
+
+                // Act
+                var path = resolver.GetPackageDirectory("a", "1.0.0");
+
+                // Assert
+                Assert.Equal(expected, path);
+            }
+        }
+
+        [Fact]
+        public async Task FallbackPackagePathResolver_FindPackageInFallbackFolder_WithOnlyHashFile()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var userFolder = Path.Combine(mockBaseDirectory, "global");
+                var fallbackFolders = new List<string>()
+                {
+                    Path.Combine(mockBaseDirectory, "fallback1"),
+                    Path.Combine(mockBaseDirectory, "fallback2"),
+                };
+
+                Directory.CreateDirectory(userFolder);
+
+                foreach (var fallback in fallbackFolders)
+                {
+                    Directory.CreateDirectory(fallback);
+                }
+
+                var saveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files;
+
+                var targetFolder = fallbackFolders[0];
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    targetFolder,
+                    saveMode,
+                    new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+
+                // delete .nupkg.metadata file
+                var localResolver = new VersionFolderPathResolver(targetFolder);
+                File.Delete(localResolver.GetNupkgMetadataPath("a", NuGetVersion.Parse("1.0.0")));
 
                 var expected = Path.Combine(targetFolder, "a", "1.0.0");
 
