@@ -361,7 +361,7 @@ namespace NuGet.PackageManagement
                 // jQuery.1.8.2 has the following contentHash:
                 Assert.Equal("cXOJxYC6ccYDP5FW1iOXhZww+7CyKdpiJbkR0YZxILNJ2zvM4VsrqOVKNRHnIWF78IixUfo/cw7Hz4M70MUbGg==",
                     contentHash);
-                Assert.True(targetPackageStream.CanSeek);}
+                Assert.True(targetPackageStream.CanSeek);
             }
         }
 
@@ -587,7 +587,7 @@ namespace NuGet.PackageManagement
 
                     // calculate contentHash to verify we got the package correctly.
                     var packageArchiveReader = new PackageArchiveReader(targetPackageStream);
-                    var contentHash = packageArchiveReader.GetContentHashForPackage(new CancellationToken());
+                    var contentHash = packageArchiveReader.GetContentHash(new CancellationToken());
 
                     // Assert
                     // jQuery.1.8.2 has the following contentHash:

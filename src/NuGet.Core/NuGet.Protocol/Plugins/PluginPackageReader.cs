@@ -1164,6 +1164,12 @@ namespace NuGet.Protocol.Plugins
 
             return false;
         }
+        
+        public override string GetContentHash(CancellationToken token)
+        {
+            // Plugin Download doesn't support signed packages so simply return null...and even then their aren't always packages.
+            return null;
+        }
 
         private sealed class FileStreamCreator : IDisposable
         {

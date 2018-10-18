@@ -362,7 +362,7 @@ namespace NuGet.Packaging
             }
         }
 
-        public override string GetContentHashForPackage(CancellationToken token)
+        public override string GetContentHash(CancellationToken token)
         {
             var contentHash = GetContentHashForSignedPackage(token);
             if (contentHash == null)

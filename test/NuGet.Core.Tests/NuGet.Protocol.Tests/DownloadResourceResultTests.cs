@@ -233,6 +233,11 @@ namespace NuGet.Protocol.Tests
                 throw new NotImplementedException();
             }
 
+            public override string GetContentHash(CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
             public override Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithm, CancellationToken token)
             {
                 throw new NotImplementedException();

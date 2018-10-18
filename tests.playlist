@@ -1,0 +1,1 @@
+<Playlist Version="1.0"><Add Test="NuGet.Packaging.Test.PackageArchiveReaderTests.GetContentHash_IsSameForUnsignedAndSignedPackageAsync" /></Playlist>

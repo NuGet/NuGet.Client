@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -901,7 +902,7 @@ namespace NuGet.Packaging.Test
                     // Act & Assert
                     Assert.Throws<UnsafePackageEntryException>(() => packageReader.CopyFiles(
                         root.Path,
-                        new[] { "../../A.dll", "content/net40/B.nuspec"},
+                        new[] { "../../A.dll", "content/net40/B.nuspec" },
                         ExtractFile,
                         NullLogger.Instance,
                         CancellationToken.None));
@@ -1722,6 +1723,46 @@ namespace NuGet.Packaging.Test
                 Assert.Null(result);
             }
         }
+
+#if IS_DESKTOP
+        [Fact]
+        public async Task GetContentHash_IsSameForUnsignedAndSignedPackageAsync()
+        {
+            // this test will create an unsiged package, copy it, then sign it. then compare the contentHash
+            var nupkg = new SimpleTestPackageContext("Package.Content.Hash.Test", "1.0.0");
+
+            using (var unsignedDir = TestDirectory.Create())
+            {
+                var nupkgFileName = $"{nupkg.Identity.Id}.{nupkg.Identity.Version}.nupkg";
+                var nupkgFileInfo = await nupkg.CreateAsFileAsync(unsignedDir, nupkgFileName);
+
+                using (var signedDir = TestDirectory.Create())
+                {
+                    Uri timestampService = null;
+                    var signatureHashAlgorithm = HashAlgorithmName.SHA256;
+                    var timestampHashAlgorithm = HashAlgorithmName.SHA256;
+
+                    var signedPackagePath = Path.Combine(signedDir.Path, nupkgFileName);
+
+                    using (var originalPackage = File.OpenRead(nupkgFileInfo.FullName))
+                    using (var signedPackage = File.Open(signedPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                    using (var request = new AuthorSignPackageRequest(
+                        new X509Certificate2(),
+                        signatureHashAlgorithm,
+                        timestampHashAlgorithm))
+                    {
+                        await SignedArchiveTestUtility.CreateSignedPackageAsync(request, originalPackage, signedPackage, timestampService);
+                    }
+
+                    var contentHashUnsigned = new PackageArchiveReader(nupkgFileInfo.FullName).GetContentHash(CancellationToken.None);
+                    var contentHashSigned = new PackageArchiveReader(signedPackagePath).GetContentHash(CancellationToken.None);
+
+                    Assert.Equal(contentHashUnsigned, contentHashSigned);
+                }
+            }
+        }
+
+#endif 
 
         private static Zip CreateZipWithNestedStoredZipArchives()
         {
