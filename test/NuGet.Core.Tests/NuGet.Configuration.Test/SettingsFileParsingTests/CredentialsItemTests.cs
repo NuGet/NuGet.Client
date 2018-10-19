@@ -420,8 +420,8 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void CredentialsItem_Equals_WithSameElementName_ReturnsTrue()
         {
-            var credentials1 = new CredentialsItem("source", "user", "pass", isPasswordClearText: true, validAuthenticationTypes: "one,two,three");
-            var credentials2 = new CredentialsItem("source", "user2", "pass", isPasswordClearText: false, validAuthenticationTypes: null);
+            var credentials1 = new CredentialsItem("source", "user", "pass", isPasswordClearText: true);
+            var credentials2 = new CredentialsItem("source", "user2", "pass", isPasswordClearText: false);
 
             credentials1.Equals(credentials2).Should().BeTrue();
         }
@@ -429,8 +429,8 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void CredentialsItem_Equals_WithDifferentElemenName_ReturnsFalse()
         {
-            var credentials1 = new CredentialsItem("source1", "user", "pass", isPasswordClearText: true, validAuthenticationTypes: "one,two,three");
-            var credentials2 = new CredentialsItem("source2", "user", "pass", isPasswordClearText: true, validAuthenticationTypes: "one,two,three");
+            var credentials1 = new CredentialsItem("source1", "user", "pass", isPasswordClearText: true);
+            var credentials2 = new CredentialsItem("source2", "user", "pass", isPasswordClearText: true);
 
             credentials1.Equals(credentials2).Should().BeFalse();
         }
@@ -438,7 +438,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void CredentialsItem_ElementName_IsCorrect()
         {
-            var credentialsItem = new CredentialsItem("source", "user", "pass", isPasswordClearText: false, validAuthenticationTypes: null);
+            var credentialsItem = new CredentialsItem("source", "user", "pass", isPasswordClearText: false);
 
             credentialsItem.ElementName.Should().Be("source");
         }
@@ -453,7 +453,6 @@ namespace NuGet.Configuration.Test
         <NuGet.Org meta1='data1'>
             <add key='Username' value='username' />
             <add key='Password' value='password' />
-            <add key='ValidAuthenticationTypes' value='one,two,three' />
         </NuGet.Org>
     </packageSourceCredentials>
 </configuration>";
