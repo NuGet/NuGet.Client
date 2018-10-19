@@ -161,6 +161,33 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A credentials item must only have one Password or ClearTextPassword entry..
+        /// </summary>
+        internal static string Error_MoreThanOnePassword {
+            get {
+                return ResourceManager.GetString("Error_MoreThanOnePassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A credentials item must only have one Username entry..
+        /// </summary>
+        internal static string Error_MoreThanOneUsername {
+            get {
+                return ResourceManager.GetString("Error_MoreThanOneUsername", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A credentials item must only have one ValidAuthenticationTypes entry..
+        /// </summary>
+        internal static string Error_MoreThanOneValidAuthenticationTypes {
+            get {
+                return ResourceManager.GetString("Error_MoreThanOneValidAuthenticationTypes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There are no writable config files..
         /// </summary>
         internal static string Error_NoWritableConfig {
