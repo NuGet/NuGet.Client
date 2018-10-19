@@ -142,8 +142,8 @@ namespace NuGet.Packaging
             Stream stream = null;
             path = path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             if (!string.IsNullOrEmpty(path))
-            {
-                stream = _zipArchive.OpenFile(path);
+            {                
+                stream = _zipArchive.OpenFile(path); // TODO NK - Check what this has?
             }
 
             return stream;
