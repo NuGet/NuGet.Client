@@ -171,9 +171,6 @@ namespace NuGet.Build.Tasks
 
                 providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgFile));
 
-                var defaultSettings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
-                var sourceProvider = new CachingSourceProvider(new PackageSourceProvider(defaultSettings));
-
                 var restoreContext = new RestoreArgs()
                 {
                     CacheContext = cacheContext,
@@ -182,7 +179,6 @@ namespace NuGet.Build.Tasks
                     Log = log,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     PreLoadedRequestProviders = providers,
-                    CachingSourceProvider = sourceProvider,
                     AllowNoOp = !RestoreForce,
                     HideWarningsAndErrors = HideWarningsAndErrors,
                     RestoreForceEvaluate = RestoreForceEvaluate
