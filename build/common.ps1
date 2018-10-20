@@ -20,6 +20,7 @@ $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.exe'
 $ILMerge = Join-Path $NuGetClientRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
+$VsWhereExe = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 
 Set-Alias dotnet $DotNetExe
 Set-Alias nuget $NuGetExe
@@ -189,12 +190,34 @@ Function Install-NuGet {
     & $NuGetExe locals all -list -verbosity detailed
 }
 
+Function Get-MsBuildPath{
+    [CmdletBinding()]
+    param()
+
+    if (-Not (Test-Path $VsWhereExe))
+    {
+        throw "Expected VsWhere.exe at '$VsWhereExe' but it was not present. This is needed to locate MSBuild.exe"
+    }
+
+    $path = & $VsWhereExe -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+    if ($path) {
+        $path = join-path $path 'MSBuild\15.0\Bin\MSBuild.exe'
+        if (test-path $path) {
+        return $path
+        }
+    }
+    
+    throw "Unable to locate MSBuild using VsWhere.exe"
+}
+
 Function Install-DotnetCLI {
     [CmdletBinding()]
     param(
         [switch]$Force
     )
-    $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
+
+
+    $msbuildExe = Get-MsBuildPath 
     $CliTargetBranch = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliTargetBranch
 
     $cli = @{
