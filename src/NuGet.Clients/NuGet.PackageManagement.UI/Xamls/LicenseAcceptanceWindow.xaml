@@ -89,7 +89,7 @@
   </Window.Resources>
   <Grid>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="*" MinWidth="450"/>
       <ColumnDefinition Width="Auto"/>
     </Grid.ColumnDefinitions>
     
@@ -148,11 +148,12 @@
 
     <Border
       Visibility="Collapsed"
-      Margin="12,8"
-      MinHeight="130"
-      BorderThickness="1"
       Grid.Column="1"
       Grid.Row="2"
+      Margin="12,8"
+      MinHeight="130"
+      MinWidth="130"
+      BorderThickness="1"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
       <ScrollViewer
               Padding="3"

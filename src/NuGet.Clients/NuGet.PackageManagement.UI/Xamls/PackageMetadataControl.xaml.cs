@@ -3,9 +3,15 @@
 
 using System.Windows;
 using System.Windows.Controls;
+using NuGet.PackageManagement.UI.Xamls; // TODO NK - Change it to do nothing.
 
 namespace NuGet.PackageManagement.UI
 {
+    public class LicenseFileData
+    {
+        public string Header { get; set; }
+        public string LicenseContent { get; set; }
+    }
     /// <summary>
     /// Interaction logic for PackageMetadata.xaml
     /// </summary>
@@ -19,6 +25,17 @@ namespace NuGet.PackageManagement.UI
             DataContextChanged += PackageMetadataControl_DataContextChanged;
         }
 
+
+        private void ViewLicense_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new LicenseFileWindow();
+            window.DataContext = new LicenseFileData
+            {
+                Header = "License",
+                LicenseContent = "All the good and smart content a license can show."
+            };
+            window.ShowDialog(); // TODO NK - Continue from here.
+        }
         private void Hyperlink_Click(object sender, RoutedEventArgs e)
         {
             if(DataContext is DetailedPackageMetadata packageMetadata)
