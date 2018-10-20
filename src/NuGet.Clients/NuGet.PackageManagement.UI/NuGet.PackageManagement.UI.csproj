@@ -131,6 +131,9 @@
     </Compile>
     <Compile Include="Xamls\InfiniteScrollListBox.cs" />
     <Compile Include="Xamls\InfiniteScrollListBoxAutomationPeer.cs" />
+    <Compile Include="Xamls\LicenseFileWindow.xaml.cs">
+      <DependentUpon>LicenseFileWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Xamls\NuGetProjectUpgradeWindow.xaml.cs">
       <DependentUpon>NuGetProjectUpgradeWindow.xaml</DependentUpon>
     </Compile>
@@ -300,6 +303,10 @@
     <Page Include="Xamls\InstalledIndicator.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Xamls\LicenseFileWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\MigratorHelpIcon.xaml">
       <SubType>Designer</SubType>
