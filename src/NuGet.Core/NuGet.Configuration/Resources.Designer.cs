@@ -161,7 +161,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A credentials item must only have one Password or ClearTextPassword entry..
+        ///   Looks up a localized string similar to A credentials item must have only one Password or ClearTextPassword entry..
         /// </summary>
         internal static string Error_MoreThanOnePassword {
             get {
@@ -170,7 +170,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A credentials item must only have one Username entry..
+        ///   Looks up a localized string similar to A credentials item must have only one Username entry..
         /// </summary>
         internal static string Error_MoreThanOneUsername {
             get {
@@ -179,7 +179,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A credentials item must only have one ValidAuthenticationTypes entry..
+        ///   Looks up a localized string similar to A credentials item must have only one ValidAuthenticationTypes entry..
         /// </summary>
         internal static string Error_MoreThanOneValidAuthenticationTypes {
             get {

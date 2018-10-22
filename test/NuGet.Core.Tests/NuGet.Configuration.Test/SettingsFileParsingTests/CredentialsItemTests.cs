@@ -13,9 +13,9 @@ namespace NuGet.Configuration.Test
 {
     public class CredentialsItemTests
     {
-        private static readonly string _moreThanOneUsername = "A credentials item must only have one Username entry.";
-        private static readonly string _moreThanOnePassword = "A credentials item must only have one Password or ClearTextPassword entry.";
-        private static readonly string _moreThanOneValidAuthenticationTypes = "A credentials item must only have one ValidAuthenticationTypes entry.";
+        private static readonly string _moreThanOneUsername = Resources.Error_MoreThanOneUsername;
+        private static readonly string _moreThanOnePassword = Resources.Error_MoreThanOnePassword;
+        private static readonly string _moreThanOneValidAuthenticationTypes = Resources.Error_MoreThanOneValidAuthenticationTypes;
 
         [Theory]
         [InlineData(null, "user", "pass")]
