@@ -172,8 +172,7 @@ namespace NuGet.Protocol
                     FileMode.Create,
                     FileAccess.ReadWrite,
                     FileShare.ReadWrite | FileShare.Delete,
-                    bufferSize: 4096,
-                    useAsync: true))
+                    bufferSize: 4096))
                 {
                     var result = await _resource.CopyNupkgToStreamAsync(
                         _packageIdentity.Id,
@@ -286,8 +285,7 @@ namespace NuGet.Protocol
                FileMode.Open,
                FileAccess.Read,
                FileShare.Read,
-               bufferSize: 4096,
-               useAsync: true);
+               bufferSize: 4096);
         }
 
         private void ThrowIfDisposed()

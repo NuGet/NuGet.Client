@@ -202,7 +202,7 @@ namespace NuGet.Protocol
                    FileAccess.ReadWrite,
                    FileShare.Read,
                    BufferSize,
-                   FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+                   FileOptions.DeleteOnClose);
 
                 await packageStream.CopyToAsync(fileStream, BufferSize, token);
 
