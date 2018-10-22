@@ -15,7 +15,7 @@
     <SdkTargetBranch Condition="'$(OverrideCliTargetBranch)' == ''">release/2.1.5xx</SdkTargetBranch>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">4</NetCoreAssemblyBuildNumber>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">5</NetCoreAssemblyBuildNumber>
     <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
   </PropertyGroup>
 
