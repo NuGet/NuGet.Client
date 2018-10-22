@@ -550,65 +550,72 @@ namespace NuGet.Packaging.Signing
 
         internal static string GetPackageContentHash(BinaryReader reader)
         {
-            using (var hashFunc = new Sha512HashFunction())
+            try
             {
-                var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
-                var signatureCentralDirectoryHeader = metadata.GetPackageSignatureFileCentralDirectoryHeaderMetadata();
-                var centralDirectoryRecordsWithoutSignature = RemoveSignatureAndOrderByOffset(metadata);
-
-                // Read and hash from the start of the archive to the start of the file headers
-                reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
-                SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, metadata.StartOfLocalFileHeaders);
-
-                // Read and hash file headers
-                foreach (var record in centralDirectoryRecordsWithoutSignature)
+                using (var hashFunc = new Sha512HashFunction())
                 {
-                    reader.BaseStream.Seek(offset: record.OffsetToLocalFileHeader, origin: SeekOrigin.Begin);
-                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, record.OffsetToLocalFileHeader + record.FileEntryTotalSize);
+                    var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+                    var signatureCentralDirectoryHeader = metadata.GetPackageSignatureFileCentralDirectoryHeaderMetadata();
+                    var centralDirectoryRecordsWithoutSignature = RemoveSignatureAndOrderByOffset(metadata);
+
+                    // Read and hash from the start of the archive to the start of the file headers
+                    reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
+                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, metadata.StartOfLocalFileHeaders);
+
+                    // Read and hash file headers
+                    foreach (var record in centralDirectoryRecordsWithoutSignature)
+                    {
+                        reader.BaseStream.Seek(offset: record.OffsetToLocalFileHeader, origin: SeekOrigin.Begin);
+                        SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, record.OffsetToLocalFileHeader + record.FileEntryTotalSize);
+                    }
+
+                    // Order central directory records by their position
+                    centralDirectoryRecordsWithoutSignature.Sort((x, y) => x.Position.CompareTo(y.Position));
+
+                    // Update offset of any central directory record that has a file entry after signature
+                    foreach (var record in centralDirectoryRecordsWithoutSignature)
+                    {
+                        reader.BaseStream.Seek(offset: record.Position, origin: SeekOrigin.Begin);
+                        // Hash from the start of the central directory record until the relative offset of local file header (42 from the start of central directory record, including signature length)
+                        SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, reader.BaseStream.Position + 42);
+
+                        var relativeOffsetOfLocalFileHeader = (uint)(reader.ReadUInt32() + record.ChangeInOffset);
+                        SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(relativeOffsetOfLocalFileHeader));
+
+                        // Continue hashing file name, extra field, and file comment fields.
+                        SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, reader.BaseStream.Position + record.HeaderSize - CentralDirectoryHeader.SizeInBytesOfFixedLengthFields);
+                    }
+
+                    reader.BaseStream.Seek(offset: metadata.EndOfCentralDirectory, origin: SeekOrigin.Begin);
+
+                    // Hash until total entries in end of central directory record (8 bytes from the start of EOCDR)
+                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, metadata.EndOfCentralDirectory + 8);
+
+                    var eocdrTotalEntries = (ushort)(reader.ReadUInt16() - 1);
+                    var eocdrTotalEntriesOnDisk = (ushort)(reader.ReadUInt16() - 1);
+
+                    SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(eocdrTotalEntries));
+                    SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(eocdrTotalEntriesOnDisk));
+
+                    // update the central directory size by substracting the size of the package signature file's central directory header
+                    var eocdrSizeOfCentralDirectory = (uint)(reader.ReadUInt32() - signatureCentralDirectoryHeader.HeaderSize);
+                    SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(eocdrSizeOfCentralDirectory));
+
+                    var eocdrOffsetOfCentralDirectory = reader.ReadUInt32() - (uint)signatureCentralDirectoryHeader.FileEntryTotalSize;
+                    SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(eocdrOffsetOfCentralDirectory));
+
+                    // Hash until the end of the reader
+                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, reader.BaseStream.Length);
+
+                    hashFunc.Update(new byte[0], offset: 0, count: 0);
+
+                    return hashFunc.GetHash();
                 }
-
-                // Order central directory records by their position
-                centralDirectoryRecordsWithoutSignature.Sort((x, y) => x.Position.CompareTo(y.Position));
-
-                // Update offset of any central directory record that has a file entry after signature
-                foreach (var record in centralDirectoryRecordsWithoutSignature)
-                {
-                    reader.BaseStream.Seek(offset: record.Position, origin: SeekOrigin.Begin);
-                    // Hash from the start of the central directory record until the relative offset of local file header (42 from the start of central directory record, including signature length)
-                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, reader.BaseStream.Position + 42);
-
-                    var relativeOffsetOfLocalFileHeader = (uint)(reader.ReadUInt32() + record.ChangeInOffset);
-                    SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(relativeOffsetOfLocalFileHeader));
-
-                    // Continue hashing file name, extra field, and file comment fields.
-                    SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, reader.BaseStream.Position + record.HeaderSize - CentralDirectoryHeader.SizeInBytesOfFixedLengthFields);
-                }
-
-                reader.BaseStream.Seek(offset: metadata.EndOfCentralDirectory, origin: SeekOrigin.Begin);
-
-                // Hash until total entries in end of central directory record (8 bytes from the start of EOCDR)
-                SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, metadata.EndOfCentralDirectory + 8);
-
-                var eocdrTotalEntries = (ushort)(reader.ReadUInt16() - 1);
-                var eocdrTotalEntriesOnDisk = (ushort)(reader.ReadUInt16() - 1);
-
-                SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(eocdrTotalEntries));
-                SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(eocdrTotalEntriesOnDisk));
-
-                // update the central directory size by substracting the size of the package signature file's central directory header
-                var eocdrSizeOfCentralDirectory = (uint)(reader.ReadUInt32() - signatureCentralDirectoryHeader.HeaderSize);
-                SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(eocdrSizeOfCentralDirectory));
-
-                var eocdrOffsetOfCentralDirectory = reader.ReadUInt32() - (uint)signatureCentralDirectoryHeader.FileEntryTotalSize;
-                SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(eocdrOffsetOfCentralDirectory));
-
-                // Hash until the end of the reader
-                SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, reader.BaseStream.Length);
-
-                hashFunc.Update(new byte[0], offset: 0, count: 0);
-
-                return hashFunc.GetHash();
             }
+            // If exception is throw in means the archive was not a valid package. It has been tampered, return null.
+            catch { }
+
+            return null;
         }
 
         internal static bool IsUtf8(ushort generalPurposeBitFlags)
