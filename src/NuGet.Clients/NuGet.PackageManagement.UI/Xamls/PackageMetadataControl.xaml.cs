@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using NuGet.PackageManagement.UI.Xamls; // TODO NK - Change it to do nothing.
@@ -29,12 +30,22 @@ namespace NuGet.PackageManagement.UI
         private void ViewLicense_Click(object sender, RoutedEventArgs e)
         {
             var window = new LicenseFileWindow();
-            window.DataContext = new LicenseFileData
+
+            if (DataContext is DetailedPackageMetadata metadata)
             {
-                Header = "License",
-                LicenseContent = "All the good and smart content a license can show."
-            };
-            window.ShowDialog(); // TODO NK - Continue from here.
+                using (var licenseStream = metadata.LicenseFile.Open())
+                using (TextReader reader = new StreamReader(licenseStream)) {
+                    // if the length is too big don't open.
+                   
+                    window.DataContext = new LicenseFileData
+                    {
+                        Header = "License File",
+                        LicenseContent = reader.ReadToEnd()
+                    };
+                    window.ShowDialog(); // TODO NK - Continue from here.
+                }
+            }
+            
         }
         private void Hyperlink_Click(object sender, RoutedEventArgs e)
         {

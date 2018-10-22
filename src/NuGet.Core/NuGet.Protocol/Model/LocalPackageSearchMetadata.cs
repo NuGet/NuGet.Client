@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -86,15 +88,14 @@ namespace NuGet.Protocol
 
         public LicenseMetadata LicenseMetadata => _nuspec.GetLicenseMetadata();
 
-        public Stream GetLicenseFile()
+        public ZipArchiveEntry GetEntry(string path)
         {
-
-            var stream = new MemoryStream();
-            var writer = new StreamWriter(stream);
-
-            writer.Write("Best license ever");
-
-            return stream;
+            if (_package.GetReader() is PackageArchiveReader reader) // TODO NK - Should I Do using here?
+            {
+                return reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
+            }
+            return null;
         }
+
     }
 }

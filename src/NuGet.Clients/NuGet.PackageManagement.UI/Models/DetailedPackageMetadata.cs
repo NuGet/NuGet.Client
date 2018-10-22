@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 
 using NuGet.Packaging;
@@ -40,9 +41,13 @@ namespace NuGet.PackageManagement.UI
                 dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
             PrefixReserved = serverData.PrefixReserved;
             LicenseMetadata = serverData.LicenseMetadata;
-            if(serverData is LocalPackageSearchMetadata localPackage)
+            
+            if (serverData is LocalPackageSearchMetadata localPackage)
             {
-                LicenseFile = localPackage.GetLicenseFile();
+                if(LicenseMetadata.Type == LicenseType.File)
+                {
+                    LicenseFile = localPackage.GetEntry(LicenseMetadata.License); // Make sure it doesn't throw when the while cannot be found.
+                }
             }
         }
 
@@ -80,6 +85,6 @@ namespace NuGet.PackageManagement.UI
 
         public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
 
-        public Stream LicenseFile { get; }
+        public ZipArchiveEntry LicenseFile { get; }
     }
 }
