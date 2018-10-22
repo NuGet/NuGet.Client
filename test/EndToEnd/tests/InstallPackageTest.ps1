@@ -1129,7 +1129,8 @@ function Test-InstallPackageSkipsBindingRedirectWhenSetOnConfig
     try
     {
         # Act
-        $setting.SetValue('bindingRedirects', 'skip', 'true')
+        $o = [NuGet.Configuration.AddItem]::new('skip', 'true')
+        $setting.AddOrUpdate('bindingRedirects', $o)
 
         $a | Install-Package E -Source $context.RepositoryPath
         $a | Update-Package F -Safe -Source $context.RepositoryPath
@@ -1139,7 +1140,11 @@ function Test-InstallPackageSkipsBindingRedirectWhenSetOnConfig
         Assert-NoBindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
     }
     finally {
-        $setting.DeleteSection('bindingRedirects')
+        $section = $setting.GetSection('bindingRedirects')
+
+        ForEach ($item in $section.Items) {
+            $setting.Remove('bindingRedirects', $item)
+        }
     }
 }
 
@@ -1163,7 +1168,8 @@ function InstallPackageThrowWithLockedConfigFileIfSuccessRequired
     try
     {
         # Act
-        $setting.SetValue('bindingRedirects', 'successRequired', 'true')
+        $o = [NuGet.Configuration.AddItem]::new('successRequired', 'true')
+        $setting.AddOrUpdate('bindingRedirects', $o)
 
         $a | Install-Package E -Source $context.RepositoryPath
         $stream = [System.IO.File]::Open($webconfigPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::None)
@@ -1175,7 +1181,11 @@ function InstallPackageThrowWithLockedConfigFileIfSuccessRequired
     }
     finally
     {
-        $setting.DeleteSection('bindingRedirects')
+        $section = $setting.GetSection('bindingRedirects')
+
+        ForEach ($item in $section.Items) {
+            $setting.Remove('bindingRedirects', $item)
+        }
     }
 }
 
@@ -1198,8 +1208,12 @@ function Test-InstallPackageSucceedsWithLockedFileAndSkipsBindingRedirectSet
     try
     {
         # Act
-        $setting.SetValue('bindingRedirects', 'skip', 'True')
-        $setting.SetValue('bindingRedirects', 'successRequired', 'False')
+        $o = [NuGet.Configuration.AddItem]::new('skip', 'True')
+        $setting.AddOrUpdate('bindingRedirects', $o)
+
+        $o = [NuGet.Configuration.AddItem]::new('successRequired', 'False')
+        $setting.AddOrUpdate('bindingRedirects', $o)
+
 
         $a | Install-Package E -Source $context.RepositoryPath
         $stream = [System.IO.File]::Open($webconfigPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::None)
@@ -1215,7 +1229,11 @@ function Test-InstallPackageSucceedsWithLockedFileAndSkipsBindingRedirectSet
         Assert-NoBindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
     }
     finally {
-        $setting.DeleteSection('bindingRedirects')
+        $section = $setting.GetSection('bindingRedirects')
+
+        ForEach ($item in $section.Items) {
+            $setting.Remove('bindingRedirects', $item)
+        }
     }
 }
 
@@ -2982,10 +3000,10 @@ function Test-InstallPackageWithDependencyVersionHighestInNuGetConfig
     $setting = $componentModel.GetService([NuGet.Configuration.ISettings])
 
     try {
-        $setting.SetValue('config', 'dependencyversion', 'HighestPatch')
-
         # Arrange
         $p = New-ClassLibrary
+
+        $setting.AddOrUpdate('config', [NuGet.Configuration.AddItem]::new('dependencyversion', 'HighestPatch'))
 
         # Act
         $p | Install-Package jquery.validation -version 1.10
@@ -2995,7 +3013,7 @@ function Test-InstallPackageWithDependencyVersionHighestInNuGetConfig
         Assert-Package $p jquery 1.4.4
     }
     finally {
-        $setting.SetValue('config', 'dependencyversion', $null)
+        $setting.AddOrUpdate('config', [NuGet.Configuration.AddItem]::new('dependencyversion', $null))
     }
 }
 

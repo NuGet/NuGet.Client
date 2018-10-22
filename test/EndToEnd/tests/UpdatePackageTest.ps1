@@ -39,10 +39,11 @@ function Test-UpdatingPackageWithPackageSaveModeNuspec {
     $componentModel = Get-VSComponentModel
 	$setting = $componentModel.GetService([NuGet.Configuration.ISettings])
 
-    try {
-        $setting.SetValue('config', 'PackageSaveMode', 'nuspec')
-        
+    try {        
         $p = New-ClassLibrary
+
+        $setting.AddOrUpdate('config', [NuGet.Configuration.AddItem]::new('PackageSaveMode', 'nuspec'))
+
         Install-Package Castle.Core -Version 1.2.0 -Project $p.Name
         Assert-Package $p Castle.Core 1.2.0
     
@@ -53,7 +54,7 @@ function Test-UpdatingPackageWithPackageSaveModeNuspec {
         # Assert-Package $p Castle.Core 2.5.1
     }
     finally {
-	    $setting.SetValue('config', 'PackageSaveMode', $null)
+        $setting.AddOrUpdate('config', [NuGet.Configuration.AddItem]::new('PackageSaveMode', $null))
     }
 }
 
