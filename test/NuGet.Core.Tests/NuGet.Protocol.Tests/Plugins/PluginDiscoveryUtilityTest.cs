@@ -69,6 +69,8 @@ namespace NuGet.Protocol.Plugins.Tests
         [Theory]
         [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe",
             @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins")]
+        [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
+            @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins")]
         [InlineData(null, null)]
         public void PluginDiscoveryUtility_GetsNuGetPluginPathGivenMSBuildExeLocation(string given, string expected)
         {
