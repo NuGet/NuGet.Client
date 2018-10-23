@@ -46,7 +46,12 @@ namespace NuGet.PackageManagement.UI
             {
                 if(LicenseMetadata.Type == LicenseType.File)
                 {
+                    try { 
                     LicenseFile = localPackage.GetEntry(LicenseMetadata.License); // Make sure it doesn't throw when the while cannot be found.
+                    } catch (Exception)
+                    {
+
+                    }
                 }
             }
         }

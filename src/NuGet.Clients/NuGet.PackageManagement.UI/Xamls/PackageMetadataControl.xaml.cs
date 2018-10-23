@@ -42,25 +42,14 @@ namespace NuGet.PackageManagement.UI
                         Header = "License File",
                         LicenseContent = reader.ReadToEnd()
                     };
-                    window.ShowDialog(); // TODO NK - Continue from here.
-                }
-            }
-            
-        }
-        private void Hyperlink_Click(object sender, RoutedEventArgs e)
-        {
-            if(DataContext is DetailedPackageMetadata packageMetadata)
-            {
-                var licenseWindow = new LicenseAcceptanceWindow
-                {
-                    DataContext = packageMetadata.LicenseFile
-                };
 
-                using (NuGetEventTrigger.TriggerEventBeginEnd(
-                    NuGetEvent.LicenseWindowBegin,
-                    NuGetEvent.LicenseWindowEnd))
-                {
-                    licenseWindow.ShowModal();
+                    using (NuGetEventTrigger.TriggerEventBeginEnd(
+                    NuGetEvent.EmbeddedLicenseWindowBegin,
+                    NuGetEvent.EmbeddedLicenseWindowEnd))
+                    {
+                        window.ShowModal();
+                    }
+                    window.ShowDialog(); // TODO NK - Continue from here.
                 }
             }
         }

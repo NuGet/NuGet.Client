@@ -33,21 +33,6 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         </TextBlock>
       </DataTemplate>
 
-      <DataTemplate DataType="{x:Type nuget:LicenseText}">
-        <TextBlock
-            Margin="8,8,0,0"
-            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
-            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}">
-                <Hyperlink
-                    AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
-                    Style="{StaticResource HyperlinkStyle}"
-                    Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
-                    NavigateUri="{Binding Link}">
-                    <Run Text="{Binding Text}"></Run>
-                </Hyperlink>
-        </TextBlock>
-      </DataTemplate>
-
       <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
         <TextBlock
             Margin="8,8,0,0"
@@ -56,7 +41,7 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
                     Style="{StaticResource HyperlinkStyle}"
-                    Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+                    Click="ViewLicense_Click">
                   <Run Text="{Binding Text}"/>
                 </Hyperlink>
         </TextBlock>
