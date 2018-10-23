@@ -1125,7 +1125,7 @@ namespace NuGet.CommandLine
             var groups = package.GetContentItems();
             return groups.SelectMany(g => g.Items).Where(IsTransformFile).Select(f =>
             {
-                var element = XElement.Load(package.GetStream(f)); // TODO NK - this is how you load the license file
+                var element = XElement.Load(package.GetStream(f));
                 var memStream = new MemoryStream();
                 element.Save(memStream);
                 memStream.Seek(0, SeekOrigin.Begin);

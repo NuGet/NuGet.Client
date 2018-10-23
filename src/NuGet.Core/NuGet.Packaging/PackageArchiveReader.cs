@@ -142,8 +142,8 @@ namespace NuGet.Packaging
             Stream stream = null;
             path = path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             if (!string.IsNullOrEmpty(path))
-            {                
-                stream = _zipArchive.OpenFile(path); // TODO NK - Check what this has?
+            {
+                stream = _zipArchive.OpenFile(path);
             }
 
             return stream;
@@ -377,6 +377,11 @@ namespace NuGet.Packaging
 
                 return Task.FromResult(hash);
             }
+        }
+
+        public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
+        {
+            return true;
         }
 
         protected void ThrowIfZipReadStreamIsNull()
