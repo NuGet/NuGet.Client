@@ -82,8 +82,7 @@ namespace NuGet.PackageManagement.UI
 
                     break;
                 case LicenseType.File:
-
-                    list.Add(new FreeText(string.Format(CultureInfo.CurrentCulture, Resources.License_FileEmbeddedInPackage, metadata.License)));
+                    list.Add(new LicenseFileText(string.Format(CultureInfo.CurrentCulture, Resources.License_FileEmbeddedInPackage, metadata.License)));
                     break;
 
                 default:

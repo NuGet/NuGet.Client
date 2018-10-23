@@ -13,6 +13,6 @@ namespace NuGet.PackageManagement.UI
             Text = text;
         }
 
-        public string Text { get; }
+        public string Text { get; set; }
     }
 }

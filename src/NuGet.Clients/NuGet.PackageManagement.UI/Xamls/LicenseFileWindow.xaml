@@ -14,6 +14,7 @@
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
   Title="{Binding Header}"
+  TextBlock.TextAlignment="Center"
   d:DesignHeight="300"
   d:DesignWidth="300"
   >

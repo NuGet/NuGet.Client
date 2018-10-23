@@ -1015,7 +1015,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The license file &apos;{0}&apos; is embedded in the package..
+        ///   Looks up a localized string similar to View License File - {0}.
         /// </summary>
         public static string License_FileEmbeddedInPackage {
             get {

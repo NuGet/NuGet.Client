@@ -49,7 +49,6 @@ namespace NuGet.PackageManagement.UI
                     {
                         window.ShowModal();
                     }
-                    window.ShowDialog(); // TODO NK - Continue from here.
                 }
             }
         }
