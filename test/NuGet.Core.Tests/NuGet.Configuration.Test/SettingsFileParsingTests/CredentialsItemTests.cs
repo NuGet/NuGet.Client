@@ -13,6 +13,10 @@ namespace NuGet.Configuration.Test
 {
     public class CredentialsItemTests
     {
+        private static readonly string _moreThanOneUsername = Resources.Error_MoreThanOneUsername;
+        private static readonly string _moreThanOnePassword = Resources.Error_MoreThanOnePassword;
+        private static readonly string _moreThanOneValidAuthenticationTypes = Resources.Error_MoreThanOneValidAuthenticationTypes;
+
         [Theory]
         [InlineData(null, "user", "pass")]
         [InlineData("", "user", "pass")]
@@ -82,7 +86,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void CredentialsItem_Parsing_WithUsernamePasswordAndClearTextPassword_TakesFirstAndIgnoresRest()
+        public void CredentialsItem_Parsing_WithUsernamePasswordAndClearTextPassword_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -102,23 +106,71 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act and Assert
-                var settingsFile = new SettingsFile(mockBaseDirectory);
-                settingsFile.Should().NotBeNull();
-
-                var section = settingsFile.GetSection("packageSourceCredentials");
-                section.Should().NotBeNull();
-                section.Items.Count.Should().Be(1);
-
-                var item = section.Items.First() as CredentialsItem;
-                item.Should().NotBeNull();
-
-                item.Password.Should().Be("password");
-                item.IsPasswordClearText.Should().BeFalse();
+                var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<NuGetConfigurationException>();
+                ex.Message.Should().Be(string.Format("Unable to parse config file because: {0} Path: '{1}'.", _moreThanOnePassword, Path.Combine(mockBaseDirectory, nugetConfigPath)));
             }
         }
 
         [Fact]
-        public void CredentialsItem_Parsing_WithMultipleUsernames_TakesFirstAndIgnoresRest()
+        public void CredentialsItem_Parsing_WithMultiplePassword_Throws()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <packageSourceCredentials>
+        <NuGet.Org meta1='data1'>
+            <add key='Username' value='username' />
+            <add key='Password' value='password' />
+            <add key='Password' value='password' />
+        </NuGet.Org>
+    </packageSourceCredentials>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<NuGetConfigurationException>();
+                ex.Message.Should().Be(string.Format("Unable to parse config file because: {0} Path: '{1}'.", _moreThanOnePassword, Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            }
+        }
+
+        [Fact]
+        public void CredentialsItem_Parsing_WithMultipleClearTextPassword_Throws()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <packageSourceCredentials>
+        <NuGet.Org meta1='data1'>
+            <add key='Username' value='username' />
+            <add key='ClearTextPassword' value='clearTextPassword' />
+            <add key='ClearTextPassword' value='clearTextPassword' />
+        </NuGet.Org>
+    </packageSourceCredentials>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<NuGetConfigurationException>();
+                ex.Message.Should().Be(string.Format("Unable to parse config file because: {0} Path: '{1}'.", _moreThanOnePassword, Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            }
+        }
+
+        [Fact]
+        public void CredentialsItem_Parsing_WithMultipleUsernames_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -138,22 +190,15 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act and Assert
-                var settingsFile = new SettingsFile(mockBaseDirectory);
-                settingsFile.Should().NotBeNull();
-
-                var section = settingsFile.GetSection("packageSourceCredentials");
-                section.Should().NotBeNull();
-                section.Items.Count.Should().Be(1);
-
-                var item = section.Items.First() as CredentialsItem;
-                item.Should().NotBeNull();
-
-                item.Username.Should().Be("username");
+                var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<NuGetConfigurationException>();
+                ex.Message.Should().Be(string.Format("Unable to parse config file because: {0} Path: '{1}'.", _moreThanOneUsername, Path.Combine(mockBaseDirectory, nugetConfigPath)));
             }
         }
 
         [Fact]
-        public void CredentialsItem_Parsing_WithMultipleValidAuthenticationTypes_TakesFirstAndIgnoresRest()
+        public void CredentialsItem_Parsing_WithMultipleValidAuthenticationTypes_Throws()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -174,17 +219,10 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
 
                 // Act and Assert
-                var settingsFile = new SettingsFile(mockBaseDirectory);
-                settingsFile.Should().NotBeNull();
-
-                var section = settingsFile.GetSection("packageSourceCredentials");
-                section.Should().NotBeNull();
-                section.Items.Count.Should().Be(1);
-
-                var item = section.Items.First() as CredentialsItem;
-                item.Should().NotBeNull();
-
-                item.ValidAuthenticationTypes.Should().Be("one,two,three");
+                var ex = Record.Exception(() => new SettingsFile(mockBaseDirectory));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<NuGetConfigurationException>();
+                ex.Message.Should().Be(string.Format("Unable to parse config file because: {0} Path: '{1}'.", _moreThanOneValidAuthenticationTypes, Path.Combine(mockBaseDirectory, nugetConfigPath)));
             }
         }
 
