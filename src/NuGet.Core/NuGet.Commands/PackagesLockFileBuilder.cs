@@ -2,9 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Shared;
@@ -89,5 +94,56 @@ namespace NuGet.Commands
             return lockFile;
         }
 
+        public async Task<PackagesLockFile> CreateNuGetLockFileAsync(IEnumerable<PackageReference> installedPackages, Func<PackageIdentity, string> getNupkgFilePath, CancellationToken token)
+        {
+            Debug.Assert(installedPackages != null);
+            Debug.Assert(getNupkgFilePath != null);
+
+            var lockFile = new PackagesLockFile();
+
+            foreach (var targetFramework in installedPackages.GroupBy(p => p.TargetFramework).OrderBy(g => g.Key))
+            {
+                var target = new PackagesLockFileTarget
+                {
+                    TargetFramework = targetFramework.Key,
+                    Dependencies = new List<LockFileDependency>()
+                };
+
+                foreach (var package in targetFramework.OrderBy(p => p.PackageIdentity))
+                {
+                    string hash;
+
+                    var file = getNupkgFilePath(package.PackageIdentity);
+                    if (file == null)
+                    {
+                        throw new Exception("couldn't find package");
+                    }
+
+                    using (var reader = new PackageArchiveReader(file))
+                    {
+                        hash = reader.GetContentHashForSignedPackage(token);
+                        if (hash == null)
+                        {
+                            hash = Convert.ToBase64String(await reader.GetArchiveHashAsync(HashAlgorithmName.SHA512, token));
+                        }
+                    }
+
+                    var dependency = new LockFileDependency
+                    {
+                        Id = package.PackageIdentity.Id,
+                        Type = PackageDependencyType.Direct,
+                        RequestedVersion = package.AllowedVersions,
+                        ResolvedVersion = package.PackageIdentity.Version,
+                        ContentHash = hash
+                    };
+
+                    target.Dependencies.Add(dependency);
+                }
+
+                lockFile.Targets.Add(target);
+            }
+
+            return lockFile;
+        }
     }
 }

@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using PathUtility = NuGet.Common.PathUtility;
 using Task = System.Threading.Tasks.Task;
@@ -210,7 +211,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 && !fileName.Equals(ProjectManagement.Constants.PackageReferenceFile)
                 && !fileName.Equals("packages." + ProjectName + ".config")
                 && !fileName.Equals(EnvDTEProjectInfoUtility.WebConfig)
-                && !fileName.Equals(EnvDTEProjectInfoUtility.AppConfig))
+                && !fileName.Equals(EnvDTEProjectInfoUtility.AppConfig)
+                && !fileName.Equals(PackagesLockFileFormat.LockFileName))
             {
                 NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
             }
