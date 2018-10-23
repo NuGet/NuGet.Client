@@ -22,6 +22,7 @@ namespace NuGet.PackageManagement.UI
 
         public DetailedPackageMetadata(IPackageSearchMetadata serverData, long? downloadCount)
         {
+            Id = serverData.Identity.Id;
             Version = serverData.Identity.Version;
             Summary = serverData.Summary;
             Description = serverData.Description;
@@ -44,19 +45,24 @@ namespace NuGet.PackageManagement.UI
             
             if (serverData is LocalPackageSearchMetadata localPackage)
             {
-                if(LicenseMetadata.Type == LicenseType.File)
+                if(LicenseMetadata?.Type == LicenseType.File)
                 {
-                    try { 
-                    LicenseFile = localPackage.GetEntry(LicenseMetadata.License); // Make sure it doesn't throw when the while cannot be found.
-                    } catch (Exception)
+                    try
                     {
-
+                        LicenseFile = localPackage.GetEntry(LicenseMetadata.License); // Make sure it doesn't throw when the while cannot be found.
+                    }
+                    catch (Exception)
+                    {
+                        // TODO NK 
                     }
                 }
             }
         }
 
+        public string Id { get; set; }
+
         public NuGetVersion Version { get; set; }
+
         public string Summary { get; set; }
 
         public string Description { get; set; }

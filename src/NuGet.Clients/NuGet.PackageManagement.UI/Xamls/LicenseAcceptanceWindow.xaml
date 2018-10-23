@@ -48,6 +48,19 @@
             Text="{Binding Text}" />
       </DataTemplate>
 
+      <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
+        <TextBlock
+            Margin="8,8,0,0"
+            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
+            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFile'}">
+                <Hyperlink
+                    AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFileLink'}"
+                    Click="ViewLicense_Click">
+                  <Run Text="{Binding Text}"/>
+                </Hyperlink>
+        </TextBlock>
+      </DataTemplate>
+
       <DataTemplate DataType="{x:Type nuget:WarningText}">
           <imaging:CrispImage
                         x:Name="_licenseWarning"
@@ -87,10 +100,10 @@
       </DataTemplate>
     </ResourceDictionary>
   </Window.Resources>
-  <Grid>
+  <Grid x:Name="WindowGrid">
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*" MinWidth="450"/>
-      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition Width="6*" MinWidth="450"/>
+      <ColumnDefinition Width="4*"/>
     </Grid.ColumnDefinitions>
     
     <Grid.RowDefinitions>
@@ -119,7 +132,6 @@
       AutomationProperties.Name="{Binding Text}"
       Text="{x:Static nuget:Resources.Text_LicenseHeaderText}"
       TextWrapping="Wrap" />
-
     <ItemsControl
       Grid.Row="2"
       Margin="12,8"
@@ -147,6 +159,7 @@
     </ItemsControl>
 
     <Border
+      Name="EmbeddedLicense"
       Visibility="Collapsed"
       Grid.Column="1"
       Grid.Row="2"
@@ -165,7 +178,7 @@
           Margin="12,0,12,12"
           x:Name="_licenseFileText"
           AutomationProperties.Name="licenseFile_{0}"
-          Text="Embedded license file"
+          Text="{Binding LicenseText}"
           TextWrapping="Wrap" />
       </ScrollViewer>
     </Border>

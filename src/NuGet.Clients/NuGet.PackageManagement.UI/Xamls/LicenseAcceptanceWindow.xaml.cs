@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Windows;
@@ -25,6 +25,22 @@ namespace NuGet.PackageManagement.UI
             {
                 UIUtility.LaunchExternalLink(hyperlink.NavigateUri);
                 e.Handled = true;
+            }
+        }
+
+        private void ViewLicense_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Hyperlink hyperlink)
+            {
+                if (hyperlink.DataContext is LicenseFileText licenseFile)
+                {
+                    if (EmbeddedLicense.Visibility == Visibility.Collapsed)
+                    {
+                        Width += 300;
+                        EmbeddedLicense.Visibility = Visibility.Visible;
+                    }
+                    EmbeddedLicense.DataContext = licenseFile;
+                }
             }
         }
 

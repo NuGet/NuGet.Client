@@ -178,7 +178,7 @@ namespace NuGet.PackageManagement.UI
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
             var currentLoader = _loader;
-
+            // TODO NK - Use the example from here.
             _joinableTaskFactory.Value.RunAsync(async () =>
             {
                 await TaskScheduler.Default;

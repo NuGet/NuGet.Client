@@ -14,5 +14,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         public string Text { get; set; }
+
+        public string LicenseText { get; set; }
     }
 }

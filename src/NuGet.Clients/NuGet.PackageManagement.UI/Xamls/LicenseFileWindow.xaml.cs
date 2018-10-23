@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace NuGet.PackageManagement.UI.Xamls
+namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// Interaction logic for LicenseFileWindow.xaml
