@@ -2,9 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Moq;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
+using static NuGet.Commands.VerifyArgs;
 
 namespace NuGet.CommandLine.Test
 {
@@ -14,7 +19,7 @@ namespace NuGet.CommandLine.Test
         private const int _successCode = 0;
 
         [Fact]
-        public void VerifyCommand_VerifyUnknownVerificationType()
+        public async Task VerifyCommand_VerifyDefaultsToAllAsync()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -22,18 +27,25 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                var mockVerifyCommandRunner = new Mock<IVerifyCommandRunner>();
+                var mockConsole = new Mock<IConsole>();
+                mockConsole.Setup(c => c.Verbosity).Returns(Verbosity.Detailed);
+
+                var verifyCommand = new VerifyCommand
+                {
+                    VerifyCommandRunner = mockVerifyCommandRunner.Object,
+                    Console = mockConsole.Object
+                };
+                verifyCommand.Arguments.Add(packageFileName);
+                verifyCommand.CurrentDirectory = packageDirectory.Path;
 
                 // Act
-                var args = new string[] { "verify", packageFileName };
-                var result = CommandRunner.Run(
-                    nugetexe,
-                    packageDirectory,
-                    string.Join(" ", args),
-                    true);
+                verifyCommand.Execute();
+                await verifyCommand.ExecuteCommandAsync();
 
                 // Assert
-                Assert.Equal(_failureCode, result.Item1);
-                Assert.Contains("Verification type not supported.", result.Item3);
+                mockVerifyCommandRunner.Verify(mock => mock.ExecuteCommandAsync(It.Is<VerifyArgs>(v => v.Verifications.Count() == 1 &&
+                                                                                                       v.Verifications.First() == Verification.All)));
             }
         }
 

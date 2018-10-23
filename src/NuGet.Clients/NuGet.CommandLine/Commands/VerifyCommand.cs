@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Commands;
 using static NuGet.Commands.VerifyArgs;
@@ -16,7 +17,7 @@ namespace NuGet.CommandLine
         UsageExampleResourceName = "VerifyCommandUsageExamples")]
     public class VerifyCommand : Command
     {
-        protected VerifyCommand() : base()
+        internal VerifyCommand() : base()
         {
             CertificateFingerprint = new List<string>();
         }
@@ -29,6 +30,8 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "VerifyCommandAllDescription")]
         public bool All { get; set; }
+
+        internal IVerifyCommandRunner VerifyCommandRunner { get; set; }
 
         public override Task ExecuteCommandAsync()
         {
@@ -60,8 +63,12 @@ namespace NuGet.CommandLine
                     break;
             }
 
-            var verifyCommandRunner = new VerifyCommandRunner();
-            var result = verifyCommandRunner.ExecuteCommandAsync(verifyArgs).Result;
+            if (VerifyCommandRunner == null)
+            {
+                VerifyCommandRunner = new VerifyCommandRunner();
+            }
+
+            var result = VerifyCommandRunner.ExecuteCommandAsync(verifyArgs).Result;
             if (result > 0)
             {
                 throw new ExitCodeException(1);
@@ -81,6 +88,11 @@ namespace NuGet.CommandLine
             if (Signatures)
             {
                 verifications.Add(Verification.Signatures);
+            }
+
+            if (!verifications.Any())
+            {
+                verifications.Add(Verification.All);
             }
 
             return verifications;
