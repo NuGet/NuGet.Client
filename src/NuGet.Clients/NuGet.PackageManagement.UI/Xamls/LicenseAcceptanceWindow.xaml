@@ -167,7 +167,8 @@
       MinHeight="130"
       MinWidth="130"
       BorderThickness="1"
-      BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
+      BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
+      >
       <ScrollViewer
               Padding="3"
               CanContentScroll="True"

@@ -82,8 +82,8 @@ namespace NuGet.PackageManagement.UI
 
                     break;
                 case LicenseType.File:
-                    var licenseFile = new LicenseFileText(string.Format(CultureInfo.CurrentCulture, Resources.License_FileEmbeddedInPackage, metadata.License));
-                    licenseFile.LicenseText = "this is the rtext that will be display in the license field";
+                    var licenseFile = new LicenseFileText(Resources.Text_ViewLicense);
+                    licenseFile.LicenseText = "This is the text that will be display in the license field";
                     list.Add(licenseFile);
                     break;
 

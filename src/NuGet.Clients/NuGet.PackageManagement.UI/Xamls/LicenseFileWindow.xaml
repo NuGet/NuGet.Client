@@ -14,7 +14,6 @@
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
   Title="{Binding Header}"
-  TextBlock.TextAlignment="Center"
   d:DesignHeight="300"
   d:DesignWidth="300"
   >
@@ -30,7 +29,7 @@
         <TextBlock
             Margin="12,4,12,0"
             x:Name="_licenseHeaderText"
-            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='_licenseContent}'}"
+            AutomationProperties.AutomationId="{Binding Id, Mode=TwoWay, StringFormat='_licenseContent}'}"
             Text="{Binding LicenseContent}"
             TextWrapping="Wrap" />
       </ScrollViewer>

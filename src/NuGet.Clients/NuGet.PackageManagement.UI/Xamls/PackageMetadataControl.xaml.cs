@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
@@ -34,26 +36,31 @@ namespace NuGet.PackageManagement.UI
 
             if (DataContext is DetailedPackageMetadata metadata)
             {
-                using (var licenseStream = metadata.LicenseFile.Open())
-                using (TextReader reader = new StreamReader(licenseStream))
+
+                // if the length is too big don't open.
+                var licenseFileData = new LicenseFileData
                 {
-                    // if the length is too big don't open.
+                    Header = metadata.Id,
+                    LicenseContent = "Loading License File..."
+                };
 
+                window.DataContext = licenseFileData;
 
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await TaskScheduler.Default;
+                    string content = null;
+                    using (var licenseStream = metadata.LicenseFile.Open())
+                    using (TextReader reader = new StreamReader(licenseStream))
                     {
-                        await TaskScheduler.Default;
-                        var content = await reader.ReadToEndAsync();
-                    });
+                        content = reader.ReadToEnd();
+                    }
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-
-                    window.DataContext = new LicenseFileData
-                    {
-                        Header = "License File",
-                        LicenseContent = "Loading License File..."
-                    };
-                }
+                    (window.DataContext as LicenseFileData).LicenseContent = content;
+                });
             }
+
 
             using (NuGetEventTrigger.TriggerEventBeginEnd(
             NuGetEvent.EmbeddedLicenseWindowBegin,
