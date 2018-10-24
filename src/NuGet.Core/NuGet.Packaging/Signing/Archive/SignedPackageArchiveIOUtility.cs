@@ -198,8 +198,9 @@ namespace NuGet.Packaging.Signing
         /// Read ZIP's offsets and positions of offsets.
         /// </summary>
         /// <param name="reader">binary reader to zip archive</param>
+        /// <param name="validateSignatureEntry">boolean to skip validate signature entry</param>
         /// <returns>metadata with offsets and positions for entries</returns>
-        public static SignedPackageArchiveMetadata ReadSignedArchiveMetadata(BinaryReader reader)
+        public static SignedPackageArchiveMetadata ReadSignedArchiveMetadata(BinaryReader reader, bool validateSignatureEntry = true)
         {
             if (reader == null)
             {
@@ -272,7 +273,10 @@ namespace NuGet.Packaging.Signing
             metadata.CentralDirectoryHeaders = centralDirectoryRecords;
             metadata.SignatureCentralDirectoryHeaderIndex = packageSignatureFileMetadataIndex;
 
-            AssertSignatureEntryMetadata(reader, metadata);
+            if (validateSignatureEntry)
+            {
+                AssertSignatureEntryMetadata(reader, metadata);
+            }
 
             return metadata;
         }

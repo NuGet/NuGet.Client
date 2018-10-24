@@ -552,7 +552,9 @@ namespace NuGet.Packaging.Signing
         {
             using (var hashFunc = new Sha512HashFunction())
             {
-                var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+                // skip validating signature entry since we're just trying to get the content hash here instead of
+                // verifying signature entry.
+                var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader, validateSignatureEntry: false);
                 var signatureCentralDirectoryHeader = metadata.GetPackageSignatureFileCentralDirectoryHeaderMetadata();
                 var centralDirectoryRecordsWithoutSignature = RemoveSignatureAndOrderByOffset(metadata);
 
