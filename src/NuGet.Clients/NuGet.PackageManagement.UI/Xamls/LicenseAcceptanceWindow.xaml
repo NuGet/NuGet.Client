@@ -102,8 +102,8 @@
   </Window.Resources>
   <Grid x:Name="WindowGrid">
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="6*" MinWidth="450"/>
-      <ColumnDefinition Width="4*"/>
+      <ColumnDefinition Width="Auto" MinWidth="450"/>
+      <ColumnDefinition x:Name="SecondColumn" Width="Auto"/>
     </Grid.ColumnDefinitions>
     
     <Grid.RowDefinitions>
@@ -160,12 +160,11 @@
 
     <Border
       Name="EmbeddedLicense"
-      Visibility="Collapsed"
       Grid.Column="1"
       Grid.Row="2"
       Margin="12,8"
       MinHeight="130"
-      MinWidth="130"
+      MinWidth="300"
       BorderThickness="1"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
       >

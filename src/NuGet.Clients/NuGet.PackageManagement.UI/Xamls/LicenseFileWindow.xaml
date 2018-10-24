@@ -29,8 +29,8 @@
         <TextBlock
             Margin="12,4,12,0"
             x:Name="_licenseHeaderText"
-            AutomationProperties.AutomationId="{Binding Id, Mode=TwoWay, StringFormat='_licenseContent}'}"
-            Text="{Binding LicenseContent}"
+            AutomationProperties.AutomationId="{Binding Id,Mode=OneWay, StringFormat='_licenseContent}'}"
+            Text="{Binding LicenseContent, Mode=TwoWay,  UpdateSourceTrigger=PropertyChanged}"
             TextWrapping="Wrap" />
       </ScrollViewer>
     </Border>

@@ -61,7 +61,6 @@ namespace NuGet.PackageManagement.UI
                 });
             }
 
-
             using (NuGetEventTrigger.TriggerEventBeginEnd(
             NuGetEvent.EmbeddedLicenseWindowBegin,
             NuGetEvent.EmbeddedLicenseWindowEnd))
