@@ -102,7 +102,7 @@
   </Window.Resources>
   <Grid x:Name="WindowGrid">
     <Grid.ColumnDefinitions>
-      <ColumnDefinition MinWidth="450"/>
+      <ColumnDefinition MinWidth="400"/>
       <ColumnDefinition Name="LicenseFileColumn" Width="0" MinWidth="0" />
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
