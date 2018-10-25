@@ -4,6 +4,7 @@
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -36,11 +37,12 @@ namespace NuGet.PackageManagement.UI
                 {
                     if (EmbeddedLicense.Visibility == Visibility.Collapsed)
                     {
-                        LicenseFileColumn.Width = LicenseInfoColumn.Width;
+                        LicenseFileColumn.Width = new GridLength(300);
                         LicenseFileColumn.MinWidth = 300;
-                        Width *= 2;
-                        MinWidth += 350;// maybe this still doesn't do it // 12 because the margin is 12
+                        Width += 350;
+                        MinWidth += 350;
                         EmbeddedLicense.Visibility = Visibility.Visible;
+                        licenseFile.LoadLicenseFileAsync(); // The model itself takes care of the threading.
                     }
                     EmbeddedLicense.DataContext = licenseFile;
                 }

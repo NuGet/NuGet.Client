@@ -3,9 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.UI
@@ -16,19 +17,19 @@ namespace NuGet.PackageManagement.UI
 
         internal static IReadOnlyList<IText> GenerateLicenseLinks(DetailedPackageMetadata metadata)
         {
-            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl);
+            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, metadata.LoadFile);
         }
 
         internal static IReadOnlyList<IText> GenerateLicenseLinks(IPackageSearchMetadata metadata)
         {
-            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl);
+            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, (metadata as LocalPackageSearchMetadata).LoadFile); // this will throw from a server
         }
 
-        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata licenseMetadata, Uri licenseUrl)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata licenseMetadata, Uri licenseUrl, Func<string, Task<string>> loadFile)
         {
             if (licenseMetadata != null)
             {
-                return GenerateLicenseLinks(licenseMetadata);
+                return GenerateLicenseLinks(licenseMetadata, loadFile);
             }
             else if (licenseUrl != null)
             {
@@ -38,7 +39,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Internal for testing purposes.
-        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata metadata)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata metadata, Func<string, Task<string>> loadFile)
         {
             var list = new List<IText>();
 
@@ -81,10 +82,9 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     break;
+
                 case LicenseType.File:
-                    var licenseFile = new LicenseFileText(Resources.Text_ViewLicense);
-                    licenseFile.LicenseText = "This is the text that will be display in the license field";
-                    list.Add(licenseFile);
+                    list.Add(new LicenseFileText(Resources.Text_ViewLicense, loadFile(metadata.License)));
                     break;
 
                 default:

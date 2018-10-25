@@ -88,14 +88,42 @@ namespace NuGet.Protocol
 
         public LicenseMetadata LicenseMetadata => _nuspec.GetLicenseMetadata();
 
-        public ZipArchiveEntry GetEntry(string path)
+        public Task<string> LoadFile(string path)
         {
-            if (_package.GetReader() is PackageArchiveReader reader) // TODO NK - Should I Do using here?
+            string fileContent = null;
+            try
             {
-                return reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
-            }
-            return null;
-        }
+                if (_package.GetReader() is PackageArchiveReader reader) // can it be something else
+                {
 
+                    var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
+                    if (entry != null)
+                    {
+                        if (entry.Length >= 1024 * 1024 * 100)
+                        {
+                            fileContent = "Cannot load file. The file is larger than 100MB";
+                        }
+                        else
+                        {
+                            using (var licenseStream = entry.Open())
+                            using (TextReader textReader = new StreamReader(licenseStream))
+                            {
+                                fileContent = textReader.ReadToEnd();
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        fileContent = $"The file {path} cannot be found in the archive";
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                fileContent = $"Unknown problem loading the file {path}";
+            }
+            return Task.FromResult(fileContent);
+        }
     }
 }

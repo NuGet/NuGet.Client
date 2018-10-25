@@ -3,10 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
 using System.Linq;
-
+using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -42,22 +41,11 @@ namespace NuGet.PackageManagement.UI
                 dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
             PrefixReserved = serverData.PrefixReserved;
             LicenseMetadata = serverData.LicenseMetadata;
-            
-            if (serverData is LocalPackageSearchMetadata localPackage)
-            {
-                if(LicenseMetadata?.Type == LicenseType.File)
-                {
-                    try
-                    {
-                        LicenseFile = localPackage.GetEntry(LicenseMetadata.License); // Make sure it doesn't throw when the while cannot be found.
-                    }
-                    catch (Exception)
-                    {
-                        // TODO NK 
-                    }
-                }
-            }
+
+            _localMetadata = serverData as LocalPackageSearchMetadata;
         }
+
+        private readonly LocalPackageSearchMetadata _localMetadata;
 
         public string Id { get; set; }
 
@@ -96,6 +84,13 @@ namespace NuGet.PackageManagement.UI
 
         public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
 
-        public ZipArchiveEntry LicenseFile { get; }
+        public async Task<string> LoadFile(string path)
+        {
+            if (_localMetadata != null)
+            {
+                return await _localMetadata.LoadFile(path);
+            }
+            return null;
+        }
     }
 }

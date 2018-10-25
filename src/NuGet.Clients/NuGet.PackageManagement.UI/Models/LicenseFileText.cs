@@ -1,4 +1,8 @@
+using System;
 using System.ComponentModel;
+using Microsoft.VisualStudio.Threading;
+using System.Threading.Tasks;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -6,10 +10,24 @@ namespace NuGet.PackageManagement.UI
     {
         private string _text;
         private string _licenseText;
+        private Task<string> _licenseFileContent;
 
-        public LicenseFileText(string text)
+        public LicenseFileText(string text, Task<string> licenseFileContent)
         {
             _text = text;
+            _licenseText = "Loading license file";
+            _licenseFileContent = licenseFileContent;
+        }
+
+        internal void LoadLicenseFileAsync()
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await TaskScheduler.Default;
+                var content = await _licenseFileContent;
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                LicenseText = content;
+            });
         }
 
         public string Text
