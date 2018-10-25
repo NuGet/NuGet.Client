@@ -102,10 +102,9 @@
   </Window.Resources>
   <Grid x:Name="WindowGrid">
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="Auto" MinWidth="450"/>
-      <ColumnDefinition x:Name="SecondColumn" Width="Auto"/>
+      <ColumnDefinition Name="LicenseInfoColumn" MinWidth="450"/>
+      <ColumnDefinition Name="LicenseFileColumn" Width="0" MinWidth="0" />
     </Grid.ColumnDefinitions>
-    
     <Grid.RowDefinitions>
       <RowDefinition
         Height="Auto" />
@@ -119,6 +118,7 @@
     </Grid.RowDefinitions>
     <TextBlock
       Grid.Row="0"
+      Grid.Column="0"
       Margin="12,8,12,0"
       x:Name="_licenseAcceptanceText"
       AutomationProperties.Name="{Binding Text}"
@@ -127,6 +127,7 @@
 
     <TextBlock
       Grid.Row="1"
+      Grid.Column="0"
       Margin="12,4,12,0"
       x:Name="_licenseHeaderText"
       AutomationProperties.Name="{Binding Text}"
@@ -134,6 +135,7 @@
       TextWrapping="Wrap" />
     <ItemsControl
       Grid.Row="2"
+      Grid.Column="0"
       Margin="12,8"
       MinHeight="130"
       IsTabStop="False"
@@ -158,33 +160,9 @@
       </ItemsControl.Template>
     </ItemsControl>
 
-    <Border
-      Name="EmbeddedLicense"
-      Grid.Column="1"
-      Grid.Row="2"
-      Margin="12,8"
-      MinHeight="130"
-      MinWidth="300"
-      BorderThickness="1"
-      BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
-      >
-      <ScrollViewer
-              Padding="3"
-              CanContentScroll="True"
-              VerticalScrollBarVisibility="Visible"
-              HorizontalScrollBarVisibility="Disabled"
-              AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}">
-        <TextBlock
-          Margin="12,0,12,12"
-          x:Name="_licenseFileText"
-          AutomationProperties.Name="licenseFile_{0}"
-          Text="{Binding LicenseText}"
-          TextWrapping="Wrap" />
-      </ScrollViewer>
-    </Border>
-
     <TextBlock
       Grid.Row="3"
+      Grid.Column="0"
       Margin="12,0,12,12"
       x:Name="_licenseText"
       AutomationProperties.Name="{Binding Text}"
@@ -192,6 +170,7 @@
       TextWrapping="Wrap" />
     <Grid
       Grid.Row="5"
+      Grid.Column="0"
       HorizontalAlignment="Right">
       <Grid.ColumnDefinitions>
         <ColumnDefinition />
@@ -220,5 +199,32 @@
           AutomationProperties.AutomationId="DeclineButton"
           Click="OnDeclineButtonClick" />
     </Grid>
+
+    <Border
+      Name="EmbeddedLicense"
+      Grid.Column="1"
+      Grid.Row="2"
+      Margin="12,8"
+      MinHeight="130"
+      MinWidth="300"
+      BorderThickness="1"
+      Visibility="Collapsed"
+      BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
+      >
+      <ScrollViewer
+              Padding="3"
+              CanContentScroll="True"
+              VerticalScrollBarVisibility="Visible"
+              HorizontalScrollBarVisibility="Disabled"
+              AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}">
+        <TextBlock
+          Margin="12,0,12,12"
+          x:Name="_licenseFileText"
+          AutomationProperties.Name="licenseFile_{0}"
+          Text="{Binding LicenseText}"
+          TextWrapping="Wrap" />
+      </ScrollViewer>
+    </Border>
+    
   </Grid>
 </nuget:VsDialogWindow>

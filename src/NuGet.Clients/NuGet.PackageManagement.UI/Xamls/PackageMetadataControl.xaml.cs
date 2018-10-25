@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,11 +12,39 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class LicenseFileData
+    public class LicenseFileData : INotifyPropertyChanged
     {
-        public string Header { get; set; }
-        public string LicenseContent { get; set; }
+        private string _header { get; set; }
+        private string _content { get; set; }
+
+        public string Header
+        {
+            get => _header;
+            set
+            {
+                _header = value;
+                OnPropertyChanged("Header");
+            }
+        }
+
+        public string LicenseContent
+        {
+            get => _content;
+            set
+            {
+                _content = value;
+                OnPropertyChanged("LicenseContent");
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
     }
+
     /// <summary>
     /// Interaction logic for PackageMetadata.xaml
     /// </summary>

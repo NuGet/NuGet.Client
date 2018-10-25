@@ -36,7 +36,10 @@ namespace NuGet.PackageManagement.UI
                 {
                     if (EmbeddedLicense.Visibility == Visibility.Collapsed)
                     {
-                        Width += 300;
+                        LicenseFileColumn.Width = LicenseInfoColumn.Width;
+                        LicenseFileColumn.MinWidth = 300;
+                        Width *= 2;
+                        MinWidth += 300;
                         EmbeddedLicense.Visibility = Visibility.Visible;
                     }
                     EmbeddedLicense.DataContext = licenseFile;
