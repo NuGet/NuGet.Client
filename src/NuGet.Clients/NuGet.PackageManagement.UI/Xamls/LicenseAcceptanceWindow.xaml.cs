@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.UI
                         LicenseFileColumn.Width = LicenseInfoColumn.Width;
                         LicenseFileColumn.MinWidth = 300;
                         Width *= 2;
-                        MinWidth += 300;
+                        MinWidth += 350;// maybe this still doesn't do it // 12 because the margin is 12
                         EmbeddedLicense.Visibility = Visibility.Visible;
                     }
                     EmbeddedLicense.DataContext = licenseFile;
