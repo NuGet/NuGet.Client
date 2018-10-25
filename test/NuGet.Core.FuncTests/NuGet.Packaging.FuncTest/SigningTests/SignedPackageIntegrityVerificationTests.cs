@@ -978,6 +978,36 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
+        [CIOnlyFact]
+        public async Task ReadSignedArchiveMetadata_InvalidSignatureFileEntry_IgnoreVerifySignatureEntry()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var dir = TestDirectory.Create())
+            using (var packageStream = await nupkg.CreateAsStreamAsync())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signarture = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
+                {
+                    var signatureEntry = package.CreateEntry(_specification.SignaturePath, CompressionLevel.Optimal);
+                    using (var signatureStream = new MemoryStream(signarture.GetBytes()))
+                    using (var signatureEntryStream = signatureEntry.Open())
+                    {
+                        signatureStream.CopyTo(signatureEntryStream);
+                    }
+                }
+
+                using (var reader = new BinaryReader(packageStream, _readerEncoding, leaveOpen: true))
+                {
+                    var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+
+                    Assert.NotNull(metadata);
+                }
+            }
+        }
+
         private void AssertSignatureEntryMetadataThrowsException(Stream packageStream)
         {
             using (var reader = new BinaryReader(packageStream, _readerEncoding, leaveOpen: true))
