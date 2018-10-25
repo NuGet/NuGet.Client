@@ -38,11 +38,11 @@ namespace NuGet.PackageManagement.UI
                     if (EmbeddedLicense.Visibility == Visibility.Collapsed)
                     {
                         LicenseFileColumn.Width = new GridLength(1, GridUnitType.Star);;
-                        LicenseFileColumn.MinWidth = 400;
-                        Width += 434;
-                        MinWidth += 434;
+                        LicenseFileColumn.MinWidth = 400; // Make both columns the same min width
+                        Width += 434; // Change the width to account for the added textbox
+                        MinWidth += 434; // Change the min width to account for the added textbox
                         EmbeddedLicense.Visibility = Visibility.Visible;
-                        licenseFile.LoadLicenseFileAsync(); // The model itself takes care of the threading.
+                        licenseFile.LoadLicenseFileAsync();
                     }
                     EmbeddedLicense.DataContext = licenseFile;
                 }

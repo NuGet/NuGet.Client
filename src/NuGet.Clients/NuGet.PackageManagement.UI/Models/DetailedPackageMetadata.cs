@@ -41,7 +41,6 @@ namespace NuGet.PackageManagement.UI
                 dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
             PrefixReserved = serverData.PrefixReserved;
             LicenseMetadata = serverData.LicenseMetadata;
-
             _localMetadata = serverData as LocalPackageSearchMetadata;
         }
 
