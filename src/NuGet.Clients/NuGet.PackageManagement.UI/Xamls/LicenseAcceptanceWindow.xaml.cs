@@ -39,8 +39,8 @@ namespace NuGet.PackageManagement.UI
                     {
                         LicenseFileColumn.Width = new GridLength(1, GridUnitType.Star);;
                         LicenseFileColumn.MinWidth = 400;
-                        Width += 450;
-                        MinWidth += 450;
+                        Width += 434;
+                        MinWidth += 434;
                         EmbeddedLicense.Visibility = Visibility.Visible;
                         licenseFile.LoadLicenseFileAsync(); // The model itself takes care of the threading.
                     }

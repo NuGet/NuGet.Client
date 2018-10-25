@@ -62,7 +62,7 @@
       </DataTemplate>
 
       <DataTemplate DataType="{x:Type nuget:WarningText}">
-          <imaging:CrispImage
+        <imaging:CrispImage
                         x:Name="_licenseWarning"
                         Margin="5,0,5,5"
                         Width="13"
@@ -100,7 +100,7 @@
       </DataTemplate>
     </ResourceDictionary>
   </Window.Resources>
-  <Grid x:Name="WindowGrid">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition MinWidth="400"/>
       <ColumnDefinition Name="LicenseFileColumn" Width="0" MinWidth="0" />
@@ -206,7 +206,6 @@
       Grid.Row="2"
       Margin="12,8"
       MinHeight="130"
-      MinWidth="300"
       BorderThickness="1"
       Visibility="Collapsed"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
@@ -225,6 +224,6 @@
           TextWrapping="Wrap" />
       </ScrollViewer>
     </Border>
-    
+
   </Grid>
 </nuget:VsDialogWindow>
