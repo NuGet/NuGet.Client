@@ -1000,7 +1000,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var reader = new BinaryReader(packageStream, _readerEncoding, leaveOpen: true))
                 {
-                    var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+                    var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader, validateSignatureEntry:false);
 
                     Assert.NotNull(metadata);
                 }
