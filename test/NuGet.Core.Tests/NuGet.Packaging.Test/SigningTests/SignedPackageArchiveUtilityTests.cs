@@ -250,6 +250,17 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [Fact]
+        public void GetPackageContentHash_WithCompressedSignatureFileEntry_NotThrows()
+        {
+            using (var test = new Test(SigningTestUtility.GetResourceBytes("SignatureFileWithDeflateCompressionMethodAndDefaultCompressionLevel.zip")))
+            {
+                var contentHash = SignedPackageArchiveUtility.GetPackageContentHash(test.Reader);
+
+                Assert.NotNull(contentHash);
+            }
+        }
+
 #if IS_DESKTOP
         [Fact]
         public async Task RemoveRepositorySignaturesAsync_WithNullInput_Throws()
