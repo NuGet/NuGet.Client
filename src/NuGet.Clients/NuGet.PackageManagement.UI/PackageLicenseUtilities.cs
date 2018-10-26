@@ -22,7 +22,11 @@ namespace NuGet.PackageManagement.UI
 
         internal static IReadOnlyList<IText> GenerateLicenseLinks(IPackageSearchMetadata metadata)
         {
-            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, (metadata as LocalPackageSearchMetadata).LoadFile); // this will throw from a server
+            if (metadata is LocalPackageSearchMetadata localMetadata)
+            {
+                return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, localMetadata.LoadFile);
+            }
+            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, null);
         }
 
         internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata licenseMetadata, Uri licenseUrl, Func<string, Task<string>> loadFile)
@@ -123,6 +127,7 @@ namespace NuGet.PackageManagement.UI
                             break;
                     }
                     break;
+
                 default:
                     break;
             }

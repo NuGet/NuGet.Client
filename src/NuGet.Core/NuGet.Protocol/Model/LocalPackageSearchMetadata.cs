@@ -94,7 +94,8 @@ namespace NuGet.Protocol
             string fileContent = null;
             try
             {
-                if (_package.GetReader() is PackageArchiveReader reader) // can it be something else
+                if (_package.GetReader() is PackageArchiveReader reader) // can it be something else? See if we can get the one extracted on disk if reading from a globalPackagesFolder/fallback folder.
+                    //Likely that's not possible because we don't differentiate between that in the search resource.
                 {
 
                     var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
