@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -99,9 +100,9 @@ namespace NuGet.Protocol
                     var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
                     if (entry != null)
                     {
-                        if (entry.Length >= 1024 * 1024 * 100)
+                        if (entry.Length >= 1024 * 1024 * 100) // TODO NK - Change if this is correct.
                         {
-                            fileContent = "Cannot load file. The file is larger than 100MB";
+                            fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileTooLarge);
                         }
                         else
                         {
@@ -111,17 +112,23 @@ namespace NuGet.Protocol
                                 fileContent = textReader.ReadToEnd();
                             }
                         }
-
                     }
                     else
                     {
-                        fileContent = $"The file {path} cannot be found in the archive";
+                        fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileNotFound, path);
                     }
                 }
             }
-            catch (Exception)
+            catch
             {
-                fileContent = $"Unknown problem loading the file {path}";
+                fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_UnknownProblemLoadingTheFile, path);
+            }
+            finally
+            {
+                if (fileContent == null)
+                {
+                    fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_UnknownProblemLoadingTheFile, path);
+                }
             }
             return Task.FromResult(fileContent);
         }

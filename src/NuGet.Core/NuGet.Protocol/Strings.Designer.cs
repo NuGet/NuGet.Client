@@ -287,6 +287,33 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The file &apos;{0}&apos; does not exist in the package..
+        /// </summary>
+        internal static string LoadFileFromNupkg_FileNotFound {
+            get {
+                return ResourceManager.GetString("LoadFileFromNupkg_FileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot load file. The file is larger than 100MB..
+        /// </summary>
+        internal static string LoadFileFromNupkg_FileTooLarge {
+            get {
+                return ResourceManager.GetString("LoadFileFromNupkg_FileTooLarge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown problem loading the file &apos;{0}&apos;..
+        /// </summary>
+        internal static string LoadFileFromNupkg_UnknownProblemLoadingTheFile {
+            get {
+                return ResourceManager.GetString("LoadFileFromNupkg_UnknownProblemLoadingTheFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Downloading a package from &apos;{0}&apos; was canceled..
         /// </summary>
         internal static string Log_CanceledNupkgDownload {

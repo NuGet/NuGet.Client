@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.ComponentModel;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,41 +10,9 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class LicenseFileData : INotifyPropertyChanged
-    {
-        private string _header { get; set; }
-        private string _content { get; set; }
-
-        public string Header
-        {
-            get => _header;
-            set
-            {
-                _header = value;
-                OnPropertyChanged("Header");
-            }
-        }
-
-        public string LicenseContent
-        {
-            get => _content;
-            set
-            {
-                _content = value;
-                OnPropertyChanged("LicenseContent");
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-    }
 
     /// <summary>
-    /// Interaction logic for PackageMetadata.xaml
+    /// Interaction logic for PackageMetadataControl.xaml
     /// </summary>
     public partial class PackageMetadataControl : UserControl
     {
@@ -56,7 +24,6 @@ namespace NuGet.PackageManagement.UI
             DataContextChanged += PackageMetadataControl_DataContextChanged;
         }
 
-
         private void ViewLicense_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is DetailedPackageMetadata metadata)
@@ -66,7 +33,7 @@ namespace NuGet.PackageManagement.UI
                     DataContext = new LicenseFileData
                     {
                         Header = metadata.Id,
-                        LicenseContent = "Loading License File..."
+                        LicenseContent = string.Format(CultureInfo.CurrentCulture, UI.Resources.LicenseFile_Loading)
                     }
                 };
 

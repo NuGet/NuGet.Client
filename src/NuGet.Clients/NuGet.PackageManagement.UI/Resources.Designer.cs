@@ -1015,6 +1015,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Loading license file....
+        /// </summary>
+        public static string LicenseFile_Loading {
+            get {
+                return ResourceManager.GetString("LicenseFile_Loading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Don&apos;t show again.
         /// </summary>
         public static string Link_DoNotShowAgain {

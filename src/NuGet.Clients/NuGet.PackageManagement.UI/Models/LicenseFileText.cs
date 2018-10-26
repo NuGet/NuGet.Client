@@ -1,8 +1,11 @@
-using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.ComponentModel;
 using Microsoft.VisualStudio.Threading;
 using System.Threading.Tasks;
 using NuGet.VisualStudio;
+using System.Globalization;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -15,7 +18,7 @@ namespace NuGet.PackageManagement.UI
         public LicenseFileText(string text, Task<string> licenseFileContent)
         {
             _text = text;
-            _licenseText = "Loading license file";
+            _licenseText = string.Format(CultureInfo.CurrentCulture, Resources.LicenseFile_Loading);
             _licenseFileContent = licenseFileContent;
         }
 

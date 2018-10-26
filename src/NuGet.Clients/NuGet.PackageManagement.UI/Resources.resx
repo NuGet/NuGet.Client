@@ -832,4 +832,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Accessibility_PromoteToTopLevel" xml:space="preserve">
     <value>Promote to a top level dependency</value>
   </data>
+  <data name="LicenseFile_Loading" xml:space="preserve">
+    <value>Loading license file...</value>
+  </data>
 </root>

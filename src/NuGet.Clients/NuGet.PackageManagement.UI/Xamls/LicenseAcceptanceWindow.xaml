@@ -224,6 +224,5 @@
           TextWrapping="Wrap" />
       </ScrollViewer>
     </Border>
-
   </Grid>
 </nuget:VsDialogWindow>
