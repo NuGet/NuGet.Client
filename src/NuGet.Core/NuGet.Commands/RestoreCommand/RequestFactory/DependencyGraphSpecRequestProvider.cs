@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
@@ -131,7 +132,7 @@ namespace NuGet.Commands
             var globalPath = GetPackagesPath(restoreArgs, projectPackageSpec);
             var settings = Settings.LoadSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths);
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
-            var extractionContext = restoreArgs.GetPackageExtractionContext(settings);
+            var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
@@ -147,7 +148,7 @@ namespace NuGet.Commands
                 project.PackageSpec,
                 sharedCache,
                 restoreArgs.CacheContext,
-                extractionContext,
+                clientPolicyContext,
                 restoreArgs.Log)
             {
                 // Set properties from the restore metadata

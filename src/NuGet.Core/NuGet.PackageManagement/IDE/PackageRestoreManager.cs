@@ -197,11 +197,7 @@ namespace NuGet.PackageManagement
                 var downloadContext = new PackageDownloadContext(cacheContext)
                 {
                     ParentId = nuGetProjectContext.OperationId,
-                    ExtractionContext = new PackageExtractionContext(
-                        PackageSaveMode.Defaultv3,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        ClientPolicyContext.GetClientPolicy(Settings, logger),
-                        logger)
+                    ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
                 };
 
                 return await RestoreMissingPackagesAsync(
@@ -239,11 +235,7 @@ namespace NuGet.PackageManagement
                 var downloadContext = new PackageDownloadContext(cacheContext)
                 {
                     ParentId = nuGetProjectContext.OperationId,
-                    ExtractionContext = new PackageExtractionContext(
-                        PackageSaveMode.Defaultv3,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        ClientPolicyContext.GetClientPolicy(Settings, adapterLogger),
-                        adapterLogger)
+                    ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, adapterLogger)
                 };
 
                 return await RestoreMissingPackagesAsync(

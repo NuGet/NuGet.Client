@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Packaging;
-using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
@@ -35,7 +33,7 @@ namespace NuGet.Commands.Test
             PackageSpec project,
             IEnumerable<PackageSource> sources,
             string packagesDirectory,
-            PackageExtractionContext extractionContext,
+            ClientPolicyContext clientPolicyContext,
             ILogger log)
             : this(
                   project,
@@ -43,7 +41,7 @@ namespace NuGet.Commands.Test
                   packagesDirectory,
                   new List<string>(),
                   new TestSourceCacheContext(),
-                  extractionContext,
+                  clientPolicyContext,
                   log)
         {
         }
@@ -69,7 +67,7 @@ namespace NuGet.Commands.Test
             IEnumerable<PackageSource> sources,
             string packagesDirectory,
             SourceCacheContext cacheContext,
-            PackageExtractionContext extractionContext,
+            ClientPolicyContext clientPolicyContext,
             ILogger log) : base(
                 project,
                 RestoreCommandProviders.Create(
@@ -80,7 +78,7 @@ namespace NuGet.Commands.Test
                     packageFileCache: new LocalPackageFileCache(),
                     log: log),
                 cacheContext,
-                extractionContext,
+                clientPolicyContext,
                 log)
         {
         }
@@ -114,11 +112,7 @@ namespace NuGet.Commands.Test
                   packagesDirectory,
                   fallbackPackageFolders,
                   cacheContext,
-                  new PackageExtractionContext(
-                    PackageSaveMode.Defaultv3,
-                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, log),
-                     log),
+                  ClientPolicyContext.GetClientPolicy(NullSettings.Instance, log),
                   log)
         {
         }
@@ -134,11 +128,7 @@ namespace NuGet.Commands.Test
                 packagesDirectory,
                 fallbackPackageFolders,
                 new TestSourceCacheContext(),
-                new PackageExtractionContext(
-                    PackageSaveMode.Defaultv3,
-                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, log),
-                     log),
+                ClientPolicyContext.GetClientPolicy(NullSettings.Instance, log),
                 log)
         {
         }
@@ -149,7 +139,7 @@ namespace NuGet.Commands.Test
             string packagesDirectory,
             IEnumerable<string> fallbackPackageFolders,
             SourceCacheContext cacheContext,
-            PackageExtractionContext extractionContext,
+            ClientPolicyContext clientPolicyContext,
             ILogger log) : base(
                 project,
                 RestoreCommandProviders.Create(
@@ -160,7 +150,7 @@ namespace NuGet.Commands.Test
                     packageFileCache: new LocalPackageFileCache(),
                     log: log),
                 cacheContext,
-                extractionContext,
+                clientPolicyContext,
                 log)
         {
         }

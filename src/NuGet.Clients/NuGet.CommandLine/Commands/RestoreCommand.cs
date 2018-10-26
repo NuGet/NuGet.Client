@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -349,11 +352,7 @@ namespace NuGet.CommandLine
 
                 var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload)
                 {
-                    ExtractionContext = new PackageExtractionContext(
-                         Packaging.PackageSaveMode.Defaultv3,
-                         PackageExtractionBehavior.XmlDocFileSaveMode,
-                         clientPolicyContext,
-                         collectorLogger)
+                    ClientPolicyContext = clientPolicyContext
                 };
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
