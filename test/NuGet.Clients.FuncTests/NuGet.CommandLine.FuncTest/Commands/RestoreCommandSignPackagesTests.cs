@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -30,6 +31,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private static readonly string _NU3008 = "NU3008: {0}";
         private static readonly string _NU3027Message = "The signature should be timestamped to enable long-term signature validity after the certificate has expired.";
         private static readonly string _NU3027 = "NU3027: {0}";
+        private static readonly string _NU3005CompressedMessage = "The package signature file entry is invalid. The central directory header field 'compression method' has an invalid value (8).";
+        private static readonly string _NU3005 = "NU3005: {0}";
 
         private SignCommandTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
@@ -147,6 +150,146 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 warnings.First().Code.Should().Be(NuGetLogCode.NU3027);
                 warnings.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3027Message, packageX.Identity, pathContext.PackageSource));
                 warnings.First().LibraryId.Should().Be("X.9.0.0");
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task Restore_PackageWithCompressedSignature_WarnsAsync()
+        {
+            // Arrange
+            var packageX = new SimpleTestPackageContext();
+
+            using (var pathContext = new SimpleTestPathContext())
+            using (var packageStream = await packageX.CreateAsStreamAsync())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
+                {
+                    var signatureEntry = package.CreateEntry(SigningSpecifications.V1.SignaturePath);
+                    using (var signatureStream = new MemoryStream(signature.GetBytes()))
+                    using (var signatureEntryStream = signatureEntry.Open())
+                    {
+                        signatureStream.CopyTo(signatureEntryStream);
+                    }
+                }
+
+                var packagePath = Path.Combine(pathContext.PackageSource, $"{packageX.ToString()}.nupkg");
+                packageStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    packageStream.CopyTo(fileStream);
+                }
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard2.0"));
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var args = new string[]
+                {
+                    projectA.ProjectPath
+                };
+
+                // Act
+                var result = RunRestore(_nugetExePath, pathContext, expectedExitCode: 0, additionalArgs: args);
+                var assetFileReader = new LockFileFormat();
+                var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
+                var errors = assetsFile.LogMessages.Where(m => m.Level == LogLevel.Error);
+                var warnings = assetsFile.LogMessages.Where(m => m.Level == LogLevel.Warning);
+
+                // Assert
+                result.ExitCode.Should().Be(0);
+                result.AllOutput.Should().Contain($"WARNING: {string.Format(_NU3005, SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource))}");
+
+                errors.Count().Should().Be(0);
+
+                warnings.Count().Should().Be(1);
+                warnings.First().Code.Should().Be(NuGetLogCode.NU3005);
+                warnings.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
+                warnings.First().LibraryId.Should().Be(packageX.Id);
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task Restore_PackageWithCompressedSignature_WarnAsError_FailsAsync()
+        {
+            // Arrange
+            var packageX = new SimpleTestPackageContext();
+
+            using (var pathContext = new SimpleTestPathContext())
+            using (var packageStream = await packageX.CreateAsStreamAsync())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
+                {
+                    var signatureEntry = package.CreateEntry(SigningSpecifications.V1.SignaturePath);
+                    using (var signatureStream = new MemoryStream(signature.GetBytes()))
+                    using (var signatureEntryStream = signatureEntry.Open())
+                    {
+                        signatureStream.CopyTo(signatureEntryStream);
+                    }
+                }
+
+                var packagePath = Path.Combine(pathContext.PackageSource, $"{packageX.ToString()}.nupkg");
+                packageStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    packageStream.CopyTo(fileStream);
+                }
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var propsFile = Path.Combine(pathContext.SolutionRoot, "Directory.Build.props");
+
+                using (var stream = File.OpenWrite(propsFile))
+                using (var textWritter = new StreamWriter(stream))
+                {
+                    textWritter.Write(@"<Project><PropertyGroup><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup></Project>");
+                }
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard2.0"));
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var args = new string[]
+                {
+                    projectA.ProjectPath
+                };
+
+                // Act
+                var result = RunRestore(_nugetExePath, pathContext, expectedExitCode: 1, additionalArgs: args);
+                var assetFileReader = new LockFileFormat();
+                var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
+                var errors = assetsFile.LogMessages.Where(m => m.Level == LogLevel.Error);
+                var warnings = assetsFile.LogMessages.Where(m => m.Level == LogLevel.Warning);
+
+                // Assert
+                result.ExitCode.Should().Be(1);
+                result.Errors.Should().Contain(string.Format(_NU3005, SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource)));
+
+                errors.Count().Should().Be(1);
+                errors.First().Code.Should().Be(NuGetLogCode.NU3005);
+                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
+                errors.First().LibraryId.Should().Be(packageX.Id);
+
+                warnings.Count().Should().Be(0);
             }
         }
 
