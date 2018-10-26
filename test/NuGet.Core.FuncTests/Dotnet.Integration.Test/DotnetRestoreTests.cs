@@ -64,7 +64,7 @@ EndGlobal";
                     new XAttribute(XName.Get("Name"), "ErrorOnSolutionDir"),
                     new XAttribute(XName.Get("BeforeTargets"), "CollectPackageReferences"),
                     new XElement(XName.Get("Error"),
-                        new XAttribute(XName.Get("Text"), $"|SOLUTION $(SolutionDir) $(SolutionName)|"))));
+                        new XAttribute(XName.Get("Text"), $"|SOLUTION $(SolutionDir) $(SolutionName) $(SolutionExt) $(SolutionFileName) $(SolutionPath)|"))));
 
                 File.Delete(projPath);
                 File.WriteAllText(projPath, doc.ToString());
@@ -72,7 +72,7 @@ EndGlobal";
                 var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, "msbuild proj.sln /t:restore /p:DisableImplicitFrameworkReferences=true", ignoreExitCode: true);
 
                 result.ExitCode.Should().Be(1, "error text should be displayed");
-                result.AllOutput.Should().Contain($"|SOLUTION {PathUtility.EnsureTrailingSlash(pathContext.SolutionRoot)} proj|");
+                result.AllOutput.Should().Contain($"|SOLUTION {PathUtility.EnsureTrailingSlash(pathContext.SolutionRoot)} proj .sln proj.sln {slnPath}|");
             }
         }
 
