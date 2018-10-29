@@ -206,7 +206,7 @@ namespace NuGet.CommandLine
                         Packaging.PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         clientPolicyContext,
-                        packageRestoreContext.Logger)
+                        Console)
                 };
 
                 var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload)
