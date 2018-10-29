@@ -13,6 +13,10 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class LicenseAcceptanceWindow : VsDialogWindow
     {
+
+        private const int MinColumnWidth = 400;
+        private const int MinAdditionalColumnWidthWithMargin = 434;  
+
         public LicenseAcceptanceWindow()
         {
             InitializeComponent();
@@ -37,10 +41,10 @@ namespace NuGet.PackageManagement.UI
                 {
                     if (EmbeddedLicense.Visibility == Visibility.Collapsed)
                     {
-                        LicenseFileColumn.Width = new GridLength(1, GridUnitType.Star);;
-                        LicenseFileColumn.MinWidth = 400; // Make both columns the same min width
-                        Width += 434; // Change the width to account for the added textbox
-                        MinWidth += 434; // Change the min width to account for the added textbox
+                        LicenseFileColumn.Width = new GridLength(1, GridUnitType.Star);
+                        LicenseFileColumn.MinWidth = MinColumnWidth; // Make both columns the same min width
+                        Width += MinAdditionalColumnWidthWithMargin; // Change the width to account for the added textbox
+                        MinWidth += MinAdditionalColumnWidthWithMargin; // Change the min width to account for the added textbox
                         EmbeddedLicense.Visibility = Visibility.Visible;
                         EmbeddedLicenseHeader.Visibility = Visibility.Visible;
                     }

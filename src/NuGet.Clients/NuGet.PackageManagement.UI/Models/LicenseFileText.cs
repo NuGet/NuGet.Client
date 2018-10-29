@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI
         {
             _text = text;
             _licenseHeader = licenseFileHeader;
-            _licenseText = string.Format(CultureInfo.CurrentCulture, Resources.LicenseFile_Loading);
+            _licenseText = Resources.LicenseFile_Loading;
             _loadFileFromPackage = loadFileFromPackage;
             _licenseFileLocation = licenseFileLocation;
         }
