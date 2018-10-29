@@ -78,5 +78,23 @@ namespace NuGet.Packaging.Licenses
                     break;
             }
         }
+
+        public static bool IsUnlicensed(this NuGetLicense license)
+        {
+            return license.Identifier.Equals(NuGetLicense.UNLICENSED);
+        }
+
+        public static bool IsUnlicensed(this NuGetLicenseExpression expression)
+        {
+            switch (expression.Type)
+            {
+                case LicenseExpressionType.License:
+                    return ((NuGetLicense)expression).IsUnlicensed();
+
+                case LicenseExpressionType.Operator: // expressions with operators cannot be unlicensed.
+                default:
+                    return false;
+            }
+        }
     }
 }

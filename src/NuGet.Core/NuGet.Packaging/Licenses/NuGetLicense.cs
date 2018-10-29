@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Licenses
         /// <returns>Prased NuGetLicense object</returns>
         /// <exception cref="NuGetLicenseExpressionParsingException">If the identifier is deprecated, contains invalid characters or is an exception identifier.</exception>
         /// <exception cref="ArgumentException">If it's null or empty.</exception>
-        internal static NuGetLicense ParseIdentifier(string licenseIdentifier)
+        internal static NuGetLicense ParseIdentifier(string licenseIdentifier, bool allowUnlicensed = false)
         {
             if (!string.IsNullOrWhiteSpace(licenseIdentifier))
             {
@@ -65,10 +65,10 @@ namespace NuGet.Packaging.Licenses
                                 new NuGetLicense(cleanIdentifier, plus: plus, isStandardLicense: true) :
                                 throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_DeprecatedIdentifier, licenseIdentifier));
                         }
-                        return ProcessNonStandardLicense(cleanIdentifier, plus: plus);
+                        return ProcessLicenseNotInStandardData(cleanIdentifier, plus: plus, allowUnlicensed: allowUnlicensed);
                     }
 
-                    return ProcessNonStandardLicense(licenseIdentifier, plus: false);
+                    return ProcessLicenseNotInStandardData(licenseIdentifier, plus: false, allowUnlicensed: allowUnlicensed);
                 }
             }
             // This will not happen in production code as the tokenizer takes cares of that. 
@@ -88,13 +88,28 @@ namespace NuGet.Packaging.Licenses
             return regex.IsMatch(value);
         }
 
-        private static NuGetLicense ProcessNonStandardLicense(string licenseIdentifier, bool plus)
+        private static NuGetLicense ProcessLicenseNotInStandardData(string licenseIdentifier, bool plus, bool allowUnlicensed)
         {
             if (!NuGetLicenseData.ExceptionList.TryGetValue(licenseIdentifier, out var exceptionData))
             {
                 if (HasValidCharacters(licenseIdentifier))
                 {
-                    return new NuGetLicense(licenseIdentifier, plus: plus, isStandardLicense: false);
+                    if (licenseIdentifier.Equals(UNLICENSED))
+                    {
+                        if (plus)
+                        {
+                            throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_IllegalUnlicensedOperator));
+                        }
+                        if (allowUnlicensed)
+                        {
+                            return new NuGetLicense(licenseIdentifier, plus: false, isStandardLicense: true); // UNLICENSED is considered a standard license.
+                        }
+                        throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_UnexpectedIdentifier, licenseIdentifier));
+                    }
+                    else
+                    {
+                        return new NuGetLicense(licenseIdentifier, plus: plus, isStandardLicense: false);
+                    }
                 }
                 else
                 {
@@ -103,6 +118,8 @@ namespace NuGet.Packaging.Licenses
             }
             throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_LicenseIdentifierIsException, licenseIdentifier));
         }
+
+        internal static string UNLICENSED = nameof(UNLICENSED);
 
         public override string ToString()
         {

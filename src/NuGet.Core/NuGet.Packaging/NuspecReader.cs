@@ -482,6 +482,14 @@ namespace NuGet.Packaging
                                         }
                                         errors.Add(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_NonStandardIdentifier, string.Join(", ", invalidLicenseIdentifiers)));
                                     }
+                                    if (expression.IsUnlicensed())
+                                    {
+                                        if (errors == null)
+                                        {
+                                            errors = new List<string>();
+                                        }
+                                        errors.Add(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_UnlicensedPackageWarning));
+                                    }
 
                                     return new LicenseMetadata(type: licenseType, license: license, expression: expression, warningsAndErrors: errors, version: version);
                                 }

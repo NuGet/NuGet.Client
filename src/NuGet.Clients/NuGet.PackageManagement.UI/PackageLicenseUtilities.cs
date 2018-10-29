@@ -51,8 +51,8 @@ namespace NuGet.PackageManagement.UI
             {
                 case LicenseType.Expression:
 
-                    if (metadata.LicenseExpression != null)
-                    {
+                    if (metadata.LicenseExpression != null && !metadata.LicenseExpression.IsUnlicensed())
+                    { 
                         var identifiers = new List<string>();
                         PopulateLicenseIdentifiers(metadata.LicenseExpression, identifiers);
 
