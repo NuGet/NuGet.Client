@@ -15,24 +15,26 @@ namespace NuGet.PackageManagement.UI
         private string _text;
         private string _licenseText;
         private string _licenseHeader;
-        private Task<string> _licenseFileContent;
+        private readonly string _licenseFileLocation;
+        private Func<string, Task<string>> _loadFileFromPackage;
 
-        internal LicenseFileText(string text, string licenseFileHeader, Task<string> licenseFileContent)
+        internal LicenseFileText(string text, string licenseFileHeader, Func<string,Task<string>> loadFileFromPackage, string licenseFileLocation)
         {
             _text = text;
             _licenseHeader = licenseFileHeader;
             _licenseText = string.Format(CultureInfo.CurrentCulture, Resources.LicenseFile_Loading);
-            _licenseFileContent = licenseFileContent;
+            _loadFileFromPackage = loadFileFromPackage;
+            _licenseFileLocation = licenseFileLocation;
         }
 
         internal Lazy<object> LoadLicenseFile()
         {
-            if (_licenseFileContent != null)
+            if (_loadFileFromPackage != null)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await TaskScheduler.Default;
-                    var content = await _licenseFileContent;
+                    var content = await _loadFileFromPackage(_licenseFileLocation);
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     LicenseText = content;
                 });

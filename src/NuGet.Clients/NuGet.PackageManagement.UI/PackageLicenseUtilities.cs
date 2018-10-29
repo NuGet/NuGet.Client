@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.UI
                     break;
 
                 case LicenseType.File:
-                    list.Add(new LicenseFileText(Resources.Text_ViewLicense, licenseFileHeader, loadFile(metadata.License)));
+                    list.Add(new LicenseFileText(Resources.Text_ViewLicense, licenseFileHeader, loadFile, metadata.License));
                     break;
 
                 default:
