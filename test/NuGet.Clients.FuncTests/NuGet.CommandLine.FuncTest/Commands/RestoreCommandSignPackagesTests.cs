@@ -220,7 +220,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [CIOnlyFact]
-        public async Task Restore_PackageWithCompressedSignature_WarnAsError_FailsAsync()
+        public async Task Restore_PackageWithCompressedSignature_WarnAsError_FailsAndDoesNotExpandAsync()
         {
             // Arrange
             var packageX = new SimpleTestPackageContext();
@@ -290,6 +290,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 errors.First().LibraryId.Should().Be(packageX.Id);
 
                 warnings.Count().Should().Be(0);
+
+                var installedPackageDir = Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id);
+                Directory.Exists(installedPackageDir).Should().BeFalse();
             }
         }
 
