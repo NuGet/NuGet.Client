@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -78,12 +77,22 @@ namespace NuGet.PackageManagement.UI.Test
         public void PackageLicenseUtility_GeneratesLinkForFiles()
         {
             // Setup
-            var licenseData = new LicenseMetadata(LicenseType.File, "License.txt", null, null, LicenseMetadata.CurrentVersion);
+            var licenseFileLocation = "License.txt";
+            var licenseFileHeader = "header";
+            var licenseData = new LicenseMetadata(LicenseType.File, licenseFileLocation, null, null, LicenseMetadata.CurrentVersion);
             var licenseContent = "License content";
             var embeddedLicenseText = Task.FromResult(licenseContent);
 
             // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, "licenseFileLocation", delegate (string value) { return embeddedLicenseText; });
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(
+                licenseData,
+                licenseFileHeader,
+                delegate (string value)
+                {
+                    if (value.Equals(licenseFileLocation))
+                        return embeddedLicenseText;
+                    return null;
+                });
 
             Assert.Equal(1, links.Count);
             Assert.True(links[0] is LicenseFileText);

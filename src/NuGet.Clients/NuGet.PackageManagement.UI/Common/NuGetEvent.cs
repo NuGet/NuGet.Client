@@ -22,6 +22,5 @@ namespace NuGet.PackageManagement.UI
         public static readonly int PackageManagerConsoleCommandExecutionEnd = 25714;
         public static readonly int EmbeddedLicenseWindowBegin = 25715;
         public static readonly int EmbeddedLicenseWindowEnd = 25716;
-
     }
 }
