@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseData = new LicenseMetadata(LicenseType.Expression, license, expression, warnings, LicenseMetadata.EmptyVersion);
 
             // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, null);
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, null, null);
 
             // Assert
             Assert.Equal(partsCount, links.Count);
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseData = new LicenseMetadata(LicenseType.Expression, license, null, new List<string> { "bad license warning" }, new System.Version(LicenseMetadata.CurrentVersion.Major + 1, 0, 0));
 
             // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, null);
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, null, null);
 
             Assert.True(links[0] is WarningText);
             Assert.Empty(links.Where(e => e is LicenseText));
@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.UI.Test
             var embeddedLicenseText = Task.FromResult(licenseContent);
 
             // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, delegate (string value) { return embeddedLicenseText; });
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, "licenseFileLocation", delegate (string value) { return embeddedLicenseText; });
 
             Assert.Equal(1, links.Count);
             Assert.True(links[0] is LicenseFileText);

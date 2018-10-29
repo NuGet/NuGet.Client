@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -94,14 +93,13 @@ namespace NuGet.Protocol
             string fileContent = null;
             try
             {
-                if (_package.GetReader() is PackageArchiveReader reader) // can it be something else? See if we can get the one extracted on disk if reading from a globalPackagesFolder/fallback folder.
-                    //Likely that's not possible because we don't differentiate between that in the search resource.
+                if (_package.GetReader() is PackageArchiveReader reader) // This will never be anything else in reality. The search resource always uses a PAR
                 {
 
                     var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
                     if (entry != null)
                     {
-                        if (entry.Length >= 1024 * 1024 * 100) // TODO NK - Change if this is correct.
+                        if (entry.Length >= 104857600) // 1024 * 1024 * 100, 100MB
                         {
                             fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileTooLarge);
                         }
