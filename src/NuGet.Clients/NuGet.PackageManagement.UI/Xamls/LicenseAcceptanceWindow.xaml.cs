@@ -42,9 +42,11 @@ namespace NuGet.PackageManagement.UI
                         Width += 434; // Change the width to account for the added textbox
                         MinWidth += 434; // Change the min width to account for the added textbox
                         EmbeddedLicense.Visibility = Visibility.Visible;
-                        licenseFile.LoadLicenseFileAsync();
+                        EmbeddedLicenseHeader.Visibility = Visibility.Visible;
                     }
+                    licenseFile.LoadLicenseFile(); // This loads the file asynchronously 
                     EmbeddedLicense.DataContext = licenseFile;
+                    EmbeddedLicenseHeader.DataContext = licenseFile;
                 }
             }
         }

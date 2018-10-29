@@ -219,10 +219,22 @@
         <TextBlock
           Margin="12,0,12,12"
           x:Name="_licenseFileText"
-          AutomationProperties.Name="licenseFile_{0}"
+          AutomationProperties.Name="licenseFile"
           Text="{Binding LicenseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
           TextWrapping="Wrap" />
       </ScrollViewer>
     </Border>
+
+    <TextBlock
+      Name="EmbeddedLicenseHeader"
+      Grid.Row="1"
+      Grid.Column="1"
+      Margin="12,4,12,0"
+      Visibility="Collapsed"
+      AutomationProperties.Name="licenseFileHeader"
+      Text="{Binding LicenseHeader, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+      FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
+      TextWrapping="Wrap"
+      />
   </Grid>
 </nuget:VsDialogWindow>

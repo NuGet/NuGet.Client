@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.Threading;
 using System.Threading.Tasks;
 using NuGet.VisualStudio;
 using System.Globalization;
+using System;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -13,24 +14,40 @@ namespace NuGet.PackageManagement.UI
     {
         private string _text;
         private string _licenseText;
+        private string _licenseHeader;
         private Task<string> _licenseFileContent;
 
-        public LicenseFileText(string text, Task<string> licenseFileContent)
+        internal LicenseFileText(string text, string licenseFileHeader, Task<string> licenseFileContent)
         {
             _text = text;
+            _licenseHeader = licenseFileHeader;
             _licenseText = string.Format(CultureInfo.CurrentCulture, Resources.LicenseFile_Loading);
             _licenseFileContent = licenseFileContent;
         }
 
-        internal void LoadLicenseFileAsync()
+        internal Lazy<object> LoadLicenseFile()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            if (_licenseFileContent != null)
             {
-                await TaskScheduler.Default;
-                var content = await _licenseFileContent;
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                LicenseText = content;
-            });
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await TaskScheduler.Default;
+                    var content = await _licenseFileContent;
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    LicenseText = content;
+                });
+            }
+            return null;
+        }
+
+        public string LicenseHeader
+        {
+            get => _licenseHeader;
+            set
+            {
+                _licenseHeader = value;
+                OnPropertyChanged("LicenseHeader");
+            }
         }
 
         public string Text

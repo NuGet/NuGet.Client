@@ -17,23 +17,23 @@ namespace NuGet.PackageManagement.UI
 
         internal static IReadOnlyList<IText> GenerateLicenseLinks(DetailedPackageMetadata metadata)
         {
-            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, metadata.LoadFile);
+            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, metadata.Id, metadata.LoadFile);
         }
 
         internal static IReadOnlyList<IText> GenerateLicenseLinks(IPackageSearchMetadata metadata)
         {
             if (metadata is LocalPackageSearchMetadata localMetadata)
             {
-                return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, localMetadata.LoadFile);
+                return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, metadata.Identity.Id, localMetadata.LoadFile);
             }
-            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, null);
+            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, metadata.Identity.Id, null);
         }
 
-        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata licenseMetadata, Uri licenseUrl, Func<string, Task<string>> loadFile)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata licenseMetadata, Uri licenseUrl, string licenseFileHeader, Func<string, Task<string>> loadFile)
         {
             if (licenseMetadata != null)
             {
-                return GenerateLicenseLinks(licenseMetadata, loadFile);
+                return GenerateLicenseLinks(licenseMetadata, licenseFileHeader, loadFile);
             }
             else if (licenseUrl != null)
             {
@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Internal for testing purposes.
-        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata metadata, Func<string, Task<string>> loadFile)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata metadata, string licenseFileHeader, Func<string, Task<string>> loadFile)
         {
             var list = new List<IText>();
 
@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.UI
                     break;
 
                 case LicenseType.File:
-                    list.Add(new LicenseFileText(Resources.Text_ViewLicense, loadFile(metadata.License)));
+                    list.Add(new LicenseFileText(Resources.Text_ViewLicense, licenseFileHeader, loadFile(metadata.License)));
                     break;
 
                 default:
