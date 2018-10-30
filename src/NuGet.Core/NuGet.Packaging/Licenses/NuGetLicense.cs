@@ -40,9 +40,11 @@ namespace NuGet.Packaging.Licenses
         /// Parse a licenseIdentifier. If a licenseIdentifier is deprecated, this will throw. Non-standard licenses get parsed into a object model as well.
         /// </summary>
         /// <param name="licenseIdentifier">license identifier to be parsed</param>
+        /// <param name="allowUnlicensed">Whether the parser allows the UNLICENSED identifier</param>
         /// <returns>Prased NuGetLicense object</returns>
         /// <exception cref="NuGetLicenseExpressionParsingException">If the identifier is deprecated, contains invalid characters or is an exception identifier.</exception>
         /// <exception cref="ArgumentException">If it's null or empty.</exception>
+        /// <remarks>The purpose of the <paramref name="allowUnlicensed"/> switch is to allow the expression parser communicate at which operand location the unlicensed identifier is legal. </remarks>
         internal static NuGetLicense ParseIdentifier(string licenseIdentifier, bool allowUnlicensed = false)
         {
             if (!string.IsNullOrWhiteSpace(licenseIdentifier))
@@ -119,7 +121,7 @@ namespace NuGet.Packaging.Licenses
             throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_LicenseIdentifierIsException, licenseIdentifier));
         }
 
-        internal static string UNLICENSED = nameof(UNLICENSED);
+        internal static string UNLICENSED = "UNLICENSED";
 
         public override string ToString()
         {
