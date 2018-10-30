@@ -53,7 +53,7 @@ namespace NuGet.Packaging.Xml
                 {
                     elem.Add(licenseElement);
                 }
-                licenseUrlToWrite = LicenseMetadata.DeprecateUrl;
+                licenseUrlToWrite = metadata.LicenseMetadata.LicenseUrl;
             }
             AddElementIfNotNull(elem, ns, "licenseUrl", licenseUrlToWrite);
             AddElementIfNotNull(elem, ns, "projectUrl", metadata.ProjectUrl);

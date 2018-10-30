@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Web;
 using NuGet.Packaging.Licenses;
 using NuGet.Shared;
 
@@ -42,7 +44,7 @@ namespace NuGet.Packaging
         /// LicenseMetadata (expression) version. Never null.
         /// </summary>
         public Version Version { get; }
-        
+
         public LicenseMetadata(LicenseType type, string license, NuGetLicenseExpression expression, IReadOnlyList<string> warningsAndErrors, Version version)
         {
             Type = type;
@@ -51,8 +53,6 @@ namespace NuGet.Packaging
             WarningsAndErrors = warningsAndErrors;
             Version = version ?? throw new ArgumentNullException(nameof(version));
         }
-
-
 
         public bool Equals(LicenseMetadata other)
         {
@@ -89,6 +89,24 @@ namespace NuGet.Packaging
             combiner.AddObject(Version);
 
             return combiner.CombinedHash;
+        }
+
+        public Uri LicenseUrl 
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case LicenseType.File:
+                        return DeprecateUrl;
+
+                    case LicenseType.Expression:
+                        return new Uri(string.Format("https://licenses.nuget.org/{0}", WebUtility.UrlEncode(License)));
+
+                    default:
+                        return null;
+                }
+            }
         }
     }
 

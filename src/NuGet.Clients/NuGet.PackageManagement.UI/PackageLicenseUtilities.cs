@@ -12,7 +12,7 @@ namespace NuGet.PackageManagement.UI
 {
     internal class PackageLicenseUtilities
     {
-        private static string LicenseFormat = "https://licenses.nuget.org/licenses/{0}";
+        private static string LicenseFormat = "https://licenses.nuget.org/{0}";
 
         internal static IReadOnlyList<IText> GenerateLicenseLinks(DetailedPackageMetadata metadata)
         {
