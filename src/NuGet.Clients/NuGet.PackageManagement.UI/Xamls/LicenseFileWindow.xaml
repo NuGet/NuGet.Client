@@ -34,7 +34,7 @@
               VerticalScrollBarVisibility="Visible"
               HorizontalScrollBarVisibility="Disabled">
         <TextBlock
-            Margin="12,4,12,0"
+            Margin="12,8,12,8"
             Name="_licenseHeaderText"
             AutomationProperties.Name="{Binding Text}"
             Text="{Binding LicenseContent, Mode=TwoWay,  UpdateSourceTrigger=PropertyChanged}"
