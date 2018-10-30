@@ -29,8 +29,9 @@
       </ResourceDictionary.MergedDictionaries>
       <DataTemplate DataType="{x:Type nuget:LicenseText}">
         <TextBlock
-            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
-            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}">
+            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}"
+            AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}"
+            >
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
                     Style="{StaticResource HyperlinkStyle}"
@@ -40,10 +41,10 @@
                 </Hyperlink>
         </TextBlock>
       </DataTemplate>
-
+      
       <DataTemplate DataType="{x:Type nuget:FreeText}">
         <TextBlock
-            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseOperator}"
+            AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseOperator_{0}'}"
             Text="{Binding Text}" />
       </DataTemplate>
@@ -51,7 +52,7 @@
       <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
         <TextBlock
             Margin="8,8,0,0"
-            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
+            AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFile'}">
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFileLink'}"
@@ -188,7 +189,7 @@
           Margin="0,12"
           Content="{x:Static nuget:Resources.Button_IAccept}"
           AutomationProperties.AutomationId="AcceptButton"
-        AutomationProperties.LabeledBy="{Binding ElementName=_licenseText}"
+          AutomationProperties.LabeledBy="{Binding ElementName=_licenseText}"
           Click="OnAcceptButtonClick" />
       <Button
           Grid.Column="2"
@@ -215,11 +216,11 @@
               CanContentScroll="True"
               VerticalScrollBarVisibility="Visible"
               HorizontalScrollBarVisibility="Disabled"
-              AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}">
+        >
         <TextBlock
           Margin="12,0,12,12"
           x:Name="_licenseFileText"
-          AutomationProperties.Name="licenseFile"
+          AutomationProperties.Name="{Binding Text}"
           Text="{Binding LicenseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
           TextWrapping="Wrap" />
       </ScrollViewer>
@@ -231,7 +232,7 @@
       Grid.Column="1"
       Margin="12,4,12,0"
       Visibility="Collapsed"
-      AutomationProperties.Name="licenseFileHeader"
+      AutomationProperties.Name="{Binding Text}"
       Text="{Binding LicenseHeader, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
       FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
       TextWrapping="Wrap"
