@@ -6,9 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -32,29 +30,18 @@ namespace NuGet.Core.FuncTest
             // Act & Assert
             using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
+            using (var downloadResult = await parser.DownloadFromUrl(
+                new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
+                new Uri("https://www.nuget.org/api/v2/package/WindowsAzure.Storage/6.2.0"),
+                new PackageDownloadContext(cacheContext),
+                packagesFolder,
+                NullLogger.Instance,
+                CancellationToken.None))
             {
-                var downloadContext = new PackageDownloadContext(cacheContext)
-                {
-                    ExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv3,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    clientPolicyContext: null,
-                    logger: NullLogger.Instance)
-                };
+                var packageReader = downloadResult.PackageReader;
+                var files = packageReader.GetFiles();
 
-                using (var downloadResult = await parser.DownloadFromUrl(
-                    new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
-                    new Uri("https://www.nuget.org/api/v2/package/WindowsAzure.Storage/6.2.0"),
-                    downloadContext,
-                    packagesFolder,
-                    NullLogger.Instance,
-                    CancellationToken.None))
-                {
-                    var packageReader = downloadResult.PackageReader;
-                    var files = packageReader.GetFiles();
-
-                    Assert.Equal(13, files.Count());
-                }
+                Assert.Equal(13, files.Count());
             }
         }
     }

@@ -262,11 +262,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         var downloadContext = new PackageDownloadContext(cacheContext)
                         {
                             ParentId = OperationId,
-                            ExtractionContext = new PackageExtractionContext(
-                                PackageSaveMode.Defaultv3,
-                                PackageExtractionBehavior.XmlDocFileSaveMode,
-                                ClientPolicyContext.GetClientPolicy(ConfigSettings, logger),
-                                logger)
+                            ClientPolicyContext = ClientPolicyContext.GetClientPolicy(ConfigSettings, logger)
                         };
 
                         var result = await PackageRestoreManager.RestoreMissingPackagesAsync(

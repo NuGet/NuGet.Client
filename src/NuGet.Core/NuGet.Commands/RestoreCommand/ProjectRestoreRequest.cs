@@ -22,7 +22,14 @@ namespace NuGet.Commands
             ExistingLockFile = existingLockFile;
             MaxDegreeOfConcurrency = request.MaxDegreeOfConcurrency;
             Project = packageSpec;
-            PackageExtractionContext = request.PackageExtractionContext;
+            PackageExtractionContext = new PackageExtractionContext(
+                request.PackageSaveMode,
+                request.XmlDocFileSaveMode,
+                request.ClientPolicyContext,
+                log)
+            {
+                SignedPackageVerifier = request.SignedPackageVerifier
+            };
         }
 
         public SourceCacheContext CacheContext { get; }

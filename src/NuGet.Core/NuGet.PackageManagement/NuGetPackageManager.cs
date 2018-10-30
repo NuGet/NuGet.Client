@@ -16,7 +16,6 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -195,11 +194,7 @@ namespace NuGet.PackageManagement
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
                 ParentId = nuGetProjectContext.OperationId,
-                ExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv3,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(Settings, logger),
-                    logger)
+                ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
             };
 
             return InstallPackageAsync(
@@ -253,11 +248,7 @@ namespace NuGet.PackageManagement
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
                 ParentId = nuGetProjectContext.OperationId,
-                ExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv3,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(Settings, logger),
-                    logger)
+                ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
             };
 
             await InstallPackageAsync(
@@ -331,11 +322,7 @@ namespace NuGet.PackageManagement
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
                 ParentId = nuGetProjectContext.OperationId,
-                ExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv3,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(Settings, logger),
-                    logger)
+                ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
             };
 
             return InstallPackageAsync(
@@ -392,11 +379,7 @@ namespace NuGet.PackageManagement
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
             {
                 ParentId = nuGetProjectContext.OperationId,
-                ExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv3,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(Settings, logger),
-                    logger)
+                ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
             };
 
             await InstallPackageAsync(
@@ -2147,11 +2130,7 @@ namespace NuGet.PackageManagement
             var downloadContext = new PackageDownloadContext(sourceCacheContext)
             {
                 ParentId = nuGetProjectContext.OperationId,
-                ExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv3,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(Settings, logger),
-                    logger)
+                ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
             };
 
             await ExecuteNuGetProjectActionsAsync(nuGetProject,
