@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using NuGet.VisualStudio;
 using System.Globalization;
 using System;
+using System.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -18,6 +19,9 @@ namespace NuGet.PackageManagement.UI
         private readonly string _licenseFileLocation;
         private Func<string, Task<string>> _loadFileFromPackage;
 
+        private int _initialized;
+
+
         internal LicenseFileText(string text, string licenseFileHeader, Func<string,Task<string>> loadFileFromPackage, string licenseFileLocation)
         {
             _text = text;
@@ -27,19 +31,21 @@ namespace NuGet.PackageManagement.UI
             _licenseFileLocation = licenseFileLocation;
         }
 
-        internal Lazy<object> LoadLicenseFile()
+        internal void LoadLicenseFile()
         {
-            if (_loadFileFromPackage != null)
+            if (Interlocked.CompareExchange(ref _initialized, 1, 0) == 0)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                if (_loadFileFromPackage != null)
                 {
-                    await TaskScheduler.Default;
-                    var content = await _loadFileFromPackage(_licenseFileLocation);
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    LicenseText = content;
-                });
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    {
+                        await TaskScheduler.Default;
+                        var content = await _loadFileFromPackage(_licenseFileLocation);
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        LicenseText = content;
+                    });
+                }
             }
-            return null;
         }
 
         public string LicenseHeader
