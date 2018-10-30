@@ -218,21 +218,6 @@ namespace NuGet.Commands
 
                         var package = packageInfo.Package;
 
-                        var developmentDependency = package.Nuspec.GetDevelopmentDependency();
-
-                        // check if package is development dependency and include flags are not overwritten
-                        if (developmentDependency && includeFlags == LibraryIncludeFlags.All)
-                        {
-                            var dependency = tfi.Dependencies.FirstOrDefault(dep => dep.Name.Equals(package.Id, StringComparison.OrdinalIgnoreCase));
-
-                            // make sure new resolved dependency still have default PrivateAssets as well as IncludeAssets
-                            if (dependency?.SuppressParent == LibraryIncludeFlagUtils.DefaultSuppressParent &&
-                                dependency?.IncludeType == LibraryIncludeFlags.All)
-                            {
-                                includeFlags = LibraryIncludeFlags.All & ~LibraryIncludeFlags.Compile;
-                            }
-                        }
-
                         var targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
                             libraries[Tuple.Create(library.Name, library.Version)],
                             package,

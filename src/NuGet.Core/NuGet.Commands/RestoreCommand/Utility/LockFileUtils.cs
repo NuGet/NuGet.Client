@@ -920,7 +920,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Replace excluded asset groups with _._ if they have > 0 items.
         /// </summary>
-        private static void ExcludeItems(LockFileTargetLibrary lockFileLib, LibraryIncludeFlags dependencyType)
+        public static void ExcludeItems(LockFileTargetLibrary lockFileLib, LibraryIncludeFlags dependencyType)
         {
             if ((dependencyType & LibraryIncludeFlags.Runtime) == LibraryIncludeFlags.None)
             {

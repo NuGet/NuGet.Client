@@ -2789,7 +2789,7 @@ namespace NuGet.PackageManagement
                         if (buildIntegratedProject.ProjectStyle == ProjectStyle.PackageReference)
                         {
                             BuildIntegratedRestoreUtility.UpdatePackageReferenceMetadata(
-                                projectAction.RestoreResult.LockFile.PackageSpec,
+                                projectAction.RestoreResult.LockFile,
                                 pathResolver,
                                 originalAction.PackageIdentity);
 
