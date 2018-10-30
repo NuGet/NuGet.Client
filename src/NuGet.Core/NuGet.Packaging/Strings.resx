@@ -807,4 +807,14 @@ Valid from:</comment>
     <value>The license identifier(s) {0} is(are) not recognized by the current toolset.</value>
     <comment>0 - semicolon delimited list of identifiers</comment>
   </data>
+  <data name="NuGetLicenseExpression_IllegalUnlicensedOperator" xml:space="preserve">
+    <value>The 'UNLICENSED' license identifier cannot be combined with the '+' operator.</value>
+  </data>
+  <data name="NuGetLicenseExpression_UnexpectedIdentifier" xml:space="preserve">
+    <value>Unexpected license identifier '{0}'. The identifier is not allowed in this context.</value>
+    <comment>0 - the license identifier.</comment>
+  </data>
+  <data name="NuGetLicenseExpression_UnlicensedPackageWarning" xml:space="preserve">
+    <value>The owner has marked this package as 'UNLICENSED'. This means that there is no license that allows this package to be used outside of the copyright owner.</value>
+  </data>
 </root>

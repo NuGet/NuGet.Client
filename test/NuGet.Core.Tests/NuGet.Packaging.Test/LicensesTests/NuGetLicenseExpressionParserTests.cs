@@ -60,17 +60,18 @@ namespace NuGet.Packaging.Licenses.Test
         }
 
         [Theory]
-        [InlineData("MIT", true, false)]
-        [InlineData("AFL-1.1+", true, true)]
-        [InlineData("MyFancyLicense", false, false)]
-        public void LicenseExpressionParser_ParsesSimpleExpression(string expression, bool hasStandardIdentifiers, bool hasPlus)
+        [InlineData("MIT", true, false, false)]
+        [InlineData("AFL-1.1+", true, true, false)]
+        [InlineData("MyFancyLicense", false, false, false)]
+        [InlineData("UNLICENSED", true, false, true)]
+        public void LicenseExpressionParser_ParsesSimpleExpression(string expression, bool hasStandardIdentifiers, bool hasPlus, bool isUnlicensed)
         {
             var licenseExpression = NuGetLicenseExpression.Parse(expression);
             Assert.Equal(expression, licenseExpression.ToString());
             Assert.Equal(licenseExpression.HasOnlyStandardIdentifiers(), hasStandardIdentifiers);
             Assert.NotNull(licenseExpression as NuGetLicense);
             Assert.Equal(hasPlus, (licenseExpression as NuGetLicense).Plus);
-
+            Assert.Equal(isUnlicensed, licenseExpression.IsUnlicensed());
         }
 
         [Theory]
@@ -114,6 +115,7 @@ namespace NuGet.Packaging.Licenses.Test
         [InlineData("()")]
         [InlineData("MIT WITH OR LPL-1.0")]
         [InlineData("MIT++")]
+        [InlineData("UNLICENSED++")]
         [InlineData("MIT+ OR LPL-1.0+++")]
         [InlineData("(MIT OR LPL-1.0)+")]
         public void LicenseExpressionParser_StrictParseThrowsForInvalidExpressions(string expression)
@@ -136,6 +138,23 @@ namespace NuGet.Packaging.Licenses.Test
         {
             var ex = Assert.Throws<NuGetLicenseExpressionParsingException>(() => NuGetLicenseExpression.Parse(expression));
             Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExceptionIdentifier, exception), ex.Message);
+        }
+
+        [Theory]
+        [InlineData("MIT AND UNLICENSED", "UNLICENSED")]
+        public void LicenseExpressionParser_ThrowsForInvalidLicensedCombinations(string expression, string exception)
+        {
+            var ex = Assert.Throws<NuGetLicenseExpressionParsingException>(() => NuGetLicenseExpression.Parse(expression));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_UnexpectedIdentifier, exception), ex.Message);
+        }
+
+        [Theory]
+        [InlineData("UNLICENSED+")]
+        [InlineData("MIT OR UNLICENSED+")]
+        public void LicenseExpressionParser_ThrowsForBadUnlicensedExpression(string expression)
+        {
+            var ex = Assert.Throws<NuGetLicenseExpressionParsingException>(() => NuGetLicenseExpression.Parse(expression));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_IllegalUnlicensedOperator), ex.Message);
         }
 
         [Theory]
