@@ -863,6 +863,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The &apos;UNLICENSED&apos; license identifier cannot be combined with the &apos;+&apos; operator..
+        /// </summary>
+        internal static string NuGetLicenseExpression_IllegalUnlicensedOperator {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_IllegalUnlicensedOperator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The license expression &apos;{0}&apos; contains invalid characters..
         /// </summary>
         internal static string NuGetLicenseExpression_InvalidCharacters {
@@ -931,6 +940,24 @@ namespace NuGet.Packaging {
         internal static string NuGetLicenseExpression_NonStandardIdentifier {
             get {
                 return ResourceManager.GetString("NuGetLicenseExpression_NonStandardIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected license identifier &apos;{0}&apos;. The identifier is not allowed in this context..
+        /// </summary>
+        internal static string NuGetLicenseExpression_UnexpectedIdentifier {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_UnexpectedIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The owner has marked this package as &apos;UNLICENSED&apos;. This means that there is no license that allows this package to be used outside of the copyright owner..
+        /// </summary>
+        internal static string NuGetLicenseExpression_UnlicensedPackageWarning {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_UnlicensedPackageWarning", resourceCulture);
             }
         }
         

@@ -135,7 +135,7 @@ namespace NuGet.Packaging.Licenses
                 {
                     var value = operandStack.Pop();
 
-                    return value.Item1 ? NuGetLicense.ParseIdentifier(((LicenseExpressionToken)value.Item2).Value) : (NuGetLicenseExpression)value.Item2;
+                    return value.Item1 ? NuGetLicense.ParseIdentifier(((LicenseExpressionToken)value.Item2).Value, allowUnlicensed: true) : (NuGetLicenseExpression)value.Item2;
                 }
             }
             catch (NuGetLicenseExpressionParsingException)
