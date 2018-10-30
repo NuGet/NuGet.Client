@@ -9,8 +9,6 @@ using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
-using NuGet.Packaging.PackageExtraction;
-using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -176,15 +174,6 @@ namespace NuGet.Commands
             }
 
             return sourceObjects.Select(entry => CachingSourceProvider.CreateRepository(entry.Value)).ToList();
-        }
-
-        internal PackageExtractionContext GetPackageExtractionContext(ISettings settings)
-        {
-            return new PackageExtractionContext(
-                PackageSaveMode,
-                PackageExtractionBehavior.XmlDocFileSaveMode,
-                ClientPolicyContext.GetClientPolicy(settings, Log),
-                Log);
         }
 
         public void ApplyStandardProperties(RestoreRequest request)

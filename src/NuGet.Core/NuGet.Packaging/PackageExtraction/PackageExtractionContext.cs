@@ -21,8 +21,9 @@ namespace NuGet.Packaging
 
         /// <remarks>
         /// This property should only be used to override the default verifier on tests.
+        /// It is public only so that NuGet.Commands.RestoreRequest can pass this property through
         /// </remarks>
-        internal IPackageSignatureVerifier SignedPackageVerifier { get; set; }
+        public IPackageSignatureVerifier SignedPackageVerifier { get; set; }
 
         public PackageExtractionContext(
             PackageSaveMode packageSaveMode,

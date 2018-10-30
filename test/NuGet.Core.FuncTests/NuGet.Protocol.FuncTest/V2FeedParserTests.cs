@@ -91,29 +91,18 @@ namespace NuGet.Protocol.FuncTest
             // Act & Assert
             using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
+            using (var downloadResult = await parser.DownloadFromIdentity(
+                new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
+                new PackageDownloadContext(cacheContext),
+                packagesFolder,
+                cacheContext,
+                NullLogger.Instance,
+                CancellationToken.None))
             {
-                var downloadContext = new PackageDownloadContext(cacheContext)
-                {
-                    ExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv3,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    clientPolicyContext: null,
-                    logger: NullLogger.Instance)
-                };
+                var packageReader = downloadResult.PackageReader;
+                var files = packageReader.GetFiles();
 
-                using (var downloadResult = await parser.DownloadFromIdentity(
-                    new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
-                    downloadContext,
-                    packagesFolder,
-                    cacheContext,
-                    NullLogger.Instance,
-                    CancellationToken.None))
-                {
-                    var packageReader = downloadResult.PackageReader;
-                    var files = packageReader.GetFiles();
-
-                    Assert.Equal(13, files.Count());
-                }
+                Assert.Equal(13, files.Count());
             }
         }
 

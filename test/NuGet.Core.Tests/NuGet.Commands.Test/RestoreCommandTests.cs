@@ -1018,18 +1018,11 @@ namespace NuGet.Commands.Test
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(isValid: false, isSigned: true));
 
-                var extractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv3,
-                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
-                     logger)
-                {
-                    SignedPackageVerifier = signedPackageVerifier.Object
-                };
-
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, extractionContext, logger)
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger);
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, clientPolicyContext, logger)
                 {
                     LockFilePath = Path.Combine(project1.FullName, "project.lock.json"),
+                    SignedPackageVerifier = signedPackageVerifier.Object
                 };
 
                 var packageAContext = new SimpleTestPackageContext("packageA");
@@ -1095,18 +1088,11 @@ namespace NuGet.Commands.Test
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(isValid: true, isSigned: true));
 
-                var extractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv3,
-                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
-                     logger)
-                {
-                    SignedPackageVerifier = signedPackageVerifier.Object
-                };
-
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, extractionContext, logger)
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger);
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, clientPolicyContext, logger)
                 {
                     LockFilePath = Path.Combine(project1.FullName, "project.lock.json"),
+                    SignedPackageVerifier = signedPackageVerifier.Object
                 };
 
                 var packageAContext = new SimpleTestPackageContext("packageA");

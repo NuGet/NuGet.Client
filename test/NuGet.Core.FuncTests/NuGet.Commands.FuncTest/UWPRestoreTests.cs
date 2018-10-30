@@ -10,8 +10,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands.Test;
 using NuGet.Configuration;
-using NuGet.Packaging;
-using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -150,12 +148,8 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var extractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv3,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
-                    logger);
-                var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, extractionContext, logger)
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, clientPolicyContext, logger)
                 {
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };

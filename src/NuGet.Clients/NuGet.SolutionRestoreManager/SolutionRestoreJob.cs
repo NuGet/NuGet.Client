@@ -19,8 +19,6 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
-using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -537,11 +535,7 @@ namespace NuGet.SolutionRestoreManager
                 var downloadContext = new PackageDownloadContext(cacheContext)
                 {
                     ParentId = _nuGetProjectContext.OperationId,
-                    ExtractionContext = new PackageExtractionContext(
-                        PackageSaveMode.Defaultv3,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        ClientPolicyContext.GetClientPolicy(_settings, logger),
-                        logger)
+                    ClientPolicyContext = ClientPolicyContext.GetClientPolicy(_settings, logger)
                 };
 
                 await _packageRestoreManager.RestoreMissingPackagesAsync(

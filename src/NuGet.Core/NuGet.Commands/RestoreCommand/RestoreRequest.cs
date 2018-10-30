@@ -7,6 +7,8 @@ using System.IO;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 
@@ -20,7 +22,7 @@ namespace NuGet.Commands
             PackageSpec project,
             RestoreCommandProviders dependencyProviders,
             SourceCacheContext cacheContext,
-            PackageExtractionContext extractionContext,
+            ClientPolicyContext clientPolicyContext,
             ILogger log)
         {
 
@@ -28,7 +30,7 @@ namespace NuGet.Commands
             Log = log ?? throw new ArgumentNullException(nameof(log));
             Project = project ?? throw new ArgumentNullException(nameof(project));
             DependencyProviders = dependencyProviders ?? throw new ArgumentNullException(nameof(dependencyProviders));
-            PackageExtractionContext = extractionContext ?? throw new ArgumentNullException(nameof(extractionContext));
+            ClientPolicyContext = clientPolicyContext;
 
             ExternalProjects = new List<ExternalProjectReference>();
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
@@ -144,7 +146,19 @@ namespace NuGet.Commands
         /// </summary>
         public bool HideWarningsAndErrors { get; set; } = false;
 
-        public PackageExtractionContext PackageExtractionContext { get; set; }
+        /// <summary>
+        /// Gets or sets the <see cref="Packaging.PackageSaveMode"/>. 
+        /// </summary> 
+        public PackageSaveMode PackageSaveMode { get; set; } = PackageSaveMode.Defaultv3;
+
+        public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; } = PackageExtractionBehavior.XmlDocFileSaveMode;
+
+        public ClientPolicyContext ClientPolicyContext { get; }
+
+        /// <remarks>
+        /// This property should only be used to override the default verifier on tests.
+        /// </remarks>
+        internal IPackageSignatureVerifier SignedPackageVerifier { get; set; }
 
         public Guid ParentId { get; set;}
 
