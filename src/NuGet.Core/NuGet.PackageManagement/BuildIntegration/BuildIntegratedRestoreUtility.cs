@@ -14,6 +14,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement
@@ -147,7 +148,7 @@ namespace NuGet.PackageManagement
         }
 
         public static void UpdatePackageReferenceMetadata(
-            PackageSpec packageSpec,
+            LockFile lockFile,
             FallbackPackagePathResolver pathResolver,
             PackageIdentity package)
         {
@@ -165,7 +166,7 @@ namespace NuGet.PackageManagement
 
             if (developmentDependency)
             {
-                foreach (var frameworkInfo in packageSpec.TargetFrameworks
+                foreach (var frameworkInfo in lockFile.PackageSpec.TargetFrameworks
                     .OrderBy(framework => framework.FrameworkName.ToString(),
                         StringComparer.Ordinal))
                 {
@@ -174,8 +175,21 @@ namespace NuGet.PackageManagement
                     if (dependency?.SuppressParent == LibraryIncludeFlagUtils.DefaultSuppressParent &&
                         dependency?.IncludeType == LibraryIncludeFlags.All)
                     {
+                        var includeType = LibraryIncludeFlags.All & ~LibraryIncludeFlags.Compile;
                         dependency.SuppressParent = LibraryIncludeFlags.All;
-                        dependency.IncludeType = LibraryIncludeFlags.All & ~LibraryIncludeFlags.Compile;
+                        dependency.IncludeType = includeType;
+
+                        // update lock file target libraries
+                        foreach (var target in lockFile.Targets
+                            .Where(t => EqualityUtility.EqualsWithNullCheck(t.TargetFramework, frameworkInfo.FrameworkName)))
+                        {
+                            var targetLibrary = target.GetTargetLibrary(package.Id);
+
+                            if (targetLibrary != null)
+                            {
+                                LockFileUtils.ExcludeItems(targetLibrary, includeType);
+                            }
+                        }
                     }
                 }
             }
