@@ -1123,6 +1123,15 @@ namespace NuGet.Packaging
                         {
                             await packageExtractionContext.Logger.LogAsync(warning);
                         }
+
+                        if (packageExtractionContext.Logger is ICollectorLogger collectorLogger)
+                        {
+                            if (collectorLogger.Errors.Any())
+                            {
+                                // Send empty results since errors and warnings have already been logged
+                                throw new SignatureException(results: Enumerable.Empty<PackageVerificationResult>().ToList(), package: package);
+                            }
+                        }
                     }
                     else
                     {
