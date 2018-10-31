@@ -1126,7 +1126,8 @@ namespace NuGet.Packaging
 
                         if (packageExtractionContext.Logger is ICollectorLogger collectorLogger)
                         {
-                            if (collectorLogger.Errors.Any())
+                            // collectorLogger.Errors is a collection of errors and warnings, we just need to fail if there are errors.
+                            if (collectorLogger.Errors.Where(e => e.Level >= LogLevel.Error).Any())
                             {
                                 // Send empty results since errors and warnings have already been logged
                                 throw new SignatureException(results: Enumerable.Empty<PackageVerificationResult>().ToList(), package: package);
