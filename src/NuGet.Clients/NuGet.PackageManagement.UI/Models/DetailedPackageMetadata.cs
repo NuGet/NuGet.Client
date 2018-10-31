@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Threading.Tasks;
 using NuGet.Packaging;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -19,6 +20,7 @@ namespace NuGet.PackageManagement.UI
 
         public DetailedPackageMetadata(IPackageSearchMetadata serverData, long? downloadCount)
         {
+            Id = serverData.Identity.Id;
             Version = serverData.Identity.Version;
             Summary = serverData.Summary;
             Description = serverData.Description;
@@ -38,9 +40,15 @@ namespace NuGet.PackageManagement.UI
                 dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
             PrefixReserved = serverData.PrefixReserved;
             LicenseMetadata = serverData.LicenseMetadata;
+            _localMetadata = serverData as LocalPackageSearchMetadata;
         }
 
+        private readonly LocalPackageSearchMetadata _localMetadata;
+
+        public string Id { get; set; }
+
         public NuGetVersion Version { get; set; }
+
         public string Summary { get; set; }
 
         public string Description { get; set; }
@@ -72,12 +80,15 @@ namespace NuGet.PackageManagement.UI
 
         public LicenseMetadata LicenseMetadata { get; set; }
 
-        public IReadOnlyList<IText> LicenseLinks
+        public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
+
+        public string LoadFileAsText(string path)
         {
-            get
+            if (_localMetadata != null)
             {
-                return PackageLicenseUtilities.GenerateLicenseLinks(this);
+                return _localMetadata.LoadFileAsText(path);
             }
+            return null;
         }
     }
 }
