@@ -13,23 +13,23 @@ namespace NuGet.PackageManagement.UI
 {
     internal class PackageLicenseUtilities
     {
-        private static string LicenseFormat = "https://licenses.nuget.org/licenses/{0}";
+        private static string LicenseFormat = "https://licenses.nuget.org/{0}";
 
         internal static IReadOnlyList<IText> GenerateLicenseLinks(DetailedPackageMetadata metadata)
         {
-            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, metadata.Id, metadata.LoadFileAsync);
+            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, metadata.Id, metadata.LoadFileAsText);
         }
 
         internal static IReadOnlyList<IText> GenerateLicenseLinks(IPackageSearchMetadata metadata)
         {
             if (metadata is LocalPackageSearchMetadata localMetadata)
             {
-                return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, metadata.Identity.Id, localMetadata.LoadFileAsync);
+                return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, metadata.Identity.Id, localMetadata.LoadFileAsText);
             }
             return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, metadata.Identity.Id, null);
         }
 
-        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata licenseMetadata, Uri licenseUrl, string licenseFileHeader, Func<string, Task<string>> loadFile)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata licenseMetadata, Uri licenseUrl, string licenseFileHeader, Func<string, string> loadFile)
         {
             if (licenseMetadata != null)
             {
@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Internal for testing purposes.
-        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata metadata, string licenseFileHeader, Func<string, Task<string>> loadFile)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata metadata, string licenseFileHeader, Func<string, string> loadFile)
         {
             var list = new List<IText>();
 

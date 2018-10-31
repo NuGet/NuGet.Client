@@ -4,8 +4,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
@@ -16,12 +14,11 @@ namespace NuGet.PackageManagement.UI
         private string _licenseText;
         private string _licenseHeader;
         private readonly string _licenseFileLocation;
-        private Func<string, Task<string>> _loadFileFromPackage;
+        private Func<string, string> _loadFileFromPackage;
 
         private int _initialized;
 
-
-        internal LicenseFileText(string text, string licenseFileHeader, Func<string,Task<string>> loadFileFromPackage, string licenseFileLocation)
+        internal LicenseFileText(string text, string licenseFileHeader, Func<string,string> loadFileFromPackage, string licenseFileLocation)
         {
             _text = text;
             _licenseHeader = licenseFileHeader;
@@ -38,7 +35,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                     {
-                        var content = await _loadFileFromPackage(_licenseFileLocation);
+                        var content = _loadFileFromPackage(_licenseFileLocation);
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                         LicenseText = content;
                     });

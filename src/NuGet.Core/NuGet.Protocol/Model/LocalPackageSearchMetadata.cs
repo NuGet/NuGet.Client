@@ -90,7 +90,7 @@ namespace NuGet.Protocol
 
         private const int FiveMegabytes = 5242880; // 1024 * 1024 * 5, 5MB
 
-        public Task<string> LoadFileAsync(string path)
+        public string LoadFileAsText(string path)
         {
             string fileContent = null;
             try
@@ -130,7 +130,7 @@ namespace NuGet.Protocol
                     fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_UnknownProblemLoadingTheFile, path);
                 }
             }
-            return Task.FromResult(fileContent);
+            return fileContent;
         }
     }
 }

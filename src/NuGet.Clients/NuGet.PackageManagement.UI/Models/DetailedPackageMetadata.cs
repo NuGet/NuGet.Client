@@ -82,11 +82,11 @@ namespace NuGet.PackageManagement.UI
 
         public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
 
-        public async Task<string> LoadFileAsync(string path)
+        public string LoadFileAsText(string path)
         {
             if (_localMetadata != null)
             {
-                return await _localMetadata.LoadFileAsync(path);
+                return _localMetadata.LoadFileAsText(path);
             }
             return null;
         }
