@@ -1725,10 +1725,10 @@ namespace NuGet.Packaging.Test
         }
 
 #if IS_DESKTOP
-        [Fact]
+        [CIOnlyFact]
         public async Task GetContentHash_IsSameForUnsignedAndSignedPackageAsync()
         {
-            // this test will create an unsiged package, copy it, then sign it. then compare the contentHash
+            // this test will create an unsigned package, copy it, then sign it. then compare the contentHash
             var nupkg = new SimpleTestPackageContext("Package.Content.Hash.Test", "1.0.0");
 
             using (var unsignedDir = TestDirectory.Create())
@@ -1744,24 +1744,28 @@ namespace NuGet.Packaging.Test
 
                     var signedPackagePath = Path.Combine(signedDir.Path, nupkgFileName);
 
+                    using (var trustedCert = SigningTestUtility.GenerateTrustedTestCertificate())
                     using (var originalPackage = File.OpenRead(nupkgFileInfo.FullName))
                     using (var signedPackage = File.Open(signedPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                     using (var request = new AuthorSignPackageRequest(
-                        new X509Certificate2(),
+                        trustedCert.Source.Cert,
                         signatureHashAlgorithm,
                         timestampHashAlgorithm))
                     {
                         await SignedArchiveTestUtility.CreateSignedPackageAsync(request, originalPackage, signedPackage, timestampService);
                     }
 
-                    var contentHashUnsigned = new PackageArchiveReader(nupkgFileInfo.FullName).GetContentHash(CancellationToken.None);
-                    var contentHashSigned = new PackageArchiveReader(signedPackagePath).GetContentHash(CancellationToken.None);
+                    using (var unsignedReader = new PackageArchiveReader(nupkgFileInfo.FullName))
+                    using (var signedReader = new PackageArchiveReader(signedPackagePath))
+                    {
+                        var contentHashUnsigned = unsignedReader.GetContentHashForPackage(CancellationToken.None);
+                        var contentHashSigned = signedReader.GetContentHashForPackage(CancellationToken.None);
 
-                    Assert.Equal(contentHashUnsigned, contentHashSigned);
+                        Assert.Equal(contentHashUnsigned, contentHashSigned);
+                    }
                 }
             }
         }
-
 #endif 
 
         private static Zip CreateZipWithNestedStoredZipArchives()

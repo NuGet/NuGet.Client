@@ -23,6 +23,8 @@ namespace NuGet.PackageManagement
 {
     public class PackageDownloaderTests
     {
+        private static readonly string _jQuery182ContentHash = "cXOJxYC6ccYDP5FW1iOXhZww+7CyKdpiJbkR0YZxILNJ2zvM4VsrqOVKNRHnIWF78IixUfo/cw7Hz4M70MUbGg==";
+
         [Fact]
         public async Task GetDownloadResourceResultAsync_Sources_ThrowsForNullSources()
         {
@@ -320,15 +322,14 @@ namespace NuGet.PackageManagement
             {
                 var targetPackageStream = downloadResult.PackageStream;
 
-                // calculate contentHash to verify we got the package correctly.
-                var packageArchiveReader = new PackageArchiveReader(targetPackageStream);
-                var contentHash = packageArchiveReader.GetContentHashForPackage(new CancellationToken());
+                using (var packageArchiveReader = new PackageArchiveReader(targetPackageStream))
+                {
+                    var contentHash = packageArchiveReader.GetContentHashForPackage(CancellationToken.None);
 
-                // Assert
-                // jQuery.1.8.2 has the following contentHash:
-                Assert.Equal("cXOJxYC6ccYDP5FW1iOXhZww+7CyKdpiJbkR0YZxILNJ2zvM4VsrqOVKNRHnIWF78IixUfo/cw7Hz4M70MUbGg==",
-                    contentHash);
-                Assert.True(targetPackageStream.CanSeek);
+                    // Assert
+                    Assert.Equal(_jQuery182ContentHash, contentHash);
+                    Assert.True(targetPackageStream.CanSeek);
+                }
             }
         }
 
@@ -353,15 +354,14 @@ namespace NuGet.PackageManagement
             {
                 var targetPackageStream = downloadResult.PackageStream;
 
-                // calculate contentHash to verify we got the package correctly.
-                var packageArchiveReader = new PackageArchiveReader(targetPackageStream);
-                var contentHash = packageArchiveReader.GetContentHashForSignedPackage(new CancellationToken());
+                using (var packageArchiveReader = new PackageArchiveReader(targetPackageStream))
+                {
+                    var contentHash = packageArchiveReader.GetContentHashForSignedPackage(CancellationToken.None);
 
-                // Assert
-                // jQuery.1.8.2 has the following contentHash:
-                Assert.Equal("cXOJxYC6ccYDP5FW1iOXhZww+7CyKdpiJbkR0YZxILNJ2zvM4VsrqOVKNRHnIWF78IixUfo/cw7Hz4M70MUbGg==",
-                    contentHash);
-                Assert.True(targetPackageStream.CanSeek);
+                    // Assert
+                    Assert.Equal(_jQuery182ContentHash, contentHash);
+                    Assert.True(targetPackageStream.CanSeek);
+                }
             }
         }
 
@@ -372,7 +372,7 @@ namespace NuGet.PackageManagement
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
             // Act & Assert
-            await VerifyDirectDownloadSkipsGlobalPackagesFolder(sourceRepositoryProvider);
+            await VerifyDirectDownloadSkipsGlobalPackagesFolderAsync(sourceRepositoryProvider);
         }
 
         [Fact]
@@ -382,7 +382,7 @@ namespace NuGet.PackageManagement
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
 
             // Act & Assert
-            await VerifyDirectDownloadSkipsGlobalPackagesFolder(sourceRepositoryProvider);
+            await VerifyDirectDownloadSkipsGlobalPackagesFolderAsync(sourceRepositoryProvider);
         }
 
         [Fact]
@@ -558,7 +558,7 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private static async Task VerifyDirectDownloadSkipsGlobalPackagesFolder(
+        private static async Task VerifyDirectDownloadSkipsGlobalPackagesFolderAsync(
             SourceRepositoryProvider sourceRepositoryProvider)
         {
             // Arrange
@@ -585,15 +585,14 @@ namespace NuGet.PackageManagement
                 {
                     var targetPackageStream = downloadResult.PackageStream;
 
-                    // calculate contentHash to verify we got the package correctly.
-                    var packageArchiveReader = new PackageArchiveReader(targetPackageStream);
-                    var contentHash = packageArchiveReader.GetContentHash(new CancellationToken());
+                    using (var packageArchiveReader = new PackageArchiveReader(targetPackageStream))
+                    {
+                        var contentHash = packageArchiveReader.GetContentHashForPackage(CancellationToken.None);
 
-                    // Assert
-                    // jQuery.1.8.2 has the following contentHash:
-                    Assert.Equal("cXOJxYC6ccYDP5FW1iOXhZww+7CyKdpiJbkR0YZxILNJ2zvM4VsrqOVKNRHnIWF78IixUfo/cw7Hz4M70MUbGg==",
-                        contentHash);
-                    Assert.True(targetPackageStream.CanSeek);
+                        // Assert
+                        Assert.Equal(_jQuery182ContentHash, contentHash);
+                        Assert.True(targetPackageStream.CanSeek);
+                    }
                 }
 
                 // Verify that the direct download directory is empty. The package should be downloaded to a temporary
