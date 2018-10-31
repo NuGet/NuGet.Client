@@ -27,18 +27,20 @@
 
   <Grid>
     <Border
+      Name="borderLicenseFile"
       BorderThickness="1"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
       <ScrollViewer
+        Name="scrollViewerLicenseFile"
               CanContentScroll="True"
               VerticalScrollBarVisibility="Visible"
               HorizontalScrollBarVisibility="Disabled">
         <TextBlock
+            Name="textBlockLicenseFile"
             Margin="12,8,12,8"
-            Name="_licenseHeaderText"
-            AutomationProperties.Name="{Binding Text}"
-            Text="{Binding LicenseContent, Mode=TwoWay,  UpdateSourceTrigger=PropertyChanged}"
-            TextWrapping="Wrap" />
+            TextWrapping="Wrap">
+          <Run Text="{Binding LicenseContent, Mode=TwoWay,  UpdateSourceTrigger=PropertyChanged}"/>
+        </TextBlock>
       </ScrollViewer>
     </Border>
   </Grid>

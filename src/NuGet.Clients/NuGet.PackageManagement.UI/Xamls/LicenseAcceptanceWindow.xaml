@@ -51,11 +51,9 @@
 
       <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
         <TextBlock
-            Margin="8,8,0,0"
-            AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}"
-            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFile'}">
+            Margin="8,8,0,0">
                 <Hyperlink
-                    AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFileLink'}"
+                  AutomationProperties.AutomationId="{Binding Text}"
                     Click="ViewLicense_Click">
                   <Run Text="{Binding Text}"/>
                 </Hyperlink>
