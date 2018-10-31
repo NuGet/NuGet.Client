@@ -310,7 +310,14 @@ namespace NuGet.Commands
                         await _logger.LogAsync(e.AsLogMessage());
                     }
 
-                    await _logger.LogMessagesAsync(e.Results.SelectMany(p => p.Issues));
+                    // If the package is unsigned and unsigned packages are not allowed a SignatureException
+                    // will be thrown but it won't have results because it didn't went through any
+                    // verification provider.
+                    if (e.Results != null)
+                    {
+                        await _logger.LogMessagesAsync(e.Results.SelectMany(p => p.Issues));
+                    }
+
                     return false;
                 }
             }

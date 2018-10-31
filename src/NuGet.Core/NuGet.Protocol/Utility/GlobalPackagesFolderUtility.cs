@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -88,7 +87,7 @@ namespace NuGet.Protocol
             Stream packageStream,
             string globalPackagesFolder,
             Guid parentId,
-            PackageExtractionContext extractionContext,
+            ClientPolicyContext clientPolicyContext,
             ILogger logger,
             CancellationToken token)
         {
@@ -110,6 +109,12 @@ namespace NuGet.Protocol
             // The following call adds it to the global packages folder.
             // Addition is performed using ConcurrentUtils, such that,
             // multiple processes may add at the same time
+
+            var extractionContext = new PackageExtractionContext(
+               PackageSaveMode.Defaultv3,
+               PackageExtractionBehavior.XmlDocFileSaveMode,
+               clientPolicyContext,
+               logger);
 
             var versionFolderPathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 

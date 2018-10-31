@@ -43,5 +43,12 @@ namespace NuGet.Packaging.Signing
         /// <param name="token">Cancellation token</param>
         /// <returns>hash of the unsigned content of the signed package. but return null for unsigned package.</returns>
         string GetContentHashForSignedPackage(CancellationToken token);
+
+        /// <summary>
+        /// Indicates if the the ISignedPackageReader instance can verify signed packages.
+        /// </summary>
+        /// <param name="verifierSettings">Package verification settings. Include information about what is allowed.</param>
+        /// <exception cref="SignatureException">if the ISignedPackageReader does not support signed packages</exception>
+        bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings);
     }
 }

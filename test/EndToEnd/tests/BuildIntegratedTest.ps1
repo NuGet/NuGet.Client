@@ -692,6 +692,18 @@ function Test-BuildIntegratedVSandMSBuildNoOp {
     Assert-True ($MsBuildRestoreTimestamp -eq $VSRestoreTimestamp)
 }
 
+function Test-PackageReferenceProjectWithLockFile{
+    [SkipTestForVS14()]
+    param()
+
+    $projectT = New-Project PackageReferenceClassLibraryWithLockFile
+    $projectT | Install-Package Newtonsoft.Json -Version 9.0.1
+    $projectT.Save();
+    
+    #Assert
+    Assert-PackagesLockFile $projectT
+}
+
 function BuildProjectTemplateTestCases([string[]]$ProjectTemplates) {		
     $ProjectTemplates | ForEach-Object{		
         $testCase = New-Object System.Object		

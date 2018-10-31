@@ -114,5 +114,72 @@ namespace NuGet.Configuration.Test
                 ex.Message.Should().Be(string.Format("Error parsing NuGet.Config. Element '{0}' cannot have descendant elements. Path: '{1}'.", "add", Path.Combine(mockBaseDirectory, nugetConfigPath)));
             }
         }
+
+        [Fact]
+        public void SourceItem_Equals_WithSameKeyAndProtocol_ReturnsTrue()
+        {
+            var source1 = new SourceItem("key1", "value1", "3");
+            var source2 = new SourceItem("key1", "valueN", "3");
+
+            source1.Equals(source2).Should().BeTrue();
+        }
+
+        [Fact]
+        public void SourceItem_Equals_WithSameKeyDifferentProtocol_ReturnsFalse()
+        {
+            var source1 = new SourceItem("key1", "value1", "2");
+            var source2 = new SourceItem("key1", "value1", "3");
+
+            source1.Equals(source2).Should().BeFalse();
+        }
+
+        [Fact]
+        public void SourceItem_Equals_WithSameProtocolDifferentKey_ReturnsFalse()
+        {
+            var source1 = new SourceItem("key1", "value1", "3");
+            var source2 = new SourceItem("keyN", "value1", "3");
+
+            source1.Equals(source2).Should().BeFalse();
+        }
+
+        [Fact]
+        public void SourceItem_ElementName_IsCorrect()
+        {
+            var sourceItem = new SourceItem("key1", "value1");
+
+            sourceItem.ElementName.Should().Be("add");
+        }
+
+        [Fact]
+        public void SourceItem_Clone_ReturnsItemClone()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <packageSources>
+        <add key=""key1"" value=""val"" protocolVersion=""5"" />
+    </packageSources>
+</configuration>";
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.TryGetSection("packageSources", out var section).Should().BeTrue();
+                section.Should().NotBeNull();
+
+                section.Items.Count.Should().Be(1);
+                var item = section.Items.First();
+                item.IsCopy().Should().BeFalse();
+                item.Origin.Should().NotBeNull();
+
+                var clone = item.Clone() as SourceItem;
+                clone.IsCopy().Should().BeTrue();
+                clone.Origin.Should().NotBeNull();
+                SettingsTestUtils.DeepEquals(clone, item).Should().BeTrue();
+            }
+        }
     }
 }

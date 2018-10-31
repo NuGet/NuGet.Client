@@ -93,7 +93,7 @@ namespace NuGet.Protocol
                                     packageStream,
                                     globalPackagesFolder,
                                     downloadContext.ParentId,
-                                    downloadContext.ExtractionContext,
+                                    downloadContext.ClientPolicyContext,
                                     logger,
                                     token);
                             }
@@ -202,7 +202,7 @@ namespace NuGet.Protocol
                    FileAccess.ReadWrite,
                    FileShare.Read,
                    BufferSize,
-                   FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+                   FileOptions.DeleteOnClose);
 
                 await packageStream.CopyToAsync(fileStream, BufferSize, token);
 

@@ -212,11 +212,7 @@ namespace NuGet.CommandLine
 
                 var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload)
                 {
-                    ExtractionContext = new PackageExtractionContext(
-                        Packaging.PackageSaveMode.Defaultv3,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        clientPolicyContext,
-                        Console)
+                    ClientPolicyContext = clientPolicyContext
                 };
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
@@ -389,22 +385,18 @@ namespace NuGet.CommandLine
                             Console)
                     };
 
+                    if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+                    {
+                        projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
+                    }
+
                     resolutionContext.SourceCacheContext.NoCache = NoCache;
                     resolutionContext.SourceCacheContext.DirectDownload = DirectDownload;
 
                     var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload)
                     {
-                        ExtractionContext = new PackageExtractionContext(
-                            Packaging.PackageSaveMode.Defaultv3,
-                            PackageExtractionBehavior.XmlDocFileSaveMode,
-                            clientPolicyContext,
-                            Console)
+                        ClientPolicyContext = clientPolicyContext
                     };
-
-                    if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
-                    {
-                        downloadContext.ExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
-                    }
 
                     await packageManager.InstallPackageAsync(
                         project,

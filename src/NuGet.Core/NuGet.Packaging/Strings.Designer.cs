@@ -224,7 +224,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A list of trusted signers is required by the client but none was found..
+        ///   Looks up a localized string similar to signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified..
         /// </summary>
         internal static string Error_NoClientAllowList {
             get {
@@ -233,7 +233,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any certificate fingerprint in client allow list..
+        ///   Looks up a localized string similar to This package is signed but not by a trusted signer..
         /// </summary>
         internal static string Error_NoMatchingClientCertificate {
             get {
@@ -242,7 +242,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package signature certificate fingerprint does not match any certificate fingerprint in repository allow list..
+        ///   Looks up a localized string similar to This package was not repository signed with a certificate listed by this repository..
         /// </summary>
         internal static string Error_NoMatchingRepositoryCertificate {
             get {
@@ -251,7 +251,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A repository announced that their packages should be signed but an empty list of trusted certificates was found..
+        ///   Looks up a localized string similar to This repository indicated that all its packages are repository signed; however, it listed no signing certificates..
         /// </summary>
         internal static string Error_NoRepoAllowList {
             get {
@@ -278,11 +278,29 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This repository indicated that all its packages are repository signed; however, this package is unsigned..
+        /// </summary>
+        internal static string Error_RepositorySettings_UnsignedPackage {
+            get {
+                return ResourceManager.GetString("Error_RepositorySettings_UnsignedPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A repository primary signature must not have a repository countersignature..
         /// </summary>
         internal static string Error_RepositorySignatureMustNotHaveARepositoryCountersignature {
             get {
                 return ResourceManager.GetString("Error_RepositorySignatureMustNotHaveARepositoryCountersignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned..
+        /// </summary>
+        internal static string Error_RequireMode_UnsignedPackage {
+            get {
+                return ResourceManager.GetString("Error_RequireMode_UnsignedPackage", resourceCulture);
             }
         }
         
@@ -845,6 +863,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The &apos;UNLICENSED&apos; license identifier cannot be combined with the &apos;+&apos; operator..
+        /// </summary>
+        internal static string NuGetLicenseExpression_IllegalUnlicensedOperator {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_IllegalUnlicensedOperator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The license expression &apos;{0}&apos; contains invalid characters..
         /// </summary>
         internal static string NuGetLicenseExpression_InvalidCharacters {
@@ -913,6 +940,24 @@ namespace NuGet.Packaging {
         internal static string NuGetLicenseExpression_NonStandardIdentifier {
             get {
                 return ResourceManager.GetString("NuGetLicenseExpression_NonStandardIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected license identifier &apos;{0}&apos;. The identifier is not allowed in this context..
+        /// </summary>
+        internal static string NuGetLicenseExpression_UnexpectedIdentifier {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_UnexpectedIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The owner has marked this package as &apos;UNLICENSED&apos;. This means that there is no license that allows this package to be used outside of the copyright owner..
+        /// </summary>
+        internal static string NuGetLicenseExpression_UnlicensedPackageWarning {
+            get {
+                return ResourceManager.GetString("NuGetLicenseExpression_UnlicensedPackageWarning", resourceCulture);
             }
         }
         

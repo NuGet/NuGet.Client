@@ -18,7 +18,6 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol;
@@ -4921,14 +4920,7 @@ namespace NuGet.Test
                 // Act
                 using (var cacheContext = new SourceCacheContext())
                 {
-                    var packageDownloadContext = new PackageDownloadContext(cacheContext)
-                    {
-                        ExtractionContext = new PackageExtractionContext(
-                        PackageSaveMode.Defaultv3,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        clientPolicyContext: null,
-                        logger: NullLogger.Instance)
-                    };
+                    var packageDownloadContext = new PackageDownloadContext(cacheContext);
 
                     await nuGetPackageManager.RestorePackageAsync(
                         packageOld,

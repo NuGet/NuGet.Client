@@ -131,13 +131,19 @@ namespace Dotnet.Integration.Test
         }
 
         internal void RestoreProject(string workingDirectory, string projectName, string args)
+            => RestoreProjectOrSolution(workingDirectory, $"{projectName}.csproj", args);
+
+        internal void RestoreSolution(string workingDirectory, string solutionName, string args)
+            => RestoreProjectOrSolution(workingDirectory, $"{solutionName}.sln", args);
+
+        private void RestoreProjectOrSolution(string workingDirectory, string fileName, string args)
         {
             var envVar = new Dictionary<string, string>();
             envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
 
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
-                $"restore {projectName}.csproj {args}",
+                $"restore {fileName} {args}",
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
             Assert.True(result.Item1 == 0, $"Restore failed with following log information :\n {result.AllOutput}");
@@ -165,10 +171,16 @@ namespace Dotnet.Integration.Test
         }
 
         internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath = "obj", bool validateSuccess = true)
+            => PackProjectOrSolution(workingDirectory, $"{projectName}.csproj", args, nuspecOutputPath, validateSuccess);
+
+        internal CommandRunnerResult PackSolution(string workingDirectory, string solutionName, string args, string nuspecOutputPath = "obj", bool validateSuccess = true)
+            => PackProjectOrSolution(workingDirectory, $"{solutionName}.sln", args, nuspecOutputPath, validateSuccess);
+
+        private CommandRunnerResult PackProjectOrSolution(string workingDirectory, string file, string args, string nuspecOutputPath, bool validateSuccess)
         {
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
-                $"pack {projectName}.csproj {args} /p:NuspecOutputPath={nuspecOutputPath}",
+                $"pack {file} {args} /p:NuspecOutputPath={nuspecOutputPath}",
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
             if (validateSuccess)

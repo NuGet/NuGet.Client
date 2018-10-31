@@ -594,5 +594,7 @@ namespace NuGet.Packaging
         public abstract Task<byte[]> GetArchiveHashAsync(HashAlgorithmName hashAlgorithm, CancellationToken token);
 
         public abstract string GetContentHashForSignedPackage(CancellationToken token);
+
+        public abstract bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings);
     }
 }

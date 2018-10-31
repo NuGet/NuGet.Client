@@ -74,6 +74,56 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
+        public void PackageLicenseUtility_UnlicensedGeneratesNoLinksAndAWarning()
+        {
+            var license = "UNLICENSED";
+            NuGetLicenseExpression expression = null;
+            var warnings = new List<string>();
+            try
+            {
+                expression = NuGetLicenseExpression.Parse(license);
+            }
+            catch (NuGetLicenseExpressionParsingException e)
+            {
+                warnings.Add(e.Message);
+            }
+            // Setup
+            var licenseData = new LicenseMetadata(LicenseType.Expression, license, expression, warnings, LicenseMetadata.CurrentVersion);
+
+            // Act
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData);
+
+            Assert.Equal(links.Count, 2);
+            Assert.True(links[0] is WarningText);
+            Assert.True(links[1] is FreeText);
+        }
+
+        [Fact]
+        public void PackageLicenseUtility_BadUnlicensedGeneratesNoLinksAndAWarning()
+        {
+            var license = "UNLICENSED OR MIT";
+            NuGetLicenseExpression expression = null;
+            var warnings = new List<string>();
+            try
+            {
+                expression = NuGetLicenseExpression.Parse(license);
+            }
+            catch (NuGetLicenseExpressionParsingException e)
+            {
+                warnings.Add(e.Message);
+            }
+            // Setup
+            var licenseData = new LicenseMetadata(LicenseType.Expression, license, expression, warnings, LicenseMetadata.CurrentVersion);
+
+            // Act
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData);
+
+            Assert.Equal(links.Count, 2);
+            Assert.True(links[0] is WarningText);
+            Assert.True(links[1] is FreeText);
+        }
+
+        [Fact]
         public void PackageLicenseUtility_GeneratesLinkForFiles()
         {
             // Setup

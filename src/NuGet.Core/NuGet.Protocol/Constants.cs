@@ -20,7 +20,7 @@ namespace NuGet.Protocol
         public static readonly string[] LegacyGallery = { "LegacyGallery" + Versioned, "LegacyGallery" + Version200 };
         public static readonly string[] PackagePublish = { "PackagePublish" + Versioned, "PackagePublish" + Version200 };
         public static readonly string[] PackageBaseAddress = { "PackageBaseAddress" + Versioned, "PackageBaseAddress" + Version300 };
-        public static readonly string[] RepositorySignatures = { "RepositorySignatures" + Version470 };
+        public static readonly string[] RepositorySignatures = { "RepositorySignatures" + Version490, "RepositorySignatures" + Version470 };
         public static readonly string[] SymbolPackagePublish = { "SymbolPackagePublish" + Version490 };
     }
 }

@@ -35,7 +35,7 @@ function Test-GetRepositoryPathFromVsSettings {
 	$p2 | Install-Package elmah -Version 1.2.2
 
 	$vsSetting = [NuGet.PackageManagement.VisualStudio.SettingsHelper]::GetVsSettings()
-	$v = $vsSetting.GetValue("config", "repositoryPath")
+	$v = [NuGet.Configuration.SettingsUtility]::GetValueForAddItem($vsSetting, "config", "repositoryPath")
 
 	# Assert
 	Write-Host 'Expected:' $repoPath

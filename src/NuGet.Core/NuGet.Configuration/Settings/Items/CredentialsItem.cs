@@ -145,33 +145,41 @@ namespace NuGet.Configuration
             {
                 if (string.Equals(item.Key, ConfigurationConstants.UsernameToken, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (_username == null)
+                    if (_username != null)
                     {
-                        _username = item;
+                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, Resources.Error_MoreThanOneUsername, origin.ConfigFilePath));
                     }
+
+                    _username = item;
                 }
                 else if (string.Equals(item.Key, ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (_password == null)
+                    if (_password != null)
                     {
-                        _password = item;
-                        IsPasswordClearText = false;
+                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, Resources.Error_MoreThanOnePassword, origin.ConfigFilePath));
                     }
+
+                    _password = item;
+                    IsPasswordClearText = false;
                 }
                 else if (string.Equals(item.Key, ConfigurationConstants.ClearTextPasswordToken, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (_password == null)
+                    if (_password != null)
                     {
-                        _password = item;
-                        IsPasswordClearText = true;
+                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, Resources.Error_MoreThanOnePassword, origin.ConfigFilePath));
                     }
+
+                    _password = item;
+                    IsPasswordClearText = true;
                 }
                 else if (string.Equals(item.Key, ConfigurationConstants.ValidAuthenticationTypesToken, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (_validAuthenticationTypes == null)
+                    if (_validAuthenticationTypes != null)
                     {
-                        _validAuthenticationTypes = item;
+                        throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, Resources.Error_MoreThanOneValidAuthenticationTypes, origin.ConfigFilePath));
                     }
+
+                    _validAuthenticationTypes = item;
                 }
             }
 
@@ -188,6 +196,11 @@ namespace NuGet.Configuration
             if (Origin != null)
             {
                 newSetting.SetOrigin(Origin);
+            }
+
+            foreach(var attr in Attributes)
+            {
+                newSetting.AddAttribute(attr.Key, attr.Value);
             }
 
             return newSetting;

@@ -46,12 +46,12 @@ namespace NuGet.Configuration
         /// <summary>
         ///  Key-value pairs that give more information about the element
         /// </summary>
-        protected IDictionary<string, string> MutableAttributes { get; }
+        protected Dictionary<string, string> MutableAttributes { get; }
 
         /// <summary>
         /// Read only key-value pairs that give more information about the element
         /// </summary>
-        internal IReadOnlyDictionary<string, string> Attributes => new ReadOnlyDictionary<string, string>(MutableAttributes);
+        internal IReadOnlyDictionary<string, string> Attributes => MutableAttributes;
 
         /// <summary>
         /// Specifies if the element is empty.

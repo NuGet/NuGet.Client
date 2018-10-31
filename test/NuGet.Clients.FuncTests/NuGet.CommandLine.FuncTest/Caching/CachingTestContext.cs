@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +11,6 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -322,11 +324,7 @@ namespace NuGet.CommandLine.Test.Caching
                     packageStream: fileStream,
                     globalPackagesFolder: GlobalPackagesPath,
                     parentId: Guid.Empty,
-                    extractionContext: new PackageExtractionContext(
-                        PackageSaveMode.Defaultv3,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        clientPolicyContext: null,
-                        logger: NullLogger.Instance),
+                    clientPolicyContext: null,
                     logger: NullLogger.Instance,
                     token: CancellationToken.None))
                 {

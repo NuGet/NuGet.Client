@@ -111,6 +111,11 @@ namespace NuGet.ProjectManagement.Projects
             return GetAssetsFilePathAsync();
         }
 
+        public override Task AddFileToProjectAsync(string filePath)
+        {
+            return Task.CompletedTask;
+        }
+
         /// <summary>
         /// project.json path
         /// </summary>
