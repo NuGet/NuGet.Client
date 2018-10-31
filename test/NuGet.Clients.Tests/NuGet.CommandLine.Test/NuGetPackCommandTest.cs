@@ -5032,6 +5032,84 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             }
         }
 
+        [Theory]
+        [InlineData(@"LICENSE")]
+        [InlineData(@".\LICENSE.md")]
+        [InlineData(@"./LICENSE.txt")]
+        public void PackCommand_PackLicense_BasicLicenseFileReadFileFromNupkg(string licenseFileName)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "packageA";
+            var version = "1.0.0";
+            var requireLicenseAcceptance = true;
+            var licenseText = "The best license ever.";
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    licenseFileName,
+                    licenseText);
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>{packageName}</id>
+    <version>{version}</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <license type=""file"">{licenseFileName}</license>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+                    // Validate the output .nuspec.
+                    Assert.Equal(packageName, nuspecReader.GetId());
+                    Assert.Equal(version, nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal(requireLicenseAcceptance, nuspecReader.GetRequireLicenseAcceptance());
+                    Assert.Equal(LicenseMetadata.DeprecateUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    var licenseMetadata = nuspecReader.GetLicenseMetadata();
+                    Assert.NotNull(licenseMetadata);
+                    Assert.Equal(licenseMetadata.Type, LicenseType.File);
+                    Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
+                    Assert.Equal(licenseMetadata.License, licenseFileName);
+                    Assert.Null(licenseMetadata.LicenseExpression);
+                    var licenseFileEntry = nupkgReader.GetEntry(Common.PathUtility.StripLeadingDirectorySeparators(licenseMetadata.License));
+
+                    using (var stream = licenseFileEntry.Open())
+                    using (TextReader textReader = new StreamReader(stream))
+                    {
+                        var value = textReader.ReadToEnd();
+                        Assert.Equal(new FileInfo(Path.Combine(workingDirectory, licenseFileName)).Length, licenseFileEntry.Length);
+                        Assert.Equal(licenseText, value);
+                    }
+                }
+            }
+        }
+
+
         private class PackageDepencyComparer : IEqualityComparer<PackageDependency>
         {
             public bool Equals(PackageDependency x, PackageDependency y)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.PackageManagement.UI
@@ -20,5 +20,7 @@ namespace NuGet.PackageManagement.UI
         public static readonly int PackageManagerConsoleLoaded = 25712;
         public static readonly int PackageManagerConsoleCommandExecutionBegin = 25713;
         public static readonly int PackageManagerConsoleCommandExecutionEnd = 25714;
+        public static readonly int EmbeddedLicenseWindowBegin = 25715;
+        public static readonly int EmbeddedLicenseWindowEnd = 25716;
     }
 }

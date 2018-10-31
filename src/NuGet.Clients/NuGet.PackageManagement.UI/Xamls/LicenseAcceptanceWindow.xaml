@@ -29,8 +29,9 @@
       </ResourceDictionary.MergedDictionaries>
       <DataTemplate DataType="{x:Type nuget:LicenseText}">
         <TextBlock
-            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
-            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}">
+            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}"
+            AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}"
+            >
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
                     Style="{StaticResource HyperlinkStyle}"
@@ -40,16 +41,27 @@
                 </Hyperlink>
         </TextBlock>
       </DataTemplate>
-
+      
       <DataTemplate DataType="{x:Type nuget:FreeText}">
         <TextBlock
-            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseOperator}"
+            AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseOperator_{0}'}"
             Text="{Binding Text}" />
       </DataTemplate>
 
+      <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
+        <TextBlock
+            Margin="8,8,0,0">
+                <Hyperlink
+                  AutomationProperties.AutomationId="{Binding Text}"
+                    Click="ViewLicense_Click">
+                  <Run Text="{Binding Text}"/>
+                </Hyperlink>
+        </TextBlock>
+      </DataTemplate>
+
       <DataTemplate DataType="{x:Type nuget:WarningText}">
-          <imaging:CrispImage
+        <imaging:CrispImage
                         x:Name="_licenseWarning"
                         Margin="5,0,5,5"
                         Width="13"
@@ -88,6 +100,10 @@
     </ResourceDictionary>
   </Window.Resources>
   <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition MinWidth="400"/>
+      <ColumnDefinition Name="LicenseFileColumn" Width="0" MinWidth="0" />
+    </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition
         Height="Auto" />
@@ -101,6 +117,7 @@
     </Grid.RowDefinitions>
     <TextBlock
       Grid.Row="0"
+      Grid.Column="0"
       Margin="12,8,12,0"
       x:Name="_licenseAcceptanceText"
       AutomationProperties.Name="{Binding Text}"
@@ -109,14 +126,15 @@
 
     <TextBlock
       Grid.Row="1"
+      Grid.Column="0"
       Margin="12,4,12,0"
       x:Name="_licenseHeaderText"
       AutomationProperties.Name="{Binding Text}"
       Text="{x:Static nuget:Resources.Text_LicenseHeaderText}"
       TextWrapping="Wrap" />
-
     <ItemsControl
       Grid.Row="2"
+      Grid.Column="0"
       Margin="12,8"
       MinHeight="130"
       IsTabStop="False"
@@ -140,8 +158,10 @@
         </ControlTemplate>
       </ItemsControl.Template>
     </ItemsControl>
+
     <TextBlock
       Grid.Row="3"
+      Grid.Column="0"
       Margin="12,0,12,12"
       x:Name="_licenseText"
       AutomationProperties.Name="{Binding Text}"
@@ -149,6 +169,7 @@
       TextWrapping="Wrap" />
     <Grid
       Grid.Row="5"
+      Grid.Column="0"
       HorizontalAlignment="Right">
       <Grid.ColumnDefinitions>
         <ColumnDefinition />
@@ -166,7 +187,7 @@
           Margin="0,12"
           Content="{x:Static nuget:Resources.Button_IAccept}"
           AutomationProperties.AutomationId="AcceptButton"
-        AutomationProperties.LabeledBy="{Binding ElementName=_licenseText}"
+          AutomationProperties.LabeledBy="{Binding ElementName=_licenseText}"
           Click="OnAcceptButtonClick" />
       <Button
           Grid.Column="2"
@@ -177,5 +198,43 @@
           AutomationProperties.AutomationId="DeclineButton"
           Click="OnDeclineButtonClick" />
     </Grid>
+
+    <TextBlock
+      Name="EmbeddedLicenseHeader"
+      Grid.Row="1"
+      Grid.Column="1"
+      Margin="12,4,12,0"
+      Visibility="Collapsed"
+      AutomationProperties.Name="{Binding Text}"
+      Text="{Binding LicenseHeader, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+      FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
+      TextWrapping="Wrap"
+      />
+    
+    <Border
+      Name="EmbeddedLicense"
+      Grid.Column="1"
+      Grid.Row="2"
+      Margin="12,8"
+      MinHeight="130"
+      BorderThickness="1"
+      Visibility="Collapsed"
+      BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
+      >
+      <ScrollViewer
+              Padding="3"
+              CanContentScroll="True"
+              VerticalScrollBarVisibility="Visible"
+              HorizontalScrollBarVisibility="Disabled"
+        >
+        <TextBlock
+          Margin="12,0,12,12"
+          x:Name="_licenseFileText"
+          AutomationProperties.Name="{Binding Text}"
+          Text="{Binding LicenseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+          TextWrapping="Wrap" />
+      </ScrollViewer>
+    </Border>
+    
   </Grid>
 </nuget:VsDialogWindow>
