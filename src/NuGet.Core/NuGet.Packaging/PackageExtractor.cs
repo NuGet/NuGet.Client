@@ -567,7 +567,7 @@ namespace NuGet.Packaging
                             {
                                 try
                                 {
-                                    File.Delete(targetTempNupkg);
+                                    FileUtility.Delete(targetTempNupkg);
                                 }
                                 catch (IOException ex)
                                 {
@@ -619,7 +619,7 @@ namespace NuGet.Packaging
         {
             if (File.Exists(targetTempNupkg))
             {
-                File.Delete(targetTempNupkg);
+                FileUtility.Delete(targetTempNupkg);
             }
 
             if (Directory.Exists(targetPath))
