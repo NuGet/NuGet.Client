@@ -1,13 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.ComponentModel;
-using Microsoft.VisualStudio.Threading;
-using System.Threading.Tasks;
-using NuGet.VisualStudio;
-using System.Globalization;
 using System;
+using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -39,7 +38,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                     {
-                        await TaskScheduler.Default;
                         var content = await _loadFileFromPackage(_licenseFileLocation);
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                         LicenseText = content;

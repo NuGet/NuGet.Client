@@ -88,8 +88,9 @@ namespace NuGet.Protocol
 
         public LicenseMetadata LicenseMetadata => _nuspec.GetLicenseMetadata();
 
-        private const int OneHundredMegabytes = 104857600; // 1024 * 1024 * 100, 100MB
-        public Task<string> LoadFile(string path)
+        private const int FiveMegabytes = 5242880; // 1024 * 1024 * 5, 5MB
+
+        public Task<string> LoadFileAsync(string path)
         {
             string fileContent = null;
             try
@@ -99,9 +100,9 @@ namespace NuGet.Protocol
                     var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
                     if (entry != null)
                     {
-                        if (entry.Length >= OneHundredMegabytes) 
+                        if (entry.Length >= FiveMegabytes) 
                         {
-                            fileContent = Strings.LoadFileFromNupkg_FileTooLarge;
+                            fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileTooLarge, path, "5");
                         }
                         else
                         {

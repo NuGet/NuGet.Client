@@ -296,7 +296,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot load file. The file is larger than 100MB..
+        ///   Looks up a localized string similar to Cannot load the file &apos;{0}&apos; because it is larger than {1} MB..
         /// </summary>
         internal static string LoadFileFromNupkg_FileTooLarge {
             get {

@@ -39,8 +39,7 @@ namespace NuGet.PackageManagement.UI
 
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    await TaskScheduler.Default;
-                    var content = await metadata.LoadFile(metadata.LicenseMetadata.License); // Make sure that this is not null or empty
+                    var content = await metadata.LoadFileAsync(metadata.LicenseMetadata.License);
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     (window.DataContext as LicenseFileData).LicenseContent = content;
                 });
