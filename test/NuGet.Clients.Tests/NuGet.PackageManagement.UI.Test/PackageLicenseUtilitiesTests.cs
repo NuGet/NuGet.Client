@@ -91,7 +91,7 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseData = new LicenseMetadata(LicenseType.Expression, license, expression, warnings, LicenseMetadata.CurrentVersion);
 
             // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData);
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, null, null);
 
             Assert.Equal(links.Count, 2);
             Assert.True(links[0] is WarningText);
@@ -116,7 +116,7 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseData = new LicenseMetadata(LicenseType.Expression, license, expression, warnings, LicenseMetadata.CurrentVersion);
 
             // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData);
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, null, null);
 
             Assert.Equal(links.Count, 2);
             Assert.True(links[0] is WarningText);
