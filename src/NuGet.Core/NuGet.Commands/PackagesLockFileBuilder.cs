@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Commands.Utility;
 using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -94,47 +95,28 @@ namespace NuGet.Commands
             return lockFile;
         }
 
-        public async Task<PackagesLockFile> CreateNuGetLockFileAsync(IEnumerable<PackageReference> installedPackages, Func<PackageIdentity, string> getNupkgFilePath, CancellationToken token)
+        public async Task<PackagesLockFile> CreateNuGetLockFileAsync(IEnumerable<PackageReference> installedPackages, IContentHashUtility contentHashUtility, CancellationToken token)
         {
             Debug.Assert(installedPackages != null);
-            Debug.Assert(getNupkgFilePath != null);
+            Debug.Assert(contentHashUtility != null);
 
             var lockFile = new PackagesLockFile();
 
-            foreach (var targetFramework in installedPackages.GroupBy(p => p.TargetFramework).OrderBy(g => g.Key))
+            foreach (var targetFramework in installedPackages.GroupBy(p => p.TargetFramework).OrderBy(g => g.Key.Framework).ThenBy(g => g.Key.Version))
             {
                 var target = new PackagesLockFileTarget
                 {
                     TargetFramework = targetFramework.Key,
-                    Dependencies = new List<LockFileDependency>()
                 };
 
                 foreach (var package in targetFramework.OrderBy(p => p.PackageIdentity))
                 {
-                    string hash;
-
-                    var file = getNupkgFilePath(package.PackageIdentity);
-                    if (file == null)
-                    {
-                        throw new Exception("couldn't find package");
-                    }
-
-                    using (var reader = new PackageArchiveReader(file))
-                    {
-                        hash = reader.GetContentHashForSignedPackage(token);
-                        if (hash == null)
-                        {
-                            hash = Convert.ToBase64String(await reader.GetArchiveHashAsync(HashAlgorithmName.SHA512, token));
-                        }
-                    }
-
                     var dependency = new LockFileDependency
                     {
                         Id = package.PackageIdentity.Id,
                         Type = PackageDependencyType.Direct,
-                        RequestedVersion = package.AllowedVersions,
                         ResolvedVersion = package.PackageIdentity.Version,
-                        ContentHash = hash
+                        ContentHash = await contentHashUtility.GetContentHashAsync(package.PackageIdentity, token)
                     };
 
                     target.Dependencies.Add(dependency);

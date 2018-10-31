@@ -11,6 +11,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
+using NuGet.Commands.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -2337,68 +2338,54 @@ namespace NuGet.PackageManagement
                         }
                     }
 
-#if PACKAGE_CONFIG_LOCK
-                    try
+                    var directory = Path.GetDirectoryName(msbuildProject.MSBuildProjectPath);
+                    var msbuildProperty = msbuildProject?.ProjectSystem?.GetPropertyValue("NuGetLockFilePath");
+                    string lockFileName = null;
+                    if (msbuildProperty is string nuGetLockFilePathValue)
                     {
-                        if (msbuildProject != null)
+                        if (!string.IsNullOrWhiteSpace(nuGetLockFilePathValue))
                         {
-                            //start batch processing for msbuild
-                            await msbuildProject.ProjectSystem.BeginProcessingAsync();
-                        }
-
-                        //todo: use same logic as PackageReference code to enable packages lock file (msbuild prop or file already exists)
-                        var useLockFile = false;
-                        var property = msbuildProject?.ProjectSystem?.GetPropertyValue("RestorePackagesWithLockFile");
-                        if (property is string propertyValue)
-                        {
-                            bool.TryParse(propertyValue, out useLockFile);
-                        }
-                        if (useLockFile)
-                        {
-                            //todo: get lock file name same way PackageReference projects do
-                            var directory = Path.GetDirectoryName(msbuildProject.MSBuildProjectPath);
-                            var lockFileFullPath = Path.Combine(directory, PackagesLockFileFormat.LockFileName);
-                            var lockFileName = Path.GetFileName(lockFileFullPath);
-
-                            var installedPackagesEnumeration = await nuGetProject.GetInstalledPackagesAsync(token);
-                            var installedPackages = installedPackagesEnumeration as ICollection<PackageReference> ?? installedPackagesEnumeration.ToList();
-
-                            if (installedPackages.Count > 0)
-                            {
-                                var builder = new PackagesLockFileBuilder();
-                                var lockFile = await builder.CreateNuGetLockFileAsync(installedPackages,
-                                    PackagesFolderNuGetProject.GetInstalledPackageFilePath,
-                                    token);
-                                PackagesLockFileFormat.Write(lockFileFullPath, lockFile);
-
-                                if (msbuildProject != null)
-                                {
-                                    msbuildProject.ProjectSystem.AddExistingFile(lockFileName);
-                                }
-                            }
-                            else
-                            {
-                                if (File.Exists(lockFileFullPath))
-                                {
-                                    File.Delete(lockFileFullPath);
-                                }
-                                if (msbuildProject != null)
-                                {
-                                    msbuildProject.ProjectSystem.RemoveFile(lockFileName);
-                                }
-                            }
+                            lockFileName = Path.Combine(directory, nuGetLockFilePathValue);
                         }
                     }
-                    finally
+                    if (lockFileName == null)
                     {
+                        lockFileName = PackagesLockFileUtilities.GetNuGetLockFilePath(directory, Path.GetFileNameWithoutExtension(msbuildProject.MSBuildProjectPath));
+                    }
+                    var useLockFile = false;
+                    msbuildProperty = msbuildProject?.ProjectSystem?.GetPropertyValue("RestorePackagesWithLockFile");
+                    if (msbuildProperty is string restorePackagesWithLockFileValue)
+                    {
+                        bool.TryParse(restorePackagesWithLockFileValue, out useLockFile);
+                    }
+                    if (useLockFile || File.Exists(lockFileName))
+                    {
+                        var installedPackagesEnumeration = await nuGetProject.GetInstalledPackagesAsync(token);
+                        var installedPackages = installedPackagesEnumeration as ICollection<PackageReference> ?? installedPackagesEnumeration.ToList();
+
+                        var repositories = new List<SourceRepository>();
+                        repositories.Add(PackagesFolderSourceRepository);
+                        repositories.AddRange(GlobalPackageFolderRepositories);
+
+                        var contentHashUtil = new ContentHashUtility(repositories, logger);
+                        var builder = new PackagesLockFileBuilder();
+                        var lockFile = await builder.CreateNuGetLockFileAsync(installedPackages,
+                            contentHashUtil,
+                            token);
+                        PackagesLockFileFormat.Write(lockFileName, lockFile);
+
                         if (msbuildProject != null)
                         {
-                            // end batch for msbuild and let it save everything.
-                            // always calls it before PostProcessAsync or binding redirects
-                            await msbuildProject.ProjectSystem.EndProcessingAsync();
+                            var projectUri = new Uri(msbuildProject.MSBuildProjectPath);
+                            var lockFileUri = new Uri(lockFileName);
+                            var lockFileRelativePath = projectUri.MakeRelativeUri(lockFileUri).OriginalString;
+                            if (Path.DirectorySeparatorChar != '/')
+                            {
+                                lockFileRelativePath.Replace('/', Path.DirectorySeparatorChar);
+                            }
+                            msbuildProject.ProjectSystem.AddExistingFile(lockFileRelativePath);
                         }
                     }
-#endif
 
                     // Post process
                     await nuGetProject.PostProcessAsync(nuGetProjectContext, token);
