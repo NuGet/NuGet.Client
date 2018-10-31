@@ -81,7 +81,6 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseFileHeader = "header";
             var licenseData = new LicenseMetadata(LicenseType.File, licenseFileLocation, null, null, LicenseMetadata.CurrentVersion);
             var licenseContent = "License content";
-            var embeddedLicenseText = Task.FromResult(licenseContent);
 
             // Act
             var links = PackageLicenseUtilities.GenerateLicenseLinks(
@@ -90,7 +89,7 @@ namespace NuGet.PackageManagement.UI.Test
                 delegate (string value)
                 {
                     if (value.Equals(licenseFileLocation))
-                        return embeddedLicenseText;
+                        return licenseContent;
                     return null;
                 });
 
