@@ -598,15 +598,12 @@ namespace NuGet.Packaging
         /// <summary>
         /// Get contentHash for a signed package.
         /// </summary>
-        /// <param name="token"></param>
         /// <returns>null if the package is not signed</returns>
         public abstract string GetContentHashForSignedPackage(CancellationToken token);
 
         /// <summary>
         /// Get contenthash for a package.
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public abstract string GetContentHashForPackage(CancellationToken token);
+        public abstract string GetContentHash(CancellationToken token);
     }
 }

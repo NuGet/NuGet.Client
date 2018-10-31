@@ -233,7 +233,7 @@ namespace NuGet.Protocol.Tests
                 throw new NotImplementedException();
             }
 
-            public override string GetContentHashForPackage(CancellationToken token)
+            public override string GetContentHash(CancellationToken token)
             {
                 throw new NotImplementedException();
             }

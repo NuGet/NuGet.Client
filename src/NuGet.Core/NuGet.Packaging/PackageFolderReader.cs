@@ -250,7 +250,7 @@ namespace NuGet.Packaging
             return false;
         }
         
-        public override string GetContentHashForPackage(CancellationToken token)
+        public override string GetContentHash(CancellationToken token)
         {
             throw new NotImplementedException();
         }

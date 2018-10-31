@@ -1165,9 +1165,9 @@ namespace NuGet.Protocol.Plugins
             return false;
         }
         
-        public override string GetContentHashForPackage(CancellationToken token)
+        public override string GetContentHash(CancellationToken token)
         {
-            // Plugin Download doesn't support signed packages so simply return null...and even then their aren't always packages.
+            // Plugin Download doesn't support signed packages so simply return null... and even then they aren't always packages.
             return null;
         }
 

@@ -1758,8 +1758,8 @@ namespace NuGet.Packaging.Test
                     using (var unsignedReader = new PackageArchiveReader(nupkgFileInfo.FullName))
                     using (var signedReader = new PackageArchiveReader(signedPackagePath))
                     {
-                        var contentHashUnsigned = unsignedReader.GetContentHashForPackage(CancellationToken.None);
-                        var contentHashSigned = signedReader.GetContentHashForPackage(CancellationToken.None);
+                        var contentHashUnsigned = unsignedReader.GetContentHash(CancellationToken.None);
+                        var contentHashSigned = signedReader.GetContentHash(CancellationToken.None);
 
                         Assert.Equal(contentHashUnsigned, contentHashSigned);
                     }

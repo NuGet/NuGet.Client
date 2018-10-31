@@ -362,12 +362,11 @@ namespace NuGet.Packaging
             }
         }
 
-        public override string GetContentHashForPackage(CancellationToken token)
+        public override string GetContentHash(CancellationToken token)
         {
             var contentHash = GetContentHashForSignedPackage(token);
             if (contentHash == null)
             {
-                // Return the zip stream position to the begining
                 ZipReadStream.Position = 0;
 
                 contentHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(ZipReadStream));

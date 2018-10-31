@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement
 {
     public class PackageDownloaderTests
     {
-        private static readonly string _jQuery182ContentHash = "cXOJxYC6ccYDP5FW1iOXhZww+7CyKdpiJbkR0YZxILNJ2zvM4VsrqOVKNRHnIWF78IixUfo/cw7Hz4M70MUbGg==";
+        private static readonly string _jQuery182ContentHash = "uhcB1DuO8O6WW6wWe7SDn0Rz4vZZPqNJHld10yrtG9Z/l4HiTHBhncn2GWAzF7Yv6hoNC/+kAM/6WMsrIdThWA==";
 
         [Fact]
         public async Task GetDownloadResourceResultAsync_Sources_ThrowsForNullSources()
@@ -324,7 +324,7 @@ namespace NuGet.PackageManagement
 
                 using (var packageArchiveReader = new PackageArchiveReader(targetPackageStream))
                 {
-                    var contentHash = packageArchiveReader.GetContentHashForPackage(CancellationToken.None);
+                    var contentHash = packageArchiveReader.GetContentHash(CancellationToken.None);
 
                     // Assert
                     Assert.Equal(_jQuery182ContentHash, contentHash);
@@ -587,7 +587,7 @@ namespace NuGet.PackageManagement
 
                     using (var packageArchiveReader = new PackageArchiveReader(targetPackageStream))
                     {
-                        var contentHash = packageArchiveReader.GetContentHashForPackage(CancellationToken.None);
+                        var contentHash = packageArchiveReader.GetContentHash(CancellationToken.None);
 
                         // Assert
                         Assert.Equal(_jQuery182ContentHash, contentHash);
