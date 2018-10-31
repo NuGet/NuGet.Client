@@ -51,7 +51,8 @@ namespace Test.Utility
             RemoveReferenceAction = RemoveReferenceImplementation;
             KnownProperties = new Dictionary<string, dynamic>()
             {
-                {"RestorePackagesWithLockFile", "false" }
+                { "NuGetLockFilePath", null },
+                { "RestorePackagesWithLockFile", "false" }
             };
         }
 
