@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Web;
 using NuGet.Packaging.Licenses;
 using NuGet.Shared;
 
@@ -18,7 +17,8 @@ namespace NuGet.Packaging
     {
         public static readonly Version EmptyVersion = new Version(1, 0, 0);
         public static readonly Version CurrentVersion = new Version(1, 0, 0);
-        public static readonly Uri DeprecateUrl = new Uri("https://aka.ms/deprecateLicenseUrl");
+        public static readonly Uri LicenseFileDeprecationUrl = new Uri("https://aka.ms/deprecateLicenseUrl");
+        public static readonly string LicenseServiceLinkTemplate = "https://licenses.nuget.org/{0}";
 
         /// <summary>
         /// The LicenseType, never null
@@ -98,10 +98,10 @@ namespace NuGet.Packaging
                 switch (Type)
                 {
                     case LicenseType.File:
-                        return DeprecateUrl;
+                        return LicenseFileDeprecationUrl;
 
                     case LicenseType.Expression:
-                        return new Uri(string.Format("https://licenses.nuget.org/{0}", WebUtility.UrlEncode(License)));
+                        return new Uri(string.Format(LicenseServiceLinkTemplate, WebUtility.UrlEncode(License)));
 
                     default:
                         return null;
