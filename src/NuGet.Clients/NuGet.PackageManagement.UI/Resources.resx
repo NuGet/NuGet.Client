@@ -835,4 +835,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="LicenseFile_Loading" xml:space="preserve">
     <value>Loading license file...</value>
   </data>
+  <data name="WindowTitle_LicenseFileWindow" xml:space="preserve">
+    <value>{0} License</value>
+  </data>
 </root>

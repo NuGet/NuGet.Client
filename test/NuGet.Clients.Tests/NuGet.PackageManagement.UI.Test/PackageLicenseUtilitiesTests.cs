@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
 using Xunit;
@@ -71,6 +71,23 @@ namespace NuGet.PackageManagement.UI.Test
 
             Assert.True(links[0] is WarningText);
             Assert.Empty(links.Where(e => e is LicenseText));
+        }
+
+        [Fact]
+        public void PackageLicenseUtility_GeneratesLegacyLicenseUrlCorrectly()
+        {
+            // Setup
+            var originalUri = "https://nuget.org";
+            var uri = new Uri(originalUri);
+
+            // Act
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(null, uri, null, null);
+
+            var licenseText = links[0] as LicenseText;
+
+            Assert.NotNull(licenseText);
+            Assert.Equal(originalUri, licenseText.Text);
+            Assert.Equal(uri, licenseText.Link);
         }
 
         [Fact]
