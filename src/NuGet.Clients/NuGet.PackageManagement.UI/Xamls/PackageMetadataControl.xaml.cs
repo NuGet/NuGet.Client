@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     DataContext = new LicenseFileData
                     {
-                        Header = metadata.Id,
+                        Header = string.Format(CultureInfo.CurrentCulture, UI.Resources.WindowTitle_LicenseFileWindow, metadata.Id),
                         LicenseContent = UI.Resources.LicenseFile_Loading
                     }
                 };
