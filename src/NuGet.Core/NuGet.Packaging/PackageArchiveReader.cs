@@ -367,7 +367,9 @@ namespace NuGet.Packaging
             var contentHash = GetContentHashForSignedPackage(token);
             if (contentHash == null)
             {
-                ZipReadStream.Position = 0;
+                ThrowIfZipReadStreamIsNull();
+
+                ZipReadStream.Seek(offset: 0, origin: SeekOrigin.Begin);
 
                 contentHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(ZipReadStream));
             }
