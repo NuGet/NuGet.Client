@@ -23,6 +23,8 @@ namespace NuGet.PackageManagement
 {
     public class PackageDownloaderTests
     {
+        private static readonly string _jQuery182ContentHash = "uhcB1DuO8O6WW6wWe7SDn0Rz4vZZPqNJHld10yrtG9Z/l4HiTHBhncn2GWAzF7Yv6hoNC/+kAM/6WMsrIdThWA==";
+
         [Fact]
         public async Task GetDownloadResourceResultAsync_Sources_ThrowsForNullSources()
         {
@@ -320,10 +322,14 @@ namespace NuGet.PackageManagement
             {
                 var targetPackageStream = downloadResult.PackageStream;
 
-                // Assert
-                // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
-                Assert.Equal(185476, targetPackageStream.Length);
-                Assert.True(targetPackageStream.CanSeek);
+                using (var packageArchiveReader = new PackageArchiveReader(targetPackageStream))
+                {
+                    var contentHash = packageArchiveReader.GetContentHash(CancellationToken.None);
+
+                    // Assert
+                    Assert.Equal(_jQuery182ContentHash, contentHash);
+                    Assert.True(targetPackageStream.CanSeek);
+                }
             }
         }
 
@@ -348,10 +354,14 @@ namespace NuGet.PackageManagement
             {
                 var targetPackageStream = downloadResult.PackageStream;
 
-                // Assert
-                // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
-                Assert.Equal(185476, targetPackageStream.Length);
-                Assert.True(targetPackageStream.CanSeek);
+                using (var packageArchiveReader = new PackageArchiveReader(targetPackageStream))
+                {
+                    var contentHash = packageArchiveReader.GetContentHashForSignedPackage(CancellationToken.None);
+
+                    // Assert
+                    Assert.Equal(_jQuery182ContentHash, contentHash);
+                    Assert.True(targetPackageStream.CanSeek);
+                }
             }
         }
 
@@ -362,7 +372,7 @@ namespace NuGet.PackageManagement
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
             // Act & Assert
-            await VerifyDirectDownloadSkipsGlobalPackagesFolder(sourceRepositoryProvider);
+            await VerifyDirectDownloadSkipsGlobalPackagesFolderAsync(sourceRepositoryProvider);
         }
 
         [Fact]
@@ -372,7 +382,7 @@ namespace NuGet.PackageManagement
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
 
             // Act & Assert
-            await VerifyDirectDownloadSkipsGlobalPackagesFolder(sourceRepositoryProvider);
+            await VerifyDirectDownloadSkipsGlobalPackagesFolderAsync(sourceRepositoryProvider);
         }
 
         [Fact]
@@ -548,7 +558,7 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private static async Task VerifyDirectDownloadSkipsGlobalPackagesFolder(
+        private static async Task VerifyDirectDownloadSkipsGlobalPackagesFolderAsync(
             SourceRepositoryProvider sourceRepositoryProvider)
         {
             // Arrange
@@ -575,10 +585,14 @@ namespace NuGet.PackageManagement
                 {
                     var targetPackageStream = downloadResult.PackageStream;
 
-                    // Assert
-                    // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
-                    Assert.Equal(185476, targetPackageStream.Length);
-                    Assert.True(targetPackageStream.CanSeek);
+                    using (var packageArchiveReader = new PackageArchiveReader(targetPackageStream))
+                    {
+                        var contentHash = packageArchiveReader.GetContentHash(CancellationToken.None);
+
+                        // Assert
+                        Assert.Equal(_jQuery182ContentHash, contentHash);
+                        Assert.True(targetPackageStream.CanSeek);
+                    }
                 }
 
                 // Verify that the direct download directory is empty. The package should be downloaded to a temporary
