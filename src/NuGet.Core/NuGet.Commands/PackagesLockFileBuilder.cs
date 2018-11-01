@@ -8,12 +8,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands.Utility;
-using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Shared;
+using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
@@ -102,7 +103,12 @@ namespace NuGet.Commands
 
             var lockFile = new PackagesLockFile();
 
-            foreach (var targetFramework in installedPackages.GroupBy(p => p.TargetFramework).OrderBy(g => g.Key.Framework).ThenBy(g => g.Key.Version))
+            NuGetFramework GetFramework(PackageReference package) => package.TargetFramework.Framework == FrameworkConstants.SpecialIdentifiers.Unsupported
+                ? new NuGetFramework(FrameworkConstants.SpecialIdentifiers.Any)
+                : package.TargetFramework;
+            
+
+            foreach (var targetFramework in installedPackages.GroupBy(GetFramework).OrderBy(g => g.Key.Framework).ThenBy(g => g.Key.Version))
             {
                 var target = new PackagesLockFileTarget
                 {
@@ -111,10 +117,16 @@ namespace NuGet.Commands
 
                 foreach (var package in targetFramework.OrderBy(p => p.PackageIdentity))
                 {
+                    var requestedVersion = new VersionRange(minVersion: package.PackageIdentity.Version,
+                        includeMinVersion: true,
+                        maxVersion: package.PackageIdentity.Version,
+                        includeMaxVersion: true);
+
                     var dependency = new LockFileDependency
                     {
                         Id = package.PackageIdentity.Id,
                         Type = PackageDependencyType.Direct,
+                        RequestedVersion = requestedVersion,
                         ResolvedVersion = package.PackageIdentity.Version,
                         ContentHash = await contentHashUtility.GetContentHashAsync(package.PackageIdentity, token)
                     };
