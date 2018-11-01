@@ -509,20 +509,13 @@ namespace NuGet.Packaging
                                                 token);
                                         }
 
-                                        string packageHash;
                                         nupkgStream.Position = 0;
-                                        packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(nupkgStream));
+                                        var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(nupkgStream));
 
                                         File.WriteAllText(tempHashPath, packageHash);
 
-                                        // get hash for the unsigned content of signed package
-                                        var contentHash = packageReader.GetContentHashForSignedPackage(cancellationToken);
-
-                                        // if null, then it's unsigned package so just use the existing hash
-                                        if (string.IsNullOrEmpty(contentHash))
-                                        {
-                                            contentHash = packageHash;
-                                        }
+                                        // get hash for the unsigned content of package
+                                        var contentHash = packageReader.GetContentHash(cancellationToken, fallbackHashFilePath: tempHashPath);
 
                                         // write the new hash file
                                         var hashFile = new NupkgMetadataFile()
@@ -825,19 +818,13 @@ namespace NuGet.Packaging
 
                             File.WriteAllText(tempHashPath, packageHash);
 
-                            // get hash for the unsigned content of signed package
-                            var contentHash = packageDownloader.SignedPackageReader.GetContentHashForSignedPackage(cancellationToken);
-
-                            // if null, then it's unsigned package so use the existing hash
-                            if (string.IsNullOrEmpty(contentHash))
-                            {
-                                contentHash = packageHash;
-                            }
+                            // get hash for the unsigned content of package
+                            var contentHash = packageDownloader.SignedPackageReader.GetContentHash(cancellationToken, fallbackHashFilePath: tempHashPath);
 
                             // write the new hash file
                             var hashFile = new NupkgMetadataFile()
                             {
-                                ContentHash = packageHash
+                                ContentHash = contentHash
                             };
 
                             NupkgMetadataFileFormat.Write(tempNupkgMetadataFilePath, hashFile);

@@ -1149,12 +1149,6 @@ namespace NuGet.Protocol.Plugins
             throw new NotImplementedException();
         }
 
-        public override string GetContentHashForSignedPackage(CancellationToken token)
-        {
-            // Plugin Download doesn't support signed packages so simply return null.
-            return null;
-        }
-
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
             if (!verifierSettings.AllowUnsigned)
@@ -1165,7 +1159,7 @@ namespace NuGet.Protocol.Plugins
             return false;
         }
         
-        public override string GetContentHash(CancellationToken token)
+        public override string GetContentHash(CancellationToken token, string fallbackHashFilePath = null)
         {
             // Plugin Download doesn't support signed packages so simply return null... and even then they aren't always packages.
             return null;

@@ -39,10 +39,12 @@ namespace NuGet.Packaging.Signing
 
         /// <summary>
         /// Get the hash of the package content excluding signature context for signed package.
+        /// If the package is not signed it calculates it from the whole package.
         /// </summary>
-        /// <param name="token">Cancellation token</param>
-        /// <returns>hash of the unsigned content of the signed package. but return null for unsigned package.</returns>
-        string GetContentHashForSignedPackage(CancellationToken token);
+        /// <param name="token">Cancellation token.</param>
+        /// <remarks>The method takes an optional fallback hash filepath to read the hash of an unsigned package instead of calculating it.</remarks>
+        /// <returns>hash of the unsigned content of the package.</returns>
+        string GetContentHash(CancellationToken token, string fallbackHashFilePath = null);
 
         /// <summary>
         /// Indicates if the the ISignedPackageReader instance can verify signed packages.

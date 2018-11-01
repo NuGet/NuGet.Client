@@ -356,7 +356,7 @@ namespace NuGet.PackageManagement
 
                 using (var packageArchiveReader = new PackageArchiveReader(targetPackageStream))
                 {
-                    var contentHash = packageArchiveReader.GetContentHashForSignedPackage(CancellationToken.None);
+                    var contentHash = packageArchiveReader.GetContentHash(CancellationToken.None);
 
                     // Assert
                     Assert.Equal(_jQuery182ContentHash, contentHash);

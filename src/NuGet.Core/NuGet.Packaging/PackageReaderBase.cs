@@ -596,14 +596,8 @@ namespace NuGet.Packaging
         public abstract bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings);
 
         /// <summary>
-        /// Get contentHash for a signed package.
-        /// </summary>
-        /// <returns>null if the package is not signed</returns>
-        public abstract string GetContentHashForSignedPackage(CancellationToken token);
-
-        /// <summary>
         /// Get contenthash for a package.
         /// </summary>
-        public abstract string GetContentHash(CancellationToken token);
+        public abstract string GetContentHash(CancellationToken token, string fallbackHashFilePath = null);
     }
 }

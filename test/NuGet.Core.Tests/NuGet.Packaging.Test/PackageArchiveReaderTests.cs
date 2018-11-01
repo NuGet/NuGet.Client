@@ -1714,15 +1714,70 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GetContentHashForSignedPackage_WhenPackageNotSigned_ReturnsNull()
+        public void GetContentHash_WhenPackageNotSigned_ReturnsHashOfWholePackage()
         {
             using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
             {
-                var result = test.Reader.GetContentHashForSignedPackage(CancellationToken.None);
+                var result = test.Reader.GetContentHash(CancellationToken.None);
 
-                Assert.Null(result);
+                test.Stream.Seek(offset: 0, origin: SeekOrigin.Begin);
+
+                var expectedResult = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(test.Stream));
+
+                Assert.Equal(expectedResult, result);
             }
         }
+
+
+        [Fact]
+        public void GetContentHash_UnsignedPackage_WhenGivingAFilePathForANonEmptyFile_ReadsFileAndReturnsFileContent()
+        {
+            using (var root = TestDirectory.Create())
+            using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
+            {
+                var testFilePath = Path.Combine(root, "test.txt");
+                File.WriteAllText(testFilePath, "abcde");
+
+                var result = test.Reader.GetContentHash(CancellationToken.None, testFilePath);
+
+                Assert.Equal("abcde", result);
+            }
+        }
+
+        [Fact]
+        public void GetContentHash_UnsignedPackage_WhenGivingAFilePathForNonExistingFile_ReturnsHashOfWholePackage()
+        {
+            using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
+            {
+                var result = test.Reader.GetContentHash(CancellationToken.None, "FileDoesNotExist.txt");
+
+                test.Stream.Seek(offset: 0, origin: SeekOrigin.Begin);
+
+                var expectedResult = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(test.Stream));
+
+                Assert.Equal(expectedResult, result);
+            }
+        }
+
+        [Fact]
+        public void GetContentHash_UnsignedPackage_WhenGivingAFilePathForEmptyFile_ReturnsHashOfWholePackage()
+        {
+            using (var root = TestDirectory.Create())
+            using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
+            {
+                var testFilePath = Path.Combine(root, "test.txt");
+                File.WriteAllText(testFilePath, "");
+
+                var result = test.Reader.GetContentHash(CancellationToken.None, testFilePath);
+
+                test.Stream.Seek(offset: 0, origin: SeekOrigin.Begin);
+
+                var expectedResult = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(test.Stream));
+
+                Assert.Equal(expectedResult, result);
+            }
+        }
+
 
 #if IS_DESKTOP
         [CIOnlyFact]
@@ -1855,20 +1910,22 @@ namespace NuGet.Packaging.Test
             private bool _isDisposed;
             private readonly TestPackagesCore.TempFile _tempFile;
 
+            internal FileStream Stream { get; }
+
             internal PackageArchiveReader Reader { get; }
 
-            private PackageReaderTest(PackageArchiveReader reader, TestPackagesCore.TempFile tempFile)
+            private PackageReaderTest(FileStream stream, TestPackagesCore.TempFile tempFile)
             {
-                Reader = reader;
+                Reader = new PackageArchiveReader(stream);
+                Stream = stream;
                 _tempFile = tempFile;
             }
 
             internal static PackageReaderTest Create(TestPackagesCore.TempFile tempFile)
             {
                 var stream = File.OpenRead(tempFile);
-                var reader = new PackageArchiveReader(stream);
 
-                return new PackageReaderTest(reader, tempFile);
+                return new PackageReaderTest(stream, tempFile);
             }
 
             public void Dispose()
