@@ -100,9 +100,9 @@ namespace GenerateLicenseList
                 LicenseDataClassDeclaration +
                 licenses.LicenseListVersion +
                 DictionaryDeclaration +
-                string.Join(Environment.NewLine, licenses.LicenseList.Select(e => PrettyPrint(e))) +
+                string.Join(Environment.NewLine, licenses.LicenseList.OrderBy(e => e.LicenseID).Select(e => PrettyPrint(e))) +
                 ClosingBracket +
-                string.Join(Environment.NewLine, exceptions.ExceptionList.Select(e => PrettyPrint(e))) +
+                string.Join(Environment.NewLine, exceptions.ExceptionList.OrderBy(e => e.LicenseExceptionID).Select(e => PrettyPrint(e))) +
                 ClosingBracket2 +
                 Environment.NewLine;
         }
