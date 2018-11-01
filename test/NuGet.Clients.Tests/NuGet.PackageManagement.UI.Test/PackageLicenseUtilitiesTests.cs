@@ -89,7 +89,6 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.NotNull(licenseText);
             Assert.Equal(originalUri, licenseText.Text);
             Assert.Equal(uri, licenseText.Link);
-
         }
 
         [Fact]
