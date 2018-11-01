@@ -130,6 +130,8 @@ namespace NuGet.CommandLine
                     console.WriteLine(LocalizedResourceManager.GetString("InvalidArguments"), commandName);
 
                     p.HelpCommand.ViewHelpForCommand(commandName);
+
+                    throw new ExitCodeException(1);
                 }
                 else
                 {
