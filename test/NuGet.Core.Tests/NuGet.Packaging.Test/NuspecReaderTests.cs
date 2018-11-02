@@ -1047,7 +1047,7 @@ namespace NuGet.Packaging.Test
             licenseMetadata.Version.Should().Be(LicenseMetadata.EmptyVersion);
             licenseMetadata.WarningsAndErrors.Count().Should().Be(1);
 
-            licenseMetadata.WarningsAndErrors[0].Should().Be(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_NonStandardIdentifiers, "BestLicense, CoolLicense"));
+            licenseMetadata.WarningsAndErrors[0].Should().Be(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_NonStandardIdentifier, "BestLicense, CoolLicense"));
         }
 
         [Fact]
