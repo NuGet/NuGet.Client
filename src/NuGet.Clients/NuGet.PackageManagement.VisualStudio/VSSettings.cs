@@ -120,9 +120,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public IEnumerable<string> GetConfigFilePaths() => SolutionSettings.GetConfigFilePaths();
+        public IList<string> GetConfigFilePaths() => SolutionSettings.GetConfigFilePaths();
 
-        public IEnumerable<string> GetConfigRoots() => SolutionSettings.GetConfigRoots();
+        public IList<string> GetConfigRoots() => SolutionSettings.GetConfigRoots();
 
         // The value for SolutionSettings can't possibly be null, but it could be a read-only instance
         private bool CanChangeSettings => !ReferenceEquals(SolutionSettings, NullSettings.Instance);

@@ -22,9 +22,9 @@ namespace NuGet.Configuration
 
         public void SaveToDisk() { }
 
-        public IEnumerable<string> GetConfigFilePaths() => Enumerable.Empty<string>();
+        public IList<string> GetConfigFilePaths() => Enumerable.Empty<string>().ToList();
 
-        public IEnumerable<string> GetConfigRoots() => Enumerable.Empty<string>();
+        public IList<string> GetConfigRoots() => Enumerable.Empty<string>().ToList();
 
         //TODO: Remove deprecated methods https://github.com/NuGet/Home/issues/7294
 #pragma warning disable CS0618 // Type or member is obsolete

@@ -161,11 +161,11 @@ namespace NuGet.Configuration
         /// <summary>
         /// Get a list of all the paths of the settings files used as part of this settings object
         /// </summary>
-        IEnumerable<string> GetConfigFilePaths();
+        IList<string> GetConfigFilePaths();
 
         /// <summary>
         /// Get a list of all the roots of the settings files used as part of this settings object
         /// </summary>
-        IEnumerable<string> GetConfigRoots();
+        IList<string> GetConfigRoots();
     }
 }
