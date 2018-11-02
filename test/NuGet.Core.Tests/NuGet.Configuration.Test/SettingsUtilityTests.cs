@@ -281,6 +281,8 @@ namespace NuGet.Configuration.Test
             ex.Should().BeOfType<ArgumentNullException>();
         }
 
+        //TODO: Delete all obsolete APIs. https://github.com/NuGet/Home/issues/7294
+#pragma warning disable CS0618 // Type or member is obsolete
         [Fact]
         public void GetConfigFilePaths_WithNullSettings_Throws()
         {
@@ -289,14 +291,6 @@ namespace NuGet.Configuration.Test
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
         }
-
-        [Fact]
-        public void GetConfigRoots_WithNullSettings_Throws()
-        {
-            var ex = Record.Exception(() => SettingsUtility.GetConfigRoots(settings: null));
-
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentNullException>();
-        }
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
