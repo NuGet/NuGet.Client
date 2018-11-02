@@ -5093,7 +5093,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(packageName, nuspecReader.GetId());
                     Assert.Equal(version, nuspecReader.GetVersion().ToFullString());
                     Assert.Equal(requireLicenseAcceptance, nuspecReader.GetRequireLicenseAcceptance());
-                    Assert.Equal(LicenseMetadata.DeprecateUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
                     Assert.NotNull(licenseMetadata);
                     Assert.Equal(licenseMetadata.Type, LicenseType.File);
