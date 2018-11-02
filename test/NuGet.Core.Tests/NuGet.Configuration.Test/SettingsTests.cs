@@ -1923,7 +1923,7 @@ namespace NuGet.Configuration.Test
                     Path.Combine(mockBaseDirectory, "nuget", "Config"), "IDE", "Version", "SKU", "TestDir");
 
                 // Assert
-                var files = SettingsUtility.GetConfigFilePaths(settings).ToArray();
+                var files = settings.GetConfigFilePaths();
 
                 files.Count().Should().Be(9);
                 files.Should().Contain(Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU", "a2.config"));
@@ -2179,6 +2179,148 @@ namespace NuGet.Configuration.Test
             machineWidePathTuple.Item1.Should().Be("NuGet.Config");
             globalConfigTuple.Item2.Should().Be(Path.Combine(userSetting, "NuGet"));
             globalConfigTuple.Item1.Should().Be("NuGet.Config");
+        }
+
+        [Fact]
+        public void GetConfigFilePaths_ReadsFilesCorrectly()
+        {
+            // Arrange
+            var fileContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+        <configuration>
+          <SectionName>
+            <add key=""key"" value=""value"" />
+          </SectionName>
+        </configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "nuget", "Config"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU", "Dir"), fileContent);
+
+                var configPath1 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU", "Dir", "a1.config");
+                var configPath2 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU", "a1.config");
+                var configPath3 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU", "a2.config");
+                var configPath4 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "a1.config");
+                var configPath5 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "a2.config");
+                var configPath6 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "a1.config");
+                var configPath7 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "a2.config");
+                var configPath8 = Path.Combine(mockBaseDirectory, "nuget", "Config", "a1.config");
+                var configPath9 = Path.Combine(mockBaseDirectory, "nuget", "Config", "a2.config");
+                var configPath10 = Path.Combine(mockBaseDirectory, "nuget", "a1.config");
+
+                // Act
+                var settings = Settings.LoadSettingsGivenConfigPaths(new List<string>() { configPath1, configPath2, configPath3,
+                                                                                          configPath4, configPath5, configPath6,
+                                                                                          configPath7, configPath8, configPath9,
+                                                                                          configPath10 });
+
+                // Assert
+                var files = settings.GetConfigFilePaths();
+
+                files.Count().Should().Be(10);
+                files.Should().Contain(configPath1);
+                files.Should().Contain(configPath2);
+                files.Should().Contain(configPath3);
+                files.Should().Contain(configPath4);
+                files.Should().Contain(configPath5);
+                files.Should().Contain(configPath6);
+                files.Should().Contain(configPath7);
+                files.Should().Contain(configPath8);
+                files.Should().Contain(configPath9);
+                files.Should().Contain(configPath10);
+            }
+        }
+
+        [Fact]
+        public void GetConfigFilePaths_SettingsWithoutFiles_ReturnEmptyList()
+        {
+            var settings = new Settings(settingsHead: null);
+
+            var configFilePaths = settings.GetConfigFilePaths();
+
+            configFilePaths.Should().NotBeNull();
+            configFilePaths.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetConfigRoots_ReadsFilesCorrectly()
+        {
+            // Arrange
+            var fileContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+        <configuration>
+          <SectionName>
+            <add key=""key"" value=""value"" />
+          </SectionName>
+        </configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "nuget", "Config"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU"), fileContent);
+                SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU", "Dir"), fileContent);
+
+                var configPath1 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU", "Dir", "a1.config");
+                var configPath2 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU", "a1.config");
+                var configPath3 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU", "a2.config");
+                var configPath4 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "a1.config");
+                var configPath5 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "a2.config");
+                var configPath6 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "a1.config");
+                var configPath7 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "a2.config");
+                var configPath8 = Path.Combine(mockBaseDirectory, "nuget", "Config", "a1.config");
+                var configPath9 = Path.Combine(mockBaseDirectory, "nuget", "Config", "a2.config");
+                var configPath10 = Path.Combine(mockBaseDirectory, "nuget", "a1.config");
+
+                // Act
+                var settings = Settings.LoadSettingsGivenConfigPaths(new List<string>() { configPath1, configPath2, configPath3,
+                                                                                          configPath4, configPath5, configPath6,
+                                                                                          configPath7, configPath8, configPath9,
+                                                                                          configPath10 });
+
+
+                var configRoot1 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU", "Dir");
+                var configRoot2 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version", "SKU");
+                var configRoot3 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "Version");
+                var configRoot4 = Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE");
+                var configRoot5 = Path.Combine(mockBaseDirectory, "nuget", "Config");
+                var configRoot6 = Path.Combine(mockBaseDirectory, "nuget");
+
+                // Assert
+                var files = settings.GetConfigRoots();
+
+                files.Count().Should().Be(6);
+                files.Should().Contain(configRoot1);
+                files.Should().Contain(configRoot2);
+                files.Should().Contain(configRoot3);
+                files.Should().Contain(configRoot4);
+                files.Should().Contain(configRoot5);
+                files.Should().Contain(configRoot6);
+            }
+        }
+
+        [Fact]
+        public void GetConfigRoots_SettingsWithoutFiles_ReturnEmptyList()
+        {
+            var settings = new Settings(settingsHead: null);
+
+            var configRoots = settings.GetConfigRoots();
+
+            configRoots.Should().NotBeNull();
+            configRoots.Should().BeEmpty();
         }
     }
 }
