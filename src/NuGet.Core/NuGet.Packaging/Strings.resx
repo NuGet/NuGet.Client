@@ -786,19 +786,8 @@ Valid from:</comment>
 1 - Fingerprint
 'allowUntrustedRoot' should not be localized</comment>
   </data>
-  <data name="Error_LoadingHashFile" xml:space="preserve">
-    <value>Error parsing nupkg metadata file {0} : {1}</value>
-    <comment>0 - nupkg metadata file path
-1 - error message</comment>
-  </data>
-  <data name="DefaultError_EmptyAllowList" xml:space="preserve">
-    <value>A list of trusted signers is required but none was found.</value>
-  </data>
-  <data name="DefaultError_NoMatchInAllowList" xml:space="preserve">
-    <value>The package signature certificate fingerprint does not match any certificate fingerprint in the allow list.</value>
-  </data>
   <data name="NuGetLicenseExpression_NonStandardIdentifier" xml:space="preserve">
-    <value>The license identifier {0} is not recognized by the current toolset.</value>
+    <value>The license identifier(s) {0} is(are) not recognized by the current toolset.</value>
     <comment>0 - semicolon delimited list of identifiers</comment>
   </data>
   <data name="Error_RepositorySettings_UnsignedPackage" xml:space="preserve">
@@ -806,10 +795,6 @@ Valid from:</comment>
   </data>
   <data name="Error_RequireMode_UnsignedPackage" xml:space="preserve">
     <value>signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.</value>
-  </data>
-  <data name="NuGetLicenseExpression_NonStandardIdentifier" xml:space="preserve">
-    <value>The license identifier(s) {0} is(are) not recognized by the current toolset.</value>
-    <comment>0 - semicolon delimited list of identifiers</comment>
   </data>
   <data name="NuGetLicenseExpression_IllegalUnlicensedOperator" xml:space="preserve">
     <value>The 'UNLICENSED' license identifier cannot be combined with the '+' operator.</value>
@@ -820,8 +805,5 @@ Valid from:</comment>
   </data>
   <data name="NuGetLicenseExpression_UnlicensedPackageWarning" xml:space="preserve">
     <value>The owner has marked this package as 'UNLICENSED'. This means that there is no license that allows this package to be used outside of the copyright owner.</value>
-  </data>
-  <data name="NuGetLicenseExpression_NonStandardIdentifiers" xml:space="preserve">
-    <value>The license identifiers {0} are not recognized by the current toolset.</value>
   </data>
 </root>

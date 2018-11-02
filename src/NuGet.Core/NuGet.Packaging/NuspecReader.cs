@@ -480,11 +480,7 @@ namespace NuGet.Packaging
                                         {
                                             errors = new List<string>();
                                         }
-                                        var nonStandardIdentifierError = invalidLicenseIdentifiers.Count == 1 ?
-                                            string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_NonStandardIdentifier, invalidLicenseIdentifiers[0] ) :
-                                            string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_NonStandardIdentifiers, string.Join(", ", invalidLicenseIdentifiers));
-
-                                        errors.Add(nonStandardIdentifierError);
+                                        errors.Add(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_NonStandardIdentifier, string.Join(", ", invalidLicenseIdentifiers)));
                                     }
                                     if (expression.IsUnlicensed())
                                     {

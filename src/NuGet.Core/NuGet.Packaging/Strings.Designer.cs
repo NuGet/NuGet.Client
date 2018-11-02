@@ -935,20 +935,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The license identifier {0} is not recognized by the current toolset..
+        ///   Looks up a localized string similar to The license identifier(s) {0} is(are) not recognized by the current toolset..
         /// </summary>
         internal static string NuGetLicenseExpression_NonStandardIdentifier {
             get {
                 return ResourceManager.GetString("NuGetLicenseExpression_NonStandardIdentifier", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The license identifiers {0} are not recognized by the current toolset..
-        /// </summary>
-        internal static string NuGetLicenseExpression_NonStandardIdentifiers {
-            get {
-                return ResourceManager.GetString("NuGetLicenseExpression_NonStandardIdentifiers", resourceCulture);
             }
         }
         
