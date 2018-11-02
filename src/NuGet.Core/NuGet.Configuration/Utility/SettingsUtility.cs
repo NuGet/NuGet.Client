@@ -413,10 +413,15 @@ namespace NuGet.Configuration
         /// <summary>
         /// Get a list of all the paths of the settings files used as part of this settings object
         /// </summary>
-        [Obsolete("GetConfigFilePaths(ISettings) has been deprecated. Please use ISettings.GetConfigFilePaths() instead.", error: true)]
+        [Obsolete("GetConfigFilePaths(ISettings) has been deprecated. Please use ISettings.GetConfigFilePaths() instead.")]
         public static IEnumerable<string> GetConfigFilePaths(ISettings settings)
         {
-            throw new NotSupportedException();
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            return settings.GetConfigFilePaths();
         }
 
         /// <summary>
