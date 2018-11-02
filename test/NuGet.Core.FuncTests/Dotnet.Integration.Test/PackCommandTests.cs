@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Common;
@@ -3082,9 +3083,10 @@ namespace ClassLibrary
                     Assert.Equal("ClassLibrary1", nuspecReader.GetId());
                     Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
-                    Assert.Equal(LicenseMetadata.DeprecateUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
+                    Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, WebUtility.UrlEncode(licenseExpr))), new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.NotNull(licenseMetadata);
+                    Assert.Equal(licenseMetadata.LicenseUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.Equal(licenseMetadata.Type, LicenseType.Expression);
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseExpr);
@@ -3133,9 +3135,10 @@ namespace ClassLibrary
                     Assert.Equal("ClassLibrary1", nuspecReader.GetId());
                     Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
-                    Assert.Equal(LicenseMetadata.DeprecateUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, WebUtility.UrlEncode(licenseExpr))), new Uri(nuspecReader.GetLicenseUrl()));
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
                     Assert.NotNull(licenseMetadata);
+                    Assert.Equal(licenseMetadata.LicenseUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.Equal(licenseMetadata.Type, LicenseType.Expression);
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseExpr);
@@ -3309,10 +3312,10 @@ namespace ClassLibrary
                     Assert.Equal("ClassLibrary1", nuspecReader.GetId());
                     Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
-                    Assert.Equal(LicenseMetadata.DeprecateUrl, new Uri(nuspecReader.GetLicenseUrl()));
-
+                    Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
                     Assert.NotNull(licenseMetadata);
+                    Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, licenseMetadata.LicenseUrl);
                     Assert.Equal(licenseMetadata.Type, LicenseType.File);
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseFileName);
