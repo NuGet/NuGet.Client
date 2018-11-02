@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseText = links[0] as LicenseText;
 
             Assert.NotNull(licenseText);
-            Assert.Equal(originalUri, licenseText.Text);
+            Assert.Equal(Resources.Text_ViewLicense, licenseText.Text);
             Assert.Equal(uri, licenseText.Link);
         }
 
