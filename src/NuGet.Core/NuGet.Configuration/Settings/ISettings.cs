@@ -157,5 +157,15 @@ namespace NuGet.Configuration
         /// Event raised when the setting have been changed.
         /// </summary>
         event EventHandler SettingsChanged;
+
+        /// <summary>
+        /// Get a list of all the paths of the settings files used as part of this settings object
+        /// </summary>
+        IEnumerable<string> GetConfigFilePaths();
+
+        /// <summary>
+        /// Get a list of all the roots of the settings files used as part of this settings object
+        /// </summary>
+        IEnumerable<string> GetConfigRoots();
     }
 }

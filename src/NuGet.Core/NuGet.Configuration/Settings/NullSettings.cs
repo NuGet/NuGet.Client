@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace NuGet.Configuration
 {
@@ -20,6 +21,10 @@ namespace NuGet.Configuration
         public void Remove(string sectionName, SettingItem item) => throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidNullSettingsOperation, nameof(Remove)));
 
         public void SaveToDisk() { }
+
+        public IEnumerable<string> GetConfigFilePaths() => Enumerable.Empty<string>();
+
+        public IEnumerable<string> GetConfigRoots() => Enumerable.Empty<string>();
 
         //TODO: Remove deprecated methods https://github.com/NuGet/Home/issues/7294
 #pragma warning disable CS0618 // Type or member is obsolete

@@ -576,6 +576,22 @@ namespace NuGet.Configuration
             return new Tuple<string, string>(fileName, directory);
         }
 
+        /// <summary>
+        /// Get a list of all the paths of the settings files used as part of this settings object
+        /// </summary>
+        public IEnumerable<string> GetConfigFilePaths()
+        {
+            return Priority.Select(config => Path.GetFullPath(Path.Combine(config.DirectoryPath, config.FileName)));
+        }
+
+        /// <summary>
+        /// Get a list of all the roots of the settings files used as part of this settings object
+        /// </summary>
+        public IEnumerable<string> GetConfigRoots()
+        {
+            return Priority.Select(config => config.DirectoryPath).Distinct();
+        }
+
         internal static string ResolvePathFromOrigin(string originDirectoryPath, string originFilePath, string path)
         {
             if (Uri.TryCreate(path, UriKind.Relative, out var _) &&
