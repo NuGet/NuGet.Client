@@ -410,10 +410,10 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
+        [InlineData("add nupkgPath -Source srcFolder extraArg")]
         [InlineData("add")]
         [InlineData("add -?")]
-        [InlineData("add nupkgPath -Source srcFolder extraArg")]
-        public void AddCommand_Success_InvalidArguments_HelpMessage(string args)
+        public void AddCommand_Failure_InvalidArguments_HelpMessage(string args)
         {
             // Arrange & Act
             var result = CommandRunner.Run(
@@ -423,8 +423,8 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Util.VerifyResultSuccess(result,
-                "usage: NuGet add <packagePath> -Source <folderBasedPackageSource> [options]");
+            Util.VerifyResultFailure(result,
+                "usage: NuGet add <packagePath> -Source <folderBasedPackageSource> [options]", false);
         }
 
         [Fact]

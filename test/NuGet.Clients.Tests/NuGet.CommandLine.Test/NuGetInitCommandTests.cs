@@ -158,7 +158,10 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Util.VerifyResultSuccess(result, "usage: NuGet init <srcPackageSourcePath> <destPackageSourcePath> [options]");
+            // Why assert true ?
+            //Util.VerifyResultSuccess(result, "usage: NuGet init <srcPackageSourcePath> <destPackageSourcePath> [options]");
+            Util.VerifyResultFailure(result, "usage: NuGet init <srcPackageSourcePath> <destPackageSourcePath> [options]",
+                false);
         }
 
         [Fact]

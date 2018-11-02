@@ -807,15 +807,20 @@ EndProject";
         }
 
         public static void VerifyResultFailure(CommandRunnerResult result,
-                                               string expectedErrorMessage)
+                                               string expectedErrorMessage, bool checkErrorMsgOnStdErr = true)
         {
             Assert.True(
                 result.Item1 != 0,
                 "nuget.exe DID NOT FAIL: Ouput is " + result.Item2 + ". Error is " + result.Item3);
 
-            Assert.True(
-                result.Item3.Contains(expectedErrorMessage),
-                "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Item3);
+            if(checkErrorMsgOnStdErr)
+                Assert.True(
+                    result.Item3.Contains(expectedErrorMessage),
+                    "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Item3);
+            else
+                Assert.True(
+                    result.Item2.Contains(expectedErrorMessage),
+                    "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Item3);
         }
 
         public static void VerifyPackageExists(
