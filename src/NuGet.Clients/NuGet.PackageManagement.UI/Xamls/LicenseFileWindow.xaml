@@ -10,6 +10,7 @@
   MinHeight="450"
   Width="450"
   Height="450"
+  WindowStartupLocation="CenterOwner"
   Background="{DynamicResource {x:Static nuget:Brushes.BackgroundBrushKey}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"

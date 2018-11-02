@@ -35,6 +35,7 @@
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
                     Style="{StaticResource HyperlinkStyle}"
+                    ToolTip="{Binding Link}"
                     RequestNavigate="OnViewLicenseTermsRequestNavigate"
                     NavigateUri="{Binding Link}">
                     <Run Text="{Binding Text}"></Run>
@@ -207,7 +208,6 @@
       Visibility="Collapsed"
       AutomationProperties.Name="{Binding Text}"
       Text="{Binding LicenseHeader, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-      FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
       TextWrapping="Wrap"
       />
     
