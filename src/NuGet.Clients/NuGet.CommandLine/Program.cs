@@ -132,7 +132,7 @@ namespace NuGet.CommandLine
                     // then show help
                     p.HelpCommand.ViewHelpForCommand(commandName);
 
-                    throw new ExitCodeException(1);
+                    return 1;
                 }
                 else
                 {

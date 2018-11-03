@@ -1630,11 +1630,17 @@ namespace NuGet.CommandLine.Test
                 "-outputdirectory",
             };
 
+            var nugetexe = Util.GetNuGetExePath();
+
             // act & assert
-            using(var test_dir = TestDirectory.CreateInTemp())
+            using (var testDir = TestDirectory.Create())
             {
-                var result = Program.MainCore(test_dir, args);
-                Assert.NotEqual(0, result);
+                var result = CommandRunner.Run(
+                   nugetexe,
+                   testDir,
+                   string.Join(" ", args),
+                   true);
+                Assert.NotEqual(0, result.Item1);
             }
         }
 
