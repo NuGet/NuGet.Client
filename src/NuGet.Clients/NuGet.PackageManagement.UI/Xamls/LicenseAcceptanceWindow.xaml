@@ -226,7 +226,8 @@
               VerticalScrollBarVisibility="Visible"
               HorizontalScrollBarVisibility="Disabled"
         >
-        <TextBlock
+        <TextBox
+          Style="{DynamicResource SelectableTextBlockStyle}" 
           Margin="12,0,12,12"
           x:Name="_licenseFileText"
           AutomationProperties.Name="{Binding Text}"
@@ -234,6 +235,5 @@
           TextWrapping="Wrap" />
       </ScrollViewer>
     </Border>
-    
   </Grid>
 </nuget:VsDialogWindow>
