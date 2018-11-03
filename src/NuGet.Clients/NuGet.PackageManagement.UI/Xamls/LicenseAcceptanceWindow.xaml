@@ -51,8 +51,7 @@
       </DataTemplate>
 
       <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
-        <TextBlock
-            Margin="8,8,0,0">
+        <TextBlock>
                 <Hyperlink
                   AutomationProperties.AutomationId="{Binding Text}"
                     Click="ViewLicense_Click">

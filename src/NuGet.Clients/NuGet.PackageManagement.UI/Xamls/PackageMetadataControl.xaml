@@ -20,7 +20,6 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
       <nuget:DateTimeConverter x:Key="DateFormatConverter" />
       <DataTemplate DataType="{x:Type nuget:LicenseText}">
         <TextBlock
-            Margin="8,8,0,0"
             AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}">
                 <Hyperlink
@@ -36,7 +35,6 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
 
       <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
         <TextBlock
-            Margin="8,8,0,0"
             AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFile'}">
                 <Hyperlink
@@ -50,7 +48,7 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
       <DataTemplate DataType="{x:Type nuget:WarningText}">
         <imaging:CrispImage
                         x:Name="_licenseWarning"
-                        Margin="8,8,0,0"
+                        Margin="0,0,4,0"
                         Width="13"
                         Height="13"
                         Visibility="{Binding Text, Converter={StaticResource NullToVisibilityConverter}}"
@@ -60,7 +58,6 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
       
       <DataTemplate DataType="{x:Type nuget:FreeText}">
         <TextBlock
-            Margin="8,8,0,0"
             AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseOperator}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseOperator_{0}'}"
             Text="{Binding Text}" />
@@ -195,7 +192,7 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
       <ItemsControl Grid.Row="3" Grid.Column="1" ItemsSource="{Binding LicenseLinks}">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate>
-            <WrapPanel Orientation="Horizontal" />
+            <WrapPanel Margin="8,8,0,0" Orientation="Horizontal" />
           </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
       </ItemsControl>
