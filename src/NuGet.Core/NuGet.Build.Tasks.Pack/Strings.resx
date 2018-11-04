@@ -131,7 +131,7 @@
   </data>
   <data name="InvalidLicenseCombination" xml:space="preserve">
     <value>Invalid metadata. Cannot specify both a PackageLicenseExpression and a PackageLicenseFile.</value>
-    <comment>Please don't localize PackageLicenseUrl, PackageLicenseFile and PackageLicenseExpression.</comment>
+    <comment>Please don't localize PackageLicenseFile and PackageLicenseExpression.</comment>
   </data>
   <data name="InvalidLicenseExppressionVersion_VersionTooHigh" xml:space="preserve">
     <value>The version string '{0}' is not supported by this toolset. The highest supported version is '{1}'. Either use a lower version or upgrade your toolset.</value>
@@ -141,7 +141,7 @@
     <comment>0 - the license expression, 1 further details</comment>
   </data>
   <data name="InvalidLicenseExpressionVersion" xml:space="preserve">
-    <value>The version string '{0}' PackageLicenseExpressionVersion is invalid.</value>
+    <value>The PackageLicenseExpressionVersion string '{0}' is not a valid version.</value>
     <comment>{0} version string</comment>
   </data>
   <data name="InvalidMinClientVersion" xml:space="preserve">

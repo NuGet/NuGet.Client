@@ -787,7 +787,7 @@ Valid from:</comment>
 'allowUntrustedRoot' should not be localized</comment>
   </data>
   <data name="NuGetLicenseExpression_NonStandardIdentifier" xml:space="preserve">
-    <value>The license identifier(s) {0} is(are) not recognized by the current toolset.</value>
+    <value>The license identifier(s) '{0}' is(are) not recognized by the current toolset.</value>
     <comment>0 - semicolon delimited list of identifiers</comment>
   </data>
   <data name="Error_RepositorySettings_UnsignedPackage" xml:space="preserve">
