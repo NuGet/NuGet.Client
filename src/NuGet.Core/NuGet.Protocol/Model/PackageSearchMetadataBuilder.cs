@@ -32,6 +32,7 @@ namespace NuGet.Protocol.Core.Types
             public Uri ProjectUrl { get; set; }
             public DateTimeOffset? Published { get; set; }
             public Uri ReportAbuseUrl { get; set; }
+            public Uri PackageDetailsUrl { get; set; }
             public bool RequireLicenseAcceptance { get; set; }
             public string Summary { get; set; }
             public string Tags { get; set; }
@@ -76,6 +77,7 @@ namespace NuGet.Protocol.Core.Types
                 ProjectUrl = _metadata.ProjectUrl,
                 Published = _metadata.Published,
                 ReportAbuseUrl = _metadata.ReportAbuseUrl,
+                PackageDetailsUrl = _metadata.PackageDetailsUrl,
                 RequireLicenseAcceptance = _metadata.RequireLicenseAcceptance,
                 Summary = _metadata.Summary,
                 Tags = _metadata.Tags,

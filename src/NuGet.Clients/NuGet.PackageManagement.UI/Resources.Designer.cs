@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -57,6 +57,24 @@ namespace NuGet.PackageManagement.UI {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package details URL icon.
+        /// </summary>
+        public static string Accessibility_PackageDetailsUrlIcon {
+            get {
+                return ResourceManager.GetString("Accessibility_PackageDetailsUrlIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package details link.
+        /// </summary>
+        public static string Accessibility_PackageDetailsUrlLink {
+            get {
+                return ResourceManager.GetString("Accessibility_PackageDetailsUrlLink", resourceCulture);
             }
         }
         

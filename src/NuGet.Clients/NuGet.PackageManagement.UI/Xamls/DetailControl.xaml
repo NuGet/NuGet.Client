@@ -6,6 +6,7 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+  xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
   Background="{Binding UIBrushes.DetailPaneBackground }"
   x:Name="_self"
   mc:Ignorable="d"
@@ -49,8 +50,7 @@
       <Grid
         Grid.Row="0"
         MinHeight="32"
-        Margin="0,8"
-        HorizontalAlignment="Left">
+        Margin="0,8">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="auto"/>
           <ColumnDefinition Width="*"/>
@@ -61,25 +61,64 @@
           Margin="0,0,8,0"
           AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageIcon}"
           Style="{StaticResource PackageIconImageStyle}" />
-        <TextBox
-          Grid.Column="1"
-          Name="_packageId"
-          AutomationProperties.Name="{Binding Path=Id, Mode=OneWay}"
-          Style="{DynamicResource SelectableTextBlockStyle}"
-          Text="{Binding Path=Id, Mode=OneWay}"
-          FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font155PercentSizeConverter}}" />
-        <imaging:CrispImage
+        <Grid
+          Grid.Column="1">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
+          </Grid.ColumnDefinitions>
+          <TextBox
+            Grid.Column="0"
+            Name="_packageId"
+            AutomationProperties.Name="{Binding Path=Id, Mode=OneWay}"
+            Style="{DynamicResource SelectableTextBlockStyle}"
+            Text="{Binding Path=Id, Mode=OneWay}"
+            FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font155PercentSizeConverter}}" />
+          <imaging:CrispImage
+            Grid.Column="1"
+            x:Name="_prefixReservedMark"
+            Grid.Row="0"
+            Margin="5,7,0,0"
+            Width="16"
+            Height="16"
+            VerticalAlignment="Top"
+            AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PrefixReserved}"
+            Visibility="{Binding Path=PrefixReserved, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+            ToolTip="{x:Static nuget:Resources.Tooltip_PrefixReserved}"
+            Moniker="{x:Static nuget:PackageIconMonikers.PrefixReservedIndicator}" />
+        </Grid>
+        <Grid
           Grid.Column="2"
-          x:Name="_prefixReservedMark"
           Grid.Row="0"
-          Margin="5,7,0,0"
-          Width="16"
-          Height="16"
-          VerticalAlignment="Top"
-          AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PrefixReserved}"
-          Visibility="{Binding Path=PrefixReserved, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-          ToolTip="{x:Static nuget:Resources.Tooltip_PrefixReserved}"
-          Moniker="{x:Static nuget:PackageIconMonikers.PrefixReservedIndicator}" />
+          Visibility="{Binding Path=PackageMetadata.PackageDetailsUrl, FallbackValue=Collapsed, Converter={StaticResource NullToVisibilityConverter}}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
+          </Grid.ColumnDefinitions>
+          <imaging:CrispImage
+            x:Name="_packageDetailsUrlIcon"
+            Width="20"
+            Height="20"
+            Grid.Column="0"
+            VerticalAlignment="Top"
+            Margin="0,5,0,0"
+            AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageDetailsUrlIcon}"
+            Moniker="{x:Static catalog:KnownMonikers.OpenWebSite}" />
+          <TextBlock
+            x:Name="_packageDetailsUrlLink"
+            Grid.Column="1"
+            VerticalAlignment="Top"
+            Margin="5,7,0,0">
+            <Hyperlink
+              NavigateUri="{Binding Path=PackageMetadata.PackageDetailsUrl}"
+              Style="{StaticResource HyperlinkStyle}"
+              AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageDetailsUrlLink}"
+              ToolTip="{Binding Path=PackageMetadata.PackageDetailsUrl}"
+              Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+              <Run Text="{Binding Path=PackageMetadata.PackageDetailsText}" />
+            </Hyperlink>
+          </TextBlock>
+        </Grid>
       </Grid>
 
       <!-- project action when in project package manager -->

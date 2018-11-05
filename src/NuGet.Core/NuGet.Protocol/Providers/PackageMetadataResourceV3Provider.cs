@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,11 +24,16 @@ namespace NuGet.Protocol
             {
                 var regResource = await source.GetResourceAsync<RegistrationResourceV3>();
                 var reportAbuseResource = await source.GetResourceAsync<ReportAbuseResourceV3>();
+                var packageDetailsUriResource = await source.GetResourceAsync<PackageDetailsUriResourceV3>();
 
                 var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
                 // construct a new resource
-                curResource = new PackageMetadataResourceV3(httpSourceResource.HttpSource, regResource, reportAbuseResource);
+                curResource = new PackageMetadataResourceV3(
+                    httpSourceResource.HttpSource,
+                    regResource,
+                    reportAbuseResource,
+                    packageDetailsUriResource);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

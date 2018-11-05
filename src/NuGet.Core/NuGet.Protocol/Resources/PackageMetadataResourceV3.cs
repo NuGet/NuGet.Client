@@ -15,13 +15,19 @@ namespace NuGet.Protocol
     {
         private readonly RegistrationResourceV3 _regResource;
         private readonly ReportAbuseResourceV3 _reportAbuseResource;
+        private readonly PackageDetailsUriResourceV3 _packageDetailsUriResource;
         private readonly HttpSource _client;
 
-        public PackageMetadataResourceV3(HttpSource client, RegistrationResourceV3 regResource, ReportAbuseResourceV3 reportAbuseResource)
+        public PackageMetadataResourceV3(
+            HttpSource client,
+            RegistrationResourceV3 regResource,
+            ReportAbuseResourceV3 reportAbuseResource,
+            PackageDetailsUriResourceV3 packageDetailsUriResource)
         {
             _regResource = regResource;
             _client = client;
             _reportAbuseResource = reportAbuseResource;
+            _packageDetailsUriResource = packageDetailsUriResource;
         }
 
         public override async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(
@@ -61,6 +67,7 @@ namespace NuGet.Protocol
         {
             var parsed = metadata.FromJToken<PackageSearchMetadataRegistration>();
             parsed.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(parsed.PackageId, parsed.Version);
+            parsed.PackageDetailsUrl = _packageDetailsUriResource?.GetUri(parsed.PackageId, parsed.Version);
             return parsed;
         }
     }

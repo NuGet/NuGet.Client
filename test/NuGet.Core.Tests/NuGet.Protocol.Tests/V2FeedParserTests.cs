@@ -110,6 +110,7 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(DateTimeOffset.Parse("2015-12-11T01:25:11.37"), latest.Published.Value);
             Assert.Null(latest.LastEdited);
             Assert.Equal("https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/6.2.2-preview", latest.ReportAbuseUrl);
+            Assert.Equal("https://www.nuget.org/packages/WindowsAzure.Storage/6.2.2-preview", latest.GalleryDetailsUrl);
             Assert.True(latest.RequireLicenseAcceptance);
             Assert.Equal("A client library for working with Microsoft Azure storage services including blobs, files, tables, and queues.", latest.Summary);
             Assert.Equal("Microsoft Azure Storage Table Blob File Queue Scalable windowsazureofficial", latest.Tags);
@@ -219,6 +220,7 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(DateTimeOffset.Parse("2016-12-10T22:39:05.103"), package.LastEdited.Value);
             Assert.Equal(DateTimeOffset.Parse("2015-12-10T22:39:05.103"), package.Published.Value);
             Assert.Equal("https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/6.2.0", package.ReportAbuseUrl);
+            Assert.Equal("https://www.nuget.org/packages/WindowsAzure.Storage/6.2.0", package.GalleryDetailsUrl);
             Assert.True(package.RequireLicenseAcceptance);
             Assert.Equal("A client library for working with Microsoft Azure storage services including blobs, files, tables, and queues.", package.Summary);
             Assert.Equal("Microsoft Azure Storage Table Blob File Queue Scalable windowsazureofficial", package.Tags);
@@ -433,6 +435,7 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(DateTimeOffset.Parse("2014-11-12T22:19:16.297"), package.Created.Value);
             Assert.Null(package.LastEdited);
             Assert.Equal("https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/4.3.2-preview", package.ReportAbuseUrl);
+            Assert.Equal("https://www.nuget.org/packages/WindowsAzure.Storage/4.3.2-preview", package.GalleryDetailsUrl);
             Assert.True(package.RequireLicenseAcceptance);
             Assert.Equal("A client library for working with Microsoft Azure storage services including blobs, files, tables, and queues.", package.Summary);
             Assert.Equal("Microsoft Azure Storage Table Blob File Queue Scalable windowsazureofficial", package.Tags);
@@ -501,6 +504,7 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(DateTimeOffset.Parse("2014-11-12T22:19:16.297"), package.Created.Value);
             Assert.Null(package.LastEdited);
             Assert.Equal("https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/4.3.2-preview", package.ReportAbuseUrl);
+            Assert.Equal("https://www.nuget.org/packages/WindowsAzure.Storage/4.3.2-preview", package.GalleryDetailsUrl);
             Assert.True(package.RequireLicenseAcceptance);
             Assert.Equal("A client library for working with Microsoft Azure storage services including blobs, files, tables, and queues.", package.Summary);
             Assert.Equal("Microsoft Azure Storage Table Blob File Queue Scalable windowsazureofficial", package.Tags);

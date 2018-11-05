@@ -67,6 +67,9 @@ namespace NuGet.Protocol
         [JsonIgnore]
         public Uri ReportAbuseUrl { get; set; }
 
+        [JsonIgnore]
+        public Uri PackageDetailsUrl { get; set; }
+
         [JsonProperty(PropertyName = JsonProperties.RequireLicenseAcceptance, DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(false)]
         [JsonConverter(typeof(SafeBoolConverter))]

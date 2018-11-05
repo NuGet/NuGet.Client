@@ -308,6 +308,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(new Uri("http://nuget.org/"), package.ProjectUrl);
                 Assert.NotNull(package.Published);
                 Assert.Null(package.ReportAbuseUrl);
+                Assert.Null(package.PackageDetailsUrl);
                 Assert.True(package.RequireLicenseAcceptance);
                 Assert.Equal("sum", package.Summary);
                 Assert.Equal("a b c", package.Tags);

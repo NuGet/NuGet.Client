@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -41,6 +40,25 @@ namespace NuGet.PackageManagement.UI
             PrefixReserved = serverData.PrefixReserved;
             LicenseMetadata = serverData.LicenseMetadata;
             _localMetadata = serverData as LocalPackageSearchMetadata;
+
+            // Determine the package detauls URL and text.
+            PackageDetailsUrl = null;
+            PackageDetailsText = null;
+            if (serverData.PackageDetailsUrl != null
+                && serverData.PackageDetailsUrl.IsAbsoluteUri
+                && serverData.PackageDetailsUrl.Host != null)
+            {
+                PackageDetailsUrl = serverData.PackageDetailsUrl;
+                PackageDetailsText = serverData.PackageDetailsUrl.Host;
+
+                // Special case the subdomain "www." - we hide it. Other subdomains are not hidden.
+                const string wwwDot = "www.";
+                if (PackageDetailsText.StartsWith(wwwDot, StringComparison.OrdinalIgnoreCase)
+                    && PackageDetailsText.Length > wwwDot.Length)
+                {
+                    PackageDetailsText = PackageDetailsText.Substring(wwwDot.Length);
+                }
+            }
         }
 
         private readonly LocalPackageSearchMetadata _localMetadata;
@@ -64,6 +82,10 @@ namespace NuGet.PackageManagement.UI
         public Uri ProjectUrl { get; set; }
 
         public Uri ReportAbuseUrl { get; set; }
+
+        public Uri PackageDetailsUrl { get; set; }
+
+        public string PackageDetailsText { get; set; }
 
         public string Tags { get; set; }
 
