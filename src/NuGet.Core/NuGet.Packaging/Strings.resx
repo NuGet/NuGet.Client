@@ -786,26 +786,15 @@ Valid from:</comment>
 1 - Fingerprint
 'allowUntrustedRoot' should not be localized</comment>
   </data>
-  <data name="Error_LoadingHashFile" xml:space="preserve">
-    <value>Error parsing nupkg metadata file {0} : {1}</value>
-    <comment>0 - nupkg metadata file path
-1 - error message</comment>
-  </data>
-  <data name="DefaultError_EmptyAllowList" xml:space="preserve">
-    <value>A list of trusted signers is required but none was found.</value>
-  </data>
-  <data name="DefaultError_NoMatchInAllowList" xml:space="preserve">
-    <value>The package signature certificate fingerprint does not match any certificate fingerprint in the allow list.</value>
+  <data name="NuGetLicenseExpression_NonStandardIdentifier" xml:space="preserve">
+    <value>The license identifier(s) '{0}' is(are) not recognized by the current toolset.</value>
+    <comment>0 - semicolon delimited list of identifiers</comment>
   </data>
   <data name="Error_RepositorySettings_UnsignedPackage" xml:space="preserve">
     <value>This repository indicated that all its packages are repository signed; however, this package is unsigned.</value>
   </data>
   <data name="Error_RequireMode_UnsignedPackage" xml:space="preserve">
     <value>signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.</value>
-  </data>
-  <data name="NuGetLicenseExpression_NonStandardIdentifier" xml:space="preserve">
-    <value>The license identifier(s) {0} is(are) not recognized by the current toolset.</value>
-    <comment>0 - semicolon delimited list of identifiers</comment>
   </data>
   <data name="NuGetLicenseExpression_IllegalUnlicensedOperator" xml:space="preserve">
     <value>The 'UNLICENSED' license identifier cannot be combined with the '+' operator.</value>

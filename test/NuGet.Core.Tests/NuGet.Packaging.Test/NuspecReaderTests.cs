@@ -458,6 +458,19 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
+        private const string LicenseExpressionComplexNonStandardLicenses = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                    <license type=""expression"">BestLicense OR CoolLicense</license>
+                  </metadata>
+                </package>";
+
         public static IEnumerable<object[]> GetValidVersions()
         {
             return GetVersionRange(validVersions: true);
@@ -1016,6 +1029,25 @@ namespace NuGet.Packaging.Test
             licenseMetadata.WarningsAndErrors.Count().Should().Be(1);
 
             licenseMetadata.WarningsAndErrors[0].Should().Be(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_NonStandardIdentifier, "CoolLicense"));
+        }
+
+        [Fact]
+        public void NuspecReaderTests_LicenseExpressionNonStandardLicensesAddsMessage()
+        {
+            // Arrange
+            var reader = GetReader(LicenseExpressionComplexNonStandardLicenses);
+
+            // Act
+            var licenseMetadata = reader.GetLicenseMetadata();
+
+            // Assert
+            licenseMetadata.Type.Should().Be(LicenseType.Expression);
+            licenseMetadata.LicenseExpression.Should().NotBeNull();
+            licenseMetadata.License.Should().Be("BestLicense OR CoolLicense");
+            licenseMetadata.Version.Should().Be(LicenseMetadata.EmptyVersion);
+            licenseMetadata.WarningsAndErrors.Count().Should().Be(1);
+
+            licenseMetadata.WarningsAndErrors[0].Should().Be(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_NonStandardIdentifier, "BestLicense, CoolLicense"));
         }
 
         [Fact]

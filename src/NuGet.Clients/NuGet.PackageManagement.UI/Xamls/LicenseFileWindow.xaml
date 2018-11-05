@@ -10,6 +10,7 @@
   MinHeight="450"
   Width="450"
   Height="450"
+  WindowStartupLocation="CenterOwner"
   Background="{DynamicResource {x:Static nuget:Brushes.BackgroundBrushKey}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
@@ -31,16 +32,16 @@
       BorderThickness="1"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
       <ScrollViewer
-        Name="scrollViewerLicenseFile"
+              Name="scrollViewerLicenseFile"
               CanContentScroll="True"
               VerticalScrollBarVisibility="Visible"
               HorizontalScrollBarVisibility="Disabled">
-        <TextBlock
+        <TextBox
+            Style="{DynamicResource SelectableTextBlockStyle}" 
             Name="textBlockLicenseFile"
             Margin="12,8,12,8"
-            TextWrapping="Wrap">
-          <Run Text="{Binding LicenseContent, Mode=TwoWay,  UpdateSourceTrigger=PropertyChanged}"/>
-        </TextBlock>
+            TextWrapping="Wrap"
+          Text="{Binding LicenseContent, Mode=TwoWay,  UpdateSourceTrigger=PropertyChanged}"/>
       </ScrollViewer>
     </Border>
   </Grid>

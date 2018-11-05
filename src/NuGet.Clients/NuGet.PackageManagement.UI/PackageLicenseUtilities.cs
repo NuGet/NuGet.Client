@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.UI
             }
             else if (licenseUrl != null)
             {
-                return new List<IText>() { new LicenseText(licenseUrl.OriginalString, licenseUrl) };
+                return new List<IText>() { new LicenseText(Resources.Text_ViewLicense, licenseUrl) };
             }
             return new List<IText>();
         }

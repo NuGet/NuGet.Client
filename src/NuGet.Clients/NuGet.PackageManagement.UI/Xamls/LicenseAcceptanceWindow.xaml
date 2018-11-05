@@ -35,6 +35,7 @@
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
                     Style="{StaticResource HyperlinkStyle}"
+                    ToolTip="{Binding Link}"
                     RequestNavigate="OnViewLicenseTermsRequestNavigate"
                     NavigateUri="{Binding Link}">
                     <Run Text="{Binding Text}"></Run>
@@ -50,8 +51,7 @@
       </DataTemplate>
 
       <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
-        <TextBlock
-            Margin="8,8,0,0">
+        <TextBlock>
                 <Hyperlink
                   AutomationProperties.AutomationId="{Binding Text}"
                     Click="ViewLicense_Click">
@@ -207,7 +207,6 @@
       Visibility="Collapsed"
       AutomationProperties.Name="{Binding Text}"
       Text="{Binding LicenseHeader, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-      FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
       TextWrapping="Wrap"
       />
     
@@ -227,7 +226,8 @@
               VerticalScrollBarVisibility="Visible"
               HorizontalScrollBarVisibility="Disabled"
         >
-        <TextBlock
+        <TextBox
+          Style="{DynamicResource SelectableTextBlockStyle}" 
           Margin="12,0,12,12"
           x:Name="_licenseFileText"
           AutomationProperties.Name="{Binding Text}"
@@ -235,6 +235,5 @@
           TextWrapping="Wrap" />
       </ScrollViewer>
     </Border>
-    
   </Grid>
 </nuget:VsDialogWindow>
