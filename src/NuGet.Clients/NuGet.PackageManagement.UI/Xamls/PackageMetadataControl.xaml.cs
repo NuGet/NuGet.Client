@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
 
@@ -28,20 +29,23 @@ namespace NuGet.PackageManagement.UI
         {
             if (DataContext is DetailedPackageMetadata metadata)
             {
+          
                 var window = new LicenseFileWindow()
                 {
                     DataContext = new LicenseFileData
                     {
                         Header = string.Format(CultureInfo.CurrentCulture, UI.Resources.WindowTitle_LicenseFileWindow, metadata.Id),
-                        LicenseContent = UI.Resources.LicenseFile_Loading
+                        LicenseContent = new FlowDocument(new Paragraph(new Run(UI.Resources.LicenseFile_Loading)))
                     }
                 };
 
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     var content = metadata.LoadFileAsText(metadata.LicenseMetadata.License);
+                    var flowDoc = new FlowDocument(new Paragraph(new Run(content))); // TODO GenerateParagraphs
+
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    (window.DataContext as LicenseFileData).LicenseContent = content;
+                    (window.DataContext as LicenseFileData).LicenseContent = flowDoc;
                 });
 
                 using (NuGetEventTrigger.TriggerEventBeginEnd(

@@ -31,18 +31,10 @@
       Name="borderLicenseFile"
       BorderThickness="1"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
-      <ScrollViewer
-              Name="scrollViewerLicenseFile"
-              CanContentScroll="True"
-              VerticalScrollBarVisibility="Visible"
-              HorizontalScrollBarVisibility="Disabled">
-        <TextBox
-            Style="{DynamicResource SelectableTextBlockStyle}" 
-            Name="textBlockLicenseFile"
-            Margin="12,8,12,8"
-            TextWrapping="Wrap"
-          Text="{Binding LicenseContent, Mode=TwoWay,  UpdateSourceTrigger=PropertyChanged}"/>
-      </ScrollViewer>
+      <FlowDocumentScrollViewer
+          Name="_flowDocumentViewer"
+          Document="{Binding LicenseContent}"
+        />
     </Border>
   </Grid>
 </nuget:VsDialogWindow>
