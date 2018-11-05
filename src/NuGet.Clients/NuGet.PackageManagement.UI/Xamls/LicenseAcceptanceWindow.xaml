@@ -222,7 +222,7 @@
       >
       <FlowDocumentScrollViewer
           Name="_flowDocumentViewer"
-          AutomationProperties.Name="License content viewer"
+          AutomationProperties.LabeledBy="{Binding ElementName=EmbeddedLicense}"
           Document="{Binding LicenseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
     </Border>
   </Grid>

@@ -21,13 +21,13 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public FlowDocument LicenseContent
+        public FlowDocument LicenseText
         {
             get => _content;
             set
             {
                 _content = value;
-                OnPropertyChanged("LicenseContent");
+                OnPropertyChanged("LicenseText");
             }
         }
 

@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.UI
                     DataContext = new LicenseFileData
                     {
                         Header = string.Format(CultureInfo.CurrentCulture, UI.Resources.WindowTitle_LicenseFileWindow, metadata.Id),
-                        LicenseContent = new FlowDocument(new Paragraph(new Run(UI.Resources.LicenseFile_Loading)))
+                        LicenseText = new FlowDocument(new Paragraph(new Run(UI.Resources.LicenseFile_Loading)))
                     }
                 };
 
@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.UI
                     var flowDoc = new FlowDocument(new Paragraph(new Run(content))); // TODO GenerateParagraphs
 
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    (window.DataContext as LicenseFileData).LicenseContent = flowDoc;
+                    (window.DataContext as LicenseFileData).LicenseText = flowDoc;
                 });
 
                 using (NuGetEventTrigger.TriggerEventBeginEnd(
