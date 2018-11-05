@@ -29,7 +29,7 @@
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' == 'true' ">$(ArtifactsDirectory)ReleaseNupkgs\</NupkgOutputDirectory>
     <SolutionPackagesFolder>$(RepositoryRootDirectory)packages\</SolutionPackagesFolder>
     <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console.2.3.1\tools\net452\xunit.console.x86.exe</XunitConsoleExePath>
-    <ILMergeExePath>$(SolutionPackagesFolder)ILMerge.2.14.1208\tools\ILMerge.exe</ILMergeExePath>
+    <ILMergeExePath>$(SolutionPackagesFolder)ILMerge.3.0.18\tools\ILMerge.exe</ILMergeExePath>
     <XunitXmlLoggerDirectory>$(SolutionPackagesFolder)XunitXml.TestLogger.2.0.0\build\_common</XunitXmlLoggerDirectory>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)src</EnlistmentRootSrc>
