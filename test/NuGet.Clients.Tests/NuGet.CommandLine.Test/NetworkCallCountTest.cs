@@ -1199,7 +1199,7 @@ namespace NuGet.CommandLine.Test
                     "-Verbosity",
                     "detailed",
                     "-DisableParallelProcessing",
-                    "MSBuildVersion",
+                    "-MSBuildVersion",
                     "14"
                 };
 
