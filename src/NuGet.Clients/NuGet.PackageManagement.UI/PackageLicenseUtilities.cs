@@ -46,11 +46,10 @@ namespace NuGet.PackageManagement.UI
         internal static Paragraph[] GenerateParagraphs(string licenseContent)
         {
             var textParagraphs = licenseContent.Split(
-                new[] { "\n\n", "\r\n\r\n" },
+                new[] { "\n\n", "\r\n\r\n" }, // Take care of paragraphs regardless of the name ending. It's a best effort, so weird line ending combinations might not work too well.
                 StringSplitOptions.None);
 
             var paragraphs = new Paragraph[textParagraphs.Length];
-
             for (var i = 0; i < textParagraphs.Length; i++)
             {
                 paragraphs[i] = new Paragraph(new Run(textParagraphs[i]));
