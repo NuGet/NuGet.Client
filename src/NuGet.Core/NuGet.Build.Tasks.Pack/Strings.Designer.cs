@@ -89,7 +89,7 @@ namespace NuGet.Build.Tasks.Pack {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid metadata. Cannot specify both a License Expression and a License File..
+        ///   Looks up a localized string similar to Invalid metadata. Cannot specify both a PackageLicenseExpression and a PackageLicenseFile..
         /// </summary>
         internal static string InvalidLicenseCombination {
             get {
@@ -116,7 +116,7 @@ namespace NuGet.Build.Tasks.Pack {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The version string &apos;{0}&apos; for the License Expression is invalid..
+        ///   Looks up a localized string similar to The PackageLicenseExpressionVersion string &apos;{0}&apos; is not a valid version..
         /// </summary>
         internal static string InvalidLicenseExpressionVersion {
             get {
@@ -188,7 +188,7 @@ namespace NuGet.Build.Tasks.Pack {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The PackageLicenseUrl cannot be used cannot be used in conjunction with the PackageLicenseFile and PackageLicenseExpression..
+        ///   Looks up a localized string similar to The PackageLicenseUrl is being deprecated and cannot be used in conjunction with the PackageLicenseFile or PackageLicenseExpression..
         /// </summary>
         internal static string NuGetLicenses_LicenseUrlCannotBeUsedInConjuctionWithLicense {
             get {

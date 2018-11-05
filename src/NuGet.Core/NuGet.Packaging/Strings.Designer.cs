@@ -935,7 +935,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The license identifier(s) {0} is(are) not recognized by the current toolset..
+        ///   Looks up a localized string similar to The license identifier(s) &apos;{0}&apos; is(are) not recognized by the current toolset..
         /// </summary>
         internal static string NuGetLicenseExpression_NonStandardIdentifier {
             get {
