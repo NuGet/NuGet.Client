@@ -37,7 +37,8 @@ namespace NuGet.PackageManagement.UI
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                     {
                         var content = _loadFileFromPackage(_licenseFileLocation);
-                        var flowDoc = new FlowDocument(new Paragraph(new Run(content))); // TODO GenerateParagraphs
+                        var flowDoc = new FlowDocument();
+                        flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                         LicenseText = flowDoc;
                     });

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
@@ -42,8 +43,8 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     var content = metadata.LoadFileAsText(metadata.LicenseMetadata.License);
-                    var flowDoc = new FlowDocument(new Paragraph(new Run(content))); // TODO GenerateParagraphs
-
+                    var flowDoc = new FlowDocument();
+                    flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     (window.DataContext as LicenseFileData).LicenseText = flowDoc;
                 });
@@ -56,6 +57,8 @@ namespace NuGet.PackageManagement.UI
                 }
             }
         }
+
+
 
         private void PackageMetadataControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {

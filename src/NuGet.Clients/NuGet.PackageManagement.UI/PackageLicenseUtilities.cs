@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Windows.Documents;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
 using NuGet.Protocol;
@@ -40,6 +41,21 @@ namespace NuGet.PackageManagement.UI
                 return new List<IText>() { new LicenseText(Resources.Text_ViewLicense, licenseUrl) };
             }
             return new List<IText>();
+        }
+
+        internal static Paragraph[] GenerateParagraphs(string licenseContent)
+        {
+            var textParagraphs = licenseContent.Split(
+                new[] { "\n\n", "\r\n\r\n" },
+                StringSplitOptions.None);
+
+            var paragraphs = new Paragraph[textParagraphs.Length];
+
+            for (var i = 0; i < textParagraphs.Length; i++)
+            {
+                paragraphs[i] = new Paragraph(new Run(textParagraphs[i]));
+            }
+            return paragraphs;
         }
 
         // Internal for testing purposes.
