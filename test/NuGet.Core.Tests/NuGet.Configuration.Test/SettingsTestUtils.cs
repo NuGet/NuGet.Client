@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -35,6 +36,34 @@ namespace NuGet.Configuration.Test
         public static string RemoveWhitespace(string s)
         {
             return Regex.Replace(s, @"\s+", string.Empty);
+        }
+
+        public static bool SequenceDeepEquals<T>(IList<T> settings1, IList<T> settings2) where T : SettingBase
+        {
+            if (settings1 == null && settings2 == null)
+            {
+                return true;
+            }
+
+            if (settings1 == null || settings2 == null)
+            {
+                return false;
+            }
+
+            if (settings1.Count() != settings2.Count())
+            {
+                return false;
+            }
+
+            for (var i = 0; i < settings1.Count(); i++)
+            {
+                if (!DeepEquals(settings1[0], settings2[0]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public static bool DeepEquals(SettingBase setting1, SettingBase setting2)
