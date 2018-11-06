@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Documents;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
 using Xunit;
@@ -164,7 +165,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.True(links[0] is LicenseFileText);
             var licenseFileText = links[0] as LicenseFileText;
             Assert.Equal(Resources.Text_ViewLicense, licenseFileText.Text);
-            Assert.Equal(Resources.LicenseFile_Loading, licenseFileText.LicenseText);
+            Assert.Equal(Resources.LicenseFile_Loading, ((Run)((Paragraph)licenseFileText.LicenseText.Blocks.AsEnumerable().First()).Inlines.First()).Text);
         }
     }
 }
