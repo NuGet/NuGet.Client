@@ -58,8 +58,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-
-
         private void PackageMetadataControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (DataContext is DetailedPackageMetadata)
