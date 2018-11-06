@@ -24,6 +24,7 @@
   FocusManager.FocusedElement="{Binding ElementName=_acceptButton}">
   <Window.Resources>
     <ResourceDictionary>
+
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
@@ -97,6 +98,11 @@
           </ItemsControl>
         </StackPanel>
       </DataTemplate>
+
+      <Style TargetType="{x:Type FlowDocument}">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="PagePadding" Value="3"/>
+      </Style>
     </ResourceDictionary>
   </Window.Resources>
   <Grid>

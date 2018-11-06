@@ -23,6 +23,9 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
+      <Style TargetType="{x:Type FlowDocument}">
+        <Setter Property="FontSize" Value="12"/>
+      </Style>
     </ResourceDictionary>
   </Window.Resources>
 
@@ -35,7 +38,8 @@
       <FlowDocumentScrollViewer
           Name="_flowDocumentViewer"
           AutomationProperties.LabeledBy="{Binding ElementName=borderLicenseFile}"
-          Document="{Binding LicenseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+          Document="{Binding LicenseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+      </FlowDocumentScrollViewer>
     </Border>
   </Grid>
 </nuget:VsDialogWindow>
