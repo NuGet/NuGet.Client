@@ -24,6 +24,7 @@
   FocusManager.FocusedElement="{Binding ElementName=_acceptButton}">
   <Window.Resources>
     <ResourceDictionary>
+
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
@@ -97,6 +98,11 @@
           </ItemsControl>
         </StackPanel>
       </DataTemplate>
+
+      <Style TargetType="{x:Type FlowDocument}">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="PagePadding" Value="3"/>
+      </Style>
     </ResourceDictionary>
   </Window.Resources>
   <Grid>
@@ -220,20 +226,10 @@
       Visibility="Collapsed"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
       >
-      <ScrollViewer
-              Padding="3"
-              CanContentScroll="True"
-              VerticalScrollBarVisibility="Visible"
-              HorizontalScrollBarVisibility="Disabled"
-        >
-        <TextBox
-          Style="{DynamicResource SelectableTextBlockStyle}" 
-          Margin="12,0,12,12"
-          x:Name="_licenseFileText"
-          AutomationProperties.Name="{Binding Text}"
-          Text="{Binding LicenseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-          TextWrapping="Wrap" />
-      </ScrollViewer>
+      <FlowDocumentScrollViewer
+          Name="_flowDocumentViewer"
+          AutomationProperties.LabeledBy="{Binding ElementName=EmbeddedLicense}"
+          Document="{Binding LicenseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
     </Border>
   </Grid>
 </nuget:VsDialogWindow>
