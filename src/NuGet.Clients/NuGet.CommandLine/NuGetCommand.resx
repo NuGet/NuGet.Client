@@ -5483,4 +5483,47 @@ This option should be used when specifying the certificate via -CertificateSubje
     <value>When creating a symbols package, allows to choose between the 'snupkg' and 'symbols.nupkg' format.</value>
     <comment>Do not localize snupkg and symbols.nupkg</comment>
   </data>
+  <data name="TrustedSignersCommandDescription" xml:space="preserve">
+    <value>Provides the ability to manage list of trusted signers located in NuGet.Config</value>
+  </data>
+  <data name="TrustedSignersCommandUsageExamples" xml:space="preserve">
+    <value>nuget trusted-signers
+
+nuget trusted-signers Add -Name existingSource
+
+nuget trusted-signers Add -Name trustedRepo -ServiceIndex https://trustedRepo.test/v3ServiceIndex
+
+nuget trusted-signers Add -Name author1 -CertificateFingerprint CE40881FF5F0AD3E58965DA20A9F571EF1651A56933748E1BF1C99E537C4E039 -FingerprintAlgorithm SHA256
+
+nuget trusted-signers Add -Repository .\..\MyRepositorySignedPackage.nupkg -Name TrustedRepo
+
+nuget-trusted-signers Remove -Name TrustedRepo</value>
+  </data>
+  <data name="TrustedSignersCommandUsageSummary" xml:space="preserve">
+    <value>&lt;List|Add|Remove|Sync&gt; [options]</value>
+  </data>
+  <data name="TrustedSignersCommandAllowUntrustedRootDescription" xml:space="preserve">
+    <value>If specified, chaining to an untrusted root should be allowed for the trusted signer.</value>
+  </data>
+  <data name="TrustedSignersCommandAuthorDescription" xml:space="preserve">
+    <value>If specified, the author signature of the package should be trusted.</value>
+  </data>
+  <data name="TrustedSignersCommandCertificateFingerprintDescription" xml:space="preserve">
+    <value>Certificate fingerprint for trusted author.</value>
+  </data>
+  <data name="TrustedSignersCommandFingerprintAlgorithmDescription" xml:space="preserve">
+    <value>Hash algorithm used to calculate certificate fingerprint. Defaults to SHA256.</value>
+  </data>
+  <data name="TrustedSignersCommandNameDescription" xml:space="preserve">
+    <value>Name of the trusted signer.</value>
+  </data>
+  <data name="TrustedSignersCommandOwnersDescription" xml:space="preserve">
+    <value>List of owners allowed for a package signed with the trusted repository.</value>
+  </data>
+  <data name="TrustedSignersCommandRepositoryDescription" xml:space="preserve">
+    <value>If specified, the repository signature of the package should be trusted.</value>
+  </data>
+  <data name="TrustedSignersCommandServiceIndexDescription" xml:space="preserve">
+    <value>Service Index for trusted repository.</value>
+  </data>
 </root>

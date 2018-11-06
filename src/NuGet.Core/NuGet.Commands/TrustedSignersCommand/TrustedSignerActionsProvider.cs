@@ -19,16 +19,18 @@ namespace NuGet.Commands
     public sealed class TrustedSignerActionsProvider
     {
         private readonly ITrustedSignersProvider _trustedSignersProvider;
+        private readonly ILogger _logger;
 
         /// <summary>
-        /// Internal SourceRepository useful for overriding on tests to get
+        /// Internal SourceRepository usefull for overriding on tests to get
         /// mocked responses from the server
         /// </summary>
         internal SourceRepository ServiceIndexSourceRepository { get; set; }
 
-        public TrustedSignerActionsProvider(ITrustedSignersProvider trustedSignersProvider)
+        public TrustedSignerActionsProvider(ITrustedSignersProvider trustedSignersProvider, ILogger logger)
         {
             _trustedSignersProvider = trustedSignersProvider ?? throw new ArgumentNullException(nameof(trustedSignersProvider));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -55,6 +57,8 @@ namespace NuGet.Commands
                     existingRepository.Certificates.AddRange(certificateItems);
 
                     _trustedSignersProvider.AddOrUpdateTrustedSigner(existingRepository);
+
+                    await _logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullySynchronizedTrustedRepository, name));
 
                     return;
                 }
@@ -130,6 +134,8 @@ namespace NuGet.Commands
                 var certificateItem = GetCertificateItemForSignature(repositorySignature, allowUntrustedRoot);
 
                 _trustedSignersProvider.AddOrUpdateTrustedSigner(new RepositoryItem(name, v3ServiceIndex, CreateOwnersList(owners), certificateItem));
+
+                await _logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedRepository, name));
             }
             else
             {
@@ -141,15 +147,17 @@ namespace NuGet.Commands
                 var certificateItem = GetCertificateItemForSignature(primarySignature, allowUntrustedRoot);
 
                 _trustedSignersProvider.AddOrUpdateTrustedSigner(new AuthorItem(name, certificateItem));
+
+                await _logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedAuthor, name));
             }
         }
+
 #endif
 
         /// <summary>
-        /// Updates the certificate list of a trusted signer by adding the given certificate.
-        /// If the signer does not exists it creates a new one.
+        /// Adds a new trusted author to the settings.
+        /// If a trusted signer already exists with this name, adds a certificate item to it.
         /// </summary>
-        /// <remarks>This method defaults to adding a trusted author if the signer doesn't exist.</remarks>
         /// <param name="name">Name of the trusted author.</param>
         /// <param name="fingerprint">Fingerprint to be added to the certificate entry.</param>
         /// <param name="hashAlgorithm">Hash algorithm used to calculate <paramref name="fingerprint"/>.</param>
@@ -185,16 +193,21 @@ namespace NuGet.Commands
                 }
             }
 
+            string logMessage = null;
             if (signerToAdd == null)
             {
                 signerToAdd = new AuthorItem(name, certificateToAdd);
+                logMessage = Strings.SuccessfullyAddedTrustedAuthor;
             }
             else
             {
                 signerToAdd.Certificates.Add(certificateToAdd);
+                logMessage = Strings.SuccessfullUpdatedTrustedSigner;
             }
 
             _trustedSignersProvider.AddOrUpdateTrustedSigner(signerToAdd);
+
+            _logger.Log(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, logMessage, name));
         }
 
         /// <summary>
@@ -222,6 +235,8 @@ namespace NuGet.Commands
 
             _trustedSignersProvider.AddOrUpdateTrustedSigner(
                 new RepositoryItem(name, serviceIndex.AbsoluteUri, CreateOwnersList(owners), certificateItems));
+
+            await _logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyAddedTrustedRepository, name));
         }
 
         private void ValidateNoExistingSigner(string name, string serviceIndex, bool validateServiceIndex = true)
@@ -250,7 +265,6 @@ namespace NuGet.Commands
             return new CertificateItem(fingerprint, defaultHashAlgorithm, allowUntrustedRoot);
         }
 #endif
-
         private async Task<CertificateItem[]> GetCertificateItemsFromServiceIndexAsync(string serviceIndex, CancellationToken token)
         {
             if (string.IsNullOrEmpty(serviceIndex))

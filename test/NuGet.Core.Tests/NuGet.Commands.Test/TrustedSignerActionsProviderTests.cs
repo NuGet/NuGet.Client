@@ -34,7 +34,7 @@ namespace NuGet.Commands.Test
         public void TrustedSignerActionsProvider_Constructor_WithNullTrustedSignersProvider_Throws()
         {
             // Act and Assert
-            Assert.Throws<ArgumentNullException>(() => new TrustedSignerActionsProvider(trustedSignersProvider: null));
+            Assert.Throws<ArgumentNullException>(() => new TrustedSignerActionsProvider(trustedSignersProvider: null, logger: NullLogger.Instance));
         }
 
         [Theory]
@@ -44,7 +44,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             // Act and Assert
             var ex = await Assert.ThrowsAsync<ArgumentException>(async () => await actionsProvider.SyncTrustedRepositoryAsync(name, CancellationToken.None));
@@ -66,7 +66,7 @@ namespace NuGet.Commands.Test
                     new RepositoryItem("repo1", "https://serviceIndex.test/api.json", new CertificateItem("abc", HashAlgorithmName.SHA256))
                 });
 
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
 
             // Act and Assert
@@ -98,7 +98,7 @@ namespace NuGet.Commands.Test
                     new RepositoryItem("repo1", source, new CertificateItem("abc", HashAlgorithmName.SHA256))
                 });
 
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object)
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance)
             {
                 ServiceIndexSourceRepository = repo
             };
@@ -133,7 +133,7 @@ namespace NuGet.Commands.Test
                     new RepositoryItem("repo1", source, new CertificateItem("abc", HashAlgorithmName.SHA256))
                 });
 
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object)
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance)
             {
                 ServiceIndexSourceRepository = repo
             };
@@ -169,7 +169,7 @@ namespace NuGet.Commands.Test
                     new RepositoryItem("repo1", source, new CertificateItem("abc", HashAlgorithmName.SHA256))
                 });
 
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object)
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance)
             {
                 ServiceIndexSourceRepository = repo
             };
@@ -192,7 +192,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             // Act and Assert
             var ex = await Record.ExceptionAsync(async () =>
@@ -209,7 +209,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageReader = new Mock<ISignedPackageReader>();
 
             // Act and Assert
@@ -231,7 +231,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageReader = new Mock<ISignedPackageReader>();
 
             // Act and Assert
@@ -254,7 +254,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageReader = new Mock<ISignedPackageReader>();
 
             // Act and Assert
@@ -277,7 +277,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageReader = new Mock<ISignedPackageReader>();
 
             // Act and Assert
@@ -300,7 +300,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageReader = new Mock<ISignedPackageReader>();
 
             packageReader
@@ -327,7 +327,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageContext = new SimpleTestPackageContext();
 
             using (var directory = TestDirectory.Create())
@@ -359,7 +359,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageContext = new SimpleTestPackageContext();
 
             trustedSignersProvider
@@ -398,7 +398,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageContext = new SimpleTestPackageContext();
             var repoServiceIndex = "https://trustedv3serviceindex.test/api.json";
 
@@ -440,7 +440,7 @@ namespace NuGet.Commands.Test
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
             var packageReader = new Mock<ISignedPackageReader>();
 
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageContext = new SimpleTestPackageContext();
 
             trustedSignersProvider
@@ -486,7 +486,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageContext = new SimpleTestPackageContext();
             var repoServiceIndex = "https://trustedV3ServiceIndex.test/api.json";
 
@@ -531,7 +531,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageContext = new SimpleTestPackageContext();
             var repoServiceIndex = "https://trustedV3ServiceIndex.test/api.json";
 
@@ -577,7 +577,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageContext = new SimpleTestPackageContext();
             var repoServiceIndex = "https://trustedV3ServiceIndex.test/api.json";
 
@@ -623,7 +623,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageContext = new SimpleTestPackageContext();
             var repoServiceIndex = "https://trustedV3ServiceIndex.test/api.json";
 
@@ -670,7 +670,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageContext = new SimpleTestPackageContext();
             var repoServiceIndex = "https://trustedV3ServiceIndex.test/api.json";
 
@@ -718,7 +718,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageContext = new SimpleTestPackageContext();
             var repoServiceIndex = "https://trustedV3ServiceIndex.test/api.json";
 
@@ -766,7 +766,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageContext = new SimpleTestPackageContext();
 
             trustedSignersProvider
@@ -808,7 +808,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
             var packageContext = new SimpleTestPackageContext();
 
             trustedSignersProvider
@@ -853,7 +853,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             // Act and Assert
             var ex = Assert.Throws<ArgumentException>(() => actionsProvider.AddOrUpdateTrustedSigner(name, fingerprint: "abc", hashAlgorithm: HashAlgorithmName.SHA256, allowUntrustedRoot: false));
@@ -869,7 +869,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             // Act and Assert
             var ex = Assert.Throws<ArgumentException>(() => actionsProvider.AddOrUpdateTrustedSigner(name: "author1", fingerprint: fingerprint, hashAlgorithm: HashAlgorithmName.SHA256, allowUntrustedRoot: false));
@@ -883,7 +883,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             // Act and Assert
             var ex = Record.Exception(() => actionsProvider.AddOrUpdateTrustedSigner(name: "author1", fingerprint: "abc", hashAlgorithm: HashAlgorithmName.Unknown, allowUntrustedRoot: false));
@@ -899,7 +899,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             // Act and Assert
             var ex = Record.Exception(() => actionsProvider.AddOrUpdateTrustedSigner(name: "author1", fingerprint: "abc", hashAlgorithm: (HashAlgorithmName)99, allowUntrustedRoot: false));
@@ -914,7 +914,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             trustedSignersProvider
                 .Setup(p => p.GetTrustedSigners())
@@ -941,7 +941,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             trustedSignersProvider
                 .Setup(p => p.GetTrustedSigners())
@@ -968,7 +968,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             trustedSignersProvider
                 .Setup(p => p.GetTrustedSigners())
@@ -1000,7 +1000,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             trustedSignersProvider
                 .Setup(p => p.GetTrustedSigners())
@@ -1032,7 +1032,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             trustedSignersProvider
                 .Setup(p => p.GetTrustedSigners())
@@ -1066,7 +1066,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             // Act and Assert
             var ex = await Assert.ThrowsAsync<ArgumentException>(async () => await actionsProvider.AddTrustedRepositoryAsync(name, new Uri("https://serviceIndex.test/v3/api.json"), owners: null, token: CancellationToken.None));
@@ -1080,7 +1080,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
             // Act and Assert
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await actionsProvider.AddTrustedRepositoryAsync("repo1", serviceIndex: null, owners: null, token: CancellationToken.None));
@@ -1099,7 +1099,7 @@ namespace NuGet.Commands.Test
                     new RepositoryItem("repo1", "https://serviceIndex.test/api.json", new CertificateItem("abc", HashAlgorithmName.SHA256))
                 });
 
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
 
             // Act and Assert
@@ -1123,7 +1123,7 @@ namespace NuGet.Commands.Test
                     new RepositoryItem("repo1", "https://serviceIndex.test/api.json", new CertificateItem("abc", HashAlgorithmName.SHA256))
                 });
 
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance);
 
 
             // Act and Assert
@@ -1155,7 +1155,7 @@ namespace NuGet.Commands.Test
                     new RepositoryItem("repo1", "https://serviceIndex.test/api.json", new CertificateItem("abc", HashAlgorithmName.SHA256))
                 });
 
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object)
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance)
             {
                 ServiceIndexSourceRepository = repo
             };
@@ -1190,7 +1190,7 @@ namespace NuGet.Commands.Test
                     new RepositoryItem("repo1", "https://serviceIndex.test/api.json", new CertificateItem("abc", HashAlgorithmName.SHA256))
                 });
 
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object)
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance)
             {
                 ServiceIndexSourceRepository = repo
             };
@@ -1225,7 +1225,7 @@ namespace NuGet.Commands.Test
                     new RepositoryItem("repo1", "https://serviceIndex.test/api.json", new CertificateItem("abc", HashAlgorithmName.SHA256))
                 });
 
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object)
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance)
             {
                 ServiceIndexSourceRepository = repo
             };
@@ -1267,7 +1267,7 @@ namespace NuGet.Commands.Test
                     new RepositoryItem("repo1", "https://serviceIndex.test/api.json", new CertificateItem("abc", HashAlgorithmName.SHA256))
                 });
 
-            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object)
+            var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: NullLogger.Instance)
             {
                 ServiceIndexSourceRepository = repo
             };

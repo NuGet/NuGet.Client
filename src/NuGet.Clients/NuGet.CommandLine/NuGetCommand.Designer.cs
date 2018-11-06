@@ -13461,6 +13461,115 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to If specified, chaining to an untrusted root should be allowed for the trusted signer..
+        /// </summary>
+        internal static string TrustedSignersCommandAllowUntrustedRootDescription {
+            get {
+                return ResourceManager.GetString("TrustedSignersCommandAllowUntrustedRootDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If specified, the author signature of the package should be trusted..
+        /// </summary>
+        internal static string TrustedSignersCommandAuthorDescription {
+            get {
+                return ResourceManager.GetString("TrustedSignersCommandAuthorDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate fingerprint for trusted author..
+        /// </summary>
+        internal static string TrustedSignersCommandCertificateFingerprintDescription {
+            get {
+                return ResourceManager.GetString("TrustedSignersCommandCertificateFingerprintDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provides the ability to manage list of trusted signers located in NuGet.Config.
+        /// </summary>
+        internal static string TrustedSignersCommandDescription {
+            get {
+                return ResourceManager.GetString("TrustedSignersCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hash algorithm used to calculate certificate fingerprint. Defaults to SHA256..
+        /// </summary>
+        internal static string TrustedSignersCommandFingerprintAlgorithmDescription {
+            get {
+                return ResourceManager.GetString("TrustedSignersCommandFingerprintAlgorithmDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the trusted signer..
+        /// </summary>
+        internal static string TrustedSignersCommandNameDescription {
+            get {
+                return ResourceManager.GetString("TrustedSignersCommandNameDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to List of owners allowed for a package signed with the trusted repository..
+        /// </summary>
+        internal static string TrustedSignersCommandOwnersDescription {
+            get {
+                return ResourceManager.GetString("TrustedSignersCommandOwnersDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If specified, the repository signature of the package should be trusted..
+        /// </summary>
+        internal static string TrustedSignersCommandRepositoryDescription {
+            get {
+                return ResourceManager.GetString("TrustedSignersCommandRepositoryDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service Index for trusted repository..
+        /// </summary>
+        internal static string TrustedSignersCommandServiceIndexDescription {
+            get {
+                return ResourceManager.GetString("TrustedSignersCommandServiceIndexDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget trusted-signers
+        ///
+        ///nuget trusted-signers Add -Name existingSource
+        ///
+        ///nuget trusted-signers Add -Name trustedRepo -ServiceIndex https://trustedRepo.test/v3ServiceIndex
+        ///
+        ///nuget trusted-signers Add -Name author1 -CertificateFingerprint CE40881FF5F0AD3E58965DA20A9F571EF1651A56933748E1BF1C99E537C4E039 -FingerprintAlgorithm SHA256
+        ///
+        ///nuget trusted-signers Add -Repository .\..\MyRepositorySignedPackage.nupkg -Name TrustedRepo
+        ///
+        ///nuget-trusted-signers Remove -Name TrustedRepo.
+        /// </summary>
+        internal static string TrustedSignersCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("TrustedSignersCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|Sync&gt; [options].
+        /// </summary>
+        internal static string TrustedSignersCommandUsageSummary {
+            get {
+                return ResourceManager.GetString("TrustedSignersCommandUsageSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Update packages to latest available versions. This command also updates NuGet.exe itself..
         /// </summary>
         internal static string UpdateCommandDescription {
