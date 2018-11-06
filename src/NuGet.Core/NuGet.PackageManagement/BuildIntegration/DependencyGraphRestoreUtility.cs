@@ -218,6 +218,8 @@ namespace NuGet.PackageManagement
         {
             var dgSpec = new DependencyGraphSpec();
 
+            var uniqueProjectDependencies = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
+
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>();
 
             foreach (var project in projects)
@@ -235,8 +237,27 @@ namespace NuGet.PackageManagement
                     {
                         dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
                     }
+
+                    var projFileName = Path.GetFileName(packageSpec.RestoreMetadata.ProjectPath);
+                    var dgFileName = string.Format(DependencyGraphSpec.DGSpecFileName, projFileName);
+                    var persistedDGSpecPath = Path.Combine(packageSpec.RestoreMetadata.OutputPath, dgFileName);
+
+                    if (File.Exists(persistedDGSpecPath))
+                    {
+                        var persistedDGSpec = DependencyGraphSpec.Load(persistedDGSpecPath);
+
+                        foreach (var dependentPackageSpec in persistedDGSpec.GetClosure(packageSpec.RestoreMetadata.ProjectUniqueName))
+                        {
+                            if (!projects.Any(p => PathUtility.GetStringComparerBasedOnOS().Equals(p.MSBuildProjectPath, dependentPackageSpec.RestoreMetadata.ProjectPath)) &&
+                                uniqueProjectDependencies.Add(dependentPackageSpec.RestoreMetadata.ProjectUniqueName))
+                            {
+                                dgSpec.AddProject(dependentPackageSpec);
+                            }
+                        }
+                    }
                 }
             }
+
             // Return dg file
             return dgSpec;
         }

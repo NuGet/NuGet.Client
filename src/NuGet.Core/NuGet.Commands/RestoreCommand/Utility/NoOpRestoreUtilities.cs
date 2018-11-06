@@ -200,11 +200,12 @@ namespace NuGet.Commands
         /// </summary>
         public static string GetHash(RestoreRequest request)
         {
+            var dgSpec = request.DependencyGraphSpec;
+
             if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool || request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
             {
-
                 var uniqueName = request.DependencyGraphSpec.Restore.First();
-                var dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
+                dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
 
                 foreach (var projectSpec in dgSpec.Projects){
                     // The project path where the tool is declared does not affect restore and is only used for logging and transparency.
@@ -222,15 +223,41 @@ namespace NuGet.Commands
                         projectSpec.RestoreSettings = null;
                     }
                 }
-
-                PersistHashedDGFileIfDebugging(dgSpec, request.Log);
-                return dgSpec.GetHash();
             }
 
-            PersistHashedDGFileIfDebugging(request.DependencyGraphSpec, request.Log);
-            return request.DependencyGraphSpec.GetHash();
+            PersistHashedDGFileIfDebugging(dgSpec, request.Log);
+            PersistDGSpecFile(dgSpec, request, request.Log);
+            return dgSpec.GetHash();
         }
 
+        private static void PersistDGSpecFile(DependencyGraphSpec spec, RestoreRequest request, ILogger log)
+        {
+            var dgPath = GetPersistedDGSpecFilePath(request);
+
+            if (dgPath == null)
+            {
+                return;
+            }
+
+            DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(dgPath));
+            log.LogMinimal($"Persisting no-op dg to {dgPath}");
+            spec.Save(dgPath);
+        }
+
+        private static string GetPersistedDGSpecFilePath(RestoreRequest request)
+        {
+            if (request.ProjectStyle == ProjectStyle.ProjectJson
+                || request.ProjectStyle == ProjectStyle.PackageReference
+                || request.ProjectStyle == ProjectStyle.Standalone)
+            {
+                var outputRoot = request.MSBuildProjectExtensionsPath ?? request.RestoreOutputPath;
+                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
+                var dgFileName = string.Format(DependencyGraphSpec.DGSpecFileName, projFileName);
+                return Path.Combine(outputRoot, dgFileName);
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Write the dg file to a temp location if NUGET_PERSIST_NOOP_DG.
@@ -256,7 +283,7 @@ namespace NuGet.Commands
                     DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(path));
                 }
 
-                log.LogMinimal($"Persisting no-op dg to {path}");
+                log.LogMinimal($"Persisting no-op dg for debugging to {path}");
 
                 spec.Save(path);
             }
