@@ -136,31 +136,27 @@ internal class NuGetLicenseData
 
         private static readonly string LicenseData = $@"internal class LicenseData
 {{
-    public LicenseData(string licenseID, int referenceNumber, bool isOsiApproved, bool isDeprecatedLicenseId)
+    public LicenseData(string licenseID, bool isOsiApproved, bool isDeprecatedLicenseId)
     {{
         LicenseID = licenseID;
-        ReferenceNumber = referenceNumber;
         IsOsiApproved = isOsiApproved;
         IsDeprecatedLicenseId = isDeprecatedLicenseId;
     }}
 
     internal string LicenseID {{ get; }}
-    internal int ReferenceNumber {{ get; }}
     internal bool IsOsiApproved {{ get; }}
     internal bool IsDeprecatedLicenseId {{ get; }}
 }}";
 
         private static readonly string ExceptionData = $@"internal class ExceptionData
 {{
-    public ExceptionData(string licenseID, int referenceNumber, bool isDeprecatedLicenseId)
+    public ExceptionData(string licenseID, bool isDeprecatedLicenseId)
     {{
         LicenseExceptionID = licenseID;
-        ReferenceNumber = referenceNumber;
         IsDeprecatedLicenseId = isDeprecatedLicenseId;
     }}
 
     internal string LicenseExceptionID {{ get; }}
-    internal int ReferenceNumber {{ get; }}
     internal bool IsDeprecatedLicenseId {{ get; }}
 }}";
 
