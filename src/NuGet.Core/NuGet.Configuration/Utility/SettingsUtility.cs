@@ -408,20 +408,6 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Get a list of all the paths of the settings files used as part of this settings object
-        /// </summary>
-        [Obsolete("GetConfigFilePaths(ISettings) has been deprecated. Please use ISettings.GetConfigFilePaths() instead.")]
-        public static IEnumerable<string> GetConfigFilePaths(ISettings settings)
-        {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            return settings.GetConfigFilePaths();
-        }
-
-        /// <summary>
         /// Throw if a path is relative.
         /// </summary>
         private static void VerifyPathIsRooted(string key, string path)
