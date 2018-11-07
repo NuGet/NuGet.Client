@@ -338,7 +338,7 @@ namespace NuGet.Packaging
 #endif
         }
 
-        public override string GetContentHash(CancellationToken token, string fallbackHashFilePath = null)
+        public override string GetContentHash(CancellationToken token, Func<string> fallbackHashGenerator = null)
         {
             // Try to get the content hash for signed packages
             var contentHash = GetContentHashForSignedPackage(token);
@@ -346,9 +346,9 @@ namespace NuGet.Packaging
             if (string.IsNullOrEmpty(contentHash))
             {
                 // The package is unsigned, try to read the existing sha512 file
-                if (!string.IsNullOrEmpty(fallbackHashFilePath) && File.Exists(fallbackHashFilePath))
+                if (fallbackHashGenerator != null)
                 {
-                    var packageHash = File.ReadAllText(fallbackHashFilePath);
+                    var packageHash = fallbackHashGenerator();
 
                     if (!string.IsNullOrEmpty(packageHash))
                     {
@@ -356,7 +356,6 @@ namespace NuGet.Packaging
                     }
                 }
 
-                // sha512 file doesn't exist or is empty, try calculating it
                 ThrowIfZipReadStreamIsNull();
 
                 ZipReadStream.Seek(offset: 0, origin: SeekOrigin.Begin);

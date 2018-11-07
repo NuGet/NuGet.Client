@@ -1170,7 +1170,17 @@ namespace NuGet.Protocol
                         using (var packageReader = new PackageArchiveReader(stream))
                         {
                             // get hash of unsigned content of signed package
-                            var packageHash = packageReader.GetContentHash(CancellationToken.None, hashPath);
+                            var packageHash = packageReader.GetContentHash(
+                                CancellationToken.None,
+                                fallbackHashGenerator:
+                                () => {
+                                    if (!string.IsNullOrEmpty(hashPath) && File.Exists(hashPath))
+                                    {
+                                        return File.ReadAllText(hashPath);
+                                    }
+
+                                    return null;
+                                });
 
                             // write the new hash file
                             var hashFile = new NupkgMetadataFile()

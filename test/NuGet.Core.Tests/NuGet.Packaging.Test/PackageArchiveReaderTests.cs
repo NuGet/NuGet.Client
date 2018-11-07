@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1730,26 +1729,25 @@ namespace NuGet.Packaging.Test
 
 
         [Fact]
-        public void GetContentHash_UnsignedPackage_WhenGivingAFilePathForANonEmptyFile_ReadsFileAndReturnsFileContent()
+        public void GetContentHash_UnsignedPackage_WhenGivingAFallbackFunctionThatReturnsANonEmptyString_ReturnsGivenString()
         {
             using (var root = TestDirectory.Create())
             using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
             {
-                var testFilePath = Path.Combine(root, "test.txt");
-                File.WriteAllText(testFilePath, "abcde");
-
-                var result = test.Reader.GetContentHash(CancellationToken.None, testFilePath);
+                var result = test.Reader.GetContentHash(CancellationToken.None, fallbackHashGenerator: () => "abcde");
 
                 Assert.Equal("abcde", result);
             }
         }
 
-        [Fact]
-        public void GetContentHash_UnsignedPackage_WhenGivingAFilePathForNonExistingFile_ReturnsHashOfWholePackage()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void GetContentHash_UnsignedPackage_WhenGivingAFallbackFunctionThatReturnsANullOrEmptyString_ReturnsHashOfWholePackage(string data)
         {
             using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
             {
-                var result = test.Reader.GetContentHash(CancellationToken.None, "FileDoesNotExist.txt");
+                var result = test.Reader.GetContentHash(CancellationToken.None, fallbackHashGenerator: () => data);
 
                 test.Stream.Seek(offset: 0, origin: SeekOrigin.Begin);
 
@@ -1758,26 +1756,6 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(expectedResult, result);
             }
         }
-
-        [Fact]
-        public void GetContentHash_UnsignedPackage_WhenGivingAFilePathForEmptyFile_ReturnsHashOfWholePackage()
-        {
-            using (var root = TestDirectory.Create())
-            using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
-            {
-                var testFilePath = Path.Combine(root, "test.txt");
-                File.WriteAllText(testFilePath, "");
-
-                var result = test.Reader.GetContentHash(CancellationToken.None, testFilePath);
-
-                test.Stream.Seek(offset: 0, origin: SeekOrigin.Begin);
-
-                var expectedResult = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(test.Stream));
-
-                Assert.Equal(expectedResult, result);
-            }
-        }
-
 
 #if IS_DESKTOP
         [CIOnlyFact]
