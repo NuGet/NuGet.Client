@@ -363,7 +363,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 errors.Count().Should().Be(1);
                 errors.First().Code.Should().Be(NuGetLogCode.NU3005);
                 errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
-                errors.First().LibraryId.Should().Be(packageX.Identity.ToString());
+                errors.First().LibraryId.Should().Be(packageX.Identity.Id.ToString());
 
                 warnings.Count().Should().Be(0);
 
