@@ -36,7 +36,8 @@ namespace GenerateLicenseList
             return new LicenseData(licenseID: ReadString(tokens, "licenseId"),
                                    referenceNumber: ReadInt(tokens, "referenceNumber"),
                                    isOsiApproved: ReadBool(tokens, "isOsiApproved"),
-                                   isDeprecatedLicenseId: ReadBool(tokens, "isDeprecatedLicenseId")
+                                   isDeprecatedLicenseId: ReadBool(tokens, "isDeprecatedLicenseId"),
+                                   isFsfLibre: ReadBool(tokens, "isFsfLibre", false)
                 );
         }
 
@@ -89,6 +90,11 @@ namespace GenerateLicenseList
         private static bool ReadBool(JToken json, string property)
         {
             return json[property].Value<bool>();
+        }
+
+        private static bool ReadBool(JToken json, string property, bool defaultValue = false)
+        {
+            return json.Value<bool?>(property) ?? defaultValue;
         }
 
         private static JObject ReadJsonFile(string file)
@@ -145,18 +151,20 @@ namespace GenerateLicenseList
 
     public class LicenseData
     {
-        public LicenseData(string licenseID, int referenceNumber, bool isOsiApproved, bool isDeprecatedLicenseId)
+        public LicenseData(string licenseID, int referenceNumber, bool isOsiApproved, bool isDeprecatedLicenseId, bool isFsfLibre)
         {
             LicenseID = licenseID;
             ReferenceNumber = referenceNumber;
             IsOsiApproved = isOsiApproved;
             IsDeprecatedLicenseId = isDeprecatedLicenseId;
+            IsFsfLibre = isFsfLibre;
         }
 
         public string LicenseID { get; }
         public int ReferenceNumber { get; }
         public bool IsOsiApproved { get; }
         public bool IsDeprecatedLicenseId { get; }
+        public bool IsFsfLibre { get; }
     }
 
     public class ExceptionData
