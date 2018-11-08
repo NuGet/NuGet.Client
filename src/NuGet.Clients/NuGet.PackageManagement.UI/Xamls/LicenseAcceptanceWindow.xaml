@@ -54,7 +54,8 @@
       <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
         <TextBlock>
                 <Hyperlink
-                  AutomationProperties.AutomationId="{Binding Text}"
+                    AutomationProperties.AutomationId="{Binding Text}"
+                    Style="{StaticResource WindowHyperlinkStyle}"
                     Click="ViewLicense_Click">
                   <Run Text="{Binding Text}"/>
                 </Hyperlink>
