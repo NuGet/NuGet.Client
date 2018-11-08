@@ -9,10 +9,12 @@
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     <VsTargetBranch>lab/d16.$(MinorNuGetVersion)stg</VsTargetBranch>
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d16.$(MinorNuGetVersion)</VsTargetBranch>
-    <CliTargetBranch Condition="'$(OverrideCliTargetBranch)' != ''">$(OverrideCliTargetBranch)</CliTargetBranch>
-    <CliTargetBranch Condition="'$(OverrideCliTargetBranch)' == ''">master</CliTargetBranch>
-    <SdkTargetBranch Condition="'$(OverrideCliTargetBranch)' != ''">$(OverrideCliTargetBranch)</SdkTargetBranch>
-    <SdkTargetBranch Condition="'$(OverrideCliTargetBranch)' == ''">master</SdkTargetBranch>
+    <CliTargetBranch1 Condition="'$(OverrideCliTargetBranch)' != ''">$(OverrideCliTargetBranch)</CliTargetBranch1>
+    <CliTargetBranch1 Condition="'$(OverrideCliTargetBranch)' == ''">release/2.2.2xx</CliTargetBranch1>
+    <CliTargetBranch2>release/2.1.6xx</CliTargetBranch2>
+    <SdkTargetBranch1 Condition="'$(OverrideCliTargetBranch)' != ''">$(OverrideCliTargetBranch)</SdkTargetBranch1>
+    <SdkTargetBranch1 Condition="'$(OverrideCliTargetBranch)' == ''">release/2.2.2xx</SdkTargetBranch1>
+    <SdkTargetBranch2>release/2.1.6xx</SdkTargetBranch2>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
@@ -56,10 +58,16 @@
   <Target Name="GetVsTargetBranch">
     <Message Text="$(VsTargetBranch)" Importance="High"/>
   </Target>
-  <Target Name="GetCliTargetBranch">
-    <Message Text="$(CliTargetBranch)" Importance="High"/>
+  <Target Name="GetCliTargetBranch1">
+    <Message Text="$(CliTargetBranch1)" Importance="High"/>
   </Target>
-  <Target Name="GetSdkTargetBranch">
-    <Message Text="$(SdkTargetBranch)" Importance="High"/>
+  <Target Name="GetCliTargetBranch2">
+    <Message Text="$(CliTargetBranch2)" Importance="High"/>
+  </Target>
+  <Target Name="GetSdkTargetBranch1">
+    <Message Text="$(SdkTargetBranch1)" Importance="High"/>
+  </Target>
+  <Target Name="GetSdkTargetBranch2">
+    <Message Text="$(SdkTargetBranch2)" Importance="High"/>
   </Target>
 </Project>
