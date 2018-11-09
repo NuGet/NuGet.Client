@@ -965,15 +965,20 @@ namespace NuGet.Packaging.FuncTest
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
 
                 var verifier = new PackageSignatureVerifier(_trustProviders);
-
-                using (var packageReader = new PackageArchiveReader(signedPackagePath))
+                using (var stream = File.OpenRead(signedPackagePath))
+                using (var packageReader = new PackageArchiveReader(stream, leaveStreamOpen: true))
                 {
                     // Act
-                    var result = packageReader.GetContentHashForSignedPackage(CancellationToken.None);
+                    var contentHash = packageReader.GetContentHash(CancellationToken.None);
+
+                    stream.Seek(offset: 0, origin: SeekOrigin.Begin);
+                    var wholePackageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(stream));
 
                     // Assert
-                    result.Should().NotBeNullOrEmpty();
-                    Assert.Equal(expectedHash, result);
+                    contentHash.Should().NotBeNullOrEmpty();
+                    Assert.Equal(expectedHash, contentHash);
+                    Assert.NotEqual(wholePackageHash, contentHash);
+
                 }
             }
         }

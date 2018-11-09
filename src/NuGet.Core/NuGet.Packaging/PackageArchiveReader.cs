@@ -338,35 +338,24 @@ namespace NuGet.Packaging
 #endif
         }
 
-        public override string GetContentHashForSignedPackage(CancellationToken token)
+        public override string GetContentHash(CancellationToken token, Func<string> GetUnsignedPackageHash = null)
         {
-            token.ThrowIfCancellationRequested();
-
-            ThrowIfZipReadStreamIsNull();
-
-            using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
-            {
-                var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
-
-                if (signatureEntry == null ||
-                    !string.Equals(signatureEntry.Name, SigningSpecifications.SignaturePath, StringComparison.Ordinal))
-                {
-                    return null;
-                }
-            }
-
-            using (var bufferedStream = new ReadOnlyBufferedStream(ZipReadStream, leaveOpen: true))
-            using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
-            {
-                return SignedPackageArchiveUtility.GetPackageContentHash(reader);
-            }
-        }
-
-        public override string GetContentHash(CancellationToken token)
-        {
+            // Try to get the content hash for signed packages
             var contentHash = GetContentHashForSignedPackage(token);
-            if (contentHash == null)
+
+            if (string.IsNullOrEmpty(contentHash))
             {
+                // The package is unsigned, try to read the existing sha512 file
+                if (GetUnsignedPackageHash != null)
+                {
+                    var packageHash = GetUnsignedPackageHash();
+
+                    if (!string.IsNullOrEmpty(packageHash))
+                    {
+                        return packageHash;
+                    }
+                }
+
                 ThrowIfZipReadStreamIsNull();
 
                 ZipReadStream.Seek(offset: 0, origin: SeekOrigin.Begin);
@@ -403,6 +392,33 @@ namespace NuGet.Packaging
             if (ZipReadStream == null)
             {
                 throw new SignatureException(Strings.SignedPackageUnableToAccessSignature);
+            }
+        }
+
+        private string GetContentHashForSignedPackage(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            if (ZipReadStream == null)
+            {
+                return null;
+            }
+
+            using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
+            {
+                var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
+
+                if (signatureEntry == null ||
+                    !string.Equals(signatureEntry.Name, SigningSpecifications.SignaturePath, StringComparison.Ordinal))
+                {
+                    return null;
+                }
+            }
+
+            using (var bufferedStream = new ReadOnlyBufferedStream(ZipReadStream, leaveOpen: true))
+            using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
+            {
+                return SignedPackageArchiveUtility.GetPackageContentHash(reader);
             }
         }
     }
