@@ -2609,7 +2609,7 @@ namespace NuGet.Packaging.Test
                     })
                 .ReturnsAsync(() => copiedFilePaths);
 
-            signedReader.Setup(x => x.GetContentHashForSignedPackage(It.IsAny<CancellationToken>()))
+            signedReader.Setup(x => x.GetContentHash(It.IsAny<CancellationToken>(), It.IsAny<Func<string>>()))
                 .Returns(string.Empty);
 
             var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
@@ -2684,7 +2684,7 @@ namespace NuGet.Packaging.Test
                     })
                 .ReturnsAsync(() => copiedFilePaths);
 
-            signedReader.Setup(x => x.GetContentHashForSignedPackage(It.IsAny<CancellationToken>()))
+            signedReader.Setup(x => x.GetContentHash(It.IsAny<CancellationToken>(), It.IsAny<Func<string>>()))
                 .Returns(string.Empty);
 
             var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));

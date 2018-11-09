@@ -240,14 +240,14 @@ namespace NuGet.Packaging
             throw new NotImplementedException();
         }
 
-        public override string GetContentHashForSignedPackage(CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
-
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
             return false;
+        }
+        
+        public override string GetContentHash(CancellationToken token, Func<string> GetUnsignedPackageHash = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

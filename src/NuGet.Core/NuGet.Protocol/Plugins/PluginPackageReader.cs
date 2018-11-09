@@ -1149,12 +1149,6 @@ namespace NuGet.Protocol.Plugins
             throw new NotImplementedException();
         }
 
-        public override string GetContentHashForSignedPackage(CancellationToken token)
-        {
-            // Plugin Download doesn't support signed packages so simply return null.
-            return null;
-        }
-
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
 #if IS_DESKTOP
@@ -1164,6 +1158,12 @@ namespace NuGet.Protocol.Plugins
             }
 #endif
             return false;
+        }
+        
+        public override string GetContentHash(CancellationToken token, Func<string> GetUnsignedPackageHash = null)
+        {
+            // Plugin Download doesn't support signed packages so simply return null... and even then they aren't always packages.
+            return null;
         }
 
         private sealed class FileStreamCreator : IDisposable
