@@ -1,7 +1,9 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Runtime.Versioning;
 using NuGet.Frameworks;
-using Utility = System.IO;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -19,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException("ScriptPackageFileTargetFramework");
             }
 
-            Path = path.Replace(Utility.Path.AltDirectorySeparatorChar, Utility.Path.DirectorySeparatorChar);
+            Path = path.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);
             TargetFramework = new FrameworkName(targetFramework.DotNetFrameworkName); ;
         }
 

@@ -2,19 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using NuGet.Commands.Utility;
-using NuGet.Frameworks;
+using NuGet.Common;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Shared;
-using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
@@ -96,48 +89,5 @@ namespace NuGet.Commands
             return lockFile;
         }
 
-        public async Task<PackagesLockFile> CreateNuGetLockFileAsync(IEnumerable<PackageReference> installedPackages, IContentHashUtility contentHashUtility, CancellationToken token)
-        {
-            Debug.Assert(installedPackages != null);
-            Debug.Assert(contentHashUtility != null);
-
-            var lockFile = new PackagesLockFile();
-
-            NuGetFramework GetFramework(PackageReference package) => package.TargetFramework.Framework == FrameworkConstants.SpecialIdentifiers.Unsupported
-                ? new NuGetFramework(FrameworkConstants.SpecialIdentifiers.Any)
-                : package.TargetFramework;
-            
-
-            foreach (var targetFramework in installedPackages.GroupBy(GetFramework).OrderBy(g => g.Key.Framework).ThenBy(g => g.Key.Version))
-            {
-                var target = new PackagesLockFileTarget
-                {
-                    TargetFramework = targetFramework.Key,
-                };
-
-                foreach (var package in targetFramework.OrderBy(p => p.PackageIdentity))
-                {
-                    var requestedVersion = new VersionRange(minVersion: package.PackageIdentity.Version,
-                        includeMinVersion: true,
-                        maxVersion: package.PackageIdentity.Version,
-                        includeMaxVersion: true);
-
-                    var dependency = new LockFileDependency
-                    {
-                        Id = package.PackageIdentity.Id,
-                        Type = PackageDependencyType.Direct,
-                        RequestedVersion = requestedVersion,
-                        ResolvedVersion = package.PackageIdentity.Version,
-                        ContentHash = await contentHashUtility.GetContentHashAsync(package.PackageIdentity, token)
-                    };
-
-                    target.Dependencies.Add(dependency);
-                }
-
-                lockFile.Targets.Add(target);
-            }
-
-            return lockFile;
-        }
     }
 }

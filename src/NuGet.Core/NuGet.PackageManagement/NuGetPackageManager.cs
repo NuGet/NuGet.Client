@@ -15,6 +15,7 @@ using NuGet.Commands.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.PackageManagement.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -2338,54 +2339,10 @@ namespace NuGet.PackageManagement
                         }
                     }
 
-                    var directory = Path.GetDirectoryName(msbuildProject.MSBuildProjectPath);
-                    var msbuildProperty = msbuildProject?.ProjectSystem?.GetPropertyValue("NuGetLockFilePath");
-                    string lockFileName = null;
-                    if (msbuildProperty is string nuGetLockFilePathValue)
-                    {
-                        if (!string.IsNullOrWhiteSpace(nuGetLockFilePathValue))
-                        {
-                            lockFileName = Path.Combine(directory, nuGetLockFilePathValue);
-                        }
-                    }
-                    if (lockFileName == null)
-                    {
-                        lockFileName = PackagesLockFileUtilities.GetNuGetLockFilePath(directory, Path.GetFileNameWithoutExtension(msbuildProject.MSBuildProjectPath));
-                    }
-                    var useLockFile = false;
-                    msbuildProperty = msbuildProject?.ProjectSystem?.GetPropertyValue("RestorePackagesWithLockFile");
-                    if (msbuildProperty is string restorePackagesWithLockFileValue)
-                    {
-                        bool.TryParse(restorePackagesWithLockFileValue, out useLockFile);
-                    }
-                    if (useLockFile || File.Exists(lockFileName))
-                    {
-                        var installedPackagesEnumeration = await nuGetProject.GetInstalledPackagesAsync(token);
-                        var installedPackages = installedPackagesEnumeration as ICollection<PackageReference> ?? installedPackagesEnumeration.ToList();
-
-                        var repositories = new List<SourceRepository>();
-                        repositories.Add(PackagesFolderSourceRepository);
-                        repositories.AddRange(GlobalPackageFolderRepositories);
-
-                        var contentHashUtil = new ContentHashUtility(repositories, logger);
-                        var builder = new PackagesLockFileBuilder();
-                        var lockFile = await builder.CreateNuGetLockFileAsync(installedPackages,
-                            contentHashUtil,
-                            token);
-                        PackagesLockFileFormat.Write(lockFileName, lockFile);
-
-                        if (msbuildProject != null)
-                        {
-                            var projectUri = new Uri(msbuildProject.MSBuildProjectPath);
-                            var lockFileUri = new Uri(lockFileName);
-                            var lockFileRelativePath = projectUri.MakeRelativeUri(lockFileUri).OriginalString;
-                            if (Path.DirectorySeparatorChar != '/')
-                            {
-                                lockFileRelativePath.Replace('/', Path.DirectorySeparatorChar);
-                            }
-                            msbuildProject.ProjectSystem.AddExistingFile(lockFileRelativePath);
-                        }
-                    }
+                    var repositories = new List<SourceRepository>();
+                    repositories.Add(PackagesFolderSourceRepository);
+                    repositories.AddRange(GlobalPackageFolderRepositories);
+                    await PackagesConfigLockFileUtility.UpdateLockFileAsync(msbuildProject, actionsList, repositories, logger, token);
 
                     // Post process
                     await nuGetProject.PostProcessAsync(nuGetProjectContext, token);

@@ -204,13 +204,16 @@ namespace NuGet.PackageManagement.VisualStudio
             // it into the project.
             // Other exceptions are 'web.config' and 'app.config'
             var fileName = Path.GetFileName(path);
+            var customLockFilePath = GetPropertyValue("NuGetLockFilePath")?.ToString();
             if (File.Exists(Path.Combine(ProjectFullPath, path))
                 && !fileExistsInProject
                 && !fileName.Equals(ProjectManagement.Constants.PackageReferenceFile)
                 && !fileName.Equals("packages." + ProjectName + ".config")
                 && !fileName.Equals(EnvDTEProjectInfoUtility.WebConfig)
                 && !fileName.Equals(EnvDTEProjectInfoUtility.AppConfig)
-                && !fileName.Equals(PackagesLockFileFormat.LockFileName))
+                && !fileName.Equals(PackagesLockFileFormat.LockFileName)
+                && !fileName.Equals("packages." + ProjectName + ".lock.json")
+                && !(customLockFilePath != null && fileName.Equals(customLockFilePath)))
             {
                 NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
             }

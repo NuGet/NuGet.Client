@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests.PackagesConfigPr
         }
 
         [Fact]
-        public async Task InstallingPackageShouldCreateLockFile()
+        public async Task InstallingPackageShouldCreateLockFile_PackagesLockJson()
         {
             // Arrange
             using (var packageSource = TestDirectory.Create())
@@ -112,6 +112,60 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests.PackagesConfigPr
                 // Check that the packages.lock.json file exists after the installation
                 Assert.True(File.Exists(packagesLockPath));
                 Assert.True(msBuildNuGetProjectSystem.FileExistsInProject("packages.lock.json"));
+                // Check the number of target frameworks and dependencies in the lock file
+                var lockFile = PackagesLockFileFormat.Read(packagesLockPath);
+                Assert.Equal(1, lockFile.Targets.Count);
+                Assert.Equal(1, lockFile.Targets[0].Dependencies.Count);
+            }
+        }
+
+        [Fact]
+        public async Task InstallingPackageShouldCreateLockFile_CustomLockFileName()
+        {
+            // Arrange
+            using (var packageSource = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager(true))
+            {
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<PackageSource>()
+                    {
+                        new PackageSource(packageSource.Path)
+                    });
+
+                var testSettings = NullSettings.Instance;
+                var token = CancellationToken.None;
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+                var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+                var packageContext = new SimpleTestPackageContext("packageA");
+                packageContext.AddFile("lib/net45/a.dll");
+                SimpleTestPackageUtility.CreateOPCPackage(packageContext, packageSource);
+
+                var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
+                msBuildNuGetProjectSystem.SetPropertyValue("RestorePackagesWithLockFile", "true");
+                msBuildNuGetProjectSystem.SetPropertyValue("NuGetLockFilePath", "my.lock.json");
+                var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
+                var packagesLockPath = packagesConfigPath.Replace("packages.config", "my.lock.json");
+                var packageIdentity = packageContext.Identity;
+
+                // Pre-Assert
+                // Check that the packages.lock.json file does not exist
+                Assert.False(File.Exists(packagesLockPath));
+
+                // Act
+                await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
+                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+                // Assert
+                // Check that the packages.lock.json file exists after the installation
+                Assert.True(File.Exists(packagesLockPath));
+                Assert.True(msBuildNuGetProjectSystem.FileExistsInProject("my.lock.json"));
                 // Check the number of target frameworks and dependencies in the lock file
                 var lockFile = PackagesLockFileFormat.Read(packagesLockPath);
                 Assert.Equal(1, lockFile.Targets.Count);
