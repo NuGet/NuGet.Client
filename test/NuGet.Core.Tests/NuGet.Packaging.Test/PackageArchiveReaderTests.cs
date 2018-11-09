@@ -1734,7 +1734,7 @@ namespace NuGet.Packaging.Test
             using (var root = TestDirectory.Create())
             using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
             {
-                var result = test.Reader.GetContentHash(CancellationToken.None, fallbackHashGenerator: () => "abcde");
+                var result = test.Reader.GetContentHash(CancellationToken.None, GetUnsignedPackageHash: () => "abcde");
 
                 Assert.Equal("abcde", result);
             }
@@ -1747,7 +1747,7 @@ namespace NuGet.Packaging.Test
         {
             using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
             {
-                var result = test.Reader.GetContentHash(CancellationToken.None, fallbackHashGenerator: () => data);
+                var result = test.Reader.GetContentHash(CancellationToken.None, GetUnsignedPackageHash: () => data);
 
                 test.Stream.Seek(offset: 0, origin: SeekOrigin.Begin);
 

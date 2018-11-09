@@ -338,7 +338,7 @@ namespace NuGet.Packaging
 #endif
         }
 
-        public override string GetContentHash(CancellationToken token, Func<string> fallbackHashGenerator = null)
+        public override string GetContentHash(CancellationToken token, Func<string> GetUnsignedPackageHash = null)
         {
             // Try to get the content hash for signed packages
             var contentHash = GetContentHashForSignedPackage(token);
@@ -346,9 +346,9 @@ namespace NuGet.Packaging
             if (string.IsNullOrEmpty(contentHash))
             {
                 // The package is unsigned, try to read the existing sha512 file
-                if (fallbackHashGenerator != null)
+                if (GetUnsignedPackageHash != null)
                 {
-                    var packageHash = fallbackHashGenerator();
+                    var packageHash = GetUnsignedPackageHash();
 
                     if (!string.IsNullOrEmpty(packageHash))
                     {

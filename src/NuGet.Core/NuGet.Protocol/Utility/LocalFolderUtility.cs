@@ -1172,7 +1172,7 @@ namespace NuGet.Protocol
                             // get hash of unsigned content of signed package
                             var packageHash = packageReader.GetContentHash(
                                 CancellationToken.None,
-                                fallbackHashGenerator:
+                                GetUnsignedPackageHash:
                                 () => {
                                     if (!string.IsNullOrEmpty(hashPath) && File.Exists(hashPath))
                                     {

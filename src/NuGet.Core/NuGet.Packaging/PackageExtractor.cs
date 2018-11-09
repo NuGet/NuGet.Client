@@ -515,7 +515,7 @@ namespace NuGet.Packaging
                                         File.WriteAllText(tempHashPath, packageHash);
 
                                         // get hash for the unsigned content of package
-                                        var contentHash = packageReader.GetContentHash(cancellationToken, fallbackHashGenerator: () => packageHash);
+                                        var contentHash = packageReader.GetContentHash(cancellationToken, GetUnsignedPackageHash: () => packageHash);
 
                                         // write the new hash file
                                         var hashFile = new NupkgMetadataFile()
@@ -819,7 +819,7 @@ namespace NuGet.Packaging
                             File.WriteAllText(tempHashPath, packageHash);
 
                             // get hash for the unsigned content of package
-                            var contentHash = packageDownloader.SignedPackageReader.GetContentHash(cancellationToken, fallbackHashGenerator: () => packageHash);
+                            var contentHash = packageDownloader.SignedPackageReader.GetContentHash(cancellationToken, GetUnsignedPackageHash: () => packageHash);
 
                             // write the new hash file
                             var hashFile = new NupkgMetadataFile()

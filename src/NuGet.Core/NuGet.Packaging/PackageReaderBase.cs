@@ -598,6 +598,6 @@ namespace NuGet.Packaging
         /// <summary>
         /// Get contenthash for a package.
         /// </summary>
-        public abstract string GetContentHash(CancellationToken token, Func<string> fallbackHashGenerator = null);
+        public abstract string GetContentHash(CancellationToken token, Func<string> GetUnsignedPackageHash = null);
     }
 }
