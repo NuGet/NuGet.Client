@@ -9,12 +9,14 @@
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     <VsTargetBranch>lab/d16.$(MinorNuGetVersion)stg</VsTargetBranch>
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d16.$(MinorNuGetVersion)</VsTargetBranch>
-    <CliTargetBranch1 Condition="'$(OverrideCliTargetBranch)' != ''">$(OverrideCliTargetBranch)</CliTargetBranch1>
-    <CliTargetBranch1 Condition="'$(OverrideCliTargetBranch)' == ''">release/2.2.2xx</CliTargetBranch1>
-    <CliTargetBranch2>release/2.1.6xx</CliTargetBranch2>
-    <SdkTargetBranch1 Condition="'$(OverrideCliTargetBranch)' != ''">$(OverrideCliTargetBranch)</SdkTargetBranch1>
-    <SdkTargetBranch1 Condition="'$(OverrideCliTargetBranch)' == ''">release/2.2.2xx</SdkTargetBranch1>
-    <SdkTargetBranch2>release/2.1.6xx</SdkTargetBranch2>
+    <CliTargetBranch1 Condition="'$(OverrideCliTargetBranch1)' != ''">$(OverrideCliTargetBranch1)</CliTargetBranch1>
+    <CliTargetBranch1 Condition="'$(OverrideCliTargetBranch1)' == ''">release/2.2.2xx</CliTargetBranch1>
+    <CliTargetBranch2 Condition="'$(OverrideCliTargetBranch2)' != ''">$(OverrideCliTargetBranch2)</CliTargetBranch2>
+    <CliTargetBranch2 Condition="'$(OverrideCliTargetBranch2)' == ''">release/2.1.6xx</CliTargetBranch2>
+    <SdkTargetBranch1 Condition="'$(OverrideCliTargetBranch1)' != ''">$(OverrideCliTargetBranch1)</SdkTargetBranch1>
+    <SdkTargetBranch1 Condition="'$(OverrideCliTargetBranch1)' == ''">release/2.2.2xx</SdkTargetBranch1>
+    <SdkTargetBranch2 Condition="'$(OverrideCliTargetBranch2)' != ''">$(OverrideCliTargetBranch2)</SdkTargetBranch2>
+    <SdkTargetBranch2 Condition="'$(OverrideCliTargetBranch2)' == ''">release/2.1.6xx</SdkTargetBranch2>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
