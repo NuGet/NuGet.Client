@@ -238,12 +238,12 @@ namespace NuGet.Packaging.Signing
                             {
                                 if (offlineRevocationErrors)
                                 {
-                                    issues.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampVerifyChainBuildingIssue, signature.FriendlyName, Strings.VerifyCertTrustOfflineWhileRevocationModeOnline)));
+                                    issues.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampVerifyChainBuildingIssue, signature.FriendlyName, Strings.VerifyCertTrustOfflineWhileRevocationModeOnline)));
                                 }
 
                                 if (unknownRevocationMessage != null)
                                 {
-                                    issues.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3018, unknownRevocationMessage));
+                                    issues.Add(SignatureLog.Issue(!settings.AllowUnknownRevocation, NuGetLogCode.NU3028, unknownRevocationMessage));
                                 }
 
                             }
