@@ -98,7 +98,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Author trust was expected but package is not author signed..
+        ///   Looks up a localized string similar to Unable to add trusted author. The package is not author signed..
         /// </summary>
         internal static string Error_AuthorTrustExpectedAuthorSignature {
             get {
@@ -125,7 +125,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The repository with service index &apos;{0}&apos; does not list any trusted certificate..
+        ///   Looks up a localized string similar to The repository with the service index &apos;{0}&apos; does not list any trusted certificates..
         /// </summary>
         internal static string Error_EmptyCertificateListInRepository {
             get {
@@ -170,7 +170,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Invalid certificate information from service index &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Invalid certificate information from the service index &apos;{0}&apos;.
         /// </summary>
         internal static string Error_InvalidCertificateInformationFromServer {
             get {
@@ -368,7 +368,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Repository trust was expected but package is not repository signed..
+        ///   Looks up a localized string similar to Unable to add trusted repository. The package is not repository signed or countersigned..
         /// </summary>
         internal static string Error_RepoTrustExpectedRepoSignature {
             get {
@@ -395,7 +395,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Trusted author cannot have owners..
+        ///   Looks up a localized string similar to A trusted author cannot have owners..
         /// </summary>
         internal static string Error_TrustedAuthorNoOwners {
             get {
@@ -404,7 +404,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Trusted repository with service index &apos;{0}&apos; already exists..
+        ///   Looks up a localized string similar to A trusted repository with the service index &apos;{0}&apos; already exists..
         /// </summary>
         internal static string Error_TrustedRepoAlreadyExists {
             get {
@@ -413,7 +413,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Trusted repository with name &apos;{0}&apos; does not exist..
+        ///   Looks up a localized string similar to A trusted repository with the name &apos;{0}&apos; does not exist..
         /// </summary>
         internal static string Error_TrustedRepositoryDoesNotExist {
             get {
@@ -422,7 +422,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Trusted signer with name &apos;{0}&apos; already exists..
+        ///   Looks up a localized string similar to A trusted signer with the name &apos;{0}&apos; already exists..
         /// </summary>
         internal static string Error_TrustedSignerAlreadyExists {
             get {
