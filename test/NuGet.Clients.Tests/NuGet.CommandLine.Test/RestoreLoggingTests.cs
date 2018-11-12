@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -1966,6 +1967,94 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeTrue();
                 r.AllOutput.Should().NotContain("NU1603");
+            }
+        }
+
+        [Fact]
+        public void RestoreLogging_PackagesLockFile_InvalidInputError()
+        {
+
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                projectA.Properties.Add("RestorePackagesWithLockFile", "false");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                File.Create(projectA.NuGetLockFileOutputPath).Close();
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1005");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_PackagesLockFile_RestoreLockedModeErrorAsync()
+        {
+
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                };
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0",
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX, packageY);
+
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+
+                projectA.AddPackageToAllFrameworks(packageY);
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Save();
+
+                // Act
+                r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1004");
             }
         }
     }
