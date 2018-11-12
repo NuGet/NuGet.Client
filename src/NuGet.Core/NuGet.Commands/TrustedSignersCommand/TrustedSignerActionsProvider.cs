@@ -85,7 +85,7 @@ namespace NuGet.Commands
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(name));
             }
 
-            if (!Enum.IsDefined(typeof(VerificationTarget), trustTarget) || trustTarget == VerificationTarget.Unknown)
+            if (!Enum.IsDefined(typeof(VerificationTarget), trustTarget) || (trustTarget != VerificationTarget.Repository && trustTarget != VerificationTarget.Author))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnsupportedTrustTarget, trustTarget.ToString()));
             }
@@ -96,7 +96,7 @@ namespace NuGet.Commands
             }
 
             var v3ServiceIndex = string.Empty;
-            IRepositorySignature reposig = null;
+            IRepositorySignature repositorySignature = null;
             var trustingRepository = trustTarget.HasFlag(VerificationTarget.Repository);
 
             var primarySignature = await package.GetPrimarySignatureAsync(token);
@@ -110,39 +110,26 @@ namespace NuGet.Commands
             {
                 if (primarySignature.Type == SignatureType.Repository)
                 {
-                    reposig = primarySignature as RepositoryPrimarySignature;
+                    repositorySignature = primarySignature as RepositoryPrimarySignature;
                 }
                 else
                 {
                     var countersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
-                    reposig = countersignature ?? throw new InvalidOperationException(Strings.Error_RepoTrustExpectedRepoSignature);
+                    repositorySignature = countersignature ?? throw new InvalidOperationException(Strings.Error_RepoTrustExpectedRepoSignature);
                 }
 
-                v3ServiceIndex = reposig.V3ServiceIndexUrl.AbsoluteUri;
+                v3ServiceIndex = repositorySignature.V3ServiceIndexUrl.AbsoluteUri;
             }
 
-            var signers = _trustedSignersProvider.GetTrustedSigners();
-            foreach (var existingSigner in signers)
-            {
-                if (string.Equals(existingSigner.Name, name, StringComparison.Ordinal))
-                {
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedSignerAlreadyExists, name));
-                }
-
-                if (trustingRepository && existingSigner is RepositoryItem repoItem && string.Equals(repoItem.ServiceIndex, v3ServiceIndex, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedRepoAlreadyExists, v3ServiceIndex));
-                }
-            }
+            ValidateNoExistingSigner(name, v3ServiceIndex, trustingRepository);
 
             if (trustingRepository)
             {
-                var certificateItem = GetCertificateItemForSignature(reposig, allowUntrustedRoot);
+                var certificateItem = GetCertificateItemForSignature(repositorySignature, allowUntrustedRoot);
 
                 _trustedSignersProvider.AddOrUpdateTrustedSigner(new RepositoryItem(name, v3ServiceIndex, CreateOwnersList(owners), certificateItem));
             }
-
-            if (trustTarget.HasFlag(VerificationTarget.Author))
+            else
             {
                 if (primarySignature.Type != SignatureType.Author)
                 {
@@ -154,7 +141,6 @@ namespace NuGet.Commands
                 _trustedSignersProvider.AddOrUpdateTrustedSigner(new AuthorItem(name, certificateItem));
             }
         }
-
 #endif
 
         /// <summary>
@@ -227,6 +213,16 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(serviceIndex));
             }
 
+            ValidateNoExistingSigner(name, serviceIndex.AbsoluteUri);
+
+            var certificateItems = await GetCertificateItemsFromServiceIndexAsync(serviceIndex.AbsoluteUri, token);
+
+            _trustedSignersProvider.AddOrUpdateTrustedSigner(
+                new RepositoryItem(name, serviceIndex.AbsoluteUri, CreateOwnersList(owners), certificateItems));
+        }
+
+        private void ValidateNoExistingSigner(string name, string serviceIndex, bool validateServiceIndex = true)
+        {
             var signers = _trustedSignersProvider.GetTrustedSigners();
             foreach (var existingSigner in signers)
             {
@@ -235,17 +231,13 @@ namespace NuGet.Commands
                     throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedSignerAlreadyExists, name));
                 }
 
-                if (existingSigner is RepositoryItem repoItem && string.Equals(repoItem.ServiceIndex, serviceIndex.AbsoluteUri, StringComparison.OrdinalIgnoreCase))
+                if (validateServiceIndex && existingSigner is RepositoryItem repoItem && string.Equals(repoItem.ServiceIndex, serviceIndex, StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedRepoAlreadyExists, serviceIndex.AbsoluteUri));
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedRepoAlreadyExists, serviceIndex));
                 }
             }
-
-            var certificateItems = await GetCertificateItemsFromServiceIndexAsync(serviceIndex.AbsoluteUri, token);
-
-            _trustedSignersProvider.AddOrUpdateTrustedSigner(
-                new RepositoryItem(name, serviceIndex.AbsoluteUri, CreateOwnersList(owners), certificateItems));
         }
+
 #if IS_DESKTOP
         private CertificateItem GetCertificateItemForSignature(ISignature signature, bool allowUntrustedRoot = false)
         {
@@ -255,6 +247,7 @@ namespace NuGet.Commands
             return new CertificateItem(fingerprint, defaultHashAlgorithm, allowUntrustedRoot);
         }
 #endif
+
         private async Task<CertificateItem[]> GetCertificateItemsFromServiceIndexAsync(string serviceIndex, CancellationToken token)
         {
             if (string.IsNullOrEmpty(serviceIndex))
