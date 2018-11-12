@@ -4,6 +4,8 @@
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+using Microsoft.Internal.VisualStudio.PlatformUI.Automation;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
@@ -20,6 +22,7 @@ namespace NuGet.PackageManagement.UI
         public LicenseAcceptanceWindow()
         {
             InitializeComponent();
+            CustomAutomationProperties.SetLiveSetting(EmbeddedLicense, AutomationLiveSetting.Polite);
         }
 
         private void OnViewLicenseTermsRequestNavigate(object sender, RoutedEventArgs e)
@@ -48,7 +51,8 @@ namespace NuGet.PackageManagement.UI
                         EmbeddedLicense.Visibility = Visibility.Visible;
                         EmbeddedLicenseHeader.Visibility = Visibility.Visible;
                     }
-                    licenseFile.LoadLicenseFile(); // This loads the file asynchronously 
+                    licenseFile.LoadLicenseFile(); // This loads the file asynchronously
+                    AutomationUtilities.RaiseLiveRegionChangedEvent(EmbeddedLicense);
                     EmbeddedLicense.DataContext = licenseFile;
                     EmbeddedLicenseHeader.DataContext = licenseFile;
                 }
