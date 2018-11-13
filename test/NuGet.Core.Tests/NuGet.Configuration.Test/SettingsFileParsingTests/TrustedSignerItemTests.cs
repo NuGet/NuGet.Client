@@ -38,10 +38,17 @@ namespace NuGet.Configuration.Test
                 var items = section.Items.ToList();
 
                 items.Count.Should().Be(2);
+
+                var trustedSignerItem = items[0] as TrustedSignerItem;
+                trustedSignerItem.Name.Should().Be("repositoryName");
+
                 var repositoryitem = items[0] as RepositoryItem;
                 var expectedRepositoryItem = new RepositoryItem("repositoryName", "https://api.test/index/", "test;text",
                     new CertificateItem("abcdefg", Common.HashAlgorithmName.SHA256, allowUntrustedRoot: true));
                 SettingsTestUtils.DeepEquals(repositoryitem, expectedRepositoryItem).Should().BeTrue();
+
+                trustedSignerItem = items[1] as TrustedSignerItem;
+                trustedSignerItem.Name.Should().Be("authorName");
 
                 var authorItem = items[1] as AuthorItem;
                 var expectedAuthorItem = new AuthorItem("authorName",

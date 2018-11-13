@@ -170,7 +170,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid certificate information from the service index &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Invalid certificate information from the service index &apos;{0}&apos;..
         /// </summary>
         internal static string Error_InvalidCertificateInformationFromServer {
             get {
@@ -1620,7 +1620,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unsupported hash algorithm: &apos;{0}&apos;.
+        ///   Looks up a localized string similar to The hash algorithm is unsupported:  &apos;{0}&apos;..
         /// </summary>
         internal static string UnsupportedHashAlgorithm {
             get {

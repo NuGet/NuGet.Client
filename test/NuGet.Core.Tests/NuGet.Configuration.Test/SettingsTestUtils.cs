@@ -38,7 +38,7 @@ namespace NuGet.Configuration.Test
             return Regex.Replace(s, @"\s+", string.Empty);
         }
 
-        public static bool SequenceDeepEquals<T>(IList<T> settings1, IList<T> settings2) where T : SettingBase
+        public static bool SequenceDeepEquals<T>(IReadOnlyList<T> settings1, IReadOnlyList<T> settings2) where T : SettingBase
         {
             if (settings1 == null && settings2 == null)
             {
@@ -50,14 +50,21 @@ namespace NuGet.Configuration.Test
                 return false;
             }
 
-            if (settings1.Count() != settings2.Count())
+            if (settings1.Count != settings2.Count)
             {
                 return false;
             }
 
-            for (var i = 0; i < settings1.Count(); i++)
+            for (var i = 0; i < settings1.Count; i++)
             {
-                if (!DeepEquals(settings1[0], settings2[0]))
+                var val2 = settings2.Where(s => s.Equals(settings1[i]));
+
+                if (val2 == null || val2.Count() != 1)
+                {
+                    return false;
+                }
+
+                if (!DeepEquals(settings1[i], val2.First()))
                 {
                     return false;
                 }

@@ -12,8 +12,6 @@ namespace NuGet.Packaging.Signing
 #if IS_DESKTOP
         SignatureType Type { get; }
 
-        string FriendlyName { get; }
-
         SignerInfo SignerInfo { get; }
 #endif
     }

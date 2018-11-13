@@ -729,7 +729,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Unable to add trusted author. The package is not author signed.</value>
   </data>
   <data name="Error_InvalidCertificateInformationFromServer" xml:space="preserve">
-    <value>Invalid certificate information from the service index '{0}'</value>
+    <value>Invalid certificate information from the service index '{0}'.</value>
     <comment>0 - service index</comment>
   </data>
   <data name="Error_PackageNotSigned" xml:space="preserve">
@@ -758,7 +758,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>0 - VerificationTarget</comment>
   </data>
   <data name="UnsupportedHashAlgorithm" xml:space="preserve">
-    <value>Unsupported hash algorithm: '{0}'</value>
+    <value>The hash algorithm is unsupported:  '{0}'.</value>
     <comment>0 - hash algorithm</comment>
   </data>
   <data name="Error_EmptyCertificateListInRepository" xml:space="preserve">

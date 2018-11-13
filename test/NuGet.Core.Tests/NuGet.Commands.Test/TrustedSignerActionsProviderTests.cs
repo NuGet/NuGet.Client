@@ -34,10 +34,7 @@ namespace NuGet.Commands.Test
         public void TrustedSignerActionsProvider_Constructor_WithNullTrustedSignersProvider()
         {
             // Act and Assert
-            var ex = Record.Exception(() => new TrustedSignerActionsProvider(trustedSignersProvider: null));
-
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentNullException>();
+            Assert.Throws<ArgumentNullException>(() => new TrustedSignerActionsProvider(trustedSignersProvider: null));
         }
 
         [Theory]
@@ -50,11 +47,10 @@ namespace NuGet.Commands.Test
             var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
 
             // Act and Assert
-            var ex = await Record.ExceptionAsync(async () => await actionsProvider.SyncTrustedRepositoryAsync(name, CancellationToken.None));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(async () => await actionsProvider.SyncTrustedRepositoryAsync(name, CancellationToken.None));
 
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentException>();
             ex.Message.Should().Contain(Strings.ArgumentCannotBeNullOrEmpty);
+            ex.ParamName.Should().Be("name");
         }
 
         [Fact]
@@ -217,7 +213,7 @@ namespace NuGet.Commands.Test
             var packageReader = new Mock<ISignedPackageReader>();
 
             // Act and Assert
-            var ex = await Record.ExceptionAsync(async () =>
+            var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
                 await actionsProvider.AddTrustedSignerAsync(
                     name,
                     packageReader.Object,
@@ -226,9 +222,8 @@ namespace NuGet.Commands.Test
                     owners: null,
                     token: CancellationToken.None));
 
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentException>();
             ex.Message.Should().Contain(Strings.ArgumentCannotBeNullOrEmpty);
+            ex.ParamName.Should().Be("name");
         }
 
         [Fact]
@@ -861,11 +856,10 @@ namespace NuGet.Commands.Test
             var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
 
             // Act and Assert
-            var ex = Record.Exception(() => actionsProvider.AddOrUpdateTrustedSigner(name, fingerprint: "abc", hashAlgorithm: HashAlgorithmName.SHA256, allowUntrustedRoot: false));
+            var ex = Assert.Throws<ArgumentException>(() => actionsProvider.AddOrUpdateTrustedSigner(name, fingerprint: "abc", hashAlgorithm: HashAlgorithmName.SHA256, allowUntrustedRoot: false));
 
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentException>();
             ex.Message.Should().Contain(Strings.ArgumentCannotBeNullOrEmpty);
+            ex.ParamName.Should().Be("name");
         }
 
         [Theory]
@@ -878,11 +872,10 @@ namespace NuGet.Commands.Test
             var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
 
             // Act and Assert
-            var ex = Record.Exception(() => actionsProvider.AddOrUpdateTrustedSigner(name: "author1", fingerprint: fingerprint, hashAlgorithm: HashAlgorithmName.SHA256, allowUntrustedRoot: false));
+            var ex = Assert.Throws<ArgumentException>(() => actionsProvider.AddOrUpdateTrustedSigner(name: "author1", fingerprint: fingerprint, hashAlgorithm: HashAlgorithmName.SHA256, allowUntrustedRoot: false));
 
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentException>();
             ex.Message.Should().Contain(Strings.ArgumentCannotBeNullOrEmpty);
+            ex.ParamName.Should().Be("fingerprint");
         }
 
         [Fact]
@@ -940,7 +933,7 @@ namespace NuGet.Commands.Test
                 p.AddOrUpdateTrustedSigner(It.Is<AuthorItem>(i =>
                     string.Equals(i.Name, "author1", StringComparison.Ordinal) &&
                     i.Certificates.Count == 1 &&
-                    SettingsTestUtils.SequenceDeepEquals(i.Certificates, expectedCerts))));
+                    SettingsTestUtils.SequenceDeepEquals(i.Certificates.ToList(), expectedCerts))));
         }
 
         [Fact]
@@ -967,7 +960,7 @@ namespace NuGet.Commands.Test
                 p.AddOrUpdateTrustedSigner(It.Is<AuthorItem>(i =>
                     string.Equals(i.Name, "author1", StringComparison.Ordinal) &&
                     i.Certificates.Count == 1 &&
-                    SettingsTestUtils.SequenceDeepEquals(i.Certificates, expectedCerts))));
+                    SettingsTestUtils.SequenceDeepEquals(i.Certificates.ToList(), expectedCerts))));
         }
 
         [Fact]
@@ -999,7 +992,7 @@ namespace NuGet.Commands.Test
                 p.AddOrUpdateTrustedSigner(It.Is<AuthorItem>(i =>
                     string.Equals(i.Name, "author1", StringComparison.Ordinal) &&
                     i.Certificates.Count == 2 &&
-                    SettingsTestUtils.SequenceDeepEquals(i.Certificates, expectedCerts))));
+                    SettingsTestUtils.SequenceDeepEquals(i.Certificates.ToList(), expectedCerts))));
         }
 
         [Fact]
@@ -1031,7 +1024,7 @@ namespace NuGet.Commands.Test
                 p.AddOrUpdateTrustedSigner(It.Is<RepositoryItem>(i =>
                     string.Equals(i.Name, "repo1", StringComparison.Ordinal) &&
                     i.Certificates.Count == 2 &&
-                    SettingsTestUtils.SequenceDeepEquals(i.Certificates, expectedCerts))));
+                    SettingsTestUtils.SequenceDeepEquals(i.Certificates.ToList(), expectedCerts))));
         }
 
         [Fact]
@@ -1063,7 +1056,7 @@ namespace NuGet.Commands.Test
                 p.AddOrUpdateTrustedSigner(It.Is<RepositoryItem>(i =>
                     string.Equals(i.Name, "repo1", StringComparison.Ordinal) &&
                     i.Certificates.Count == 2 &&
-                    SettingsTestUtils.SequenceDeepEquals(i.Certificates, expectedCerts))));
+                    SettingsTestUtils.SequenceDeepEquals(i.Certificates.ToList(), expectedCerts))));
         }
 
         [Theory]
@@ -1076,11 +1069,10 @@ namespace NuGet.Commands.Test
             var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
 
             // Act and Assert
-            var ex = await Record.ExceptionAsync(async () => await actionsProvider.AddTrustedRepositoryAsync(name, new Uri("https://serviceIndex.test/v3/api.json"), owners: null, token: CancellationToken.None));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(async () => await actionsProvider.AddTrustedRepositoryAsync(name, new Uri("https://serviceIndex.test/v3/api.json"), owners: null, token: CancellationToken.None));
 
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentException>();
             ex.Message.Should().Contain(Strings.ArgumentCannotBeNullOrEmpty);
+            ex.ParamName.Should().Be("name");
         }
 
         [Fact]
@@ -1091,10 +1083,7 @@ namespace NuGet.Commands.Test
             var actionsProvider = new TrustedSignerActionsProvider(trustedSignersProvider.Object);
 
             // Act and Assert
-            var ex = await Record.ExceptionAsync(async () => await actionsProvider.AddTrustedRepositoryAsync("repo1", serviceIndex: null, owners: null, token: CancellationToken.None));
-
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentNullException>();
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await actionsProvider.AddTrustedRepositoryAsync("repo1", serviceIndex: null, owners: null, token: CancellationToken.None));
         }
 
         [Fact]

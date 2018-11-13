@@ -21,7 +21,7 @@ namespace NuGet.Commands
         private readonly ITrustedSignersProvider _trustedSignersProvider;
 
         /// <summary>
-        /// Internal SourceRepository usefull for overriding on tests to get
+        /// Internal SourceRepository useful for overriding on tests to get
         /// mocked responses from the server
         /// </summary>
         internal SourceRepository ServiceIndexSourceRepository { get; set; }
@@ -95,7 +95,9 @@ namespace NuGet.Commands
                 throw new ArgumentException(Strings.Error_TrustedAuthorNoOwners);
             }
 
-            var v3ServiceIndex = string.Empty;
+            token.ThrowIfCancellationRequested();
+
+            string v3ServiceIndex = null;
             IRepositorySignature repositorySignature = null;
             var trustingRepository = trustTarget.HasFlag(VerificationTarget.Repository);
 
@@ -161,7 +163,7 @@ namespace NuGet.Commands
 
             if (string.IsNullOrEmpty(fingerprint))
             {
-                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(name));
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(fingerprint));
             }
 
             if (!Enum.IsDefined(typeof(HashAlgorithmName), hashAlgorithm) || hashAlgorithm == HashAlgorithmName.Unknown)
