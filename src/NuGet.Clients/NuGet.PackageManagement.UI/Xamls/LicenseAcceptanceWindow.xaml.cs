@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI
         public LicenseAcceptanceWindow()
         {
             InitializeComponent();
-            CustomAutomationProperties.SetLiveSetting(EmbeddedLicense, AutomationLiveSetting.Polite);
+            CustomAutomationProperties.SetLiveSetting(_flowDocumentViewer, AutomationLiveSetting.Assertive);
         }
 
         private void OnViewLicenseTermsRequestNavigate(object sender, RoutedEventArgs e)
@@ -50,11 +50,17 @@ namespace NuGet.PackageManagement.UI
                         MinWidth += MinAdditionalColumnWidthWithMargin; // Change the min width to account for the added textbox
                         EmbeddedLicense.Visibility = Visibility.Visible;
                         EmbeddedLicenseHeader.Visibility = Visibility.Visible;
+                        CustomAutomationProperties.SetLiveSetting(_flowDocumentViewer, AutomationLiveSetting.Assertive);
                     }
                     licenseFile.LoadLicenseFile(); // This loads the file asynchronously
-                    AutomationUtilities.RaiseLiveRegionChangedEvent(EmbeddedLicense);
                     EmbeddedLicense.DataContext = licenseFile;
                     EmbeddedLicenseHeader.DataContext = licenseFile;
+
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    {
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        AutomationUtilities.RaiseLiveRegionChangedEvent(_flowDocumentViewer);
+                    });
                 }
             }
         }
