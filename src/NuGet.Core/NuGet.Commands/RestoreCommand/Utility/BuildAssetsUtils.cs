@@ -178,7 +178,7 @@ namespace NuGet.Commands
                 new XDeclaration("1.0", "utf-8", "no"),
 
                 new XElement(Namespace + "Project",
-                    new XAttribute("ToolsVersion", "15.0"),
+                    new XAttribute("ToolsVersion", "14.0"),
                     new XElement(Namespace + "PropertyGroup",
                         new XElement(Namespace + "MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"))));
 

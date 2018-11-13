@@ -341,7 +341,7 @@ namespace NuGet.CommandLine
             return new XDocument(
                 new XDeclaration("1.0", "utf-8", "no"),
                 new XElement(MSBuildNamespace + "Project",
-                    new XAttribute("ToolsVersion", "15.0"),
+                    new XAttribute("ToolsVersion", "14.0"),
                     elements));
         }
 
@@ -682,9 +682,9 @@ namespace NuGet.CommandLine
             {
                 // Search by path. We use a StartsWith match because a toolset's path may have an architecture specialization.
                 // e.g.
-                //     c:\Program Files (x86)\MSBuild\15.0\Bin
+                //     c:\Program Files (x86)\MSBuild\14.0\Bin
                 // is specified in the path (a path which we have validated contains an msbuild.exe) and the toolset is located at
-                //     c:\Program Files (x86)\MSBuild\15.0\Bin\amd64
+                //     c:\Program Files (x86)\MSBuild\14.0\Bin\amd64
                 selectedToolset = installedToolsets.FirstOrDefault(
                     t => t.Path.StartsWith(msBuildPath, StringComparison.OrdinalIgnoreCase));
 
@@ -709,7 +709,7 @@ namespace NuGet.CommandLine
             string userVersion,
             IEnumerable<MsBuildToolset> installedToolsets)
         {
-            // Version.TryParse only take decimal string like "15.0", "15" need to be converted.
+            // Version.TryParse only take decimal string like "14.0", "14" need to be converted.
             var versionParts = userVersion.Split('.');
             var major = versionParts.Length > 0 ? versionParts[0] : "0";
             var minor = versionParts.Length > 1 ? versionParts[1] : "0";

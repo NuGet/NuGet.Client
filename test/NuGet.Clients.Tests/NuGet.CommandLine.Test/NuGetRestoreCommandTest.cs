@@ -1898,7 +1898,7 @@ EndProject";
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
 
                 Util.CreateFile(Path.Combine(basePath, "A", "A.Util"), "A.Util.csproj",
-@"<Project ToolsVersion='15.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+@"<Project ToolsVersion='14.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -1922,7 +1922,7 @@ EndProject";
             }
 }");
                 Util.CreateFile(Path.Combine(basePath, "B"), "B.csproj",
-@"<Project ToolsVersion='15.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+@"<Project ToolsVersion='14.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
   <PropertyGroup>
     <OutputType>Library</OutputType>
