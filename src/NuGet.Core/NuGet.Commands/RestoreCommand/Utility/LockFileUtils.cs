@@ -174,6 +174,14 @@ namespace NuGet.Commands
 
             lockFileLib.RuntimeAssemblies.AddRange(runtimeGroup);
 
+            // Link
+            var linkGroup = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
+                targetGraph.Conventions.Patterns.LinkAssemblies);
+
+            lockFileLib.LinkAssemblies.AddRange(linkGroup);
+
             // Resources
             var resourceGroup = GetLockFileItems(
                 orderedCriteria,

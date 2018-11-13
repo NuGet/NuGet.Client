@@ -395,6 +395,11 @@ namespace NuGet.Client
             /// </summary>
             public PatternSet ToolsAssemblies { get; }
 
+            /// <summary>
+            /// Pattern used to locate embed interop types assemblies
+            /// </summary>
+            public PatternSet LinkAssemblies { get; }
+
             internal ManagedCodePatterns(ManagedCodeConventions conventions)
             {
                 AnyTargettedFile = new PatternSet(
@@ -526,6 +531,17 @@ namespace NuGet.Client
                         {
                             new PatternDefinition("tools/{tfm}/{rid}/{any?}", table: AnyTable),
                     });
+
+                LinkAssemblies = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                        {
+                            new PatternDefinition("link/{tfm}/{any?}", table: DotnetAnyTable),
+                        },
+                    pathPatterns: new PatternDefinition[]
+                        {
+                            new PatternDefinition("link/{tfm}/{assembly}", table: DotnetAnyTable),
+                        });
             }
         }
 

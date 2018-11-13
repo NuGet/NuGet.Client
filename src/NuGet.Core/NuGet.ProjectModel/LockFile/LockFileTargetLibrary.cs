@@ -42,6 +42,8 @@ namespace NuGet.ProjectModel
 
         public IList<LockFileItem> ToolsAssemblies { get; set; } = new List<LockFileItem>();
 
+        public IList<LockFileItem> LinkAssemblies { get; set; } = new List<LockFileItem>();
+
         // Package Type does not belong in Equals and HashCode, since it's only used for compatibility checking post restore.
         public IList<PackageType> PackageType { get; set; } = new List<PackageType>();
 
@@ -72,7 +74,8 @@ namespace NuGet.ProjectModel
                 && RuntimeTargets.OrderedEquals(other.RuntimeTargets, item => item.Path, StringComparer.OrdinalIgnoreCase)
                 && Build.OrderedEquals(other.Build, item => item.Path, StringComparer.OrdinalIgnoreCase)
                 && BuildMultiTargeting.OrderedEquals(other.BuildMultiTargeting, item => item.Path, StringComparer.OrdinalIgnoreCase)
-                && ToolsAssemblies.OrderedEquals(other.ToolsAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase);
+                && ToolsAssemblies.OrderedEquals(other.ToolsAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase)
+                && LinkAssemblies.OrderedEquals(other.LinkAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)
@@ -140,6 +143,11 @@ namespace NuGet.ProjectModel
             }
 
             foreach (var item in ToolsAssemblies.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(item);
+            }
+
+            foreach (var item in LinkAssemblies.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
             {
                 combiner.AddObject(item);
             }
