@@ -47,22 +47,10 @@
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.Interop" Version="1.0.0">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
-
-  <Choose>
-    <When Condition="$(VisualStudioVersion)=='14.0'">
-      <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-        <PackageReference Include="Microsoft.VisualStudio.Shell.14.0" Version="14.2.25123" />
-      </ItemGroup>
-    </When>
-    <When Condition="$(VisualStudioVersion)=='15.0'">
-      <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-        <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201">
-          <PrivateAssets>All</PrivateAssets>
-        </PackageReference>
-      </ItemGroup>
-    </When>
-  </Choose>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <Reference Include="System.Runtime.Serialization" />

@@ -123,40 +123,6 @@ function Test-BuildIntegratedLockFileIsCreatedOnBuild {
     Assert-ProjectJsonLockFilePackage $project NuGet.Versioning 1.0.7
 }
 
-function Test-BuildIntegratedInstallPackagePrefersWindowsOverWindowsPhoneApp {
-    # Windows 8.x/Phone tests irrelevant post-VS14
-    if ((Get-VSVersion) -ge "15.0") {
-        Write-Host "Skipping BuildIntegratedInstallPackagePrefersWindowsOverWindowsPhoneApp"
-        return
-    }
-
-    # Arrange
-    $project = New-BuildIntegratedProj UAPApp
-
-    # Act
-    Install-Package automapper -ProjectName $project.Name -version 3.3.1
-
-    # Assert
-    Assert-ProjectJsonLockFileRuntimeAssembly $project lib/windows8/AutoMapper.dll
-}
-
-function Test-BuildIntegratedInstallPackageWithWPA81 {
-    # Windows 8.x/Phone tests irrelevant post-VS14
-    if ((Get-VSVersion) -ge "15.0") {
-        Write-Host "Skipping BuildIntegratedInstallPackageWithWPA81"
-        return
-    }
-	
-    # Arrange
-    $project = New-BuildIntegratedProj UAPApp
-
-    # Act
-    Install-Package kinnara.toolkit -ProjectName $project.Name -version 0.3.0
-
-    # Assert
-    Assert-ProjectJsonLockFileRuntimeAssembly $project lib/wpa81/Kinnara.Toolkit.dll
-}
-
 function Test-BuildIntegratedPackageFailsIfDowngradeWasDetected {
     # Arrange
     $project = New-BuildIntegratedProj UAPApp
@@ -494,7 +460,6 @@ function Test-BuildIntegratedCleanDeleteCacheFile {
     Assert-ProjectCacheFileNotExists $project
 }
 function Test-InconsistencyBetweenAssetsAndProjectFile{
-    [SkipTestForVS14()]
     param()
 
     $projectT = New-Project PackageReferenceClassLibrary
@@ -626,7 +591,6 @@ function Test-BuildIntegratedRestoreAfterUninstall {
     Assert-True ($uninstallTimeStamp -eq $restoreTimeStamp)
 }
 function Test-BuildIntegratedProjectGetPackageTransitive {
-    [SkipTestForVS14()]
     param($Context, $TestCase)
 
     $projectR = New-Project $TestCase.ProjectTemplate
@@ -649,7 +613,6 @@ function TestCases-BuildIntegratedProjectGetPackageTransitive{
 }
 
 function Test-PackageReferenceProjectGetPackageTransitive {
-    [SkipTestForVS14()]
     param($Context, $TestCase)
 
     $projectR = New-Project $TestCase.ProjectTemplate

@@ -28,8 +28,6 @@
     <UpgradeBackupLocation />
     <OldToolsVersion>14.0</OldToolsVersion>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <IsProductComponent>true</IsProductComponent>
     <ExtensionInstallationRoot>CommonExtensions</ExtensionInstallationRoot>
     <ExtensionInstallationFolder>Microsoft\NuGet</ExtensionInstallationFolder>
@@ -274,21 +272,12 @@
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(IsXplat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' " />
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.targets" Condition="'$(IsXplat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' " />
   <Target Name="FindSourceVsixManifest">
-    <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-      <SourceVsixManifest Include="source.extension.vs14.vsixmanifest" />
-    </ItemGroup>
     <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
       <SourceVsixManifest Include="source.extension.vs15.vsixmanifest" />
     </ItemGroup>
   </Target>
   <ItemGroup>
     <VsixIncludeFile Include=".vsixinclude" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <VsixIgnoreFile Include=".vsixignore.vs14" />
-    <None Include="source.extension.vs14.vsixmanifest">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <VsixIgnoreFile Include=".vsixignore.vs15" />
@@ -301,17 +290,7 @@
       <Version>3.0.3</Version>
     </PackageReference>
   </ItemGroup>
-  <Target Name="AfterBuild" DependsOnTargets="PublishVS14;PublishVS15" />
-  <Target Name="PublishVS14" Condition="'$(VisualStudioVersion)' == '14.0'">
-    <Message Text="Publishing VS14 VSIX package files..." Importance="high" />
-    <Message Text="$(TargetVsixContainer) -&gt; $(VsixPublishDestination)NuGet.Tools.vsix" Importance="high" />
-    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(VsixPublishDestination)NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
-    <ItemGroup Condition="'$(IsCIBuild)' !='true'">
-      <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
-    </ItemGroup>
-    <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'" />
-  </Target>
+  <Target Name="AfterBuild" DependsOnTargets="PublishVS15" />
   <Target Name="PublishVS15" Condition="'$(VisualStudioVersion)' == '15.0'">
     <ItemGroup>
       <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />

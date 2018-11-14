@@ -1002,32 +1002,6 @@ function UninstallPackageRemoveImportStatement
     Assert-NoProjectImport $p "..\packages\PackageWithImport.2.0.0\build\PackageWithImport.props"
 }
 
-function Test-UninstallPackageFromNativeWinStoreApplication {
-    [SkipTestForVS15()]
-    param()
-
-    if ((Get-VSVersion) -eq "10.0")
-    {
-        return
-    }
-
-    # Arrange
-    $p = New-NativeWinStoreApplication
-
-    Install-Package jQuery.Validation -IgnoreDependencies -ProjectName $p.Name
-    Assert-Package $p "jQuery.Validation"
-
-    # Act
-    Uninstall-Package jQuery.Validation -ProjectName $p.Name
-
-    # Assert
-    Assert-NoPackage $p "jQuery.Validation"
-
-    # verify the Scripts folder is completely removed
-    $scriptFolder = Get-ProjectItem $p "Scripts"
-    Assert-Null $scriptFolder
-}
-
 function UninstallPackageFromJsWinStoreApplication
 {
     if ((Get-VSVersion) -eq "10.0")

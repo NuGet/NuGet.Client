@@ -86,15 +86,7 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
-    <DefineConstants>$(DefineConstants);VS14</DefineConstants>
-    <VSSDKRoot>$(RepositoryRootDirectory)packages\Microsoft.VSSDK.BuildTools.14.3.25420</VSSDKRoot>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
-    <VsixOutputDirName>VS14</VsixOutputDirName>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+  <PropertyGroup>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <DefineConstants>$(DefineConstants);VS15</DefineConstants>
     <VSSDKRoot>$(RepositoryRootDirectory)packages\Microsoft.VSSDK.BuildTools.15.1.192</VSSDKRoot>
@@ -148,8 +140,6 @@
   <!-- Set the output location for all non-test projects -->
   <!-- Test projects currently fail when the output dir is moved -->
   <PropertyGroup Condition=" '$(TestProject)' != 'true' OR '$(Shipping)' == 'true'">
-    <!-- Create different folders for 14.0, 15.0, 15.0-RTM -->
-
     <!-- output paths -->
     <BaseIntermediateOutputPath>$(ArtifactsDirectory)$(MSBuildProjectName)\$(BuildVariationFolder)\obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>

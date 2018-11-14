@@ -1,6 +1,6 @@
 param (
-    [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
-    [string]$VSVersion = "14.0")
+    [ValidateSet("15.0")]
+    [string]$VSVersion = "15.0")
 
  . "$PSScriptRoot\Utils.ps1"
 

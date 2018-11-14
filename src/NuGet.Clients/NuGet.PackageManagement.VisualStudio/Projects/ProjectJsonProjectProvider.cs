@@ -20,11 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(INuGetProjectProvider))]
     [Name(nameof(ProjectJsonProjectProvider))]
-#if VS14
-    [Order(After = nameof(ProjectKNuGetProjectProvider))]
-#else
     [Order(After = nameof(LegacyPackageReferenceProjectProvider))]
-#endif
     internal class ProjectJsonProjectProvider : INuGetProjectProvider
     {
         private readonly IVsProjectThreadingService _threadingService;
