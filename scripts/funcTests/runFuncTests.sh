@@ -18,7 +18,7 @@ pushd $DIR
 
 NuGetExe="$DIR/.nuget/nuget.exe"
 #Get NuGet.exe
-curl -o $NuGetExe https://dist.nuget.org/win-x86-commandline/v4.5.1/nuget.exe
+curl -o $NuGetExe https://dist.nuget.org/win-x86-commandline/v4.8.1/nuget.exe
 
 mono --version
 
