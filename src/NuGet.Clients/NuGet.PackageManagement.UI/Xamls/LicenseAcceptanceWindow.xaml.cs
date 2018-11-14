@@ -60,6 +60,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                         AutomationUtilities.RaiseLiveRegionChangedEvent(_flowDocumentViewer);
+                        _flowDocumentViewer.Focus();
                     });
                 }
             }
