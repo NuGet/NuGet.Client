@@ -4650,6 +4650,14 @@ namespace Test.Utility
 }";
         #endregion
 
+        #region repoSignResponseEmptyCertInfo
+
+        public const string RepoSignDataEmptyCertInfo = @"{
+  ""allRepositorySigned"": false,
+  ""signingCertificates"": []
+}";
+        #endregion
+
 
         #region PackageARegisteration
 
