@@ -16,18 +16,10 @@ namespace NuGet.Configuration
 
         public string ServiceIndex => Attributes[ConfigurationConstants.ServiceIndex];
 
-        public string Name
+        public new string Name
         {
-            get => Attributes[ConfigurationConstants.NameAttribute];
-            set
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.PropertyCannotBeNullOrEmpty, nameof(Name)));
-                }
-
-                UpdateAttribute(ConfigurationConstants.NameAttribute, value);
-            }
+            get => base.Name;
+            set => SetName(value);
         }
 
         private OwnersItem _owners;

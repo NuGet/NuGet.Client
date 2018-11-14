@@ -14,8 +14,6 @@ namespace NuGet.Configuration
 
         protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.NameAttribute };
 
-        public string Name => Attributes[ConfigurationConstants.NameAttribute];
-
         public AuthorItem(string name, params CertificateItem[] certificates)
             : base(name, certificates)
         {
