@@ -272,14 +272,14 @@
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(IsXplat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' " />
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.targets" Condition="'$(IsXplat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' " />
   <Target Name="FindSourceVsixManifest">
-    <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <ItemGroup>
       <SourceVsixManifest Include="source.extension.vs15.vsixmanifest" />
     </ItemGroup>
   </Target>
   <ItemGroup>
     <VsixIncludeFile Include=".vsixinclude" />
   </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+  <ItemGroup>
     <VsixIgnoreFile Include=".vsixignore.vs15" />
     <None Include="source.extension.vs15.vsixmanifest">
       <SubType>Designer</SubType>
@@ -291,7 +291,7 @@
     </PackageReference>
   </ItemGroup>
   <Target Name="AfterBuild" DependsOnTargets="PublishVS15" />
-  <Target Name="PublishVS15" Condition="'$(VisualStudioVersion)' == '15.0'">
+  <Target Name="PublishVS15">
     <ItemGroup>
       <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />
     </ItemGroup>
