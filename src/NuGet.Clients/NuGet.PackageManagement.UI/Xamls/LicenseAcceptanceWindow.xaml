@@ -189,7 +189,7 @@
       >
       <FlowDocumentScrollViewer
           Name="_flowDocumentViewer"
-          AutomationProperties.LabeledBy="{Binding ElementName=EmbeddedLicense}"
+          AutomationProperties.Name="{Binding LicenseHeader, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
           Document="{Binding LicenseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
     </Border>
 
