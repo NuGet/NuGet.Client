@@ -3436,6 +3436,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The action &apos;{0}&apos; is not recognized..
+        /// </summary>
+        public static string Error_UnknownAction {
+            get {
+                return ResourceManager.GetString("Error_UnknownAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This version of msbuild is not supported: &apos;{0}&apos;.
         /// </summary>
         public static string Error_UnsupportedMsbuild {
