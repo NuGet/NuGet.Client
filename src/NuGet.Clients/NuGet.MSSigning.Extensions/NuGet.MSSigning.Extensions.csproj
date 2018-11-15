@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj" />
+    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.CommandLine\NuGet.CommandLine.csproj" />
   </ItemGroup>
 
   <ItemGroup>

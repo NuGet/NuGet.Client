@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Indexing\NuGet.Indexing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
