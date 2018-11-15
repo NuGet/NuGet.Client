@@ -13,7 +13,7 @@
     <RootNamespace>NuGetVSExtension</RootNamespace>
     <AssemblyName>NuGet.Tools</AssemblyName>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <CreateVsixContainer>false</CreateVsixContainer>
     <FileAlignment>512</FileAlignment>
     <DeployExtension>false</DeployExtension>

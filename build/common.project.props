@@ -8,6 +8,7 @@
 
   <!-- Common -->
   <PropertyGroup>
+    <NETFXTargetFrameworkVersion>v4.6</NETFXTargetFrameworkVersion>
     <NETFXTargetFramework>net46</NETFXTargetFramework>
     <NETCoreTargetFramework>netcoreapp1.0</NETCoreTargetFramework>
     <XPlatTargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</XPlatTargetFrameworksExe>

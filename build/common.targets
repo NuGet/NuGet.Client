@@ -45,7 +45,7 @@
   <!-- Allow WPF projects to run under NETCore SDK -->
   <!-- Errors occur if the output ptah is not set correctly -->
   <PropertyGroup Condition=" '$(NETCoreWPFProject)' == 'true' ">
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <BaseOutputPath>bin\</BaseOutputPath>
     <OutputPath>bin\$(VisualStudioVersion)\$(Configuration)</OutputPath>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>

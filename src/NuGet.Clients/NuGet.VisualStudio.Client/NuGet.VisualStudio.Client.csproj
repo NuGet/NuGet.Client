@@ -19,7 +19,7 @@
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
     <DeployExtension>false</DeployExtension>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <AssemblyName>NuGet.VisualStudio.Client</AssemblyName>
     <TargetVsixContainerName>NuGet.Tools.vsix</TargetVsixContainerName>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>

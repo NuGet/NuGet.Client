@@ -15,7 +15,7 @@
     <FileAlignment>512</FileAlignment>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>

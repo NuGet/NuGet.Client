@@ -8,7 +8,7 @@
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
     <TargetFrameworkProfile />
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <PropertyGroup>
