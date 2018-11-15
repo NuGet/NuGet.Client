@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   
   <PropertyGroup>
-    <TargetFrameworks>$(XPlatTargetFrameworksExe)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework)</TargetFrameworks>
     <TestProject>true</TestProject>
     <UseParallelXunit>true</UseParallelXunit>

@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(XPlatTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
     <Description>NuGet's implementation of Semantic Versioning.</Description>
     <PackageTags>semver;semantic versioning</PackageTags>

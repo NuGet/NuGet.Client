@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>The core data structures for NuGet.Packaging</Description>
-    <TargetFrameworks>$(XPlatTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackProject>true</PackProject>

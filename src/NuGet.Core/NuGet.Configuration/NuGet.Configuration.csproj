@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Description>NuGet's client configuration settings implementation.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <TargetFrameworks>$(XPlatTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>

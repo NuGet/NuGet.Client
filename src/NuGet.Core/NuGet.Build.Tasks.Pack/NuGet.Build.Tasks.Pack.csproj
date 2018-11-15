@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(XPlatTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyName>NuGet.Build.Tasks.Pack</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>

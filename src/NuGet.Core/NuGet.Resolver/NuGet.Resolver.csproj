@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>NuGet's dependency resolver within the NuGet.Packaging package</Description>
-    <TargetFrameworks>$(XPlatTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
     <PackProject>true</PackProject>
