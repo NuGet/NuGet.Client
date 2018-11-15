@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.0</TargetFrameworks>
+    <TargetFrameworks>$(NETCoreTargetFramework)</TargetFrameworks>
     <TestProject>true</TestProject>
   </PropertyGroup>
 

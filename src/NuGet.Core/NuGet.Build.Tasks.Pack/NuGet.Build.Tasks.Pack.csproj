@@ -38,7 +38,7 @@
     <Reference Include="Microsoft.Build.Framework" Pack="false" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
@@ -150,7 +150,7 @@
         <PackagePath>Desktop/</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.6'">
+    <ItemGroup Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">
       <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\NuGet.Build.Tasks.Pack.dll">
         <PackagePath>CoreCLR/</PackagePath>
       </TfmSpecificPackageFile>

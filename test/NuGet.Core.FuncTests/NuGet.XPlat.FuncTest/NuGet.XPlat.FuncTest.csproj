@@ -3,8 +3,8 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.0;net46</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">netcoreapp1.0</TargetFrameworks>
+    <TargetFrameworks>$(XPlatTargetFrameworksExe)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework)</TargetFrameworks>
     <TestProject>true</TestProject>
     <TestProjectType>functional</TestProjectType>
   </PropertyGroup>
@@ -31,7 +31,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp1.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(NETCoreTargetFramework)'">
     <PackageReference Include="Microsoft.Net.Compilers.netcore">
       <Version>2.0.0-rc4</Version>
     </PackageReference>

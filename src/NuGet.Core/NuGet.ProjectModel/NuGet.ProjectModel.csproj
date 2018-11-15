@@ -21,7 +21,7 @@
     <ProjectReference Include="..\NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
   </ItemGroup>
