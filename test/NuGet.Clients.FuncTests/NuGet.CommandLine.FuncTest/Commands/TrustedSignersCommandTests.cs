@@ -29,7 +29,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
     {
         private readonly string _nugetExePath;
         private const string _trustedSignersHelpStringFragment = "usage: NuGet trusted-signers <List|Add|Remove|Sync> [options]";
-        private const string _successfulActionTrustedSigner = "Successfully {0} trusted {1} with name: '{2}'.";
+        private const string _successfulActionTrustedSigner = "Successfully {0} the trusted {1} '{2}'.";
+        private const string _successfulAddTrustedSigner = "Successfully added a trusted {0} '{1}'.";
 
         public TrustedSignersCommandTests()
         {
@@ -180,7 +181,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
-                commandResult.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulActionTrustedSigner, "added", "author", "signer"));
+                commandResult.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulAddTrustedSigner, "author", "signer"));
 
                 var expectedResult = SettingsTestUtils.RemoveWhitespace($@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -243,7 +244,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task TrustedSignersCommand_AddTrustedSigner_WithAuthorSignedPackage_AddsItSuccesfullyToConfigAsync(bool allowUntrustedRoot)
@@ -276,7 +277,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
-                commandResult.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulActionTrustedSigner, "added", "author", "signer"));
+                commandResult.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulAddTrustedSigner, "author", "signer"));
 
                 var expectedResult = SettingsTestUtils.RemoveWhitespace($@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -291,7 +292,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData(true, null)]
         [InlineData(true, "one;two;three")]
         [InlineData(false, null)]
@@ -335,7 +336,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
-                commandResult.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulActionTrustedSigner, "added", "repository", "signer"));
+                commandResult.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulAddTrustedSigner, "repository", "signer"));
 
                 var expectedResult = SettingsTestUtils.RemoveWhitespace($@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -351,7 +352,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Theory]
+        [CIOnlyTheory]
         [InlineData(true, null)]
         [InlineData(true, "one;two;three")]
         [InlineData(false, null)]
@@ -397,7 +398,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
-                commandResult.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulActionTrustedSigner, "added", "repository", "signer"));
+                commandResult.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulAddTrustedSigner, "repository", "signer"));
 
                 var expectedResult = SettingsTestUtils.RemoveWhitespace($@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -442,7 +443,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
-                commandResult.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulActionTrustedSigner, "removed", "signers", "signer"));
+                commandResult.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulActionTrustedSigner, "removed", "signer", "signer"));
 
                 var expectedResult = SettingsTestUtils.RemoveWhitespace($@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
