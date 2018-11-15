@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>NuGet's implementation for reading nupkg package and nuspec package specification files.</Description>
-    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <TargetFrameworks>$(XPlatTargetFrameworks)</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1572</NoWarn>
     <NoWarn Condition="'$(TargetFramework)' == 'netstandard1.6'">$(NoWarn);CS0414</NoWarn>
@@ -16,7 +16,7 @@
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
     <TargetFrameworks />
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

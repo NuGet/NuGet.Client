@@ -19,7 +19,7 @@
     <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.0.1" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
   </ItemGroup>

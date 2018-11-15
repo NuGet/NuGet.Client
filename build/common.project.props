@@ -8,6 +8,10 @@
 
   <!-- Common -->
   <PropertyGroup>
+    <NETFXTargetFramework>net46</NETFXTargetFramework>
+    <NETCoreTargetFramework>netcoreapp1.0</NETCoreTargetFramework>
+    <NetStandardVersion>netstandard1.6</NetStandardVersion>
+    <XPlatTargetFrameworks>$(NETFXTargetFramework);$(NetStandardVersion)</XPlatTargetFrameworks>
     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
     <SolutionFile>$(RepositoryRootDirectory)$(RepositoryName).sln</SolutionFile>

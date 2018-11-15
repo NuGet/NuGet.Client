@@ -9,7 +9,7 @@
   <Import Project="ilmerge.props" />
 
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <PackageId>NuGet.CommandLine</PackageId>

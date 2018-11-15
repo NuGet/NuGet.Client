@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <TargetFrameworks>$(XPlatTargetFrameworks)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyName>NuGet.Build.Tasks.Pack</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
@@ -33,7 +33,7 @@
     <ProjectReference Include="..\NuGet.Commands\NuGet.Commands.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <Reference Include="Microsoft.Build.Utilities.v4.0" Pack="false" />
     <Reference Include="Microsoft.Build.Framework" Pack="false" />
   </ItemGroup>
@@ -139,7 +139,7 @@
   </Target>
 
   <Target Name="CreatePackNupkg">
-    <ItemGroup Condition="'$(TargetFramework)' == 'net46' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">
+    <ItemGroup Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">
       <TfmSpecificPackageFile Include="$(OutputPath)\ilmerge\NuGet.Build.Tasks.Pack.dll">
         <PackagePath>Desktop/</PackagePath>
       </TfmSpecificPackageFile>

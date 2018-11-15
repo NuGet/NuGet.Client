@@ -4,7 +4,7 @@
   <Import Project="ilmerge.props" />
 
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Shipping>true</Shipping>
     <PackProject>false</PackProject>
     <IncludeInVsix>false</IncludeInVsix>
