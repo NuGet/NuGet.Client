@@ -37,6 +37,15 @@ namespace NuGet.Commands.Test
             Assert.Throws<ArgumentNullException>(() => new TrustedSignerActionsProvider(trustedSignersProvider: null, logger: NullLogger.Instance));
         }
 
+        [Fact]
+        public void TrustedSignerActionsProvider_Constructor_WithNullLogger_Throws()
+        {
+            // Act and Assert
+            var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
+
+            Assert.Throws<ArgumentNullException>(() => new TrustedSignerActionsProvider(trustedSignersProvider.Object, logger: null));
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]

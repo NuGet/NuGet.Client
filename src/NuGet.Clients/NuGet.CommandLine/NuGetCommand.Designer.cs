@@ -13461,7 +13461,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If specified, chaining to an untrusted root should be allowed for the trusted signer..
+        ///   Looks up a localized string similar to Set allowUntrustedRoot to true for the trusted signer&apos;s certificate to be added..
         /// </summary>
         internal static string TrustedSignersCommandAllowUntrustedRootDescription {
             get {
@@ -13470,7 +13470,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If specified, the author signature of the package should be trusted..
+        ///   Looks up a localized string similar to Add the author signature of the package as a trusted author..
         /// </summary>
         internal static string TrustedSignersCommandAuthorDescription {
             get {
@@ -13479,7 +13479,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Certificate fingerprint for trusted author..
+        ///   Looks up a localized string similar to Fingerprint of the certificate to trust..
         /// </summary>
         internal static string TrustedSignersCommandCertificateFingerprintDescription {
             get {
@@ -13488,7 +13488,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Provides the ability to manage list of trusted signers located in NuGet.Config.
+        ///   Looks up a localized string similar to Provides the ability to manage the list of trusted signers..
         /// </summary>
         internal static string TrustedSignersCommandDescription {
             get {
@@ -13497,7 +13497,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hash algorithm used to calculate certificate fingerprint. Defaults to SHA256..
+        ///   Looks up a localized string similar to Hash algorithm used to calculate the certificate fingerprint. Defaults to SHA256..
         /// </summary>
         internal static string TrustedSignersCommandFingerprintAlgorithmDescription {
             get {
@@ -13524,7 +13524,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If specified, the repository signature of the package should be trusted..
+        ///   Looks up a localized string similar to Add the repository signature or countersignature of the package as a trusted repository..
         /// </summary>
         internal static string TrustedSignersCommandRepositoryDescription {
             get {
@@ -13533,7 +13533,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Service Index for trusted repository..
+        ///   Looks up a localized string similar to Service index for a repository to be trusted..
         /// </summary>
         internal static string TrustedSignersCommandServiceIndexDescription {
             get {

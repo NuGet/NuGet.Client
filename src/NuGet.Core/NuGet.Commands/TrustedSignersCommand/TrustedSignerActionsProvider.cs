@@ -22,7 +22,7 @@ namespace NuGet.Commands
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Internal SourceRepository usefull for overriding on tests to get
+        /// Internal SourceRepository useful for overriding on tests to get
         /// mocked responses from the server
         /// </summary>
         internal SourceRepository ServiceIndexSourceRepository { get; set; }
@@ -155,9 +155,10 @@ namespace NuGet.Commands
 #endif
 
         /// <summary>
-        /// Adds a new trusted author to the settings.
-        /// If a trusted signer already exists with this name, adds a certificate item to it.
+        /// Updates the certificate list of a trusted signer by adding the given certificate.
+        /// If the signer does not exists it creates a new one.
         /// </summary>
+        /// <remarks>This method defaults to adding a trusted author if the signer doesn't exist.</remarks>
         /// <param name="name">Name of the trusted author.</param>
         /// <param name="fingerprint">Fingerprint to be added to the certificate entry.</param>
         /// <param name="hashAlgorithm">Hash algorithm used to calculate <paramref name="fingerprint"/>.</param>
@@ -265,6 +266,7 @@ namespace NuGet.Commands
             return new CertificateItem(fingerprint, defaultHashAlgorithm, allowUntrustedRoot);
         }
 #endif
+
         private async Task<CertificateItem[]> GetCertificateItemsFromServiceIndexAsync(string serviceIndex, CancellationToken token)
         {
             if (string.IsNullOrEmpty(serviceIndex))

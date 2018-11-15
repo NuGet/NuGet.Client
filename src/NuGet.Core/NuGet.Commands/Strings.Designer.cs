@@ -134,7 +134,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not add trusted signer: {0}.
+        ///   Looks up a localized string similar to Could not add the trusted signer: {0}.
         /// </summary>
         internal static string Error_CouldNotAdd {
             get {
@@ -143,7 +143,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not list trusted signers: {0}.
+        ///   Looks up a localized string similar to Could not list the trusted signers: {0}.
         /// </summary>
         internal static string Error_CouldNotList {
             get {
@@ -152,7 +152,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not remove trusted signer: {0}.
+        ///   Looks up a localized string similar to Could not remove the trusted signer: {0}.
         /// </summary>
         internal static string Error_CouldNotRemove {
             get {
@@ -161,7 +161,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not sync trusted repository: {0}.
+        ///   Looks up a localized string similar to Could not sync the trusted repository: {0}.
         /// </summary>
         internal static string Error_CouldNotSync {
             get {
@@ -170,7 +170,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The repository with service index &apos;{0}&apos; does not list any trusted certificate..
+        ///   Looks up a localized string similar to The repository with the service index &apos;{0}&apos; does not list any trusted certificates..
         /// </summary>
         internal static string Error_EmptyCertificateListInRepository {
             get {
@@ -341,7 +341,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No signature was specified to be trusted for package &apos;{0}&apos;. Please specify either Author or Repository..
+        ///   Looks up a localized string similar to No signature to be trusted was specified for the package &apos;{0}&apos;. Please specify either Author or Repository..
         /// </summary>
         internal static string Error_NoSignatureTrustedForPackage {
             get {
@@ -458,7 +458,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Repository trust was expected but package is not repository signed..
+        ///   Looks up a localized string similar to Unable to add trusted repository. The package is not repository signed or countersigned..
         /// </summary>
         internal static string Error_RepoTrustExpectedRepoSignature {
             get {
@@ -512,7 +512,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A trusted repository with the name &apos;{0}&apos; does not exist..
+        ///   Looks up a localized string similar to A trusted repository &apos;{0}&apos; does not exist..
         /// </summary>
         internal static string Error_TrustedRepositoryDoesNotExist {
             get {
@@ -521,7 +521,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A trusted signer with the name &apos;{0}&apos; already exists..
+        ///   Looks up a localized string similar to A trusted signer &apos;{0}&apos; already exists..
         /// </summary>
         internal static string Error_TrustedSignerAlreadyExists {
             get {
@@ -575,7 +575,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Source with name &apos;{0}&apos; does not exist or cannot be retrived..
+        ///   Looks up a localized string similar to Source &apos;{0}&apos; does not exist or cannot be retrived..
         /// </summary>
         internal static string Error_UnavailableSource {
             get {
@@ -1467,7 +1467,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No trusted signers with name: &apos;{0}&apos; where found..
+        ///   Looks up a localized string similar to No trusted signers with the name: &apos;{0}&apos; were found..
         /// </summary>
         internal static string NoTrustedSignersMatching {
             get {
@@ -1737,7 +1737,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Successfully updated trusted signer with name: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Successfully updated the trusted signer &apos;{0}&apos;..
         /// </summary>
         internal static string SuccessfullUpdatedTrustedSigner {
             get {
@@ -1746,7 +1746,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Successfully added trusted author with name: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Successfully added a trusted author &apos;{0}&apos;..
         /// </summary>
         internal static string SuccessfullyAddedTrustedAuthor {
             get {
@@ -1755,7 +1755,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Successfully added trusted repository with name: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Successfully added a trusted repository &apos;{0}&apos;..
         /// </summary>
         internal static string SuccessfullyAddedTrustedRepository {
             get {
@@ -1764,7 +1764,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Successfully removed trusted signers with name: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Successfully removed the trusted signer &apos;{0}&apos;..
         /// </summary>
         internal static string SuccessfullyRemovedTrustedSigner {
             get {
@@ -1773,7 +1773,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Successfully synchronized trusted repository with name: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Successfully synchronized the trusted repository &apos;{0}&apos;..
         /// </summary>
         internal static string SuccessfullySynchronizedTrustedRepository {
             get {
