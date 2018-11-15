@@ -67,7 +67,7 @@ namespace NuGet.Commands.Test
                 var result = await test.Runner.ExecuteCommandAsync(test.Args);
                 result.Should().Be(0);
 
-                test.Logger.Messages.Should().Contain("No trusted signers with name: 'signer' where found.");
+                test.Logger.Messages.Should().Contain("No trusted signers with the name: 'signer' were found.");
             }
         }
 
@@ -91,7 +91,7 @@ namespace NuGet.Commands.Test
                 var result = await test.Runner.ExecuteCommandAsync(test.Args);
                 result.Should().Be(0);
 
-                test.Logger.Messages.Should().Contain("No trusted signers with name: 'signer' where found.");
+                test.Logger.Messages.Should().Contain("No trusted signers with the name: 'signer' were found.");
             }
         }
 
@@ -116,7 +116,7 @@ namespace NuGet.Commands.Test
                 var result = await test.Runner.ExecuteCommandAsync(test.Args);
                 result.Should().Be(0);
 
-                test.Logger.Messages.Should().Contain("Successfully removed trusted signers with name: 'author'.");
+                test.Logger.Messages.Should().Contain("Successfully removed the trusted signer 'author'.");
 
                 trustedSignersProvider.Verify(p =>
                     p.Remove(It.Is<IReadOnlyList<TrustedSignerItem>>(l =>
@@ -145,7 +145,7 @@ namespace NuGet.Commands.Test
                 var result = await test.Runner.ExecuteCommandAsync(test.Args);
                 result.Should().Be(0);
 
-                test.Logger.Messages.Should().Contain("Successfully added trusted author with name: 'author'.");
+                test.Logger.Messages.Should().Contain("Successfully added a trusted author 'author'.");
 
                 var expectedItem = new AuthorItem("author", new CertificateItem("abc", HashAlgorithmName.SHA256));
                 trustedSignersProvider.Verify(p =>
