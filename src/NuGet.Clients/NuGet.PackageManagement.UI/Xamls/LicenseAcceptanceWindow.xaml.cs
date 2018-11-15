@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -15,14 +16,9 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class LicenseAcceptanceWindow : VsDialogWindow
     {
-
-        private const int MinColumnWidth = 400;
-        private const int MinAdditionalColumnWidthWithMargin = 434;  
-
         public LicenseAcceptanceWindow()
         {
             InitializeComponent();
-            CustomAutomationProperties.SetLiveSetting(_flowDocumentViewer, AutomationLiveSetting.Assertive);
         }
 
         private void OnViewLicenseTermsRequestNavigate(object sender, RoutedEventArgs e)
@@ -42,26 +38,20 @@ namespace NuGet.PackageManagement.UI
             {
                 if (hyperlink.DataContext is LicenseFileText licenseFile)
                 {
-                    if (EmbeddedLicense.Visibility == Visibility.Collapsed)
+                    var window = new LicenseFileWindow()
                     {
-                        LicenseFileColumn.Width = new GridLength(1, GridUnitType.Star);
-                        LicenseFileColumn.MinWidth = MinColumnWidth; // Make both columns the same min width
-                        Width += MinAdditionalColumnWidthWithMargin; // Change the width to account for the added textbox
-                        MinWidth += MinAdditionalColumnWidthWithMargin; // Change the min width to account for the added textbox
-                        EmbeddedLicense.Visibility = Visibility.Visible;
-                        EmbeddedLicenseHeader.Visibility = Visibility.Visible;
-                        CustomAutomationProperties.SetLiveSetting(_flowDocumentViewer, AutomationLiveSetting.Assertive);
-                    }
-                    licenseFile.LoadLicenseFile(); // This loads the file asynchronously
-                    EmbeddedLicense.DataContext = licenseFile;
-                    EmbeddedLicenseHeader.DataContext = licenseFile;
+                        DataContext = licenseFile
 
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    };
+
+                    licenseFile.LoadLicenseFile();
+
+                    using (NuGetEventTrigger.TriggerEventBeginEnd(
+                            NuGetEvent.EmbeddedLicenseWindowBegin,
+                            NuGetEvent.EmbeddedLicenseWindowEnd))
                     {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        AutomationUtilities.RaiseLiveRegionChangedEvent(_flowDocumentViewer);
-                        _flowDocumentViewer.Focus();
-                    });
+                        window.ShowModal();
+                    }
                 }
             }
         }
