@@ -24,7 +24,7 @@
   FocusManager.FocusedElement="{Binding ElementName=_acceptButton}">
   <Window.Resources>
     <ResourceDictionary>
-      
+
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
