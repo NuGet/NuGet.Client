@@ -5,7 +5,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
-    <Description>NuGet's implementation of Semantic Versioning.</Description>
+    <Description>NuGet's implementation of Semantic Versioning. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.</Description>
     <PackageTags>semver;semantic versioning</PackageTags>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>

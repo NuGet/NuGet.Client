@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <Description>NuGet's client configuration settings implementation.</Description>
+    <Description>NuGet's client configuration settings implementation. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />

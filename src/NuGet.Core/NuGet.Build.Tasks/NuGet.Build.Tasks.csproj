@@ -8,7 +8,7 @@
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <PackProject>true</PackProject>
-    <Description>NuGet restore for dotnet CLI</Description>    
+    <Description>NuGet restore for dotnet CLI. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.</Description>    
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <XPLATProject>true</XPLATProject>
   </PropertyGroup>

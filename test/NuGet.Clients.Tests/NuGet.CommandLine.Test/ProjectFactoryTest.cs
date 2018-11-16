@@ -38,8 +38,8 @@ namespace NuGet.CommandLine
 	        <description>$description$</description>
 	        <authors>$owner$</authors>
 	        <copyright>$copyright$</copyright>
-	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
-	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+	        <projectUrl>https://aka.ms/nugetprj</projectUrl>
 	        <tags>nuget</tags>
 	    </metadata>
 	</package>";
@@ -109,8 +109,8 @@ namespace NuGet.CommandLine
 	        <description>$description$</description>
 	        <authors>$owner$</authors>
 	        <copyright>$copyright$</copyright>
-	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
-	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+	        <projectUrl>https://aka.ms/nugetprj</projectUrl>
 	        <tags>nuget</tags>
 	    </metadata>
 	</package>";
@@ -183,8 +183,8 @@ namespace NuGet.CommandLine
 	        <description>$description$</description>
 	        <authors>$overriden$</authors>
 	        <copyright>$copyright$</copyright>
-	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
-	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+	        <projectUrl>https://aka.ms/nugetprj</projectUrl>
 	        <tags>nuget</tags>
 	    </metadata>
 	</package>";
@@ -257,8 +257,8 @@ namespace NuGet.CommandLine
 	        <description>$description$</description>
 	        <authors>Outercurve</authors>
 	        <copyright>$copyright$</copyright>
-	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
-	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+	        <projectUrl>https://aka.ms/nugetprj</projectUrl>
 	        <tags>nuget</tags>
 	    </metadata>
 	</package>";
@@ -330,8 +330,8 @@ namespace NuGet.CommandLine
 	        <description>$description$</description>
 	        <authors>Outercurve</authors>
 	        <copyright>$copyright$</copyright>
-	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
-	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+	        <projectUrl>https://aka.ms/nugetprj</projectUrl>
 	        <tags>nuget</tags>
             <dependencies>
                 <dependency id=""NeverGonnaGiveYouUp"" version =""$version$"" />
@@ -392,8 +392,8 @@ namespace NuGet.CommandLine
         <description>$description$</description>
         <authors>$author$</authors>
         <copyright>$copyright$</copyright>
-        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
-        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+        <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+        <projectUrl>https://aka.ms/nugetprj</projectUrl>
         <tags>nuget</tags>
     </metadata>
 </package>";

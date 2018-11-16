@@ -9,7 +9,8 @@
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <PackProject>true</PackProject>
-    <Description>MSBuild SDK resolver for NuGet packages.</Description>
+    <Description>MSBuild SDK resolver for NuGet packages. Microsoft holds the copyright for this NuGet package.
+    .NET Foundation holds the copyright to the source.</Description>
     <XPLATProject>true</XPLATProject>
   </PropertyGroup>
 

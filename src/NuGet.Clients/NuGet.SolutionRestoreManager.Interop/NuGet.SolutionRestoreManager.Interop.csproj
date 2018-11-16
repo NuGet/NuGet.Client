@@ -9,12 +9,12 @@
     <PackProject>true</PackProject>
     <IncludeInVsix>true</IncludeInVsix>
     <authors>Microsoft</authors>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
-    <PackageProjectUrl	>https://github.com/NuGet/NuGet.Client</PackageProjectUrl	>
+    <PackageLicenseUrl>https://aka.ms/nugetlicense</PackageLicenseUrl>
+    <PackageProjectUrl>https://aka.ms/nugetprj</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <AssemblyDescription>APIs for invoking NuGet Restore Manager in Visual Studio.</AssemblyDescription>
-    <Description>APIs for invoking NuGet Restore Manager in Visual Studio.</Description>
-    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <AssemblyDescription>APIs for invoking NuGet Restore Manager in Visual Studio. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.</AssemblyDescription>
+    <Description>APIs for invoking NuGet Restore Manager in Visual Studio. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.</Description>
+    <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
   </PropertyGroup>
 
   <ItemGroup>

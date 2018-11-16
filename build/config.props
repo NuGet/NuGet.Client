@@ -42,8 +42,8 @@
   <!-- Nuspec defaults -->
   <PropertyGroup>
     <Authors>Microsoft</Authors>
-    <ProjectUrl>https://aka.ms/nugetprj</ProjectUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl>https://aka.ms/nugetprj</PackageProjectUrl>
+    <PackageLicenseUrl>https://aka.ms/nugetlicense</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NuGet/NuGet.Client</RepositoryUrl>
