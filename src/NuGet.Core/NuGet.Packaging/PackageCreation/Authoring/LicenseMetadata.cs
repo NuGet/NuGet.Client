@@ -101,12 +101,17 @@ namespace NuGet.Packaging
                         return LicenseFileDeprecationUrl;
 
                     case LicenseType.Expression:
-                        return new Uri(string.Format(LicenseServiceLinkTemplate, License));
+                        return new Uri(GenerateLicenseServiceLink(License));
 
                     default:
                         return null;
                 }
             }
+        }
+
+        private string GenerateLicenseServiceLink(string license)
+        {
+            return new Uri(string.Format(LicenseServiceLinkTemplate, License)).AbsoluteUri;
         }
     }
 
