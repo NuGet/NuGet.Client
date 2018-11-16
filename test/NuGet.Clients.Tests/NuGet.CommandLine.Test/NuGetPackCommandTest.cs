@@ -4431,6 +4431,7 @@ namespace Proj1
         [Theory]
         [InlineData("MIT", true)]
         [InlineData("MIT OR Apache-2.0", false)]
+        [InlineData("MIT+ OR Apache-2.0", false)]
         public void PackCommand_PackLicense_SimpleExpression_StandardLicense(string licenseExpr, bool requireLicenseAcceptance)
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -4478,7 +4479,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(version, nuspecReader.GetVersion().ToFullString());
                     Assert.Equal(requireLicenseAcceptance, nuspecReader.GetRequireLicenseAcceptance());
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
-                    Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, WebUtility.UrlEncode(licenseExpr))), new Uri(nuspecReader.GetLicenseUrl()));
+                    Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, licenseExpr)), new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.NotNull(licenseMetadata);
                     Assert.Equal(licenseMetadata.LicenseUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.Equal(licenseMetadata.Type, LicenseType.Expression);

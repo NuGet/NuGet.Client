@@ -101,7 +101,7 @@ namespace NuGet.Packaging
                         return LicenseFileDeprecationUrl;
 
                     case LicenseType.Expression:
-                        return new Uri(string.Format(LicenseServiceLinkTemplate, WebUtility.UrlEncode(License)));
+                        return new Uri(string.Format(LicenseServiceLinkTemplate, License));
 
                     default:
                         return null;
