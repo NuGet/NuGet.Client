@@ -442,7 +442,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task AddTrustedSignersAsync_WithUnknownPrimarySignature_ThrowsAsync()
         {
             // Arrange
