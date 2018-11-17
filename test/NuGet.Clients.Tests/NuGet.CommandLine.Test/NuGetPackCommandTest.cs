@@ -4481,7 +4481,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
                     Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, licenseExpr)), new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.NotNull(licenseMetadata);
-                    Assert.Equal(licenseMetadata.LicenseUrl.AbsoluteUri, nuspecReader.GetLicenseUrl());
+                    Assert.Equal(licenseMetadata.LicenseUrl.OriginalString, nuspecReader.GetLicenseUrl());
                     Assert.Equal(licenseMetadata.LicenseUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.Equal(licenseMetadata.Type, LicenseType.Expression);
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
@@ -5098,7 +5098,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
                     Assert.NotNull(licenseMetadata);
-                    Assert.Equal(licenseMetadata.LicenseUrl.AbsoluteUri, nuspecReader.GetLicenseUrl());
+                    Assert.Equal(licenseMetadata.LicenseUrl.OriginalString, nuspecReader.GetLicenseUrl());
                     Assert.Equal(licenseMetadata.Type, LicenseType.File);
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseFileName);
