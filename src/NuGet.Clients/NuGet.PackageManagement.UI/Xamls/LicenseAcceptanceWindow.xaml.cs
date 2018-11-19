@@ -37,7 +37,6 @@ namespace NuGet.PackageManagement.UI
                     var window = new LicenseFileWindow()
                     {
                         DataContext = licenseFile
-
                     };
 
                     licenseFile.LoadLicenseFile();
