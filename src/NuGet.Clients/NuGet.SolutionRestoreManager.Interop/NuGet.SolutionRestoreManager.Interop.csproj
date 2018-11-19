@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <PackageId>NuGet.SolutionRestoreManager.Interop</PackageId>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <IncludeInVsix>true</IncludeInVsix>
