@@ -4,7 +4,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <Description>NuGet.Indexing Class Library</Description>
+    <Description>NuGet.Indexing Class Library.</Description>
     <TargetFramework>net46</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackProject>true</PackProject>

@@ -14,7 +14,7 @@
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <XPLATProject>true</XPLATProject>
-    <PackageDescription>NuGet pack for dotnet CLI. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.</PackageDescription>
+    <PackageDescription>NuGet pack for dotnet CLI.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>
