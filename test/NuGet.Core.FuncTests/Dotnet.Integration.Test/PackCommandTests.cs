@@ -3084,9 +3084,10 @@ namespace ClassLibrary
                     Assert.Equal("ClassLibrary1", nuspecReader.GetId());
                     Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+                    Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, licenseExpr)), new Uri(nuspecReader.GetLicenseUrl()));
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
-                    Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, WebUtility.UrlEncode(licenseExpr))), new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.NotNull(licenseMetadata);
+                    Assert.Equal(licenseMetadata.LicenseUrl.OriginalString, nuspecReader.GetLicenseUrl());
                     Assert.Equal(licenseMetadata.LicenseUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.Equal(licenseMetadata.Type, LicenseType.Expression);
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
