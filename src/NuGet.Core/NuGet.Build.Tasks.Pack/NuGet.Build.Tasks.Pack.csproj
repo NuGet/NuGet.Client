@@ -18,7 +18,7 @@
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg</TargetsForTfmSpecificContentInPackage>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
-    <PackageDescription>NuGet pack for dotnet CLI. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.</PackageDescription>
+    <PackageDescription>NuGet pack for dotnet CLI.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>

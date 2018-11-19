@@ -38,8 +38,8 @@ namespace NuGet.CommandLine
 	        <description>$description$</description>
 	        <authors>$owner$</authors>
 	        <copyright>$copyright$</copyright>
-	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
-	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+	        <projectUrl>https://aka.ms/nugetprj</projectUrl>
 	        <tags>nuget</tags>
 	    </metadata>
 	</package>";
@@ -82,7 +82,7 @@ namespace NuGet.CommandLine
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
-                Assert.Equal("NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.", xdoc.XPathSelectElement("/package/metadata/description").Value);
+                Assert.Equal("NuGet client library.", xdoc.XPathSelectElement("/package/metadata/description").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
                 Assert.Equal(
                 testAssembly.GetCustomAttributes<AssemblyMetadataAttribute>()
@@ -109,8 +109,8 @@ namespace NuGet.CommandLine
 	        <description>$description$</description>
 	        <authors>$owner$</authors>
 	        <copyright>$copyright$</copyright>
-	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
-	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+	        <projectUrl>https://aka.ms/nugetprj</projectUrl>
 	        <tags>nuget</tags>
 	    </metadata>
 	</package>";
@@ -160,7 +160,7 @@ namespace NuGet.CommandLine
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
-                Assert.Equal("NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.", xdoc.XPathSelectElement("/package/metadata/description").Value);
+                Assert.Equal("NuGet client library.", xdoc.XPathSelectElement("/package/metadata/description").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
                 Assert.Equal(
                     cmdLineProperties["owner"],
@@ -183,8 +183,8 @@ namespace NuGet.CommandLine
 	        <description>$description$</description>
 	        <authors>$overriden$</authors>
 	        <copyright>$copyright$</copyright>
-	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
-	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+	        <projectUrl>https://aka.ms/nugetprj</projectUrl>
 	        <tags>nuget</tags>
 	    </metadata>
 	</package>";
@@ -234,7 +234,7 @@ namespace NuGet.CommandLine
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
-                Assert.Equal("NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.", xdoc.XPathSelectElement("/package/metadata/description").Value);
+                Assert.Equal("NuGet client library.", xdoc.XPathSelectElement("/package/metadata/description").Value);
                 Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
                 Assert.Equal(
                     cmdLineProperties["overriden"],
@@ -257,8 +257,8 @@ namespace NuGet.CommandLine
 	        <description>$description$</description>
 	        <authors>Outercurve</authors>
 	        <copyright>$copyright$</copyright>
-	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
-	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+	        <projectUrl>https://aka.ms/nugetprj</projectUrl>
 	        <tags>nuget</tags>
 	    </metadata>
 	</package>";
@@ -330,8 +330,8 @@ namespace NuGet.CommandLine
 	        <description>$description$</description>
 	        <authors>Outercurve</authors>
 	        <copyright>$copyright$</copyright>
-	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
-	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+	        <projectUrl>https://aka.ms/nugetprj</projectUrl>
 	        <tags>nuget</tags>
             <dependencies>
                 <dependency id=""NeverGonnaGiveYouUp"" version =""$version$"" />
@@ -392,8 +392,8 @@ namespace NuGet.CommandLine
         <description>$description$</description>
         <authors>$author$</authors>
         <copyright>$copyright$</copyright>
-        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
-        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+        <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+        <projectUrl>https://aka.ms/nugetprj</projectUrl>
         <tags>nuget</tags>
     </metadata>
 </package>";
