@@ -358,7 +358,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Returns="@(_RestoreGraphEntry)">
 
     <PropertyGroup>
-      <DotnetCliToolTargetFramework Condition=" '$(DotnetCliToolTargetFramework)' == '' ">netcoreapp2.0</DotnetCliToolTargetFramework>
+      <DotnetCliToolTargetFramework Condition=" '$(DotnetCliToolTargetFramework)' == '' ">netcoreapp1.0</DotnetCliToolTargetFramework>
     </PropertyGroup>
 
     <!-- Write out tool references -->
