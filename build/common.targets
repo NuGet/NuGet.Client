@@ -206,7 +206,7 @@
   <Target Name="GetNetCoreLocalizedFilesInProjectOutputPath" Returns="@(_LocalizedNetCoreDllsWithRelativeTargetPath)" Condition=" '$(PackProject)' == 'true' ">
     <ItemGroup>
       <_LocalizedDllsNetCoreApp Include="$(OutputPath)$(NETCoreTargetFramework)\**\$(AssemblyName).resources.dll"/>
-      <_LocalizedDllsNetStandard16 Include="$(OutputPath)$(NetStandardVersion)\**\$(AssemblyName).resources.dll"/>
+      <_LocalizedDllsNetStandard Include="$(OutputPath)$(NetStandardVersion)\**\$(AssemblyName).resources.dll"/>
       <_LocalizedDllsNetStandard10 Include="$(OutputPath)netstandard1.0\**\$(AssemblyName).resources.dll"/>
 
       <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetCoreApp)" Condition=" '@(_LocalizedDllsNetCoreApp)' != '' ">
@@ -217,8 +217,8 @@
         <RelativeTargetPath>$(NetStandardVersion)\%(_LocalizedDllsNetStandard10.RecursiveDir)%(_LocalizedDllsNetStandard10.FileName)%(_LocalizedDllsNetStandard10.Extension)</RelativeTargetPath>
       </_LocalizedNetCoreDllsWithRelativeTargetPath>
 
-      <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetStandard16)" Condition=" '@(_LocalizedDllsNetStandard16)' != '' ">
-        <RelativeTargetPath>$(NetStandardVersion)\%(_LocalizedDllsNetStandard16.RecursiveDir)%(_LocalizedDllsNetStandard16.FileName)%(_LocalizedDllsNetStandard16.Extension)</RelativeTargetPath>
+      <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetStandard)" Condition=" '@(_LocalizedDllsNetStandard)' != '' ">
+        <RelativeTargetPath>$(NetStandardVersion)\%(_LocalizedDllsNetStandard.RecursiveDir)%(_LocalizedDllsNetStandard.FileName)%(_LocalizedDllsNetStandard.Extension)</RelativeTargetPath>
       </_LocalizedNetCoreDllsWithRelativeTargetPath>
     </ItemGroup>
   </Target>
