@@ -48,7 +48,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NuGet/NuGet.Client</RepositoryUrl>
     <PackageTags>nuget</PackageTags>
-    <Description>NuGet client library. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.</Description>
+    <Description>NuGet client library.</Description>
     <Copyright>&#169; Microsoft Corporation. All rights reserved.</Copyright>
     <Serviceable>true</Serviceable>
     <PackageIconUrl>https://raw.githubusercontent.com/NuGet/Media/master/Images/MainLogo/256x256/nuget_256.png</PackageIconUrl>
