@@ -14,8 +14,6 @@ namespace NuGet.PackageManagement.UI
 {
     internal class PackageLicenseUtilities
     {
-        private static string LicenseFormat = "https://licenses.nuget.org/{0}";
-
         internal static IReadOnlyList<IText> GenerateLicenseLinks(DetailedPackageMetadata metadata)
         {
             return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, string.Format(CultureInfo.CurrentCulture, Resources.WindowTitle_LicenseFileWindow, metadata.Id), metadata.LoadFileAsText);
@@ -86,7 +84,7 @@ namespace NuGet.PackageManagement.UI
                                 list.Add(new FreeText(licenseToBeProcessed.Substring(0, licenseStart)));
                             }
                             var license = licenseToBeProcessed.Substring(licenseStart, identifier.Length);
-                            list.Add(new LicenseText(license, new Uri(string.Format(LicenseFormat, license))));
+                            list.Add(new LicenseText(license, new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, license))));
                             licenseToBeProcessed = licenseToBeProcessed.Substring(licenseStart + identifier.Length);
                         }
 

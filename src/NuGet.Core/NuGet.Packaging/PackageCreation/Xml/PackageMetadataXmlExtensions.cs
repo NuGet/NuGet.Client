@@ -45,7 +45,7 @@ namespace NuGet.Packaging.Xml
             {
                 elem.Add(new XElement(ns + "developmentDependency", metadata.DevelopmentDependency));
             }
-            var licenseUrlToWrite = metadata.LicenseUrl;
+            var licenseUrlToWrite = metadata.LicenseUrl?.ToString();
             if (metadata.LicenseMetadata != null)
             {
                 var licenseElement = GetXElementFromLicenseMetadata(ns, metadata.LicenseMetadata);
@@ -53,7 +53,7 @@ namespace NuGet.Packaging.Xml
                 {
                     elem.Add(licenseElement);
                 }
-                licenseUrlToWrite = metadata.LicenseMetadata.LicenseUrl;
+                licenseUrlToWrite = metadata.LicenseMetadata.LicenseUrl.OriginalString;
             }
             AddElementIfNotNull(elem, ns, "licenseUrl", licenseUrlToWrite);
             AddElementIfNotNull(elem, ns, "projectUrl", metadata.ProjectUrl);
