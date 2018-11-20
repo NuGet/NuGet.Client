@@ -1,12 +1,21 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
 <package>
   <metadata>
     <id>NuGet.Build.Tasks.Pack</id>
     <version>$version$</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <developmentDependency>true</developmentDependency>
+    <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+    <projectUrl>https://aka.ms/nugetprj</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/NuGet/Media/master/Images/MainLogo/256x256/nuget_256.png</iconUrl>
     <description>NuGet pack for dotnet CLI</description>
-    <copyright>&#169; .NET Foundation. All rights reserved.</copyright>
+    <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
+    <tags>nuget</tags>
+    <serviceable>true</serviceable>
+    <repository type="git" url="https://github.com/NuGet/NuGet.Client" />
   </metadata>
   <files>
     <file src="net46\ilmerge\NuGet.Build.Tasks.Pack.dll" target="Desktop\" />
