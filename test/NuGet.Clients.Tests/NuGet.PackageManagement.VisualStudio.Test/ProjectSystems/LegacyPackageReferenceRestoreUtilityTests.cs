@@ -485,8 +485,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         Assert.False(restoreSummary.NoOpRestore);
                     }
 
+                    // Initial asserts
                     Assert.True(File.Exists(projectLockFilePath));
-                    Assert.True(File.Exists(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json")));
+                    var assetsFilePath = Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json");
+                    Assert.True(File.Exists(assetsFilePath));
+
+                    // Assert that there is no warning logged into assets file
+                    var assetsFile = new LockFileFormat().Read(assetsFilePath);
+                    Assert.False(assetsFile.LogMessages.Any());
 
                     // delete existing restore output files
                     File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json"));
@@ -509,7 +515,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    // update the proeject with new ProjectService instance
+                    // update the project with new ProjectService instance
                     restoreContext.PackageSpecCache.Clear();
                     dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
 
