@@ -54,5 +54,45 @@ namespace NuGet.PackageManagement.UI.Test.Converters
 
             Assert.Equal(expected, converted);
         }
+
+        [Fact]
+        public void Convert_DateTime()
+        {
+            var converter = new DateTimeConverter();
+
+            var converted = converter.Convert(new DateTime(2018, 11, 20),
+                typeof(string),
+                null,
+                CultureInfo.GetCultureInfo("en-US"));
+
+            Assert.Equal("Tuesday, November 20, 2018 (11/20/2018)", converted);
+        }
+
+        [Fact]
+        public void Convert_DateTimeParsableObject()
+        {
+            var converter = new DateTimeConverter();
+
+            var converted = converter.Convert("2018-11-20",
+                typeof(string),
+                null,
+                CultureInfo.GetCultureInfo("en-US"));
+
+            Assert.Equal("Tuesday, November 20, 2018 (11/20/2018)", converted);
+        }
+
+        [Fact]
+        public void Convert_ObjectDateTimeCanNotParse()
+        {
+            var converter = new DateTimeConverter();
+
+            var converted = converter.Convert(Guid.Empty,
+                typeof(string),
+                null,
+                CultureInfo.GetCultureInfo("en-US"));
+
+            Assert.Null(converted);
+        }
+
     }
 }
