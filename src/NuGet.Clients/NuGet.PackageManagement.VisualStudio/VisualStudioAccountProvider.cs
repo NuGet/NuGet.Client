@@ -5,12 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Net;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Services.Client.AccountManagement;
 using System.Threading;
 using NuGet.Credentials;
 using NuGet.Configuration;
+using NuGet.Common;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -20,12 +21,16 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class VisualStudioAccountProvider : ICredentialProvider
     {
-        private readonly IAccountManager _accountManager;
+        private readonly AsyncLazy<IAccountManager> _accountManager;
         private readonly IInteractiveLoginProvider _loginProvider;
 
         public VisualStudioAccountProvider()
             //  Loadup the account manager and the account provider so that we can query the keychain.
-            : this(ServiceProvider.GlobalProvider.GetService(typeof(SVsAccountManager)) as IAccountManager, new InteractiveLoginProvider())
+            : this(new AsyncLazy<IAccountManager>(async () =>
+                {
+                    return await ServiceLocator.GetGlobalServiceAsync<SVsAccountManager, IAccountManager>();
+                }),
+                new InteractiveLoginProvider())
         {
         }
 
@@ -34,7 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="accountManager">Account manager, most likely a mock</param>
         /// <param name="interactiveLogin">Interactive login provider most likely a mock</param>
-        public VisualStudioAccountProvider(IAccountManager accountManager, IInteractiveLoginProvider interactiveLogin)
+        public VisualStudioAccountProvider(AsyncLazy<IAccountManager> accountManager, IInteractiveLoginProvider interactiveLogin)
         {
             _accountManager = accountManager;
             _loginProvider = interactiveLogin;
@@ -109,7 +114,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new InvalidOperationException(Strings.AccountProvider_FailedToLoadAccountManager);
             }
 
-            var provider = (VSAccountProvider) await _accountManager
+            var provider = (VSAccountProvider) await (await _accountManager)
                 .GetAccountProviderAsync(VSAccountProvider.AccountProviderIdentifier);
 
             if (provider == null)
@@ -120,7 +125,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             //  Ask keychain for all accounts
-            var accounts = _accountManager.Store.GetAllAccounts();
+            var accounts = (await _accountManager).Store.GetAllAccounts();
 
             //  Look through the accounts to see what ones have the VSO tenant in them (collected from
             //  the LookupTenant() call at the top of the method).

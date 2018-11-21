@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Services.Client;
 using Microsoft.VisualStudio.Services.Client.AccountManagement;
 using Microsoft.VisualStudio.Services.DelegatedAuthorization.Client;
 using Microsoft.VisualStudio.Services.WebApi;
+using NuGet.Common;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -24,11 +25,14 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string MsaOnlyTenantId = "00000000-0000-0000-0000-000000000000";
         private const string SessionTokenScope = "vso.packaging_write";
 
-        private readonly DTE _dte;
+        private readonly AsyncLazy<DTE> _dte;
 
         public InteractiveLoginProvider()
         {
-            _dte = ServiceLocator.GetInstance<DTE>();
+            _dte = new AsyncLazy<DTE>(async () =>
+            {
+                return await ServiceLocator.GetInstanceAsync<DTE>();
+            });
         }
 
         // Logic shows UI and interacts with all mocked methods.  Mocking this as well.
@@ -53,7 +57,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var parent = IntPtr.Zero;
                 if (_dte != null)
                 {
-                    parent = new IntPtr(_dte.MainWindow.HWnd);
+                    parent = new IntPtr((await _dte).MainWindow.HWnd);
                 }
 
                 account = await provider.CreateAccountWithUIAsync(parent, cancellationToken);
@@ -94,7 +98,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var parent = IntPtr.Zero;
                 if (_dte != null)
                 {
-                    parent = new IntPtr(_dte.MainWindow.HWnd);
+                    parent = new IntPtr((await _dte).MainWindow.HWnd);
                 }
 
                 try

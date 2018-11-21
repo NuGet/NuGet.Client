@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.VisualStudio.Services.Client.AccountManagement;
@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Credentials;
 using Xunit;
 using NuGet.Configuration;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
@@ -55,7 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 x => x.FindTenantInAccount(It.IsAny<Account>(), It.IsAny<string>(), It.IsAny<VSAccountProvider>()))
                 .Returns(new TenantInformation("uid", TestTenantId, "name", true, true));
 
-            _provider = new VisualStudioAccountProvider(_mockAccountManager.Object, _mockLoginProvider.Object);
+            _provider = new VisualStudioAccountProvider(new AsyncLazy<IAccountManager>(() => Task.FromResult(_mockAccountManager.Object)), _mockLoginProvider.Object);
         }
 
         private Account GetTestAccount()
