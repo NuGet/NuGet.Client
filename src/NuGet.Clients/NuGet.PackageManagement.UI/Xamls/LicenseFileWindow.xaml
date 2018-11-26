@@ -14,7 +14,7 @@
   Background="{DynamicResource {x:Static nuget:Brushes.BackgroundBrushKey}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
-  Title="{Binding Header}"
+  Title="{Binding LicenseHeader}"
   d:DesignHeight="300"
   d:DesignWidth="300"
   >
@@ -33,7 +33,7 @@
     <Border
       Name="borderLicenseFile"
       BorderThickness="1"
-      AutomationProperties.Name="{Binding Header, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+      AutomationProperties.Name="{Binding LicenseHeader, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
       <FlowDocumentScrollViewer
           Name="_flowDocumentViewer"

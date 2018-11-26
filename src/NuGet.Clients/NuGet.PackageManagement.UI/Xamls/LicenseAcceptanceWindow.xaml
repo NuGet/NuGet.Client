@@ -54,7 +54,8 @@
       <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
         <TextBlock>
                 <Hyperlink
-                  AutomationProperties.AutomationId="{Binding Text}"
+                    AutomationProperties.AutomationId="{Binding Text}"
+                    Style="{StaticResource WindowHyperlinkStyle}"
                     Click="ViewLicense_Click">
                   <Run Text="{Binding Text}"/>
                 </Hyperlink>
@@ -98,18 +99,9 @@
           </ItemsControl>
         </StackPanel>
       </DataTemplate>
-
-      <Style TargetType="{x:Type FlowDocument}">
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="PagePadding" Value="3"/>
-      </Style>
     </ResourceDictionary>
   </Window.Resources>
   <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition MinWidth="400"/>
-      <ColumnDefinition Name="LicenseFileColumn" Width="0" MinWidth="0" />
-    </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition
         Height="Auto" />
@@ -204,32 +196,5 @@
           AutomationProperties.AutomationId="DeclineButton"
           Click="OnDeclineButtonClick" />
     </Grid>
-
-    <TextBlock
-      Name="EmbeddedLicenseHeader"
-      Grid.Row="1"
-      Grid.Column="1"
-      Margin="12,4,12,0"
-      Visibility="Collapsed"
-      AutomationProperties.Name="{Binding Text}"
-      Text="{Binding LicenseHeader, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-      TextWrapping="Wrap"
-      />
-    
-    <Border
-      Name="EmbeddedLicense"
-      Grid.Column="1"
-      Grid.Row="2"
-      Margin="12,8"
-      MinHeight="130"
-      BorderThickness="1"
-      Visibility="Collapsed"
-      BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
-      >
-      <FlowDocumentScrollViewer
-          Name="_flowDocumentViewer"
-          AutomationProperties.LabeledBy="{Binding ElementName=EmbeddedLicense}"
-          Document="{Binding LicenseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-    </Border>
   </Grid>
 </nuget:VsDialogWindow>

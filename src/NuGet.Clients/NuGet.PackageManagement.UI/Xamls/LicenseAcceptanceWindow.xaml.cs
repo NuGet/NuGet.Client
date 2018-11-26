@@ -4,7 +4,6 @@
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -13,10 +12,6 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class LicenseAcceptanceWindow : VsDialogWindow
     {
-
-        private const int MinColumnWidth = 400;
-        private const int MinAdditionalColumnWidthWithMargin = 434;  
-
         public LicenseAcceptanceWindow()
         {
             InitializeComponent();
@@ -39,18 +34,19 @@ namespace NuGet.PackageManagement.UI
             {
                 if (hyperlink.DataContext is LicenseFileText licenseFile)
                 {
-                    if (EmbeddedLicense.Visibility == Visibility.Collapsed)
+                    var window = new LicenseFileWindow()
                     {
-                        LicenseFileColumn.Width = new GridLength(1, GridUnitType.Star);
-                        LicenseFileColumn.MinWidth = MinColumnWidth; // Make both columns the same min width
-                        Width += MinAdditionalColumnWidthWithMargin; // Change the width to account for the added textbox
-                        MinWidth += MinAdditionalColumnWidthWithMargin; // Change the min width to account for the added textbox
-                        EmbeddedLicense.Visibility = Visibility.Visible;
-                        EmbeddedLicenseHeader.Visibility = Visibility.Visible;
+                        DataContext = licenseFile
+                    };
+
+                    licenseFile.LoadLicenseFile();
+
+                    using (NuGetEventTrigger.TriggerEventBeginEnd(
+                            NuGetEvent.EmbeddedLicenseWindowBegin,
+                            NuGetEvent.EmbeddedLicenseWindowEnd))
+                    {
+                        window.ShowModal();
                     }
-                    licenseFile.LoadLicenseFile(); // This loads the file asynchronously 
-                    EmbeddedLicense.DataContext = licenseFile;
-                    EmbeddedLicenseHeader.DataContext = licenseFile;
                 }
             }
         }
