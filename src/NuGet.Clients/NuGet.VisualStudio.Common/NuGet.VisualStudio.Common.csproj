@@ -8,6 +8,7 @@
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <VSTSVersion>15.131.1</VSTSVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -22,14 +23,14 @@
       <HintPath>$(EnlistmentRoot)\packages\Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="15.112.1" />
+    <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSTSVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26606" />
     <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="15.0.26606" />
     <PackageReference Include="Microsoft.VisualStudio.Editor" Version="15.0.26606" />
     <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.0.26606" />
     <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="15.112.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="15.112.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="$(VSTSVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="$(VSTSVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26606" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.15.0" Version="15.0.25123-Dev15Preview">
       <PrivateAssets>All</PrivateAssets>

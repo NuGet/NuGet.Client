@@ -8,8 +8,8 @@
 
   <!-- Common -->
   <PropertyGroup>
-    <NETFXTargetFrameworkVersion>v4.6</NETFXTargetFrameworkVersion>
-    <NETFXTargetFramework>net46</NETFXTargetFramework>
+    <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
+    <NETFXTargetFramework>net472</NETFXTargetFramework>
     <NETCoreTargetFramework>netcoreapp1.0</NETCoreTargetFramework>
     <NetStandardVersion>netstandard1.6</NetStandardVersion>
     <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
