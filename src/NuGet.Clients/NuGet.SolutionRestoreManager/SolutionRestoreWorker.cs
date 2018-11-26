@@ -223,9 +223,8 @@ namespace NuGet.SolutionRestoreManager
                     {
                         // Do not block VS forever
                         // After the specified delay the task will disjoin.
-                        await _backgroundJobRunner.GetValueAsync().WithTimeout(TimeSpan.FromSeconds(60));
-                    },
-                    JoinableTaskCreationOptions.LongRunning);
+                        await _backgroundJobRunner.GetValueAsync().WithTimeout(TimeSpan.FromSeconds(5));
+                    });
             }
 
             _pendingRestore?.Dispose();
