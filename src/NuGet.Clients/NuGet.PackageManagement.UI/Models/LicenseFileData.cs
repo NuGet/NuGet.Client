@@ -11,13 +11,13 @@ namespace NuGet.PackageManagement.UI
         private string _header { get; set; }
         private FlowDocument _content { get; set; }
 
-        public string Header
+        public string LicenseHeader
         {
             get => _header;
             set
             {
                 _header = value;
-                OnPropertyChanged("Header");
+                OnPropertyChanged("LicenseHeader");
             }
         }
 

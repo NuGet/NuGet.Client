@@ -39,6 +39,7 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFile'}">
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFileLink'}"
+                    Style="{StaticResource WindowHyperlinkStyle}"
                     Click="ViewLicense_Click">
                   <Run Text="{Binding Text}"/>
                 </Hyperlink>
