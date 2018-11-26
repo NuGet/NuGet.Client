@@ -896,6 +896,38 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void LoadPackageSources_WithSpaceInName_ReadsCredentialPairsFromSettings()
+        {
+            // Arrange
+            var encryptedPassword = Guid.NewGuid().ToString();
+
+            var settings = new Mock<ISettings>();
+            settings
+                .Setup(s => s.GetSection("packageSources"))
+                .Returns(new VirtualSettingSection("packageSources",
+                    new SourceItem("one source", "onesource"),
+                    new SourceItem("two source", "twosource"),
+                    new SourceItem("three source", "threesource")
+                ));
+
+            settings
+                .Setup(s => s.GetSection("packageSourceCredentials"))
+                .Returns(new VirtualSettingSection("packageSourceCredentials",
+                    new CredentialsItem("two source", "user1", encryptedPassword, isPasswordClearText: false)
+                    ));
+
+            var provider = CreatePackageSourceProvider(settings.Object);
+
+            // Act
+            var values = provider.LoadPackageSources().ToList();
+
+            // Assert
+            Assert.Equal(3, values.Count);
+            AssertPackageSource(values[1], "two source", "twosource", true);
+            AssertCredentials(values[1].Credentials, "two source", "user1", encryptedPassword, isPasswordClearText: false);
+        }
+
+        [Fact]
         public void LoadPackageSources_ReadsClearTextCredentialPairsFromSettings()
         {
             // Arrange

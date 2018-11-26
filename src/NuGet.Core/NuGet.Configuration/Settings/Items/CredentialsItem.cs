@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace NuGet.Configuration
@@ -16,7 +17,19 @@ namespace NuGet.Configuration
     /// </summary>
     public sealed class CredentialsItem : SettingItem
     {
-        public override string ElementName { get; protected set; }
+        private string _elementName;
+        public override string ElementName {
+            get => XmlConvert.DecodeName(_elementName);
+            protected set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.PropertyCannotBeNullOrEmpty, nameof(ElementName)));
+                }
+
+                _elementName = XmlUtility.GetEncodedXMLName(value);
+            }
+        }
 
         public string Username
         {
@@ -163,7 +176,7 @@ namespace NuGet.Configuration
                 return Node;
             }
 
-            var element = new XElement(ElementName,
+            var element = new XElement(_elementName,
                 _username.AsXNode(),
                 _password.AsXNode());
 

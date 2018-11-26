@@ -28,6 +28,14 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void CredentialsItem_Constructor_WithSpaceOnName_EncodesItCorrectly()
+        {
+            var item = new CredentialsItem("credentials name", "username", "password", isPasswordClearText: true);
+
+            item.ElementName.Should().Be("credentials name");
+        }
+
+        [Fact]
         public void CredentialsItem_Parsing_WithoutUsername_Throws()
         {
             // Arrange
@@ -358,6 +366,34 @@ namespace NuGet.Configuration.Test
             }
         }
 
+        [Fact]
+        public void CredentialsItem_AsXNode_WithSpaceInName_ReturnsCorrectElement()
+        {
+            // Arrange
+            var credentialsItem = new CredentialsItem("credentials name", "username", "password", isPasswordClearText: false);
+
+            // Act
+            var xnode = credentialsItem.AsXNode();
+
+            // Assert
+            xnode.Should().BeOfType<XElement>();
+            var xelement = xnode as XElement;
+
+            xelement.Name.LocalName.Should().Be("credentials_x0020_name");
+            var elements = xelement.Elements().ToList();
+            elements.Count.Should().Be(2);
+            elements[0].Name.LocalName.Should().Be("add");
+            var elattr = elements[0].Attributes().ToList();
+            elattr.Count.Should().Be(2);
+            elattr[0].Value.Should().Be("Username");
+            elattr[1].Value.Should().Be("username");
+
+            elements[1].Name.LocalName.Should().Be("add");
+            elattr = elements[1].Attributes().ToList();
+            elattr.Count.Should().Be(2);
+            elattr[0].Value.Should().Be("Password");
+            elattr[1].Value.Should().Be("password");
+        }
 
         [Fact]
         public void CredentialsItem_AsXNode_WithUsernameAndPassword_ReturnsCorrectElement()
@@ -454,6 +490,41 @@ namespace NuGet.Configuration.Test
             <add key='Username' value='username' />
             <add key='Password' value='password' />
         </NuGet.Org>
+    </packageSourceCredentials>
+</configuration>";
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settingsFile = new SettingsFile(mockBaseDirectory);
+                settingsFile.TryGetSection("packageSourceCredentials", out var section).Should().BeTrue();
+                section.Should().NotBeNull();
+
+                section.Items.Count.Should().Be(1);
+                var item = section.Items.First();
+                item.IsCopy().Should().BeFalse();
+                item.Origin.Should().NotBeNull();
+
+                var clone = item.Clone() as CredentialsItem;
+                clone.IsCopy().Should().BeTrue();
+                clone.Origin.Should().NotBeNull();
+                SettingsTestUtils.DeepEquals(clone, item).Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public void CredentialsItem_Clone_WithSpaceOnName_ReturnsItemClone()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <packageSourceCredentials>
+        <nuget_x0020_org>
+            <add key='Username' value='username' />
+            <add key='Password' value='password' />
+        </nuget_x0020_org>
     </packageSourceCredentials>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";

@@ -119,5 +119,19 @@ namespace NuGet.Configuration.Test
 
             SettingsTestUtils.DeepEquals(credentials.AsCredentialsItem(), expectedItem).Should().BeTrue();
         }
+
+        [Fact]
+        public void AsCredentialsItem_WithSpaceOnSourceName_WorksCorrectly()
+        {
+            var credentials = new PackageSourceCredential(
+                "source name",
+                "user",
+                "password",
+                isPasswordClearText: true);
+
+            var expectedItem = new CredentialsItem("source name", "user", "password", isPasswordClearText: true);
+
+            SettingsTestUtils.DeepEquals(credentials.AsCredentialsItem(), expectedItem).Should().BeTrue();
+        }
     }
 }
