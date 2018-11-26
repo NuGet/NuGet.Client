@@ -27,6 +27,18 @@ namespace NuGet.Configuration
             return CreateDocument(content, fullPath);
         }
 
+        internal static string GetEncodedXMLName(string name)
+        {
+            try
+            {
+                return XmlConvert.VerifyName(name);
+            }
+            catch (XmlException)
+            {
+                return XmlConvert.EncodeName(name);
+            }
+        }
+
         private static XDocument CreateDocument(XDocument content, string fullPath)
         {
             // Add it to the file system
