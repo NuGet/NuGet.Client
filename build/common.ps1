@@ -10,7 +10,7 @@ $PackageReleaseVersion = "4.6.0"
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $CLIRoot = Join-Path $NuGetClientRoot cli
-$CLIRootForPack = Join-Path $NuGetClientRoot "cli1.0.4"
+$CLIRootForPack = Join-Path $NuGetClientRoot "cli2.1.500"
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $Nupkgs = Join-Path $Artifacts nupkgs
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
@@ -237,8 +237,8 @@ Function Install-DotnetCLIToILMergePack {
     $cli = @{
             Root = $CLIRootForPack
             DotNetExe = Join-Path $CLIRootForPack 'dotnet.exe'
-            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
-            Version = '1.0.1'
+            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/4bd9bb92cc3636421cd01baedbd8ef3e41aa1e22/scripts/obtain/dotnet-install.ps1'
+            Version = '2.1.300'
         }
 
     if ([Environment]::Is64BitOperatingSystem) {
