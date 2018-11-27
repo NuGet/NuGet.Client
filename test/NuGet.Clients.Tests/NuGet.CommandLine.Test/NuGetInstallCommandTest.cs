@@ -1620,7 +1620,7 @@ namespace NuGet.CommandLine.Test
         /// arguments for install command are not appropiate
         /// </summary>
         [Fact]
-        public void InstallCommand_WrongArguments()
+        public void InstallCommand_Failure_WrongArguments()
         {
             // prepare
             string[] args = {
@@ -1640,7 +1640,7 @@ namespace NuGet.CommandLine.Test
                    testDir,
                    string.Join(" ", args),
                    true);
-                Assert.NotEqual(0, result.Item1);
+                Util.VerifyResultFailure(result, "'-outputdirectory' is not a valid version string.");
             }
         }
 

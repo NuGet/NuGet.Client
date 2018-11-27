@@ -806,8 +806,18 @@ EndProject";
             }
         }
 
+        /// <summary>
+        /// Utility for asserting faulty executions of nuget.exe
+        /// 
+        /// Asserts a non-zero status code and a message.
+        /// </summary>
+        /// <param name="result">An instance of <see cref="CommandRunnerResult"/> with command execution results</param>
+        /// <param name="expectedErrorMessage">A portion of the error message to be sent</param>
+        /// <param name="checkErrorMsgOnStdErr">Check error message on stderr, 
+        /// true by default. If false, it checks the message in stdout</param>
         public static void VerifyResultFailure(CommandRunnerResult result,
-                                               string expectedErrorMessage, bool checkErrorMsgOnStdErr = true)
+                                               string expectedErrorMessage,
+                                               bool checkErrorMsgOnStdErr = true)
         {
             Assert.True(
                 result.Item1 != 0,
