@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -124,10 +124,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // create the session token
             var connection = new VssConnection(AccountManager.VsoEndpoint, aadcred);
-            var delegatedClient = connection.GetClient< Microsoft.VisualStudio.Services.DelegatedAuthorization.WebApi.TokenHttpClient> ();
+            var delegatedClient = connection.GetClient<DelegatedAuthorizationHttpClient>();
 
             // Create a scoped session token to the endpoint
-            var sessionToken = await delegatedClient.GetSessionTokenAsync(
+            var sessionToken = await delegatedClient.CreateSessionToken(
                 cancellationToken: cancellationToken,
                 scope: SessionTokenScope);
 
