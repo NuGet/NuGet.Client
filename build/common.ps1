@@ -10,7 +10,7 @@ $PackageReleaseVersion = "4.6.0"
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $CLIRoot = Join-Path $NuGetClientRoot cli
-$CLIRootForPack = Join-Path $NuGetClientRoot "cli2.1.500"
+$CLIRootForPack = Join-Path $NuGetClientRoot "cli2.1.300"
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $Nupkgs = Join-Path $Artifacts nupkgs
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
