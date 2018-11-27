@@ -9,6 +9,7 @@
     <IncludeInVsix>true</IncludeInVsix>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <VSTSVersion>15.131.1</VSTSVersion>
+    <VSVersion>15.8.525</VSVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,22 +25,23 @@
       <Private>False</Private>
     </Reference>
     <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSTSVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VisualStudio.Editor" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" Version="15.0.26606" />
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="$(VSVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="$(VSVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Editor" Version="$(VSVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(VSVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" Version="$(VSVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="$(VSTSVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="$(VSTSVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26606" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.8.28010" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.15.0" Version="15.0.25123-Dev15Preview">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Telemetry" Version="15.0.691-master31907920" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.Data" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.Logic" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.UI" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" Version="15.0.26606" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Data" Version="$(VSVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Logic" Version="$(VSVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI" Version="$(VSVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" Version="$(VSVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.ImageCatalog" Version="15.8.28010" />
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.8.132" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="15.0.240" />
     <PackageReference Include="VSLangProj" Version="7.0.3300" />
