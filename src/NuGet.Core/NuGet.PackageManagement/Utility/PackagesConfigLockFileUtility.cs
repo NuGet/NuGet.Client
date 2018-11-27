@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -17,9 +18,9 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.Utility
 {
-    internal class PackagesConfigLockFileUtility
+    public class PackagesConfigLockFileUtility
     {
-        public static async Task UpdateLockFileAsync(
+        internal static async Task UpdateLockFileAsync(
             MSBuildNuGetProject msbuildProject,
             List<NuGetProjectAction> actionsList,
             List<SourceRepository> localRepositories,
@@ -28,8 +29,13 @@ namespace NuGet.PackageManagement.Utility
         {
             var lockFileName = GetPackagesLockFilePath(msbuildProject);
             var lockFileExists = File.Exists(lockFileName);
-            var enableLockFile = IsPackagesLockFileExcplicitlyEnabled(msbuildProject);
-            if (enableLockFile || lockFileExists)
+            var enableLockFile = IsRestorePackagesWithLockFileEnabled(msbuildProject);
+            if (enableLockFile == false && lockFileExists)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidLockFileInput, lockFileName);
+                throw new InvalidOperationException(message);
+            }
+            else if (enableLockFile == true || lockFileExists)
             {
                 var lockFile = GetLockFile(lockFileExists, lockFileName);
                 var contentHashUtil = new ContentHashUtility(localRepositories, logger);
@@ -55,27 +61,33 @@ namespace NuGet.PackageManagement.Utility
         {
             var directory = Path.GetDirectoryName(msbuildProject.MSBuildProjectPath);
             var msbuildProperty = msbuildProject?.ProjectSystem?.GetPropertyValue("NuGetLockFilePath");
-            if (msbuildProperty is string nuGetLockFilePathValue)
-            {
-                if (!string.IsNullOrWhiteSpace(nuGetLockFilePathValue))
-                {
-                    return Path.Combine(directory, nuGetLockFilePathValue);
-                }
-            }
+            var projectName = Path.GetFileNameWithoutExtension(msbuildProject.MSBuildProjectPath);
 
-            return PackagesLockFileUtilities.GetNuGetLockFilePath(directory, Path.GetFileNameWithoutExtension(msbuildProject.MSBuildProjectPath));
+            return GetPackagesLockFilePath(directory, msbuildProperty, projectName);
         }
 
-        private static bool IsPackagesLockFileExcplicitlyEnabled(MSBuildNuGetProject msbuildProject)
+        public static string GetPackagesLockFilePath(string projectPath, string nuGetLockFilePath, string projectName)
+        {
+            if (!string.IsNullOrWhiteSpace(nuGetLockFilePath))
+            {
+                return Path.Combine(projectPath, nuGetLockFilePath);
+            }
+
+            return PackagesLockFileUtilities.GetNuGetLockFilePath(projectPath, projectName);
+        }
+
+        private static bool? IsRestorePackagesWithLockFileEnabled(MSBuildNuGetProject msbuildProject)
         {
             var msbuildProperty = msbuildProject?.ProjectSystem?.GetPropertyValue("RestorePackagesWithLockFile");
             if (msbuildProperty is string restorePackagesWithLockFileValue)
             {
-                bool.TryParse(restorePackagesWithLockFileValue, out var useLockFile);
-                return useLockFile;
+                if (bool.TryParse(restorePackagesWithLockFileValue, out var useLockFile))
+                {
+                    return useLockFile;
+                }
             }
 
-            return false;
+            return null;
         }
 
         internal static PackagesLockFile GetLockFile(bool lockFileExists, string lockFileName)
@@ -120,7 +132,7 @@ namespace NuGet.PackageManagement.Utility
 
                 foreach (var installed in lockFile.Targets[0].Dependencies)
                 {
-                    if (installed.Id == toUninstall.PackageIdentity.Id)
+                    if (string.Equals(installed.Id, toUninstall.PackageIdentity.Id, StringComparison.InvariantCultureIgnoreCase))
                     {
                         lockFile.Targets[0].Dependencies.Remove(installed);
                         return;
