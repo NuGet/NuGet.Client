@@ -3,14 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Net;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Services.Client.AccountManagement;
 using System.Threading;
-using NuGet.Credentials;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Services.Client.AccountManagement;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
-using NuGet.Common;
+using NuGet.Credentials;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -26,10 +26,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public VisualStudioAccountProvider()
             //  Loadup the account manager and the account provider so that we can query the keychain.
-            : this(new AsyncLazy<IAccountManager>(async () =>
-                {
-                    return await ServiceLocator.GetGlobalServiceAsync<SVsAccountManager, IAccountManager>();
-                }),
+            : this(new AsyncLazy<IAccountManager>(() =>
+                    ServiceLocator.GetGlobalServiceAsync<SVsAccountManager, IAccountManager>(), NuGetUIThreadHelper.JoinableTaskFactory),
                 new InteractiveLoginProvider())
         {
         }
@@ -114,7 +112,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new InvalidOperationException(Strings.AccountProvider_FailedToLoadAccountManager);
             }
 
-            var provider = (VSAccountProvider) await (await _accountManager)
+            var provider = (VSAccountProvider) await (await _accountManager.GetValueAsync())
                 .GetAccountProviderAsync(VSAccountProvider.AccountProviderIdentifier);
 
             if (provider == null)
@@ -125,7 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             //  Ask keychain for all accounts
-            var accounts = (await _accountManager).Store.GetAllAccounts();
+            var accounts = (await _accountManager.GetValueAsync()).Store.GetAllAccounts();
 
             //  Look through the accounts to see what ones have the VSO tenant in them (collected from
             //  the LookupTenant() call at the top of the method).

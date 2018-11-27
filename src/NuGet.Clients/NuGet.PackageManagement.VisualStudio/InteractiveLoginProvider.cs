@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.Services.Client;
 using Microsoft.VisualStudio.Services.Client.AccountManagement;
 using Microsoft.VisualStudio.Services.DelegatedAuthorization.Client;
 using Microsoft.VisualStudio.Services.WebApi;
-using NuGet.Common;
+using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -29,10 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public InteractiveLoginProvider()
         {
-            _dte = new AsyncLazy<DTE>(async () =>
-            {
-                return await ServiceLocator.GetInstanceAsync<DTE>();
-            });
+            _dte = new AsyncLazy<DTE>(() => ServiceLocator.GetInstanceAsync<DTE>(), NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         // Logic shows UI and interacts with all mocked methods.  Mocking this as well.
@@ -57,7 +54,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var parent = IntPtr.Zero;
                 if (_dte != null)
                 {
-                    parent = new IntPtr((await _dte).MainWindow.HWnd);
+                    parent = new IntPtr((await _dte.GetValueAsync()).MainWindow.HWnd);
                 }
 
                 account = await provider.CreateAccountWithUIAsync(parent, cancellationToken);
@@ -98,7 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var parent = IntPtr.Zero;
                 if (_dte != null)
                 {
-                    parent = new IntPtr((await _dte).MainWindow.HWnd);
+                    parent = new IntPtr((await _dte.GetValueAsync()).MainWindow.HWnd);
                 }
 
                 try

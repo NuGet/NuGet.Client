@@ -1,17 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.VisualStudio.Services.Client.AccountManagement;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Services.Client.AccountManagement;
+using Microsoft.VisualStudio.Threading;
+using Moq;
+using NuGet.Configuration;
 using NuGet.Credentials;
 using Xunit;
-using NuGet.Configuration;
-using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
