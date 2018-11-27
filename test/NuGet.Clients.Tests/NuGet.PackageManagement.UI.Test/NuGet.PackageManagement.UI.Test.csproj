@@ -25,6 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Converters\IconUrlToImageCacheConverterTests.cs" />
+    <Compile Include="Converters\DateTimeConverterTests.cs" />
     <Compile Include="Converters\VersionToStringConverterTests.cs" />
     <Compile Include="ConverterTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />

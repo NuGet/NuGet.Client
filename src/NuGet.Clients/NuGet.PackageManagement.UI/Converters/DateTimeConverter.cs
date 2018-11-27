@@ -24,7 +24,24 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            var dateTime = DateTime.Parse(value.ToString());
+            DateTimeOffset dateTime;
+            if (value is DateTimeOffset dto)
+            {
+                dateTime = dto;
+            }
+            else if (value is DateTime dt)
+            {
+                dateTime = dt;
+            }
+            else
+            {
+                if (!DateTime.TryParse(value.ToString(), out dt))
+                {
+                    return null;
+                }
+                dateTime = dt;
+            }
+
             if (string.Equals(culture.Name, "ja-JP"))
             {
                 return $"{dateTime.ToString("D", culture)} {dateTime.ToString("dddd", culture)} ({ dateTime.ToString("d", culture)})";
