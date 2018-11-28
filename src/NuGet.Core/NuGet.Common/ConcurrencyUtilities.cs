@@ -74,18 +74,19 @@ namespace NuGet.Common
 
                         // This can occur when the file is being deleted
                         // Or when an admin user has locked the file
-                        await Task.Delay(SleepDuration).ConfigureAwait(false);
+                        await Task.Delay(SleepDuration);
                         continue;
                     }
                     catch (IOException)
                     {
                         token.ThrowIfCancellationRequested();
 
-                        await Task.Delay(SleepDuration).ConfigureAwait(false);
+                        await Task.Delay(SleepDuration);
                         continue;
                     }
+
                     // Run the action within the lock
-                    return await action(token).ConfigureAwait(false);
+                    return await action(token);
                 }
                 finally
                 {
@@ -98,14 +99,79 @@ namespace NuGet.Common
             }
         }
 
-        public static void ExecuteWithFileLocked(string filePath, Action action) =>
-            ExecuteWithFileLockedAsync(filePath, ct =>
+        public static void ExecuteWithFileLocked(string filePath,
+            Action action)
+        {
+            if (string.IsNullOrEmpty(filePath))
             {
-                action();
-                return Task.FromResult(true);
-            }, CancellationToken.None)
-            .GetAwaiter()
-            .GetResult();
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            // limit the number of unauthorized, this should be around 30 seconds.
+            var unauthorizedAttemptsLeft = NumberOfRetries;
+
+            while (true)
+            {
+                FileStream fs = null;
+                var lockPath = string.Empty;
+                try
+                {
+                    try
+                    {
+                        lockPath = FileLockPath(filePath);
+
+                        fs = AcquireFileStream(lockPath);
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        throw;
+                    }
+                    catch(PathTooLongException)
+                    {
+                        throw;
+                    }
+                    catch(UnauthorizedAccessException)
+                    {
+                        if (unauthorizedAttemptsLeft < 1)
+                        {
+                            if (string.IsNullOrEmpty(lockPath))
+                            {
+                                lockPath = BasePath;
+                            }
+
+                            var message = string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.UnauthorizedLockFail,
+                                lockPath,
+                                filePath);
+
+                            throw new InvalidOperationException(message);
+                        }
+
+                        unauthorizedAttemptsLeft--;
+
+                        // This can occur when the file is being deleted
+                        // Or when an admin user has locked the file
+                        Thread.Sleep(SleepDuration);
+                        continue;
+                    }
+                    catch (IOException)
+                    {
+                        Thread.Sleep(SleepDuration);
+                        continue;
+                    }
+
+                    // Run the action within the lock
+                    action();
+                    return;
+                }
+                finally
+                {
+                    // Dispose of the stream, this will cause a delete
+                    fs?.Dispose();
+                }
+            }
+        }
 
         private static FileStream AcquireFileStream(string lockPath)
         {
