@@ -17,7 +17,6 @@ $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
 $ConfigureJson = Join-Path $Artifacts configure.json
 $VsWhereExe = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $VSVersion = $env:VisualStudioVersion
-
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.exe'
@@ -184,62 +183,25 @@ Function Install-NuGet {
     if ($Force -or -not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
 
-        wget https://dist.nuget.org/win-x86-commandline/v4.7.0/nuget.exe -OutFile $NuGetExe
+        wget https://dist.nuget.org/win-x86-commandline/$NuGetExeVersion/nuget.exe -OutFile $NuGetExe
     }
 
     # Display nuget info
     & $NuGetExe locals all -list -verbosity detailed
 }
 
-Function Install-DotnetCLI {
-    [CmdletBinding()]
+Function Install-DotnetCLICommon {
     param(
-        [switch]$Force
+        [bool]$Force,
+        [hashtable]$cli
     )
+<<<<<<< HEAD
     $MSBuildExe = Get-MSBuildExe
     $CliTargetBranch = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliTargetBranch1
+=======
+>>>>>>> refactor and try 2.2.100
 
-    $cli = @{
-            Root = $CLIRoot
-            DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
-            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1'
-        }
-
-    $env:DOTNET_HOME=$cli.Root
-    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
-
-    if ($Force -or -not (Test-Path $cli.DotNetExe)) {
-        Trace-Log 'Downloading .NET CLI'
-
-        New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
-
-        $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
-
-        Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
-        $channel = $CliTargetBranch.Trim()
-        & $DotNetInstall -Channel $channel  -i $cli.Root
-    }
-
-    if (-not (Test-Path $cli.DotNetExe)) {
-        Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
-    }
-
-    # Display build info
-    & $cli.DotNetExe --info
-}
-
-Function Install-DotnetCLIToILMergePack {
-    [CmdletBinding()]
-    param(
-        [switch]$Force
-    )
-
-    $cli = @{
-            Root = $CLIRootForPack
-            DotNetExe = Join-Path $CLIRootForPack 'dotnet.exe'
-            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1'
-            Version = '2.1.300'
-        }
+    $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
 
     if ([Environment]::Is64BitOperatingSystem) {
         $arch = "x64";
@@ -251,24 +213,58 @@ Function Install-DotnetCLIToILMergePack {
     $env:DOTNET_HOME=$cli.Root
     $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-    if ($Force -or -not (Test-Path $cli.DotNetExe)) {
+    if ($Force -or -not (Test-Path $DotNetExe)) {
         Trace-Log 'Downloading .NET CLI'
 
         New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
 
         $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
 
-        Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
-
-        & $DotNetInstall -Channel preview -i $cli.Root -Version $cli.Version -Architecture $arch
+        Invoke-WebRequest 'https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1' -OutFile $DotNetInstall
+        & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch
     }
 
-    if (-not (Test-Path $cli.DotNetExe)) {
+    if (-not (Test-Path $DotNetExe)) {
         Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
     }
 
     # Display build info
-    & $cli.DotNetExe --info
+    & $DotNetExe --info
+}
+
+Function Install-DotnetCLI {
+    [CmdletBinding()]
+    param(
+        [switch]$Force
+    )
+
+    $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
+    $CliTargetBranch = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliTargetBranch1
+
+    $cli = @{
+        Root = $CLIRoot
+        Version = '2.2.100'
+        Channel = 'LTS'
+        # Version = 'latest'
+        # Channel = $CliTargetBranch.Trim()
+    }
+    
+    Install-DotnetCLICommon $Force $cli
+}
+
+Function Install-DotnetCLIToILMergePack {
+    [CmdletBinding()]
+    param(
+        [switch]$Force
+    )
+
+    $cli = @{
+        Root = $CLIRootForPack
+        Version = '2.1.300'
+        Channel = 'LTS'
+    }
+    
+    Install-DotnetCLICommon $Force $cli
 }
 
 Function Get-LatestVisualStudioRoot() {
