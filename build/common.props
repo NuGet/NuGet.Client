@@ -2,6 +2,8 @@
 <Project ToolsVersion="15.0">
   <PropertyGroup>
     <IsNetCoreProject>true</IsNetCoreProject>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl> 
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
   <!-- When building on non-Windows machines, we need the reference assemblies to build full-framework assemblies. -->
@@ -9,7 +11,7 @@
      <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0-alpha-5" PrivateAssets="All" />
   </ItemGroup>
   <PropertyGroup Condition="'$(IsNetCoreProject)' == 'true' AND '$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'">
-    <DebugType>full</DebugType>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
   <!-- Load config -->
   <Import Project="config.props" />

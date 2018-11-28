@@ -68,8 +68,8 @@
     <PackageProjectUrl>https://aka.ms/nugetprj</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/NuGet/NuGet.Client</RepositoryUrl>
+    <!--<RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/NuGet/NuGet.Client</RepositoryUrl>-->
     <PackageTags>nuget</PackageTags>
     <Description>NuGet client library.</Description>
     <Copyright>&#169; Microsoft Corporation. All rights reserved.</Copyright>
