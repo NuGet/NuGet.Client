@@ -50,7 +50,7 @@ namespace NuGet.VisualStudio
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetInstanceAsync<TService>);
         }
 
-        private static async Task<TService> GetInstanceAsync<TService>() where TService : class
+        public static async Task<TService> GetInstanceAsync<TService>() where TService : class
         {
             // VS Threading Rule #1
             // Access to ServiceProvider and a lot of casts are performed in this method,
@@ -88,7 +88,7 @@ namespace NuGet.VisualStudio
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetGlobalServiceAsync<TService, TInterface>);
         }
 
-        private static async Task<TInterface> GetGlobalServiceAsync<TService, TInterface>() where TInterface : class
+        public static async Task<TInterface> GetGlobalServiceAsync<TService, TInterface>() where TInterface : class
         {
             // VS Threading Rule #1
             // Access to ServiceProvider and a lot of casts are performed in this method,
