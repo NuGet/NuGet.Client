@@ -8,8 +8,6 @@
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <VSServicesVersion>15.131.1</VSServicesVersion>
-    <VSComponentsVersion>15.8.525</VSComponentsVersion>
   </PropertyGroup>
 
   <PropertyGroup>
