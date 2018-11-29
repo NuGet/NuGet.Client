@@ -14,7 +14,6 @@ $Artifacts = Join-Path $NuGetClientRoot artifacts
 $Nupkgs = Join-Path $Artifacts nupkgs
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
 $ConfigureJson = Join-Path $Artifacts configure.json
-$ILMergeOutputDir = Join-Path $Artifacts "VS14"
 $VsWhereExe = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
