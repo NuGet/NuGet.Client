@@ -148,7 +148,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("init -?")]
         [InlineData("init srcFolder")]
         [InlineData("init srcFolder destFolder extraArg")]
-        public void InitCommand_Success_InvalidArguments_HelpMessage(string args)
+        public void InitCommand_Failure_InvalidArguments_HelpMessage(string args)
         {
             // Arrange & Act
             var result = CommandRunner.Run(
@@ -158,8 +158,10 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Util.VerifyResultFailure(result, "usage: NuGet init <srcPackageSourcePath> <destPackageSourcePath> [options]",
-                false);
+            Util.VerifyResultFailure(
+                result,
+                "usage: NuGet init <srcPackageSourcePath> <destPackageSourcePath> [options]",
+                checkErrorMsgOnStdErr: false);
         }
 
         [Fact]
