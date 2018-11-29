@@ -141,7 +141,7 @@ namespace NuGet.Packaging.Signing
 
             try
             {
-                cms.ComputeSignature(cmsSigner);
+                cms.ComputeSignature(cmsSigner, false); // silent is false to ensure PIN prompts appear if CNG/CAPI requires it
             }
             catch (CryptographicException ex) when (ex.HResult == INVALID_PROVIDER_TYPE_HRESULT)
             {
