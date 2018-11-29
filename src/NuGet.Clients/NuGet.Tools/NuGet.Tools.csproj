@@ -20,10 +20,8 @@
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
+    <FileUpgradeFlags />
+    <UpgradeBackupLocation />
     <OldToolsVersion>14.0</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>

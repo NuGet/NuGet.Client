@@ -85,7 +85,7 @@ try {
     if ($lastexitcode -gt 1) {
         exit 1
     }
-# consider making the target framework a parameter. Potentially with a default.
+
     $TestExtension = Join-Path $NuGetRoot "artifacts\API.Test\${ToolsetVersion}.0\bin\${Configuration}\net472\API.Test.dll" -Resolve
     Write-Verbose "Copying test extension from '$TestExtension' to '$WorkingDirectory'"
     Copy-Item $TestExtension $WorkingDirectory

@@ -24,10 +24,8 @@
     <TargetVsixContainerName>NuGet.Tools.vsix</TargetVsixContainerName>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
     <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
+    <FileUpgradeFlags />
+    <UpgradeBackupLocation />
     <OldToolsVersion>14.0</OldToolsVersion>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <IsProductComponent>true</IsProductComponent>
