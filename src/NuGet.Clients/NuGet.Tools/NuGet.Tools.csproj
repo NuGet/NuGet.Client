@@ -92,7 +92,7 @@
       <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
       <Name>NuGet.Console</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NuGet.Credentials\NuGet.Credentials.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Credentials\NuGet.Credentials.csproj">
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
     </ProjectReference>
