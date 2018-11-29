@@ -270,16 +270,10 @@ Function Install-DotnetCLIToILMergePack {
     & $cli.DotNetExe --info
 }
 
-Function Get-LatestVisualStudioRoot {
-    param(
-        [int]$MaxVersion
-    )
+Function Get-LatestVisualStudioRoot() {
     # First try to use vswhere to find the latest version of Visual Studio.
     if (Test-Path $VsWhereExe) {
-        if ($MaxVersion) {
-            $additionalArgs = '-version', "[15.0,$($MaxVersion+1).0)"
-        }
-        $installationPath = & $VsWhereExe -latest -prerelease -property installationPath $additionalArgs
+        $installationPath = & $VsWhereExe -latest -prerelease -property installationPath
         Verbose-Log "Found Visual Studio at '$installationPath' using vswhere"
 
         return $installationPath
@@ -324,18 +318,16 @@ Function Get-LatestVisualStudioRoot {
 
 Function Get-MSBuildRoot {
     param(
-        [ValidateSet(14,15)]
-        [int]$MSBuildVersion = 15,
         [switch]$Default
     )
     # Willow install workaround
-    if (-not $Default -and $MSBuildVersion -eq 15) {
+    if (-not $Default) {
         # Find version 15.0 or newer
         if (Test-Path Env:\VS150COMNTOOLS) {
             # If VS "15" is installed get msbuild from VS install path
             $MSBuildRoot = Join-Path $env:VS150COMNTOOLS '..\..\MSBuild'
         } else {
-            $VisualStudioRoot = Get-LatestVisualStudioRoot $MSBuildVersion
+            $VisualStudioRoot = Get-LatestVisualStudioRoot
             if ($VisualStudioRoot -and (Test-Path $VisualStudioRoot)) {
                 $MSBuildRoot = Join-Path $VisualStudioRoot 'MSBuild'
             }
@@ -361,7 +353,7 @@ Function Get-MSBuildExe {
         return Get-MSBuildExe 15
     }
 
-    $MSBuildRoot = Get-MSBuildRoot $MSBuildVersion
+    $MSBuildRoot = Get-MSBuildRoot
     $MSBuildExe = Join-Path $MSBuildRoot 'Current\bin\msbuild.exe'
 
     if (-not (Test-Path $MSBuildExe)) {
