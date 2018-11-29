@@ -73,7 +73,17 @@
     </MSBuild>
   </Target>
 
-  <Target Name="ILMergeNuGetPack" Condition="'$(TargetFramework)' != '' AND '$(IsBuildOnlyXPLATProjects)' != 'true' ">
+  <Target Name="GetILMergePlatformArg">
+    <ItemGroup>
+      <ILMergeMscorlibReferencePath Include="@(ReferencePath)" Condition="'%(ReferencePath.Filename)' == 'mscorlib'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <ILMergePlatformDir>@(IlmergeMscorlibReferencePath->'%(RootDir)%(Directory)')</ILMergePlatformDir>
+      <ILMergePlatformArg>/targetplatform:v4,"$(ILMergePlatformDir.TrimEnd('\/'))"</ILMergePlatformArg>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="ILMergeNuGetPack" DependsOnTargets="GetILMergePlatformArg" Condition="'$(TargetFramework)' != '' AND '$(IsBuildOnlyXPLATProjects)' != 'true' ">
     <PropertyGroup>
       <ILMergeResultDir>$(OutputPath)ilmerge</ILMergeResultDir>
     </PropertyGroup>
@@ -83,15 +93,14 @@
     </ItemGroup>
     <PropertyGroup>
       <PathToMergedNuGetPack>$(ILMergeResultDir)\NuGet.Build.Tasks.Pack.dll</PathToMergedNuGetPack>
-      <DotnetSharedDirectoryArg Condition="'$(IsCore)' == 'true'">/lib:$(DotnetSharedSDKDirectory)</DotnetSharedDirectoryArg>
-      <IlmergeCommand>$(ILMergeExePath) /out:$(PathToMergedNuGetPack) $(DotnetSharedDirectoryArg) /lib:$(OutputPath)$(RuntimeIdentifier)\publish /internalize /xmldocs /log:$(ILMergeResultDir)IlMergeLog.txt</IlmergeCommand>
+      <IlmergeCommand>$(ILMergeExePath) /out:$(PathToMergedNuGetPack) $(ILMergePlatformArg)  /lib:$(OutputPath)$(RuntimeIdentifier)\publish /internalize /xmldocs /log:$(ILMergeResultDir)IlMergeLog.txt</IlmergeCommand>
       <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
       <IlmergeCommand>$(IlmergeCommand) $(OutputPath)NuGet.Build.Tasks.Pack.dll @(BuildArtifacts, ' ')</IlmergeCommand>
     </PropertyGroup>
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
 
-  <Target Name="ILMergeNuGetPackResources" Condition="'$(TargetFramework)' != '' AND '$(CurrentCulture)' != ''">
+  <Target Name="ILMergeNuGetPackResources" DependsOnTargets="GetILMergePlatformArg" Condition="'$(TargetFramework)' != '' AND '$(CurrentCulture)' != ''">
     <PropertyGroup>
       <ILMergeResultDir>$(OutputPath)ilmerge\$(CurrentCulture)</ILMergeResultDir>
     </PropertyGroup>
@@ -101,7 +110,7 @@
     </ItemGroup>
     <PropertyGroup>
       <PathToMergedNuGetPackResource>$(ILMergeResultDir)NuGet.Build.Tasks.Pack.resources.dll</PathToMergedNuGetPackResource>
-      <IlmergeCommand>$(ILMergeExePath) /out:$(PathToMergedNuGetPackResource) /lib:$(OutputPath)$(RuntimeIdentifier)\publish /internalize /xmldocs /log:$(ILMergeResultDir)IlMergeLog.txt</IlmergeCommand>
+      <IlmergeCommand>$(ILMergeExePath) /out:$(PathToMergedNuGetPackResource) $(ILMergePlatformArg) /lib:$(OutputPath)$(RuntimeIdentifier)\publish /internalize /xmldocs /log:$(ILMergeResultDir)IlMergeLog.txt</IlmergeCommand>
       <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
       <IlmergeCommand>$(IlmergeCommand) $(OutputPath)$(CurrentCulture)NuGet.Build.Tasks.Pack.resources.dll @(ResourceArtifacts, ' ')</IlmergeCommand>
     </PropertyGroup>
