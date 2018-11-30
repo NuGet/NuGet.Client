@@ -50,7 +50,7 @@ Invoke-BuildStep 'Installing NuGet.exe' {
 } -ev +BuildErrors
 
 Invoke-BuildStep 'Installing .NET CLI' {
-    Install-DotnetCLI -Force:$Force    
+    Install-DotnetCLI -Force:$Force   
 } -ev +BuildErrors
 
 # Restoring tools required for build

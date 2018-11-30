@@ -182,21 +182,27 @@ Function Install-NuGet {
     if ($Force -or -not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
 
-        wget https://dist.nuget.org/win-x86-commandline/$NuGetExeVersion/nuget.exe -OutFile $NuGetExe
+        wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $NuGetExe
     }
 
     # Display nuget info
     & $NuGetExe locals all -list -verbosity detailed
 }
 
-Function Install-DotnetCLICommon {
+Function Install-DotnetCLI {
+    [CmdletBinding()]
     param(
-        [bool]$Force,
-        [hashtable]$cli
+        [switch]$Force
     )
     $MSBuildExe = Get-MSBuildExe
-    $CliTargetBranch = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliTargetBranch1
+    $CliTargetBranch = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliTargetBranch
 
+    $cli = @{
+        Root = $CLIRoot
+        Version = 'latest'
+        Channel = $CliTargetBranch.Trim()
+    }
+    
     $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
 
     if ([Environment]::Is64BitOperatingSystem) {
@@ -228,27 +234,7 @@ Function Install-DotnetCLICommon {
     & $DotNetExe --info
 }
 
-Function Install-DotnetCLI {
-    [CmdletBinding()]
-    param(
-        [switch]$Force
-    )
-
-    $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
-    $CliTargetBranch = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliTargetBranch1
-
-    $cli = @{
-        Root = $CLIRoot
-        Version = '2.1.500'
-        Channel = 'LTS'
-        # Version = 'latest'
-        # Channel = $CliTargetBranch.Trim()
-    }
-    
-    Install-DotnetCLICommon $Force $cli
-}
-
-Function Get-LatestVisualStudioRoot() {
+Function Get-LatestVisualStudioRoot {
     # First try to use vswhere to find the latest version of Visual Studio.
     if (Test-Path $VsWhereExe) {
         $installationPath = & $VsWhereExe -latest -prerelease -property installationPath

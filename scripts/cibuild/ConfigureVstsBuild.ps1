@@ -185,10 +185,8 @@ else
     }
 
     $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
-    $CliTargetBranch1 = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranch1
-    $CliTargetBranch2 = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranch2
-    $SdkTargetBranch1 = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranch1
-    $SdkTargetBranch2 = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranch2
+    $CliTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranch
+    $SdkTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranch
     Write-Host $VsTargetBranch
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
@@ -197,10 +195,8 @@ else
         LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
         LocalizationRepositoryCommitHash = $LocalizationRepoCommitHash
         VsTargetBranch = $VsTargetBranch.Trim()
-        CliTargetBranch1 = $CliTargetBranch1.Trim()
-        CliTargetBranch2 = $CliTargetBranch2.Trim()
-        SdkTargetBranch1 = $SdkTargetBranch1.Trim()
-        SdkTargetBranch2 = $SdkTargetBranch2.Trim()
+        CliTargetBranch = $CliTargetBranch.Trim()
+        SdkTargetBranch = $SdkTargetBranch.Trim()
     }   
 
     New-Item $BuildInfoJsonFile -Force
