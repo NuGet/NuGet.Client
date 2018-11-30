@@ -565,7 +565,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>No updates available for this framework packages.</value>
   </data>
   <data name="ListPkg_NoUpdatesForProject" xml:space="preserve">
-    <value>The given project `{0}` have no updates given the current sources.</value>
+    <value>The given project `{0}` has no updates given the current sources.</value>
   </data>
   <data name="ListPkg_ProjectUpdatesHeaderLog" xml:space="preserve">
     <value>Project `{0}` has the following updates to its packages</value>
