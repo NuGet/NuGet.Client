@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -10,7 +11,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands.Utility;
-using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -20,10 +20,13 @@ namespace NuGet.PackageManagement.Utility
 {
     public class PackagesConfigLockFileUtility
     {
+        private static readonly IComparer _dependencyComparer = new DependencyComparer();
+
         internal static async Task UpdateLockFileAsync(
             MSBuildNuGetProject msbuildProject,
             List<NuGetProjectAction> actionsList,
-            List<SourceRepository> localRepositories,
+            SourceRepository packagesFolderSourceRepository,
+            IReadOnlyList<SourceRepository> globalPackageFolderRepositories,
             ProjectContextLogger logger,
             CancellationToken token)
         {
@@ -38,7 +41,8 @@ namespace NuGet.PackageManagement.Utility
             else if (enableLockFile == true || lockFileExists)
             {
                 var lockFile = GetLockFile(lockFileExists, lockFileName);
-                var contentHashUtil = new ContentHashUtility(localRepositories, logger);
+                lockFile.Targets[0].TargetFramework = msbuildProject.ProjectSystem.TargetFramework;
+                var contentHashUtil = new SolutionPackagesContentHashUtility(packagesFolderSourceRepository, globalPackageFolderRepositories, logger);
                 await ApplyChangesAsync(lockFile, actionsList, contentHashUtil, token);
                 PackagesLockFileFormat.Write(lockFileName, lockFile);
 
@@ -97,14 +101,31 @@ namespace NuGet.PackageManagement.Utility
             if (lockFileExists)
             {
                 lockFile = PackagesLockFileFormat.Read(lockFileName);
+                lockFile.Version = PackagesLockFileFormat.Version;
+                if (lockFile.Targets.Count == 0)
+                {
+                    lockFile.Targets.Add(new PackagesLockFileTarget());
+                }
+                else if (lockFile.Targets.Count > 1)
+                {
+                    // merge lists
+                    while (lockFile.Targets.Count > 1)
+                    {
+                        var target = lockFile.Targets[1];
+
+                        for (var i = 0; i < target.Dependencies.Count; i++)
+                        {
+                            lockFile.Targets[0].Dependencies.Add(target.Dependencies[i]);
+                        }
+
+                        lockFile.Targets.RemoveAt(1);
+                    }
+                }
             }
             else
             {
                 lockFile = new PackagesLockFile();
-                lockFile.Targets.Add(new PackagesLockFileTarget
-                {
-                    TargetFramework = new NuGetFramework(FrameworkConstants.SpecialIdentifiers.Any)
-                });
+                lockFile.Targets.Add(new PackagesLockFileTarget());
             }
 
             return lockFile;
@@ -113,7 +134,7 @@ namespace NuGet.PackageManagement.Utility
         internal static async Task ApplyChangesAsync(
             PackagesLockFile lockFile,
             List<NuGetProjectAction> actionsList,
-            IContentHashUtility contentHashUtil,
+            ISolutionPackagesContentHashUtility contentHashUtil,
             CancellationToken token)
         {
             RemoveUninstalledPackages(lockFile,
@@ -122,20 +143,24 @@ namespace NuGet.PackageManagement.Utility
                 actionsList.Where(a => a.NuGetProjectActionType == NuGetProjectActionType.Install),
                 contentHashUtil,
                 token);
+            ArrayList.Adapter((IList)lockFile.Targets[0].Dependencies).Sort(_dependencyComparer);
         }
 
         private static void RemoveUninstalledPackages(PackagesLockFile lockFile, IEnumerable<NuGetProjectAction> actionsList)
         {
+            var dependencies = lockFile.Targets[0].Dependencies;
             foreach (var toUninstall in actionsList)
             {
                 Debug.Assert(toUninstall.NuGetProjectActionType == NuGetProjectActionType.Uninstall);
 
-                foreach (var installed in lockFile.Targets[0].Dependencies)
+                var toUninstallId = toUninstall.PackageIdentity.Id;
+
+                for (var i = 0; i < dependencies.Count; i++)
                 {
-                    if (string.Equals(installed.Id, toUninstall.PackageIdentity.Id, StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals(toUninstallId, dependencies[i].Id, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        lockFile.Targets[0].Dependencies.Remove(installed);
-                        return;
+                        dependencies.RemoveAt(i);
+                        break;
                     }
                 }
             }
@@ -144,7 +169,7 @@ namespace NuGet.PackageManagement.Utility
         private static async Task AddInstalledPackagesAsync(
             PackagesLockFile lockFile,
             IEnumerable<NuGetProjectAction> actionsList,
-            IContentHashUtility contentHashUtil,
+            ISolutionPackagesContentHashUtility contentHashUtil,
             CancellationToken token)
         {
             foreach (var toInstall in actionsList)
@@ -160,10 +185,22 @@ namespace NuGet.PackageManagement.Utility
                     Type = PackageDependencyType.Direct
                 };
 
-                // should keep sorted, but lockFile[Targets[0].Dependencies is an IList<T>, but only List<T> has the .Sort() method, so we have to insert in sorted order.
-                var index = 0;
-                for (; index < lockFile.Targets[0].Dependencies.Count && string.Compare(lockFile.Targets[0].Dependencies[index].Id, toInstall.PackageIdentity.Id) < 0; index++) ;
-                lockFile.Targets[0].Dependencies.Insert(index, newDependency);
+                lockFile.Targets[0].Dependencies.Add(newDependency);
+            }
+        }
+
+        private class DependencyComparer : IComparer<LockFileDependency>, IComparer
+        {
+            public int Compare(LockFileDependency x, LockFileDependency y)
+            {
+                if (x == null && y == null) return 0;
+                if (x == null || y == null) return x == null ? -1 : 1;
+                return string.Compare(x.Id, y.Id, StringComparison.InvariantCultureIgnoreCase);
+            }
+
+            public int Compare(object x, object y)
+            {
+                return Compare(x as LockFileDependency, y as LockFileDependency);
             }
         }
     }

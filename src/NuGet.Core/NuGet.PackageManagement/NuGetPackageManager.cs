@@ -2339,10 +2339,12 @@ namespace NuGet.PackageManagement
                         }
                     }
 
-                    var repositories = new List<SourceRepository>();
-                    repositories.Add(PackagesFolderSourceRepository);
-                    repositories.AddRange(GlobalPackageFolderRepositories);
-                    await PackagesConfigLockFileUtility.UpdateLockFileAsync(msbuildProject, actionsList, repositories, logger, token);
+                    await PackagesConfigLockFileUtility.UpdateLockFileAsync(msbuildProject,
+                        actionsList,
+                        PackagesFolderSourceRepository,
+                        GlobalPackageFolderRepositories,
+                        logger,
+                        token);
 
                     // Post process
                     await nuGetProject.PostProcessAsync(nuGetProjectContext, token);

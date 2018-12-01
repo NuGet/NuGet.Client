@@ -7,7 +7,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.Commands.Utility
 {
-    public interface IContentHashUtility
+    public interface ISolutionPackagesContentHashUtility
     {
         Task<string> GetContentHashAsync(PackageIdentity packageIdentity, CancellationToken token);
     }
