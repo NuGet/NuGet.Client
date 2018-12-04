@@ -20,7 +20,7 @@ chmod +x cli/dotnet-install.sh
 # v1 needed for some test
 cli/dotnet-install.sh -i cli -c 1.0
 # todo: update to read version from build.props https://github.com/NuGet/Home/issues/7485
-cli/dotnet-install.sh -i cli -c release/2.2.1xx
+cli/dotnet-install.sh -i cli -c release/2.2.2xx
 
 # Display current version
 DOTNET_TEST="$(pwd)/cli_test/dotnet"

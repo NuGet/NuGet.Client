@@ -18,7 +18,7 @@ pushd $DIR
 
 NuGetExe="$DIR/.nuget/nuget.exe"
 #Get NuGet.exe
-curl -o $NuGetExe https://dist.nuget.org/win-x86-commandline/v4.9.1/nuget.exe
+curl -o $NuGetExe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 
 mono --version
 
@@ -39,7 +39,7 @@ chmod +x cli/dotnet-install.sh
 # v1 needed for some test
 cli/dotnet-install.sh -i cli -c 1.0
 # todo: update to read version from build.props https://github.com/NuGet/Home/issues/7485
-cli/dotnet-install.sh -i cli -c release/2.2.1xx
+cli/dotnet-install.sh -i cli -c release/2.2.2xx
 
 # Display current version
 DOTNET="$(pwd)/cli/dotnet"
