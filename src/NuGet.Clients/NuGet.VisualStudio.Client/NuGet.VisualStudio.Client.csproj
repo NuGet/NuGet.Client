@@ -23,7 +23,7 @@
     <AssemblyName>NuGet.VisualStudio.Client</AssemblyName>
     <TargetVsixContainerName>NuGet.Tools.vsix</TargetVsixContainerName>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
-    <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <FileUpgradeFlags />
     <UpgradeBackupLocation />
     <OldToolsVersion>14.0</OldToolsVersion>
@@ -94,6 +94,7 @@
       <Link>Modules\NuGet\Profile.ps1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <None Include="project.json" />
     <Content Include="..\NuGet.PackageManagement.UI\Resources\PackageIconMonikers.imagemanifest">
       <Link>PackageIconMonikers.imagemanifest</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
