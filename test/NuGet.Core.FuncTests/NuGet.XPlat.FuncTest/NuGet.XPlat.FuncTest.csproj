@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Core\Microsoft.Build.NuGetSdkResolver\Microsoft.Build.NuGetSdkResolver.csproj" />
   </ItemGroup>
 
   <ItemGroup>
