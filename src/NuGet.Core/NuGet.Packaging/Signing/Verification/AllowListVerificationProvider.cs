@@ -86,10 +86,14 @@ namespace NuGet.Packaging.Signing
                         {
                             if (ShouldVerifyOwners(certificateHashEntry as TrustedSignerAllowListEntry, signature as IRepositorySignature, out var allowedOwners, out var actualOwners))
                             {
-                                return allowedOwners.Intersect(actualOwners).Any();
+                                if (allowedOwners.Intersect(actualOwners).Any())
+                                {
+                                    return true;
+                                }
                             }
-
-                            return true;
+                            else {
+                                return true;
+                            }
                         }
                     }
 
@@ -108,10 +112,15 @@ namespace NuGet.Packaging.Signing
                             {
                                 if (ShouldVerifyOwners(certificateHashEntry as TrustedSignerAllowListEntry, repositoryCountersignature.Value as IRepositorySignature, out var allowedOwners, out var actualOwners))
                                 {
-                                    return allowedOwners.Intersect(actualOwners).Any();
+                                    if (allowedOwners.Intersect(actualOwners).Any())
+                                    {
+                                        return true;
+                                    }
                                 }
-
-                                return true;
+                                else 
+                                {
+                                    return true;
+                                }
                             }
                         }
                     }
