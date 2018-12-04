@@ -129,20 +129,23 @@ if (-not $ProgramFiles -or -not (Test-Path $ProgramFiles)) {
 $MSBuildDefaultRoot = Get-MSBuildRoot
 $MSBuildRelativePath = 'bin\msbuild.exe'
 
-Invoke-BuildStep 'Validating VS15 toolset installation' {
-    $vs15 = New-BuildToolset 15
+Invoke-BuildStep 'Validating VS toolset installation' {
+
+    $vsMajorVersion = Get-VSMajorVersion
+    $vs15 = New-BuildToolset $vsMajorVersion
     if ($vs15) {
         $ConfigureObject.Toolsets.Add('vs15', $vs15)
-        $script:MSBuildExe = Get-MSBuildExe 15
+        $script:MSBuildExe = Get-MSBuildExe $vsMajorVersion
+        $vsVersion = Get-VSVersion
 
         # Hack VSSDK path
-        $VSToolsPath = Join-Path $MSBuildDefaultRoot 'Microsoft\VisualStudio\v15.0'
+        $VSToolsPath = Join-Path $MSBuildDefaultRoot "Microsoft\VisualStudio\v${vsVersion}"
         $Targets = Join-Path $VSToolsPath 'VSSDK\Microsoft.VsSDK.targets'
         if (-not (Test-Path $Targets)) {
             Warning-Log "VSSDK is not found at default location '$VSToolsPath'. Attempting to override."
             # Attempting to fix VS SDK path for VS15 willow install builds
             # as MSBUILD failes to resolve it correctly
-            $VSToolsPath = Join-Path $vs15.VisualStudioInstallDir '..\..\MSBuild\Microsoft\VisualStudio\v15.0' -Resolve
+            $VSToolsPath = Join-Path $vs15.VisualStudioInstallDir "..\..\MSBuild\Microsoft\VisualStudio\v${vsVersion}" -Resolve
             $ConfigureObject.Add('EnvVars', @{ VSToolsPath = $VSToolsPath })
         }
     }

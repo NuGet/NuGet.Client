@@ -2,6 +2,7 @@
 $DefaultConfiguration = 'debug'
 $DefaultReleaseLabel = 'zlocal'
 $DefaultMSBuildVersion = 15
+$DefaultVSVersion = 15.0
 
 # The pack version can be inferred from the .nuspec files on disk. This is only necessary as long
 # as the following issue is open: https://github.com/NuGet/Home/issues/3530
@@ -15,6 +16,7 @@ $Nupkgs = Join-Path $Artifacts nupkgs
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
 $ConfigureJson = Join-Path $Artifacts configure.json
 $VsWhereExe = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+$VSVersion = $env:VisualStudioVersion
 
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
@@ -315,16 +317,34 @@ Function Get-LatestVisualStudioRoot() {
     Error-Log 'Cannot find an instance of Visual Studio 2017 or newer' -Fatal
 }
 
+Function Get-VSVersion() {
+    if (-not $VSVersion) {
+        $VSVersion = $DefaultVSVersion
+    }
+    return $VSVersion
+}
+
+Function Get-VSMajorVersion() {
+    $vsVersion = Get-VSVersion
+    $vsMajorVersion = $vsVersion.Split('.')[0]
+    return $vsMajorVersion
+}
+
 Function Get-MSBuildRoot {
     param(
         [switch]$Default
     )
+
+    $vsMajorVersion = Get-VSMajorVersion
+
     # Willow install workaround
     if (-not $Default) {
+
         # Find version 15.0 or newer
-        if (Test-Path Env:\VS150COMNTOOLS) {
+        $CommonToolsVar = "Env:VS${vsMajorVersion}0COMNTOOLS"
+        if (Test-Path $CommonToolsVar) {
             # If VS "15" is installed get msbuild from VS install path
-            $MSBuildRoot = Join-Path $env:VS150COMNTOOLS '..\..\MSBuild'
+            $MSBuildRoot = Join-Path $CommonToolsVar '..\..\MSBuild'
         } else {
             $VisualStudioRoot = Get-LatestVisualStudioRoot
             if ($VisualStudioRoot -and (Test-Path $VisualStudioRoot)) {
@@ -344,12 +364,11 @@ Function Get-MSBuildRoot {
 
 Function Get-MSBuildExe {
     param(
-        [ValidateSet(15)]
         [int]$MSBuildVersion
     )
     # Get the highest msbuild version if version was not specified
     if (-not $MSBuildVersion) {
-        return Get-MSBuildExe 15
+        return Get-MSBuildExe $DefaultMSBuildVersion
     }
 
     $MSBuildRoot = Get-MSBuildRoot
