@@ -638,7 +638,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The given project `{0}` have no updates given the current sources..
+        ///   Looks up a localized string similar to The given project `{0}` has no updates given the current sources..
         /// </summary>
         internal static string ListPkg_NoUpdatesForProject {
             get {
