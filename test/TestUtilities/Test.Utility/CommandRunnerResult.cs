@@ -11,7 +11,7 @@ namespace NuGet.Test.Utility
         public Process Process { get; }
 
         /// <summary>
-        /// Item 1
+        /// Item 1. Multi-purpose
         /// </summary>
         /// <remarks>
         /// In occasions, it refers to Exit Status Code of the command execution result
@@ -19,7 +19,7 @@ namespace NuGet.Test.Utility
         public int Item1 { get; }
 
         /// <summary>
-        /// Item 2
+        /// Item 2. Multi-purpose
         /// </summary>
         /// <remarks>
         /// In occasions, it refers to the Standard Output of the command execution
@@ -27,7 +27,7 @@ namespace NuGet.Test.Utility
         public string Item2 { get; }
 
         /// <summary>
-        /// Item 3
+        /// Item 3. Multi-purpose
         /// </summary>
         /// <remarks>
         /// In occasions, it refers to the Standard Error of the command execution
