@@ -539,10 +539,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.ImageCatalog">
-      <Version>15.8.28010</Version>
-    </PackageReference>
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.4.0" PrivateAssets="all" />
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.8.0" PrivateAssets="all" />
   </ItemGroup>
   <PropertyGroup>
     <IncludeContentInPack>false</IncludeContentInPack>

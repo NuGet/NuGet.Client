@@ -8,8 +8,8 @@
 
   <!-- Common -->
   <PropertyGroup>
-    <NETFXTargetFrameworkVersion>v4.6</NETFXTargetFrameworkVersion>
-    <NETFXTargetFramework>net46</NETFXTargetFramework>
+    <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
+    <NETFXTargetFramework>net472</NETFXTargetFramework>
     <NETCoreTargetFramework>netcoreapp1.0</NETCoreTargetFramework>
     <NetStandardVersion>netstandard1.6</NetStandardVersion>
     <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
@@ -42,6 +42,8 @@
     <MicroBuildDirectory>$(SolutionPackagesFolder)MicroBuild.Core.0.2.0\build\</MicroBuildDirectory>
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
     <BlobPublishTargetsPath>$(SolutionPackagesFolder)Microsoft.DotNet.Build.Tasks.Feed.2.1.0-prerelease-02419-02\build\Microsoft.DotNet.Build.Tasks.Feed.targets</BlobPublishTargetsPath>
+    <VSServicesVersion>15.131.1</VSServicesVersion>
+    <VSComponentsVersion>15.8.525</VSComponentsVersion>
   </PropertyGroup>
 
   <!-- Defaults -->
