@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,18 +11,27 @@ namespace NuGet.Test.Utility
         public Process Process { get; }
 
         /// <summary>
-        /// Exit Status code
+        /// Item 1
         /// </summary>
+        /// <remarks>
+        /// In occasions, it refers to Exit Status Code of the command execution result
+        /// </remarks>
         public int Item1 { get; }
 
         /// <summary>
-        /// Standard Output
+        /// Item 2
         /// </summary>
+        /// <remarks>
+        /// In occasions, it refers to the Standard Output of the command execution
+        /// </remarks>
         public string Item2 { get; }
 
         /// <summary>
-        /// Standard Error
+        /// Item 3
         /// </summary>
+        /// <remarks>
+        /// In occasions, it refers to the Standard Error of the command execution
+        /// </remarks>
         public string Item3 { get; }
 
         public int ExitCode => Item1;
