@@ -36,7 +36,7 @@
     <PackageReference Include="Microsoft.Net.Compilers.netcore" Version="3.0.0-dev-61717-03" />
   </ItemGroup>
   <Target Name="CopyTargets" AfterTargets="AfterBuild">
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\$(OutputPath)\Microsoft.CSharp.Core.targets" DestinationFolder="$(MSBuildProjectDirectory)\$(OutputPath)\..\Roslyn\" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\$(OutputPath)\Microsoft.CSharp.Core.targets" DestinationFolder="$(MSBuildProjectDirectory)\$(OutputPath)\Roslyn\" />
   </Target>
   
   <Import Project="$(BuildCommonDirectory)common.targets" />
