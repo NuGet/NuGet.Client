@@ -160,8 +160,7 @@ namespace NuGet.CommandLine.Test
             // Assert
             Util.VerifyResultFailure(
                 result,
-                "usage: NuGet init <srcPackageSourcePath> <destPackageSourcePath> [options]",
-                checkErrorMsgOnStdErr: false);
+                "usage: NuGet init <srcPackageSourcePath> <destPackageSourcePath> [options]");
         }
 
         [Fact]

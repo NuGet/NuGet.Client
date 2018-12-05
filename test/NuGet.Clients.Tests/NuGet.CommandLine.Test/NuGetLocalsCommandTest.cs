@@ -44,7 +44,7 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Util.VerifyResultFailure(result, LocalsHelpStringFragment, false);
+            Util.VerifyResultFailure(result, LocalsHelpStringFragment);
         }
 
         [Theory]

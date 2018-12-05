@@ -424,8 +424,7 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             Util.VerifyResultFailure(result,
-                "usage: NuGet add <packagePath> -Source <folderBasedPackageSource> [options]",
-                checkErrorMsgOnStdErr: false);
+                "usage: NuGet add <packagePath> -Source <folderBasedPackageSource> [options]");
         }
 
         [Fact]
