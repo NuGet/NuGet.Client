@@ -659,17 +659,17 @@ namespace Test.Utility.Signing
 
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
+                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider";
             }
             else
             {
-                untrustedRoot = "certificate not trusted";
+                untrustedRoot = "self signed certificate";
             }
 
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == untrustedRoot);
+                issue.Message.Contains(untrustedRoot));
         }
 
         public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)
