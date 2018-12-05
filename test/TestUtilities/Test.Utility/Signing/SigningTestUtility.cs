@@ -632,7 +632,7 @@ namespace Test.Utility.Signing
 
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                offlineRevocation = "The revocation function was unable to check revocation because the revocation server was offline.";
+                offlineRevocation = "The revocation function was unable to check revocation because the revocation server was offline";
             }
             else
             {
@@ -642,7 +642,7 @@ namespace Test.Utility.Signing
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == offlineRevocation);
+                issue.Message.Contains(offlineRevocation));
         }
 
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
@@ -650,7 +650,7 @@ namespace Test.Utility.Signing
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == "The revocation function was unable to check revocation for the certificate.");
+                issue.Message.Contains("The revocation function was unable to check revocation for the certificate"));
         }
 
         public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
