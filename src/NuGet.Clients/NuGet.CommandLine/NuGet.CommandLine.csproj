@@ -59,7 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.Credentials\NuGet.Credentials.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Credentials\NuGet.Credentials.csproj" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.Build.Tasks.csproj" />
   </ItemGroup>
 

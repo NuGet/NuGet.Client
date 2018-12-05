@@ -100,7 +100,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dotnet.Integration.Test", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.CommandLine", "src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj", "{957C4E99-3644-47DD-8F9A-AE36F41EBE4A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Credentials", "src\NuGet.Clients\NuGet.Credentials\NuGet.Credentials.csproj", "{32A23995-14C7-483B-98C3-0AE4185373EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Credentials", "src\NuGet.Core\NuGet.Credentials\NuGet.Credentials.csproj", "{32A23995-14C7-483B-98C3-0AE4185373EA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio", "src\NuGet.Clients\NuGet.VisualStudio\NuGet.VisualStudio.csproj", "{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}"
 EndProject
@@ -140,7 +140,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.CommandLine.FuncTest"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.CommandLine.Test", "test\NuGet.Clients.Tests\NuGet.CommandLine.Test\NuGet.CommandLine.Test.csproj", "{5039C2F9-CAD9-4162-849C-5EF7E3CE03D9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Credentials.Test", "test\NuGet.Clients.Tests\NuGet.Credentials.Test\NuGet.Credentials.Test.csproj", "{3DB4EDE3-B57B-498C-9EA9-A8BF8D9D4B2B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Credentials.Test", "test\NuGet.Core.Tests\NuGet.Credentials.Test\NuGet.Credentials.Test.csproj", "{3DB4EDE3-B57B-498C-9EA9-A8BF8D9D4B2B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EndToEnd", "EndToEnd", "{A8F45E94-4CFD-478C-9FE2-8E6DEE7E0770}"
 	ProjectSection(SolutionItems) = preProject
