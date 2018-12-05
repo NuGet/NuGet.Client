@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -423,8 +423,9 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Util.VerifyResultFailure(result,
-                "usage: NuGet add <packagePath> -Source <folderBasedPackageSource> [options]");
+            Util.VerifyResultFailure(
+                result,
+                "add: invalid arguments.");
         }
 
         [Fact]
