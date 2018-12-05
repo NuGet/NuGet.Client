@@ -111,14 +111,15 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(1, logger.Errors);
                 Assert.Equal(1, logger.Warnings);
 
-                SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
 
                 if (RuntimeEnvironmentHelper.IsWindows)
                 {
                     AssertNotTimeValid(logger.LogMessages, LogLevel.Error);
+                    SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
                 }
                 else
                 {
+                    AssertPartialChain(logger.LogMessages, LogLevel.Error);
                     SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
                 }
             }
@@ -694,6 +695,14 @@ namespace NuGet.Packaging.Test
                 certificate,
                 Common.HashAlgorithmName.SHA256,
                 Common.HashAlgorithmName.SHA256);
+        }
+
+        private static void AssertPartialChain(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message.Contains("unable to get local issuer certificate"));
         }
 
         private static RepositorySignPackageRequest CreateRequestRepository(
