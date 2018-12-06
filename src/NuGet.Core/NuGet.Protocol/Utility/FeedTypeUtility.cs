@@ -16,6 +16,12 @@ namespace NuGet.Protocol
         /// </summary>
         public static FeedType GetFeedType(PackageSource packageSource)
         {
+            // If the feed type is already specified, use that value
+            if (packageSource is FeedTypePackageSource feedTypePackageSource)
+            {
+                return feedTypePackageSource.FeedType;
+            }
+
             // Default to unknown file system
             var type = FeedType.FileSystemUnknown;
 
