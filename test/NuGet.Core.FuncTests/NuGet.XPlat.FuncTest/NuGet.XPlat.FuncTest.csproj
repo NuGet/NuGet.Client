@@ -37,6 +37,7 @@
   </ItemGroup>
   <Target Name="CopyTargets" AfterTargets="AfterBuild">
     <Copy SourceFiles="$(MSBuildProjectDirectory)\$(OutputPath)\Microsoft.CSharp.Core.targets" DestinationFolder="$(MSBuildProjectDirectory)\$(OutputPath)\Roslyn\" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\$(OutputPath)\Microsoft.CSharp.Core.targets" DestinationFolder="$(MSBuildProjectDirectory)\$(OutputPath)\..\..\Roslyn\" />
   </Target>
   
   <Import Project="$(BuildCommonDirectory)common.targets" />
