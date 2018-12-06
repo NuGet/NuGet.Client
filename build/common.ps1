@@ -344,7 +344,8 @@ Function Get-MSBuildRoot {
         $CommonToolsVar = "Env:VS${vsMajorVersion}0COMNTOOLS"
         if (Test-Path $CommonToolsVar) {
             # If VS "15" is installed get msbuild from VS install path
-            $MSBuildRoot = Join-Path $CommonToolsVar '..\..\MSBuild'
+            $CommonToolsValue = gci $CommonToolsVar | select -expand value -ea Ignore
+            $MSBuildRoot = Join-Path $CommonToolsValue '..\..\MSBuild' -Resolve
         } else {
             $VisualStudioRoot = Get-LatestVisualStudioRoot
             if ($VisualStudioRoot -and (Test-Path $VisualStudioRoot)) {
