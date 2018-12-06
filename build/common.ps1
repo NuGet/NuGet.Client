@@ -2,7 +2,7 @@
 $DefaultConfiguration = 'debug'
 $DefaultReleaseLabel = 'zlocal'
 $DefaultMSBuildVersion = 15
-$DefaultVSVersion = 15.0
+$DefaultVSVersion = "15.0"
 
 # The pack version can be inferred from the .nuspec files on disk. This is only necessary as long
 # as the following issue is open: https://github.com/NuGet/Home/issues/3530
@@ -326,7 +326,7 @@ Function Get-VSVersion() {
 
 Function Get-VSMajorVersion() {
     $vsVersion = Get-VSVersion
-    $vsMajorVersion = $vsVersion.Split('.')[0]
+    $vsMajorVersion = "${vsVersion}".Split('.')[0]
     return $vsMajorVersion
 }
 
