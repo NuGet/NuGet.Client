@@ -14,7 +14,7 @@ namespace NuGet.Build.Tasks.Pack
         public string AssemblyName { get; set; }
         public string[] Authors { get; set; }
         public IMSBuildItem[] BuildOutputInPackage { get; set; }
-        public string BuildOutputFolder { get; set; }
+        public string[] BuildOutputFolder { get; set; }
         public string[] ContentTargetFolders { get; set; }
         public bool ContinuePackingAfterGeneratingNuspec { get; set; }
         public string Copyright { get; set; }

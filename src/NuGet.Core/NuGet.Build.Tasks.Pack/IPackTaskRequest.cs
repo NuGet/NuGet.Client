@@ -20,7 +20,7 @@ namespace NuGet.Build.Tasks.Pack
         string AssemblyName { get; }
         string[] Authors { get; }
         TItem[] BuildOutputInPackage { get; }
-        string BuildOutputFolder { get; }
+        string[] BuildOutputFolder { get; }
         string[] ContentTargetFolders { get; }
         bool ContinuePackingAfterGeneratingNuspec { get; }
         string Copyright { get; }

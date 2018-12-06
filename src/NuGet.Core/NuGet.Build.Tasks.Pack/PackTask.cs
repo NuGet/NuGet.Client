@@ -60,7 +60,7 @@ namespace NuGet.Build.Tasks.Pack
         public bool NoDefaultExcludes { get; set; }
         public string NuspecOutputPath { get; set; }
         public bool IncludeBuildOutput { get; set; }
-        public string BuildOutputFolder { get; set; }
+        public string[] BuildOutputFolder { get; set; }
         public string[] ContentTargetFolders { get; set; }
         public string[] NuspecProperties { get; set; }
         public string NuspecBasePath { get; set; }
@@ -159,7 +159,7 @@ namespace NuGet.Build.Tasks.Pack
                 AssemblyName = MSBuildStringUtility.TrimAndGetNullForEmpty(AssemblyName),
                 Authors = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Authors),
                 BuildOutputInPackage = MSBuildUtility.WrapMSBuildItem(BuildOutputInPackage),
-                BuildOutputFolder = MSBuildStringUtility.TrimAndGetNullForEmpty(BuildOutputFolder),
+                BuildOutputFolder = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(BuildOutputFolder),
                 ContinuePackingAfterGeneratingNuspec = ContinuePackingAfterGeneratingNuspec,
                 ContentTargetFolders = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(ContentTargetFolders),
                 Copyright = MSBuildStringUtility.TrimAndGetNullForEmpty(Copyright),

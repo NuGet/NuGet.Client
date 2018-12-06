@@ -617,7 +617,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                         { "Extension", Path.GetExtension(fullPath) },
                         { "FullPath", fullPath }
                     }),
-                    BuildOutputFolder = "lib",
+                    BuildOutputFolder = new string[] { "lib" },
                     NuspecOutputPath = "obj",
                     IncludeBuildOutput = true,
                     RestoreOutputPath = Path.Combine(testDir, "obj"),

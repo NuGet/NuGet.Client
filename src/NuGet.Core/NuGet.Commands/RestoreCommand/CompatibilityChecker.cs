@@ -252,7 +252,7 @@ namespace NuGet.Commands
                 graph.Conventions.Patterns.ResourceAssemblies,
                 graph.Conventions.Patterns.CompileRefAssemblies,
                 graph.Conventions.Patterns.RuntimeAssemblies,
-                graph.Conventions.Patterns.LinkAssemblies,
+                graph.Conventions.Patterns.EmbedAssemblies,
                 graph.Conventions.Patterns.ContentFiles
             };
 

@@ -107,7 +107,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             var target = new PackTask
             {
                 AssemblyName = " AssemblyName \t ",
-                BuildOutputFolder = " BuildOutputFolder \t ",
+                BuildOutputFolder = new string[] { " BuildOutputFolder \t " },
                 Copyright = " Copyright \t ",
                 Description = " Description \t ",
                 IconUrl = " IconUrl \t ",
@@ -130,7 +130,7 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             // Assert
             Assert.Equal("AssemblyName", actual.AssemblyName);
-            Assert.Equal("BuildOutputFolder", actual.BuildOutputFolder);
+            Assert.Equal("BuildOutputFolder", actual.BuildOutputFolder[0]);
             Assert.Equal("Copyright", actual.Copyright);
             Assert.Equal("Description", actual.Description);
             Assert.Equal("IconUrl", actual.IconUrl);
@@ -155,7 +155,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             var target = new PackTask
             {
                 AssemblyName = " \t ",
-                BuildOutputFolder = " \t ",
+                BuildOutputFolder = Array.Empty<string>(),
                 Copyright = " \t ",
                 Description = " \t ",
                 IconUrl = " \t ",
@@ -178,7 +178,7 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             // Assert
             Assert.Null(actual.AssemblyName);
-            Assert.Null(actual.BuildOutputFolder);
+            Assert.Empty(actual.BuildOutputFolder);
             Assert.Null(actual.Copyright);
             Assert.Null(actual.Description);
             Assert.Null(actual.IconUrl);
@@ -325,7 +325,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 Authors = Array.Empty<string>(),
                 AllowedOutputExtensionsInPackageBuildOutputFolder = Array.Empty<string>(),
                 AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = Array.Empty<string>(),
-                BuildOutputFolder = "BuildOutputFolder",
+                BuildOutputFolder = new string[] { "BuildOutputFolder" },
                 ContentTargetFolders = new string[] { "ContentTargetFolders" } ,
                 ContinuePackingAfterGeneratingNuspec = true,
                 Copyright = "Copyright",

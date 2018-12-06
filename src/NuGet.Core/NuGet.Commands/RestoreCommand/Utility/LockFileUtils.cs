@@ -174,13 +174,13 @@ namespace NuGet.Commands
 
             lockFileLib.RuntimeAssemblies.AddRange(runtimeGroup);
 
-            // Link
-            var linkGroup = GetLockFileItems(
+            // Embed
+            var embedGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
-                targetGraph.Conventions.Patterns.LinkAssemblies);
+                targetGraph.Conventions.Patterns.EmbedAssemblies);
 
-            lockFileLib.LinkAssemblies.AddRange(linkGroup);
+            lockFileLib.EmbedAssemblies.AddRange(embedGroup);
 
             // Resources
             var resourceGroup = GetLockFileItems(
@@ -940,6 +940,7 @@ namespace NuGet.Commands
             if ((dependencyType & LibraryIncludeFlags.Compile) == LibraryIncludeFlags.None)
             {
                 ClearIfExists(lockFileLib.CompileTimeAssemblies);
+                ClearIfExists(lockFileLib.EmbedAssemblies);
             }
 
             if ((dependencyType & LibraryIncludeFlags.Native) == LibraryIncludeFlags.None)
