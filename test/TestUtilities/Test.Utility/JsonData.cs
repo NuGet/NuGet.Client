@@ -4039,7 +4039,7 @@ namespace Test.Utility
             ""version"": ""1.4.1""
           }";
         #endregion
-        
+
         #region DuplicatePackageBesidesVersion
         public const string DuplicatePackageBesidesVersionRegistrationIndex = @"{
   ""@id"": ""https://api.nuget.org/v3/registration0/afine/index.json"",
@@ -4187,7 +4187,7 @@ namespace Test.Utility
   }
 }";
         #endregion
-        
+
         #region TempApiKeyResponse
         public const string TempApiKeyJsonData = @"{{
             ""Key"": ""{0}"",
@@ -4764,6 +4764,23 @@ namespace Test.Utility
   }}
 }}";
 
+        #endregion
+
+        #region AutoCompleteResourceV3Index
+        public static string AutocompleteResourceV3Index = @"{
+    ""@context"":
+        {""@vocab"": ""http://schema.nuget.org/schema#""},
+         ""totalHits"": 123989,
+         ""lastReopen"": ""2018-12-04T19:55:54.3810129Z"",
+         ""index"": ""v3-lucene2-v2v3-20171018"",
+         ""data"": [
+            ""NUnit"", ""Newtonsoft.Json"", ""EntityFramework"", ""MySql.Data"" ,""bootstrap"", ""jQuery"",
+            ""NuGet.Core"", ""HtmlAgilityPack"", ""Microsoft.AspNet.Mvc"", ""Dapper"", ""log4net"", ""NLog"",
+            ""Microsoft.Web.Xdt"", ""SlowCheetah.Xdt"", ""RestSharp"", ""Selenium.WebDriver"", ""iTextSharp"",
+            ""Microsoft.AspNet.WebApi"", ""SSH.NET"",""NPOI""
+        ]
+      }";
+           // "{{""@context"":{{""@vocab":"http://schema.nuget.org/schema#"},"totalHits":123989,"lastReopen":"2018-12-04T19:55:54.3810129Z","index":"v3-lucene2-v2v3-20171018","data":["NUnit","Newtonsoft.Json","EntityFramework","MySql.Data","bootstrap","jQuery","NuGet.Core","HtmlAgilityPack","Microsoft.AspNet.Mvc","Dapper","log4net","NLog","Microsoft.Web.Xdt","SlowCheetah.Xdt","RestSharp","Selenium.WebDriver","iTextSharp","Microsoft.AspNet.WebApi","SSH.NET","NPOI"]}"
         #endregion
     }
 }
