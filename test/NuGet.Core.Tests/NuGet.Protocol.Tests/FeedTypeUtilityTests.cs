@@ -1,11 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
@@ -25,7 +22,7 @@ namespace NuGet.Protocol.Tests
         [InlineData("https://dotnet.myget.org/F/nuget-volatile/api/v2")]
         [InlineData("http://nuget.org/index.json.html")]
         [InlineData("http://tempuri.org/api/v2/")]
-        public void FeedTypeUtility_HttpSourcesV2(string source)
+        public void GetFeedType_WithV2HttpSources_ReturnsHttpV2(string source)
         {
             Assert.Equal(FeedType.HttpV2, FeedTypeUtility.GetFeedType(new PackageSource(source)));
         }
@@ -35,13 +32,13 @@ namespace NuGet.Protocol.Tests
         [InlineData("http://api.nuget.org/v3/index.json")]
         [InlineData("https://api.nuget.org/v3/INDEX.JSON")]
         [InlineData("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json")]
-        public void FeedTypeUtility_HttpSourcesV3(string source)
+        public void GetFeedType_WithV3HttpSources_ReturnsHttpV3(string source)
         {
             Assert.Equal(FeedType.HttpV3, FeedTypeUtility.GetFeedType(new PackageSource(source)));
         }
 
         [Fact]
-        public void FeedTypeUtility_VerifyBadSourceIsUnknown()
+        public void GetFeedType_WithUnknownSource_ReturnsFileSystemUnknown()
         {
             // Arrange & Act
             var type = FeedTypeUtility.GetFeedType(new PackageSource("\\blah"));
@@ -53,8 +50,8 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData("../foo/packages")]
         [InlineData(@"..\foo\packages")]
-        [InlineData(@"packages")]
-        public void FeedTypeUtility_VerifyRelativePathIsUnknown(string source)
+        [InlineData("packages")]
+        public void GetFeedType_WithRelativePath_ReturnsFileSystemUnknown(string source)
         {
             // Arrange & Act
             var type = FeedTypeUtility.GetFeedType(new PackageSource(source));
@@ -64,7 +61,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void FeedTypeUtility_VerifyBadSourceIsUnknown2()
+        public void GetFeedType_WithIllegalPathCharacters_ReturnsFileSystemUnknown()
         {
             // Arrange & Act
             var type = FeedTypeUtility.GetFeedType(new PackageSource("$|. \n\t"));
@@ -74,7 +71,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void FeedTypeUtility_EmptyDirectoryIsUnknownType()
+        public void GetFeedType_WithEmptyDirectory_ReturnsFileSystemUnknown()
         {
             using (var root = TestDirectory.Create())
             {
@@ -87,7 +84,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void FeedTypeUtility_RandomFilesInRootIsUnknownType()
+        public void GetFeedType_WithRandomFilesInRoot_ReturnsFileSystemUnknown()
         {
             using (var root = TestDirectory.Create())
             {
@@ -105,7 +102,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void FeedTypeUtility_NupkgAtInvalidLocationIsUnknown()
+        public void GetFeedType_WithNupkgInInvalidLocation_ReturnsFileSystemUnknown()
         {
             using (var root = TestDirectory.Create())
             {
@@ -121,7 +118,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void FeedTypeUtility_NupkgAtRootIsV2()
+        public void GetFeedType_WithFileSystemV2LayoutAndLocalFileSystemPath_ReturnsFileSystemV2()
         {
             using (var root = TestDirectory.Create())
             {
@@ -137,7 +134,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void FeedTypeUtility_NupkgAtRootIsV2_FileUri()
+        public void GetFeedType_WithFileSystemV2LayoutAndFileUri_ReturnsFileSystemV2()
         {
             using (var root = TestDirectory.Create())
             {
@@ -153,7 +150,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void FeedTypeUtility_NupkgInVersionFolderIsV3()
+        public void GetFeedType_WithFileSystemV3Layout_ReturnsFileSystemV3()
         {
             using (var root = TestDirectory.Create())
             {
@@ -171,7 +168,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void FeedTypeUtility_NupkgInVersionFolderIsV3_FileUri()
+        public void GetFeedType_WithFileSystemV3LayoutAndFileUri_ReturnsFileSystemV3()
         {
             using (var root = TestDirectory.Create())
             {
@@ -189,7 +186,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void FeedTypeUtility_NupkgOnlyInVersionFolderIsUnknown()
+        public void GetFeedType_WithNupkgOnlyInVersionFolder_ReturnsFileSystemUnknown()
         {
             using (var root = TestDirectory.Create())
             {
@@ -205,7 +202,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void FeedTypeUtility_V2V3CombinedReturnsV2()
+        public void GetFeedType_WithBothFileSystemV2AndV3Layouts_ReturnsFileSystemV2()
         {
             using (var root = TestDirectory.Create())
             {
@@ -219,6 +216,28 @@ namespace NuGet.Protocol.Tests
 
                 // Assert
                 Assert.Equal(FeedType.FileSystemV2, type);
+            }
+        }
+
+        [Fact]
+        public void GetFeedType_WithFileSystemV3LayoutAndFeedTypePackageSource_ReturnsFeedTypePackageSourceFeedType()
+        {
+            using (var root = TestDirectory.Create())
+            {
+                CreateFile(Path.Combine(root, "a", "1.0.0", "a.1.0.0.nupkg.sha512"));
+                CreateFile(Path.Combine(root, "a", "1.0.0", "a.nuspec"));
+                CreateFile(Path.Combine(root, "a", "1.0.0", "a.1.0.0.nupkg"));
+
+                var feedTypes = new[] { FeedType.FileSystemV2, FeedType.FileSystemV3, FeedType.FileSystemUnknown };
+
+                foreach (var expectedFeedType in feedTypes)
+                {
+                    var packageSource = new FeedTypePackageSource(root, expectedFeedType);
+
+                    var actualFeedType = FeedTypeUtility.GetFeedType(packageSource);
+
+                    Assert.Equal(expectedFeedType, actualFeedType);
+                }
             }
         }
 
