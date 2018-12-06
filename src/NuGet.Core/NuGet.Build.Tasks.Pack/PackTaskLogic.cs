@@ -80,7 +80,7 @@ namespace NuGet.Build.Tasks.Pack
                 packArgs.PackTargetArgs.TargetPathsToSymbols = InitLibFiles(request.TargetPathsToSymbols);
                 packArgs.PackTargetArgs.AssemblyName = request.AssemblyName;
                 packArgs.PackTargetArgs.IncludeBuildOutput = request.IncludeBuildOutput;
-                packArgs.PackTargetArgs.BuildOutputFolder = request.BuildOutputFolder;
+                packArgs.PackTargetArgs.BuildOutputFolder = request.BuildOutputFolders;
                 packArgs.PackTargetArgs.TargetFrameworks = ParseFrameworks(request);
 
                 if (request.IncludeSource)
