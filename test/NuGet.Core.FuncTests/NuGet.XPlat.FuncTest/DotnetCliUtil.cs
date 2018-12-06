@@ -35,7 +35,7 @@ namespace NuGet.XPlat.FuncTest
 #else
                 "Release",
 #endif
-                "netcoreapp2.1",
+                "netcoreapp2.2",
                 XPlatDll);
         }
 
