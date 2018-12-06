@@ -91,7 +91,8 @@ namespace NuGet.Packaging.Signing
                                     return true;
                                 }
                             }
-                            else {
+                            else
+                            {
                                 return true;
                             }
                         }
