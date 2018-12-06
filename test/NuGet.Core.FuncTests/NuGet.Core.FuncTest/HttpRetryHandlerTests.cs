@@ -96,11 +96,11 @@ namespace NuGet.Core.FuncTest
             Assert.NotNull(exception.InnerException);
             if (!RuntimeEnvironmentHelper.IsWindows)
             {
-                Assert.Equal("Couldn't connect to server", exception.InnerException.Message);
+                Assert.Equal("Connection refused", exception.InnerException.Message);
             }
             else
             {
-                Assert.Equal("A connection with the server could not be established", exception.InnerException.Message);
+                Assert.Equal("No connection could be made because the target machine actively refused it", exception.InnerException.Message);
             }
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
@@ -145,11 +145,11 @@ namespace NuGet.Core.FuncTest
             Assert.NotNull(exception.InnerException);
             if (!RuntimeEnvironmentHelper.IsWindows)
             {
-                Assert.Equal("Couldn't resolve host name", exception.InnerException.Message);
+                Assert.Equal("No such device or address", exception.InnerException.Message);
             }
             else
             {
-                Assert.Equal("The server name or address could not be resolved", exception.InnerException.Message);
+                Assert.Equal("No such host is known", exception.InnerException.Message);
             }
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
