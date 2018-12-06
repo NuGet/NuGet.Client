@@ -143,7 +143,12 @@ namespace NuGet.Core.FuncTest
             var exception = await ThrowsException<HttpRequestException>(server);
 #if IS_CORECLR
             Assert.NotNull(exception.InnerException);
-            if (!RuntimeEnvironmentHelper.IsWindows)
+
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                Assert.Equal("Device not configured", exception.InnerException.Message);
+            }
+            else if (!RuntimeEnvironmentHelper.IsWindows)
             {
                 Assert.Equal("No such device or address", exception.InnerException.Message);
             }
