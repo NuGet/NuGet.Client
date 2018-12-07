@@ -325,7 +325,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 Authors = Array.Empty<string>(),
                 AllowedOutputExtensionsInPackageBuildOutputFolder = Array.Empty<string>(),
                 AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = Array.Empty<string>(),
-                BuildOutputFolders = new string[] { "BuildOutputFolder" },
+                BuildOutputFolders = new string[] { "lib", "embed" },
                 ContentTargetFolders = new string[] { "ContentTargetFolders" } ,
                 ContinuePackingAfterGeneratingNuspec = true,
                 Copyright = "Copyright",
