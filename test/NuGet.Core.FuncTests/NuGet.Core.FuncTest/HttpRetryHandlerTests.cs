@@ -117,16 +117,8 @@ namespace NuGet.Core.FuncTest
             // Act & Assert
             var exception = await ThrowsException<HttpRequestException>(server);
 #if IS_CORECLR
-            if (!RuntimeEnvironmentHelper.IsWindows)
-            {
-                Assert.Null(exception.InnerException);
-                Assert.Equal("The server returned an invalid or unrecognized response.", exception.Message);
-            }
-            else
-            {
-                Assert.NotNull(exception.InnerException);
-                Assert.Equal("The server returned an invalid or unrecognized response", exception.InnerException.Message);
-            }
+            Assert.Null(exception.InnerException);
+            Assert.Equal("The server returned an invalid or unrecognized response.", exception.Message);
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
             Assert.Equal(WebExceptionStatus.ServerProtocolViolation, innerException.Status);
