@@ -664,6 +664,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>
         <RestoreLockedMode>$(RestoreLockedMode)</RestoreLockedMode>
+        <IgnoreLockFileForRestore>$(IgnoreLockFileForRestore)</IgnoreLockFileForRestore>
       </_RestoreGraphEntry>
     </ItemGroup>
 

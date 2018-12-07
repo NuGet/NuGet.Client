@@ -37,5 +37,6 @@ namespace NuGet.ProjectManagement
         public const string RestorePackagesWithLockFile = nameof(RestorePackagesWithLockFile);
         public const string NuGetLockFilePath = nameof(NuGetLockFilePath);
         public const string RestoreLockedMode = nameof(RestoreLockedMode);
+        public const string IgnoreLockFileForRestore = nameof(IgnoreLockFileForRestore);
     }
 }

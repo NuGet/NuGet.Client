@@ -60,6 +60,7 @@ namespace NuGet.SolutionRestoreManager
         private const string RestorePackagesWithLockFile = nameof(RestorePackagesWithLockFile);
         private const string NuGetLockFilePath = nameof(NuGetLockFilePath);
         private const string RestoreLockedMode = nameof(RestoreLockedMode);
+        private const string IgnoreLockFileForRestore = nameof(IgnoreLockFileForRestore);
 
         private static readonly Version Version20 = new Version(2, 0, 0, 0);
 
@@ -292,7 +293,8 @@ namespace NuGet.SolutionRestoreManager
                     RestoreLockProperties = new RestoreLockProperties(
                         GetRestorePackagesWithLockFile(projectRestoreInfo.TargetFrameworks),
                         GetNuGetLockFilePath(projectRestoreInfo.TargetFrameworks),
-                        IsLockFileFreezeOnRestore(projectRestoreInfo.TargetFrameworks))
+                        IsLockFileFreezeOnRestore(projectRestoreInfo.TargetFrameworks),
+                        ShouldLockFileBeIgnored(projectRestoreInfo.TargetFrameworks))
                 },
                 RuntimeGraph = GetRuntimeGraph(projectRestoreInfo),
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
@@ -335,6 +337,11 @@ namespace NuGet.SolutionRestoreManager
         private static bool IsLockFileFreezeOnRestore(IVsTargetFrameworks tfms)
         {
             return GetSingleNonEvaluatedPropertyOrNull(tfms, RestoreLockedMode, MSBuildStringUtility.IsTrue);
+        }
+
+        private static bool ShouldLockFileBeIgnored(IVsTargetFrameworks tfms)
+        {
+            return GetSingleNonEvaluatedPropertyOrNull(tfms, IgnoreLockFileForRestore, MSBuildStringUtility.IsTrue);
         }
 
         /// <summary>

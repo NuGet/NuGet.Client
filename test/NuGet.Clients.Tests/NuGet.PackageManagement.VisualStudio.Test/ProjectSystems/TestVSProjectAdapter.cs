@@ -211,6 +211,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return Task.FromResult(NuGetFramework.Parse(_targetFrameworkString));
         }
 
+        public Task<bool> ShouldLockFileBeIgnoredAsync()
+        {
+            return Task.FromResult(false);
+        }
+
         public Task<bool> IsRestoreLockedAsync()
         {
             return Task.FromResult(_restoreLockedMode);

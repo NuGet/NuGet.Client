@@ -146,5 +146,7 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <returns></returns>
         Task<bool> IsRestoreLockedAsync();
+
+        Task<bool> ShouldLockFileBeIgnoredAsync();
     }
 }

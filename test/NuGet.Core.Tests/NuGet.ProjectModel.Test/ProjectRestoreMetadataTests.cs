@@ -103,9 +103,9 @@ namespace NuGet.ProjectModel.Test
             var metadata3 = metadata1.Clone();
             var metadata4 = metadata1.Clone();
 
-            metadata2.RestoreLockProperties = new RestoreLockProperties("false", null, false);
-            metadata3.RestoreLockProperties = new RestoreLockProperties("true", "tempPath", false);
-            metadata4.RestoreLockProperties = new RestoreLockProperties("true", null, true);
+            metadata2.RestoreLockProperties = new RestoreLockProperties("false", null, false, false);
+            metadata3.RestoreLockProperties = new RestoreLockProperties("true", "tempPath", false, false);
+            metadata4.RestoreLockProperties = new RestoreLockProperties("true", null, true, true);
 
             // Act & Assert
             metadata1.Equals(metadata2).Should().BeFalse();
@@ -135,7 +135,7 @@ namespace NuGet.ProjectModel.Test
             var noWarn = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1500 };
             var warningsAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1501 };
             var warningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn);
-            var restoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: false);
+            var restoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: false, ignoreLockFileForRestore: false);
             var originalProjectRestoreMetadata = new ProjectRestoreMetadata
             {
                 ProjectStyle = ProjectStyle.PackageReference,

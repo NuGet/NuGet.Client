@@ -407,7 +407,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     RestoreLockProperties = new RestoreLockProperties(
                         await _vsProjectAdapter.GetRestorePackagesWithLockFileAsync(),
                         await _vsProjectAdapter.GetNuGetLockFilePathAsync(),
-                        await _vsProjectAdapter.IsRestoreLockedAsync())
+                        await _vsProjectAdapter.IsRestoreLockedAsync(),
+                        await _vsProjectAdapter.ShouldLockFileBeIgnoredAsync())
                 }
             };
         }

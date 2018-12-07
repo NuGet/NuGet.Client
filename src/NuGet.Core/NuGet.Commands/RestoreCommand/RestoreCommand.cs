@@ -309,7 +309,8 @@ namespace NuGet.Commands
                         // clear out the existing lock file so that we don't over-write the same file
                         packagesLockFile = null;
                     }
-                    else if (PackagesLockFileUtilities.IsNuGetLockFileSupported(_request.Project))
+                    else if (PackagesLockFileUtilities.IsNuGetLockFileSupported(_request.Project) &&
+                        !_request.Project.RestoreMetadata.RestoreLockProperties.IgnoreLockFileForRestore)
                     {
                         // generate packages.lock.json file if enabled
                         packagesLockFile = new PackagesLockFileBuilder()
@@ -459,7 +460,8 @@ namespace NuGet.Commands
             }
 
             // read packages.lock.json file if exists and RestoreForceEvaluate flag is not set to true
-            if (!_request.RestoreForceEvaluate && File.Exists(packagesLockFilePath))
+            if (!_request.RestoreForceEvaluate && File.Exists(packagesLockFilePath) &&
+                _request.Project.RestoreMetadata?.RestoreLockProperties.IgnoreLockFileForRestore != true )
             {
                 lockFileTelemetry.StartIntervalMeasure();
                 packagesLockFile = PackagesLockFileFormat.Read(packagesLockFilePath, _logger);

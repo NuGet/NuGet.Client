@@ -24,6 +24,11 @@ namespace NuGet.ProjectModel
         /// </summary>
         public bool RestoreLockedMode { get; }
 
+        /// <summary>
+        /// True, if lock file should be ignored for restore.
+        /// </summary>
+        public bool IgnoreLockFileForRestore { get; }
+
         public RestoreLockProperties()
         {
         }
@@ -31,11 +36,13 @@ namespace NuGet.ProjectModel
         public RestoreLockProperties(
             string restorePackagesWithLockFile,
             string nuGetLockFilePath,
-            bool restoreLockedMode)
+            bool restoreLockedMode,
+            bool ignoreLockFileForRestore)
         {
             RestorePackagesWithLockFile = restorePackagesWithLockFile;
             NuGetLockFilePath = nuGetLockFilePath;
             RestoreLockedMode = restoreLockedMode;
+            IgnoreLockFileForRestore = ignoreLockFileForRestore;
         }
 
         public override int GetHashCode()
@@ -45,6 +52,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(RestorePackagesWithLockFile);
             hashCode.AddObject(NuGetLockFilePath);
             hashCode.AddObject(RestoreLockedMode);
+            hashCode.AddObject(IgnoreLockFileForRestore);
 
             return hashCode.CombinedHash;
         }
@@ -68,12 +76,13 @@ namespace NuGet.ProjectModel
 
             return StringComparer.OrdinalIgnoreCase.Equals(RestorePackagesWithLockFile, other.RestorePackagesWithLockFile) &&
                 PathUtility.GetStringComparerBasedOnOS().Equals(NuGetLockFilePath, other.NuGetLockFilePath) &&
-                RestoreLockedMode == other.RestoreLockedMode;
+                RestoreLockedMode == other.RestoreLockedMode &&
+                IgnoreLockFileForRestore == other.IgnoreLockFileForRestore;
         }
 
         public RestoreLockProperties Clone()
         {
-            return new RestoreLockProperties(RestorePackagesWithLockFile, NuGetLockFilePath, RestoreLockedMode);
+            return new RestoreLockProperties(RestorePackagesWithLockFile, NuGetLockFilePath, RestoreLockedMode, IgnoreLockFileForRestore);
         }
     }
 }
