@@ -634,6 +634,10 @@ namespace Test.Utility.Signing
             {
                 offlineRevocation = "The revocation function was unable to check revocation because the revocation server was offline";
             }
+            else if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                offlineRevocation = "An incomplete certificate revocation check ocurred.";
+            }
             else
             {
                 offlineRevocation = "unable to get certificate CRL";
@@ -660,6 +664,10 @@ namespace Test.Utility.Signing
             if (RuntimeEnvironmentHelper.IsWindows)
             {
                 untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider";
+            }
+            else if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                untrustedRoot = "The certificate was not trusted.";
             }
             else
             {
