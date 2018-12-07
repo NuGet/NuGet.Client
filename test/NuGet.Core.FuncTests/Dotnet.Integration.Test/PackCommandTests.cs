@@ -478,8 +478,11 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp21,
                         dependencyGroups[0].TargetFramework);
                     var packagesA = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(1,
+                    Assert.Equal(2,
                         packagesA.Count);
+                    Assert.Equal("Microsoft.NETCore.App", packagesA[1].Id);
+                    Assert.Equal(new List<string> {"Analyzers", "Build"}, packagesA[1].Exclude);
+                    Assert.Empty(packagesA[1].Include);
 
                     Assert.Equal("ClassLibrary2", packagesA[0].Id);
                     Assert.Equal(new VersionRange(new NuGetVersion("1.0.0")), packagesA[0].VersionRange);

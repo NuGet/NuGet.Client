@@ -519,12 +519,12 @@ Function Publish-CoreProject {
     }
 
     $opts += 'publish', $XProjectLocation
-    $opts += '--configuration', $Configuration, '--framework', 'netcoreapp2.0'
+    $opts += '--configuration', $Configuration, '--framework', 'netcoreapp2.1'
     $opts += '--no-build'
 
     $opts += '--build-base-path', $Artifacts
 
-    $OutputDir = Join-Path $PublishLocation "$Configuration\netcoreapp2.0"
+    $OutputDir = Join-Path $PublishLocation "$Configuration\netcoreapp2.1"
     $opts += '--output', $OutputDir
 
     Trace-Log "$DotNetExe $opts"

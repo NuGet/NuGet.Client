@@ -20,7 +20,7 @@ chmod +x cli/dotnet-install.sh
 # v1 needed for some test
 cli/dotnet-install.sh -i cli -c 1.0
 # todo: update to read version from build.props https://github.com/NuGet/Home/issues/7485
-cli/dotnet-install.sh -i cli -c release/2.2.2xx
+cli/dotnet-install.sh -i cli -c release/2.2.1xx
 
 # Display current version
 DOTNET_TEST="$(pwd)/cli_test/dotnet"
@@ -44,7 +44,7 @@ then
 fi
 
 # restore packages
-echo "$DOTNET msbuild build/build.proj /t:RestoreTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+echo "$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
 $DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
