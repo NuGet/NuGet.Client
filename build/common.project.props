@@ -10,7 +10,7 @@
   <PropertyGroup>
     <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
     <NETFXTargetFramework>net472</NETFXTargetFramework>
-    <NETCoreTargetFramework>netcoreapp2.2</NETCoreTargetFramework>
+    <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
     <NetStandardVersion>netstandard2.0</NetStandardVersion>
     <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
     <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>

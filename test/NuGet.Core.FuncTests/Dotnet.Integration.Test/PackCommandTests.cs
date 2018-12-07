@@ -475,7 +475,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1,
                         dependencyGroups.Count);
 
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp22,
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp21,
                         dependencyGroups[0].TargetFramework);
                     var packagesA = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1,
@@ -489,10 +489,10 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp22, libItems[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp21, libItems[0].TargetFramework);
                     Assert.Equal(
                         new[]
-                        {"lib/netcoreapp2.2/ClassLibrary1.dll", "lib/netcoreapp2.2/ClassLibrary1.runtimeconfig.json"},
+                        {"lib/netcoreapp2.1/ClassLibrary1.dll", "lib/netcoreapp2.1/ClassLibrary1.runtimeconfig.json"},
                         libItems[0].Items);
                 }
             }
