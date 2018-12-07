@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -81,7 +82,7 @@ namespace NuGet.Packaging.Test
         }
 
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Constructor_WhenV3ServiceIndexUrlNull_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -98,7 +99,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Constructor_WhenV3ServiceIndexUrlNotAbsolute_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -116,7 +117,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Constructor_WhenV3ServiceIndexUrlNotHttps_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -134,7 +135,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Theory]
+        [PlatformTheory(Platform.Windows, Platform.Linux)]
         [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]

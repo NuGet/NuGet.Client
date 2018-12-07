@@ -108,7 +108,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void GetCertificateChain_WithUntrustedSelfIssuedCertificate_ReturnsChain()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
