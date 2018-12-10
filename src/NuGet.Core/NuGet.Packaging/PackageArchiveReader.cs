@@ -381,7 +381,11 @@ namespace NuGet.Packaging
 
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
+#if IS_DESKTOP
             return true;
+#else
+            return false;
+#endif
         }
 
         protected void ThrowIfZipReadStreamIsNull()
