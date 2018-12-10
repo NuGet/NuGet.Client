@@ -24,6 +24,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private readonly string _nuGetLockFilePath;
         private readonly bool _restoreLockedMode;
 
+        public bool IgnoreLockFileForRestore;
+
         public TestVSProjectAdapter(
             string fullProjectPath,
             ProjectNames projectNames,
@@ -213,7 +215,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         public Task<bool> ShouldLockFileBeIgnoredAsync()
         {
-            return Task.FromResult(false);
+            return Task.FromResult(IgnoreLockFileForRestore);
         }
 
         public Task<bool> IsRestoreLockedAsync()

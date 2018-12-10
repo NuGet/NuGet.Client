@@ -445,6 +445,27 @@ namespace NuGet.ProjectModel.Test
             VerifyPackageSpecWrite(json, expectedJson);
         }
 
+        [Fact]
+        public void Write_SerializesMembersAsJsonWithRestoreLockProperties()
+        {
+            // Arrange && Act
+            var expectedRestoreLockPropertiesJson = @"{
+  ""restorePackagesWithLockFile"": ""true"",
+  ""nuGetLockFilePath"": ""nuGetLockFilePath"",
+  ""restoreLockedMode"": true,
+  ""ignoreLockFileForRestore"": true
+}";
+
+            var restoreLockProperties = new RestoreLockProperties("true", "nuGetLockFilePath", true, true);
+            var packageSpec = CreatePackageSpec(withRestoreSettings: true, restoreLockProperties: restoreLockProperties);
+            var actualJson = GetJsonObject(packageSpec);
+            var actualWarningPropertiesJson = actualJson["restore"]["restoreLockProperties"].ToString();
+
+            // Assert
+            Assert.NotNull(actualWarningPropertiesJson);
+            Assert.Equal(expectedRestoreLockPropertiesJson, actualWarningPropertiesJson);
+        }
+
         private static string GetJsonString(PackageSpec packageSpec)
         {
             var writer = new JsonObjectWriter();
@@ -463,7 +484,7 @@ namespace NuGet.ProjectModel.Test
             return writer.GetJObject();
         }
 
-        private static PackageSpec CreatePackageSpec(bool withRestoreSettings, WarningProperties warningProperties = null)
+        private static PackageSpec CreatePackageSpec(bool withRestoreSettings, WarningProperties warningProperties = null, RestoreLockProperties restoreLockProperties = null)
         {
             var unsortedArray = new[] { "b", "a", "c" };
             var unsortedReadOnlyList = new List<string>(unsortedArray).AsReadOnly();
@@ -559,6 +580,11 @@ namespace NuGet.ProjectModel.Test
             if (warningProperties != null)
             {
                 packageSpec.RestoreMetadata.ProjectWideWarningProperties = warningProperties;
+            }
+
+            if (restoreLockProperties != null)
+            {
+                packageSpec.RestoreMetadata.RestoreLockProperties = restoreLockProperties;
             }
 
             packageSpec.PackInclude.Add("b", "d");

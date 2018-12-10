@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -990,6 +990,66 @@ namespace NuGet.ProjectModel.Test
 
             Assert.NotNull(metadata);
             Assert.NotNull(warningProperties);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsRestoreMetadataWithLockFileProperties()
+        {
+            // Arrange
+            var json = @"{  
+                ""restore"": {
+                    ""projectUniqueName"": ""projectUniqueName"",
+                    ""projectName"": ""projectName"",
+                    ""projectPath"": ""projectPath"",
+                    ""projectJsonPath"": ""projectJsonPath"",
+                    ""packagesPath"": ""packagesPath"",
+                    ""outputPath"": ""outputPath"",
+                    ""projectStyle"": ""PackageReference"",
+                    ""crossTargeting"": true,
+                    ""configFilePaths"": [
+                      ""b"",
+                      ""a"",
+                      ""c""
+                    ],
+                    ""fallbackFolders"": [
+                      ""b"",
+                      ""a"",
+                      ""c""
+                    ],
+                    ""originalTargetFrameworks"": [
+                      ""b"",
+                      ""a"",
+                      ""c""
+                    ],
+                    ""sources"": {
+                      ""source"": {}
+                    },
+                    ""frameworks"": {
+                      ""frameworkidentifier123-frameworkprofile"": {
+                        ""projectReferences"": {}
+                      }
+                    },
+                    ""restoreLockProperties"": {
+                        ""restorePackagesWithLockFile"" : ""true"",
+                        ""nuGetLockFilePath"" : ""nuGetLockFilePath"",
+                        ""restoreLockedMode"" : true,
+                        ""ignoreLockFileForRestore"" : true
+                    }
+                  }
+                }";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var metadata = actual.RestoreMetadata;
+            var lockProperties = actual.RestoreMetadata.RestoreLockProperties;
+
+            Assert.NotNull(metadata);
+            Assert.NotNull(lockProperties);
+            Assert.Equal("true", lockProperties.RestorePackagesWithLockFile);
+            Assert.Equal("nuGetLockFilePath", lockProperties.NuGetLockFilePath);
+            Assert.True(lockProperties.RestoreLockedMode);
+            Assert.True(lockProperties.IgnoreLockFileForRestore);
         }
     }
 }

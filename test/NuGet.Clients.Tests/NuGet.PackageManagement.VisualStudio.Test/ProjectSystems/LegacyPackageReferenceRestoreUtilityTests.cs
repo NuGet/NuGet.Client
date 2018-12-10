@@ -1201,6 +1201,148 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_IgnoreLockFile()
+        {
+            using (var packageSource = TestDirectory.Create())
+            {
+                // Arrange
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<Configuration.PackageSource>()
+                    {
+                        new Configuration.PackageSource(packageSource.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var randomProjectFolderPath = TestDirectory.Create())
+                {
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+
+                    var projectTargetFrameworkStr = "net45";
+                    var fullProjectPath = Path.Combine(randomProjectFolderPath, "project1.csproj");
+
+                    var projectNames = new ProjectNames(
+                        fullName: fullProjectPath,
+                        uniqueName: Path.GetFileName(fullProjectPath),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
+                        customUniqueName: Path.GetFileName(fullProjectPath));
+                    var vsProjectAdapter = new TestVSProjectAdapter(
+                        fullProjectPath,
+                        projectNames,
+                        projectTargetFrameworkStr,
+                        restorePackagesWithLockFile: "true");
+
+                    var projectServices = new TestProjectSystemServices();
+                    projectServices.SetupInstalledPackages(
+                        NuGetFramework.Parse(projectTargetFrameworkStr),
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "packageA",
+                                VersionRange.Parse("1.*"),
+                                LibraryDependencyTarget.Package)
+                        });
+
+                    var legacyPRProject = new LegacyPackageReferenceProject(
+                        vsProjectAdapter,
+                        Guid.NewGuid().ToString(),
+                        projectServices,
+                        _threadingService);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProject);
+
+                    var testLogger = new TestLogger();
+                    var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+
+                    var packageContextA = new SimpleTestPackageContext("packageA", "1.0.0");
+                    packageContextA.AddFile("lib/net45/a.dll");
+                    SimpleTestPackageUtility.CreateOPCPackage(packageContextA, packageSource);
+                    var packageContextB = new SimpleTestPackageContext("packageB", "1.0.0");
+                    packageContextB.AddFile("lib/net45/b.dll");
+                    SimpleTestPackageUtility.CreateOPCPackage(packageContextB, packageSource);
+
+                    var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+
+                    var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                        testSolutionManager,
+                        dgSpec,
+                        restoreContext,
+                        new RestoreCommandProvidersCache(),
+                        (c) => { },
+                        sourceRepositoryProvider.GetRepositories(),
+                        Guid.Empty,
+                        false,
+                        true,
+                        testLogger,
+                        CancellationToken.None);
+
+                    foreach (var restoreSummary in restoreSummaries)
+                    {
+                        Assert.True(restoreSummary.Success);
+                        Assert.False(restoreSummary.NoOpRestore);
+                    }
+
+                    var lockFilePath = Path.Combine(randomProjectFolderPath, "packages.lock.json");
+                    Assert.True(File.Exists(lockFilePath));
+
+                    // install a new package
+                    projectServices.SetupInstalledPackages(
+                        NuGetFramework.Parse(projectTargetFrameworkStr),
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "packageA",
+                                VersionRange.Parse("1.*"),
+                                LibraryDependencyTarget.Package)
+                        },
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "packageB",
+                                VersionRange.Parse("1.0.0"),
+                                LibraryDependencyTarget.Package)
+                        });
+
+                    // update VSProjectAdapter to set IgnoreLockFileForRestore
+                    vsProjectAdapter.IgnoreLockFileForRestore = true;
+
+                    // update the proeject with new ProjectService instance
+                    restoreContext.PackageSpecCache.Clear();
+                    dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+
+                    // Act
+                    restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                        testSolutionManager,
+                        dgSpec,
+                        restoreContext,
+                        new RestoreCommandProvidersCache(),
+                        (c) => { },
+                        sourceRepositoryProvider.GetRepositories(),
+                        Guid.Empty,
+                        false,
+                        true,
+                        testLogger,
+                        CancellationToken.None);
+
+                    // Assert
+                    foreach (var restoreSummary in restoreSummaries)
+                    {
+                        Assert.True(restoreSummary.Success);
+                    }
+
+                    Assert.True(File.Exists(lockFilePath));
+                    var lockFile = PackagesLockFileFormat.Read(lockFilePath);
+                    Assert.False(lockFile.Targets.Any(t => t.Dependencies.Any(dep => dep.Id.Equals("packageB", StringComparison.OrdinalIgnoreCase))));
+                }
+            }
+        }
+
         private ISettings PopulateSettingsWithSources(SourceRepositoryProvider sourceRepositoryProvider, TestDirectory settingsDirectory)
         {
             var settings = new Settings(settingsDirectory);
