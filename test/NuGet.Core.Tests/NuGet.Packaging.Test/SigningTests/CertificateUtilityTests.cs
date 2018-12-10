@@ -271,7 +271,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void IsSelfIssued_WithSelfSignedCertificate_ReturnsTrue()
         {
             using (var certificate = _fixture.GetDefaultCertificate())

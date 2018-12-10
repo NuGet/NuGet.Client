@@ -39,7 +39,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("request", exception.ParamName);
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Verify_WhenLoggerNull_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -125,7 +125,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Verify_WithUntrustedSelfSignedCertificate_Succeeds()
         {
             using (var certificate = _fixture.GetDefaultCertificate())

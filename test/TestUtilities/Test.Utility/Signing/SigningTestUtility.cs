@@ -636,7 +636,7 @@ namespace Test.Utility.Signing
             }
             else if (RuntimeEnvironmentHelper.IsMacOSX)
             {
-                offlineRevocation = "An incomplete certificate revocation check ocurred.";
+                offlineRevocation = "An incomplete certificate revocation check occurred.";
             }
             else
             {
