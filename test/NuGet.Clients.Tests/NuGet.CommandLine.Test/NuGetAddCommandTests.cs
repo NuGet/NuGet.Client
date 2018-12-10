@@ -415,17 +415,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("add -?")]
         public void AddCommand_Failure_InvalidArguments_HelpMessage(string args)
         {
-            // Arrange & Act
-            var result = CommandRunner.Run(
-                Util.GetNuGetExePath(),
-                Directory.GetCurrentDirectory(),
-                args,
-                waitForExit: true);
-
-            // Assert
-            Util.VerifyResultFailure(
-                result,
-                "add: invalid arguments.");
+            Util.TestCommandInvalidArguments(args);
         }
 
         [Fact]

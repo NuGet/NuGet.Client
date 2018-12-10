@@ -1644,6 +1644,14 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData("install mypackage -version -outputdirectory SomeDir")] // Invalid args for -version flag
+        [InlineData("install a b")]
+        public void InstallCommand_Failure_InvalidArguments_HelpMessage(string args)
+        {
+            Util.TestCommandInvalidArguments(args);
+        }
+
         [Fact]
         public void TestInstallWhenNoFeedAvailable()
         {
