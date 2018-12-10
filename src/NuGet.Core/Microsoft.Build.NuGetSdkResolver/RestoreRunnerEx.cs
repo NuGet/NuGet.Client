@@ -73,7 +73,12 @@ namespace NuGet.Commands
                         ConfigFilePaths = settings.GetConfigFilePaths(),
                         PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings),
                         Sources = SettingsUtility.GetEnabledSources(settings).ToList(),
-                        FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList()
+                        FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList(),
+                        RestoreLockProperties = new RestoreLockProperties(
+                            restorePackagesWithLockFile: null,
+                            nuGetLockFilePath: null,
+                            restoreLockedMode: false,
+                            ignoreLockFileForRestore: true)
                     },
                     FilePath = projectPath,
                     Name = Path.GetFileNameWithoutExtension(projectPath),
