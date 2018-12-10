@@ -9,25 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.CommandLine\NuGet.CommandLine.csproj">
-      <Project>{957c4e99-3644-47dd-8f9a-ae36f41ebe4a}</Project>
-      <Name>NuGet.CommandLine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Clients.Tests\NuGet.CommandLine.Test\NuGet.CommandLine.Test.csproj">
-      <Project>{33294bb8-5144-4363-b02c-332f6d94c1c1}</Project>
-      <Name>NuGet.CommandLine.Test</Name>
-    </ProjectReference>
-
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
-
+    <ProjectReference Include="..\..\NuGet.Clients.Tests\NuGet.CommandLine.Test\NuGet.CommandLine.Test.csproj" />
     <ProjectReference Include="..\..\NuGet.Core.Tests\NuGet.Configuration.Test\NuGet.Configuration.Test.csproj" />
-
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup>
