@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
-using NuGet.Shared;
 using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
@@ -213,7 +212,7 @@ namespace Test.Utility.Signing
             var keyUsage = KeyUsage.DigitalSignature;
             var issuerDN = chainCertificateRequest?.IssuerDN ?? subjectDN;
             certGen.SetIssuerDN(new X509Name(issuerDN));
-            
+
 #if IS_DESKTOP
             if (chainCertificateRequest != null)
             {
@@ -504,7 +503,7 @@ namespace Test.Utility.Signing
         public static X509Certificate2 GetPublicCertWithPrivateKey(X509Certificate2 cert)
         {
             var password = new Guid().ToString();
-            return new X509Certificate2(cert.Export(X509ContentType.Pfx, password), password, X509KeyStorageFlags.PersistKeySet|X509KeyStorageFlags.Exportable);
+            return new X509Certificate2(cert.Export(X509ContentType.Pfx, password), password, X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificate()

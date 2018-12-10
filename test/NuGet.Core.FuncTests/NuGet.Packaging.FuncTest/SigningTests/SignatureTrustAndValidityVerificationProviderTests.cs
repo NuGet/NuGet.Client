@@ -658,7 +658,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
             var testLogger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
-            var setting = new SignedPackageVerifierSettings(
+            var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
@@ -686,7 +686,7 @@ namespace NuGet.Packaging.FuncTest
                 reTimestampedSignature.Timestamps.Count.Should().Be(2);
 
                 // Act
-                var result = await verificationProvider.GetTrustResultAsync(package, reTimestampedSignature, setting, CancellationToken.None);
+                var result = await verificationProvider.GetTrustResultAsync(package, reTimestampedSignature, settings, CancellationToken.None);
                 var totalErrorIssues = result.GetErrorIssues();
 
                 // Assert
@@ -1021,13 +1021,13 @@ namespace NuGet.Packaging.FuncTest
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInAcceptMode_DoesNotWarnAsync()
         {
             // Arrange
-            var setting = SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy();
+            var settings = SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy();
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
-                setting);
+                settings);
 
             Assert.Empty(matchingIssues);
         }
@@ -1036,13 +1036,13 @@ namespace NuGet.Packaging.FuncTest
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInRequireMode_WarnsAsync()
         {
             // Arrange
-            var setting = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+            var settings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
-                setting);
+                settings);
 
             Assert.Equal(2, matchingIssues.Count);
 
@@ -1053,14 +1053,12 @@ namespace NuGet.Packaging.FuncTest
         [CIOnlyFact]
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInVerify_WarnsAsync()
         {
-            // Arrange
-            var setting = _verifyCommandSettings;
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
-                setting);
+                _verifyCommandSettings);
 
             Assert.Equal(2, matchingIssues.Count);
 
@@ -1072,7 +1070,7 @@ namespace NuGet.Packaging.FuncTest
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowIllegal_WarnsAsync()
         {
             // Arrange
-            var setting = new SignedPackageVerifierSettings(
+            var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: true,
                 allowUntrusted: false,
@@ -1090,7 +1088,7 @@ namespace NuGet.Packaging.FuncTest
             var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
-                setting);
+                settings);
 
             Assert.Empty(matchingIssues);
         }
@@ -1099,7 +1097,7 @@ namespace NuGet.Packaging.FuncTest
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WithOnlineRevocationMode_WarnsAsync()
         {
             // Arrange
-            var setting = new SignedPackageVerifierSettings(
+            var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
@@ -1117,7 +1115,7 @@ namespace NuGet.Packaging.FuncTest
             var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
-                setting);
+                settings);
 
             Assert.Equal(2, matchingIssues.Count);
 
@@ -1129,7 +1127,7 @@ namespace NuGet.Packaging.FuncTest
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WithOfflineRevocationMode_WarnsAsync()
         {
             // Arrange
-            var setting = new SignedPackageVerifierSettings(
+            var settings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: false,
                 allowUntrusted: false,
@@ -1147,10 +1145,25 @@ namespace NuGet.Packaging.FuncTest
             var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Information,
-                setting);
+                settings);
 
             AssertOfflineRevocationOfflineMode(matchingIssues);
             AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.Undefined, LogLevel.Information);
+        }
+
+        [CIOnlyFact]
+        public async Task GetTrustResultAsync_WithTrustedButExpiredPrimaryAndTimestampCertificates_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WarnsAsync()
+        {
+            var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
+                SignatureVerificationStatus.Valid,
+                LogLevel.Warning,
+                _verifyCommandSettings,
+                "ExpiredPrimaryAndTimestampCertificatesWithUnavailableRevocationInfo.nupkg");
+
+            Assert.Equal(4, matchingIssues.Count);
+
+            AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
+            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.NU3018, LogLevel.Warning);
         }
 
         [CIOnlyFact]
@@ -2203,38 +2216,30 @@ namespace NuGet.Packaging.FuncTest
         private static async Task<List<SignatureLog>> VerifyUnavailableRevocationInfoAsync(
             SignatureVerificationStatus expectedStatus,
             LogLevel expectedLogLevel,
-            SignedPackageVerifierSettings setting)
+            SignedPackageVerifierSettings settings,
+            string resourceName = "UnavailableCrlPackage.nupkg")
         {
             var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
 
-            using (var nupkgStream = new MemoryStream(GetResource("UnavailableCrlPackage.nupkg")))
+            using (var nupkgStream = new MemoryStream(GetResource(resourceName)))
             using (var package = new PackageArchiveReader(nupkgStream, leaveStreamOpen: false))
             {
                 // Read a signature that is valid in every way except that the CRL information is unavailable.
                 var signature = await package.GetPrimarySignatureAsync(CancellationToken.None);
 
-                using (var certificateChain = SignatureUtility.GetCertificateChain(signature))
+                using (TrustPrimaryRootCertificate(signature))
+                using (TrustPrimaryTimestampRootCertificate(signature))
                 {
-                    var rootCertificate = certificateChain.Last();
+                    // Act
+                    var result = await verificationProvider.GetTrustResultAsync(package, signature, settings, CancellationToken.None);
 
-                    // Trust the root CA of the signing certificate.
-                    using (var testCertificate = TrustedTestCert.Create(
-                        new X509Certificate2(rootCertificate),
-                        StoreName.Root,
-                        StoreLocation.LocalMachine,
-                        maximumValidityPeriod: TimeSpan.MaxValue))
-                    {
-                        // Act
-                        var result = await verificationProvider.GetTrustResultAsync(package, signature, setting, CancellationToken.None);
-
-                        // Assert
-                        Assert.Equal(expectedStatus, result.Trust);
-                        return result
-                            .Issues
-                            .Where(x => x.Level >= expectedLogLevel)
-                            .OrderBy(x => x.Message)
-                            .ToList();
-                    }
+                    // Assert
+                    Assert.Equal(expectedStatus, result.Trust);
+                    return result
+                        .Issues
+                        .Where(x => x.Level >= expectedLogLevel)
+                        .OrderBy(x => x.Message)
+                        .ToList();
                 }
             }
         }
@@ -2268,6 +2273,47 @@ namespace NuGet.Packaging.FuncTest
             return ResourceTestUtility.GetResourceBytes(
                 $"NuGet.Packaging.FuncTest.compiler.resources.{name}",
                 typeof(SignatureTrustAndValidityVerificationProviderTests));
+        }
+
+        private static IDisposable TrustPrimaryRootCertificate(PrimarySignature signature)
+        {
+            using (var certificateChain = SignatureUtility.GetCertificateChain(signature))
+            {
+                return TrustRootCertificate(certificateChain);
+            }
+        }
+
+        private static IDisposable TrustPrimaryTimestampRootCertificate(PrimarySignature signature)
+        {
+            var timestamp = signature.Timestamps.FirstOrDefault();
+
+            if (timestamp == null)
+            {
+                return NoOpDisposable.Instance;
+            }
+
+            using (var certificateChain = SignatureUtility.GetTimestampCertificateChain(signature))
+            {
+                return TrustRootCertificate(certificateChain);
+            }
+        }
+
+        private static IDisposable TrustRootCertificate(IX509CertificateChain certificateChain)
+        {
+            var rootCertificate = certificateChain.Last();
+
+            return TrustedTestCert.Create(
+                new X509Certificate2(rootCertificate),
+                StoreName.Root,
+                StoreLocation.LocalMachine,
+                maximumValidityPeriod: TimeSpan.MaxValue);
+        }
+
+        private sealed class NoOpDisposable : IDisposable
+        {
+            internal static NoOpDisposable Instance { get; } = new NoOpDisposable();
+
+            public void Dispose() { }
         }
     }
 }
