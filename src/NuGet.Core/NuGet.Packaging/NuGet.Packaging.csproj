@@ -24,8 +24,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Configuration\NuGet.Configuration.csproj" />
-    <ProjectReference Include="..\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)\NuGet.Configuration\NuGet.Configuration.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsDesktop)' == 'true' ">
