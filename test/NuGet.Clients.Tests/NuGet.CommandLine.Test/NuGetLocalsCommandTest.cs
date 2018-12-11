@@ -32,21 +32,12 @@ namespace NuGet.CommandLine.Test
             Util.VerifyResultSuccess(result, LocalsHelpStringFragment);
         }
 
-        [Fact]
-        public void LocalsCommand_Failure_InvalidArguments_HelpMessage()
+        [Theory]
+        [InlineData("locals all -list extraArg")]
+        [InlineData("locals http-cache temp")]
+        public void LocalsCommand_Failure_InvalidArguments_HelpMessage(string cmd)
         {
-            string args = "locals all -list extraArg";
-            // Arrange & Act
-            var result = CommandRunner.Run(
-                Util.GetNuGetExePath(),
-                Directory.GetCurrentDirectory(),
-                args,
-                waitForExit: true);
-
-            // Assert
-            Util.VerifyResultFailure(
-                result,
-                "locals: invalid arguments");
+            Util.TestCommandInvalidArguments(cmd);
         }
 
         [Theory]

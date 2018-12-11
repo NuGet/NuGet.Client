@@ -1154,11 +1154,5 @@ namespace NuGet.CommandLine.Test
                 }
             }
         }
-
-        [Fact]
-        public void ListCommand_Failure_InvalidArguments()
-        {
-            Util.TestCommandInvalidArguments("");
-        }
     }
 }

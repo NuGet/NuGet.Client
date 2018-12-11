@@ -5110,6 +5110,13 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
 
+        [Fact]
+        public void PackCommand_Failure_InvalidArguments()
+        {
+            Util.TestCommandInvalidArguments("pack a.nuspec b.nuspec");
+        }
+
+
         private class PackageDepencyComparer : IEqualityComparer<PackageDependency>
         {
             public bool Equals(PackageDependency x, PackageDependency y)
