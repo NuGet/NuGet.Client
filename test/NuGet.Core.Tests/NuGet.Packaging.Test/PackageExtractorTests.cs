@@ -2102,7 +2102,7 @@ namespace NuGet.Packaging.Test
                 }
             }
         }
-#endif
+
 
         [Fact]
         public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_PackageArchiveReader_WhenUnsignedPackagesDisallowed_ErrorsAsync()
@@ -2356,6 +2356,88 @@ namespace NuGet.Packaging.Test
                 }
             }
         }
+#endif
+
+#if IS_CORECLR
+        [Fact]
+        public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_InCoreCLR_SkipsSigningVerificationAsync()
+        {
+            // Arrange
+            var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
+
+            signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
+                It.IsAny<ISignedPackageReader>(),
+                It.IsAny<SignedPackageVerifierSettings>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<Guid>())).
+                ReturnsAsync(new VerifySignaturesResult(isValid: false, isSigned: false));
+
+            var extractionContext = new PackageExtractionContext(
+                packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                clientPolicyContext: new ClientPolicyContext(SignatureValidationMode.Require, allowList: null),
+                logger: NullLogger.Instance)
+            {
+                SignedPackageVerifier = signedPackageVerifier.Object
+            };
+
+            using (var test = new ExtractPackageAsyncTest(extractionContext))
+            {
+
+                var packageContext = new SimpleTestPackageContext();
+                await SimpleTestPackageUtility.CreatePackagesAsync(test.Source, packageContext);
+
+                var packageFile = new FileInfo(Path.Combine(test.Source,
+                    $"{packageContext.Identity.Id}.{packageContext.Identity.Version.ToNormalizedString()}.nupkg"));
+
+                using (var packageReader = new PackageArchiveReader(File.OpenRead(packageFile.FullName)))
+                {
+                    // Act
+                    SignatureException exception = null;
+                    IEnumerable<string> files = null;
+
+                    try
+                    {
+                        files = await PackageExtractor.ExtractPackageAsync(
+                            test.Source,
+                            packageReader,
+                            test.Resolver,
+                            test.Context,
+                            CancellationToken.None);
+                    }
+                    catch (SignatureException e)
+                    {
+                        exception = e;
+                    }
+
+                    // Assert
+                    exception.Should().BeNull();
+                    files.Should().NotBeNull();
+                    files.Count().Should().Be(8);
+                    var packagePath = Path.Combine(test.DestinationDirectory.FullName,
+                        $"{packageContext.Identity.Id}.{packageContext.Identity.Version.ToNormalizedString()}");
+
+                    Directory.Exists(packagePath).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        $"{packageContext.Id}.nuspec")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        "contentFiles/any/any/config.xml")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        "contentFiles/cs/net45/code.cs")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        "lib/net45/a.dll")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        "lib/netstandard1.0/a.dll")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        $"build/net45/{packageContext.Id}.targets")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        "runtimes/any/native/a.dll")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        "tools/a.exe")).Should().BeTrue();
+                }
+            }
+        }
+#endif
 
         [Fact]
         public async Task InstallFromSourceAsync_WithoutPackageSaveModeNuspec_DoesNotExtractNuspecAsync()
@@ -2635,6 +2717,7 @@ namespace NuGet.Packaging.Test
             packageDownloader.Verify();
         }
 
+#if IS_DESKTOP
         [Fact]
         public async Task InstallFromSourceAsyncByPackageDownloader_TrustedSignPackageAsync()
         {
@@ -3438,7 +3521,7 @@ namespace NuGet.Packaging.Test
                 }
             }
         }
-
+#endif
         private string StatPermissions(string path)
         {
             string permissions;
