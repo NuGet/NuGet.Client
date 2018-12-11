@@ -2289,7 +2289,7 @@ namespace NuGet.Packaging.FuncTest
 
             if (timestamp == null)
             {
-                return NoOpDisposable.Instance;
+                return null;
             }
 
             using (var certificateChain = SignatureUtility.GetTimestampCertificateChain(signature))
@@ -2307,13 +2307,6 @@ namespace NuGet.Packaging.FuncTest
                 StoreName.Root,
                 StoreLocation.LocalMachine,
                 maximumValidityPeriod: TimeSpan.MaxValue);
-        }
-
-        private sealed class NoOpDisposable : IDisposable
-        {
-            internal static NoOpDisposable Instance { get; } = new NoOpDisposable();
-
-            public void Dispose() { }
         }
     }
 }
