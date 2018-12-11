@@ -969,6 +969,7 @@ namespace NuGet.Commands.Test
             }
         }
 
+#if IS_DESKTOP
         [Fact]
         public async Task RestoreCommand_InvalidSignedPackageAsync()
         {
@@ -1108,6 +1109,7 @@ namespace NuGet.Commands.Test
                 Assert.True(result.Success);
             }
         }
+#endif
 
         [Fact]
         public async Task RestoreCommand_PathInPackageLibraryAsync()
