@@ -64,7 +64,7 @@ if($index -ne '-1')
     $ProductVersion = $ProductVersion.Substring(0,$index).Trim()
 }
 
-$CreatedBranchName = "$Release-$AttemptNum"
+$CreatedBranchName = "$Release-$BranchName-$AttemptNum"
 
 Function UpdateNuGetVersionInXmlFile {
     param(
