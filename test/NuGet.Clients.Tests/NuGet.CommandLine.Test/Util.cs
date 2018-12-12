@@ -1186,12 +1186,21 @@ EndProject");
                 command,
                 waitForExit: true);
 
-            var mainCommand = command.Split(' ')[0];
+            var commandSplit = command.Split(' ');
 
-            // Assert
-            var invalidMessage = string.Format("{0}: invalid arguments.", mainCommand);
+            // Break the test if no proper command is found
+            if (commandSplit.Length < 1 || string.IsNullOrEmpty(commandSplit[0]))
+                Assert.True(false, "command not found");
+
+            var mainCommand = commandSplit[0];
+
+            // Assert command
+            Assert.Contains(mainCommand, result.Item3, StringComparison.InvariantCultureIgnoreCase);
+            // Assert invalid argument message
+            var invalidMessage = string.Format(": invalid arguments.", mainCommand);
+            // Verify Exit code
             VerifyResultFailure(result, invalidMessage);
-
+            // Verify traits of help message in stdout
             Assert.Contains("usage:", result.Item2);
         }
     }
