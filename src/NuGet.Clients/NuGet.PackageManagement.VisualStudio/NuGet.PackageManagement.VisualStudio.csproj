@@ -42,10 +42,6 @@
       <HintPath>$(SolutionPackagesFolder)VSLangProj150.1.0.0\lib\net46\VSLangProj150.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>    
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.15.0.26201\lib\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
