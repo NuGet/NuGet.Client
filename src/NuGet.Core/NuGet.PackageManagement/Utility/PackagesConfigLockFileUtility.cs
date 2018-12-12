@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Commands.Utility;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -26,7 +25,6 @@ namespace NuGet.PackageManagement.Utility
             MSBuildNuGetProject msbuildProject,
             List<NuGetProjectAction> actionsList,
             SourceRepository packagesFolderSourceRepository,
-            IReadOnlyList<SourceRepository> globalPackageFolderRepositories,
             ProjectContextLogger logger,
             CancellationToken token)
         {
@@ -42,7 +40,7 @@ namespace NuGet.PackageManagement.Utility
             {
                 var lockFile = GetLockFile(lockFileExists, lockFileName);
                 lockFile.Targets[0].TargetFramework = msbuildProject.ProjectSystem.TargetFramework;
-                var contentHashUtil = new SolutionPackagesContentHashUtility(packagesFolderSourceRepository, globalPackageFolderRepositories, logger);
+                var contentHashUtil = new SolutionPackagesContentHashUtility(packagesFolderSourceRepository, logger);
                 await ApplyChangesAsync(lockFile, actionsList, contentHashUtil, token);
                 PackagesLockFileFormat.Write(lockFileName, lockFile);
 

@@ -212,7 +212,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 && !fileName.Equals("packages." + ProjectName + ".config")
                 && !fileName.Equals(EnvDTEProjectInfoUtility.WebConfig)
                 && !fileName.Equals(EnvDTEProjectInfoUtility.AppConfig)
-                && !fileName.Equals(Path.GetFileName(lockFileFullPath)))
+                && !fileName.Equals(Path.GetFileName(lockFileFullPath))
+                )
             {
                 NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
             }

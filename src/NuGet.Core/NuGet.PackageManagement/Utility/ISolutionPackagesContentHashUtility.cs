@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 
-namespace NuGet.Commands.Utility
+namespace NuGet.PackageManagement
 {
-    public interface ISolutionPackagesContentHashUtility
+    internal interface ISolutionPackagesContentHashUtility
     {
         Task<string> GetContentHashAsync(PackageIdentity packageIdentity, CancellationToken token);
     }

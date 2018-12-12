@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using NuGet.Commands.Utility;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.Utility;
 using NuGet.Packaging.Core;

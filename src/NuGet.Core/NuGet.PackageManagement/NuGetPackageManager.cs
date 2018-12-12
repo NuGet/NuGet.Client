@@ -11,7 +11,6 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
-using NuGet.Commands.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -2342,7 +2341,6 @@ namespace NuGet.PackageManagement
                     await PackagesConfigLockFileUtility.UpdateLockFileAsync(msbuildProject,
                         actionsList,
                         PackagesFolderSourceRepository,
-                        GlobalPackageFolderRepositories,
                         logger,
                         token);
 

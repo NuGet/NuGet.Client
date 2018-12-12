@@ -367,7 +367,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid restore input where RestorePackagesWithLockFile property is set to false and also exist a packages lock file at {0}..
+        ///   Looks up a localized string similar to Invalid restore input where RestorePackagesWithLockFile property is set to false but a packages lock file exists at {0}..
         /// </summary>
         internal static string Error_InvalidLockFileInput {
             get {
