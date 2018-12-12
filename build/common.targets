@@ -54,6 +54,15 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
+  <!-- These are needed because currently a VSIX project cannot reference a net core project that multi targets.
+  This is a hack for building VS15 VSIX. It's because all these targets are available in the inner build, while the VSIX project
+  is non netcore, and isn't aware of inner/outer builds. -->
+  <Target Name="BuiltProjectOutputGroupDependencies" DependsOnTargets="PrintVSVersionAndNetcore" Condition="false" />
+  <Target Name="BuiltProjectOutputGroup" DependsOnTargets="PrintVSVersionAndNetcore" Condition="false" />
+  <Target Name="GetCopyToOutputDirectoryItems" DependsOnTargets="PrintVSVersionAndNetcore" Condition="false" />
+  <Target Name="SatelliteDllsProjectOutputGroup" DependsOnTargets="PrintVSVersionAndNetcore" Condition="false" />
+  <Target Name="DebugSymbolsProjectOutputGroup" DependsOnTargets="PrintVSVersionAndNetcore" Condition="false" />
+
   <!--
     ============================================================
     TestProject
