@@ -528,6 +528,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
+  <Import Project="$(BuildCommonDirectory)fixinterop.targets" />
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -537,9 +538,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.8.0" PrivateAssets="all" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.27" PrivateAssets="all"/>
   </ItemGroup>
   <PropertyGroup>
     <IncludeContentInPack>false</IncludeContentInPack>

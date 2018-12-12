@@ -291,10 +291,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes">
-      <Version>15.0.27</Version>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="15.0.198-pre" />
     <!-- can this be removed?, upgraded version-->
     <PackageReference Include="VSLangProj110" Version="11.0.61030" />
@@ -303,5 +299,6 @@
     <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.4.0" PrivateAssets="all" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
+  <Import Project="$(BuildCommonDirectory)fixinterop.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
