@@ -141,7 +141,7 @@
   <Target Name="CreatePackNupkg">
     <PropertyGroup>
       <!-- Build from source can't use ILMerge. -->
-      <ILMergeSubpath Condition="'$(DotNetBuildFromSource)' != 'true'">ilmerge\</ILMergeSubpath>
+      <ILMergeSubpath Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">ilmerge\</ILMergeSubpath>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">
       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll">
