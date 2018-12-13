@@ -355,6 +355,15 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData("sources a b")]
+        [InlineData("sources a b c")]
+        [InlineData("sources B a -ConfigFile file.txt -Name x -Source y")]
+        public void SourcesCommandTest_Failure_InvalidArguments(string cmd)
+        {
+            Util.TestCommandInvalidArguments(cmd);
+        }
+
         [Fact]
         public void TestVerbosityQuiet_DoesNotShowInfoMessages()
         {
