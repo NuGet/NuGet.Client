@@ -137,6 +137,9 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
+    <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.27" PrivateAssets="all" />
+  </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)fixinterop.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

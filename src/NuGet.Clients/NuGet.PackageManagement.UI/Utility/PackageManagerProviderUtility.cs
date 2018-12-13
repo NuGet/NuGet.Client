@@ -8,7 +8,7 @@ namespace NuGet.PackageManagement.UI
 {
     public static class PackageManagerProviderUtility
     {
-        public static List<IVsPackageManagerProvider> Sort(
+        public static IList<IVsPackageManagerProvider> Sort(
             IEnumerable<Lazy<IVsPackageManagerProvider, IOrderable>> packageManagerProviders, 
             int max)
         {
