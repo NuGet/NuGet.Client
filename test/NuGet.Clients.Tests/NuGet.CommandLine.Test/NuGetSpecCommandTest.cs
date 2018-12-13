@@ -11,7 +11,7 @@ namespace NuGet.CommandLine.Test
     {
         [Theory]
         [InlineData("spec -AssemblyPath x b a")]
-        [InlineData("nuget spec a b -Force")]
+        [InlineData("spec a b -Force")]
         [InlineData("spec a b -?")]
         public void SpecCommand_Failure_InvalidArguments(string cmd)
         {
