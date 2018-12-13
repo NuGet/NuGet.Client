@@ -195,12 +195,12 @@ Function Install-DotnetCLI {
         [switch]$Force
     )
     $MSBuildExe = Get-MSBuildExe
-    $CliTargetBranch = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliTargetBranch
+    $CliBranchForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
 
     $cli = @{
         Root = $CLIRoot
         Version = 'latest'
-        Channel = $CliTargetBranch.Trim()
+        Channel = $CliBranchForTesting.Trim()
     }
     
     $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
