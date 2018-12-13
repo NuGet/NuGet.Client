@@ -25,20 +25,19 @@ namespace NuGet.Protocol.Tests
             var responses = new Dictionary<string, string>();
             const string sourceName = "http://testsource.com/v3/index.json";
             responses.Add(sourceName, JsonData.IndexWithoutFlatContainer);
-            responses.Add("https://api-v3search-0.nuget.org/autocomplete", "Mock data for the autocompleteresouce"); // content of that should be https://api-v2v3search-0.nuget.org/autocomplete.
+            responses.Add("https://api-v3search-0.nuget.org/autocomplete", JsonData.AutocompleteResourceV3Index); // content of that should be https://api-v2v3search-0.nuget.org/autocomplete
 
-            //var repo = StaticHttpHandler.CreateSource(sourceName, Repository.Provider.GetCoreV3(), responses);
-            var repo = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
+            var repo = StaticHttpHandler.CreateSource(sourceName, Repository.Provider.GetCoreV3(), responses);
+            //var repo = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
 
-            var resource = await repo.GetResourceAsync<AutoCompleteResourceV3>();
+            var resource = await repo.GetResourceAsync<AutoCompleteResource>();
 
             // Act
-            using (var sourceCacheContext = new SourceCacheContext())
-            {
 
                 var result = resource.IdStartsWith("newt", true, NullLogger.Instance, CancellationToken.None);
 
-            }
+            // Assert
+            Assert.Equal(30, result.Result.Count());
         }
     }
 }
