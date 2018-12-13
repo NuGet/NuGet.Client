@@ -13,7 +13,7 @@ PersonalAccessToken of the NuGetLurker account
 .PARAMETER RepositoryName
 The Repository to insert into (SDK or CLI)
 
-.PARAMETER BranchNames
+.PARAMETER BranchName
 Semicolon separated list of the repository's branches to insert into
 
 .PARAMETER NuGetTag
@@ -32,7 +32,7 @@ param
     [Parameter(Mandatory=$True)]
     [string]$RepositoryName,
     [Parameter(Mandatory=$True)]
-    [string]$BranchNames,
+    [string]$BranchName,
     [Parameter(Mandatory=$True)]
     [string]$FilePath,
     [Parameter(Mandatory=$True)]
@@ -211,19 +211,19 @@ $PullRequestsUrl | Set-Content $mdFile
 Write-Host "##vso[task.addattachment type=Distributedtask.Core.Summary;name=$RepositoryName Pull Requests Url;]$mdFile"  
 }
 
-$BranchesToInsert = $BranchNames.Split(';')
+$BranchesToInsert = $BranchName.Split(';')
 $AllPullRequestsUrls = ""
-ForEach ($BranchName in $BranchesToInsert) {
-    $xml = GetDependencyVersionPropsFile -RepositoryName $RepositoryName -BranchName $BranchName -FilePath $FilePath
+ForEach ($Branch in $BranchesToInsert) {
+    $xml = GetDependencyVersionPropsFile -RepositoryName $RepositoryName -BranchName $Branch -FilePath $FilePath
     Write-Host $xml
     
     $updatedXml = UpdateNuGetVersionInXmlFile -XmlContents $xml -NuGetVersion $ProductVersion -NuGetTag $NuGetTag
     
-    $CreatedBranchName = "$Release-$BranchName-$AttemptNum"
+    $CreatedBranchName = "$Release-$Branch-$AttemptNum"
     
-    CreateBranchForPullRequest -RepositoryName $RepositoryName -Headers $Headers -BranchName $BranchName -BranchNameToCreate $CreatedBranchName
+    CreateBranchForPullRequest -RepositoryName $RepositoryName -Headers $Headers -BranchName $Branch -BranchNameToCreate $CreatedBranchName
     UpdateFileContent -RepositoryName $RepositoryName -Headers $Headers -FilePath $FilePath -FileContent $updatedXml-CreatedBranchName $CreatedBranchName
-    $PullRequestUrl = CreatePullRequest -RepositoryName $RepositoryName -Headers $Headers -CreatedBranchName $CreatedBranchName -BaseBranch $BranchName
+    $PullRequestUrl = CreatePullRequest -RepositoryName $RepositoryName -Headers $Headers -CreatedBranchName $CreatedBranchName -BaseBranch $Branch
     $AllPullRequestsUrls = $AllPullRequestsUrls + "$PullRequestUrl`n"
 }
 
