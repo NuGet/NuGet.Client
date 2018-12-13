@@ -152,7 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop" Version="7.10.6070" />
-    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop.10.0" Version="10.0.30319" /> <!-- this is not really merged-->
+    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop.10.0" Version="10.0.30319" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)fixinterop.targets" />
