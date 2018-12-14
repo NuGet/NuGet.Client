@@ -790,6 +790,7 @@ namespace NuGet.Commands
                 symbolsBuilder.HasSnapshotVersion = mainPackageBuilder.HasSnapshotVersion;
                 if(_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg)
                 {
+                    symbolsBuilder.PackageTypes.Clear();
                     symbolsBuilder.PackageTypes.Add(PackageType.SymbolsPackage);
                 }
 
@@ -926,9 +927,9 @@ namespace NuGet.Commands
         private void BuildSymbolsPackage(string path)
         {
             var symbolsBuilder = CreatePackageBuilderFromNuspec(path);
-            if(_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg &&
-                !symbolsBuilder.PackageTypes.Contains(PackageType.SymbolsPackage))
+            if(_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg))
             {
+                symbolsBuilder.PackageTypes.Clear();
                 symbolsBuilder.PackageTypes.Add(PackageType.SymbolsPackage);
             }
 
