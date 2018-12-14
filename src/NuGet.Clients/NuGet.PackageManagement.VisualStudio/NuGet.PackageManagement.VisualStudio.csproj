@@ -20,10 +20,18 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS0618</NoWarn>
   </PropertyGroup>
-  <ItemGroup>
+
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '16.0'">
+    <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Composition">
       <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Composition.15.8.98\lib\net45\Microsoft.VisualStudio.Composition.dll</HintPath>
     </Reference>
@@ -41,18 +49,10 @@
     <Reference Include="VSLangProj150">
       <HintPath>$(SolutionPackagesFolder)VSLangProj150.1.0.0\lib\net46\VSLangProj150.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.15.0.26201\lib\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
+    </Reference>    
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime.14.3.25407\lib\Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
@@ -291,11 +291,12 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="15.0.198-pre" /> <!-- can this be removed?, upgraded version-->
+    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="15.0.198-pre" />
+    <!-- can this be removed?, upgraded version-->
     <PackageReference Include="VSLangProj110" Version="11.0.61030" />
     <PackageReference Include="VSLangProj2" Version="7.0.5000" />
     <PackageReference Include="VSLangProj157" Version="15.7.0" />
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.4.0" PrivateAssets="all" />
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.8.0" PrivateAssets="all" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)fixinterop.targets" />

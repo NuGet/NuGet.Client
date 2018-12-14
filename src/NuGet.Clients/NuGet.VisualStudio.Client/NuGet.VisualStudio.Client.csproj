@@ -23,7 +23,7 @@
     <AssemblyName>NuGet.VisualStudio.Client</AssemblyName>
     <TargetVsixContainerName>NuGet.Tools.vsix</TargetVsixContainerName>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
-    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <MinimumVisualStudioVersion>$(VisualStudioVersion)</MinimumVisualStudioVersion>
     <FileUpgradeFlags />
     <UpgradeBackupLocation />
     <OldToolsVersion>14.0</OldToolsVersion>
