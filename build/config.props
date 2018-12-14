@@ -9,13 +9,13 @@
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     <VsTargetBranch>lab/d16.$(MinorNuGetVersion)stg</VsTargetBranch>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
-    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">release/2.2.1xx</CliBranchForTesting>
+    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">release/2.2.2xx</CliBranchForTesting>
     <!-- This branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d16.$(MinorNuGetVersion)</VsTargetBranch>
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
-    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">$(CliBranchForTesting);release/2.1.503</CliTargetBranches>
+    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">$(CliBranchForTesting);release/2.1.6xx</CliTargetBranches>
     <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</SdkTargetBranches>
-    <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">$(CliBranchForTesting);release/2.1.5xx</SdkTargetBranches>
+    <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">$(CliBranchForTesting);release/2.1.6xx</SdkTargetBranches>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
