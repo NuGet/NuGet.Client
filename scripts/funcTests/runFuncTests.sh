@@ -42,7 +42,10 @@ cli/dotnet-install.sh -i cli -c 1.0
 
 DOTNET="$(pwd)/cli/dotnet"
 
+echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
+
+echo $DOTNET_BRANCH
 cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH
 
 # Display current version
