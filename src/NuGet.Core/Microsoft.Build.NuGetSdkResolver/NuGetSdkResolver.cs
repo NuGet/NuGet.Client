@@ -1,18 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Build.Framework;
-using NuGet.Commands;
-using NuGet.Configuration;
-using NuGet.Credentials;
-using NuGet.Packaging;
-using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Build.Framework;
+using NuGet.Commands;
+using NuGet.Configuration;
+using NuGet.Credentials;
+using NuGet.Packaging;
+using NuGet.Versioning;
 
 namespace Microsoft.Build.NuGetSdkResolver
 {
@@ -134,7 +134,6 @@ namespace Microsoft.Build.NuGetSdkResolver
                         // This must be run in its own task because legacy project system evaluates projects on the UI thread which can cause RunWithoutCommit() to deadlock
                         // https://developercommunity.visualstudio.com/content/problem/311379/solution-load-never-completes-when-project-contain.html
                         var restoreTask = Task.Run(() => RestoreRunnerEx.RunWithoutCommit(
-                            context.ProjectFilePath,
                             sdk.Name,
                             parsedSdkVersion.ToFullString(),
                             settings,
