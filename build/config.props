@@ -26,7 +26,7 @@
   <!-- Dependency versions -->
   <PropertyGroup>
     <NewtonsoftJsonVersionCore>9.0.1</NewtonsoftJsonVersionCore>
-    <XunitVersion>2.3.1</XunitVersion>
+    <XunitVersion>2.4.1</XunitVersion>
     <TestSDKVersion>15.5.0</TestSDKVersion>
     <MoqVersion>4.10.1</MoqVersion>
     <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>

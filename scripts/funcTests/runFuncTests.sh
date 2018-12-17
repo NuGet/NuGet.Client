@@ -124,7 +124,7 @@ fi
 
 #run mono test
 TestDir="$DIR/artifacts/NuGet.CommandLine.Test/"
-XunitConsole="$DIR/packages/xunit.runner.console.2.3.1/tools/net452/xunit.console.exe"
+XunitConsole="$DIR/packages/xunit.runner.console.2.4.1/tools/net452/xunit.console.exe"
 
 #Clean System dll
 rm -r -f "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSharp.dll" "$TestDir/Microsoft.Build.Engine.dll"

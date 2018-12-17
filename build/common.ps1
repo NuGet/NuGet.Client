@@ -8,7 +8,7 @@ $BuiltInVsWhereExe = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer
 $VSVersion = $env:VisualStudioVersion
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
-$XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.exe'
+$XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.4.1\tools\xunit.console.exe'
 $ILMerge = Join-Path $NuGetClientRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
 
 Set-Alias dotnet $DotNetExe
