@@ -40,7 +40,8 @@ chmod +x cli/dotnet-install.sh
 # v1 needed for some test and bootstrapping testing version
 cli/dotnet-install.sh -i cli -c 1.0
 
-DOTNET="$(pwd)/cli/dotnet"
+export DOTNET_ROOT="$(pwd)/cli"
+DOTNET="${DOTNET_ROOT}/dotnet"
 
 echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 
@@ -53,6 +54,10 @@ cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH
 
 # Display current version
 $DOTNET --version
+
+# Specify MSBuildSDKsPath and export the dotnet root to the path
+export MSBuildSDKsPath=$DOTNET_ROOT/sdk/$($DOTNET --version)/Sdks
+export PATH=${PATH}:${DOTNET_ROOT}
 
 echo "================="
 
