@@ -24,6 +24,9 @@ cli/dotnet-install.sh -i cli -c 1.0
 DOTNET="$(pwd)/cli/dotnet"
 
 echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
+
+# run it twice so dotnet cli can expand and decompress without affecting the result of the target
+$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting
 DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
 
 echo $DOTNET_BRANCH
