@@ -296,7 +296,6 @@
     <PackageReference Include="VSLangProj110" Version="11.0.61030" />
     <PackageReference Include="VSLangProj2" Version="7.0.5000" />
     <PackageReference Include="VSLangProj157" Version="15.7.0" />
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.8.0" PrivateAssets="all" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)fixinterop.targets" />

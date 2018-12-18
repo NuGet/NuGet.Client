@@ -536,9 +536,6 @@
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.8.0" PrivateAssets="all" />
-  </ItemGroup>
   <PropertyGroup>
     <IncludeContentInPack>false</IncludeContentInPack>
   </PropertyGroup>
