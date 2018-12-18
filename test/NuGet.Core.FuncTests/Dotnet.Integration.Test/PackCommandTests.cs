@@ -3516,5 +3516,44 @@ namespace ClassLibrary
                 Assert.True(result.AllOutput.Contains("NU5035"));
             }
         }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackEmbedInteropPackage()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                // Setup BuildOutputTargetFolder
+                var buildTargetFolders = "lib;embed";
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "BuildOutputTargetFolder", buildTargetFolders);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // Act
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    // Validate Compile assets 
+                    foreach (var buildTargetFolder in buildTargetFolders.Split(';'))
+                    {
+                        var compileItems = nupkgReader.GetFiles(buildTargetFolder).ToList();
+                        Assert.Equal(1, compileItems.Count);
+                        Assert.Equal(buildTargetFolder + "/netstandard2.0/ClassLibrary1.dll", compileItems[0]);
+                    }
+                }
+            }
+        }
     }
 }

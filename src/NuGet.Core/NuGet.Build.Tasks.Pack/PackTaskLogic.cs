@@ -80,7 +80,7 @@ namespace NuGet.Build.Tasks.Pack
                 packArgs.PackTargetArgs.TargetPathsToSymbols = InitLibFiles(request.TargetPathsToSymbols);
                 packArgs.PackTargetArgs.AssemblyName = request.AssemblyName;
                 packArgs.PackTargetArgs.IncludeBuildOutput = request.IncludeBuildOutput;
-                packArgs.PackTargetArgs.BuildOutputFolder = request.BuildOutputFolder;
+                packArgs.PackTargetArgs.BuildOutputFolder = request.BuildOutputFolders;
                 packArgs.PackTargetArgs.TargetFrameworks = ParseFrameworks(request);
 
                 if (request.IncludeSource)
@@ -436,12 +436,12 @@ namespace NuGet.Build.Tasks.Pack
             {
                 foreach (var packageType in request.PackageTypes)
                 {
-                    string[] packageTypeSplitInPart = packageType.Split(new char[] { ',' });
-                    string packageTypeName = packageTypeSplitInPart[0].Trim();
+                    var packageTypeSplitInPart = packageType.Split(new char[] { ',' });
+                    var packageTypeName = packageTypeSplitInPart[0].Trim();
                     var version = PackageType.EmptyVersion;
                     if (packageTypeSplitInPart.Length > 1)
                     {
-                        string versionString = packageTypeSplitInPart[1];
+                        var versionString = packageTypeSplitInPart[1];
                         Version.TryParse(versionString, out version);
                     }
                     listOfPackageTypes.Add(new PackageType(packageTypeName, version));
@@ -542,7 +542,7 @@ namespace NuGet.Build.Tasks.Pack
 
                 var packagePathString = packageFile.GetProperty("PackagePath");
                 targetPaths = packagePathString == null
-                    ? new string[] { String.Empty }.ToList()
+                    ? new string[] { string.Empty }.ToList()
                     : MSBuildStringUtility.Split(packagePathString)
                     .Distinct()
                     .ToList();
@@ -559,7 +559,7 @@ namespace NuGet.Build.Tasks.Pack
                         newTargetPaths.Add(PathUtility.GetStringComparerBasedOnOS().
                             Compare(Path.GetExtension(fileName),
                             Path.GetExtension(targetPath)) == 0
-                            && !String.IsNullOrEmpty(Path.GetExtension(fileName))
+                            && !string.IsNullOrEmpty(Path.GetExtension(fileName))
                                 ? targetPath
                                 : Path.Combine(targetPath, recursiveDir));
                     }

@@ -1748,5 +1748,62 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(NuGetFramework.Parse("dotnet").DotNetFrameworkName, netPlatDepGroup.FrameworkName);
             Assert.Empty(netPlatDepGroup.Dependencies);
         }
+
+        [Fact]
+        public void LockFileFormat_ReadsLockFileWithEmbedAssemblies()
+        {
+            var lockFileContent = @"{
+              ""version"": 1,
+              ""targets"": {
+                "".NETCoreApp,Version=v2.1"": {
+                  ""packageA.interop/1.0.0"": {
+                    ""compile"": {
+                      ""lib/netstandard2.0/packageA.interop.dll"": {}
+                    },
+                    ""embed"": {
+                      ""embed/netstandard2.0/packageA.interop.dll"": {}
+                    },
+                    ""runtime"": {
+                      ""lib/netstandard2.0/packageA.interop.dll"": {}
+                    }
+                  }
+                }
+              },
+              ""libraries"": {
+                ""packageA.interop/1.0.0"": {
+                  ""sha512"": ""WFRsJnfRzXYIiDJRbTXGctncx6Hw1F/uS2c5a5CzUwHuA3D/CM152F2HjWt12dLgH0BOcGvcRjKl2AfJ6MnHVg=="",
+                  ""type"": ""package"",
+                  ""files"": [
+                    ""_rels/.rels"",
+                    ""packageA.interop.nuspec"",
+                    ""lib/netstandard2.0/packageA.interop.dll"",
+                    ""embed/netstandard2.0/packageA.interop.dll"",
+                    ""package/services/metadata/core-properties/b7eb2b260f1846d69b1ccf1a4e614180.psmdcp"",
+                    ""[Content_Types].xml""
+                  ]
+                }
+              },
+              ""projectFileDependencyGroups"": {
+                """": [
+                  ""packageA.interop [1.0.0, )""
+                ],
+                "".NETCoreApp,Version=v2.1"": []
+              }
+            }";
+
+            var lockFileFormat = new LockFileFormat();
+            var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
+
+            Assert.Equal(1, lockFile.Version);
+
+            var target = lockFile.Targets.Single();
+
+            var targetLibrary = target.Libraries.Single();
+            Assert.Equal("packageA.interop", targetLibrary.Name);
+            Assert.Equal(NuGetVersion.Parse("1.0.0"), targetLibrary.Version);
+            Assert.Equal("lib/netstandard2.0/packageA.interop.dll", targetLibrary.CompileTimeAssemblies.Single().Path);
+            Assert.Equal("lib/netstandard2.0/packageA.interop.dll", targetLibrary.RuntimeAssemblies.Single().Path);
+            Assert.Equal("embed/netstandard2.0/packageA.interop.dll", targetLibrary.EmbedAssemblies.Single().Path);
+        }
     }
 }
