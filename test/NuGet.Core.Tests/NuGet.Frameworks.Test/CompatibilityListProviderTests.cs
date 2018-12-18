@@ -40,6 +40,7 @@ namespace NuGet.Frameworks.Test
             Assert.Contains("WindowsPhoneApp,Version=v8.1", actual);
             Assert.Contains("Xamarin.iOS,Version=v0.0", actual);
             Assert.Contains("Xamarin.Mac,Version=v0.0", actual);
+            Assert.Contains("Xamarin.Mac.NET,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStation3,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStation4,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStationVita,Version=v0.0", actual);
@@ -55,7 +56,7 @@ namespace NuGet.Frameworks.Test
             Assert.DoesNotContain(".NETPlatform,Version=v5.3", actual); // frameworks with no relationship are not returned
 
             // count
-            Assert.Equal(26, actual.Length);
+            Assert.Equal(27, actual.Length);
         }
 
         [Fact]
@@ -83,6 +84,7 @@ namespace NuGet.Frameworks.Test
             Assert.Contains("MonoTouch,Version=v0.0", actual);
             Assert.Contains("Xamarin.iOS,Version=v0.0", actual);
             Assert.Contains("Xamarin.Mac,Version=v0.0", actual);
+            Assert.Contains("Xamarin.Mac.NET,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStation3,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStation4,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStationVita,Version=v0.0", actual);
@@ -99,7 +101,7 @@ namespace NuGet.Frameworks.Test
             Assert.DoesNotContain(".NETPlatform,Version=v5.6", actual); // frameworks with no relationship are not returned
 
             // count
-            Assert.Equal(20, actual.Length);
+            Assert.Equal(21, actual.Length);
         }
 
         [Fact]
@@ -126,6 +128,7 @@ namespace NuGet.Frameworks.Test
             Assert.Contains("MonoTouch,Version=v0.0", actual);
             Assert.Contains("Xamarin.iOS,Version=v0.0", actual);
             Assert.Contains("Xamarin.Mac,Version=v0.0", actual);
+            Assert.Contains("Xamarin.Mac.NET,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStation3,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStation4,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStationVita,Version=v0.0", actual);
@@ -143,7 +146,7 @@ namespace NuGet.Frameworks.Test
             Assert.DoesNotContain("DNXCore,Version=v5.0", actual);
 
             // count
-            Assert.Equal(19, actual.Length);
+            Assert.Equal(20, actual.Length);
         }
 
         [Fact]
@@ -170,6 +173,7 @@ namespace NuGet.Frameworks.Test
             Assert.Contains("MonoTouch,Version=v0.0", actual);
             Assert.Contains("Xamarin.iOS,Version=v0.0", actual);
             Assert.Contains("Xamarin.Mac,Version=v0.0", actual);
+            Assert.Contains("Xamarin.Mac.NET,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStation3,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStation4,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStationVita,Version=v0.0", actual);
@@ -187,7 +191,7 @@ namespace NuGet.Frameworks.Test
             Assert.DoesNotContain("DNXCore,Version=v5.0", actual);
 
             // count
-            Assert.Equal(19, actual.Length);
+            Assert.Equal(20, actual.Length);
         }
 
         [Fact]
@@ -207,12 +211,14 @@ namespace NuGet.Frameworks.Test
             Assert.Contains(".NETCoreApp,Version=v2.0", actual);
             Assert.Contains(".NETFramework,Version=v4.6.1", actual);
             Assert.Contains(".NETStandard,Version=v2.0", actual);
+            Assert.Contains(".NETStandardApp,Version=v2.0", actual);
             Assert.Contains("DNX,Version=v4.6.1", actual);
             Assert.Contains("MonoAndroid,Version=v0.0", actual);
             Assert.Contains("MonoMac,Version=v0.0", actual);
             Assert.Contains("MonoTouch,Version=v0.0", actual);
             Assert.Contains("Xamarin.iOS,Version=v0.0", actual);
             Assert.Contains("Xamarin.Mac,Version=v0.0", actual);
+            Assert.Contains("Xamarin.Mac.NET,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStation3,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStation4,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStationVita,Version=v0.0", actual);
@@ -230,7 +236,7 @@ namespace NuGet.Frameworks.Test
             Assert.DoesNotContain("DNXCore,Version=v5.0", actual);
 
             // count
-            Assert.Equal(19, actual.Length);
+            Assert.Equal(20, actual.Length);
         }
     }
 }
