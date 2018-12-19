@@ -53,7 +53,7 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, file.Path));
+                    log.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, file.Path));
 
                     // Create the directory if it doesn't exist
                     Directory.CreateDirectory(Path.GetDirectoryName(file.Path));

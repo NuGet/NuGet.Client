@@ -277,7 +277,7 @@ namespace NuGet.Commands
 
             if (result.Success)
             {
-                log.LogMinimal(string.Format(
+                log.LogInformation(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_RestoreComplete,
                     DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
@@ -285,7 +285,7 @@ namespace NuGet.Commands
             }
             else
             {
-                log.LogMinimal(string.Format(
+                log.LogInformation(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_RestoreFailed,
                     DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),

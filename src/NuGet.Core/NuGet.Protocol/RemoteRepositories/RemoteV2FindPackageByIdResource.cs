@@ -430,7 +430,7 @@ namespace NuGet.Protocol
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsyncCore), uri)
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
-                    logger.LogMinimal(message);
+                    logger.LogMinimal(message); // should this be decreased
                 }
                 catch (Exception ex) when (retry == 2)
                 {

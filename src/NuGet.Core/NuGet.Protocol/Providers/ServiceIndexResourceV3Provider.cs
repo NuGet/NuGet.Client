@@ -143,7 +143,7 @@ namespace NuGet.Protocol
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingServiceIndex, url)
                             + Environment.NewLine
                             + ExceptionUtilities.DisplayMessage(ex);
-                        log.LogMinimal(message);
+                        log.LogMinimal(message); // should this be decreased
                     }
                     catch (Exception ex) when (retry == 2)
                     {

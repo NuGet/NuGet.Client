@@ -116,7 +116,7 @@ namespace NuGet.Commands
 
                         if (result)
                         {
-                            _request.Log.LogMinimal(string.Format(
+                            _request.Log.LogInformation(string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.Log_ConvertedPackageToOriginalCase,
                                 identity));
