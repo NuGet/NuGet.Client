@@ -339,6 +339,8 @@ namespace NuGet.ProjectModel
                     GetBoolOrFalse(restoreLockProperties, "restoreLockedMode", packageSpec.FilePath));
             }
 
+            msbuildMetadata.PackagesConfigPath = rawMSBuildMetadata.GetValue<string>("packagesConfigPath");
+
             return msbuildMetadata;
         }
 

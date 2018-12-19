@@ -113,6 +113,11 @@ namespace NuGet.ProjectModel
 
         public RestoreLockProperties RestoreLockProperties { get; set; } = new RestoreLockProperties();
 
+        /// <summary>
+        /// Full path to the packages.config file, if it exists. Only valid when ProjectStyle is PackagesConfig.
+        /// </summary>
+        public string PackagesConfigPath { get; set; }
+
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();

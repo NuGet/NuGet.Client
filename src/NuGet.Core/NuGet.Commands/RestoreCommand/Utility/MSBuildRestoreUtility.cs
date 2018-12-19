@@ -274,6 +274,7 @@ namespace NuGet.Commands
                 if (restoreType == ProjectStyle.PackagesConfig)
                 {
                     // Packages lock file properties
+                    result.RestoreMetadata.PackagesConfigPath = specItem.GetProperty("PackagesConfigPath");
                     result.RestoreMetadata.RestoreLockProperties = GetRestoreLockProperites(specItem);
                 }
 
