@@ -33,7 +33,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal override bool IsEmpty() => !Children.Any() || Children.All(c => c.IsEmpty());
+        public override bool IsEmpty() => !Children.Any() || Children.All(c => c.IsEmpty());
 
         internal SettingsGroup(XElement element, SettingsFile origin)
             : base(element, origin)

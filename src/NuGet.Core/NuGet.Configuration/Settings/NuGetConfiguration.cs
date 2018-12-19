@@ -139,7 +139,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal override SettingBase Clone()
+        public override SettingBase Clone()
         {
             return new NuGetConfiguration(Attributes, Sections.Select(s => s.Value.Clone() as SettingSection));
         }
