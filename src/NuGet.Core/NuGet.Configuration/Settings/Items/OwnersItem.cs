@@ -52,7 +52,7 @@ namespace NuGet.Configuration
             Content = _content.Value.Split(OwnersListSeparator).Select(o => o.Trim()).ToList();
         }
 
-        internal override SettingBase Clone()
+        public override SettingBase Clone()
         {
             var newItem = new OwnersItem(_content.Value);
 

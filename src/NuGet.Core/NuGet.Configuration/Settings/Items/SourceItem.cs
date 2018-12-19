@@ -51,7 +51,7 @@ namespace NuGet.Configuration
         {
         }
 
-        internal override SettingBase Clone()
+        public override SettingBase Clone()
         {
             var newSetting = new SourceItem(Key, Value, ProtocolVersion);
 
