@@ -434,6 +434,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' AND @(PackageReference) != '' ">PackageReference</RestoreProjectStyle>
       <!-- If this is not a PackageReference project check if project.json or projectName.project.json exists. -->
       <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' AND '$(_CurrentProjectJsonPath)' != '' ">ProjectJson</RestoreProjectStyle>
+      <!-- If this is not a PackageReference or ProjectJson project check if packages.config or packages.ProjectName.config exists -->
+      <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' AND (Exists('$(MSBuildProjectDirectory)\packages.config') Or Exists('$(MSBuildProjectDirectory)\packages.$(MSBuildProjectName).config'))">PackagesConfig</RestoreProjectStyle>
       <!-- This project is either a packages.config project or one that does not use NuGet at all. -->
       <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' ">Unknown</RestoreProjectStyle>
     </PropertyGroup>
@@ -704,6 +706,21 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectJsonPath>$(_CurrentProjectJsonPath)</ProjectJsonPath>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
         <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
+      </_RestoreGraphEntry>
+    </ItemGroup>
+
+    <!-- Use packages.config -->
+    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackagesConfig' ">
+      <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
+        <Type>ProjectSpec</Type>
+        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
+        <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
+        <ProjectName>$(_RestoreProjectName)</ProjectName>
+        <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
+        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
+        <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
+        <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>
+        <RestoreLockedMode>$(RestoreLockedMode)</RestoreLockedMode>
       </_RestoreGraphEntry>
     </ItemGroup>
 
