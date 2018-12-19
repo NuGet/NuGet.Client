@@ -17,7 +17,7 @@ namespace NuGet.Configuration
 
         public new IReadOnlyDictionary<string, string> Attributes => base.Attributes;
 
-        internal override bool IsEmpty() => false;
+        public override bool IsEmpty() => false;
 
         protected override bool CanHaveChildren => true;
 
@@ -61,7 +61,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal override SettingBase Clone()
+        public override SettingBase Clone()
         {
             var newSetting = new UnknownItem(ElementName, Attributes, Children.Select(c => c.Clone()));
 

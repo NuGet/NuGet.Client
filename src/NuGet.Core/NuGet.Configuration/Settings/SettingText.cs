@@ -54,9 +54,9 @@ namespace NuGet.Configuration
 
         public override int GetHashCode() => Value.GetHashCode();
 
-        internal override bool IsEmpty() => string.IsNullOrEmpty(Value);
+        public override bool IsEmpty() => string.IsNullOrEmpty(Value);
 
-        internal override SettingBase Clone()
+        public override SettingBase Clone()
         {
             var newSetting = new SettingText(Value);
 

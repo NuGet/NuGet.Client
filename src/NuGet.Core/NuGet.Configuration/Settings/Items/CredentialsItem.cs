@@ -103,7 +103,7 @@ namespace NuGet.Configuration
 
         protected override bool CanHaveChildren => true;
 
-        internal override bool IsEmpty() => string.IsNullOrEmpty(Username) && string.IsNullOrEmpty(Password);
+        public override bool IsEmpty() => string.IsNullOrEmpty(Username) && string.IsNullOrEmpty(Password);
 
         internal readonly AddItem _username;
 
@@ -202,7 +202,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal override SettingBase Clone()
+        public override SettingBase Clone()
         {
             var newSetting = new CredentialsItem(ElementName, Username, Password, IsPasswordClearText, ValidAuthenticationTypes);
 

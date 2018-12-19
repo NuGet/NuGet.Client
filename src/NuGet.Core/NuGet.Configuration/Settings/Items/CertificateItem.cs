@@ -90,7 +90,7 @@ namespace NuGet.Configuration
             UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, AllowUntrustedRoot.ToString().ToLower());
         }
 
-        internal override SettingBase Clone()
+        public override SettingBase Clone()
         {
             var newItem = new CertificateItem(Fingerprint, HashAlgorithm, AllowUntrustedRoot);
 
