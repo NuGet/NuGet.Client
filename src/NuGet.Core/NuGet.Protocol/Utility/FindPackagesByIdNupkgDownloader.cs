@@ -279,7 +279,7 @@ namespace NuGet.Protocol
                     // Requests can get cancelled if we got the data from elsewhere, no reason to warn.
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_CanceledNupkgDownload, url);
 
-                    logger.LogMinimal(message); // should this be decreased
+                    logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry < 2)
                 {
@@ -291,7 +291,7 @@ namespace NuGet.Protocol
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
 
-                    logger.LogMinimal(message); // should this be decreased
+                    logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
