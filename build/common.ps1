@@ -10,14 +10,12 @@ $PackageReleaseVersion = "4.6.0"
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $CLIRoot = Join-Path $NuGetClientRoot cli
-$CLIRootForPack = Join-Path $NuGetClientRoot "cli1.0.4"
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $Nupkgs = Join-Path $Artifacts nupkgs
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
 $ConfigureJson = Join-Path $Artifacts configure.json
 $VsWhereExe = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $VSVersion = $env:VisualStudioVersion
-
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.exe'
@@ -184,7 +182,7 @@ Function Install-NuGet {
     if ($Force -or -not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
 
-        wget https://dist.nuget.org/win-x86-commandline/v4.7.0/nuget.exe -OutFile $NuGetExe
+        wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $NuGetExe
     }
 
     # Display nuget info
@@ -197,49 +195,15 @@ Function Install-DotnetCLI {
         [switch]$Force
     )
     $MSBuildExe = Get-MSBuildExe
-    $CliTargetBranch = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliTargetBranch1
+    $CliBranchForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
 
     $cli = @{
-            Root = $CLIRoot
-            DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
-            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/4bd9bb92cc3636421cd01baedbd8ef3e41aa1e22/scripts/obtain/dotnet-install.ps1'
-        }
-
-    $env:DOTNET_HOME=$cli.Root
-    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
-
-    if ($Force -or -not (Test-Path $cli.DotNetExe)) {
-        Trace-Log 'Downloading .NET CLI'
-
-        New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
-
-        $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
-
-        Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
-        $channel = $CliTargetBranch.Trim()
-        & $DotNetInstall -Channel $channel  -i $cli.Root
+        Root = $CLIRoot
+        Version = 'latest'
+        Channel = $CliBranchForTesting.Trim()
     }
-
-    if (-not (Test-Path $cli.DotNetExe)) {
-        Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
-    }
-
-    # Display build info
-    & $cli.DotNetExe --info
-}
-
-Function Install-DotnetCLIToILMergePack {
-    [CmdletBinding()]
-    param(
-        [switch]$Force
-    )
-
-    $cli = @{
-            Root = $CLIRootForPack
-            DotNetExe = Join-Path $CLIRootForPack 'dotnet.exe'
-            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
-            Version = '1.0.1'
-        }
+    
+    $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
 
     if ([Environment]::Is64BitOperatingSystem) {
         $arch = "x64";
@@ -251,27 +215,26 @@ Function Install-DotnetCLIToILMergePack {
     $env:DOTNET_HOME=$cli.Root
     $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-    if ($Force -or -not (Test-Path $cli.DotNetExe)) {
+    if ($Force -or -not (Test-Path $DotNetExe)) {
         Trace-Log 'Downloading .NET CLI'
 
         New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
 
         $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
 
-        Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
-
-        & $DotNetInstall -Channel preview -i $cli.Root -Version $cli.Version -Architecture $arch
+        Invoke-WebRequest 'https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1' -OutFile $DotNetInstall
+        & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch
     }
 
-    if (-not (Test-Path $cli.DotNetExe)) {
+    if (-not (Test-Path $DotNetExe)) {
         Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
     }
 
     # Display build info
-    & $cli.DotNetExe --info
+    & $DotNetExe --info
 }
 
-Function Get-LatestVisualStudioRoot() {
+Function Get-LatestVisualStudioRoot {
     # First try to use vswhere to find the latest version of Visual Studio.
     if (Test-Path $VsWhereExe) {
         $installationPath = & $VsWhereExe -latest -prerelease -property installationPath
@@ -556,12 +519,12 @@ Function Publish-CoreProject {
     }
 
     $opts += 'publish', $XProjectLocation
-    $opts += '--configuration', $Configuration, '--framework', 'netcoreapp1.0'
+    $opts += '--configuration', $Configuration, '--framework', 'netcoreapp2.1'
     $opts += '--no-build'
 
     $opts += '--build-base-path', $Artifacts
 
-    $OutputDir = Join-Path $PublishLocation "$Configuration\netcoreapp1.0"
+    $OutputDir = Join-Path $PublishLocation "$Configuration\netcoreapp2.1"
     $opts += '--output', $OutputDir
 
     Trace-Log "$DotNetExe $opts"

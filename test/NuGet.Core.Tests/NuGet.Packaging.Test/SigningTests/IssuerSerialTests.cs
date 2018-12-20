@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography;
+using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Math;
@@ -37,7 +38,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("certificate", exception.ParamName);
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Create_WithCertificate_InitializesFields()
         {
             using (var certificate = _fixture.GetDefaultCertificate())

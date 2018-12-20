@@ -39,7 +39,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("request", exception.ParamName);
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Verify_WhenLoggerNull_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -52,7 +52,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Verify_WithCertificateWithUnsupportedSignatureAlgorithm_Throws()
         {
             using (var certificate = _fixture.GetRsaSsaPssCertificate())
@@ -66,7 +66,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Verify_WithCertificateWithLifetimeSigningEku_Throws()
         {
             using (var certificate = _fixture.GetLifetimeSigningCertificate())
@@ -80,7 +80,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Verify_WithNotYetValidCertificate_Throws()
         {
             using (var certificate = _fixture.GetNotYetValidCertificate())
@@ -94,7 +94,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Verify_WhenChainBuildingFails_Throws()
         {
             using (var certificate = _fixture.GetExpiredCertificate())
@@ -108,24 +108,24 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(NuGetLogCode.NU3018, exception.Code);
                 Assert.Equal("Certificate chain validation failed.", exception.Message);
 
-                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Errors);
+                Assert.Equal(1, logger.Errors);
                 Assert.Equal(1, logger.Warnings);
+
 
                 if (RuntimeEnvironmentHelper.IsWindows)
                 {
-                    AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
                     AssertNotTimeValid(logger.LogMessages, LogLevel.Error);
+                    SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
                 }
                 else
                 {
-                    AssertUntrustedRoot(logger.LogMessages, LogLevel.Error);
                     AssertPartialChain(logger.LogMessages, LogLevel.Error);
-                    AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                    SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
                 }
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Verify_WithUntrustedSelfSignedCertificate_Succeeds()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -138,11 +138,11 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Warnings);
 
-                AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
+                SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
 
                 if (!RuntimeEnvironmentHelper.IsWindows)
                 {
-                    AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                    SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
                 }
             }
         }
@@ -307,7 +307,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("request", exception.ParamName);
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void CreateCmsSigner_WhenLoggerNull_Throws()
         {
             using (var request = new AuthorSignPackageRequest(new X509Certificate2(), Common.HashAlgorithmName.SHA256))
@@ -537,7 +537,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task SignAsync_WithUntrustedSelfSignedCertificate_SucceedsAsync()
         {
             var package = new SimpleTestPackageContext();
@@ -681,47 +681,12 @@ namespace NuGet.Packaging.Test
         }
 #endif
 
-        private static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
-        {
-            string untrustedRoot;
-
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
-            }
-            else
-            {
-                untrustedRoot = "certificate not trusted";
-            }
-
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message == untrustedRoot);
-        }
-
         private static void AssertNotTimeValid(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.");
-        }
-
-        private static void AssertOfflineRevocation(IEnumerable<ILogMessage> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message == "unable to get certificate CRL");
-        }
-
-        private static void AssertPartialChain(IEnumerable<ILogMessage> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message == "unable to get local issuer certificate");
+                issue.Message.Contains("A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file"));
         }
 
         private static AuthorSignPackageRequest CreateRequest(X509Certificate2 certificate)
@@ -730,6 +695,14 @@ namespace NuGet.Packaging.Test
                 certificate,
                 Common.HashAlgorithmName.SHA256,
                 Common.HashAlgorithmName.SHA256);
+        }
+
+        private static void AssertPartialChain(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message.Contains("unable to get local issuer certificate"));
         }
 
         private static RepositorySignPackageRequest CreateRequestRepository(
