@@ -840,8 +840,8 @@ namespace NuGet.Commands
                 _success = false;
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
-
-            _logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath)); // one line per restore.
+            // Each restore should log no more than 1 or 2 lines per project.
+            _logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath)); 
 
             // Get external project references
             // If the top level project already exists, update the package spec provided

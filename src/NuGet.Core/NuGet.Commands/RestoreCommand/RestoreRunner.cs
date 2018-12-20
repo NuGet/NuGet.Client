@@ -274,7 +274,7 @@ namespace NuGet.Commands
             // Commit the result
             log.LogInformation(Strings.Log_Committing);
             await result.CommitAsync(log, token);
-
+            // Should there be 2 log messages? Happy case restore vs failed case restore?
             if (result.Success)
             {
                 log.LogInformation(string.Format(
@@ -285,7 +285,7 @@ namespace NuGet.Commands
             }
             else
             {
-                log.LogInformation(string.Format(
+                log.LogInformation(string.Format( // It's probably more important that the failed case restore writes a log message. Should this be a warning.
                     CultureInfo.CurrentCulture,
                     Strings.Log_RestoreFailed,
                     DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),

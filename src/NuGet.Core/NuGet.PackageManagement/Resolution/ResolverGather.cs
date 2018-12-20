@@ -227,7 +227,7 @@ namespace NuGet.PackageManagement
                 }
             }
             // calculate total time taken to gather all packages as well as with each source
-            stopWatch.Stop(); // does this work with PR? no.
+            stopWatch.Stop();
             _context.Log.LogMinimal(
                 string.Format(Strings.GatherTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
             _context.Log.LogDebug("Summary of time taken to gather dependencies per source :");

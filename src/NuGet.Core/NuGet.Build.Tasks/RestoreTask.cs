@@ -159,7 +159,7 @@ namespace NuGet.Build.Tasks
                 if (dgFile.Restore.Count < 1)
                 {
                     // Restore will fail if given no inputs, but here we should skip it and provide a friendly message.
-                    log.LogMinimal(Strings.NoProjectsToRestore); // this is ok...when nothing can be restored.
+                    log.LogMinimal(Strings.NoProjectsToRestore);
                     return true;
                 }
 
