@@ -14,7 +14,7 @@ namespace NuGet.ProjectModel
 {
     public class DependencyGraphSpec
     {
-        public static readonly string DGSpecFileName = "{0}.deps.json";
+        public static readonly string DGSpecFileName = "{0}.nuget.dgspec.json";
 
         private readonly SortedSet<string> _restore = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
         private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());

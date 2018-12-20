@@ -220,11 +220,11 @@ namespace NuGet.PackageManagement
 
             var uniqueProjectDependencies = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
 
-            var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>();
+            var projects = ((await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>()).ToList();
 
-            foreach (var project in projects)
+            for (var i=0; i< projects.Count; i++)
             {
-                var packageSpecs = await project.GetPackageSpecsAsync(context);
+                var packageSpecs = await projects[i].GetPackageSpecsAsync(context);
 
                 foreach (var packageSpec in packageSpecs)
                 {
