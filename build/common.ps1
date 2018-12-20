@@ -203,7 +203,7 @@ Function Install-DotnetCLI {
     }
     
     $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
-    
+
     if ([Environment]::Is64BitOperatingSystem) {
         $arch = "x64";
     }
@@ -395,10 +395,6 @@ Function Test-BuildEnvironment {
     }
 }
 
-Function Save-ProjectFile ($xproject, $fileName) {
-    Trace-Log "Saving project to '$fileName'"
-    $xproject | ConvertTo-Json -Depth 100 | Out-File $fileName
-}
 Function Get-BuildNumber() {
     $SemanticVersionDate = '2018-12-14' # Date format - yyyy-mm-dd
     try {

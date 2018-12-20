@@ -74,9 +74,9 @@ Trace-Log "Test suite run #$BuildNumber started at $startTime"
 
 Test-BuildEnvironment -CI:$CI
 
-if (-not $VS15Installed) {
-    Warning-Log "VS15 build is requested but it appears not to be installed."
-    $SkipVS15 = $True
+if (-not $VSToolsetInstalled) {
+    Warning-Log "The build is requested, but no toolset is available"
+    exit 1
 }
 
 $BuildErrors = @()

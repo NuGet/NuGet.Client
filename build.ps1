@@ -69,6 +69,7 @@ Test-BuildEnvironment -CI:$CI
 
 if (-not $VSToolsetInstalled) {
     Warning-Log "The build is requested, but no toolset is available"
+    exit 1
 }
 
 $BuildErrors = @()
