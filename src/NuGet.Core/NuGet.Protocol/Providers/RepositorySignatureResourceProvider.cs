@@ -82,7 +82,7 @@ namespace NuGet.Protocol
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingRepositorySignature, repoSignUrl)
                             + Environment.NewLine
                             + ExceptionUtilities.DisplayMessage(ex);
-                        log.LogMinimal(message); // should this be decreased
+                        log.LogMinimal(message);
                     }
                     catch (Exception ex) when (retry == 2)
                     {

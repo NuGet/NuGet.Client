@@ -285,8 +285,7 @@ namespace NuGet.Commands
             }
             else
             {
-                log.LogInformation(string.Format( // It's probably more important that the failed case restore writes a log message. Should this be a warning.
-                    CultureInfo.CurrentCulture,
+                log.LogInformation(string.Format( // It's probably more important that the failed case restore writes a log message. Should this be a warning. This is usually accompanied by other warnings..which are probably more important. Check the failed restore scenarios with this.
                     Strings.Log_RestoreFailed,
                     DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
                     summaryRequest.InputPath));
