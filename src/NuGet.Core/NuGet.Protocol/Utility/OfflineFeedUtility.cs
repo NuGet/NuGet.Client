@@ -169,7 +169,7 @@ namespace NuGet.Protocol.Core.Types
                             }
                             else
                             {
-                                logger.LogMinimal(message); // should this be decreased
+                                logger.LogMinimal(message);
                             }
                         }
                         else
