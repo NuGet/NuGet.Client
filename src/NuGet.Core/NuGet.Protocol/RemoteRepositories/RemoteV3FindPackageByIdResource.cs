@@ -290,6 +290,58 @@ namespace NuGet.Protocol
             return new RemotePackageArchiveDownloader(SourceRepository.PackageSource.Source, this, packageInfo.Identity, cacheContext, logger);
         }
 
+        /// <summary>
+        /// Asynchronously check if exact package (id/version) exists at this source.
+        /// </summary>
+        /// <param name="id">A package id.</param>
+        /// <param name="version">A package version.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        public override async Task<bool> DoesPackageExistAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(id));
+            }
+
+            if (version == null)
+            {
+                throw new ArgumentNullException(nameof(version));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, cancellationToken);
+
+            return packageInfo != null;
+        }
+
         private async Task<RemoteSourceDependencyInfo> GetPackageInfoAsync(
             string id,
             NuGetVersion version,

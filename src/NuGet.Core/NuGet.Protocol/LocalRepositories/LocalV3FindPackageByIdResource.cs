@@ -180,11 +180,9 @@ namespace NuGet.Protocol
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var matchedVersion = GetVersion(id, version, cacheContext, logger);
-
-            if (matchedVersion != null)
+            if (DoesVersionExist(id, version))
             {
-                var packagePath = _resolver.GetPackageFilePath(id, matchedVersion);
+                var packagePath = _resolver.GetPackageFilePath(id, version);
 
                 using (var fileStream = File.OpenRead(packagePath))
                 {
@@ -243,15 +241,14 @@ namespace NuGet.Protocol
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var matchedVersion = GetVersion(id, version, cacheContext, logger);
             FindPackageByIdDependencyInfo dependencyInfo = null;
-            if (matchedVersion != null)
+            if (DoesVersionExist(id, version))
             {
-                var identity = new PackageIdentity(id, matchedVersion);
+                var identity = new PackageIdentity(id, version);
 
                 dependencyInfo = ProcessNuspecReader(
                     id,
-                    matchedVersion,
+                    version,
                     nuspecReader =>
                     {
                         return GetDependencyInfo(nuspecReader);
@@ -298,18 +295,67 @@ namespace NuGet.Protocol
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var matchedVersion = GetVersion(packageIdentity.Id, packageIdentity.Version, cacheContext, logger);
             IPackageDownloader packageDependency = null;
 
-            if (matchedVersion != null)
+            if (DoesVersionExist(packageIdentity.Id, packageIdentity.Version))
             {
-                var packagePath = _resolver.GetPackageFilePath(packageIdentity.Id, matchedVersion);
-                var matchedPackageIdentity = new PackageIdentity(packageIdentity.Id, matchedVersion);
+                var packagePath = _resolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
+                var matchedPackageIdentity = new PackageIdentity(packageIdentity.Id, packageIdentity.Version);
 
                 packageDependency = new LocalPackageArchiveDownloader(_source, packagePath, matchedPackageIdentity, logger);
             }
 
             return Task.FromResult(packageDependency);
+        }
+
+        /// <summary>
+        /// Asynchronously check if exact package (id/version) exists at this source.
+        /// </summary>
+        /// <param name="id">A package id.</param>
+        /// <param name="version">A package version.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        public override Task<bool> DoesPackageExistAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(id));
+            }
+
+            if (version == null)
+            {
+                throw new ArgumentNullException(nameof(version));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return Task.FromResult(DoesVersionExist(id, version));
         }
 
         private T ProcessNuspecReader<T>(string id, NuGetVersion version, Func<NuspecReader, T> process)
@@ -341,17 +387,15 @@ namespace NuGet.Protocol
             return process(nuspecReader);
         }
 
-        private NuGetVersion GetVersion(string id, NuGetVersion version, SourceCacheContext cacheContext, ILogger logger)
+        private bool DoesVersionExist(string id, NuGetVersion version)
         {
-            foreach (var currentVersion in GetVersions(id, cacheContext, logger))
-            {
-                if (version == currentVersion)
-                {
-                    return currentVersion;
-                }
-            }
+            var nupkgMetadataPath = _resolver.GetNupkgMetadataPath(id, version);
+            var hashPath = _resolver.GetHashPath(id, version);
 
-            return null;
+            // for fallback folders as feed, new nupkg.metadata file should exists
+            // but for global packages folder, either of old hash file or new nupkg.metadata file is fine
+            return (_isFallbackFolder && File.Exists(nupkgMetadataPath)) ||
+                (!_isFallbackFolder && (File.Exists(hashPath) || File.Exists(nupkgMetadataPath)));
         }
 
         private List<NuGetVersion> GetVersions(string id, SourceCacheContext cacheContext, ILogger logger)
@@ -396,13 +440,7 @@ namespace NuGet.Protocol
                         continue;
                     }
 
-                    var nupkgMetadataPath = _resolver.GetNupkgMetadataPath(id, version);
-                    var hashPath = _resolver.GetHashPath(id, version);
-
-                    // for fallback folders as feed, new nupkg.metadata file should exists
-                    // but for global packages folder, either of old hash file or new nupkg.metadata file is fine
-                    if ((_isFallbackFolder && File.Exists(nupkgMetadataPath)) ||
-                        (!_isFallbackFolder && (File.Exists(hashPath) || File.Exists(nupkgMetadataPath))))
+                    if (DoesVersionExist(id, version))
                     {
                         // Writing the marker file is the last operation performed by NuGetPackageUtils.InstallFromStream. We'll use the
                         // presence of the file to denote the package was successfully installed.

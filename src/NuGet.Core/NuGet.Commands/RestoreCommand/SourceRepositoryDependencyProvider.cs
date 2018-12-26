@@ -209,6 +209,18 @@ namespace NuGet.Commands
             {
                 await EnsureResource();
 
+                // first check if the exact min version exist then simply return that
+                if (await _findPackagesByIdResource.DoesPackageExistAsync(
+                    libraryRange.Name, libraryRange.VersionRange.MinVersion, cacheContext, logger, cancellationToken))
+                {
+                    return new LibraryIdentity
+                    {
+                        Name = libraryRange.Name,
+                        Version = libraryRange.VersionRange.MinVersion,
+                        Type = LibraryType.Package
+                    };
+                }
+
                 // Discover all versions from the feed
                 var packageVersions = await GetAllVersionsAsync(libraryRange.Name, cacheContext, logger, cancellationToken);
 
