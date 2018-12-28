@@ -274,6 +274,7 @@ namespace NuGet.Commands
             // Commit the result
             log.LogInformation(Strings.Log_Committing);
             await result.CommitAsync(log, token);
+
             if (result.Success)
             {
                 log.LogMinimal(string.Format(
@@ -285,6 +286,7 @@ namespace NuGet.Commands
             else
             {
                 log.LogMinimal(string.Format(
+                    CultureInfo.CurrentCulture,
                     Strings.Log_RestoreFailed,
                     DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
                     summaryRequest.InputPath));
