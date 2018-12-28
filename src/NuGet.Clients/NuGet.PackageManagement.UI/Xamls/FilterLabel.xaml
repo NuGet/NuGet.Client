@@ -60,7 +60,7 @@
             x:Name="_textBlockCount"
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
-            Foreground="{DynamicResource {x:Static nuget:Brushes.ContentSelectedTextBrushKey}}"/>
+            Foreground="{DynamicResource {x:Static nuget:Brushes.TabPopupTextBrushKey}}"/>
         </Border>
       </StackPanel>
     </nuget:TabItemButton>

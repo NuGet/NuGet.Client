@@ -161,6 +161,8 @@ namespace NuGet.PackageManagement.UI
 
         public static object TabSelectedTextBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColorKey;
 
+        public static object TabPopupTextBrushKey { get; private set; } = SystemColors.HighlightBrushKey;
+
         public static void LoadVsBrushes()
         {
             FocusVisualStyleBrushKey = VsBrushes.ToolWindowTextKey; 
@@ -237,6 +239,7 @@ namespace NuGet.PackageManagement.UI
 
             TabSelectedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
             TabSelectedTextBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
+            TabPopupTextBrushKey = ContentSelectedTextBrushKey;
         }
     }
 }
