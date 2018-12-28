@@ -11,6 +11,12 @@ using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
 {
+    /// <summary>
+    /// Color Brushes for multiple elements of the NuGet Package Manger UI
+    ///
+    /// Initially, the properties are initialized with System Colors but, later, proper colors are assigned
+    /// <seealso cref="Brushes.LoadVsBrushes"/>
+    /// </summary>
     public static class Brushes
     {
         public static object ActiveBorderKey { get; private set; } = SystemColors.ActiveBorderBrushKey;
@@ -149,7 +155,11 @@ namespace NuGet.PackageManagement.UI
  
         public static object ButtonBorderFocusedStyleBrushKey { get; private set; } = SystemColors.HighlightTextBrushKey; 
  
-        public static object ButtonFocusedStyleBrushKey { get; private set; } = SystemColors.HighlightTextBrushKey; 
+        public static object ButtonFocusedStyleBrushKey { get; private set; } = SystemColors.HighlightTextBrushKey;
+
+        public static object TabSelectedBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColor;
+
+        public static object TabSelectedTextBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColorKey;
 
         public static void LoadVsBrushes()
         {
@@ -224,6 +234,9 @@ namespace NuGet.PackageManagement.UI
             ContentInactiveSelectedTextBrushKey = TreeViewColors.SelectedItemInactiveTextBrushKey;
             ContentSelectedBrushKey = TreeViewColors.SelectedItemActiveBrushKey;
             ContentSelectedTextBrushKey = TreeViewColors.SelectedItemActiveTextBrushKey;
+
+            TabSelectedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
+            TabSelectedTextBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
         }
     }
 }

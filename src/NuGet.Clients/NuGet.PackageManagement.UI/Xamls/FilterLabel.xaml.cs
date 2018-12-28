@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     _labelText.SetResourceReference(
                         TextBlock.ForegroundProperty,
-                        Brushes.ContentSelectedBrushKey);
+                        Brushes.TabSelectedTextBrushKey);
                     _underline.Visibility = Visibility.Visible;
 
                     if (ControlSelected != null)
@@ -114,7 +114,7 @@ namespace NuGet.PackageManagement.UI
         {
             _labelText.SetResourceReference(
                 TextBlock.ForegroundProperty,
-                Brushes.ContentSelectedBrushKey);
+                Brushes.TabSelectedTextBrushKey);
         }
 
         private void _labelText_MouseLeave(object sender, MouseEventArgs e)
