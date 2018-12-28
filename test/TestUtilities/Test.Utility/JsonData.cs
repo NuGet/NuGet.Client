@@ -4766,18 +4766,19 @@ namespace Test.Utility
 
         #endregion
 
-        #region AutoCompleteResourceV3Index
-        public static string AutocompleteResourceV3Index = @"{
-    ""@context"":
-        {""@vocab"": ""http://schema.nuget.org/schema#""},
-         ""totalHits"": 123989,
-         ""lastReopen"": ""2018-12-04T19:55:54.3810129Z"",
-         ""index"": ""v3-lucene2-v2v3-20171018"",
-         ""data"": [
-            ""NUnit"", ""Newtonsoft.Json"", ""EntityFramework"", ""MySql.Data"" ,""bootstrap"", ""jQuery"",
-            ""NuGet.Core"", ""HtmlAgilityPack"", ""Microsoft.AspNet.Mvc"", ""Dapper"", ""log4net"", ""NLog"",
-            ""Microsoft.Web.Xdt"", ""SlowCheetah.Xdt"", ""RestSharp"", ""Selenium.WebDriver"", ""iTextSharp"",
-            ""Microsoft.AspNet.WebApi"", ""SSH.NET"",""NPOI""
+        #region AutoCompleteEndpointNewtResult
+        public static string AutoCompleteEndpointNewtResult = @"{
+     ""@context"":
+        { ""@vocab"":""http://schema.nuget.org/schema#""},
+        ""totalHits"":89,
+        ""lastReopen"":""2018-12-28T19:11:38.4578687Z"",
+        ""index"":""v3-lucene2-v2v3-20171018"",
+        ""data"":[
+            ""Newtonsoft.Json"",""Rxns.NewtonsoftJson"",""Newtonsoft.Json.Bson"",""HybridDb.NewtonsoftJson"",""Newtonsoft.Msgpack"",
+            ""Newtouch.Contract"",""Fireasy.Newtonsoft"",""Newtonsoft.Json.FSharp"",""Fleece.NewtonsoftJson"",""Rock.Core.Newtonsoft"",
+            ""Sfa.Core.Newtonsoft.Json"",""NewtonsoftJsonExt"",""Cauldron.Newton"",""rethinkdb-net-newtonsoft"",
+            ""Newtonsoft.Json.Interface"",""Newtonsoft.Json.Schema"",""Newtonsoft.Json.Akshay"",""Newtonsoft.Dson"",
+            ""WampSharp.NewtonsoftJson"",""WampSharp.NewtonsoftMsgpack""
         ]
       }";
         #endregion

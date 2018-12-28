@@ -26,7 +26,7 @@ namespace NuGet.Protocol.Tests
             const string sourceName = "http://testsource.com/v3/index.json";
             responses.Add(sourceName, JsonData.IndexWithoutFlatContainer);
             responses.Add("https://api-v3search-0.nuget.org/autocomplete?q=newt&prerelease=true&semVerLevel=2.0.0",
-                JsonData.AutocompleteResourceV3Index);
+                JsonData.AutoCompleteEndpointNewtResult);
 
             var repo = StaticHttpHandler.CreateSource(sourceName, Repository.Provider.GetCoreV3(), responses);
             var resource = await repo.GetResourceAsync<AutoCompleteResource>();
@@ -35,8 +35,7 @@ namespace NuGet.Protocol.Tests
             var result = resource.IdStartsWith("newt", true, NullLogger.Instance, CancellationToken.None);
 
             // Assert
-            Assert.Equal(1, result.Result.Count());
-            Assert.Equal("Newtonsoft.Json", result.Result.First());
+            Assert.Equal(10, result.Result.Count());
         }
     }
 }
