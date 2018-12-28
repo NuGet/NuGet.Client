@@ -41,8 +41,8 @@
     <MicroBuildDirectory>$(SolutionPackagesFolder)MicroBuild.Core.0.2.0\build\</MicroBuildDirectory>
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
     <BlobPublishTargetsPath>$(SolutionPackagesFolder)Microsoft.DotNet.Build.Tasks.Feed.2.1.0-prerelease-02419-02\build\Microsoft.DotNet.Build.Tasks.Feed.targets</BlobPublishTargetsPath>
-    <VSServicesVersion>15.131.1</VSServicesVersion>
-    <VSComponentsVersion>15.8.525</VSComponentsVersion>
+    <VSServicesVersion>16.144.1-preview</VSServicesVersion>
+    <VSComponentsVersion>16.0.189-g83e7c53a57</VSComponentsVersion>
   </PropertyGroup>
 
   <!-- Defaults -->
