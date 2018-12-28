@@ -9,9 +9,6 @@ Cleans NuGet packages cache before build
 .PARAMETER Force
 Switch to force installation of required tools.
 
-.PARAMETER CI
-Indicates the build script is invoked from CI
-
 .PARAMETER Test
 Indicates the Tests need to be run. Downloads the Test cli when tests are needed to run.
 
@@ -29,9 +26,6 @@ Param (
     [switch]$CleanCache,
     [Alias('f')]
     [switch]$Force,
-    [switch]$CI,
-    [Alias('s15')]
-    [switch]$SkipVS15,
     [switch]$RunTest
 )
 
@@ -46,7 +40,7 @@ Invoke-BuildStep 'Configuring git repo' {
 } -ev +BuildErrors
 
 Invoke-BuildStep 'Installing NuGet.exe' {
-    Install-NuGet -Force:$Force -CI:$CI
+    Install-NuGet -Force:$Force
 } -ev +BuildErrors
 
 Invoke-BuildStep 'Installing .NET CLI' {
@@ -128,12 +122,14 @@ if (-not $ProgramFiles -or -not (Test-Path $ProgramFiles)) {
 $MSBuildDefaultRoot = Get-MSBuildRoot
 $MSBuildRelativePath = 'bin\msbuild.exe'
 
-Invoke-BuildStep 'Validating VS toolset installation' {
+$vsMajorVersion = Get-VSMajorVersion
+$validateToolsetMessage = "Validating VS $vsMajorVersion toolset installation" 
 
-    $vsMajorVersion = Get-VSMajorVersion
-    $vs15 = New-BuildToolset $vsMajorVersion
-    if ($vs15) {
-        $ConfigureObject.Toolsets.Add('vs15', $vs15)
+Invoke-BuildStep $validateToolsetMessage {
+
+    $vstoolset = New-BuildToolset $vsMajorVersion
+    if ($vstoolset) {
+        $ConfigureObject.Toolsets.Add('vstoolset', $vstoolset)
         $script:MSBuildExe = Get-MSBuildExe $vsMajorVersion
         $vsVersion = Get-VSVersion
 
@@ -142,13 +138,13 @@ Invoke-BuildStep 'Validating VS toolset installation' {
         $Targets = Join-Path $VSToolsPath 'VSSDK\Microsoft.VsSDK.targets'
         if (-not (Test-Path $Targets)) {
             Warning-Log "VSSDK is not found at default location '$VSToolsPath'. Attempting to override."
-            # Attempting to fix VS SDK path for VS15 willow install builds
+            # Attempting to fix VS SDK path for VS willow install builds
             # as MSBUILD failes to resolve it correctly
-            $VSToolsPath = Join-Path $vs15.VisualStudioInstallDir "..\..\MSBuild\Microsoft\VisualStudio\v${vsVersion}" -Resolve
+            $VSToolsPath = Join-Path $vstoolset.VisualStudioInstallDir "..\..\MSBuild\Microsoft\VisualStudio\v${vsVersion}" -Resolve
             $ConfigureObject.Add('EnvVars', @{ VSToolsPath = $VSToolsPath })
         }
     }
-} -skip:($SkipVS15) -ev +BuildErrors
+} -ev +BuildErrors
 
 if ($MSBuildExe) {
     $MSBuildExe = [System.IO.Path]::GetFullPath($MSBuildExe)
