@@ -32,6 +32,10 @@ namespace NuGet.PackageManagement.UI.Test
             set { _testCase.SourceInformation = value; }
         }
 
+        public Exception InitializationException => null;
+
+        public int Timeout => 0;
+
         public WpfTestCase(IXunitTestCase testCase)
         {
             if (testCase == null)

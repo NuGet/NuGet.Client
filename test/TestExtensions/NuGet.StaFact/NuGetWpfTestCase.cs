@@ -32,6 +32,10 @@ namespace NuGet.StaFact
             set { _testCase.SourceInformation = value; }
         }
 
+        public Exception InitializationException => null;
+
+        public int Timeout => 0;
+
         public NuGetWpfTestCase(IXunitTestCase testCase)
         {
             if (testCase == null)
