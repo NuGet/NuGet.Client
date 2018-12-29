@@ -31,8 +31,7 @@ namespace Test.Utility
 
         public string SolutionDirectory { get; }
 
-
-        private TestDirectory _testDirectory;
+        public TestDirectory TestDirectory;
 
         private readonly string _configContent = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
@@ -46,8 +45,8 @@ namespace Test.Utility
 
         public TestSolutionManager(bool foo)
         {
-            _testDirectory = TestDirectory.Create();
-            SolutionDirectory = _testDirectory;
+            TestDirectory = TestDirectory.Create();
+            SolutionDirectory = TestDirectory;
             NuGetConfigPath = Path.Combine(SolutionDirectory, "NuGet.Config");
             PackagesFolder = Path.Combine(SolutionDirectory, "packages");
             GlobalPackagesFolder = Path.Combine(SolutionDirectory, "globalpackages");
@@ -209,11 +208,11 @@ namespace Test.Utility
 
         public void Dispose()
         {
-            var testDirectory = _testDirectory;
+            var testDirectory = TestDirectory;
             if (testDirectory != null)
             {
                 testDirectory.Dispose();
-                _testDirectory = null;
+                TestDirectory = null;
             }
 
             // reset environment variable

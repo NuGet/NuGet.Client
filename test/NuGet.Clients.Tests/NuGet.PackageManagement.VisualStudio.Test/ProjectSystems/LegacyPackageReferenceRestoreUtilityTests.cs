@@ -1347,6 +1347,170 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackagesLockFile_ResolveExactVersion()
+        {
+            using (var packageSource = TestDirectory.Create())
+            {
+                // Arrange
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<Configuration.PackageSource>()
+                    {
+                        new Configuration.PackageSource(packageSource.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager(true))
+                {
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+
+                    //projectA
+                    var projectTargetFrameworkStr = "net45";
+                    var projectAPath = Path.Combine(testSolutionManager.TestDirectory, "projectA");
+                    Directory.CreateDirectory(projectAPath);
+                    var fullProjectAPath = Path.Combine(projectAPath, "project1.csproj");
+                    var projectANames = new ProjectNames(
+                        fullName: fullProjectAPath,
+                        uniqueName: Path.GetFileName(fullProjectAPath),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectAPath),
+                        customUniqueName: Path.GetFileName(fullProjectAPath));
+                    var vsProjectAdapterA = new TestVSProjectAdapter(
+                        fullProjectAPath,
+                        projectANames,
+                        projectTargetFrameworkStr);
+
+                    var projectAServices = new TestProjectSystemServices();
+                    projectAServices.SetupInstalledPackages(
+                        NuGetFramework.Parse(projectTargetFrameworkStr),
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "packageA",
+                                VersionRange.Parse("1.0.0"),
+                                LibraryDependencyTarget.Package)
+                        });
+
+                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                        vsProjectAdapterA,
+                        Guid.NewGuid().ToString(),
+                        projectAServices,
+                        _threadingService);
+
+                    //projectB
+                    var projectBPath = Path.Combine(testSolutionManager.TestDirectory, "projectB");
+                    Directory.CreateDirectory(projectBPath);
+                    var fullProjectBPath = Path.Combine(projectBPath, "project2.csproj");
+                    var projectBNames = new ProjectNames(
+                        fullName: fullProjectBPath,
+                        uniqueName: Path.GetFileName(fullProjectBPath),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectBPath),
+                        customUniqueName: Path.GetFileName(fullProjectBPath));
+                    var vsProjectAdapterB = new TestVSProjectAdapter(
+                        fullProjectBPath,
+                        projectBNames,
+                        projectTargetFrameworkStr);
+
+                    var projectBServices = new TestProjectSystemServices();
+                    projectBServices.SetupInstalledPackages(
+                        NuGetFramework.Parse(projectTargetFrameworkStr),
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "packageA",
+                                VersionRange.Parse("1.0.1"),
+                                LibraryDependencyTarget.Package)
+                        });
+
+                    var legacyPRProjectB = new LegacyPackageReferenceProject(
+                        vsProjectAdapterB,
+                        Guid.NewGuid().ToString(),
+                        projectBServices,
+                        _threadingService);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
+
+                    var testLogger = new TestLogger();
+                    var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+
+                    // create packages
+                    var packageContext = new SimpleTestPackageContext("packageA", "1.0.0");
+                    packageContext.AddFile("lib/net45/a.dll");
+                    var newPackageContext = new SimpleTestPackageContext("packageA", "1.0.1");
+                    newPackageContext.AddFile("lib/net45/a.dll");
+                    var packages = new List<SimpleTestPackageContext>() { packageContext, newPackageContext };
+                    SimpleTestPackageUtility.CreateOPCPackages(packages, packageSource);
+
+                    var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+
+                    var projectLockFilePath = Path.Combine(projectAPath, "packages.project1.lock.json");
+                    File.Create(projectLockFilePath).Close();
+
+                    var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                        testSolutionManager,
+                        dgSpec,
+                        restoreContext,
+                        new RestoreCommandProvidersCache(),
+                        (c) => { },
+                        sourceRepositoryProvider.GetRepositories(),
+                        Guid.Empty,
+                        false,
+                        true,
+                        testLogger,
+                        CancellationToken.None);
+
+                    foreach (var restoreSummary in restoreSummaries)
+                    {
+                        Assert.True(restoreSummary.Success);
+                        Assert.False(restoreSummary.NoOpRestore);
+                    }
+
+                    Assert.True(File.Exists(projectLockFilePath));
+
+                    var lockFilePath = Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project.assets.json");
+                    Assert.True(File.Exists(lockFilePath));
+
+                    var lockFile = new LockFileFormat().Read(lockFilePath);
+                    var resolvedVersion = lockFile.Targets.First().Libraries.First(library => library.Name.Equals("packageA", StringComparison.OrdinalIgnoreCase)).Version;
+                    Assert.Equal("1.0.0", resolvedVersion.ToNormalizedString());
+
+                    // delete existing restore output files
+                    File.Delete(Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project.assets.json"));
+                    File.Delete(Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project1.csproj.nuget.cache"));
+
+                    //clear packageA 1.0.0 from global packages folder
+                    var packageAPath = Path.Combine(testSolutionManager.GlobalPackagesFolder, "packagea", "1.0.0");
+                    Directory.Delete(packageAPath, true);
+
+                    // Act
+                    restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                        testSolutionManager,
+                        dgSpec,
+                        restoreContext,
+                        new RestoreCommandProvidersCache(),
+                        (c) => { },
+                        sourceRepositoryProvider.GetRepositories(),
+                        Guid.Empty,
+                        false,
+                        true,
+                        testLogger,
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(lockFilePath));
+
+                    lockFile = new LockFileFormat().Read(lockFilePath);
+                    resolvedVersion = lockFile.Targets.First().Libraries.First(library => library.Name.Equals("packageA", StringComparison.OrdinalIgnoreCase)).Version;
+                    Assert.Equal("1.0.0", resolvedVersion.ToNormalizedString());
+                }
+            }
+        }
+
         private ISettings PopulateSettingsWithSources(SourceRepositoryProvider sourceRepositoryProvider, TestDirectory settingsDirectory)
         {
             var settings = new Settings(settingsDirectory);
