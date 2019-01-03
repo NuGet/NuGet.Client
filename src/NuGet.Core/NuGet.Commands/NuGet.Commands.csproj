@@ -20,8 +20,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="..\..\..\submodules\FileSystem\src\**\AssemblyInfo.cs" />
-    <Compile Include="..\..\..\submodules\FileSystem\src\Microsoft.Extensions.FileSystemGlobbing\**\*.cs;..\..\..\submodules\FileSystem\src\Microsoft.AspNet.FileProviders.Abstractions\**\*.cs;..\..\..\submodules\FileSystem\src\Microsoft.AspNet.FileProviders.Sources\**\*.cs;..\..\..\submodules\Common\src\Microsoft.Extensions.Primitives\IChangeToken.cs" Exclude="..\..\..\submodules\FileSystem\src\**\AssemblyInfo.cs;bin\**;obj\**;**\*.xproj;packages\**" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="3.0.0-preview.18572.1"/>
+    <PackageReference Include="Microsoft.Extensions.Primitives" Version="3.0.0-preview.18572.1"/>
   </ItemGroup>
 
   <ItemGroup>
