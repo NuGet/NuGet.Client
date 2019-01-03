@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0">
   <ItemGroup>
+    <MergeInclude Include="$(OutputPath)Microsoft.Extensions.FileProviders.Abstractions.dll"/>
+    <MergeInclude Include="$(OutputPath)Microsoft.Extensions.FileSystemGlobbing.dll"/>
+    <MergeInclude Include="$(OutputPath)Microsoft.Extensions.Primitives.dll"/>
     <MergeInclude Include="$(OutputPath)Microsoft.Web.XmlTransform.dll"/>
     <MergeInclude Include="$(OutputPath)Newtonsoft.Json.dll"/>
     <MergeInclude Include="$(OutputPath)NuGet.Build.Tasks.dll"/>
@@ -21,6 +24,7 @@
 
     <MergeExclude Include="$(OutputPath)Microsoft.CSharp.dll"/>
     <MergeExclude Include="$(OutputPath)mscorlib.dll"/>
+    <MergeExclude Include="$(OutputPath)System.Buffers.dll"/>
     <MergeExclude Include="$(OutputPath)System.Collections.Concurrent.dll"/>
     <MergeExclude Include="$(OutputPath)System.Collections.dll"/>
     <MergeExclude Include="$(OutputPath)System.ComponentModel.Composition.dll"/>
@@ -28,10 +32,13 @@
     <MergeExclude Include="$(OutputPath)System.Globalization.dll"/>
     <MergeExclude Include="$(OutputPath)System.IdentityModel.dll"/>
     <MergeExclude Include="$(OutputPath)System.IO.Compression.dll"/>
+    <MergeExclude Include="$(OutputPath)System.Memory.dll"/>
     <MergeExclude Include="$(OutputPath)System.Net.Http.dll"/>
     <MergeExclude Include="$(OutputPath)System.Net.Http.WebRequest.dll"/>
+    <MergeExclude Include="$(OutputPath)System.Numerics.Vectors.dll"/>
     <MergeExclude Include="$(OutputPath)System.Runtime.dll"/>
     <MergeExclude Include="$(OutputPath)System.Runtime.Serialization.dll"/>
+    <MergeExclude Include="$(OutputPath)System.Runtime.CompilerServices.Unsafe.dll"/>
     <MergeExclude Include="$(OutputPath)System.Security.dll"/>
     <MergeExclude Include="$(OutputPath)System.ServiceModel.dll"/>
     <MergeExclude Include="$(OutputPath)System.Xml.dll"/>
