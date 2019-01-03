@@ -400,6 +400,11 @@ namespace NuGet.Client
             /// </summary>
             public PatternSet EmbedAssemblies { get; }
 
+            /// <summary>
+            /// Pattern used to identify MSBuild transitive targets and props files
+            /// </summary>
+            public PatternSet MSBuildTransitiveFiles { get; }
+
             internal ManagedCodePatterns(ManagedCodeConventions conventions)
             {
                 AnyTargettedFile = new PatternSet(
@@ -542,6 +547,19 @@ namespace NuGet.Client
                         {
                             new PatternDefinition("embed/{tfm}/{assembly}", table: DotnetAnyTable),
                         });
+
+                MSBuildTransitiveFiles = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+                        new PatternDefinition("buildTransitive/{tfm}/{msbuild?}", table: DotnetAnyTable),
+                        new PatternDefinition("buildTransitive/{msbuild?}", table: null, defaults: DefaultTfmAny)
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+                        new PatternDefinition("buildTransitive/{tfm}/{msbuild}", table: DotnetAnyTable),
+                        new PatternDefinition("buildTransitive/{msbuild}", table: null, defaults: DefaultTfmAny)
+                    });
             }
         }
 

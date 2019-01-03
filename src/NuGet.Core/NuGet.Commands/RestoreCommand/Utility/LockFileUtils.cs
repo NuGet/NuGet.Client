@@ -198,21 +198,8 @@ namespace NuGet.Commands
 
             lockFileLib.NativeLibraries.AddRange(nativeGroup);
 
-            // Build
-            var buildGroup = GetLockFileItems(
-                orderedCriteria,
-                contentItems,
-                targetGraph.Conventions.Patterns.MSBuildFiles);
-
-            lockFileLib.Build.AddRange(GetBuildItemsForPackageId(buildGroup, library.Name));
-
-            // Build multi targeting
-            var buildMultiTargetingGroup = GetLockFileItems(
-                orderedCriteria,
-                contentItems,
-                targetGraph.Conventions.Patterns.MSBuildMultiTargetingFiles);
-
-            lockFileLib.BuildMultiTargeting.AddRange(GetBuildItemsForPackageId(buildMultiTargetingGroup, library.Name));
+            // Add MSBuild files
+            AddMSBuildAssets(library, targetGraph, lockFileLib, orderedCriteria, contentItems);
 
             // Add content files
             AddContentFiles(targetGraph, lockFileLib, framework, contentItems, nuspec);
@@ -227,6 +214,44 @@ namespace NuGet.Commands
 
             // Apply filters from the <references> node in the nuspec
             ApplyReferenceFilter(lockFileLib, framework, nuspec);
+        }
+
+        private static void AddMSBuildAssets(
+            LockFileLibrary library,
+            RestoreTargetGraph targetGraph,
+            LockFileTargetLibrary lockFileLib,
+            IReadOnlyList<SelectionCriteria> orderedCriteria,
+            ContentItemCollection contentItems)
+        {
+            // Build Transitive
+            var btGroup = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
+                targetGraph.Conventions.Patterns.MSBuildTransitiveFiles);
+
+            var filteredBTGroup = GetBuildItemsForPackageId(btGroup, library.Name);
+            lockFileLib.Build.AddRange(filteredBTGroup);
+
+            // Build
+            var buildGroup = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
+                targetGraph.Conventions.Patterns.MSBuildFiles);
+
+            // filter any build asset already being added as part of build transitive
+            var filteredBuildGroup = GetBuildItemsForPackageId(buildGroup, library.Name).
+                Where(buildItem => !filteredBTGroup.Any(
+                    btItem => Path.GetFileName(btItem.Path).Equals(Path.GetFileName(buildItem.Path), StringComparison.OrdinalIgnoreCase)));
+
+            lockFileLib.Build.AddRange(filteredBuildGroup);
+
+            // Build multi targeting
+            var buildMultiTargetingGroup = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
+                targetGraph.Conventions.Patterns.MSBuildMultiTargetingFiles);
+
+            lockFileLib.BuildMultiTargeting.AddRange(GetBuildItemsForPackageId(buildMultiTargetingGroup, library.Name));
         }
 
         private static void AddToolsAssets(LockFileLibrary library,
@@ -790,7 +815,7 @@ namespace NuGet.Commands
                 object keyObj;
                 if (group.Properties.TryGetValue(primaryKey, out keyObj))
                 {
-                    string key = (string)keyObj;
+                    var key = (string)keyObj;
 
                     List<ContentItemGroup> index;
                     if (!primaryGroups.TryGetValue(key, out index))
@@ -956,10 +981,48 @@ namespace NuGet.Commands
                 lockFileLib.ContentFiles.Add(ContentFileUtils.CreateEmptyItem());
             }
 
-            if ((dependencyType & LibraryIncludeFlags.Build) == LibraryIncludeFlags.None)
+            if ((dependencyType & LibraryIncludeFlags.BuildTransitive) == LibraryIncludeFlags.None)
             {
+                // If BuildTransitive is excluded then all build assets are cleared.
                 ClearIfExists(lockFileLib.Build);
                 ClearIfExists(lockFileLib.BuildMultiTargeting);
+            }
+            else if ((dependencyType & LibraryIncludeFlags.Build) == LibraryIncludeFlags.None)
+            {
+                if (!lockFileLib.Build.Any(item => Path.GetPathRoot(item.Path).Equals("buildTransitive", StringComparison.OrdinalIgnoreCase)))
+                {
+                    // all build assets are from /build folder so just clear them all.
+                    ClearIfExists(lockFileLib.Build);
+                    ClearIfExists(lockFileLib.BuildMultiTargeting);
+                }
+                else
+                {
+                    // only clear /build assets, leaving /BuildTransitive behind
+                    var newBuildAssets = new List<LockFileItem>();
+
+                    for (var i = 0; i < lockFileLib.Build.Count; i++)
+                    {
+                        var currentBuildItem = lockFileLib.Build[i];
+
+                        if (!Path.GetPathRoot(currentBuildItem.Path).Equals("build", StringComparison.OrdinalIgnoreCase))
+                        {
+                            newBuildAssets.Add(currentBuildItem);
+                        }
+                        else
+                        {
+                            // if current asset is from build then also clear it for BuildMultiTargeting if exists.
+                            var multiBuildAsset = lockFileLib.BuildMultiTargeting.FirstOrDefault(
+                                item => Path.GetFileName(item.Path).Equals(Path.GetFileName(currentBuildItem.Path), StringComparison.OrdinalIgnoreCase));
+
+                            if (multiBuildAsset != null)
+                            {
+                                lockFileLib.BuildMultiTargeting.Remove(multiBuildAsset);
+                            }
+                        }
+                    }
+
+                    lockFileLib.Build = newBuildAssets;
+                }
             }
         }
     }
