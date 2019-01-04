@@ -55,7 +55,7 @@
           Visibility="Collapsed"
           HorizontalAlignment="Center"
           VerticalAlignment="Center"
-          Background="{DynamicResource {x:Static nuget:Brushes.TabSelectedBrushKey}}">
+          Background="{DynamicResource {x:Static nuget:Brushes.TabPopupBrushKey}}">
           <TextBlock
             x:Name="_textBlockCount"
             HorizontalAlignment="Right"

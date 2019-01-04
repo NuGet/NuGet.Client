@@ -12,9 +12,10 @@ using Microsoft.VisualStudio.Shell;
 namespace NuGet.PackageManagement.UI
 {
     /// <summary>
-    /// Color Brushes for multiple elements of the NuGet Package Manger UI
+    /// Color Brushes for multiple elements of the NuGet Package Manager UI
     ///
-    /// Initially, the properties are initialized with System Colors but, later, proper colors are assigned
+    /// Initially, the properties are initialized with SystemColors brushes but, later, proper colors are assigned in
+    /// another method.
     /// <seealso cref="Brushes.LoadVsBrushes"/>
     /// </summary>
     public static class Brushes
@@ -157,11 +158,17 @@ namespace NuGet.PackageManagement.UI
  
         public static object ButtonFocusedStyleBrushKey { get; private set; } = SystemColors.HighlightTextBrushKey;
 
+        public static object TabInactiveBrushKey { get; private set; } = SystemColors.InactiveCaptionBrushKey;
+
+        public static object TabInactiveTextBrushKey { get; private set; } = SystemColors.InactiveCaptionTextBrushKey;
+
         public static object TabSelectedBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColor;
 
         public static object TabSelectedTextBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColorKey;
 
-        public static object TabPopupTextBrushKey { get; private set; } = SystemColors.HighlightBrushKey;
+        public static object TabPopupBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColor;
+
+        public static object TabPopupTextBrushKey { get; private set; } = SystemColors.HighlightTextBrush;
 
         public static void LoadVsBrushes()
         {
@@ -229,9 +236,9 @@ namespace NuGet.PackageManagement.UI
             CheckBoxBorderPressedBrushKey = CommonControlsColors.CheckBoxBorderPressedBrushKey;
 
             BackgroundBrushKey = EnvironmentColors.ToolWindowBackgroundBrushKey;
+
             ContentMouseOverBrushKey = EnvironmentColors.ToolboxContentMouseOverBrushKey;
             ContentMouseOverTextBrushKey = EnvironmentColors.ToolboxContentMouseOverTextBrushKey;
-
             ContentInactiveSelectedBrushKey = TreeViewColors.SelectedItemInactiveBrushKey;
             ContentInactiveSelectedTextBrushKey = TreeViewColors.SelectedItemInactiveTextBrushKey;
             ContentSelectedBrushKey = TreeViewColors.SelectedItemActiveBrushKey;
@@ -239,7 +246,9 @@ namespace NuGet.PackageManagement.UI
 
             TabSelectedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
             TabSelectedTextBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
-            TabPopupTextBrushKey = ContentSelectedTextBrushKey;
+
+            TabPopupBrushKey = CommonControlsColors.ButtonPressedBrushKey;
+            TabPopupTextBrushKey = CommonControlsColors.ButtonPressedTextBrushKey;
         }
     }
 }
