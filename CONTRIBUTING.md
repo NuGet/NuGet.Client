@@ -1,6 +1,6 @@
 # Setup
 
-After you clone this repository run build.ps1, you might have to run build.ps1.
+After you clone this repository run configure.ps1 & build.ps1.
 
 Note that build.ps1 is the only process producing all nuget packages and artifacts, building from visual studio is good for development purposes, but is not enough at the moment.
 
