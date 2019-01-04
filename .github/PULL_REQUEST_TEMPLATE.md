@@ -1,18 +1,16 @@
 ## Bug
 
-Fixes: Link_to_issue
-- [ ] Regression
-Last working release:
-How are we preventing it in the future:
+Fixes: Link_to_issue  
+Regression: Yes/No  
+* Last working version:   
+* How are we preventing it in future:   
 
 ## Fix
 
-Details: Details_about_the_fix
+Details: Details_about_the_fix  
 
-## Testing
+## Testing/Validation
 
-- [ ] Tests Added
-Reason for not adding tests:
-- [ ] Automation
-- [ ] Manual validation
-- [ ] Vendor run
+Tests Added: Yes/No  
+Reason for not adding tests:  
+Validation:  
