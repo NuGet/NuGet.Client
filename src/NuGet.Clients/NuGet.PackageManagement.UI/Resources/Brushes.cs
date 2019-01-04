@@ -170,6 +170,8 @@ namespace NuGet.PackageManagement.UI
 
         public static object TabPopupTextBrushKey { get; private set; } = SystemColors.HighlightTextBrush;
 
+        public static object TabHoverBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
+
         public static void LoadVsBrushes()
         {
             FocusVisualStyleBrushKey = VsBrushes.ToolWindowTextKey; 
@@ -249,6 +251,8 @@ namespace NuGet.PackageManagement.UI
 
             TabPopupBrushKey = CommonControlsColors.ButtonPressedBrushKey;
             TabPopupTextBrushKey = CommonControlsColors.ButtonPressedTextBrushKey;
+
+            TabHoverBrushKey = CommonDocumentColors.InnerTabInactiveHoverTextBrushKey;
         }
     }
 }

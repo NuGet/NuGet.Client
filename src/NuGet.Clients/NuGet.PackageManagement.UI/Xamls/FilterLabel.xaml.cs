@@ -112,9 +112,18 @@ namespace NuGet.PackageManagement.UI
 
         private void _labelText_MouseEnter(object sender, MouseEventArgs e)
         {
-            _labelText.SetResourceReference(
-                TextBlock.ForegroundProperty,
-                Brushes.TabSelectedTextBrushKey);
+            if(_selected)
+            {
+                _labelText.SetResourceReference(
+                    TextBlock.ForegroundProperty,
+                    Brushes.TabSelectedTextBrushKey);
+            }
+            else // for simulating hover state
+            {
+                _labelText.SetResourceReference(
+                    TextBlock.ForegroundProperty,
+                    Brushes.TabHoverBrushKey);
+            }
         }
 
         private void _labelText_MouseLeave(object sender, MouseEventArgs e)
