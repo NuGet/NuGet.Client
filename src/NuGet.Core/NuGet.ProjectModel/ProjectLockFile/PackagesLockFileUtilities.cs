@@ -175,7 +175,7 @@ namespace NuGet.ProjectModel
             }
 
             foreach (var dependency in newDependencies.Where(
-                dep => (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package && !dep.AutoReferenced)))
+                dep => (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package && dep.SuppressParent != LibraryIncludeFlags.All)))
             {
                 var matchedP2PLibrary = projectDependency.Dependencies.FirstOrDefault(dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Id, dependency.Name));
 
