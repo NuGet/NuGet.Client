@@ -31,7 +31,7 @@ namespace Test.Utility
 
         public string SolutionDirectory { get; }
 
-        public TestDirectory TestDirectory;
+        public TestDirectory TestDirectory { get; private set; }
 
         private readonly string _configContent = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
