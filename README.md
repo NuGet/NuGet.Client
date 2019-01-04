@@ -5,9 +5,9 @@
 # NuGet Client Tools
 
 This repo contains the following clients:
-  * [NuGet CLI](https://docs.nuget.org/ndocs/tools/nuget.exe-cli-reference)
-  * [NuGet Package Manager for Visual Studio](https://docs.nuget.org/ndocs/tools/package-manager-ui)
-  * [PowerShell CmdLets](https://docs.nuget.org/ndocs/tools/powershell-reference)
+  * [NuGet CLI](https://docs.microsoft.com/nuget/tools/nuget-exe-cli-reference)
+  * [NuGet Package Manager for Visual Studio](https://docs.microsoft.com/nuget/tools/package-manager-ui)
+  * [PowerShell CmdLets](https://docs.microsoft.com/nuget/tools/powershell-reference)
 
 ## Open Source Code of Conduct
 
