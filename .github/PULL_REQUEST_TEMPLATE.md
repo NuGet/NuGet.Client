@@ -3,7 +3,7 @@
 Fixes: Link_to_issue
 - [ ] Regression
 Last working release:
-How are we preventing it in future:
+How are we preventing it in the future:
 
 ## Fix
 
