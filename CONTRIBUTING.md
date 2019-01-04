@@ -1,6 +1,6 @@
 # Setup
 
-After you clone this repository run build.ps1, you might have to run build.ps1 -CleanCache if the build doesn't work (because we sometimes update temporary packages in place).
+After you clone this repository run build.ps1, you might have to run build.ps1.
 
 Note that build.ps1 is the only process producing all nuget packages and artifacts, building from visual studio is good for development purposes, but is not enough at the moment.
 
@@ -12,20 +12,9 @@ Note that build.ps1 is the only process producing all nuget packages and artifac
 1. ilmerge nuget.exe
 1. Running all unit tests
 
-### Note that we have two solutions:
-
-1. NuGet.core - An asp.net 5 based projects, that are cross compiled for core clr and are intented to run on unix and mac.
-1. NuGet.Client - A csproj based solution that is producing nuget.exe and the nuget extension. This project is based on nuget packages produced by the nuget.core solution.
-
-Right now there is no way for a csproj to depend directly on an xproj (asp.net 5) project. Once that is available (and we are working on it), we will merge the two solutions.
-
 # Building in Visual Studio
 
-Install [Visual Studio 2015](https://www.visualstudio.com/) (preferrable also Update 1 or later) and [ASP.NET 5 RC](https://get.asp.net/) (or later).
-
-Open [`NuGet.Core.sln`](NuGet.Core.sln) (or [`NuGet.Client.sln`](NuGet.Client.sln)) in Visual Studio and wait until it restores all packages.
-
-Once packages are restored, you should be able to build the project via `Build -> Build Solution`.
+Follow the instructions in the README.
 
 # Contributing
 

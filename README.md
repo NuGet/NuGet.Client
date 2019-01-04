@@ -6,7 +6,7 @@
 
 This repo contains the following clients:
   * [NuGet CLI](https://docs.nuget.org/ndocs/tools/nuget.exe-cli-reference)
-  * [NuGet Package Manager for Visual Studio 2017](https://docs.nuget.org/ndocs/tools/package-manager-ui)
+  * [NuGet Package Manager for Visual Studio](https://docs.nuget.org/ndocs/tools/package-manager-ui)
   * [PowerShell CmdLets](https://docs.nuget.org/ndocs/tools/powershell-reference)
 
 ## Open Source Code of Conduct
@@ -19,12 +19,11 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 - [Visual Studio 2017](https://www.visualstudio.com)
   with following workloads:
     - .NET desktop development
-    - Desktop development with C++
     - Visual Studio extension development.
+    - .NET Core Cross Platform Development
 - [Windows 10 SDK](https://dev.windows.com/en-US/downloads/windows-10-sdk)
 - Git
 - Windows Powershell v3.0+
-- [.NET Core SDK 1.0.5](https://github.com/dotnet/core/blob/master/release-notes/download-archives/1.0.4-sdk-download.md)
 
 ### Steps to build NuGet client tools
 
@@ -51,11 +50,9 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
     `.\runTests.ps1`
 
 
-
 > In case you have build issues try cleaning the local repository using `git clean -xdf` and retry steps 3 and 4.
 
 #### Notable `build.ps1` switches
-- `-SkipVS15` - skips building binaries targeting Visual Studio "15" (released as Visual Studio 2017)
 - `-SkipUnitTest` - skips running unit tests.
 - `-Fast` - runs minimal incremental build. Skips end-to-end packaging step.
 
@@ -65,8 +62,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
   ```
 
 ### Build artifacts location
-- `$(NuGetClientRoot)\Artifacts\VS15` - this folder will contain the Package Manager extension (`NuGet.Tools.vsix`) and NuGet command-line client application (`nuget.exe`)
-- `$(NuGetClientRoot)\Artifacts\nupkgs` - this folder will contain all our projects packages
+- `$(NuGetClientRoot)\artifacts\VS15` - this folder will contain the Package Manager extension (`NuGet.Tools.vsix`) and NuGet command-line client application (`nuget.exe`)
+- `$(NuGetClientRoot)\artifacts\nupkgs` - this folder will contain all our projects packages
 
 ## Feedback
 
