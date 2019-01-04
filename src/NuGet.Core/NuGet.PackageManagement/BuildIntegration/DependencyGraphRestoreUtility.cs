@@ -218,7 +218,9 @@ namespace NuGet.PackageManagement
         {
             var dgSpec = new DependencyGraphSpec();
 
-            var uniqueProjectDependencies = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
+            var stringComparer = PathUtility.GetStringComparerBasedOnOS();
+
+            var uniqueProjectDependencies = new HashSet<string>(stringComparer);
 
             var projects = ((await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>()).ToList();
 
@@ -239,7 +241,7 @@ namespace NuGet.PackageManagement
                     }
 
                     var projFileName = Path.GetFileName(packageSpec.RestoreMetadata.ProjectPath);
-                    var dgFileName = string.Format(DependencyGraphSpec.DGSpecFileName, projFileName);
+                    var dgFileName = DependencyGraphSpec.GetDGSpecFileName(projFileName);
                     var persistedDGSpecPath = Path.Combine(packageSpec.RestoreMetadata.OutputPath, dgFileName);
 
                     if (File.Exists(persistedDGSpecPath))
@@ -248,9 +250,10 @@ namespace NuGet.PackageManagement
 
                         foreach (var dependentPackageSpec in persistedDGSpec.GetClosure(packageSpec.RestoreMetadata.ProjectUniqueName))
                         {
-                            if (!projects.Any(p => PathUtility.GetStringComparerBasedOnOS().Equals(p.MSBuildProjectPath, dependentPackageSpec.RestoreMetadata.ProjectPath)) &&
-                                uniqueProjectDependencies.Add(dependentPackageSpec.RestoreMetadata.ProjectUniqueName))
+                            if (!(uniqueProjectDependencies.Contains(dependentPackageSpec.RestoreMetadata.ProjectPath) ||
+                                projects.Any(p => stringComparer.Equals(p.MSBuildProjectPath, dependentPackageSpec.RestoreMetadata.ProjectPath))))
                             {
+                                uniqueProjectDependencies.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
                                 dgSpec.AddProject(dependentPackageSpec);
                             }
                         }

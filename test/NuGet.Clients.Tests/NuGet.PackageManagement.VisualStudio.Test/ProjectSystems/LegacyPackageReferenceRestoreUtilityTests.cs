@@ -1303,13 +1303,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         providersCache,
                         (c) => { },
                         sourceRepositoryProvider.GetRepositories(),
-                        Guid.Empty,
-                        false,
-                        true,
-                        testLogger,
-                        CancellationToken.None);
+                        parentId: Guid.Empty,
+                        forceRestore: false,
+                        isRestoreOriginalAction: true,
+                        log: testLogger,
+                        token: CancellationToken.None);
 
                     // Assert
+                    Assert.NotEmpty(restoreSummaries);
+
                     foreach (var restoreSummary in restoreSummaries)
                     {
                         Assert.True(restoreSummary.Success);
@@ -1328,13 +1330,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         providersCache,
                         (c) => { },
                         sourceRepositoryProvider.GetRepositories(),
-                        Guid.Empty,
-                        false,
-                        true,
-                        testLogger,
-                        CancellationToken.None);
+                        parentId: Guid.Empty,
+                        forceRestore: false,
+                        isRestoreOriginalAction: true,
+                        log: testLogger,
+                        token: CancellationToken.None);
 
                     // Assert
+                    Assert.NotEmpty(restoreSummaries);
+
                     foreach (var restoreSummary in restoreSummaries)
                     {
                         Assert.True(restoreSummary.NoOpRestore);

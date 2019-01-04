@@ -252,7 +252,7 @@ namespace NuGet.Commands
             {
                 var outputRoot = request.MSBuildProjectExtensionsPath ?? request.RestoreOutputPath;
                 var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-                var dgFileName = string.Format(DependencyGraphSpec.DGSpecFileName, projFileName);
+                var dgFileName = DependencyGraphSpec.GetDGSpecFileName(projFileName);
                 return Path.Combine(outputRoot, dgFileName);
             }
 

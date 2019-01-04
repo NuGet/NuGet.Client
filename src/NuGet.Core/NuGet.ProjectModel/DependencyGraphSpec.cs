@@ -14,12 +14,17 @@ namespace NuGet.ProjectModel
 {
     public class DependencyGraphSpec
     {
-        public static readonly string DGSpecFileName = "{0}.nuget.dgspec.json";
+        private const string DGSpecFileNameExtension = ".nuget.dgspec.json";
 
         private readonly SortedSet<string> _restore = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
         private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
 
         private const int _version = 1;
+
+        public static string GetDGSpecFileName(string projectName)
+        {
+            return Path.Combine(projectName, DGSpecFileNameExtension);
+        }
 
         public DependencyGraphSpec(JObject json)
         {
