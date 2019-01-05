@@ -444,8 +444,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         private bool DoesSolutionRequireAnInitialSaveAs()
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             // Check if user is doing File - New File without saving the solution.
             var value = GetVSSolutionProperty((int)(__VSPROPID.VSPROPID_IsSolutionSaveAsRequired));
             if ((bool)value)

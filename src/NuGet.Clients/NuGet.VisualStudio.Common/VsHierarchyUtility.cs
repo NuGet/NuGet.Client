@@ -286,8 +286,6 @@ namespace NuGet.VisualStudio
 
         private static IVsUIHierarchyWindow GetSolutionExplorerHierarchyWindow()
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             return VsShellUtilities.GetUIHierarchyWindow(
                 ServiceLocator.GetInstance<IServiceProvider>(),
                 new Guid(VsWindowKindSolutionExplorer));

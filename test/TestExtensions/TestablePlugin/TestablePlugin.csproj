@@ -4,7 +4,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
-    <!-- <RuntimeIdentifier>win7-x64</RuntimeIdentifier> This might break tests-->
+    <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+    <TargetLatestRuntimePatch>false</TargetLatestRuntimePatch>
     <OutputType>Exe</OutputType>
     <AssemblyName>Plugin.Testable</AssemblyName>
     <NoWarn>$(NoWarn);CS1701</NoWarn>
