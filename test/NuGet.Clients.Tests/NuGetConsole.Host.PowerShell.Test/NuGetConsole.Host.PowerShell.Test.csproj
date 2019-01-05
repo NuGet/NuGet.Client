@@ -6,7 +6,6 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <TestProject>true</TestProject>
     <UseParallelXunit>true</UseParallelXunit>
-    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
