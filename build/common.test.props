@@ -3,6 +3,7 @@
   <PropertyGroup>
     <IsNetCoreProject>true</IsNetCoreProject>
     <TestProject>true</TestProject>
+    <!-- <NoWarn>$(NoWarn);NU1605</NoWarn> -->
   </PropertyGroup>
   
   <!-- Load config -->
