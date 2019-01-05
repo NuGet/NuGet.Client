@@ -6,8 +6,6 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <NETCoreWPFProject>true</NETCoreWPFProject>
     <TestProject>true</TestProject>
-        <NoWarn>$(NoWarn);NU1605</NoWarn>
-
   </PropertyGroup>
 
   <ItemGroup>
