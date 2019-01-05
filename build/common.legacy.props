@@ -6,7 +6,7 @@
   <ItemGroup Condition="'$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'">
     <PackageReference Include="PdbGit" Version="3.0.41" PrivateAssets="all"/>
   </ItemGroup>
-  
+  <!-- are the ones with no warn, the ones with common.legacy.props-->
   <!-- Load config -->
   <Import Project="config.props" />
 

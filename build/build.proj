@@ -282,19 +282,10 @@
   -->
   <Target Name="RestoreTest">
     <Message Text="Restoring for Visual Studio $(VisualStudioVersion)" Importance="high" />
-    <!-- Convert list of projects to a property -->
-    <Message Text="Restore @(CoreFuncTestProjects)"/>
+    <!-- continue from here  msbuild /t:restoretest .\build\build.proj /p:RestoreRecursive="false" -->
+    <Message Text="Restoring for the following projects: @(VSUnitTestProjects)"/>
     <PropertyGroup>
-      <ProjectListValue> F:\NuGet.Client\test\NuGet.Core.FuncTests\Dotnet.Integration.Test\Dotnet.Integration.Test.csproj;F:\NuGet.Cli
-  ent\test\NuGet.Core.FuncTests\NuGet.Commands.FuncTest\NuGet.Commands.FuncTest.csproj;F:\NuGet.Client\test\NuGet.Core.
-  FuncTests\NuGet.Common.FuncTest\NuGet.Common.FuncTest.csproj;F:\NuGet.Client\test\NuGet.Core.FuncTests\NuGet.Core.Fun
-  cTest\NuGet.Core.FuncTest.csproj;F:\NuGet.Client\test\NuGet.Core.FuncTests\NuGet.Packaging.FuncTest\NuGet.Packaging.F
-  uncTest.csproj;F:\NuGet.Client\test\NuGet.Core.FuncTests\NuGet.Protocol.FuncTest\NuGet.Protocol.FuncTest.csproj;F:\Nu
-  Get.Client\test\NuGet.Core.FuncTests\NuGet.XPlat.FuncTest\NuGet.XPlat.FuncTest.csproj;F:\NuGet.Client\test\NuGet.Clie
-  nts.Tests\NuGet.CommandLine.Test\NuGet.CommandLine.Test.csproj;F:\NuGet.Client\test\NuGet.Core.Tests\NuGet.PackageMan
-  agement.Test\NuGet.PackageManagement.Test.csproj;F:\NuGet.Client\test\NuGet.Clients.FuncTests\NuGet.CommandLine.FuncT
-  est\NuGet.CommandLine.FuncTest.csproj;F:\NuGet.Client\test\NuGet.Clients.FuncTests\NuGet.MSSigning.Extensions.FuncTes
-  t\NuGet.MSSigning.Extensions.FuncTest.csproj</ProjectListValue>
+      <ProjectListValue>@(VSUnitTestProjects)</ProjectListValue>
     </PropertyGroup>
 
     <MSBuild

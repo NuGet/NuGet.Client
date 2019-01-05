@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-    <WarningsAsErrors>False</WarningsAsErrors>
+    <WarningsAsErrors>False</WarningsAsErrors> <!-- maybe we should addd NU1605 here, that does fix it.-->
     <NoWarn>$(NoWarn);NU1608;CS1701;xUnit2013;xUnit2000;xUnit2017;xUnit2006;xUnit2009;xUnit2013;xUnit2014;xUnit2003;xUnit2010;xUnit2015;xUnit2007;xUnit1013;xUnit1014;xUnit2002;xUnit2012;xUnit2004</NoWarn>
   </PropertyGroup>
   
