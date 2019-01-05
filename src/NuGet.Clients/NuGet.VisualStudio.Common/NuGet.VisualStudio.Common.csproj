@@ -8,7 +8,6 @@
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -42,7 +41,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" Version="$(VSComponentsVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.ImageCatalog" Version="15.8.28010" />
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.8.132" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="15.0.240" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="15.8.132" />
     <PackageReference Include="VSLangProj" Version="7.0.3300" />
   </ItemGroup>
   <ItemGroup>
