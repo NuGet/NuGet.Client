@@ -27,7 +27,7 @@
     <NewtonsoftJsonVersionCore>9.0.1</NewtonsoftJsonVersionCore>
     <XunitVersion>2.3.1</XunitVersion>
     <TestSDKVersion>15.5.0</TestSDKVersion>
-    <MoqVersion>4.7.145</MoqVersion>
+    <MoqVersion>4.10.1</MoqVersion>
     <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
     <MicrosoftBuildPackageVersion>15.1.1012</MicrosoftBuildPackageVersion>
   </PropertyGroup>
