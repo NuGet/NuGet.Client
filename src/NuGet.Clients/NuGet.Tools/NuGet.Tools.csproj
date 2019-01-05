@@ -23,7 +23,6 @@
     <FileUpgradeFlags />
     <UpgradeBackupLocation />
     <OldToolsVersion>14.0</OldToolsVersion>
-    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
