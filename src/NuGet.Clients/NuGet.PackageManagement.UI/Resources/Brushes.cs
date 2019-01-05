@@ -239,13 +239,15 @@ namespace NuGet.PackageManagement.UI
 
             BackgroundBrushKey = EnvironmentColors.ToolWindowBackgroundBrushKey;
 
-            ContentMouseOverBrushKey = EnvironmentColors.ToolboxContentMouseOverBrushKey;
-            ContentMouseOverTextBrushKey = EnvironmentColors.ToolboxContentMouseOverTextBrushKey;
-            ContentInactiveSelectedBrushKey = TreeViewColors.SelectedItemInactiveBrushKey;
-            ContentInactiveSelectedTextBrushKey = TreeViewColors.SelectedItemInactiveTextBrushKey;
-            ContentSelectedBrushKey = TreeViewColors.SelectedItemActiveBrushKey;
-            ContentSelectedTextBrushKey = TreeViewColors.SelectedItemActiveTextBrushKey;
+            // Brushes/Colors for InfiniteScrollList
+            ContentMouseOverBrushKey = ThemedDialogColors.ListItemMouseOverBrushKey;
+            ContentMouseOverTextBrushKey = ThemedDialogColors.ListItemMouseOverTextBrushKey;
+            ContentInactiveSelectedBrushKey = ThemedDialogColors.SelectedItemInactiveBrushKey;
+            ContentInactiveSelectedTextBrushKey = ThemedDialogColors.SelectedItemInactiveTextBrushKey;
+            ContentSelectedBrushKey = ThemedDialogColors.SelectedItemActiveBrushKey;
+            ContentSelectedTextBrushKey = ThemedDialogColors.SelectedItemActiveTextBrushKey;
 
+            // Brushes/Colors for FilterLabel (Top Tabs)
             TabSelectedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
             TabSelectedTextBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
 
