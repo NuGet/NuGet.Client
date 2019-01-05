@@ -5,6 +5,8 @@
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <TestProject>true</TestProject>
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
+
   </PropertyGroup>
 
   <ItemGroup>
