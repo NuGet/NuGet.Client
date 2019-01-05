@@ -23,6 +23,7 @@
     <PackProject>false</PackProject>
     <IncludeNuGetSharedFiles>true</IncludeNuGetSharedFiles>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

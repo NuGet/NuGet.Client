@@ -18,7 +18,7 @@
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS0618</NoWarn>
+    <NoWarn>$(NoWarn);CS0618;NU1605</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(VisualStudioVersion)' == '16.0'">

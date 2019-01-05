@@ -8,6 +8,7 @@
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

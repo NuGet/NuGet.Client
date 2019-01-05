@@ -10,6 +10,7 @@
     <TargetFrameworkProfile />
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <ProjectGuid>{5A79EEF3-51C0-4A14-8D37-50EF38AD835D}</ProjectGuid>
