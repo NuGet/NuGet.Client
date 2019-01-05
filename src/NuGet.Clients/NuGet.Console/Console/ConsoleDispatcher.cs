@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -195,7 +195,9 @@ namespace NuGetConsole.Implementation.Console
 
                                 host.Initialize(WpfConsole);
                             }
+#pragma warning disable VSTHRD110 // Observe result of async calls
                         ).ContinueWith(
+#pragma warning restore VSTHRD110 // Observe result of async calls
                             task =>
                                 {
                                     NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate

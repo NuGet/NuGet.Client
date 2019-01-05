@@ -177,7 +177,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static void QueueUnloadAndForget(AppDomain domain)
         {
+#pragma warning disable VSTHRD110 // Observe result of async calls
             Task.Run(() =>
+#pragma warning restore VSTHRD110 // Observe result of async calls
             {
                 try
                 {

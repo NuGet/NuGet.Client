@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -125,7 +125,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             foreach (var package in view)
             {
                 // Just start the task and don't wait for it to complete
+#pragma warning disable VSTHRD110 // Observe result of async calls
                 package.AsyncLazyVersions.GetValueAsync();
+#pragma warning restore VSTHRD110 // Observe result of async calls
             }
 
             if (view.Any())
@@ -163,7 +165,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     var package = GetPowerShellPackageFromRemoteSource(id);
 
                     // Just start the task and don't wait for it to complete
+#pragma warning disable VSTHRD110 // Observe result of async calls
                     package.AsyncLazyVersions.GetValueAsync();
+#pragma warning restore VSTHRD110 // Observe result of async calls
                     packages.Add(package);
                 }
 
@@ -179,7 +183,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         var package = GetPowerShellPackageFromRemoteSource(packageId);
 
                         // Just start the task and don't wait for it to complete
+#pragma warning disable VSTHRD110 // Observe result of async calls
                         package.AsyncLazyVersions.GetValueAsync();
+#pragma warning restore VSTHRD110 // Observe result of async calls
                         WriteObject(package);
                     }
                 }

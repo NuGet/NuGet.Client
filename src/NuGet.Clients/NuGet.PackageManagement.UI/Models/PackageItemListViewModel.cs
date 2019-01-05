@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -200,7 +200,9 @@ namespace NuGet.PackageManagement.UI
                 if (!_providersLoaderStarted && ProvidersLoader != null)
                 {
                     _providersLoaderStarted = true;
+#pragma warning disable VSTHRD110 // Observe result of async calls
                     Task.Run(async () =>
+#pragma warning restore VSTHRD110 // Observe result of async calls
                     {
                         var result = await ProvidersLoader.Value;
 
@@ -267,7 +269,9 @@ namespace NuGet.PackageManagement.UI
         {
             if (!_backgroundLoader.IsValueCreated)
             {
+#pragma warning disable VSTHRD110 // Observe result of async calls
                 Task.Run(async () =>
+#pragma warning restore VSTHRD110 // Observe result of async calls
                 {
                     var result = await _backgroundLoader.Value;
 

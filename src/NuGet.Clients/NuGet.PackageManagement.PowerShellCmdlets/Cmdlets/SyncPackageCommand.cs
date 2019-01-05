@@ -67,7 +67,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             else
             {
                 _allowPrerelease = IncludePrerelease.IsPresent || identity.Version.IsPrerelease;
+#pragma warning disable VSTHRD110 // Observe result of async calls
                 Task.Run(() => SyncPackages(_projects, identity));
+#pragma warning restore VSTHRD110 // Observe result of async calls
                 WaitAndLogPackageActions();
             }
             UnsubscribeFromProgressEvents();
