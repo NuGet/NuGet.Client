@@ -122,16 +122,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     // Update-Package without ID specified
                     if (!_idSpecified)
                     {
-#pragma warning disable VSTHRD110 // Observe result of async calls
                         Task.Run(UpdateOrReinstallAllPackagesAsync);
-#pragma warning restore VSTHRD110 // Observe result of async calls
                     }
                     // Update-Package with Id specified
                     else
                     {
-#pragma warning disable VSTHRD110 // Observe result of async calls
                         Task.Run(UpdateOrReinstallSinglePackageAsync);
-#pragma warning restore VSTHRD110 // Observe result of async calls
                     }
 
                     WaitAndLogPackageActions();

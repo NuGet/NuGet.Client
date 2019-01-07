@@ -72,16 +72,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         && !_readFromDirectPackagePath
                         && _nugetVersion == null)
                     {
-#pragma warning disable VSTHRD110 // Observe result of async calls
                         Task.Run(InstallPackageByIdAsync);
-#pragma warning restore VSTHRD110 // Observe result of async calls
                     }
                     else
                     {
                         var identities = GetPackageIdentities();
-#pragma warning disable VSTHRD110 // Observe result of async calls
                         Task.Run(() => InstallPackagesAsync(identities));
-#pragma warning restore VSTHRD110 // Observe result of async calls
                     }
                     WaitAndLogPackageActions();
                     UnsubscribeFromProgressEvents();

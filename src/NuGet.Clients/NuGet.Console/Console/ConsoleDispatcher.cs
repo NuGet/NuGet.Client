@@ -195,9 +195,7 @@ namespace NuGetConsole.Implementation.Console
 
                                 host.Initialize(WpfConsole);
                             }
-#pragma warning disable VSTHRD110 // Observe result of async calls
                         ).ContinueWith(
-#pragma warning restore VSTHRD110 // Observe result of async calls
                             task =>
                                 {
                                     NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate

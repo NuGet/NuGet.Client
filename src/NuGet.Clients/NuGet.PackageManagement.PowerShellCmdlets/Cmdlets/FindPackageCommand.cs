@@ -58,11 +58,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public SwitchParameter StartWith { get; set; }
 
         [Parameter]
-        [ValidateRange(0, Int32.MaxValue)]
+        [ValidateRange(0, int.MaxValue)]
         public virtual int First { get; set; }
 
         [Parameter]
-        [ValidateRange(0, Int32.MaxValue)]
+        [ValidateRange(0, int.MaxValue)]
         public int Skip { get; set; }
 
         protected void Preprocess()
@@ -125,9 +125,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             foreach (var package in view)
             {
                 // Just start the task and don't wait for it to complete
-#pragma warning disable VSTHRD110 // Observe result of async calls
                 package.AsyncLazyVersions.GetValueAsync();
-#pragma warning restore VSTHRD110 // Observe result of async calls
             }
 
             if (view.Any())
@@ -165,9 +163,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     var package = GetPowerShellPackageFromRemoteSource(id);
 
                     // Just start the task and don't wait for it to complete
-#pragma warning disable VSTHRD110 // Observe result of async calls
                     package.AsyncLazyVersions.GetValueAsync();
-#pragma warning restore VSTHRD110 // Observe result of async calls
                     packages.Add(package);
                 }
 
@@ -183,9 +179,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         var package = GetPowerShellPackageFromRemoteSource(packageId);
 
                         // Just start the task and don't wait for it to complete
-#pragma warning disable VSTHRD110 // Observe result of async calls
                         package.AsyncLazyVersions.GetValueAsync();
-#pragma warning restore VSTHRD110 // Observe result of async calls
                         WriteObject(package);
                     }
                 }
