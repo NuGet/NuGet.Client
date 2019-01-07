@@ -181,9 +181,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             HttpHandlerResourceV3.CredentialService = new Lazy<ICredentialService>(() =>
             {
-#pragma warning disable VSTHRD011 // Use AsyncLazy<T>
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-#pragma warning restore VSTHRD011 // Use AsyncLazy<T>
                 {
                     return await _credentialServiceProvider.GetCredentialServiceAsync();
                 });

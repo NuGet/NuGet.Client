@@ -29,9 +29,7 @@ namespace NuGetVSExtension
             // get all services we need for display and activation of the NuGet output pane
             _vsOutputWindow = new Lazy<IVsOutputWindow>(() =>
             {
-#pragma warning disable VSTHRD011 // Use AsyncLazy<T>
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-#pragma warning restore VSTHRD011 // Use AsyncLazy<T>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return (IVsOutputWindow)serviceProvider.GetService(typeof(SVsOutputWindow));
@@ -40,9 +38,7 @@ namespace NuGetVSExtension
 
             _vsUiShell = new Lazy<IVsUIShell>(() =>
             {
-#pragma warning disable VSTHRD011 // Use AsyncLazy<T>
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-#pragma warning restore VSTHRD011 // Use AsyncLazy<T>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return (IVsUIShell)serviceProvider.GetService(typeof(SVsUIShell));

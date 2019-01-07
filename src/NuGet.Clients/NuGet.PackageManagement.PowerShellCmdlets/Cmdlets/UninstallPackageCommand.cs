@@ -78,9 +78,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 await _lockService.ExecuteNuGetOperationAsync(() =>
                 {
                     SubscribeToProgressEvents();
-#pragma warning disable VSTHRD110 // Observe result of async calls
                     Task.Run(UninstallPackageAsync);
-#pragma warning restore VSTHRD110 // Observe result of async calls
                     WaitAndLogPackageActions();
                     UnsubscribeFromProgressEvents();
 

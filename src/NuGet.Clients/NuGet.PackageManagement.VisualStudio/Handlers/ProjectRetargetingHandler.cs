@@ -196,9 +196,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (retargetedProject is LegacyPackageReferenceProject)
             {
                 // trigger solution restore and don't wait for it to be complete and hold the UI thread
-#pragma warning disable VSTHRD110 // Observe result of async calls
                 System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
-#pragma warning restore VSTHRD110 // Observe result of async calls
             }
             return VSConstants.S_OK;
         }
@@ -302,9 +300,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (nuGetProject is LegacyPackageReferenceProject)
             {
                 // trigger solution restore and don't wait for it to be complete and hold the UI thread
-#pragma warning disable VSTHRD110 // Observe result of async calls
                 System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
-#pragma warning restore VSTHRD110 // Observe result of async calls
             }
 
             return VSConstants.S_OK;

@@ -200,9 +200,7 @@ namespace NuGet.PackageManagement.UI
                 if (!_providersLoaderStarted && ProvidersLoader != null)
                 {
                     _providersLoaderStarted = true;
-#pragma warning disable VSTHRD110 // Observe result of async calls
                     Task.Run(async () =>
-#pragma warning restore VSTHRD110 // Observe result of async calls
                     {
                         var result = await ProvidersLoader.Value;
 

@@ -33,9 +33,7 @@ namespace NuGet.SolutionRestoreManager
 
         public void OnSolutionRestoreCompleted(SolutionRestoredEventArgs args)
         {
-#pragma warning disable VSTHRD110 // Observe result of async calls
             Task.Run(() =>
-#pragma warning restore VSTHRD110 // Observe result of async calls
             {
                 try
                 {

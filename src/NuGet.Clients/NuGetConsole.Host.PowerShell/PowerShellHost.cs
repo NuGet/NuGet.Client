@@ -385,9 +385,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             // Solution opened event is raised on the UI thread
             // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
             // Also, it uses semaphores, do not call it from the UI thread
-#pragma warning disable VSTHRD110 // Observe result of async calls
             Task.Run(async () =>
-#pragma warning restore VSTHRD110 // Observe result of async calls
             {
                 UpdateWorkingDirectory();
 
