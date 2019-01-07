@@ -274,29 +274,6 @@
     </MSBuild>
   </Target>
 
-
-  <!--
-    ============================================================
-    Restore all projects for the current platform.
-    ============================================================
-  -->
-  <Target Name="RestoreTest">
-    <Message Text="Restoring for Visual Studio $(VisualStudioVersion)" Importance="high" />
-    <!-- continue from here  msbuild /t:restoretest .\build\build.proj /p:RestoreRecursive="false" -->
-    <Message Text="Restoring for the following projects: @(VSUnitTestProjects)"/>
-    <PropertyGroup>
-      <ProjectListValue>@(VSUnitTestProjects)</ProjectListValue>
-    </PropertyGroup>
-
-    <MSBuild
-      Projects="restorehelper.targets"
-      Targets="Restore"
-      Properties="RestoreGraphProjectInput=$(ProjectListValue);
-                  $(CommonMSBuildProperties);
-                  VisualStudioVersion=$(VisualStudioVersion)">
-    </MSBuild>
-  </Target>
-
   <!--
     ============================================================
     Restore for VS15
