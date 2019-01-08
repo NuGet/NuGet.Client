@@ -124,7 +124,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // create the session token
             var connection = new VssConnection(AccountManager.VsoEndpoint, aadcred);
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete See: https://github.com/NuGet/Home/issues/7676
             var delegatedClient = connection.GetClient<DelegatedAuthorizationHttpClient>();
 #pragma warning restore CS0618 // Type or member is obsolete
 
