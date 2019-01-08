@@ -264,7 +264,10 @@ namespace Test.Utility.Signing
             var rsaParams = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
 
             var rsa = RSA.Create(rsaParams);
-            return certResult.CopyWithPrivateKey(rsa);
+            using (var export = certResult.CopyWithPrivateKey(rsa))
+            {
+                return new X509Certificate2(export.Export(X509ContentType.Pkcs12));
+            }
         }
 
         /// <summary>
@@ -312,7 +315,10 @@ namespace Test.Utility.Signing
             var rsaParams = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
 
             var rsa = RSA.Create(rsaParams);
-            return certResult.CopyWithPrivateKey(rsa);
+            using (var export = certResult.CopyWithPrivateKey(rsa))
+            {
+                return new X509Certificate2(export.Export(X509ContentType.Pkcs12));
+            }
         }
 
         public static X509Certificate2 GenerateCertificate(
@@ -353,7 +359,10 @@ namespace Test.Utility.Signing
             var rsaParams = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
 
             var rsa = RSA.Create(rsaParams);
-            return certResult.CopyWithPrivateKey(rsa);
+            using (var export = certResult.CopyWithPrivateKey(rsa))
+            {
+                return new X509Certificate2(export.Export(X509ContentType.Pkcs12));
+            }
         }
 
         public static X509Certificate2 GenerateSelfIssuedCertificate(bool isCa)
@@ -401,7 +410,10 @@ namespace Test.Utility.Signing
             var rsaParams = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
 
             var rsa = RSA.Create(rsaParams);
-            return certResult.CopyWithPrivateKey(rsa);
+            using (var export = certResult.CopyWithPrivateKey(rsa))
+            {
+                return new X509Certificate2(export.Export(X509ContentType.Pkcs12));
+            }
         }
 
         private static X509SubjectKeyIdentifierExtension GetSubjectKeyIdentifier(X509Certificate2 issuer)
