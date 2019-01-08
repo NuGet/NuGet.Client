@@ -82,7 +82,11 @@ Microsoft.VisualStudio.Workspace.dll
 Microsoft.VisualStudio.Workspace.Extensions.dll
 Microsoft.VisualStudio.Workspace.Extensions.VS.dll
 Microsoft.VisualStudio.Workspace.VSIntegration.Contracts.dll
+System.Buffers.dll
 System.IdentityModel.Tokens.Jwt.dll
+System.Memory.dll
 System.Net.Http.Formatting.dll
+System.Numerics.Vectors.dll
+System.Runtime.CompilerServices.Unsafe.dll
 System.Web.Http.dll
 VSLangProj157.dll
