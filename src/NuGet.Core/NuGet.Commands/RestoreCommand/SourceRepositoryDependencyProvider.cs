@@ -209,16 +209,19 @@ namespace NuGet.Commands
             {
                 await EnsureResource();
 
-                // first check if the exact min version exist then simply return that
-                if (await _findPackagesByIdResource.DoesPackageExistAsync(
-                    libraryRange.Name, libraryRange.VersionRange.MinVersion, cacheContext, logger, cancellationToken))
+                if (libraryRange.VersionRange?.MinVersion != null)
                 {
-                    return new LibraryIdentity
+                    // first check if the exact min version exist then simply return that
+                    if (await _findPackagesByIdResource.DoesPackageExistAsync(
+                        libraryRange.Name, libraryRange.VersionRange.MinVersion, cacheContext, logger, cancellationToken))
                     {
-                        Name = libraryRange.Name,
-                        Version = libraryRange.VersionRange.MinVersion,
-                        Type = LibraryType.Package
-                    };
+                        return new LibraryIdentity
+                        {
+                            Name = libraryRange.Name,
+                            Version = libraryRange.VersionRange.MinVersion,
+                            Type = LibraryType.Package
+                        };
+                    }
                 }
 
                 // Discover all versions from the feed
