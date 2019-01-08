@@ -222,7 +222,7 @@ ForEach ($Branch in $BranchesToInsert) {
     $CreatedBranchName = "$Release-$Branch-$AttemptNum"
     
     CreateBranchForPullRequest -RepositoryName $RepositoryName -Headers $Headers -BranchName $Branch -BranchNameToCreate $CreatedBranchName
-    UpdateFileContent -RepositoryName $RepositoryName -Headers $Headers -FilePath $FilePath -FileContent $updatedXml-CreatedBranchName $CreatedBranchName
+    UpdateFileContent -RepositoryName $RepositoryName -Headers $Headers -FilePath $FilePath -FileContent $updatedXml -CreatedBranchName $CreatedBranchName
     $PullRequestUrl = CreatePullRequest -RepositoryName $RepositoryName -Headers $Headers -CreatedBranchName $CreatedBranchName -BaseBranch $Branch
     $AllPullRequestsUrls = $AllPullRequestsUrls + "$PullRequestUrl`n"
 }
