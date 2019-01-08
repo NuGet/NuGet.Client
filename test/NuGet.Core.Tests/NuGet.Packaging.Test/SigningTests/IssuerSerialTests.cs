@@ -38,7 +38,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("certificate", exception.ParamName);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Create_WithCertificate_InitializesFields()
         {
             using (var certificate = _fixture.GetDefaultCertificate())

@@ -39,7 +39,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("request", exception.ParamName);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Verify_WhenLoggerNull_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -52,7 +52,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Verify_WithCertificateWithUnsupportedSignatureAlgorithm_Throws()
         {
             using (var certificate = _fixture.GetRsaSsaPssCertificate())
@@ -66,7 +66,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Verify_WithCertificateWithLifetimeSigningEku_Throws()
         {
             using (var certificate = _fixture.GetLifetimeSigningCertificate())
@@ -80,7 +80,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Verify_WithNotYetValidCertificate_Throws()
         {
             using (var certificate = _fixture.GetNotYetValidCertificate())
@@ -94,7 +94,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Verify_WhenChainBuildingFails_Throws()
         {
             using (var certificate = _fixture.GetExpiredCertificate())
@@ -125,7 +125,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Verify_WithUntrustedSelfSignedCertificate_Succeeds()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -307,7 +307,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("request", exception.ParamName);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void CreateCmsSigner_WhenLoggerNull_Throws()
         {
             using (var request = new AuthorSignPackageRequest(new X509Certificate2(), Common.HashAlgorithmName.SHA256))
@@ -537,7 +537,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public async Task SignAsync_WithUntrustedSelfSignedCertificate_SucceedsAsync()
         {
             var package = new SimpleTestPackageContext();

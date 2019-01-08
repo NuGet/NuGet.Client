@@ -82,7 +82,7 @@ namespace NuGet.Packaging.Test
         }
 
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Constructor_WhenV3ServiceIndexUrlNull_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -99,7 +99,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Constructor_WhenV3ServiceIndexUrlNotAbsolute_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -117,7 +117,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Constructor_WhenV3ServiceIndexUrlNotHttps_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -135,7 +135,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows, Platform.Linux)]
+        [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]

@@ -41,7 +41,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void IsSignatureAlgorithmSupported_WhenUnsupported_ReturnsFalse()
         {
             using (var certificate = _fixture.GetRsaSsaPssCertificate())
@@ -136,7 +136,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void HasLifetimeSigningEku_WithLifetimeSignerEku_ReturnsTrue()
         {
             using (var certificate = _fixture.GetLifetimeSigningCertificate())
@@ -262,7 +262,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void IsSelfIssued_WithNonSelfSignedCertificate_ReturnsFalse()
         {
             using (var certificate = _fixture.GetNonSelfSignedCertificate())
@@ -271,7 +271,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void IsSelfIssued_WithSelfSignedCertificate_ReturnsTrue()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -280,7 +280,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void IsSelfIssued_WithSelfIssuedCertificate_ReturnsTrue()
         {
             using (var certificate = _fixture.GetSelfIssuedCertificate())
@@ -289,7 +289,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void IsSelfIssued_WithRootCertificate_ReturnsTrue()
         {
             using (var certificate = _fixture.GetRootCertificate())
@@ -313,7 +313,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void GetHashString_UnknownHashAlgorithm_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -323,7 +323,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void GetHashString_UnsupportedHashAlgorithm_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())

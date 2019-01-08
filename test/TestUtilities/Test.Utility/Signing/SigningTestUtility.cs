@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -213,7 +211,6 @@ namespace Test.Utility.Signing
             var issuerDN = chainCertificateRequest?.IssuerDN ?? subjectDN;
             certGen.SetIssuerDN(new X509Name(issuerDN));
 
-#if IS_DESKTOP
             if (chainCertificateRequest != null)
             {
                 if (chainCertificateRequest.Issuer != null)
@@ -222,7 +219,7 @@ namespace Test.Utility.Signing
                     var issuer = chainCertificateRequest?.Issuer;
                     var bcIssuer = DotNetUtilities.FromX509Certificate(issuer);
                     var authorityKeyIdentifier = new AuthorityKeyIdentifierStructure(bcIssuer);
-                    issuerPrivateKey = DotNetUtilities.GetKeyPair(issuer.PrivateKey).Private;
+                    issuerPrivateKey = DotNetUtilities.GetKeyPair(issuer.GetRSAPrivateKey()).Private;
                     certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier.Id, false, authorityKeyIdentifier);
                 }
 
@@ -243,7 +240,7 @@ namespace Test.Utility.Signing
                     keyUsage |= KeyUsage.CrlSign | KeyUsage.KeyCertSign;
                 }
             }
-#endif
+
             certGen.SetNotAfter(DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
             certGen.SetNotBefore(DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)));
             certGen.SetPublicKey(keyPair.Public);
@@ -262,13 +259,12 @@ namespace Test.Utility.Signing
 
             var signatureFactory = new Asn1SignatureFactory(signatureAlgorithm, issuerPrivateKey, random);
             var certificate = certGen.Generate(signatureFactory);
+
             var certResult = new X509Certificate2(certificate.GetEncoded());
+            var rsaParams = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
 
-#if IS_DESKTOP
-            certResult.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
-#endif
-
-            return certResult;
+            var rsa = RSA.Create(rsaParams);
+            return certResult.CopyWithPrivateKey(rsa);
         }
 
         /// <summary>
@@ -311,13 +307,12 @@ namespace Test.Utility.Signing
             var issuerPrivateKey = keyPair.Private;
             var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", issuerPrivateKey, random);
             var certificate = certGen.Generate(signatureFactory);
+
             var certResult = new X509Certificate2(certificate.GetEncoded());
+            var rsaParams = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
 
-#if IS_DESKTOP
-            certResult.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
-#endif
-
-            return certResult;
+            var rsa = RSA.Create(rsaParams);
+            return certResult.CopyWithPrivateKey(rsa);
         }
 
         public static X509Certificate2 GenerateCertificate(
@@ -353,13 +348,12 @@ namespace Test.Utility.Signing
 
             var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", issuerPrivateKey, random);
             var certificate = certGen.Generate(signatureFactory);
+
             var certResult = new X509Certificate2(certificate.GetEncoded());
+            var rsaParams = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
 
-#if IS_DESKTOP
-            certResult.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
-#endif
-
-            return certResult;
+            var rsa = RSA.Create(rsaParams);
+            return certResult.CopyWithPrivateKey(rsa);
         }
 
         public static X509Certificate2 GenerateSelfIssuedCertificate(bool isCa)
@@ -403,13 +397,11 @@ namespace Test.Utility.Signing
             var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", keyPair.Private);
             var bcCertificate = generator.Generate(signatureFactory);
 
-            var certificate = new X509Certificate2(bcCertificate.GetEncoded());
+            var certResult = new X509Certificate2(bcCertificate.GetEncoded());
+            var rsaParams = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
 
-#if IS_DESKTOP
-            certificate.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
-#endif
-
-            return certificate;
+            var rsa = RSA.Create(rsaParams);
+            return certResult.CopyWithPrivateKey(rsa);
         }
 
         private static X509SubjectKeyIdentifierExtension GetSubjectKeyIdentifier(X509Certificate2 issuer)
@@ -438,7 +430,6 @@ namespace Test.Utility.Signing
             return keyPairGenerator.GenerateKeyPair();
         }
 
-#if IS_DESKTOP
         /// <summary>
         /// Generates a SignedCMS object for some content.
         /// </summary>
@@ -461,7 +452,7 @@ namespace Test.Utility.Signing
 
             return cms;
         }
-
+#if IS_DESKTOP
         /// <summary>
         /// Generates a SignedCMS object for some content.
         /// </summary>
@@ -488,7 +479,6 @@ namespace Test.Utility.Signing
             }
         }
 #endif
-
         /// <summary>
         /// Returns the public cert without the private key.
         /// </summary>

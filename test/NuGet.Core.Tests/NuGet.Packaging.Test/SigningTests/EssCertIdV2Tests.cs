@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("certificate", exception.ParamName);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Create_WithUnknownHashAlgorithmName_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -55,7 +55,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Create_WithSha256_ReturnsEssCertIdV2()
         {
             var hashAlgorithmName = HashAlgorithmName.SHA256;
@@ -72,7 +72,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Create_WithSha384_ReturnsEssCertIdV2()
         {
             var hashAlgorithmName = HashAlgorithmName.SHA384;
@@ -89,7 +89,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Create_WithSha512_ReturnsEssCertIdV2()
         {
             var hashAlgorithmName = HashAlgorithmName.SHA512;
