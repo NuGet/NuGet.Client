@@ -471,10 +471,6 @@
       <Project>{BD6BBC90-60BE-4E7D-8458-91E9CDA66ABE}</Project>
       <Name>NuGet.Packaging</Name>
     </ProjectReference>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Packaging.Core\NuGet.Packaging.Core.csproj">
-      <Project>{D65583E4-8084-466A-BA4B-55A797EA047B}</Project>
-      <Name>NuGet.Packaging.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ProjectModel\NuGet.ProjectModel.csproj">
       <Project>{F013E43F-B6D5-4F59-ACF0-EECEC2C794F5}</Project>
       <Name>NuGet.ProjectModel</Name>
@@ -528,7 +524,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <Import Project="$(BuildCommonDirectory)fixinterop.targets" />
+  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

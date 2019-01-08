@@ -23,7 +23,6 @@ NuGet.Indexing.dll
 NuGet.LibraryModel.dll
 NuGet.PackageManagement.dll
 NuGet.PackageManagement.UI.dll
-NuGet.Packaging.Core.dll
 NuGet.Packaging.dll
 NuGet.ProjectModel.dll
 NuGet.Protocol.dll

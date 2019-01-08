@@ -25,6 +25,6 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
-  <Import Project="$(BuildCommonDirectory)fixinterop.targets"/>
+  <Import Project="$(BuildCommonDirectory)embedinterop.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
