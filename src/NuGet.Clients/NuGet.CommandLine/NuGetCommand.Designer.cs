@@ -396,7 +396,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14, 15.1, 15.3, 15.4, 15.5, 15.6, 15.7, 15.8, 15.9, 16. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild..
+        ///   Looks up a localized string similar to Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14, 15.1, 15.3, 15.4, 15.5, 15.6, 15.7, 15.8, 15.9, 16.0. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild..
         /// </summary>
         internal static string CommandMSBuildVersion {
             get {
