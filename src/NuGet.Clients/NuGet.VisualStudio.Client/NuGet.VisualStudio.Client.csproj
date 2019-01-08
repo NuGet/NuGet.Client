@@ -322,6 +322,9 @@
   <Target Name="RemoveUnsolicitedVsixAssemblies" AfterTargets="GetVsixSourceItems" Condition="'$(IncludeCopyLocalReferencesInVSIXContainer)'=='true'" DependsOnTargets="ReadVsixIncludeListFromFile;ReadVsixIgnoreListFromFile">
     <Message Text="Filtering VSIX package files..." Importance="high" />
     <ItemGroup>
+      <AllVsixSymbols Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.pdb' ">
+        <SourceFile>%(VSIXSourceItem.Identity)</SourceFile>
+      </AllVsixSymbols>
       <AllVsixAssemblies Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.dll' ">
         <SourceFile>%(VSIXSourceItem.Identity)</SourceFile>
       </AllVsixAssemblies>
@@ -332,6 +335,7 @@
       <NotListedDependencies Include="@(SuppressPackaging)" Exclude="@(IgnoreVsixFilesList)" />
       <MissingIgnoredAssemblies Include="@(IgnoreVsixFilesList)" Exclude="@(AllVsixAssemblies)" />
       <VSIXSourceItem Remove="@(SuppressPackaging->'%(SourceFile)')" />
+      <VSIXSourceItem Remove="@(AllVsixSymbols->'%(SourceFile)')" />
     </ItemGroup>
     <Message Text="Suppressed file '%(SuppressPackaging.SourceFile)'" Condition=" '@(SuppressPackaging)' != '' " />
     <Message Text="Included file '%(VSIXSourceItem.Identity)'" Condition=" '@(VSIXSourceItem)' != '' " />
