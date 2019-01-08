@@ -5254,7 +5254,7 @@ nuget update -Self</value>
     <value>A list of package sources to use as fallbacks for this command.</value>
   </data>
   <data name="CommandMSBuildVersion" xml:space="preserve">
-    <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
+    <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14, 15.1, 15.3, 15.4, 15.5, 15.6, 15.7, 15.8, 15.9, 16. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
   </data>
   <data name="AddCommandDescription" xml:space="preserve">
     <value>Adds the given package to a hierarchical source. http sources are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#add-command.</value>
