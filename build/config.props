@@ -3,9 +3,10 @@
   <!-- Version -->
   <PropertyGroup>
     <IsEscrowMode>false</IsEscrowMode>
+    <!-- when changing any of the NuGetVersion props below, also update ProductVersion in src\NuGet.Clients\NuGet.Tools\NuGetPackage.cs -->
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">5</MajorNuGetVersion>
     <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">0</MinorNuGetVersion>
-    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
+    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">1</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     <VsTargetBranch>lab/d16.$(MinorNuGetVersion)stg</VsTargetBranch>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
