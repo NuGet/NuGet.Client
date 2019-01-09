@@ -989,7 +989,7 @@ namespace NuGet.Commands
             }
             else if ((dependencyType & LibraryIncludeFlags.Build) == LibraryIncludeFlags.None)
             {
-                if (!lockFileLib.Build.Any(item => Path.GetPathRoot(item.Path).Equals("buildTransitive", StringComparison.OrdinalIgnoreCase)))
+                if (!lockFileLib.Build.Any(item => item.Path.StartsWith("buildTransitive/", StringComparison.OrdinalIgnoreCase)))
                 {
                     // all build assets are from /build folder so just clear them all.
                     ClearIfExists(lockFileLib.Build);
@@ -1004,7 +1004,7 @@ namespace NuGet.Commands
                     {
                         var currentBuildItem = lockFileLib.Build[i];
 
-                        if (!Path.GetPathRoot(currentBuildItem.Path).Equals("build", StringComparison.OrdinalIgnoreCase))
+                        if (!currentBuildItem.Path.StartsWith("build/", StringComparison.OrdinalIgnoreCase))
                         {
                             newBuildAssets.Add(currentBuildItem);
                         }

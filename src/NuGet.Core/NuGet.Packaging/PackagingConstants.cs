@@ -19,6 +19,7 @@ namespace NuGet.Packaging
             public static readonly string Content = "content";
             public static readonly string Build = "build";
             public static readonly string BuildCrossTargeting = "buildCrossTargeting";
+            public static readonly string BuildTransitive = "buildTransitive";
             public static readonly string Tools = "tools";
             public static readonly string ContentFiles = "contentFiles";
             public static readonly string Lib = "lib";
@@ -33,6 +34,7 @@ namespace NuGet.Packaging
                 Content,
                 Build,
                 BuildCrossTargeting,
+                BuildTransitive,
                 Tools,
                 ContentFiles,
                 Lib,
