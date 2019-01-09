@@ -766,8 +766,23 @@ namespace NuGet.CommandLine
         {
             // Get the target framework of the project
 
-            var nugetFramework = TargetFramework != null ? NuGetFramework.Parse(TargetFramework.FullName) : null;
-           
+            NuGetFramework nugetFramework;
+            if (builder.TargetFrameworks.Any())
+            {
+                if (builder.TargetFrameworks.Count > 1)
+                {
+                    var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString("Error_MultipleTargetFrameworks"));
+                    throw new PackagingException(NuGetLogCode.NU5015, message);
+                }
+                nugetFramework = builder.TargetFrameworks.First();
+            }
+            else
+            {
+                nugetFramework = TargetFramework != null ? NuGetFramework.Parse(TargetFramework.FullName) : null;
+            }
+
             var projectOutputDirectory = Path.GetDirectoryName(TargetPath);
             string targetFileName;
 
