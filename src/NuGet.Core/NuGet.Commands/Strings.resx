@@ -523,14 +523,14 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Log_ToolWritingCacheFile" xml:space="preserve">
     <value>Writing tool cache file to disk. Path: {0}</value>
   </data>
-  <data name="Log_ToolWritingLockFile" xml:space="preserve">
-    <value>Writing tool lock file to disk. Path: {0}</value>
+  <data name="Log_ToolWritingAssetsFile" xml:space="preserve">
+    <value>Writing tool assets file to disk. Path: {0}</value>
   </data>
   <data name="Log_WritingCacheFile" xml:space="preserve">
     <value>Writing cache file to disk. Path: {0}</value>
   </data>
-  <data name="Log_WritingLockFile" xml:space="preserve">
-    <value>Writing lock file to disk. Path: {0}</value>
+  <data name="Log_WritingAssetsFile" xml:space="preserve">
+    <value>Writing assets file to disk. Path: {0}</value>
   </data>
   <data name="Log_SkippingCacheFile" xml:space="preserve">
     <value>No-Op restore. The cache will not be updated. Path: {0}</value>
