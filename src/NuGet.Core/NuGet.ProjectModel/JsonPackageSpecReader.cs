@@ -25,7 +25,6 @@ namespace NuGet.ProjectModel
         public static readonly string RestoreOptions = "restore";
         public static readonly string RestoreSettings = "restoreSettings";
         public static readonly string HideWarningsAndErrors = "hideWarningsAndErrors";
-        public static readonly string PackOptions = "packOptions";
         public static readonly string PackageType = "packageType";
         public static readonly string Files = "files";
 
@@ -98,15 +97,6 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            var packInclude = rawPackageSpec["packInclude"] as JObject;
-            if (packInclude != null)
-            {
-                foreach (var include in packInclude)
-                {
-                    packageSpec.PackInclude.Add(new KeyValuePair<string, string>(include.Key, include.Value.ToString()));
-                }
-            }
-
             packageSpec.Title = rawPackageSpec.GetValue<string>("title");
             packageSpec.Description = rawPackageSpec.GetValue<string>("description");
             packageSpec.Authors = authors == null ? new string[] { } : authors.ValueAsArray<string>();
@@ -158,7 +148,7 @@ namespace NuGet.ProjectModel
                 "dependencies",
                 isGacOrFrameworkReference: false);
 
-            packageSpec.PackOptions = GetPackOptions(packageSpec, rawPackageSpec);
+            GetPackageMetadata(packageSpec, rawPackageSpec);
 
             packageSpec.RestoreSettings = GetRestoreSettings(packageSpec, rawPackageSpec);
 
@@ -342,103 +332,19 @@ namespace NuGet.ProjectModel
             return msbuildMetadata;
         }
 
-        private static PackOptions GetPackOptions(PackageSpec packageSpec, JObject rawPackageSpec)
+        private static void GetPackageMetadata(PackageSpec packageSpec, JObject rawPackageSpec)
         {
-            var rawPackOptions = rawPackageSpec.Value<JToken>(PackOptions) as JObject;
-            if (rawPackOptions == null)
-            {
-                packageSpec.Owners = new string[] { };
-                packageSpec.Tags = new string[] { };
-                return new PackOptions
-                {
-                    PackageType = new PackageType[0]
-                };
-            }
-            var owners = rawPackOptions["owners"];
-            var tags = rawPackOptions["tags"];
+            var owners = rawPackageSpec["owners"];
+            var tags = rawPackageSpec["tags"];
             packageSpec.Owners = owners == null ? Array.Empty<string>() : owners.ValueAsArray<string>();
             packageSpec.Tags = tags == null ? Array.Empty<string>() : tags.ValueAsArray<string>();
-            packageSpec.ProjectUrl = rawPackOptions.GetValue<string>("projectUrl");
-            packageSpec.IconUrl = rawPackOptions.GetValue<string>("iconUrl");
-            packageSpec.Summary = rawPackOptions.GetValue<string>("summary");
-            packageSpec.ReleaseNotes = rawPackOptions.GetValue<string>("releaseNotes");
-            packageSpec.LicenseUrl = rawPackOptions.GetValue<string>("licenseUrl");
+            packageSpec.ProjectUrl = rawPackageSpec.GetValue<string>("projectUrl");
+            packageSpec.IconUrl = rawPackageSpec.GetValue<string>("iconUrl");
+            packageSpec.Summary = rawPackageSpec.GetValue<string>("summary");
+            packageSpec.ReleaseNotes = rawPackageSpec.GetValue<string>("releaseNotes");
+            packageSpec.LicenseUrl = rawPackageSpec.GetValue<string>("licenseUrl");
 
-            packageSpec.RequireLicenseAcceptance = GetBoolOrFalse(rawPackOptions, "requireLicenseAcceptance", packageSpec.FilePath);
-
-            var rawPackageType = rawPackOptions[PackageType];
-            if (rawPackageType != null &&
-                rawPackageType.Type != JTokenType.String &&
-                (rawPackageType.Type != JTokenType.Array || // The array must be all strings.
-                 rawPackageType.Type == JTokenType.Array && rawPackageType.Any(t => t.Type != JTokenType.String)) &&
-                rawPackageType.Type != JTokenType.Null)
-            {
-                throw FileFormatException.Create(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.InvalidPackageType,
-                        PackageSpec.PackageSpecFileName),
-                    rawPackageType,
-                    packageSpec.FilePath);
-            }
-
-            IEnumerable<string> packageTypeNames;
-            if (!TryGetStringEnumerableFromJArray(rawPackageType, out packageTypeNames))
-            {
-                packageTypeNames = Enumerable.Empty<string>();
-            }
-
-            Dictionary<string, IncludeExcludeFiles> mappings = null;
-            IncludeExcludeFiles files = null;
-            var rawFiles = rawPackOptions[Files] as JObject;
-            if (rawFiles != null)
-            {
-                files = new IncludeExcludeFiles();
-                if (!files.HandleIncludeExcludeFiles(rawFiles))
-                {
-                    files = null;
-                }
-
-                var rawMappings = rawFiles["mappings"] as JObject;
-
-                if (rawMappings != null)
-                {
-                    mappings = new Dictionary<string, IncludeExcludeFiles>();
-                    foreach (var pair in rawMappings)
-                    {
-                        var key = pair.Key;
-                        var value = pair.Value;
-                        if (value.Type == JTokenType.String ||
-                            value.Type == JTokenType.Array)
-                        {
-                            IEnumerable<string> includeFiles;
-                            TryGetStringEnumerableFromJArray(value, out includeFiles);
-                            var includeExcludeFiles = new IncludeExcludeFiles()
-                            {
-                                Include = includeFiles?.ToList()
-                            };
-                            mappings.Add(key, includeExcludeFiles);
-                        }
-                        else if (value.Type == JTokenType.Object)
-                        {
-                            var includeExcludeFiles = new IncludeExcludeFiles();
-                            if (includeExcludeFiles.HandleIncludeExcludeFiles(value as JObject))
-                            {
-                                mappings.Add(key, includeExcludeFiles);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return new PackOptions
-            {
-                PackageType = packageTypeNames
-                    .Select(name => new PackageType(name, Packaging.Core.PackageType.EmptyVersion))
-                    .ToList(),
-                IncludeExcludeFiles = files,
-                Mappings = mappings
-            };
+            packageSpec.RequireLicenseAcceptance = GetBoolOrFalse(rawPackageSpec, "requireLicenseAcceptance", packageSpec.FilePath);
         }
 
         private static void PopulateDependencies(

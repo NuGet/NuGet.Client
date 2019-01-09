@@ -85,9 +85,6 @@ namespace NuGet.ProjectModel
 
         public IDictionary<string, IEnumerable<string>> Scripts { get; private set; } = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
 
-        public IDictionary<string, string> PackInclude { get; private set; } = new Dictionary<string, string>();
-
-        public PackOptions PackOptions { get; set; } = new PackOptions();
 
         public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; } = new List<TargetFrameworkInformation>();
 
@@ -131,8 +128,6 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(ContentFiles);
             hashCode.AddSequence(Dependencies);
             hashCode.AddDictionary(Scripts);
-            hashCode.AddDictionary(PackInclude);
-            hashCode.AddObject(PackOptions);
             hashCode.AddSequence(TargetFrameworks);
             hashCode.AddObject(RuntimeGraph);
             hashCode.AddObject(RestoreMetadata);
@@ -179,8 +174,6 @@ namespace NuGet.ProjectModel
                    EqualityUtility.SequenceEqualWithNullCheck(ContentFiles, other.ContentFiles) &&
                    EqualityUtility.SequenceEqualWithNullCheck(Dependencies, other.Dependencies) &&
                    EqualityUtility.DictionaryOfSequenceEquals(Scripts, other.Scripts) &&
-                   EqualityUtility.DictionaryEquals(PackInclude, other.PackInclude, (s, o) => StringComparer.Ordinal.Equals(s, o)) &&
-                   EqualityUtility.EqualsWithNullCheck(PackOptions, other.PackOptions) &&
                    EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
                    EqualityUtility.EqualsWithNullCheck(RuntimeGraph, other.RuntimeGraph) &&
                    EqualityUtility.EqualsWithNullCheck(RestoreMetadata, other.RestoreMetadata);
@@ -214,8 +207,6 @@ namespace NuGet.ProjectModel
             spec.ContentFiles = ContentFiles != null ? new List<string>(ContentFiles) : null;
             spec.Dependencies = Dependencies?.Select(item => item.Clone()).ToList();
             spec.Scripts = CloneScripts(Scripts);
-            spec.PackInclude = PackInclude != null ? new Dictionary<string, string>(PackInclude) : null;
-            spec.PackOptions = PackOptions?.Clone();
             spec.TargetFrameworks = TargetFrameworks?.Select(item => item.Clone()).ToList();
             spec.RuntimeGraph = RuntimeGraph?.Clone();
             spec.RestoreSettings = RestoreSettings?.Clone();

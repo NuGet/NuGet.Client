@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -309,32 +308,6 @@ namespace NuGet.Commands
                 .Where(filePath => fileNames.Contains(Path.GetFileName(filePath)));
         }
 
-        private PackageBuilder CreatePackageBuilderFromProjectJson(string path, Func<string, string> propertyProvider)
-        {
-            // Set the version property if the flag is set
-            if (!String.IsNullOrEmpty(_packArgs.Version))
-            {
-                _packArgs.Properties["version"] = _packArgs.Version;
-            }
-
-            PackageBuilder builder = new PackageBuilder();
-
-            NuGetVersion version = null;
-            if (_packArgs.Version != null)
-            {
-                version = new NuGetVersion(_packArgs.Version);
-            }
-
-            var basePath = string.IsNullOrEmpty(_packArgs.BasePath) ? _packArgs.CurrentDirectory : _packArgs.BasePath;
-
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
-            {
-                LoadProjectJsonFile(builder, path, basePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, version, _packArgs.Suffix, propertyProvider);
-            }
-
-            return builder;
-        }
-
         public static bool ProcessProjectJsonFile(PackageBuilder builder, string basePath, string id, NuGetVersion version, string suffix, Func<string, string> propertyProvider)
         {
             if (basePath == null)
@@ -432,75 +405,6 @@ namespace NuGet.Commands
             {
                 builder.OutputName = spec.BuildOptions.OutputName;
             }
-
-            foreach (var include in spec.PackInclude)
-            {
-                builder.AddFiles(basePath, include.Value, include.Key);
-            }
-
-            if (spec.PackOptions != null)
-            {
-                if (spec.PackOptions.IncludeExcludeFiles != null)
-                {
-                    string fullExclude;
-                    string filesExclude;
-                    CalculateExcludes(spec.PackOptions.IncludeExcludeFiles, out fullExclude, out filesExclude);
-
-                    if (spec.PackOptions.IncludeExcludeFiles.Include != null)
-                    {
-                        foreach (var include in spec.PackOptions.IncludeExcludeFiles.Include)
-                        {
-                            builder.AddFiles(basePath, include, string.Empty, fullExclude);
-                        }
-                    }
-
-                    if (spec.PackOptions.IncludeExcludeFiles.IncludeFiles != null)
-                    {
-                        foreach (var includeFile in spec.PackOptions.IncludeExcludeFiles.IncludeFiles)
-                        {
-                            var resolvedPath = ResolvePath(new PhysicalPackageFile() { SourcePath = includeFile }, basePath);
-
-                            builder.AddFiles(basePath, includeFile, resolvedPath, filesExclude);
-                        }
-                    }
-                }
-
-                if (spec.PackOptions.Mappings != null)
-                {
-                    foreach (var map in spec.PackOptions.Mappings)
-                    {
-                        string fullExclude;
-                        string filesExclude;
-                        CalculateExcludes(map.Value, out fullExclude, out filesExclude);
-
-                        if (map.Value.Include != null)
-                        {
-                            // Include paths from project.json are glob matching strings.
-                            // Calling AddFiles for "path/**" with an output target of "newpath/"
-                            // should go to "newpath/filename" but instead goes to "newpath/path/filename".
-                            // To get around this, do a WildcardSearch ahead of the AddFiles to get full paths.
-                            // Passing in the target path will then what we want.
-                            foreach (var include in map.Value.Include)
-                            {
-                                var matchedFiles = PathResolver.PerformWildcardSearch(basePath, include);
-                                foreach (var matchedFile in matchedFiles)
-                                {
-                                    builder.AddFiles(basePath, matchedFile, map.Key, fullExclude);
-                                }
-                            }
-                        }
-
-                        if (map.Value.IncludeFiles != null)
-                        {
-                            foreach (var include in map.Value.IncludeFiles)
-                            {
-                                builder.AddFiles(basePath, include, map.Key, filesExclude);
-                            }
-                        }
-                    }
-                }
-            }
-
             if (spec.Tags.Any())
             {
                 builder.Tags.AddRange(spec.Tags);
@@ -527,29 +431,7 @@ namespace NuGet.Commands
                 }
             }
 
-            builder.PackageTypes = new Collection<PackageType>(spec.PackOptions?.PackageType?.ToList() ?? new List<PackageType>());
-        }
-
-        private static void CalculateExcludes(IncludeExcludeFiles files, out string fullExclude, out string filesExclude)
-        {
-            fullExclude = string.Empty;
-            filesExclude = string.Empty;
-            if (files.Exclude != null &&
-                files.Exclude.Any())
-            {
-                fullExclude = string.Join(";", files.Exclude);
-            }
-
-            if (files.ExcludeFiles != null &&
-                files.ExcludeFiles.Any())
-            {
-                if (!string.IsNullOrEmpty(fullExclude))
-                {
-                    fullExclude += ";";
-                }
-                filesExclude += string.Join(";", files.ExcludeFiles);
-                fullExclude += filesExclude;
-            }
+            builder.PackageTypes = new List<PackageType>();
         }
 
         public static void AddDependencyGroups(IEnumerable<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder)

@@ -39,90 +39,6 @@ namespace NuGet.ProjectModel.Test
 
         }
 
-        [Fact]
-        public void IncludeExcludeFilesCloneTest()
-        {
-            //Set up
-            var exclude = new List<string>() { "Exlclude0" };
-            var include = new List<string>() { "Include0" };
-            var includeFiles = new List<string>() { "IncludeFiles0" };
-            var excludeFiles = new List<string>() { "ExlcludeFiles0" };
-
-            var files = new IncludeExcludeFiles();
-            files.Exclude = exclude;
-            files.Include = include;
-            files.IncludeFiles = includeFiles;
-            files.ExcludeFiles = excludeFiles;
-
-            // Act
-            var clone = files.Clone();
-            //Assert
-
-            Assert.Equal(files.Exclude, clone.Exclude);
-            Assert.Equal(files.Include, clone.Include);
-            Assert.Equal(files.IncludeFiles, clone.IncludeFiles);
-            Assert.Equal(files.ExcludeFiles, clone.ExcludeFiles);
-
-            // Act again
-            exclude.Add("Extra Exclude");
-
-            //Assert
-            Assert.Equal(2, files.Exclude.Count);
-            Assert.NotEqual(files.Exclude, clone.Exclude);
-        }
-
-        [Fact]
-        public void PackOptionsCloneTest()
-        {
-            //Set up
-            var originalPackOptions = new PackOptions();
-            var originalPackageName = "PackageA";
-            var packageTypes = new List<NuGet.Packaging.Core.PackageType>() { new Packaging.Core.PackageType(originalPackageName, new System.Version("1.0.0")) };
-
-            var exclude = new List<string>() { "Exlclude0" };
-            var include = new List<string>() { "Include0" };
-            var includeFiles = new List<string>() { "IncludeFiles0" };
-            var excludeFiles = new List<string>() { "ExlcludeFiles0" };
-
-            var files = new IncludeExcludeFiles();
-            files.Exclude = exclude;
-            files.Include = include;
-            files.IncludeFiles = includeFiles;
-            files.ExcludeFiles = excludeFiles;
-
-            originalPackOptions.PackageType = packageTypes;
-            originalPackOptions.IncludeExcludeFiles = files;
-
-            // Act
-            var clone = originalPackOptions.Clone();
-
-            // Assert
-            Assert.Equal(originalPackOptions, clone);
-
-            // Act again
-            packageTypes.Clear();
-
-            // Assert
-            Assert.NotEqual(originalPackOptions, clone);
-            Assert.Equal(originalPackageName, clone.PackageType[0].Name);
-
-            // Set Up again
-            originalPackOptions.Mappings.Add("randomString", files);
-
-            // Act again
-            var cloneWithMappings = originalPackOptions.Clone();
-
-            // Assert
-            Assert.Equal(originalPackOptions, cloneWithMappings);
-
-            // Act again
-            originalPackOptions.Mappings.Clear();
-
-            // Assert
-            Assert.NotEqual(originalPackOptions, cloneWithMappings);
-            Assert.Equal(1, cloneWithMappings.Mappings.Count);
-        }
-
         internal static LibraryDependency CreateLibraryDependency()
         {
             var dependency = new LibraryDependency(
@@ -136,23 +52,6 @@ namespace NuGet.ProjectModel.Test
                 );
 
             return dependency;
-        }
-
-        private IncludeExcludeFiles CreateIncludeExcludeFiles()
-        {
-            var files = new IncludeExcludeFiles();
-            files.Exclude = new List<string>() { "Exlclude0" };
-            files.Include = new List<string>() { "Include0" };
-            files.IncludeFiles = new List<string>() { "IncludeFiles0" };
-            files.ExcludeFiles = new List<string>() { "ExlcludeFiles0" };
-            return files;
-        }
-        private PackOptions CreatePackOptions()
-        {
-            var originalPackOptions = new PackOptions();
-            originalPackOptions.PackageType = new List<PackageType>() { new PackageType("PackageA", new System.Version("1.0.0")) };
-            originalPackOptions.IncludeExcludeFiles = CreateIncludeExcludeFiles();
-            return originalPackOptions;
         }
 
         private PackageSpec CreatePackageSpec()
@@ -183,10 +82,6 @@ namespace NuGet.ProjectModel.Test
 
             PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
             PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
-
-            PackageSpec.PackInclude.Add(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
-
-            PackageSpec.PackOptions = CreatePackOptions();
 
             PackageSpec.RuntimeGraph = CreateRuntimeGraph();
             PackageSpec.RestoreSettings = CreateProjectRestoreSettings();
@@ -314,16 +209,6 @@ namespace NuGet.ProjectModel.Test
                 enumerator.MoveNext();
                 var key = enumerator.Current;
                 ((List<string>)packageSpec.Scripts[key]).Add(Guid.NewGuid().ToString());
-            }
-
-            public static void ModifyPackInclude(PackageSpec packageSpec)
-            {
-                packageSpec.PackInclude.Add(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
-            }
-
-            public static void ModifyPackOptions(PackageSpec packageSpec)
-            {
-                ((List<PackageType>)packageSpec.PackOptions.PackageType).Add(PackageType.DotnetCliTool);
             }
 
             public static void ModifyRuntimeGraph(PackageSpec packageSpec)

@@ -14,29 +14,22 @@
     "a",
     "c"
   ],
-  "packInclude": {
-    "a": "e",
-    "b": "d",
-    "c": "f"
-  },
-  "packOptions": {
-    "owners": [
-      "b",
-      "a",
-      "c"
-    ],
-    "tags": [
-      "b",
-      "a",
-      "c"
-    ],
-    "projectUrl": "projectUrl",
-    "iconUrl": "iconUrl",
-    "summary": "summary",
-    "releaseNotes": "releaseNotes",
-    "licenseUrl": "licenseUrl",
-    "requireLicenseAcceptance": true
-  },
+  "owners": [
+    "b",
+    "a",
+    "c"
+  ],
+  "tags": [
+    "b",
+    "a",
+    "c"
+  ],
+  "projectUrl": "projectUrl",
+  "iconUrl": "iconUrl",
+  "summary": "summary",
+  "releaseNotes": "releaseNotes",
+  "licenseUrl": "licenseUrl",
+  "requireLicenseAcceptance": true,
   "restore": {
     "projectUniqueName": "projectUniqueName",
     "projectName": "projectName",
