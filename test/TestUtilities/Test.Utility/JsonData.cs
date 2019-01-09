@@ -4039,7 +4039,7 @@ namespace Test.Utility
             ""version"": ""1.4.1""
           }";
         #endregion
-        
+
         #region DuplicatePackageBesidesVersion
         public const string DuplicatePackageBesidesVersionRegistrationIndex = @"{
   ""@id"": ""https://api.nuget.org/v3/registration0/afine/index.json"",
@@ -4187,7 +4187,7 @@ namespace Test.Utility
   }
 }";
         #endregion
-        
+
         #region TempApiKeyResponse
         public const string TempApiKeyJsonData = @"{{
             ""Key"": ""{0}"",
@@ -4764,6 +4764,23 @@ namespace Test.Utility
   }}
 }}";
 
+        #endregion
+
+        #region AutoCompleteEndpointNewtResult
+        public static string AutoCompleteEndpointNewtResult = @"{
+     ""@context"":
+        { ""@vocab"":""http://schema.nuget.org/schema#""},
+        ""totalHits"":89,
+        ""lastReopen"":""2018-12-28T19:11:38.4578687Z"",
+        ""index"":""v3-lucene2-v2v3-20171018"",
+        ""data"":[
+            ""Newtonsoft.Json"",""Rxns.NewtonsoftJson"",""Newtonsoft.Json.Bson"",""HybridDb.NewtonsoftJson"",""Newtonsoft.Msgpack"",
+            ""Newtouch.Contract"",""Fireasy.Newtonsoft"",""Newtonsoft.Json.FSharp"",""Fleece.NewtonsoftJson"",""Rock.Core.Newtonsoft"",
+            ""Sfa.Core.Newtonsoft.Json"",""NewtonsoftJsonExt"",""Cauldron.Newton"",""rethinkdb-net-newtonsoft"",
+            ""Newtonsoft.Json.Interface"",""Newtonsoft.Json.Schema"",""Newtonsoft.Json.Akshay"",""Newtonsoft.Dson"",
+            ""WampSharp.NewtonsoftJson"",""WampSharp.NewtonsoftMsgpack""
+        ]
+      }";
         #endregion
     }
 }

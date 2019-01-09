@@ -30,7 +30,7 @@ namespace NuGet.Protocol.Tests
                 "https://nuget.org/api/v2/",
                 string.Empty);
             ResponsesDict.Add(
-                "https://api-v3search-0.nuget.org/autocomplete?q=elm&includePrerelease=true&semVerLevel=2.0.0",
+                "https://api-v3search-0.nuget.org/autocomplete?q=elm&prerelease=true&semVerLevel=2.0.0",
                 PowershellJsonData.AutoCompleteV3Example);
             ResponsesDict.Add(
                 "https://api.nuget.org/v3/registration0/nuget.versioning/index.json",

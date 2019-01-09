@@ -44,7 +44,7 @@ namespace NuGet.Protocol
             var queryUrl = new UriBuilder(searchUrl.AbsoluteUri);
             var queryString =
                 "q=" + WebUtility.UrlEncode(packageIdPrefix) +
-                "&includePrerelease=" + includePrerelease.ToString().ToLowerInvariant() +
+                "&prerelease=" + includePrerelease.ToString().ToLowerInvariant() +
                 "&semVerLevel=2.0.0";
 
             queryUrl.Query = queryString;

@@ -12,7 +12,6 @@
     <MergeInclude Include="$(OutputPath)NuGet.Frameworks.dll"/>
     <MergeInclude Include="$(OutputPath)NuGet.LibraryModel.dll"/>
     <MergeInclude Include="$(OutputPath)NuGet.PackageManagement.dll"/>
-    <MergeInclude Include="$(OutputPath)NuGet.Packaging.Core.dll"/>
     <MergeInclude Include="$(OutputPath)NuGet.Packaging.dll"/>
     <MergeInclude Include="$(OutputPath)NuGet.ProjectModel.dll"/>
     <MergeInclude Include="$(OutputPath)NuGet.Protocol.dll"/>
