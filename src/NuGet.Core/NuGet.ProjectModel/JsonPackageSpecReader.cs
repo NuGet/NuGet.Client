@@ -88,7 +88,6 @@ namespace NuGet.ProjectModel
                 try
                 {
                     var versionString = version.Value<string>();
-                    packageSpec.HasVersionSnapshot = PackageSpecUtility.IsSnapshotVersion(versionString);
                     packageSpec.Version = PackageSpecUtility.SpecifySnapshot(versionString, snapshotValue);
                 }
                 catch (Exception ex)
@@ -97,23 +96,8 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            packageSpec.Title = rawPackageSpec.GetValue<string>("title");
-            packageSpec.Description = rawPackageSpec.GetValue<string>("description");
-            packageSpec.Authors = authors == null ? new string[] { } : authors.ValueAsArray<string>();
             packageSpec.ContentFiles = contentFiles == null ? new string[] { } : contentFiles.ValueAsArray<string>();
             packageSpec.Dependencies = new List<LibraryDependency>();
-            packageSpec.Copyright = rawPackageSpec.GetValue<string>("copyright");
-            packageSpec.Language = rawPackageSpec.GetValue<string>("language");
-
-
-            var buildOptions = rawPackageSpec["buildOptions"] as JObject;
-            if (buildOptions != null)
-            {
-                packageSpec.BuildOptions = new BuildOptions()
-                {
-                    OutputName = buildOptions.GetValue<string>("outputName")
-                };
-            }
 
             var scripts = rawPackageSpec["scripts"] as JObject;
             if (scripts != null)
@@ -147,8 +131,6 @@ namespace NuGet.ProjectModel
                 rawPackageSpec,
                 "dependencies",
                 isGacOrFrameworkReference: false);
-
-            GetPackageMetadata(packageSpec, rawPackageSpec);
 
             packageSpec.RestoreSettings = GetRestoreSettings(packageSpec, rawPackageSpec);
 
@@ -330,21 +312,6 @@ namespace NuGet.ProjectModel
             }
 
             return msbuildMetadata;
-        }
-
-        private static void GetPackageMetadata(PackageSpec packageSpec, JObject rawPackageSpec)
-        {
-            var owners = rawPackageSpec["owners"];
-            var tags = rawPackageSpec["tags"];
-            packageSpec.Owners = owners == null ? Array.Empty<string>() : owners.ValueAsArray<string>();
-            packageSpec.Tags = tags == null ? Array.Empty<string>() : tags.ValueAsArray<string>();
-            packageSpec.ProjectUrl = rawPackageSpec.GetValue<string>("projectUrl");
-            packageSpec.IconUrl = rawPackageSpec.GetValue<string>("iconUrl");
-            packageSpec.Summary = rawPackageSpec.GetValue<string>("summary");
-            packageSpec.ReleaseNotes = rawPackageSpec.GetValue<string>("releaseNotes");
-            packageSpec.LicenseUrl = rawPackageSpec.GetValue<string>("licenseUrl");
-
-            packageSpec.RequireLicenseAcceptance = GetBoolOrFalse(rawPackageSpec, "requireLicenseAcceptance", packageSpec.FilePath);
         }
 
         private static void PopulateDependencies(

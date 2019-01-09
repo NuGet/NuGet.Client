@@ -3,42 +3,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using FluentAssertions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 using Xunit;
 namespace NuGet.ProjectModel.Test
 {
     public class PackageSpecCloningTests
     {
-        private BuildOptions CreateBuildOptions()
-        {
-            var outputName = "OutputName";
-            var originalBuildOptions = new BuildOptions();
-            originalBuildOptions.OutputName = outputName;
-            return originalBuildOptions;
-        }
-
-        [Fact]
-        public void BuildOptionsCloneTest()
-        {
-            //Set up
-            var originalBuildOptions = CreateBuildOptions();
-
-            // Act
-            var clonedBuildOptions = originalBuildOptions.Clone();
-
-            //Assert
-            Assert.Equal(originalBuildOptions.OutputName, clonedBuildOptions.OutputName);
-            Assert.False(object.ReferenceEquals(originalBuildOptions, clonedBuildOptions));
-
-        }
-
         internal static LibraryDependency CreateLibraryDependency()
         {
             var dependency = new LibraryDependency(
@@ -61,22 +35,7 @@ namespace NuGet.ProjectModel.Test
             PackageSpec.RestoreMetadata = CreateProjectRestoreMetadata();
             PackageSpec.FilePath = "FilePath";
             PackageSpec.Name = "Name";
-            PackageSpec.Title = "Title";
             PackageSpec.Version = new Versioning.NuGetVersion("1.0.0");
-            PackageSpec.HasVersionSnapshot = true;
-            PackageSpec.Description = "Description";
-            PackageSpec.Summary = "Summary";
-            PackageSpec.ReleaseNotes = "ReleaseNotes";
-            PackageSpec.Authors = new string[] { "Author1" };
-            PackageSpec.Owners = new string[] { "Owner1" };
-            PackageSpec.ProjectUrl = "ProjectUrl";
-            PackageSpec.IconUrl = "IconUrl";
-            PackageSpec.LicenseUrl = "LicenseUrl";
-            PackageSpec.Copyright = "Copyright";
-            PackageSpec.Language = "Language";
-            PackageSpec.RequireLicenseAcceptance = true;
-            PackageSpec.Tags = new string[] { "Tags" };
-            PackageSpec.BuildOptions = CreateBuildOptions();
             PackageSpec.ContentFiles = new List<string>() { "contentFile1", "contentFile2" };
             PackageSpec.Dependencies = new List<LibraryDependency>() { CreateLibraryDependency(), CreateLibraryDependency() };
 
@@ -96,20 +55,14 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [InlineData("ModifyAuthors", true)]
         [InlineData("ModifyOriginalTargetFrameworkInformationAdd", true)]
         [InlineData("ModifyOriginalTargetFrameworkInformationEdit", true)]
         [InlineData("ModifyRestoreMetadata", true)]
         [InlineData("ModifyVersion", true)]
-        [InlineData("ModifyOwners", true)]
-        [InlineData("ModifyTags", true)]
-        [InlineData("ModifyBuildOptions", false)]
         [InlineData("ModifyContentFiles", true)]
         [InlineData("ModifyDependencies", true)]
         [InlineData("ModifyScriptsAdd", true)]
         [InlineData("ModifyScriptsEdit", true)]
-        [InlineData("ModifyPackInclude", true)]
-        [InlineData("ModifyPackOptions", true)]
         [InlineData("ModifyRuntimeGraph", true)]
         //[InlineData("ModifyRestoreSettings", true)] = Not really included in the equals and hash code comparisons
         public void PackageSpecCloneTest(string methodName, bool validateJson)
@@ -148,11 +101,6 @@ namespace NuGet.ProjectModel.Test
         public class PackageSpecModify
         {
 
-            public static void ModifyAuthors(PackageSpec packageSpec)
-            {
-                packageSpec.Authors[0] = "NewAuthor";
-            }
-
             public static void ModifyOriginalTargetFrameworkInformationAdd(PackageSpec packageSpec)
             {
                 packageSpec.TargetFrameworks.Add(CreateTargetFrameworkInformation("net40"));
@@ -171,21 +119,6 @@ namespace NuGet.ProjectModel.Test
             public static void ModifyVersion(PackageSpec packageSpec)
             {
                 packageSpec.Version = new Versioning.NuGetVersion("2.0.0");
-            }
-
-            public static void ModifyOwners(PackageSpec packageSpec)
-            {
-                packageSpec.Owners[0] = "BetterOwner";
-            }
-
-            public static void ModifyTags(PackageSpec packageSpec)
-            {
-                packageSpec.Tags[0] = "better tag!";
-            }
-
-            public static void ModifyBuildOptions(PackageSpec packageSpec)
-            {
-                packageSpec.BuildOptions.OutputName = Guid.NewGuid().ToString();
             }
 
             public static void ModifyContentFiles(PackageSpec packageSpec)

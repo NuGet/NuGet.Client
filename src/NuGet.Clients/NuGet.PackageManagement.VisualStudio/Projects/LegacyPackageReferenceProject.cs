@@ -371,9 +371,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 Name = projectName,
                 Version = new NuGetVersion(_vsProjectAdapter.Version),
-                Authors = new string[] { },
-                Owners = new string[] { },
-                Tags = new string[] { },
                 ContentFiles = new string[] { },
                 FilePath = _projectFullPath,
                 RuntimeGraph = runtimeGraph,

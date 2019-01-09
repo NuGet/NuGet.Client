@@ -5,9 +5,7 @@ using System;
 using System.Linq;
 using NuGet.Common;
 using NuGet.LibraryModel;
-using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
@@ -230,44 +228,6 @@ namespace NuGet.ProjectModel.Test
 
             var expected = LibraryIncludeFlags.Analyzers;
             Assert.Equal(expected, dep.IncludeType);
-        }
-
-        [Theory]
-        [InlineData("{}", null, true)]
-        [InlineData(@"{
-                        ""buildOptions"": {}
-                      }", null, false)]
-        [InlineData(@"{
-                        ""buildOptions"": {
-                          ""outputName"": ""dllName""
-                        }
-                      }", "dllName", false)]
-        [InlineData(@"{
-                        ""buildOptions"": {
-                          ""outputName"": ""dllName2"",
-                          ""emitEntryPoint"": true
-                        }
-                      }", "dllName2", false)]
-        [InlineData(@"{
-                        ""buildOptions"": {
-                          ""outputName"": null
-                        }
-                      }", null, false)]
-        public void PackageSpecReader_BuildOptions(string json, string expectedValue, bool nullBuildOptions)
-        {
-            // Arrange & Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-
-            // Assert
-            if (nullBuildOptions)
-            {
-                Assert.Null(actual.BuildOptions);
-            }
-            else
-            {
-                Assert.NotNull(actual.BuildOptions);
-                Assert.Equal(expectedValue, actual.BuildOptions.OutputName);
-            }
         }
 
         [Fact]

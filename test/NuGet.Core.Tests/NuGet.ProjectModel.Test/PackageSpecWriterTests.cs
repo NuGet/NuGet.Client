@@ -93,24 +93,7 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange
             var json = @"{
-  ""title"": ""My Title"",
   ""version"": ""1.2.3"",
-  ""description"": ""test"",
-  ""authors"": [
-    ""author1"",
-    ""author2""
-  ],
-  ""copyright"": ""2016"",
-  ""language"": ""en-US"",
-  ""tags"": [
-    ""tag1"",
-    ""tag2""
-  ],
-  ""projectUrl"": ""http://my.url.com"",
-  ""iconUrl"": ""http://my.url.com"",
-  ""summary"": ""Sum"",
-  ""releaseNotes"": ""release noted"",
-  ""licenseUrl"": ""http://my.url.com"",
   ""scripts"": {
     ""script1"": [
       ""script.js""
@@ -526,23 +509,10 @@ namespace NuGet.ProjectModel.Test
 
             var packageSpec = new PackageSpec()
             {
-                Authors = unsortedArray,
-                BuildOptions = new BuildOptions() { OutputName = "outputName" },
                 ContentFiles = new List<string>(unsortedArray),
-                Copyright = "copyright",
                 Dependencies = new List<LibraryDependency>() { libraryDependency, libraryDependencyWithNoWarnGlobal },
-                Description = "description",
                 FilePath = "filePath",
-                HasVersionSnapshot = true,
-                IconUrl = "iconUrl",
-                IsDefaultVersion = false,
-                Language = "language",
-                LicenseUrl = "licenseUrl",
                 Name = "name",
-                Owners = unsortedArray,
-                ProjectUrl = "projectUrl",
-                ReleaseNotes = "releaseNotes",
-                RequireLicenseAcceptance = true,
                 RestoreMetadata = new ProjectRestoreMetadata()
                 {
                     CrossTargeting = true,
@@ -566,9 +536,6 @@ namespace NuGet.ProjectModel.Test
                             new ProjectRestoreMetadataFrameworkInfo(nugetFramework)
                         }
                 },
-                Summary = "summary",
-                Tags = unsortedArray,
-                Title = "title",
                 Version = new NuGetVersion("1.2.3")
             };
 

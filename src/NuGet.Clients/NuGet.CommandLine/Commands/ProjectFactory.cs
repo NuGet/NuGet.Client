@@ -35,7 +35,6 @@ namespace NuGet.CommandLine
         private dynamic _project;
 
         private Common.ILogger _logger;
-        private bool _usingJsonFile;
 
         // Files we want to always exclude from the resulting package
         private static readonly HashSet<string> _excludeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
@@ -272,16 +271,9 @@ namespace NuGet.CommandLine
 
             Packaging.Manifest manifest = null;
 
-            // If there is a project.json file, load that and skip any nuspec that may exist
-            if (!PackCommandRunner.ProcessProjectJsonFile(builder, _project.DirectoryPath as string, builder.Id, version, suffix, GetPropertyValue))
-            {
-                // If the package contains a nuspec file then use it for metadata
-                manifest = ProcessNuspec(builder, basePath);
-            }
-            else
-            {
-                _usingJsonFile = true;
-            }
+            // If the package contains a nuspec file then use it for metadata
+            manifest = ProcessNuspec(builder, basePath);
+
 
             // Remove the extra author
             if (builder.Authors.Count > 1)
@@ -687,11 +679,6 @@ namespace NuGet.CommandLine
             }
         }
 
-        private bool ProcessJsonFile(Packaging.PackageBuilder builder, string basePath, string id)
-        {
-            return PackCommandRunner.ProcessProjectJsonFile(builder, basePath, id, null, null, GetPropertyValue);
-        }
-
         // Creates a package dependency from the given project, which has a corresponding
         // nuspec file.
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
@@ -710,10 +697,7 @@ namespace NuGet.CommandLine
 
                 projectFactory.InitializeProperties(builder);
 
-                if (!projectFactory.ProcessJsonFile(builder, project.DirectoryPath, null))
-                {
-                    projectFactory.ProcessNuspec(builder, null);
-                }
+                projectFactory.ProcessNuspec(builder, null);
 
                 VersionRange versionRange = null;
                 if (dependencies.ContainsKey(builder.Id))
@@ -774,23 +758,8 @@ namespace NuGet.CommandLine
         private void AddOutputFiles(Packaging.PackageBuilder builder)
         {
             // Get the target framework of the project
-            NuGetFramework nugetFramework;
-            if (_usingJsonFile && builder.TargetFrameworks.Any())
-            {
-                if (builder.TargetFrameworks.Count > 1)
-                {
-                    var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    LocalizedResourceManager.GetString("Error_MultipleTargetFrameworks"));
-                    throw new PackagingException(NuGetLogCode.NU5015, message);
-                }
-                nugetFramework = builder.TargetFrameworks.First();
-            }
-            else
-            {
-                nugetFramework = TargetFramework != null ? NuGetFramework.Parse(TargetFramework.FullName) : null;
-            }
-
+            var nugetFramework = TargetFramework != null ? NuGetFramework.Parse(TargetFramework.FullName) : null;
+            
             var projectOutputDirectory = Path.GetDirectoryName(TargetPath);
             string targetFileName;
 
@@ -873,11 +842,9 @@ namespace NuGet.CommandLine
             ProcessTransformFiles(builder, packages.SelectMany(GetTransformFiles));
 
             var dependencies = new Dictionary<string, Packaging.Core.PackageDependency>();
-            if (!_usingJsonFile)
-            {
-                dependencies = builder.DependencyGroups.SelectMany(d => d.Packages)
+
+             dependencies = builder.DependencyGroups.SelectMany(d => d.Packages)
                 .ToDictionary(d => d.Id, StringComparer.OrdinalIgnoreCase);
-            }
 
             // Reduce the set of packages we want to include as dependencies to the minimal set.
             // Normally, packages.config has the full closure included, we only add top level
@@ -900,48 +867,12 @@ namespace NuGet.CommandLine
             {
                 AddProjectReferenceDependencies(dependencies);
             }
+            // TO FIX: when we persist the target framework into packages.config file,
+            // we need to pull that info into building the PackageDependencySet object
+            builder.DependencyGroups.Clear();
 
-            if (_usingJsonFile)
-            {
-                if (dependencies.Any())
-                {
-                    if (builder.DependencyGroups.Any())
-                    {
-                        var i = 0;
-                        foreach (var group in builder.DependencyGroups.ToList())
-                        {
-                            ISet<Packaging.Core.PackageDependency> newPackagesList = new HashSet<Packaging.Core.PackageDependency>(group.Packages);
-                            foreach (var dependency in dependencies)
-                            {
-                                if (!newPackagesList.Contains(dependency.Value))
-                                {
-                                    newPackagesList.Add(dependency.Value);
-                                }
-                            }
-
-                            var dependencyGroup = new PackageDependencyGroup(group.TargetFramework, newPackagesList);
-
-                            builder.DependencyGroups.RemoveAt(i);
-                            builder.DependencyGroups.Insert(i, dependencyGroup);
-
-                            i++;
-                        }
-                    }
-                    else
-                    {
-                        builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, new HashSet<Packaging.Core.PackageDependency>(dependencies.Values)));
-                    }
-                }
-            }
-            else
-            {
-                // TO FIX: when we persist the target framework into packages.config file,
-                // we need to pull that info into building the PackageDependencySet object
-                builder.DependencyGroups.Clear();
-
-                // REVIEW: IS NuGetFramework.AnyFramework correct?
-                builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, new HashSet<Packaging.Core.PackageDependency>(dependencies.Values)));
-            }
+            // REVIEW: IS NuGetFramework.AnyFramework correct?
+            builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, new HashSet<PackageDependency>(dependencies.Values)));
         }
 
         private bool FindDependency(PackageIdentity projectPackage, IEnumerable<Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)

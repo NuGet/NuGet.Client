@@ -38,19 +38,11 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            SetValue(writer, "title", packageSpec.Title);
-
             if (!packageSpec.IsDefaultVersion)
             {
                 SetValue(writer, "version", packageSpec.Version?.ToFullString());
             }
-
-            SetValue(writer, "description", packageSpec.Description);
-            SetArrayValue(writer, "authors", packageSpec.Authors);
-            SetValue(writer, "copyright", packageSpec.Copyright);
-            SetValue(writer, "language", packageSpec.Language);
             SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles);
-            SetPackageMetadata(writer, packageSpec);
             SetMSBuildMetadata(writer, packageSpec);
             SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
 
@@ -307,29 +299,6 @@ namespace NuGet.ProjectModel
 
                 writer.WriteObjectEnd();
             }
-        }
-
-        private static void SetPackageMetadata(IObjectWriter writer, PackageSpec packageSpec)
-        {
-            if ((packageSpec.Owners == null || packageSpec.Owners.Length == 0)
-                && (packageSpec.Tags == null || packageSpec.Tags.Length == 0)
-                && packageSpec.ProjectUrl == null && packageSpec.IconUrl == null && packageSpec.Summary == null
-                && packageSpec.ReleaseNotes == null && packageSpec.LicenseUrl == null
-                && !packageSpec.RequireLicenseAcceptance
-                )
-            {
-                return;
-            }
-
-            SetArrayValue(writer, "owners", packageSpec.Owners);
-            SetArrayValue(writer, "tags", packageSpec.Tags);
-            SetValue(writer, "projectUrl", packageSpec.ProjectUrl);
-            SetValue(writer, "iconUrl", packageSpec.IconUrl);
-            SetValue(writer, "summary", packageSpec.Summary);
-            SetValue(writer, "releaseNotes", packageSpec.ReleaseNotes);
-            SetValue(writer, "licenseUrl", packageSpec.LicenseUrl);
-
-            SetValueIfTrue(writer, "requireLicenseAcceptance", packageSpec.RequireLicenseAcceptance);
         }
 
         private static void SetDependencies(IObjectWriter writer, IList<LibraryDependency> libraryDependencies)

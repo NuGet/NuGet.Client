@@ -37,8 +37,6 @@ namespace NuGet.ProjectModel
 
         public string Name { get; set; }
 
-        public string Title { get; set; }
-
         private NuGetVersion _version = DefaultVersion;
         public NuGetVersion Version
         {
@@ -50,34 +48,6 @@ namespace NuGet.ProjectModel
             }
         }
         public bool IsDefaultVersion { get; set; } = true;
-
-        public bool HasVersionSnapshot { get; set; }
-
-        public string Description { get; set; }
-
-        public string Summary { get; set; }
-
-        public string ReleaseNotes { get; set; }
-
-        public string[] Authors { get; set; } = Array.Empty<string>();
-
-        public string[] Owners { get; set; } = Array.Empty<string>();
-
-        public string ProjectUrl { get; set; }
-
-        public string IconUrl { get; set; }
-
-        public string LicenseUrl { get; set; }
-
-        public bool RequireLicenseAcceptance { get; set; }
-
-        public string Copyright { get; set; }
-
-        public string Language { get; set; }
-
-        public BuildOptions BuildOptions { get; set; }
-
-        public string[] Tags { get; set; } = Array.Empty<string>();
 
         public IList<string> ContentFiles { get; set; } = new List<string>();
 
@@ -108,23 +78,7 @@ namespace NuGet.ProjectModel
         {
             var hashCode = new HashCodeCombiner();
             
-            hashCode.AddObject(Title);
             hashCode.AddObject(Version);
-            hashCode.AddObject(IsDefaultVersion);
-            hashCode.AddObject(HasVersionSnapshot);
-            hashCode.AddObject(Description);
-            hashCode.AddObject(Summary);
-            hashCode.AddObject(ReleaseNotes);
-            hashCode.AddSequence(Authors);
-            hashCode.AddSequence(Owners);
-            hashCode.AddObject(ProjectUrl);
-            hashCode.AddObject(IconUrl);
-            hashCode.AddObject(LicenseUrl);
-            hashCode.AddObject(RequireLicenseAcceptance);
-            hashCode.AddObject(Copyright);
-            hashCode.AddObject(Language);
-            hashCode.AddObject(BuildOptions);
-            hashCode.AddSequence(Tags);
             hashCode.AddSequence(ContentFiles);
             hashCode.AddSequence(Dependencies);
             hashCode.AddDictionary(Scripts);
@@ -154,23 +108,7 @@ namespace NuGet.ProjectModel
 
             // Name and FilePath are not used for comparison since they are not serialized to JSON.
 
-            return Title == other.Title &&
-                   EqualityUtility.EqualsWithNullCheck(Version, other.Version) &&
-                   IsDefaultVersion == other.IsDefaultVersion &&
-                   HasVersionSnapshot == other.HasVersionSnapshot &&
-                   Description == other.Description &&
-                   Summary == other.Summary &&
-                   ReleaseNotes == other.ReleaseNotes &&
-                   EqualityUtility.SequenceEqualWithNullCheck(Authors, other.Authors) &&
-                   EqualityUtility.SequenceEqualWithNullCheck(Owners, other.Owners) &&
-                   ProjectUrl == other.ProjectUrl &&
-                   IconUrl == other.IconUrl &&
-                   LicenseUrl == other.LicenseUrl &&
-                   RequireLicenseAcceptance == other.RequireLicenseAcceptance &&
-                   Copyright == other.Copyright &&
-                   Language == other.Language &&
-                   EqualityUtility.EqualsWithNullCheck(BuildOptions, other.BuildOptions) &&
-                   EqualityUtility.SequenceEqualWithNullCheck(Tags, other.Tags) &&
+            return EqualityUtility.EqualsWithNullCheck(Version, other.Version) &&
                    EqualityUtility.SequenceEqualWithNullCheck(ContentFiles, other.ContentFiles) &&
                    EqualityUtility.SequenceEqualWithNullCheck(Dependencies, other.Dependencies) &&
                    EqualityUtility.DictionaryOfSequenceEquals(Scripts, other.Scripts) &&
@@ -187,23 +125,7 @@ namespace NuGet.ProjectModel
             var spec = new PackageSpec();
             spec.Name = Name;
             spec.FilePath = FilePath;
-            spec.Title = Title;
-            spec.IsDefaultVersion = IsDefaultVersion;
-            spec.HasVersionSnapshot = HasVersionSnapshot;
-            spec.Description = Description;
-            spec.Summary = Summary;
-            spec.ReleaseNotes = ReleaseNotes;
-            spec.Authors = (string[]) Authors?.Clone();
-            spec.Owners = (string[]) Owners?.Clone();
-            spec.ProjectUrl = ProjectUrl;
-            spec.IconUrl = IconUrl;
-            spec.LicenseUrl = LicenseUrl;
-            spec.RequireLicenseAcceptance = RequireLicenseAcceptance;
-            spec.Language = Language;
-            spec.Copyright = Copyright;
             spec.Version = Version; 
-            spec.BuildOptions = BuildOptions?.Clone();
-            spec.Tags = (string[]) Tags?.Clone();    
             spec.ContentFiles = ContentFiles != null ? new List<string>(ContentFiles) : null;
             spec.Dependencies = Dependencies?.Select(item => item.Clone()).ToList();
             spec.Scripts = CloneScripts(Scripts);
