@@ -31,6 +31,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="ISolutionRestoreJob.cs" />
     <Compile Include="PkgCmdID.cs" />

@@ -35,6 +35,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Cmdlets\AddBindingRedirectCommand.cs" />
     <Compile Include="Cmdlets\TabExpansionCommand.cs" />
     <Compile Include="Exceptions\PackageSourceException.cs" />
