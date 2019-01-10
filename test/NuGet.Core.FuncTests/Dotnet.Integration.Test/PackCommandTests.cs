@@ -3481,7 +3481,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackLicense_IncludeLicenseFileWithSnupkg()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -3567,7 +3567,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackLicense_IncludeLicenseFileWithSymbolsNupkg()
         {
             using (var testDirectory = TestDirectory.Create())

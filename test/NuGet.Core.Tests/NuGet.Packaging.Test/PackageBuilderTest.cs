@@ -1014,8 +1014,8 @@ namespace NuGet.Packaging.Test
     <version>1.0.0</version>
     <authors>testAuthor</authors>
     <owners>testAuthor</owners>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <developmentDependency>true</developmentDependency>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <references>
       <group targetFramework="".NETFramework3.0"">
