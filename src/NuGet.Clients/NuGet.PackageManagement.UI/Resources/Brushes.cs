@@ -240,21 +240,19 @@ namespace NuGet.PackageManagement.UI
             BackgroundBrushKey = EnvironmentColors.ToolWindowBackgroundBrushKey;
 
             // Brushes/Colors for InfiniteScrollList
-            ContentMouseOverBrushKey = ThemedDialogColors.ListItemMouseOverBrushKey;
-            ContentMouseOverTextBrushKey = ThemedDialogColors.ListItemMouseOverTextBrushKey;
-            ContentInactiveSelectedBrushKey = ThemedDialogColors.SelectedItemInactiveBrushKey;
-            ContentInactiveSelectedTextBrushKey = ThemedDialogColors.SelectedItemInactiveTextBrushKey;
-            ContentSelectedBrushKey = ThemedDialogColors.SelectedItemActiveBrushKey;
-            ContentSelectedTextBrushKey = ThemedDialogColors.SelectedItemActiveTextBrushKey;
+            ContentMouseOverBrushKey = CommonDocumentColors.ListItemBackgroundHoverBrushKey;
+            ContentMouseOverTextBrushKey = CommonDocumentColors.ListItemTextHoverBrushKey;
+            ContentInactiveSelectedBrushKey = CommonDocumentColors.ListItemBackgroundUnfocusedBrushKey;
+            ContentInactiveSelectedTextBrushKey = CommonDocumentColors.ListItemTextUnfocusedBrushKey;
+            ContentSelectedBrushKey = CommonDocumentColors.ListItemBackgroundFocusedBrushKey;
+            ContentSelectedTextBrushKey = CommonDocumentColors.ListItemTextFocusedBrushKey;
 
             // Brushes/Colors for FilterLabel (Top Tabs)
             TabSelectedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
             TabSelectedTextBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
-
+            TabHoverBrushKey = CommonDocumentColors.InnerTabInactiveHoverTextBrushKey;
             TabPopupBrushKey = CommonControlsColors.ButtonPressedBrushKey;
             TabPopupTextBrushKey = CommonControlsColors.ButtonPressedTextBrushKey;
-
-            TabHoverBrushKey = CommonDocumentColors.InnerTabInactiveHoverTextBrushKey;
         }
     }
 }
