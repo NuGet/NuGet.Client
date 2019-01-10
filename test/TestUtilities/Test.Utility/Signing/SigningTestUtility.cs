@@ -266,7 +266,7 @@ namespace Test.Utility.Signing
             var rsa = RSA.Create(rsaParams);
             using (var export = certResult.CopyWithPrivateKey(rsa))
             {
-                return new X509Certificate2(export.Export(X509ContentType.Pkcs12));
+                return new X509Certificate2(export.Export(X509ContentType.Pkcs12), password: (string) null, keyStorageFlags: X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
             }
         }
 
@@ -315,9 +315,10 @@ namespace Test.Utility.Signing
             var rsaParams = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
 
             var rsa = RSA.Create(rsaParams);
+            //rsa.
             using (var export = certResult.CopyWithPrivateKey(rsa))
             {
-                return new X509Certificate2(export.Export(X509ContentType.Pkcs12));
+                return new X509Certificate2(export.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
             }
         }
 
@@ -361,7 +362,7 @@ namespace Test.Utility.Signing
             var rsa = RSA.Create(rsaParams);
             using (var export = certResult.CopyWithPrivateKey(rsa))
             {
-                return new X509Certificate2(export.Export(X509ContentType.Pkcs12));
+                return new X509Certificate2(export.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
             }
         }
 
@@ -412,7 +413,7 @@ namespace Test.Utility.Signing
             var rsa = RSA.Create(rsaParams);
             using (var export = certResult.CopyWithPrivateKey(rsa))
             {
-                return new X509Certificate2(export.Export(X509ContentType.Pkcs12));
+                return new X509Certificate2(export.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
             }
         }
 
