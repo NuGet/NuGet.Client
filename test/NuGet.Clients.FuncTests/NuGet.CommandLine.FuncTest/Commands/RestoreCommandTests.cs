@@ -223,6 +223,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 packageY.AddFile("lib/net461/y.dll");
                 packageY.AddFile("build/y.targets");
                 packageY.AddFile("buildCrossTargeting/y.targets");
+                packageY.AddFile("build/y.props");
+                packageY.AddFile("buildCrossTargeting/y.props");
                 packageY.AddFile("buildTransitive/y.targets");
                 packageY.Exclude = "build;analyzer";
 
@@ -257,6 +259,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("y"));
                     Assert.NotNull(library);
                     Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")));
+                    Assert.False(library.Build.Any(build => build.Path.Equals("build/y.props")));
                 }
             }
         }
@@ -286,6 +289,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 packageY.AddFile("lib/net461/y.dll");
                 packageY.AddFile("build/y.targets");
                 packageY.AddFile("buildCrossTargeting/y.targets");
+                packageY.AddFile("build/y.props");
+                packageY.AddFile("buildCrossTargeting/y.props");
                 packageY.AddFile("buildTransitive/y.targets");
                 packageY.Exclude = "buildTransitive";
 
@@ -320,6 +325,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("y"));
                     Assert.NotNull(library);
                     Assert.False(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")));
+                    Assert.False(library.Build.Any(build => build.Path.Equals("build/y.props")));
                 }
             }
         }

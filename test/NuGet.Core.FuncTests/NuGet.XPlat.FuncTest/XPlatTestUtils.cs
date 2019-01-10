@@ -301,7 +301,7 @@ namespace NuGet.XPlat.FuncTest
                 var includeAssets = packageReferences.First().Element("IncludeAssets");
 
                 if (includeAssets == null ||
-                    !includeAssets.Value.Equals("runtime; build; native; contentfiles; analyzers", StringComparison.OrdinalIgnoreCase))
+                    !includeAssets.Value.Equals("runtime; build; native; contentfiles; analyzers; buildtransitive", StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }

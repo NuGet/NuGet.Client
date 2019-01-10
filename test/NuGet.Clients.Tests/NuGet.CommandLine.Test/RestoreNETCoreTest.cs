@@ -6180,5 +6180,129 @@ namespace NuGet.CommandLine.Test
                 r.Success.Should().BeTrue();
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_BuildTransitive()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net461"));
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY.Files.Clear();
+                packageY.AddFile("lib/net461/y.dll");
+                packageY.AddFile("build/y.targets");
+                packageY.AddFile("buildCrossTargeting/y.targets");
+                packageY.AddFile("buildTransitive/y.targets");
+                packageY.Exclude = "build;analyzer";
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/x.dll");
+                packageX.Dependencies.Add(packageY);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+
+                foreach (var target in assetsFile.Targets)
+                {
+                    var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("y"));
+                    Assert.NotNull(library);
+                    Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_SkipBuildTransitive()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net461"));
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY.Files.Clear();
+                packageY.AddFile("lib/net461/y.dll");
+                packageY.AddFile("build/y.targets");
+                packageY.AddFile("buildCrossTargeting/y.targets");
+                packageY.AddFile("buildTransitive/y.targets");
+                packageY.Exclude = "buildTransitive";
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/x.dll");
+                packageX.Dependencies.Add(packageY);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+
+                foreach (var target in assetsFile.Targets)
+                {
+                    var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("y"));
+                    Assert.NotNull(library);
+                    Assert.False(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")));
+                }
+            }
+        }
     }
 }

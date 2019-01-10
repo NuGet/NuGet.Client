@@ -58,7 +58,7 @@ namespace NuGet.LibraryModel
                         result |= LibraryIncludeFlags.Analyzers;
                         break;
                     case "buildtransitive":
-                        result |= LibraryIncludeFlags.BuildTransitive;
+                        result |= LibraryIncludeFlags.BuildTransitive | LibraryIncludeFlags.Build;
                         break;
 
                         // None is a noop here

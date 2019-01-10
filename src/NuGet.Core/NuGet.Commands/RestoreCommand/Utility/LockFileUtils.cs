@@ -981,7 +981,8 @@ namespace NuGet.Commands
                 lockFileLib.ContentFiles.Add(ContentFileUtils.CreateEmptyItem());
             }
 
-            if ((dependencyType & LibraryIncludeFlags.BuildTransitive) == LibraryIncludeFlags.None)
+            if ((dependencyType & LibraryIncludeFlags.BuildTransitive) == LibraryIncludeFlags.None &&
+                (dependencyType & LibraryIncludeFlags.Build) == LibraryIncludeFlags.None)
             {
                 // If BuildTransitive is excluded then all build assets are cleared.
                 ClearIfExists(lockFileLib.Build);
