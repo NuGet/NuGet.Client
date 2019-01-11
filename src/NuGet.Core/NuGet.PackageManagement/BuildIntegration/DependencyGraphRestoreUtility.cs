@@ -241,26 +241,28 @@ namespace NuGet.PackageManagement
 
                         var projFileName = Path.GetFileName(packageSpec.RestoreMetadata.ProjectPath);
                         var dgFileName = DependencyGraphSpec.GetDGSpecFileName(projFileName);
-                        var outputPath = packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ?
-                            packageSpec.BaseDirectory : packageSpec.RestoreMetadata.OutputPath;
-                        var persistedDGSpecPath = Path.Combine(outputPath, dgFileName);
+                        var outputPath = packageSpec.RestoreMetadata.OutputPath;
 
-                        if (File.Exists(persistedDGSpecPath))
+                        if (!string.IsNullOrEmpty(outputPath))
                         {
-                            var persistedDGSpec = DependencyGraphSpec.Load(persistedDGSpecPath);
+                            var persistedDGSpecPath = Path.Combine(outputPath, dgFileName);
 
-                            foreach (var dependentPackageSpec in persistedDGSpec.GetClosure(packageSpec.RestoreMetadata.ProjectUniqueName))
+                            if (File.Exists(persistedDGSpecPath))
                             {
-                                if (!(uniqueProjectDependencies.Contains(dependentPackageSpec.RestoreMetadata.ProjectPath) ||
-                                    projects.Any(p => stringComparer.Equals(p.MSBuildProjectPath, dependentPackageSpec.RestoreMetadata.ProjectPath))))
+                                var persistedDGSpec = DependencyGraphSpec.Load(persistedDGSpecPath);
+
+                                foreach (var dependentPackageSpec in persistedDGSpec.GetClosure(packageSpec.RestoreMetadata.ProjectUniqueName))
                                 {
-                                    uniqueProjectDependencies.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
-                                    dgSpec.AddProject(dependentPackageSpec);
+                                    if (!(uniqueProjectDependencies.Contains(dependentPackageSpec.RestoreMetadata.ProjectPath) ||
+                                        projects.Any(p => stringComparer.Equals(p.MSBuildProjectPath, dependentPackageSpec.RestoreMetadata.ProjectPath))))
+                                    {
+                                        uniqueProjectDependencies.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
+                                        dgSpec.AddProject(dependentPackageSpec);
+                                    }
                                 }
                             }
                         }
                     }
-                    
                 }
             }
 
