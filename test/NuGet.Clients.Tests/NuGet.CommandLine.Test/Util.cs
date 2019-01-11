@@ -1017,16 +1017,116 @@ EndProject";
         public static string CreateBasicTwoProjectSolution(TestDirectory workingPath, string proj1ConfigFileName, string proj2ConfigFileName)
         {
             var repositoryPath = Path.Combine(workingPath, "Repository");
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var proj2Directory = Path.Combine(workingPath, "proj2");
 
             Directory.CreateDirectory(repositoryPath);
-            Directory.CreateDirectory(proj1Directory);
-            Directory.CreateDirectory(proj2Directory);
 
             CreateTestPackage("packageA", "1.1.0", repositoryPath);
             CreateTestPackage("packageB", "2.2.0", repositoryPath);
 
+            CreateTwoProjectSolutionFile(workingPath);
+
+            CreateProjectWithPackagesConfig(workingPath, "proj1", proj1ConfigFileName, "packageA", "1.1.0");
+            CreateProjectWithPackagesConfig(workingPath, "proj2", proj2ConfigFileName, "packageB", "2.2.0");
+
+            // If either project uses project.json, then define "globalPackagesFolder" so the package doesn't get
+            // installed in the usual global packages folder.
+            if (IsProjectJson(proj1ConfigFileName) || IsProjectJson(proj2ConfigFileName))
+            {
+                SetupTempGlobalPackagesFolder(workingPath);
+            }
+
+            return repositoryPath;
+        }
+
+        private static void SetupTempGlobalPackagesFolder(TestDirectory workingPath)
+        {
+            CreateFile(workingPath, "nuget.config",
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""GlobalPackages"" />
+  </config>
+</configuration>");
+        }
+
+        private static void CreateProjectWithPackagesConfig(string workingPath, string projectName, string projectConfigFileName, string packageName, string packageVersion)
+        {
+            var projectDirectory = Path.Combine(workingPath, projectName);
+            Directory.CreateDirectory(projectDirectory);
+            var includeIdentifier = projectConfigFileName;
+
+            if (string.IsNullOrEmpty(includeIdentifier))
+            {
+                includeIdentifier = Guid.NewGuid().ToString();
+            }
+
+            CreateFile(projectDirectory, $"{projectName}.csproj",
+                $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='{includeIdentifier}' />
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+
+            if (!string.IsNullOrEmpty(projectConfigFileName))
+            {
+                CreateConfigFile(projectDirectory, projectConfigFileName, "net45", new List<PackageIdentity>
+                {
+                    new PackageIdentity(packageName, new NuGetVersion(packageVersion))
+                });
+            }
+        }
+
+        public static string CreateBasicTwoProjectSolutionWithPackageReferences(TestDirectory workingPath)
+        {
+            var repositoryPath = Path.Combine(workingPath, "Repository");
+
+            Directory.CreateDirectory(repositoryPath);
+
+            CreateTestPackage("packageA", "1.1.0", repositoryPath);
+            CreateTestPackage("packageB", "2.2.0", repositoryPath);
+
+            CreateTwoProjectSolutionFile(workingPath);
+
+            CreateProjectWithPackageReference(workingPath, "proj1", "packageA", "1.1.0");
+            CreateProjectWithPackageReference(workingPath, "proj2", "packageB", "2.2.0");
+
+            SetupTempGlobalPackagesFolder(workingPath);
+
+            return repositoryPath;
+        }
+
+        private static void CreateProjectWithPackageReference(string parentDirectory, string projectName, string packageName, string packageVersion)
+        {
+            var projectDirectory = Path.Combine(parentDirectory, projectName);
+            Directory.CreateDirectory(projectDirectory);
+            CreateFile(projectDirectory, $"{projectName}.csproj",
+                $@"
+<Project ToolsVersion='15.0' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+<Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props""
+ Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+  </PropertyGroup>
+   <ItemGroup>
+    <PackageReference Include=""{packageName}"">
+      <Version>{packageVersion}</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+        }
+
+        private static void CreateTwoProjectSolutionFile(TestDirectory workingPath)
+        {
             CreateFile(workingPath, "a.sln",
                 @"
 Microsoft Visual Studio Solution File, Format Version 12.00
@@ -1035,79 +1135,6 @@ Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1\proj1.c
 EndProject
 Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
 EndProject");
-
-            var include1 = proj1ConfigFileName;
-
-            if (string.IsNullOrEmpty(include1))
-            {
-                include1 = Guid.NewGuid().ToString();
-            }
-
-            CreateFile(proj1Directory, "proj1.csproj",
-                $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='{include1}' />
-  </ItemGroup>
-  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
-</Project>");
-
-            if (!string.IsNullOrEmpty(proj1ConfigFileName))
-            {
-                CreateConfigFile(proj1Directory, proj1ConfigFileName, "net45", new List<PackageIdentity>
-                {
-                    new PackageIdentity("packageA", new NuGetVersion("1.1.0"))
-                });
-            }
-
-            var include2 = proj2ConfigFileName;
-
-            if (string.IsNullOrEmpty(include2))
-            {
-                include2 = Guid.NewGuid().ToString();
-            }
-
-            CreateFile(proj2Directory, "proj2.csproj",
-                $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='{include2}' />
-  </ItemGroup>
-  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
-</Project>");
-
-            if (!string.IsNullOrEmpty(proj2ConfigFileName))
-            {
-                CreateConfigFile(proj2Directory, proj2ConfigFileName, "net45", new List<PackageIdentity>
-                {
-                    new PackageIdentity("packageB", new NuGetVersion("2.2.0"))
-                });
-            }
-
-            // If either project uses project.json, then define "globalPackagesFolder" so the package doesn't get
-            // installed in the usual global packages folder.
-            if (IsProjectJson(proj1ConfigFileName) || IsProjectJson(proj2ConfigFileName))
-            {
-                CreateFile(workingPath, "nuget.config",
-@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <config>
-    <add key=""globalPackagesFolder"" value=""GlobalPackages"" />
-  </config>
-</configuration>");
-            }
-
-            return repositoryPath;
         }
 
         public static void CreateConfigFile(string path, string configFileName, string targetFramework, IEnumerable<PackageIdentity> packages)

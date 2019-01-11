@@ -56,6 +56,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "ForceRestoreCommand")]
         public bool Force { get; set; }
 
+        [Option(typeof(NuGetCommand), "RestoreCommandSkipMSBuild")]
+        public bool SkipMSBuild { get; set; }
+
         [ImportingConstructor]
         public RestoreCommand()
         {
@@ -474,6 +477,7 @@ namespace NuGet.CommandLine
                     throw new InvalidOperationException(message);
                 }
             }
+
             // Run inputs through msbuild to determine the
             // correct type and find dependencies as needed.
             await DetermineInputsFromMSBuildAsync(packageRestoreInputs);
@@ -499,10 +503,20 @@ namespace NuGet.CommandLine
 
                 try
                 {
-                    dgFileOutput = await GetDependencyGraphSpecAsync(projectsWithPotentialP2PReferences,
-                        GetSolutionDirectory(packageRestoreInputs),
-                        packageRestoreInputs.NameOfSolutionFile,
-                        ConfigFile);
+                    if (SkipMSBuild)
+                    {
+                        // We still need a (blank) DependencyGraphSpec or AddInputsFromDependencyGraphSpec below
+                        // won't run, and that does important processing on packageRestoreInputs even if there's
+                        // nothing in dgFileOutput.
+                        dgFileOutput = new DependencyGraphSpec();
+                    }
+                    else
+                    {
+                        dgFileOutput = await GetDependencyGraphSpecAsync(projectsWithPotentialP2PReferences,
+                            GetSolutionDirectory(packageRestoreInputs),
+                            packageRestoreInputs.NameOfSolutionFile,
+                            ConfigFile);
+                    }
                 }
                 catch (Exception ex)
                 {

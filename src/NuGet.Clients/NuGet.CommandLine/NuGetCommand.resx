@@ -5526,4 +5526,7 @@ nuget-trusted-signers Remove -Name TrustedRepo</value>
   <data name="TrustedSignersCommandServiceIndexDescription" xml:space="preserve">
     <value>Service index for a repository to be trusted.</value>
   </data>
+  <data name="RestoreCommandSkipMSBuild" xml:space="preserve">
+    <value>Do not analyze projects for ProjectReference-style package references with MSBuild. This is significantly faster if all of your packages are found in old-style packages.config files.</value>
+  </data>
 </root>

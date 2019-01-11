@@ -2310,6 +2310,49 @@ EndProject";
             }
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void RestoreCommand_HonorsSkipMSBuildFlag(bool skipMSBuild)
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var repositoryPath = Util.CreateBasicTwoProjectSolutionWithPackageReferences(workingPath);
+
+                Util.CreateTestPackage("packageC", "3.3.0", repositoryPath);
+                Util.CreateFile(Path.Combine(workingPath, ".nuget"), "packages.config",
+@"<packages>
+  <package id=""packageC"" version=""3.3.0"" targetFramework=""net45"" />
+</packages>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    "restore -Source " + repositoryPath + (skipMSBuild ? " -SkipMSBuild" : ""),
+                    waitForExit: true);
+
+                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
+                var packageFileA = Path.Combine(workingPath, @"GlobalPackages", "packageA", "1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"GlobalPackages", "packageB", "2.2.0", "packageB.2.2.0.nupkg");
+                var packageFileC = Path.Combine(workingPath, @"packages", "packageC.3.3.0", "packageC.3.3.0.nupkg");
+                if (skipMSBuild)
+                {
+                    Assert.False(File.Exists(packageFileA));
+                    Assert.False(File.Exists(packageFileB));
+                }
+                else
+                {
+                    Assert.True(File.Exists(packageFileA));
+                    Assert.True(File.Exists(packageFileB));
+                }
+                Assert.True(File.Exists(packageFileC));
+            }
+        }
+
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(

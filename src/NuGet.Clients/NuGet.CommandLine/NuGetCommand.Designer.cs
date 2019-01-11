@@ -10360,6 +10360,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Do not analyze projects for ProjectReference-style package references with MSBuild. This is significantly faster if all of your packages are found in old-style packages.config files..
+        /// </summary>
+        internal static string RestoreCommandSkipMSBuild {
+            get {
+                return ResourceManager.GetString("RestoreCommandSkipMSBuild", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the solution directory. Not valid when restoring packages for a solution..
         /// </summary>
         internal static string RestoreCommandSolutionDirectory {
