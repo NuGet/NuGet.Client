@@ -6086,5 +6086,67 @@ namespace NuGet.CommandLine.Test
                 r.Success.Should().BeTrue();
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_MultiTFM_ProjectToProject_PackagesLockFile()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net46"),
+                    NuGetFramework.Parse("net45"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"),
+                    NuGetFramework.Parse("net46"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net45/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                // A -> B
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B
+                projectB.AddPackageToFramework("net45", packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectB.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Second Restore
+                r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+            }
+        }
     }
 }
