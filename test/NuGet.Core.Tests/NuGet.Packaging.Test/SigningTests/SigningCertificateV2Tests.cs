@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
+using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1;
 using Test.Utility.Signing;
 using Xunit;
@@ -39,7 +40,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("certificate", exception.ParamName);
         }
 
-        [Theory]
+        [PlatformTheory(Platform.Windows, Platform.Linux)]
         [InlineData(HashAlgorithmName.SHA256)]
         [InlineData(HashAlgorithmName.SHA384)]
         [InlineData(HashAlgorithmName.SHA512)]
@@ -69,7 +70,7 @@ namespace NuGet.Packaging.Test
                 () => SigningCertificateV2.Read(new byte[] { 0x30, 0x0b }));
         }
 
-        [Theory]
+        [PlatformTheory(Platform.Windows, Platform.Linux)]
         [InlineData(HashAlgorithmName.SHA256)]
         [InlineData(HashAlgorithmName.SHA384)]
         [InlineData(HashAlgorithmName.SHA512)]

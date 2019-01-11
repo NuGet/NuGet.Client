@@ -23,7 +23,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal override SettingBase Clone()
+        public override SettingBase Clone()
         {
             return new VirtualSettingSection(ElementName, Attributes, Items.Select(s => s.Clone() as SettingItem));
         }

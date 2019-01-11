@@ -10,7 +10,6 @@
 
 namespace NuGet.Commands {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -40,7 +39,7 @@ namespace NuGet.Commands {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Commands.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Commands.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -530,7 +529,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to find project information for &apos;{0}&apos;. Inside Visual Studio, this may be because the project is unloaded or not part of current solution. Otherwise the project file may be invalid or missing targets required for restore..
+        ///   Looks up a localized string similar to Unable to find project information for &apos;{0}&apos;. Inside Visual Studio, this may be because the project is unloaded or not part of current solution so please run a restore from command-line. Otherwise the project file may be invalid or missing targets required for restore..
         /// </summary>
         internal static string Error_UnableToFindProjectInfo {
             get {
@@ -1332,20 +1331,20 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Writing tool assets file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_ToolWritingAssetsFile {
+            get {
+                return ResourceManager.GetString("Log_ToolWritingAssetsFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Writing tool cache file to disk. Path: {0}.
         /// </summary>
         internal static string Log_ToolWritingCacheFile {
             get {
                 return ResourceManager.GetString("Log_ToolWritingCacheFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Writing tool lock file to disk. Path: {0}.
-        /// </summary>
-        internal static string Log_ToolWritingLockFile {
-            get {
-                return ResourceManager.GetString("Log_ToolWritingLockFile", resourceCulture);
             }
         }
         
@@ -1395,20 +1394,20 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Writing assets file to disk. Path: {0}.
+        /// </summary>
+        internal static string Log_WritingAssetsFile {
+            get {
+                return ResourceManager.GetString("Log_WritingAssetsFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Writing cache file to disk. Path: {0}.
         /// </summary>
         internal static string Log_WritingCacheFile {
             get {
                 return ResourceManager.GetString("Log_WritingCacheFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Writing lock file to disk. Path: {0}.
-        /// </summary>
-        internal static string Log_WritingLockFile {
-            get {
-                return ResourceManager.GetString("Log_WritingLockFile", resourceCulture);
             }
         }
         

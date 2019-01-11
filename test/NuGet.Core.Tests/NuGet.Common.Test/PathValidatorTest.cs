@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Xunit;
@@ -23,7 +23,7 @@ namespace NuGet.Common
         }
 
         [Theory]
-        [InlineData(@"C:\path\*\","windows")]
+        //[InlineData(@"C:\path\*\","windows")] TODO: Enabled once this issue is fixed: https://github.com/NuGet/Home/issues/7588
         [InlineData(@"\\share\packages","windows")]
         [InlineData(@"packages\test","windows")]
         [InlineData(@"https://test","windows")]
@@ -49,7 +49,7 @@ namespace NuGet.Common
 
         [Theory]
         [InlineData(@"C:","windows")]
-        [InlineData(@"\\server\invalid\*\","windows")]
+        //[InlineData(@"\\server\invalid\*\","windows")] TODO: Enabled once this issue is fixed: https://github.com/NuGet/Home/issues/7588
         [InlineData(@"https://test","windows")]
         [InlineData(@"..\packages","windows")]
         public void PathValidatorTest_InvalidUncSharePath(string path, string os)
@@ -97,7 +97,7 @@ namespace NuGet.Common
         }
 
         [Theory]
-        [InlineData(@"package\path\*","windows")]
+        //[InlineData(@"package\path\*","windows")] TODO: Enabled once this issue is fixed: https://github.com/NuGet/Home/issues/7588
         [InlineData(@"\\package\path","windows")]
         [InlineData(@"https://test","windows")]
         [InlineData(@"https://test", "unix-base")]

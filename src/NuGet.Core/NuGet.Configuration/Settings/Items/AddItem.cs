@@ -117,7 +117,7 @@ namespace NuGet.Configuration
 
         public override int GetHashCode() => Key.GetHashCode();
 
-        internal override SettingBase Clone()
+        public override SettingBase Clone()
         {
             var newItem = new AddItem(Key, Value, AdditionalAttributes);
 

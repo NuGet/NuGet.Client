@@ -632,7 +632,11 @@ namespace Test.Utility.Signing
 
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                offlineRevocation = "The revocation function was unable to check revocation because the revocation server was offline.";
+                offlineRevocation = "The revocation function was unable to check revocation because the revocation server was offline";
+            }
+            else if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                offlineRevocation = "An incomplete certificate revocation check occurred.";
             }
             else
             {
@@ -642,7 +646,7 @@ namespace Test.Utility.Signing
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == offlineRevocation);
+                issue.Message.Contains(offlineRevocation));
         }
 
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
@@ -650,7 +654,7 @@ namespace Test.Utility.Signing
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == "The revocation function was unable to check revocation for the certificate.");
+                issue.Message.Contains("The revocation function was unable to check revocation for the certificate"));
         }
 
         public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
@@ -659,17 +663,21 @@ namespace Test.Utility.Signing
 
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
+                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider";
+            }
+            else if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                untrustedRoot = "The certificate was not trusted.";
             }
             else
             {
-                untrustedRoot = "certificate not trusted";
+                untrustedRoot = "self signed certificate";
             }
 
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == untrustedRoot);
+                issue.Message.Contains(untrustedRoot));
         }
 
         public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)

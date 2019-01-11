@@ -9,12 +9,9 @@
     <PackProject>true</PackProject>
     <IncludeInVsix>true</IncludeInVsix>
     <authors>Microsoft</authors>
-    <PackageLicenseUrl>https://aka.ms/nugetlicense</PackageLicenseUrl>
-    <PackageProjectUrl>https://aka.ms/nugetprj</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <AssemblyDescription>APIs for invoking NuGet Restore Manager in Visual Studio.</AssemblyDescription>
     <Description>APIs for invoking NuGet Restore Manager in Visual Studio.</Description>
-    <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
   </PropertyGroup>
 
   <ItemGroup>

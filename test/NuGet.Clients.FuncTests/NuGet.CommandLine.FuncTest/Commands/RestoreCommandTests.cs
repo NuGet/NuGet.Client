@@ -146,6 +146,58 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
+        [Fact]
+        public async Task Restore_LegacyPackageReference_EmbedInteropPackage()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/a.dll");
+                packageX.AddFile("embed/net461/a.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var result = RunRestore(pathContext);
+
+                // Assert
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+
+                foreach (var target in assetsFile.Targets)
+                {
+                    var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("x"));
+                    Assert.NotNull(library);
+                    Assert.True(library.EmbedAssemblies.Any(embed => embed.Path.Equals("embed/net461/a.dll")));
+                    Assert.True(library.CompileTimeAssemblies.Any(embed => embed.Path.Equals("lib/net461/a.dll")));
+                    Assert.True(library.RuntimeAssemblies.Any(embed => embed.Path.Equals("lib/net461/a.dll")));
+                }
+            }
+        }
+
         public static CommandRunnerResult RunRestore(SimpleTestPathContext pathContext, int expectedExitCode = 0)
         {
             var nugetExe = Util.GetNuGetExePath();

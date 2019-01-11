@@ -264,10 +264,6 @@
       <Project>{394aeb96-493c-4839-a5ac-8d93cd2fad40}</Project>
       <Name>NuGet.PackageManagement</Name>
     </ProjectReference>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Packaging.Core\NuGet.Packaging.Core.csproj">
-      <Project>{d65583e4-8084-466a-ba4b-55a797ea047b}</Project>
-      <Name>NuGet.Packaging.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Packaging\NuGet.Packaging.csproj">
       <Project>{bd6bbc90-60be-4e7d-8458-91e9cda66abe}</Project>
       <Name>NuGet.Packaging</Name>
@@ -296,9 +292,8 @@
     <PackageReference Include="VSLangProj110" Version="11.0.61030" />
     <PackageReference Include="VSLangProj2" Version="7.0.5000" />
     <PackageReference Include="VSLangProj157" Version="15.7.0" />
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.8.0" PrivateAssets="all" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)fixinterop.targets" />
+  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

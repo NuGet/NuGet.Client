@@ -10,7 +10,7 @@ namespace NuGet.Configuration
     {
         public override string ElementName => ConfigurationConstants.Clear;
 
-        internal override bool IsEmpty() => false;
+        public override bool IsEmpty() => false;
 
         public ClearItem()
         {
@@ -21,7 +21,7 @@ namespace NuGet.Configuration
         {
         }
 
-        internal override SettingBase Clone()
+        public override SettingBase Clone()
         {
             var newItem = new ClearItem();
 

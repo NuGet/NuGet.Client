@@ -806,4 +806,17 @@ Valid from:</comment>
   <data name="NuGetLicenseExpression_UnlicensedPackageWarning" xml:space="preserve">
     <value>The owner has marked this package as 'UNLICENSED'. This means that there is no license that allows this package to be used outside of the copyright owner.</value>
   </data>
+  <data name="InvalidPackageTypeVersion" xml:space="preserve">
+    <value>Nuspec file contains a package type with an invalid package version '{0}'.</value>
+    <comment>{0} is the invalid version string.</comment>
+  </data>
+  <data name="MissingMetadataNode" xml:space="preserve">
+    <value>Nuspec file does not contain the '{0}' node.</value>
+  </data>
+  <data name="MissingPackageTypeName" xml:space="preserve">
+    <value>Nuspec file contains a package type that is missing the name attribute.</value>
+  </data>
+  <data name="MultiplePackageTypes" xml:space="preserve">
+    <value>Nuspec file contains multiple package types. Zero or one package type nodes are allowed.</value>
+  </data>
 </root>

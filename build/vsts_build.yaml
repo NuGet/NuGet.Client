@@ -79,7 +79,7 @@ phases:
   - task: PowerShell@1
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
-      arguments: "-Force -CI"
+      arguments: "-Force"
     displayName: "Run Configure.ps1"
 
   - task: PowerShell@1
@@ -395,7 +395,7 @@ phases:
     displayName: "Run Configure.ps1"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
-      arguments: "-Force -CI"
+      arguments: "-Force"
 
   - task: MSBuild@1
     displayName: "Restore for VS2017"

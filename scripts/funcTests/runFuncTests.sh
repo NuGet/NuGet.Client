@@ -18,7 +18,7 @@ pushd $DIR
 
 NuGetExe="$DIR/.nuget/nuget.exe"
 #Get NuGet.exe
-curl -o $NuGetExe https://dist.nuget.org/win-x86-commandline/v4.4.1/nuget.exe
+curl -o $NuGetExe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 
 mono --version
 
@@ -36,13 +36,22 @@ curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/maste
 
 # Run install.sh
 chmod +x cli/dotnet-install.sh
-# v1 needed for some test
+
+# v1 needed for some test and bootstrapping testing version
 cli/dotnet-install.sh -i cli -c 1.0
-# todo: update to read version from build.props https://github.com/NuGet/Home/issues/7485
-cli/dotnet-install.sh -i cli -c release/2.2.1xx
+
+DOTNET="$(pwd)/cli/dotnet"
+
+echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
+
+# run it twice so dotnet cli can expand and decompress without affecting the result of the target
+$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting
+DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
+
+echo $DOTNET_BRANCH
+cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH
 
 # Display current version
-DOTNET="$(pwd)/cli/dotnet"
 $DOTNET --version
 
 echo "================="
@@ -63,7 +72,7 @@ then
 fi
 
 # restore packages
-echo "$DOTNET msbuild build/build.proj /t:RestoreTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+echo "$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
 $DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"

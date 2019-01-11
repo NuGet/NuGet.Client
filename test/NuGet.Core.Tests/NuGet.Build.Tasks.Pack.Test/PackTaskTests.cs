@@ -107,7 +107,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             var target = new PackTask
             {
                 AssemblyName = " AssemblyName \t ",
-                BuildOutputFolder = " BuildOutputFolder \t ",
+                BuildOutputFolders = new string[] { " BuildOutputFolder \t " },
                 Copyright = " Copyright \t ",
                 Description = " Description \t ",
                 IconUrl = " IconUrl \t ",
@@ -130,7 +130,7 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             // Assert
             Assert.Equal("AssemblyName", actual.AssemblyName);
-            Assert.Equal("BuildOutputFolder", actual.BuildOutputFolder);
+            Assert.Equal("BuildOutputFolder", actual.BuildOutputFolders[0]);
             Assert.Equal("Copyright", actual.Copyright);
             Assert.Equal("Description", actual.Description);
             Assert.Equal("IconUrl", actual.IconUrl);
@@ -155,7 +155,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             var target = new PackTask
             {
                 AssemblyName = " \t ",
-                BuildOutputFolder = " \t ",
+                BuildOutputFolders = Array.Empty<string>(),
                 Copyright = " \t ",
                 Description = " \t ",
                 IconUrl = " \t ",
@@ -178,7 +178,7 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             // Assert
             Assert.Null(actual.AssemblyName);
-            Assert.Null(actual.BuildOutputFolder);
+            Assert.Empty(actual.BuildOutputFolders);
             Assert.Null(actual.Copyright);
             Assert.Null(actual.Description);
             Assert.Null(actual.IconUrl);
@@ -325,7 +325,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 Authors = Array.Empty<string>(),
                 AllowedOutputExtensionsInPackageBuildOutputFolder = Array.Empty<string>(),
                 AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = Array.Empty<string>(),
-                BuildOutputFolder = "BuildOutputFolder",
+                BuildOutputFolders = new string[] { "lib", "embed" },
                 ContentTargetFolders = new string[] { "ContentTargetFolders" } ,
                 ContinuePackingAfterGeneratingNuspec = true,
                 Copyright = "Copyright",
@@ -378,6 +378,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 "BuildEngine2",
                 "BuildEngine3",
                 "BuildEngine4",
+                "BuildEngine5",
                 "HostObject",
                 "Log",
                 "PackTaskLogic",

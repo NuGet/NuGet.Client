@@ -1852,6 +1852,8 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
+#if IS_DESKTOP
+        // TODO: To work on coreclr we need to address https://github.com/NuGet/Home/issues/7588
         [Fact]
         public async Task RestoreCommand_PathTooLongException()
         {
@@ -1890,7 +1892,7 @@ namespace NuGet.Commands.FuncTest
                 new Func<Task>(async () => await command.ExecuteAsync()).ShouldThrow<PathTooLongException>();
             }
         }
-
+#endif
 
         [Fact]
         public async Task RestoreCommand_RestoreExactVersionWithFailingSourceAsync()

@@ -74,6 +74,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_IncludeSymbolsWithSnupkg()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -102,6 +103,58 @@ namespace Dotnet.Integration.Test
                     var libSymItems = symbolReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
                     Assert.Equal(1, libSymItems.Count);
+                    Assert.Equal(symbolReader.GetPackageTypes().Count, 1);
+                    Assert.Equal(symbolReader.GetPackageTypes()[0], NuGet.Packaging.Core.PackageType.SymbolsPackage);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.dll" }, libItems[0].Items);
+                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.pdb" }, libSymItems[0].Items);
+                }
+
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackProjectWithPackageType_SnupkgContainsOnlyOnePackageType()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "PackageType", NuGet.Packaging.Core.PackageType.Dependency.Name);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var symbolPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(symbolPath), "The output .snupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                using (var symbolReader = new PackageArchiveReader(symbolPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the assets.
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    var libSymItems = symbolReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(1, libSymItems.Count);
+                    Assert.Equal(nupkgReader.GetPackageTypes().Count, 1);
+                    Assert.Equal(nupkgReader.GetPackageTypes()[0], NuGet.Packaging.Core.PackageType.Dependency);
+                    Assert.Equal(symbolReader.GetPackageTypes().Count, 1);
+                    Assert.Equal(symbolReader.GetPackageTypes()[0], NuGet.Packaging.Core.PackageType.SymbolsPackage);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
                     Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.dll" }, libItems[0].Items);
                     Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.pdb" }, libSymItems[0].Items);
@@ -475,15 +528,12 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1,
                         dependencyGroups.Count);
 
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp21,
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp22,
                         dependencyGroups[0].TargetFramework);
                     var packagesA = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(2,
+                    Assert.Equal(1,
                         packagesA.Count);
-                    Assert.Equal("Microsoft.NETCore.App", packagesA[1].Id);
-                    Assert.Equal(new List<string> {"Analyzers", "Build"}, packagesA[1].Exclude);
-                    Assert.Empty(packagesA[1].Include);
-
+      
                     Assert.Equal("ClassLibrary2", packagesA[0].Id);
                     Assert.Equal(new VersionRange(new NuGetVersion("1.0.0")), packagesA[0].VersionRange);
                     Assert.Equal(new List<string> {"Analyzers", "Build"}, packagesA[0].Exclude);
@@ -492,10 +542,10 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp21, libItems[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp22, libItems[0].TargetFramework);
                     Assert.Equal(
                         new[]
-                        {"lib/netcoreapp2.1/ClassLibrary1.dll", "lib/netcoreapp2.1/ClassLibrary1.runtimeconfig.json"},
+                        {"lib/netcoreapp2.2/ClassLibrary1.dll", "lib/netcoreapp2.2/ClassLibrary1.runtimeconfig.json"},
                         libItems[0].Items);
                 }
             }
@@ -3683,6 +3733,45 @@ namespace ClassLibrary
 
                 Assert.False(result.Success);
                 Assert.True(result.AllOutput.Contains("NU5035"));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackEmbedInteropPackage()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                // Setup BuildOutputTargetFolder
+                var buildTargetFolders = "lib;embed";
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "BuildOutputTargetFolder", buildTargetFolders);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // Act
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    // Validate Compile assets 
+                    foreach (var buildTargetFolder in buildTargetFolders.Split(';'))
+                    {
+                        var compileItems = nupkgReader.GetFiles(buildTargetFolder).ToList();
+                        Assert.Equal(1, compileItems.Count);
+                        Assert.Equal(buildTargetFolder + "/netstandard2.0/ClassLibrary1.dll", compileItems[0]);
+                    }
+                }
             }
         }
     }

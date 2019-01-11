@@ -21,7 +21,7 @@ namespace NuGet.Commands.Test
             _fixture = fixture;
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task ExecuteCommandAsync_WithCertificateFileNotFound_ThrowsAsync()
         {
             using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
@@ -38,7 +38,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task ExecuteCommandAsync_WithEmptyPkcs7File_ThrowsAsync()
         {
             using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
@@ -80,7 +80,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task ExecuteCommandAsync_WithIncorrectPassword_ThrowsAsync()
         {
             const string password = "password";
@@ -119,7 +119,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task ExecuteCommandAsync_WithMultiplePackagesAndInvalidCertificate_RaisesErrorsOnceAsync()
         {
             const string password = "password";

@@ -24,7 +24,7 @@ namespace NuGet.Configuration
         {
         }
 
-        internal override SettingBase Clone()
+        public override SettingBase Clone()
         {
             var newItem = new AuthorItem(Name, Certificates.Select(c => c.Clone() as CertificateItem).ToArray());
 

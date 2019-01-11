@@ -3,20 +3,20 @@
   <!-- Version -->
   <PropertyGroup>
     <IsEscrowMode>false</IsEscrowMode>
+    <!-- when changing any of the NuGetVersion props below, also update ProductVersion in src\NuGet.Clients\NuGet.Tools\NuGetPackage.cs -->
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">5</MajorNuGetVersion>
     <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">0</MinorNuGetVersion>
-    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
+    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">1</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     <VsTargetBranch>lab/d16.$(MinorNuGetVersion)stg</VsTargetBranch>
+    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
+    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">release/2.2.2xx</CliBranchForTesting>
+    <!-- This branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d16.$(MinorNuGetVersion)</VsTargetBranch>
-    <CliTargetBranch1 Condition="'$(OverrideCliTargetBranch1)' != ''">$(OverrideCliTargetBranch1)</CliTargetBranch1>
-    <CliTargetBranch1 Condition="'$(OverrideCliTargetBranch1)' == ''">release/2.2.2xx</CliTargetBranch1>
-    <CliTargetBranch2 Condition="'$(OverrideCliTargetBranch2)' != ''">$(OverrideCliTargetBranch2)</CliTargetBranch2>
-    <CliTargetBranch2 Condition="'$(OverrideCliTargetBranch2)' == ''">release/2.1.6xx</CliTargetBranch2>
-    <SdkTargetBranch1 Condition="'$(OverrideCliTargetBranch1)' != ''">$(OverrideCliTargetBranch1)</SdkTargetBranch1>
-    <SdkTargetBranch1 Condition="'$(OverrideCliTargetBranch1)' == ''">release/2.2.2xx</SdkTargetBranch1>
-    <SdkTargetBranch2 Condition="'$(OverrideCliTargetBranch2)' != ''">$(OverrideCliTargetBranch2)</SdkTargetBranch2>
-    <SdkTargetBranch2 Condition="'$(OverrideCliTargetBranch2)' == ''">release/2.1.6xx</SdkTargetBranch2>
+    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
+    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">$(CliBranchForTesting);release/2.1.6xx</CliTargetBranches>
+    <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</SdkTargetBranches>
+    <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">$(CliBranchForTesting);release/2.1.6xx</SdkTargetBranches>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
@@ -42,7 +42,7 @@
   <PropertyGroup>
     <Authors>Microsoft</Authors>
     <PackageProjectUrl>https://aka.ms/nugetprj</PackageProjectUrl>
-    <PackageLicenseUrl>https://aka.ms/nugetlicense</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NuGet/NuGet.Client</RepositoryUrl>
@@ -59,16 +59,13 @@
   <Target Name="GetVsTargetBranch">
     <Message Text="$(VsTargetBranch)" Importance="High"/>
   </Target>
-  <Target Name="GetCliTargetBranch1">
-    <Message Text="$(CliTargetBranch1)" Importance="High"/>
+  <Target Name="GetCliTargetBranches">
+    <Message Text="$(CliTargetBranches)" Importance="High"/>
   </Target>
-  <Target Name="GetCliTargetBranch2">
-    <Message Text="$(CliTargetBranch2)" Importance="High"/>
+  <Target Name="GetSdkTargetBranches">
+    <Message Text="$(SdkTargetBranches)" Importance="High"/>
   </Target>
-  <Target Name="GetSdkTargetBranch1">
-    <Message Text="$(SdkTargetBranch1)" Importance="High"/>
-  </Target>
-  <Target Name="GetSdkTargetBranch2">
-    <Message Text="$(SdkTargetBranch2)" Importance="High"/>
+  <Target Name="GetCliBranchForTesting">
+      <Message Text="$(CliBranchForTesting)" Importance="High"/>
   </Target>
 </Project>

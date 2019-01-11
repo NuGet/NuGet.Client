@@ -523,14 +523,14 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Log_ToolWritingCacheFile" xml:space="preserve">
     <value>Writing tool cache file to disk. Path: {0}</value>
   </data>
-  <data name="Log_ToolWritingLockFile" xml:space="preserve">
-    <value>Writing tool lock file to disk. Path: {0}</value>
+  <data name="Log_ToolWritingAssetsFile" xml:space="preserve">
+    <value>Writing tool assets file to disk. Path: {0}</value>
   </data>
   <data name="Log_WritingCacheFile" xml:space="preserve">
     <value>Writing cache file to disk. Path: {0}</value>
   </data>
-  <data name="Log_WritingLockFile" xml:space="preserve">
-    <value>Writing lock file to disk. Path: {0}</value>
+  <data name="Log_WritingAssetsFile" xml:space="preserve">
+    <value>Writing assets file to disk. Path: {0}</value>
   </data>
   <data name="Log_SkippingCacheFile" xml:space="preserve">
     <value>No-Op restore. The cache will not be updated. Path: {0}</value>
@@ -567,7 +567,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Unable to find project '{0}'. Check that the project reference is valid and that the project file exists.</value>
   </data>
   <data name="Error_UnableToFindProjectInfo" xml:space="preserve">
-    <value>Unable to find project information for '{0}'. Inside Visual Studio, this may be because the project is unloaded or not part of current solution. Otherwise the project file may be invalid or missing targets required for restore.</value>
+    <value>Unable to find project information for '{0}'. Inside Visual Studio, this may be because the project is unloaded or not part of current solution so please run a restore from command-line. Otherwise the project file may be invalid or missing targets required for restore.</value>
   </data>
   <data name="FoundVersionsInSource" xml:space="preserve">
     <value>Found {0} version(s) in {1} [ Nearest version: {2} ]</value>

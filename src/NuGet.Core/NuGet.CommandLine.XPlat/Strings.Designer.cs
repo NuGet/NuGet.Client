@@ -10,7 +10,6 @@
 
 namespace NuGet.CommandLine.XPlat {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -40,7 +39,7 @@ namespace NuGet.CommandLine.XPlat {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.CommandLine.XPlat.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.CommandLine.XPlat.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -970,6 +969,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow the command to block and require manual action for operations like authentication..
+        /// </summary>
+        internal static string NuGetXplatCommand_Interactive {
+            get {
+                return ResourceManager.GetString("NuGetXplatCommand_Interactive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the directory for the created NuGet package file. If not specified, uses the current directory.
         /// </summary>
         internal static string OutputDirectory_Description {
@@ -1074,15 +1082,6 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Push_Timeout_Error {
             get {
                 return ResourceManager.GetString("Push_Timeout_Error", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Allow the command to block and require manual action for operations like authentication..
-        /// </summary>
-        internal static string PushDeleteCommand_Interactive {
-            get {
-                return ResourceManager.GetString("PushDeleteCommand_Interactive", resourceCulture);
             }
         }
         
