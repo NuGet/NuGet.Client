@@ -113,8 +113,7 @@ namespace NuGet.ProjectModel
                             // ignore if this p2p packageSpec not found in DGSpec, It'll fail restore with different error at later stage
                             if (p2pSpec != null)
                             {
-                                var p2pSpecTarget = p2pSpec.TargetFrameworks.FirstOrDefault(
-                                    t => DefaultCompatibilityProvider.Instance.IsCompatible(framework.FrameworkName, t.FrameworkName));
+                                var p2pSpecTarget = NuGetFrameworkUtility.GetNearest(p2pSpec.TargetFrameworks, framework.FrameworkName, e => e.FrameworkName);
 
                                 // ignore if compatible framework not found for p2p reference which means current project didn't
                                 // get anything transitively from this p2p
