@@ -11,6 +11,13 @@ using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
 {
+    /// <summary>
+    /// Color Brushes for multiple elements of the NuGet Package Manager UI
+    ///
+    /// Initially, the properties are initialized with SystemColors brushes but, later, proper colors are assigned in
+    /// another method.
+    /// <seealso cref="Brushes.LoadVsBrushes"/>
+    /// </summary>
     public static class Brushes
     {
         public static object ActiveBorderKey { get; private set; } = SystemColors.ActiveBorderBrushKey;
@@ -149,7 +156,17 @@ namespace NuGet.PackageManagement.UI
  
         public static object ButtonBorderFocusedStyleBrushKey { get; private set; } = SystemColors.HighlightTextBrushKey; 
  
-        public static object ButtonFocusedStyleBrushKey { get; private set; } = SystemColors.HighlightTextBrushKey; 
+        public static object ButtonFocusedStyleBrushKey { get; private set; } = SystemColors.HighlightTextBrushKey;
+
+        public static object TabSelectedBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColor;
+
+        public static object TabSelectedTextBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColorKey;
+
+        public static object TabPopupBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColor;
+
+        public static object TabPopupTextBrushKey { get; private set; } = SystemColors.HighlightTextBrush;
+
+        public static object TabHoverBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
 
         public static void LoadVsBrushes()
         {
@@ -217,13 +234,21 @@ namespace NuGet.PackageManagement.UI
             CheckBoxBorderPressedBrushKey = CommonControlsColors.CheckBoxBorderPressedBrushKey;
 
             BackgroundBrushKey = EnvironmentColors.ToolWindowBackgroundBrushKey;
-            ContentMouseOverBrushKey = EnvironmentColors.ToolboxContentMouseOverBrushKey;
-            ContentMouseOverTextBrushKey = EnvironmentColors.ToolboxContentMouseOverTextBrushKey;
 
-            ContentInactiveSelectedBrushKey = TreeViewColors.SelectedItemInactiveBrushKey;
-            ContentInactiveSelectedTextBrushKey = TreeViewColors.SelectedItemInactiveTextBrushKey;
-            ContentSelectedBrushKey = TreeViewColors.SelectedItemActiveBrushKey;
-            ContentSelectedTextBrushKey = TreeViewColors.SelectedItemActiveTextBrushKey;
+            // Brushes/Colors for InfiniteScrollList
+            ContentMouseOverBrushKey = CommonDocumentColors.ListItemBackgroundHoverBrushKey;
+            ContentMouseOverTextBrushKey = CommonDocumentColors.ListItemTextHoverBrushKey;
+            ContentInactiveSelectedBrushKey = CommonDocumentColors.ListItemBackgroundUnfocusedBrushKey;
+            ContentInactiveSelectedTextBrushKey = CommonDocumentColors.ListItemTextUnfocusedBrushKey;
+            ContentSelectedBrushKey = CommonDocumentColors.ListItemBackgroundFocusedBrushKey;
+            ContentSelectedTextBrushKey = CommonDocumentColors.ListItemTextFocusedBrushKey;
+
+            // Brushes/Colors for FilterLabel (Top Tabs)
+            TabSelectedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
+            TabSelectedTextBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
+            TabHoverBrushKey = CommonDocumentColors.InnerTabInactiveHoverTextBrushKey;
+            TabPopupBrushKey = CommonControlsColors.ButtonPressedBrushKey;
+            TabPopupTextBrushKey = CommonControlsColors.ButtonPressedTextBrushKey;
         }
     }
 }
