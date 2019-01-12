@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Packaging.Signing;
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Crypto;
 using Test.Utility.Signing;
 
 namespace NuGet.Packaging.Test
@@ -25,21 +23,24 @@ namespace NuGet.Packaging.Test
 
         private bool _isDisposed;
 
-        internal AsymmetricCipherKeyPair DefaultKeyPair { get; }
+        internal RSA DefaultKeyPair { get; }
 
         public CertificatesFixture()
         {
-            DefaultKeyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
+            DefaultKeyPair = RSA.Create(keySizeInBits: 2048);
             _defaultCertificate = SigningTestUtility.GenerateCertificate("test", DefaultKeyPair);
-            _rsaSsaPssCertificate = SigningTestUtility.GenerateCertificate("test", generator => { }, "SHA256WITHRSAANDMGF1");
+            _rsaSsaPssCertificate = SigningTestUtility.GenerateCertificate("test",
+                generator => { },
+                hashAlgorithm: Common.HashAlgorithmName.SHA256,
+                paddingMode: RSASignaturePaddingMode.Pss);
             _lifetimeSigningCertificate = SigningTestUtility.GenerateCertificate(
                 "test",
                 generator =>
                 {
-                    generator.AddExtension(
-                        X509Extensions.ExtendedKeyUsage.Id,
-                        critical: true,
-                        extensionValue: new DerSequence(new DerObjectIdentifier(Oids.LifetimeSigningEku)));
+                    generator.Extensions.Add(
+                        new X509EnhancedKeyUsageExtension(
+                            new OidCollection { new Oid(Oids.LifetimeSigningEku) },
+                            critical: true));
                 });
             _expiredCertificate = SigningTestUtility.GenerateCertificate(
                 "test",
@@ -57,14 +58,15 @@ namespace NuGet.Packaging.Test
             const string name1 = "NuGet Cyclic Test Certificate 1";
             const string name2 = "NuGet Cyclic Test Certificate 2";
 
-            var keyPair1 = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
-            var keyPair2 = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
-
-            _cyclicChain = new DisposableList<X509Certificate2>()
+            using (var rsa1 = RSA.Create(keySizeInBits: 2048))
+            using (var rsa2 = RSA.Create(keySizeInBits: 2048))
             {
-                SigningTestUtility.GenerateCertificate(name1, name2, keyPair1.Private, keyPair2),
-                SigningTestUtility.GenerateCertificate(name2, name1, keyPair2.Private, keyPair1)
-            };
+                _cyclicChain = new DisposableList<X509Certificate2>()
+                {
+                    SigningTestUtility.GenerateCertificate(name1, name2, rsa1, rsa2),
+                    SigningTestUtility.GenerateCertificate(name2, name1, rsa2, rsa1)
+                };
+            }
         }
 
         public void Dispose()
@@ -80,6 +82,7 @@ namespace NuGet.Packaging.Test
                 _selfIssuedCertificate.Dispose();
                 _rootCertificate.Dispose();
                 _cyclicChain.Dispose();
+                DefaultKeyPair.Dispose();
 
                 GC.SuppressFinalize(this);
 

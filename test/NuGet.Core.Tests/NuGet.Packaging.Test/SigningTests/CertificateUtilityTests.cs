@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1.X509;
@@ -26,15 +28,16 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData("SHA256WITHRSAENCRYPTION", Oids.Sha256WithRSAEncryption)]
-        [InlineData("SHA384WITHRSAENCRYPTION", Oids.Sha384WithRSAEncryption)]
-        [InlineData("SHA512WITHRSAENCRYPTION", Oids.Sha512WithRSAEncryption)]
-        public void IsSignatureAlgorithmSupported_WhenSupported_ReturnsTrue(string signatureAlgorithm, string expectedSignatureAlgorithmOid)
+        [InlineData(Common.HashAlgorithmName.SHA256, RSASignaturePaddingMode.Pkcs1, Oids.Sha256WithRSAEncryption)]
+        [InlineData(Common.HashAlgorithmName.SHA384, RSASignaturePaddingMode.Pkcs1, Oids.Sha384WithRSAEncryption)]
+        [InlineData(Common.HashAlgorithmName.SHA512, RSASignaturePaddingMode.Pkcs1, Oids.Sha512WithRSAEncryption)]
+        public void IsSignatureAlgorithmSupported_WhenSupported_ReturnsTrue(Common.HashAlgorithmName algorithm, RSASignaturePaddingMode paddingMode, string expectedSignatureAlgorithmOid)
         {
             using (var certificate = SigningTestUtility.GenerateCertificate(
                 "test",
                 generator => { },
-                signatureAlgorithm))
+                algorithm,
+                paddingMode))
             {
                 Assert.Equal(expectedSignatureAlgorithmOid, certificate.SignatureAlgorithm.Value);
                 Assert.True(CertificateUtility.IsSignatureAlgorithmSupported(certificate));
@@ -58,7 +61,8 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate(
                 "test",
                 generator => { },
-                "SHA256WITHRSAANDMGF1",
+                Common.HashAlgorithmName.SHA256,
+                RSASignaturePaddingMode.Pss,
                 publicKeyLength: 2048))
             {
                 Assert.True(CertificateUtility.IsCertificatePublicKeyValid(certificate));
@@ -162,10 +166,12 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate("test",
                 generator =>
                 {
-                    generator.AddExtension(
-                        X509Extensions.ExtendedKeyUsage.Id,
-                        critical: false,
-                        extensionValue: new ExtendedKeyUsage(KeyPurposeID.IdKPCodeSigning));
+                    var usages = new OidCollection { TestCertificateGenerator.IdKPCodeSigning };
+
+                    generator.Extensions.Add(
+                        new X509EnhancedKeyUsageExtension(
+                              usages,
+                              critical: true));
                 }))
             {
                 Assert.Equal(1, GetExtendedKeyUsageCount(certificate));
@@ -189,10 +195,12 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate("test",
                 generator =>
                 {
-                    generator.AddExtension(
-                        X509Extensions.ExtendedKeyUsage.Id,
-                        critical: false,
-                        extensionValue: new ExtendedKeyUsage(KeyPurposeID.IdKPCodeSigning));
+                    var usages = new OidCollection { TestCertificateGenerator.IdKPCodeSigning };
+
+                    generator.Extensions.Add(
+                        new X509EnhancedKeyUsageExtension(
+                              usages,
+                              critical: true));
                 }))
             {
                 Assert.Equal(1, GetExtendedKeyUsageCount(certificate));
@@ -206,10 +214,12 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate("test",
                 generator =>
                 {
-                    generator.AddExtension(
-                        X509Extensions.ExtendedKeyUsage.Id,
-                        critical: false,
-                        extensionValue: new ExtendedKeyUsage(KeyPurposeID.IdKPEmailProtection));
+                    var usages = new OidCollection { TestCertificateGenerator.IdKPEmailProtection };
+
+                    generator.Extensions.Add(
+                        new X509EnhancedKeyUsageExtension(
+                              usages,
+                              critical: true));
                 }))
             {
                 Assert.Equal(1, GetExtendedKeyUsageCount(certificate));
@@ -223,10 +233,12 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate("test",
                 generator =>
                 {
-                    generator.AddExtension(
-                        X509Extensions.ExtendedKeyUsage.Id,
-                        critical: false,
-                        extensionValue: new ExtendedKeyUsage(KeyPurposeID.IdKPEmailProtection, KeyPurposeID.AnyExtendedKeyUsage));
+                    var usages = new OidCollection { TestCertificateGenerator.IdKPEmailProtection, TestCertificateGenerator.AnyExtendedKeyUsage };
+
+                    generator.Extensions.Add(
+                        new X509EnhancedKeyUsageExtension(
+                              usages,
+                              critical: true));
                 }))
             {
                 Assert.Equal(2, GetExtendedKeyUsageCount(certificate));

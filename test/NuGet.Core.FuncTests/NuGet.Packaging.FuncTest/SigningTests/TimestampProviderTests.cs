@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
@@ -17,7 +16,6 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
-using Org.BouncyCastle.X509;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -139,10 +137,10 @@ namespace NuGet.Packaging.FuncTest
             var authorCertName = "author@nuget.func.test";
             var content = new SignatureContent(SigningSpecifications.V1, Common.HashAlgorithmName.SHA256, "Test data to be signed and timestamped");
 
-            Action<X509V3CertificateGenerator> modifyGenerator = delegate (X509V3CertificateGenerator gen)
+            Action<TestCertificateGenerator> modifyGenerator = delegate (TestCertificateGenerator gen)
             {
-                gen.SetNotBefore(DateTime.MinValue);
-                gen.SetNotBefore(DateTime.UtcNow.Subtract(TimeSpan.FromDays(1))); // cert has expired
+                gen.NotBefore = DateTime.MinValue;
+                gen.NotBefore = DateTime.UtcNow.Subtract(TimeSpan.FromDays(1)); // cert has expired
             };
 
             using (var authorCert = SigningTestUtility.GenerateCertificate(authorCertName, modifyGenerator: modifyGenerator))

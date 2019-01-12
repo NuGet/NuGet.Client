@@ -3,7 +3,6 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using Org.BouncyCastle.X509;
 
 namespace Test.Utility.Signing
 {
@@ -56,7 +55,7 @@ namespace Test.Utility.Signing
             return "NuGetTest-" + Guid.NewGuid().ToString();
         }
 
-        public static TestCertificate Generate(Action<X509V3CertificateGenerator> modifyGenerator = null, ChainCertificateRequest chainCertificateRequest = null)
+        public static TestCertificate Generate(Action<TestCertificateGenerator> modifyGenerator = null, ChainCertificateRequest chainCertificateRequest = null)
         {
             var certName = GenerateCertificateName();
             var cert = SigningTestUtility.GenerateCertificate(certName, modifyGenerator, chainCertificateRequest: chainCertificateRequest);

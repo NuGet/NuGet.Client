@@ -463,7 +463,8 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate(
                 "test",
                 generator => { },
-                "SHA256WITHRSAANDMGF1"))
+                Common.HashAlgorithmName.SHA256,
+                System.Security.Cryptography.RSASignaturePaddingMode.Pss))
             using (var test = SignTest.Create(certificate, HashAlgorithmName.SHA256))
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
