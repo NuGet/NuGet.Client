@@ -140,8 +140,6 @@ namespace NuGet.PackageManagement.VisualStudio
             string folderName,
             bool createIfNotExists)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             if (parentItem == null)
             {
                 return null;
@@ -196,8 +194,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static bool TryGetFolder(EnvDTE.ProjectItems envDTEProjectItems, string name, out EnvDTE.ProjectItem envDTEProjectItem)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             envDTEProjectItem = GetProjectItem(envDTEProjectItems, name, FolderKinds);
 
             return envDTEProjectItem != null;
@@ -230,8 +226,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static bool TryGetFile(EnvDTE.ProjectItems envDTEProjectItems, string name, out EnvDTE.ProjectItem envDTEProjectItem)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             envDTEProjectItem = GetProjectItem(envDTEProjectItems, name, FileKinds);
 
             if (envDTEProjectItem == null)
@@ -250,8 +244,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         private static bool TryGetNestedFile(EnvDTE.ProjectItems envDTEProjectItems, string name, out EnvDTE.ProjectItem envDTEProjectItem)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             string parentFileName;
             if (!KnownNestedFiles.TryGetValue(name, out parentFileName))
             {
@@ -278,8 +270,6 @@ namespace NuGet.PackageManagement.VisualStudio
         [SuppressMessage("Microsoft.Design", "CA1031")]
         private static EnvDTE.ProjectItem GetProjectItem(EnvDTE.ProjectItems envDTEProjectItems, string name, IEnumerable<string> allowedItemKinds)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             try
             {
                 var envDTEProjectItem = envDTEProjectItems.Item(name);
@@ -298,8 +288,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static EnvDTE.ProjectItems GetProjectItems(object parent)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             var envDTEProject = parent as EnvDTE.Project;
             if (envDTEProject != null)
             {
@@ -505,8 +493,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static HashSet<string> GetLocalProjectAssemblies(EnvDTE.Project envDTEProject)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             if (EnvDTEProjectInfoUtility.IsWebSite(envDTEProject))
             {
                 var websiteLocalAssemblies = GetWebsiteLocalAssemblies(envDTEProject);
@@ -547,8 +533,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static HashSet<string> GetWebsiteLocalAssemblies(EnvDTE.Project envDTEProject)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             var assemblies = new HashSet<string>(PathComparer.Default);
             var references = GetAssemblyReferences(envDTEProject);
             foreach (AssemblyReference reference in references)
@@ -632,8 +616,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static IList<EnvDTE.Project> GetWebsiteReferencedProjects(EnvDTE.Project envDTEProject)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             var envDTEProjects = new List<EnvDTE.Project>();
             var references = GetAssemblyReferences(envDTEProject);
             foreach (AssemblyReference reference in references)
@@ -742,8 +724,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public static bool HasUnsupportedProjectCapability(EnvDTE.Project envDTEProject)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             var hier = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
 
             return VsHierarchyUtility.HasUnsupportedProjectCapability(hier);

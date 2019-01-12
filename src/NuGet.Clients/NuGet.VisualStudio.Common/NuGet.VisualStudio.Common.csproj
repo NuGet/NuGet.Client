@@ -41,7 +41,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" Version="$(VSComponentsVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.ImageCatalog" Version="15.8.28010" />
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.8.132" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="15.0.240" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="15.8.132" />
     <PackageReference Include="VSLangProj" Version="7.0.3300" />
   </ItemGroup>
   <ItemGroup>
@@ -53,7 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EnvDTE80" Version="8.0.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30111" />
     <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="15.0.198-pre" />
   </ItemGroup>
   <ItemGroup>

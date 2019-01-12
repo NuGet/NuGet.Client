@@ -110,32 +110,24 @@ namespace NuGet.VisualStudio
 
         private static async Task<TService> GetDTEServiceAsync<TService>() where TService : class
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             var dte = await GetGlobalServiceAsync<SDTE, DTE>();
             return dte != null ? QueryService(dte, typeof(TService)) as TService : null;
         }
 
         private static async Task<TService> GetComponentModelServiceAsync<TService>() where TService : class
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             IComponentModel componentModel = await GetGlobalServiceAsync<SComponentModel, IComponentModel>();
             return componentModel?.GetService<TService>();
         }
 
         private static async Task<IServiceProvider> GetServiceProviderAsync()
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             var dte = await GetGlobalServiceAsync<SDTE, DTE>();
             return GetServiceProviderFromDTE(dte);
         }
 
         private static object QueryService(_DTE dte, Type serviceType)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             Guid guidService = serviceType.GUID;
             Guid riid = guidService;
             var serviceProvider = dte as VsServiceProvider;
@@ -163,8 +155,6 @@ namespace NuGet.VisualStudio
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The caller is responsible for disposing this")]
         private static IServiceProvider GetServiceProviderFromDTE(_DTE dte)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             IServiceProvider serviceProvider = new ServiceProvider(dte as VsServiceProvider);
             Debug.Assert(serviceProvider != null, "Service provider is null");
             return serviceProvider;

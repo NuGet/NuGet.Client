@@ -42,6 +42,7 @@
     <Compile Include="Commands\ShowErrorsCommand.cs" />
     <Compile Include="DataStreamFromComStream.cs" />
     <Compile Include="FontAndColorsRegistrationAttribute.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="NuGetPackage.cs" />
     <Compile Include="NuGetSearchProvider.cs" />
