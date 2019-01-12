@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             get
             {
-                return Path.Combine(ProjectDirectory, "packages");
+                return null;
             }
         }
 

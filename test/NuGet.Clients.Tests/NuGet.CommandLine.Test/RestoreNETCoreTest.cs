@@ -601,14 +601,13 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var dgSpec = DependencyGraphSpec.Load(dgPath);
-
                 var propsXML = XDocument.Load(projectA.PropsOutput);
                 var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
 
                 // Assert
-                Assert.Equal(ProjectStyle.PackageReference, dgSpec.Projects.Single().RestoreMetadata.ProjectStyle);
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+                Assert.Equal(ProjectStyle.PackageReference, assetsFile.PackageSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
             }
         }
@@ -661,14 +660,13 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var dgSpec = DependencyGraphSpec.Load(dgPath);
-
                 var propsXML = XDocument.Load(projectA.PropsOutput);
                 var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
 
                 // Assert
-                Assert.Equal(ProjectStyle.PackageReference, dgSpec.Projects.Single().RestoreMetadata.ProjectStyle);
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+                Assert.Equal(ProjectStyle.PackageReference, assetsFile.PackageSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
             }
         }
@@ -700,6 +698,7 @@ namespace NuGet.CommandLine.Test
                 // Force this project to ProjectJson
                 projectA.Properties.Clear();
                 projectA.Properties.Add("RestoreProjectStyle", "ProjectJson");
+                projectA.Type = ProjectStyle.ProjectJson;
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
@@ -726,12 +725,10 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var dgSpec = DependencyGraphSpec.Load(dgPath);
-
                 // Assert
-                Assert.Equal(ProjectStyle.ProjectJson, dgSpec.Projects.Single().RestoreMetadata.ProjectStyle);
-                Assert.True(File.Exists(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "project.lock.json")));
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+                Assert.Equal(ProjectStyle.ProjectJson, assetsFile.PackageSpec.RestoreMetadata.ProjectStyle);
             }
         }
 
@@ -773,14 +770,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -794,8 +783,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -845,14 +833,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -866,8 +846,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3468,14 +3447,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -3488,8 +3459,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3568,14 +3538,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -3588,8 +3550,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3681,14 +3642,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -3701,8 +3654,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3759,14 +3711,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -3779,8 +3723,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3855,14 +3798,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -3875,8 +3810,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3956,14 +3890,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -3976,8 +3902,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.False(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -6191,6 +6116,68 @@ namespace NuGet.CommandLine.Test
                     Assert.True(library.CompileTimeAssemblies.Any(embed => embed.Path.Equals("lib/net461/a.dll")));
                     Assert.True(library.RuntimeAssemblies.Any(embed => embed.Path.Equals("lib/net461/a.dll")));
                 }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_MultiTFM_ProjectToProject_PackagesLockFile()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net46"),
+                    NuGetFramework.Parse("net45"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"),
+                    NuGetFramework.Parse("net46"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net45/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                // A -> B
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B
+                projectB.AddPackageToFramework("net45", packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectB.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Second Restore
+                r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
             }
         }
     }
