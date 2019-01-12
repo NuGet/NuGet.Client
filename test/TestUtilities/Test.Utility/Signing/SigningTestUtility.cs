@@ -268,12 +268,18 @@ namespace Test.Utility.Signing
                     request.CertificateExtensions.Add(extension);
                 }
 
+                X509Certificate2 certResult;
+
                 if (isSelfSigned)
                 {
-                    return request.CreateSelfSigned(certGen.NotBefore, certGen.NotAfter);
+                    certResult = request.CreateSelfSigned(certGen.NotBefore, certGen.NotAfter);
+                }
+                else
+                {
+                    certResult = request.Create(issuer, certGen.NotBefore, certGen.NotAfter, certGen.SerialNumber);
                 }
 
-                return request.Create(issuer, certGen.NotBefore, certGen.NotAfter, certGen.SerialNumber);
+                return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
             }
         }
 
@@ -313,7 +319,9 @@ namespace Test.Utility.Signing
             request.CertificateExtensions.Add(
                 new X509EnhancedKeyUsageExtension(new OidCollection { TestCertificateGenerator.IdKPCodeSigning }, critical: true));
 
-            return request.CreateSelfSigned(notBefore: DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), notAfter: DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
+            var certResult = request.CreateSelfSigned(notBefore: DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), notAfter: DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
+
+            return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
         }
 
         public static X509Certificate2 GenerateCertificate(
@@ -345,8 +353,10 @@ namespace Test.Utility.Signing
             request.CertificateExtensions.Add(
                 new X509EnhancedKeyUsageExtension(new OidCollection { TestCertificateGenerator.IdKPCodeSigning }, critical: true));
 
-           var generator = X509SignatureGenerator.CreateForRSA(issuerAlgorithm, RSASignaturePadding.Pkcs1);
-           return request.Create(issuerDN, generator, notBefore, notAfter, serialNumber);
+            var generator = X509SignatureGenerator.CreateForRSA(issuerAlgorithm, RSASignaturePadding.Pkcs1);
+            var certResult = request.Create(issuerDN, generator, notBefore, notAfter, serialNumber);
+
+            return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
         }
 
         public static X509Certificate2 GenerateSelfIssuedCertificate(bool isCa)
@@ -380,7 +390,9 @@ namespace Test.Utility.Signing
                     new X509KeyUsageExtension(keyUsages, critical: true));
 
                 var now = DateTime.UtcNow;
-                return request.CreateSelfSigned(notBefore: now, notAfter: now.AddHours(1));
+                var certResult = request.CreateSelfSigned(notBefore: now, notAfter: now.AddHours(1));
+
+                return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
             }
         }
 
