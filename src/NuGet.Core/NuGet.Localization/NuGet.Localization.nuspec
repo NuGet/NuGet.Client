@@ -6,7 +6,7 @@
     <title>NuGet.Localization</title>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
-    <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+    <license type="expression">Apache-2.0</licenseUrl>
     <projectUrl>https://aka.ms/nugetprj</projectUrl>
     <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
     <description>NuGet localization package.</description>
