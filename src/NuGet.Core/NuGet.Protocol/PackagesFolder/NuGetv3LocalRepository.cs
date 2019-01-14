@@ -173,32 +173,33 @@ namespace NuGet.Repositories
 
         private LocalPackageInfo GetPackage(string packageId, NuGetVersion version, string path)
         {
-            var nupkgMetadataPath = PathResolver.GetNupkgMetadataPath(packageId, version);
-            var hashPath = PathResolver.GetHashPath(packageId, version);
-            var zipPath = PathResolver.GetPackageFilePath(packageId, version);
-
-            LocalPackageInfo package = null;
-
-            // The nupkg metadata file is written last. If this file does not exist then the package is
-            // incomplete and should not be used.
-            if (_packageFileCache.Sha512Exists(nupkgMetadataPath))
+            if (!_packageCache.TryGetValue(path, out var package))
             {
-                package = CreateLocalPackageInfo(packageId, version, path, nupkgMetadataPath, zipPath);
-            }
-            // if hash file exists and it's not a fallback folder then we generate nupkg metadata file
-            else if (!_isFallbackFolder && _packageFileCache.Sha512Exists(hashPath))
-            {
-                LocalFolderUtility.GenerateNupkgMetadataFile(zipPath, path, hashPath, nupkgMetadataPath);
+                var nupkgMetadataPath = PathResolver.GetNupkgMetadataPath(packageId, version);
+                var hashPath = PathResolver.GetHashPath(packageId, version);
+                var zipPath = PathResolver.GetPackageFilePath(packageId, version);
 
-                package = CreateLocalPackageInfo(packageId, version, path, nupkgMetadataPath, zipPath);
-            }
+                // The nupkg metadata file is written last. If this file does not exist then the package is
+                // incomplete and should not be used.
+                if (_packageFileCache.Sha512Exists(nupkgMetadataPath))
+                {
+                    package = CreateLocalPackageInfo(packageId, version, path, nupkgMetadataPath, zipPath);
+                }
+                // if hash file exists and it's not a fallback folder then we generate nupkg metadata file
+                else if (!_isFallbackFolder && _packageFileCache.Sha512Exists(hashPath))
+                {
+                    LocalFolderUtility.GenerateNupkgMetadataFile(zipPath, path, hashPath, nupkgMetadataPath);
 
-            if (package != null)
-            {
-                // Cache the package, if it is valid it will not change
-                // for the life of this restore.
-                // Locking is done at a higher level around the id
-                _packageCache.TryAdd(path, package);
+                    package = CreateLocalPackageInfo(packageId, version, path, nupkgMetadataPath, zipPath);
+                }
+
+                if (package != null)
+                {
+                    // Cache the package, if it is valid it will not change
+                    // for the life of this restore.
+                    // Locking is done at a higher level around the id
+                    _packageCache.TryAdd(path, package);
+                }
             }
 
             return package;
