@@ -17,6 +17,9 @@ Runs minimal incremental build. Skips end-to-end packaging step.
 .PARAMETER CI
 Indicates the build script is invoked from CI
 
+.PARAMETER PackageEndToEnd
+Indicates whether to create the end to end package.
+
 .EXAMPLE
 .\build.ps1
 To run full clean build, e.g after switching branches
@@ -44,7 +47,7 @@ param (
     [Alias('f')]
     [switch]$Fast,
     [switch]$CI,
-    [switch]$Rebuild
+    [switch]$PackageEndToEnd
 )
 
 . "$PSScriptRoot\build\common.ps1"
@@ -126,7 +129,7 @@ Invoke-BuildStep 'Publishing the VS15 EndToEnd test package' {
         & $EndToEndScript -c $Configuration -tv 16 -out $OutDir
     } `
     -args $Configuration `
-    -skip:$Fast `
+    -skip:(-not $PackageEndToEnd) `
     -ev +BuildErrors
 
 
