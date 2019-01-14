@@ -27,7 +27,6 @@
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Serviceable></Serviceable>
   </PropertyGroup>
 
   <Target Name="CreateCommandlineNupkg">
