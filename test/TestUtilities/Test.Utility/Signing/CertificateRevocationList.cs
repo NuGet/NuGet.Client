@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Org.BouncyCastle.Asn1.X509;
@@ -60,8 +61,10 @@ namespace Test.Utility.Signing
                 crlGen.AddCrlEntry(bcRevokedCert.SerialNumber, DateTime.Now, CrlReason.PrivilegeWithdrawn);
             }
 
+            Debugger.Launch();
+
             var random = new SecureRandom();
-            var issuerPrivateKey = DotNetUtilities.GetKeyPair(issuerCert.PrivateKey).Private;
+            var issuerPrivateKey = DotNetUtilities.GetKeyPair(issuerCert.GetRSAPrivateKey()).Private;
             var signatureFactory = new Asn1SignatureFactory(bcIssuerCert.SigAlgOid, issuerPrivateKey, random);
             var crl = crlGen.Generate(signatureFactory);
             return crl;

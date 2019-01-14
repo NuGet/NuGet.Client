@@ -18,12 +18,14 @@ namespace NuGet.Commands
 
         // OpenSSL:  error:2006D080:BIO routines:BIO_new_file:no such file
         private const int OPENSSL_BIO_R_NO_SUCH_FILE = 0x2006D080;
+        private const int MACOS_FILE_NOT_FOUND = -25257;
 
         // "The specified password is not correct." (ERROR_INVALID_PASSWORD)
         private const int ERROR_INVALID_PASSWORD_HRESULT = unchecked((int)0x80070056);
 
         // OpenSSL:  error:23076071:PKCS12 routines:PKCS12_parse:mac verify failure
         private const int OPENSSL_PKCS12_R_MAC_VERIFY_FAILURE = 0x23076071;
+        private const int MACOS_PKCS12_MAC_VERIFY_FAILURE = -25264;
 
         // "The specified certificate file is not correct." (CRYPT_E_NO_MATCH)
         private const int CRYPT_E_NO_MATCH_HRESULT = unchecked((int)0x80092009);
@@ -56,6 +58,7 @@ namespace NuGet.Commands
                     {
                         case ERROR_INVALID_PASSWORD_HRESULT:
                         case OPENSSL_PKCS12_R_MAC_VERIFY_FAILURE:
+                        case MACOS_PKCS12_MAC_VERIFY_FAILURE:
                             throw new SignCommandException(
                                 LogMessage.CreateError(NuGetLogCode.NU3001,
                                 string.Format(CultureInfo.CurrentCulture,
@@ -65,6 +68,7 @@ namespace NuGet.Commands
 
                         case ERROR_FILE_NOT_FOUND_HRESULT:
                         case OPENSSL_BIO_R_NO_SUCH_FILE:
+                        case MACOS_FILE_NOT_FOUND:
                             throw new SignCommandException(
                                 LogMessage.CreateError(NuGetLogCode.NU3001,
                                 string.Format(CultureInfo.CurrentCulture,
