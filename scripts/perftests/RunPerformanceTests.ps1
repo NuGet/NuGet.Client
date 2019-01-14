@@ -15,6 +15,8 @@ Param(
 )
     . "$PSScriptRoot\PerformanceTestUtilities.ps1"
 
+    $processorInfo = GetProcessorInfo
+
     # Plugins cache is only available in 4.8+. We need to be careful when using that switch for older clients because it may blow up.
     # The logs location is optional
     function RunRestore([string]$solutionFilePath, [string]$nugetClient, [string]$resultsFile, [string]$logsPath, [string]$restoreName, [string]$testCaseId,
@@ -82,7 +84,7 @@ Param(
         $globalPackagesFolder = $Env:NUGET_PACKAGES
         if(Test-Path $globalPackagesFolder)
         {
-            $globalPackagesFolderNupkgFiles = GetAllPackagesInGlobalPackagesFolder $globalPackagesFolder
+            $globalPackagesFolderNupkgFiles = GetPackageFiles $globalPackagesFolder
             $globalPackagesFolderNupkgsSize = (($globalPackagesFolderNupkgFiles | Measure-Object -property length -sum).Sum/1000000)
             $globalPackagesFolderFiles = GetFiles $globalPackagesFolder
             $globalPackagesFolderFilesSize = (($globalPackagesFolderFiles | Measure-Object -property length -sum).Sum/1000000)
@@ -111,14 +113,9 @@ Param(
         } 
         else 
         {
-            Log "The plugins cache folder $httpCacheFolder does not exist" "Yellow"
+            Log "The plugins cache folder $pluginsCacheFolder does not exist" "Yellow"
         }
-        
-        $processorDetails = Get-WmiObject Win32_processor
-        $cores = $processorDetails | Select-Object -ExpandProperty NumberOfCores
-        $logicalCores = $processorDetails | Select-Object -ExpandProperty NumberOfLogicalProcessors
-        $processorName = $processorDetails | Select-Object -ExpandProperty Name
-        
+
         $clientName = GetClientName $nugetClient
         $clientVersion = GetClientVersion $nugetClient
 
@@ -127,7 +124,7 @@ Param(
             OutFileWithCreateFolders $resultsFile "clientName,clientVersion,testCaseId,name,totalTime,force,globalPackagesFolderNupkgCount,globalPackagesFolderNupkgSize,globalPackagesFolderFilesCount,globalPackagesFolderFilesSize,cleanGlobalPackagesFolder,httpCacheFileCount,httpCacheFilesSize,cleanHttpCache,pluginsCacheFileCount,pluginsCacheFilesSize,cleanPluginsCache,killMsBuildAndDotnetExeProcesses,processorName,cores,logicalCores"
         }
 
-        Add-Content -Path $resultsFile -Value "$clientName,$clientVersion,$testCaseId,$restoreName,$($totalTime.ToString()),$force,$($globalPackagesFolderNupkgFiles.Count),$globalPackagesFolderNupkgsSize,$($globalPackagesFolderFiles.Count),$globalPackagesFolderFilesSize,$cleanGlobalPackagesFolder,$($httpCacheFiles.Count),$httpCacheFilesSize,$cleanHttpCache,$($pluginsCacheFiles.Count),$pluginsCacheFilesSize,$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$processorName,$cores,$logicalCores"
+        Add-Content -Path $resultsFile -Value "$clientName,$clientVersion,$testCaseId,$restoreName,$($totalTime.ToString()),$force,$($globalPackagesFolderNupkgFiles.Count),$globalPackagesFolderNupkgsSize,$($globalPackagesFolderFiles.Count),$globalPackagesFolderFilesSize,$cleanGlobalPackagesFolder,$($httpCacheFiles.Count),$httpCacheFilesSize,$cleanHttpCache,$($pluginsCacheFiles.Count),$pluginsCacheFilesSize,$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$($processorInfo.Name),$($processorInfo.NumberOfCores),$($processorInfo.NumberOfLogicalProcessors)"
 
         Log "Finished measuring."
     }
