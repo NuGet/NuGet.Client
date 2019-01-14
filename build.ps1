@@ -123,7 +123,7 @@ Invoke-BuildStep 'Publishing the VS15 EndToEnd test package' {
         param($Configuration)
         $EndToEndScript = Join-Path $PSScriptRoot scripts\cibuild\CreateEndToEndTestPackage.ps1 -Resolve
         $OutDir = Join-Path $Artifacts VS15
-        & $EndToEndScript -c $Configuration -tv 15 -out $OutDir
+        & $EndToEndScript -c $Configuration -tv 16 -out $OutDir
     } `
     -args $Configuration `
     -skip:$Fast `
