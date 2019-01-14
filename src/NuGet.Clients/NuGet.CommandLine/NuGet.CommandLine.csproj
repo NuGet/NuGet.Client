@@ -32,10 +32,10 @@
 
   <Target Name="CreateCommandlineNupkg">
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(OutputPath)NuGet.exe">
+      <TfmSpecificPackageFile Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe">
         <PackagePath>tools/</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(OutputPath)NuGet.pdb">
+      <TfmSpecificPackageFile Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.pdb">
         <PackagePath>tools/</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
