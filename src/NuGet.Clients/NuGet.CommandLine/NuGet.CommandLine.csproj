@@ -9,21 +9,37 @@
   <Import Project="ilmerge.props" />
 
   <PropertyGroup>
-    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
-    <PackProject>true</PackProject>
-    <Shipping>true</Shipping>
-    <PackageId>NuGet.CommandLine</PackageId>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <RootNamespace>NuGet.CommandLine</RootNamespace>
     <AssemblyName>NuGet</AssemblyName>
     <AssemblyTitle>NuGet Command Line</AssemblyTitle>
-    <AssemblyDescription>NuGet Command Line</AssemblyDescription>
+    <PackageId>NuGet.CommandLine</PackageId>
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Description>NuGet Command Line Tool.</Description>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Shipping>true</Shipping>
     <OutputType>Exe</OutputType>
     <ComVisible>false</ComVisible>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- Pack properties-->
+    <PackProject>true</PackProject>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreateCommandlineNupkg</TargetsForTfmSpecificContentInPackage>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Serviceable></Serviceable>
   </PropertyGroup>
+
+  <Target Name="CreateCommandlineNupkg">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(OutputPath)NuGet.exe">
+        <PackagePath>tools/</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(OutputPath)NuGet.pdb">
+        <PackagePath>tools/</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
 
   <ItemGroup Condition="$(DefineConstants.Contains(SIGNED_BUILD))">
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
@@ -106,14 +122,10 @@
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
 
-  <PropertyGroup>
-    <NuspecFile>NuGet.CommandLine.nuspec</NuspecFile>
-    <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
-    <NuspecBasePath>$(ArtifactsDirectory)$(VsixOutputDirName)</NuspecBasePath>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-  </PropertyGroup>
-
   <Import Project="$(BuildCommonDirectory)common.targets" />
+
+  <!-- Do nothing. This basically strips away the framework assemblies from the resulting nuspec.-->
+  <Target Name ="_GetFrameworkAssemblyReferences" DependsOnTargets="ResolveReferences"/>
 
   <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
     <ItemGroup>
