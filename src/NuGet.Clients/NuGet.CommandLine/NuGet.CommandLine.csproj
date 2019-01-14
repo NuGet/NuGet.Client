@@ -20,9 +20,9 @@
     <Shipping>true</Shipping>
     <OutputType>Exe</OutputType>
     <ComVisible>false</ComVisible>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
     <!-- Pack properties-->
     <PackProject>true</PackProject>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreateCommandlineNupkg</TargetsForTfmSpecificContentInPackage>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
