@@ -29,16 +29,7 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
-  <Target Name="CreateCommandlineNupkg">
-    <ItemGroup>
-      <TfmSpecificPackageFile Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe">
-        <PackagePath>tools/</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.pdb">
-        <PackagePath>tools/</PackagePath>
-      </TfmSpecificPackageFile>
-    </ItemGroup>
-  </Target>
+
 
   <ItemGroup Condition="$(DefineConstants.Contains(SIGNED_BUILD))">
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
@@ -119,6 +110,17 @@
     </PropertyGroup>
     <MakeDir Directories="$(ArtifactsDirectory)$(VsixOutputDirName)" />
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
+  </Target>
+
+  <Target Name="CreateCommandlineNupkg">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe">
+        <PackagePath>tools/</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.pdb">
+        <PackagePath>tools/</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
   </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

@@ -9,13 +9,21 @@
     <PackProject Condition="!Exists('$(LocalizationRootDirectory)') OR '$(BuildRTM)' == 'true'">false</PackProject>
     <Description>NuGet localization package.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreateLocalizationNupkg</TargetsForTfmSpecificContentInPackage>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <NuspecFile>NuGet.Localization.nuspec</NuspecFile>
-    <NuspecProperties>Version=$(Version);configuration=$(Configuration);LocalizationFilesDirectory=$(LocalizationFilesDirectory)</NuspecProperties>
-  </PropertyGroup>
+  <Target Name="CreateLocalizationNupkg">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(LocalizationRootDirectory)\**\*.resources.dll">
+        <PackagePath>lib/</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
 
+<!-- $LocalizationFilesDirectory$\**\*.resources.dll -->
   <!--
     ============================================================
     Get localized files from all projects and move them to a common location.
