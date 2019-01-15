@@ -276,7 +276,10 @@ namespace Test.Utility.Signing
                 }
                 else
                 {
-                    certResult = request.Create(issuer, certGen.NotBefore, certGen.NotAfter, certGen.SerialNumber);
+                    using (var temp = request.Create(issuer, certGen.NotBefore, certGen.NotAfter, certGen.SerialNumber))
+                    {
+                        certResult = temp.CopyWithPrivateKey(rsa);
+                    }
                 }
 
                 return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
@@ -354,16 +357,19 @@ namespace Test.Utility.Signing
                 new X509EnhancedKeyUsageExtension(new OidCollection { TestCertificateGenerator.IdKPCodeSigning }, critical: true));
 
             var generator = X509SignatureGenerator.CreateForRSA(issuerAlgorithm, RSASignaturePadding.Pkcs1);
-            var certResult = request.Create(issuerDN, generator, notBefore, notAfter, serialNumber);
 
-            return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
+            using (var temp = request.Create(issuerDN, generator, notBefore, notAfter, serialNumber))
+            {
+                var certResult = temp.CopyWithPrivateKey(algorithm);
+                return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
+            }
         }
 
         public static X509Certificate2 GenerateSelfIssuedCertificate(bool isCa)
         {
             using (var rsa = RSA.Create(keySizeInBits: 2048))
             {
-                var subjectName = new X500DistinguishedName($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Self-Issued Certificate ({Guid.NewGuid().ToString()})");
+                var subjectName = new X500DistinguishedName($"CN=NuGet Test Self Issued Certificate ({Guid.NewGuid().ToString()})");
                 var hashAlgorithm = System.Security.Cryptography.HashAlgorithmName.SHA256;
                 var request = new CertificateRequest(subjectName, rsa, hashAlgorithm, RSASignaturePadding.Pkcs1);
 
