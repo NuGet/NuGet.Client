@@ -37,26 +37,28 @@
         Add-Content -Path $path -Value $content
     }
 
-    # Gets a list of all the nupkgs recursively in the global packages folder
-    function GetAllPackagesInGlobalPackagesFolder([string]$packagesFolder)
+    # Gets a list of all the files recursively in the given folder
+    Function GetFiles(
+        [Parameter(Mandatory = $True)]
+        [string] $folderPath,
+        [string] $pattern)
     {
-        if(Test-Path $packagesFolder)
+        If (Test-Path $folderPath)
         {
-            $packages = Get-ChildItem $packagesFolder\*.nupkg -Recurse
-            return $packages
+            $files = Get-ChildItem -Path $folderPath -Filter $pattern -Recurse -File
+
+            Return $files
         }
-        return $null
+
+        Return $null
     }
 
-    # Gets a list of all the files resursively in the given folder
-    function GetFiles([string]$folder)
+    # Gets a list of all the nupkgs recursively in the given folder
+    Function GetPackageFiles(
+        [Parameter(Mandatory = $True)]
+        [string] $folderPath)
     {
-        if(Test-Path $folder)
-        {
-            $files = Get-ChildItem $folder -recurse
-            return $files
-        }
-        return $null
+        Return GetFiles $folderPath "*.nupkg"
     }
 
     # Determines if the client is dotnet.exe by checking the path.
@@ -172,16 +174,19 @@
 
     # Cleanup the nuget folders and delete the nuget folders path. 
     # This should only be invoked by the the performance tests
-    function CleanNuGetFolders([string]$nugetClient)
+    Function CleanNuGetFolders([string] $nugetClient)
     {
         Log "Cleanup up the NuGet folders - global packages folder, http/plugins caches"
+
         LocalsClearAll $nugetClient
+
         $nugetFolders = GetNuGetFoldersPath
 
-        & Remove-Item -r $nugetFolders -force > $null
-        [Environment]::SetEnvironmentVariable("NUGET_PACKAGES",$null)
-        [Environment]::SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH",$null)
-        [Environment]::SetEnvironmentVariable("NUGET_PLUGINS_CACHE_PATH",$null)
+        Remove-Item $nugetFolders -Recurse -Force -ErrorAction Ignore
+
+        [Environment]::SetEnvironmentVariable("NUGET_PACKAGES", $null)
+        [Environment]::SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", $null)
+        [Environment]::SetEnvironmentVariable("NUGET_PLUGINS_CACHE_PATH", $null)
     }
 
     # Given a repository, a client and directories for the results/logs, runs the configured performance tests.
@@ -190,4 +195,15 @@
         $solutionFilePath = SetupGitRepository -repository $repoUrl -commitHash $commitHash -sourceDirectoryPath  $([System.IO.Path]::Combine($sourceRootDirectory, $testCaseName))
         SetupNuGetFolders $nugetClient
         . "$PSScriptRoot\RunPerformanceTests.ps1" $nugetClient $solutionFilePath $resultsFilePath $logsPath
+    }
+
+    Function GetProcessorInfo()
+    {
+        $processorInfo = Get-WmiObject Win32_processor
+
+        Return @{
+            Name = $processorInfo | Select-Object -ExpandProperty Name
+            NumberOfCores = $processorInfo | Select-Object -ExpandProperty NumberOfCores
+            NumberOfLogicalProcessors = $processorInfo | Select-Object -ExpandProperty NumberOfLogicalProcessors
+        }
     }
