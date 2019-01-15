@@ -127,11 +127,11 @@ namespace NuGet.Packaging.Test
                 }
 
                 Assert.Equal(0, logger.Errors);
-                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Warnings);
+                Assert.Equal(RuntimeEnvironmentHelper.IsLinux ? 2 : 1, logger.Warnings);
 
                 SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
 
-                if (!RuntimeEnvironmentHelper.IsWindows)
+                if (RuntimeEnvironmentHelper.IsLinux)
                 {
                     SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
                 }

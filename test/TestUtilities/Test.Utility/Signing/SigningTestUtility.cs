@@ -369,7 +369,7 @@ namespace Test.Utility.Signing
         {
             using (var rsa = RSA.Create(keySizeInBits: 2048))
             {
-                var subjectName = new X500DistinguishedName($"CN=NuGet Test Self Issued Certificate ({Guid.NewGuid().ToString()})");
+                var subjectName = new X500DistinguishedName($"C=US,S=WA,L=Redmond,O=NuGet,CN=NuGet Test Self-Issued Certificate ({Guid.NewGuid().ToString()})");
                 var hashAlgorithm = System.Security.Cryptography.HashAlgorithmName.SHA256;
                 var request = new CertificateRequest(subjectName, rsa, hashAlgorithm, RSASignaturePadding.Pkcs1);
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -18,7 +19,6 @@ namespace NuGet.Commands
 
         // OpenSSL:  error:2006D080:BIO routines:BIO_new_file:no such file
         private const int OPENSSL_BIO_R_NO_SUCH_FILE = 0x2006D080;
-        private const int MACOS_FILE_NOT_FOUND = -25257;
 
         // "The specified password is not correct." (ERROR_INVALID_PASSWORD)
         private const int ERROR_INVALID_PASSWORD_HRESULT = unchecked((int)0x80070056);
@@ -29,6 +29,8 @@ namespace NuGet.Commands
 
         // "The specified certificate file is not correct." (CRYPT_E_NO_MATCH)
         private const int CRYPT_E_NO_MATCH_HRESULT = unchecked((int)0x80092009);
+
+        private const int MACOS_INVALID_CERT = -25257;
 
         // OpenSSL:  error:0D07803A:asn1 encoding routines:ASN1_ITEM_EX_D2I:nested asn1 error
         private const int OPENSSL_ERR_R_NESTED_ASN1_ERROR = 0x0D07803A;
@@ -52,40 +54,53 @@ namespace NuGet.Commands
 
                     resultCollection = new X509Certificate2Collection(cert);
                 }
-                catch (CryptographicException ex)
+                catch (Exception ex)
                 {
-                    switch (ex.HResult)
+                    if (ex is CryptographicException ce)
                     {
-                        case ERROR_INVALID_PASSWORD_HRESULT:
-                        case OPENSSL_PKCS12_R_MAC_VERIFY_FAILURE:
-                        case MACOS_PKCS12_MAC_VERIFY_FAILURE:
-                            throw new SignCommandException(
-                                LogMessage.CreateError(NuGetLogCode.NU3001,
-                                string.Format(CultureInfo.CurrentCulture,
-                                Strings.SignCommandInvalidPasswordException,
-                                options.CertificatePath,
-                                nameof(options.CertificatePassword))));
+                        switch (ce.HResult)
+                        {
+                            case ERROR_INVALID_PASSWORD_HRESULT:
+                            case OPENSSL_PKCS12_R_MAC_VERIFY_FAILURE:
+                            case MACOS_PKCS12_MAC_VERIFY_FAILURE:
+                                throw new SignCommandException(
+                                    LogMessage.CreateError(NuGetLogCode.NU3001,
+                                    string.Format(CultureInfo.CurrentCulture,
+                                    Strings.SignCommandInvalidPasswordException,
+                                    options.CertificatePath,
+                                    nameof(options.CertificatePassword))));
 
-                        case ERROR_FILE_NOT_FOUND_HRESULT:
-                        case OPENSSL_BIO_R_NO_SUCH_FILE:
-                        case MACOS_FILE_NOT_FOUND:
-                            throw new SignCommandException(
-                                LogMessage.CreateError(NuGetLogCode.NU3001,
-                                string.Format(CultureInfo.CurrentCulture,
-                                    Strings.SignCommandCertificateFileNotFound,
-                                    options.CertificatePath)));
+                            case ERROR_FILE_NOT_FOUND_HRESULT:
+                            case OPENSSL_BIO_R_NO_SUCH_FILE:
+                                throw new SignCommandException(
+                                    LogMessage.CreateError(NuGetLogCode.NU3001,
+                                    string.Format(CultureInfo.CurrentCulture,
+                                        Strings.SignCommandCertificateFileNotFound,
+                                        options.CertificatePath)));
 
-                        case CRYPT_E_NO_MATCH_HRESULT:
-                        case OPENSSL_ERR_R_NESTED_ASN1_ERROR:
-                            throw new SignCommandException(
-                                LogMessage.CreateError(NuGetLogCode.NU3001,
-                                string.Format(CultureInfo.CurrentCulture,
-                                    Strings.SignCommandInvalidCertException,
-                                    options.CertificatePath)));
+                            case CRYPT_E_NO_MATCH_HRESULT:
+                            case OPENSSL_ERR_R_NESTED_ASN1_ERROR:
+                            case MACOS_INVALID_CERT:
+                                throw new SignCommandException(
+                                    LogMessage.CreateError(NuGetLogCode.NU3001,
+                                    string.Format(CultureInfo.CurrentCulture,
+                                        Strings.SignCommandInvalidCertException,
+                                        options.CertificatePath)));
 
-                        default:
-                            throw;
+                            default:
+                                throw;
+                        }
                     }
+                    else if (ex is FileNotFoundException fne)
+                    {
+                            throw new SignCommandException(
+                                    LogMessage.CreateError(NuGetLogCode.NU3001,
+                                    string.Format(CultureInfo.CurrentCulture,
+                                        Strings.SignCommandCertificateFileNotFound,
+                                        options.CertificatePath)));
+                    }
+
+                    throw;
                 }
             }
             else

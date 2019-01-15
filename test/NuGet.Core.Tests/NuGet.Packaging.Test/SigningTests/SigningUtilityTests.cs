@@ -111,11 +111,15 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(1, logger.Errors);
                 Assert.Equal(1, logger.Warnings);
 
-
                 if (RuntimeEnvironmentHelper.IsWindows)
                 {
                     AssertNotTimeValid(logger.LogMessages, LogLevel.Error);
                     SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
+                }
+                else if (RuntimeEnvironmentHelper.IsMacOSX)
+                {
+                    AssertExpiredCertificate(logger.LogMessages, LogLevel.Error);
+                    SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning); 
                 }
                 else
                 {
@@ -136,11 +140,11 @@ namespace NuGet.Packaging.Test
                 SigningUtility.Verify(request, logger);
 
                 Assert.Equal(0, logger.Errors);
-                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Warnings);
+                Assert.Equal(RuntimeEnvironmentHelper.IsLinux ? 2 : 1, logger.Warnings);
 
                 SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
 
-                if (!RuntimeEnvironmentHelper.IsWindows)
+                if (RuntimeEnvironmentHelper.IsLinux)
                 {
                     SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
                 }
@@ -696,6 +700,14 @@ namespace NuGet.Packaging.Test
                 certificate,
                 Common.HashAlgorithmName.SHA256,
                 Common.HashAlgorithmName.SHA256);
+        }
+
+        private static void AssertExpiredCertificate(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message.Contains("An expired certificate was detected"));
         }
 
         private static void AssertPartialChain(IEnumerable<ILogMessage> issues, LogLevel logLevel)
