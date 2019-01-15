@@ -1899,7 +1899,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(cachePath));
                 // This is expected, because despite the fact that both projects resolve to the same tool, the version range they request is different so they will keep overwriting each other
                 // Basically, it is impossible for both tools to no-op.
-                Assert.Contains($"Writing tool lock file to disk", r2.Item2);
+                Assert.Contains($"Writing tool assets file to disk", r2.Item2);
                 r = Util.RestoreSolution(pathContext);
 
             }
