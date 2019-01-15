@@ -1899,7 +1899,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(cachePath));
                 // This is expected, because despite the fact that both projects resolve to the same tool, the version range they request is different so they will keep overwriting each other
                 // Basically, it is impossible for both tools to no-op.
-                Assert.Contains($"Writing tool lock file to disk", r2.Item2);
+                Assert.Contains($"Writing tool assets file to disk", r2.Item2);
                 r = Util.RestoreSolution(pathContext);
 
             }
@@ -1981,7 +1981,7 @@ namespace NuGet.CommandLine.Test
 
                 // This is expected, because despite the fact that both projects resolve to the same tool, the version range they request is different so they will keep overwriting each other
                 // Basically, it is impossible for both tools to no-op.
-                Assert.Contains($"Writing tool lock file to disk", r2.Item2);
+                Assert.Contains($"Writing tool assets file to disk", r2.Item2);
             }
         }
 
@@ -5957,7 +5957,7 @@ namespace NuGet.CommandLine.Test
 
                 Assert.Equal(0, r.Item1);
                 Assert.Contains("Writing cache file", r.Item2);
-                Assert.Contains("Writing lock file to disk", r.Item2);
+                Assert.Contains("Writing assets file to disk", r.Item2);
 
                 // Pre-condition, Assert deleting the correct file
                 Assert.True(File.Exists(project.CacheFileOutputPath));
@@ -5967,7 +5967,7 @@ namespace NuGet.CommandLine.Test
 
                 Assert.Equal(0, r.Item1);
                 Assert.Contains("Writing cache file", r.Item2);
-                Assert.DoesNotContain("Writing lock file to disk", r.Item2);
+                Assert.DoesNotContain("Writing assets file to disk", r.Item2);
 
 
             }
@@ -6051,12 +6051,12 @@ namespace NuGet.CommandLine.Test
                 var r1 = Util.Restore(pathContext,project.ProjectPath);
                 Assert.Equal(0, r1.Item1);
                 Assert.Contains("Writing cache file", r1.Item2);
-                Assert.Contains("Writing lock file to disk", r1.Item2);
+                Assert.Contains("Writing assets file to disk", r1.Item2);
 
                 var r2 = Util.Restore(pathContext, secondaryProjectName);
                 Assert.Contains("Writing cache file", r2.Item2);
                 Assert.Equal(0, r2.Item1);
-                Assert.Contains("Writing lock file to disk", r2.Item2);
+                Assert.Contains("Writing assets file to disk", r2.Item2);
 
                 // Act
                 var result = Util.Restore(pathContext, project.ProjectPath);
@@ -6064,7 +6064,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
                 Assert.Contains("Writing cache file", result.Item2);
-                Assert.Contains("Writing lock file to disk", result.Item2);
+                Assert.Contains("Writing assets file to disk", result.Item2);
             }
         }
 
