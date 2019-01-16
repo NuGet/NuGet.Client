@@ -680,7 +680,7 @@ namespace Test.Utility.Signing
             }
             else if (RuntimeEnvironmentHelper.IsMacOSX)
             {
-                untrustedRoot = "The certificate was not trusted.";
+                untrustedRoot = "The trust policy was not trusted.";
             }
             else
             {
