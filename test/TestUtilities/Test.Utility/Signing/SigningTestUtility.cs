@@ -224,6 +224,7 @@ namespace Test.Utility.Signing
 
             var isSelfSigned = true;
             X509Certificate2 issuer = null;
+            DateTimeOffset? notAfter = null;
 
             var keyUsage = X509KeyUsageFlags.DigitalSignature;
 
@@ -235,6 +236,7 @@ namespace Test.Utility.Signing
                     // for a certificate with an issuer assign Authority Key Identifier
                     issuer = chainCertificateRequest?.Issuer;
 
+                    notAfter = issuer.NotAfter.Subtract(TimeSpan.FromMinutes(5));
                     var publicKey = DotNetUtilities.GetRsaPublicKey(issuer.GetRSAPublicKey());
 
                     certGen.Extensions.Add(
@@ -270,7 +272,7 @@ namespace Test.Utility.Signing
             var padding = paddingMode.ToPadding();
             var request = new CertificateRequest(subjectDN, rsa, hashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(), padding);
 
-            certGen.NotAfter = DateTime.UtcNow.Add(TimeSpan.FromMinutes(30));
+            certGen.NotAfter = notAfter ?? DateTime.UtcNow.Add(TimeSpan.FromMinutes(30));
             certGen.NotBefore = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(30));
 
             var random = new Random();
