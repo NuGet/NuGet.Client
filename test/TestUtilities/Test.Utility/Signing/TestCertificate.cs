@@ -58,7 +58,7 @@ namespace Test.Utility.Signing
         public static TestCertificate Generate(Action<TestCertificateGenerator> modifyGenerator = null, ChainCertificateRequest chainCertificateRequest = null)
         {
             var certName = GenerateCertificateName();
-            var cert = SigningTestUtility.GenerateCertificate(certName, modifyGenerator, chainCertificateRequest: chainCertificateRequest);
+            var cert = SigningTestUtility.GenerateCertificateWithKeyInfo(certName, modifyGenerator, chainCertificateRequest: chainCertificateRequest);
             CertificateRevocationList crl = null;
 
             // create a crl only if the certificate is part of a chain and it is a CA
@@ -69,7 +69,7 @@ namespace Test.Utility.Signing
 
             var testCertificate = new TestCertificate
             {
-                Cert = cert,
+                Cert = cert.Certificate,
                 Crl = crl
             };
 

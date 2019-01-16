@@ -174,6 +174,20 @@ namespace Test.Utility.Signing
             return certChain;
         }
 
+        public static X509CertificateWithKeyInfo GenerateCertificateWithKeyInfo(
+            string subjectName,
+            Action<TestCertificateGenerator> modifyGenerator,
+            NuGet.Common.HashAlgorithmName hashAlgorithm = NuGet.Common.HashAlgorithmName.SHA256,
+            RSASignaturePaddingMode paddingMode = RSASignaturePaddingMode.Pkcs1,
+            int publicKeyLength = 2048,
+            ChainCertificateRequest chainCertificateRequest = null)
+        {
+            var rsa = RSA.Create(publicKeyLength);
+            var cert = GenerateCertificate(subjectName, modifyGenerator, rsa, hashAlgorithm, paddingMode, chainCertificateRequest);
+
+            return new X509CertificateWithKeyInfo(cert, rsa);
+        }
+
         /// <summary>
         /// Create a self signed certificate with bouncy castle.
         /// </summary>
@@ -185,6 +199,20 @@ namespace Test.Utility.Signing
             int publicKeyLength = 2048,
             ChainCertificateRequest chainCertificateRequest = null)
         {
+            using (var rsa = RSA.Create(publicKeyLength))
+            {
+                return GenerateCertificate(subjectName, modifyGenerator, rsa, hashAlgorithm, paddingMode, chainCertificateRequest);
+            }
+        }
+
+        private static X509Certificate2 GenerateCertificate(
+            string subjectName,
+            Action<TestCertificateGenerator> modifyGenerator,
+            RSA rsa,
+            NuGet.Common.HashAlgorithmName hashAlgorithm,
+            RSASignaturePaddingMode paddingMode,
+            ChainCertificateRequest chainCertificateRequest)
+        {
             if (string.IsNullOrEmpty(subjectName))
             {
                 subjectName = "NuGetTest";
@@ -194,96 +222,93 @@ namespace Test.Utility.Signing
             var subjectDN = $"CN={subjectName}";
             var certGen = new TestCertificateGenerator();
 
-            using(var rsa = RSA.Create(publicKeyLength))
+            var isSelfSigned = true;
+            X509Certificate2 issuer = null;
+
+            var keyUsage = X509KeyUsageFlags.DigitalSignature;
+
+            if (chainCertificateRequest != null)
             {
-                var isSelfSigned = true;
-                X509Certificate2 issuer = null;
-
-                var keyUsage = X509KeyUsageFlags.DigitalSignature;
-
-                if (chainCertificateRequest != null)
+                if (chainCertificateRequest.Issuer != null)
                 {
-                    if (chainCertificateRequest.Issuer != null)
-                    {
-                        isSelfSigned = false;
-                        // for a certificate with an issuer assign Authority Key Identifier
-                        issuer = chainCertificateRequest?.Issuer;
+                    isSelfSigned = false;
+                    // for a certificate with an issuer assign Authority Key Identifier
+                    issuer = chainCertificateRequest?.Issuer;
 
-                        var publicKey = DotNetUtilities.GetRsaPublicKey(issuer.GetRSAPublicKey());
+                    var publicKey = DotNetUtilities.GetRsaPublicKey(issuer.GetRSAPublicKey());
 
-                        certGen.Extensions.Add(
-                            new X509Extension(
-                                TestCertificateGenerator.AuthorityKeyIdentifier,
-                                new AuthorityKeyIdentifierStructure(publicKey).GetEncoded(),
-                                critical: false));
-                    }
-
-                    if (chainCertificateRequest.ConfigureCrl)
-                    {
-                        // for a certificate in a chain create CRL distribution point extension
-                        var issuerDN = chainCertificateRequest?.Issuer?.Subject ?? subjectDN;
-                        var crlServerUri = $"{chainCertificateRequest.CrlServerBaseUri}{issuerDN}.crl";
-                        var generalName = new Org.BouncyCastle.Asn1.X509.GeneralName(Org.BouncyCastle.Asn1.X509.GeneralName.UniformResourceIdentifier, new DerIA5String(crlServerUri));
-                        var distPointName = new DistributionPointName(new GeneralNames(generalName));
-                        var distPoint = new DistributionPoint(distPointName, null, null);
-
-                        certGen.Extensions.Add(
-                            new X509Extension(
-                                TestCertificateGenerator.CrlDistributionPoints,
-                                new DerSequence(distPoint).GetDerEncoded(),
-                                critical: false));
-                    }
-
-                    if (chainCertificateRequest.IsCA)
-                    {
-                        // update key usage with CA cert sign and crl sign attributes
-                        keyUsage |= X509KeyUsageFlags.CrlSign | X509KeyUsageFlags.KeyCertSign;
-                    }
+                    certGen.Extensions.Add(
+                        new X509Extension(
+                            TestCertificateGenerator.AuthorityKeyIdentifier,
+                            new AuthorityKeyIdentifierStructure(publicKey).GetEncoded(),
+                            critical: false));
                 }
 
-                var padding = paddingMode.ToPadding();
-                var request = new CertificateRequest(subjectDN, rsa, hashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(), padding);
-
-                certGen.NotAfter = DateTime.UtcNow.Add(TimeSpan.FromMinutes(30));
-                certGen.NotBefore = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(30));
-
-                var random = new Random();
-                var serial = random.Next();
-                var serialNumber = BitConverter.GetBytes(serial);
-                Array.Reverse(serialNumber);
-                certGen.SetSerialNumber(serialNumber);
-
-                certGen.Extensions.Add(
-                    new X509SubjectKeyIdentifierExtension(request.PublicKey, critical: false));
-                certGen.Extensions.Add(
-                    new X509KeyUsageExtension(keyUsage, critical: false));
-                certGen.Extensions.Add(
-                    new X509BasicConstraintsExtension(certificateAuthority: chainCertificateRequest?.IsCA ?? false, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
-
-                // Allow changes
-                modifyGenerator?.Invoke(certGen);
-
-                foreach (var extension in certGen.Extensions)
+                if (chainCertificateRequest.ConfigureCrl)
                 {
-                    request.CertificateExtensions.Add(extension);
+                    // for a certificate in a chain create CRL distribution point extension
+                    var issuerDN = chainCertificateRequest?.Issuer?.Subject ?? subjectDN;
+                    var crlServerUri = $"{chainCertificateRequest.CrlServerBaseUri}{issuerDN}.crl";
+                    var generalName = new Org.BouncyCastle.Asn1.X509.GeneralName(Org.BouncyCastle.Asn1.X509.GeneralName.UniformResourceIdentifier, new DerIA5String(crlServerUri));
+                    var distPointName = new DistributionPointName(new GeneralNames(generalName));
+                    var distPoint = new DistributionPoint(distPointName, null, null);
+
+                    certGen.Extensions.Add(
+                        new X509Extension(
+                            TestCertificateGenerator.CrlDistributionPoints,
+                            new DerSequence(distPoint).GetDerEncoded(),
+                            critical: false));
                 }
 
-                X509Certificate2 certResult;
-
-                if (isSelfSigned)
+                if (chainCertificateRequest.IsCA)
                 {
-                    certResult = request.CreateSelfSigned(certGen.NotBefore, certGen.NotAfter);
+                    // update key usage with CA cert sign and crl sign attributes
+                    keyUsage |= X509KeyUsageFlags.CrlSign | X509KeyUsageFlags.KeyCertSign;
                 }
-                else
-                {
-                    using (var temp = request.Create(issuer, certGen.NotBefore, certGen.NotAfter, certGen.SerialNumber))
-                    {
-                        certResult = temp.CopyWithPrivateKey(rsa);
-                    }
-                }
-
-                return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
             }
+
+            var padding = paddingMode.ToPadding();
+            var request = new CertificateRequest(subjectDN, rsa, hashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(), padding);
+
+            certGen.NotAfter = DateTime.UtcNow.Add(TimeSpan.FromMinutes(30));
+            certGen.NotBefore = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(30));
+
+            var random = new Random();
+            var serial = random.Next();
+            var serialNumber = BitConverter.GetBytes(serial);
+            Array.Reverse(serialNumber);
+            certGen.SetSerialNumber(serialNumber);
+
+            certGen.Extensions.Add(
+                new X509SubjectKeyIdentifierExtension(request.PublicKey, critical: false));
+            certGen.Extensions.Add(
+                new X509KeyUsageExtension(keyUsage, critical: false));
+            certGen.Extensions.Add(
+                new X509BasicConstraintsExtension(certificateAuthority: chainCertificateRequest?.IsCA ?? false, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
+
+            // Allow changes
+            modifyGenerator?.Invoke(certGen);
+
+            foreach (var extension in certGen.Extensions)
+            {
+                request.CertificateExtensions.Add(extension);
+            }
+
+            X509Certificate2 certResult;
+
+            if (isSelfSigned)
+            {
+                certResult = request.CreateSelfSigned(certGen.NotBefore, certGen.NotAfter);
+            }
+            else
+            {
+                using (var temp = request.Create(issuer, certGen.NotBefore, certGen.NotAfter, certGen.SerialNumber))
+                {
+                    certResult = temp.CopyWithPrivateKey(rsa);
+                }
+            }
+
+            return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
         }
 
         private static RSASignaturePadding ToPadding(this RSASignaturePaddingMode mode)

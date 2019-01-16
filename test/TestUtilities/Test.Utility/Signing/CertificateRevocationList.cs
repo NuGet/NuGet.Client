@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Org.BouncyCastle.Asn1.X509;
@@ -19,7 +18,7 @@ namespace Test.Utility.Signing
     {
         public X509Crl Crl { get; set; }
 
-        public X509Certificate2 IssuerCert { get; private set; }
+        public X509CertificateWithKeyInfo IssuerCert { get; private set; }
 
         public string CrlLocalPath { get; private set; }
 
@@ -27,7 +26,7 @@ namespace Test.Utility.Signing
 
 #if IS_DESKTOP
         public static CertificateRevocationList CreateCrl(
-            X509Certificate2 issuerCert,
+            X509CertificateWithKeyInfo issuerCert,
             string crlLocalUri)
         {
             var version = BigInteger.One;
@@ -37,17 +36,17 @@ namespace Test.Utility.Signing
             {
                 Crl = crl,
                 IssuerCert = issuerCert,
-                CrlLocalPath = Path.Combine(crlLocalUri, $"{issuerCert.Subject}.crl"),
+                CrlLocalPath = Path.Combine(crlLocalUri, $"{issuerCert.Certificate.Subject}.crl"),
                 Version = version
             };
         }
 
         private static X509Crl CreateCrl(
-            X509Certificate2 issuerCert,
+            X509CertificateWithKeyInfo issuerCert,
             BigInteger version,
             X509Certificate2 revokedCertificate = null)
         {
-            var bcIssuerCert = DotNetUtilities.FromX509Certificate(issuerCert);
+            var bcIssuerCert = DotNetUtilities.FromX509Certificate(issuerCert.Certificate);
             var crlGen = new X509V2CrlGenerator();
             crlGen.SetIssuerDN(bcIssuerCert.SubjectDN);
             crlGen.SetThisUpdate(DateTime.Now);
@@ -61,10 +60,8 @@ namespace Test.Utility.Signing
                 crlGen.AddCrlEntry(bcRevokedCert.SerialNumber, DateTime.Now, CrlReason.PrivilegeWithdrawn);
             }
 
-            Debugger.Launch();
-
             var random = new SecureRandom();
-            var issuerPrivateKey = DotNetUtilities.GetKeyPair(issuerCert.GetRSAPrivateKey()).Private;
+            var issuerPrivateKey = DotNetUtilities.GetKeyPair(issuerCert.KeyPair).Private;
             var signatureFactory = new Asn1SignatureFactory(bcIssuerCert.SigAlgOid, issuerPrivateKey, random);
             var crl = crlGen.Generate(signatureFactory);
             return crl;
@@ -90,7 +87,7 @@ namespace Test.Utility.Signing
             Version = Version?.Add(BigInteger.One) ?? BigInteger.One;
         }
 #else
-        public static CertificateRevocationList CreateCrl(X509Certificate2 certCA, string crlLocalUri)
+        public static CertificateRevocationList CreateCrl(X509CertificateWithKeyInfo certCA, string crlLocalUri)
         {
             throw new NotImplementedException();
         }
