@@ -50,7 +50,7 @@ namespace NuGet.Commands
 
                 // Check if the entire subpath was matched
                 if (i == subPathParts.Length)
-                { 
+                {
                     // All items are files. The last string in the array will be the file name.
                     if (i == file.Length - 1)
                     {
