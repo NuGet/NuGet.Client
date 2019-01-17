@@ -34,7 +34,7 @@ namespace Test.Utility.Signing
         public static Action<TestCertificateGenerator> CertificateModificationGeneratorForInvalidEkuCert = delegate (TestCertificateGenerator gen)
         {
             // any EKU besides CodeSigning
-            var usages = new OidCollection { TestCertificateGenerator.IdKPClientAuth };
+            var usages = new OidCollection { new Oid(Oids.IdKpClientAuth) };
 
             gen.Extensions.Add(
                  new X509EnhancedKeyUsageExtension(
@@ -48,7 +48,7 @@ namespace Test.Utility.Signing
         /// </summary>
         public static Action<TestCertificateGenerator> CertificateModificationGeneratorForCodeSigningEkuCert = delegate (TestCertificateGenerator gen)
         {
-            var usages = new OidCollection { TestCertificateGenerator.IdKPCodeSigning };
+            var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
 
             gen.Extensions.Add(
                   new X509EnhancedKeyUsageExtension(
@@ -62,7 +62,7 @@ namespace Test.Utility.Signing
         /// </summary>
         public static Action<TestCertificateGenerator> CertificateModificationGeneratorExpiredCert = delegate (TestCertificateGenerator gen)
         {
-            var usages = new OidCollection { TestCertificateGenerator.IdKPCodeSigning };
+            var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
 
             gen.Extensions.Add(
                   new X509EnhancedKeyUsageExtension(
@@ -79,7 +79,7 @@ namespace Test.Utility.Signing
         /// </summary>
         public static Action<TestCertificateGenerator> CertificateModificationGeneratorNotYetValidCert = delegate (TestCertificateGenerator gen)
         {
-            var usages = new OidCollection { TestCertificateGenerator.IdKPCodeSigning };
+            var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
 
             gen.Extensions.Add(
              new X509EnhancedKeyUsageExtension(
@@ -98,7 +98,7 @@ namespace Test.Utility.Signing
         /// </summary>
         public static Action<TestCertificateGenerator> CertificateModificationGeneratorExpireIn10Seconds = delegate (TestCertificateGenerator gen)
         {
-            var usages = new OidCollection { TestCertificateGenerator.IdKPCodeSigning };
+            var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
 
             gen.Extensions.Add(
                 new X509EnhancedKeyUsageExtension(
@@ -241,7 +241,7 @@ namespace Test.Utility.Signing
 
                     certGen.Extensions.Add(
                         new X509Extension(
-                            TestCertificateGenerator.AuthorityKeyIdentifier,
+                            Oids.AuthorityKeyIdentifier,
                             new AuthorityKeyIdentifierStructure(publicKey).GetEncoded(),
                             critical: false));
                 }
@@ -257,7 +257,7 @@ namespace Test.Utility.Signing
 
                     certGen.Extensions.Add(
                         new X509Extension(
-                            TestCertificateGenerator.CrlDistributionPoints,
+                            Oids.CrlDistributionPoints,
                             new DerSequence(distPoint).GetDerEncoded(),
                             critical: false));
                 }
@@ -347,7 +347,7 @@ namespace Test.Utility.Signing
             request.CertificateExtensions.Add(
                 new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign, critical: true));
             request.CertificateExtensions.Add(
-                new X509EnhancedKeyUsageExtension(new OidCollection { TestCertificateGenerator.IdKPCodeSigning }, critical: true));
+                new X509EnhancedKeyUsageExtension(new OidCollection { new Oid(Oids.CodeSigningEku) }, critical: true));
 
             var certResult = request.CreateSelfSigned(notBefore: DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), notAfter: DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
 
@@ -381,7 +381,7 @@ namespace Test.Utility.Signing
             request.CertificateExtensions.Add(
                 new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign, critical: true));
             request.CertificateExtensions.Add(
-                new X509EnhancedKeyUsageExtension(new OidCollection { TestCertificateGenerator.IdKPCodeSigning }, critical: true));
+                new X509EnhancedKeyUsageExtension(new OidCollection { new Oid(Oids.CodeSigningEku) }, critical: true));
 
             var generator = X509SignatureGenerator.CreateForRSA(issuerAlgorithm, RSASignaturePadding.Pkcs1);
 
@@ -414,7 +414,7 @@ namespace Test.Utility.Signing
 
                 request.CertificateExtensions.Add(
                     new X509Extension(
-                        TestCertificateGenerator.AuthorityKeyIdentifier,
+                        Oids.AuthorityKeyIdentifier,
                         new AuthorityKeyIdentifierStructure(publicKey).GetEncoded(),
                         critical: false));
                 request.CertificateExtensions.Add(

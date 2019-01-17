@@ -139,7 +139,6 @@ namespace NuGet.Packaging.FuncTest
 
             Action<TestCertificateGenerator> modifyGenerator = delegate (TestCertificateGenerator gen)
             {
-                gen.NotBefore = DateTime.MinValue;
                 gen.NotBefore = DateTime.UtcNow.Subtract(TimeSpan.FromDays(1)); // cert has expired
             };
 

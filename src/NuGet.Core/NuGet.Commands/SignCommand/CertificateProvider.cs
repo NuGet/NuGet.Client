@@ -91,11 +91,11 @@ namespace NuGet.Commands
                 }
                 catch (FileNotFoundException)
                 {
-                        throw new SignCommandException(
-                                LogMessage.CreateError(NuGetLogCode.NU3001,
-                                string.Format(CultureInfo.CurrentCulture,
-                                    Strings.SignCommandCertificateFileNotFound,
-                                    options.CertificatePath)));
+                    throw new SignCommandException(
+                            LogMessage.CreateError(NuGetLogCode.NU3001,
+                            string.Format(CultureInfo.CurrentCulture,
+                                Strings.SignCommandCertificateFileNotFound,
+                                options.CertificatePath)));
                 }
             }
             else

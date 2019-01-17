@@ -8,14 +8,14 @@ using System.Security.Cryptography.X509Certificates;
 namespace Test.Utility.Signing
 {
     /// <summary>
-    /// Utility to store a certificate and the RSA key that it was build with.
+    /// Utility to store a certificate and the RSA key that it was built with.
     /// </summary>
     /// <remarks>
-    /// This is useful because CGN certs import the key as Exportable, but bouncy castle needs it as ExportablePlainText.
+    /// This is useful because CNG certs import the key as Exportable, but bouncy castle needs it as ExportablePlainText.
     /// By having the RSA key stored, you can use it with bouncy castle. If we update our test infrastructure to not use bouncy castle
     /// this class won't be needed anymore.
     /// </remarks>
-    public class X509CertificateWithKeyInfo : IDisposable
+    public sealed class X509CertificateWithKeyInfo : IDisposable
     {
         public X509Certificate2 Certificate { get; private set; }
 
