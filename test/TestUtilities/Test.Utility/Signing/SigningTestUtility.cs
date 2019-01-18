@@ -34,7 +34,7 @@ namespace Test.Utility.Signing
         public static Action<TestCertificateGenerator> CertificateModificationGeneratorForInvalidEkuCert = delegate (TestCertificateGenerator gen)
         {
             // any EKU besides CodeSigning
-            var usages = new OidCollection { new Oid(Oids.IdKpClientAuth) };
+            var usages = new OidCollection { new Oid(TestOids.IdKpClientAuth) };
 
             gen.Extensions.Add(
                  new X509EnhancedKeyUsageExtension(
@@ -257,7 +257,7 @@ namespace Test.Utility.Signing
 
                     certGen.Extensions.Add(
                         new X509Extension(
-                            Oids.CrlDistributionPoints,
+                            TestOids.CrlDistributionPoints,
                             new DerSequence(distPoint).GetDerEncoded(),
                             critical: false));
                 }
