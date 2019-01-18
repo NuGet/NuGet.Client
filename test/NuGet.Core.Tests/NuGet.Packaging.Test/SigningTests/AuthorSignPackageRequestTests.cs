@@ -32,7 +32,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("certificate", exception.ParamName);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Constructor_CertificateHashAlgorithm_WhenHashAlgorithmInvalid_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -44,7 +44,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Constructor_CertificateHashAlgorithm_WithValidInput_InitializesProperties()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -70,7 +70,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("certificate", exception.ParamName);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Constructor_CertificateSignatureHashAlgorithmTimestampHashAlgorithm_WhenSignatureHashAlgorithmInvalid_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -86,7 +86,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Constructor_CertificateSignatureHashAlgorithmTimestampHashAlgorithm_WhenTimestampHashAlgorithmInvalid_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -102,7 +102,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Constructor_CertificateSignatureHashAlgorithmTimestampHashAlgorithm_WithValidInput_InitializesProperties()
         {
             using (var certificate = _fixture.GetDefaultCertificate())

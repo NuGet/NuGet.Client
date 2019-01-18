@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1.X509;
@@ -26,22 +28,23 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData("SHA256WITHRSAENCRYPTION", Oids.Sha256WithRSAEncryption)]
-        [InlineData("SHA384WITHRSAENCRYPTION", Oids.Sha384WithRSAEncryption)]
-        [InlineData("SHA512WITHRSAENCRYPTION", Oids.Sha512WithRSAEncryption)]
-        public void IsSignatureAlgorithmSupported_WhenSupported_ReturnsTrue(string signatureAlgorithm, string expectedSignatureAlgorithmOid)
+        [InlineData(Common.HashAlgorithmName.SHA256, Oids.Sha256WithRSAEncryption)]
+        [InlineData(Common.HashAlgorithmName.SHA384, Oids.Sha384WithRSAEncryption)]
+        [InlineData(Common.HashAlgorithmName.SHA512, Oids.Sha512WithRSAEncryption)]
+        public void IsSignatureAlgorithmSupported_WhenSupported_ReturnsTrue(Common.HashAlgorithmName algorithm, string expectedSignatureAlgorithmOid)
         {
             using (var certificate = SigningTestUtility.GenerateCertificate(
                 "test",
                 generator => { },
-                signatureAlgorithm))
+                algorithm,
+                RSASignaturePaddingMode.Pkcs1))
             {
                 Assert.Equal(expectedSignatureAlgorithmOid, certificate.SignatureAlgorithm.Value);
                 Assert.True(CertificateUtility.IsSignatureAlgorithmSupported(certificate));
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void IsSignatureAlgorithmSupported_WhenUnsupported_ReturnsFalse()
         {
             using (var certificate = _fixture.GetRsaSsaPssCertificate())
@@ -58,7 +61,8 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate(
                 "test",
                 generator => { },
-                "SHA256WITHRSAANDMGF1",
+                Common.HashAlgorithmName.SHA256,
+                RSASignaturePaddingMode.Pss,
                 publicKeyLength: 2048))
             {
                 Assert.True(CertificateUtility.IsCertificatePublicKeyValid(certificate));
@@ -136,7 +140,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void HasLifetimeSigningEku_WithLifetimeSignerEku_ReturnsTrue()
         {
             using (var certificate = _fixture.GetLifetimeSigningCertificate())
@@ -162,10 +166,12 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate("test",
                 generator =>
                 {
-                    generator.AddExtension(
-                        X509Extensions.ExtendedKeyUsage.Id,
-                        critical: false,
-                        extensionValue: new ExtendedKeyUsage(KeyPurposeID.IdKPCodeSigning));
+                    var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
+
+                    generator.Extensions.Add(
+                        new X509EnhancedKeyUsageExtension(
+                              usages,
+                              critical: false));
                 }))
             {
                 Assert.Equal(1, GetExtendedKeyUsageCount(certificate));
@@ -189,10 +195,12 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate("test",
                 generator =>
                 {
-                    generator.AddExtension(
-                        X509Extensions.ExtendedKeyUsage.Id,
-                        critical: false,
-                        extensionValue: new ExtendedKeyUsage(KeyPurposeID.IdKPCodeSigning));
+                    var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
+
+                    generator.Extensions.Add(
+                        new X509EnhancedKeyUsageExtension(
+                              usages,
+                              critical: false));
                 }))
             {
                 Assert.Equal(1, GetExtendedKeyUsageCount(certificate));
@@ -206,10 +214,12 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate("test",
                 generator =>
                 {
-                    generator.AddExtension(
-                        X509Extensions.ExtendedKeyUsage.Id,
-                        critical: false,
-                        extensionValue: new ExtendedKeyUsage(KeyPurposeID.IdKPEmailProtection));
+                    var usages = new OidCollection { new Oid(Oids.IdKpEmailProtection) };
+
+                    generator.Extensions.Add(
+                        new X509EnhancedKeyUsageExtension(
+                              usages,
+                              critical: false));
                 }))
             {
                 Assert.Equal(1, GetExtendedKeyUsageCount(certificate));
@@ -223,10 +233,12 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate("test",
                 generator =>
                 {
-                    generator.AddExtension(
-                        X509Extensions.ExtendedKeyUsage.Id,
-                        critical: false,
-                        extensionValue: new ExtendedKeyUsage(KeyPurposeID.IdKPEmailProtection, KeyPurposeID.AnyExtendedKeyUsage));
+                    var usages = new OidCollection { new Oid(Oids.IdKpEmailProtection), new Oid(Oids.AnyExtendedKeyUsage) };
+
+                    generator.Extensions.Add(
+                        new X509EnhancedKeyUsageExtension(
+                              usages,
+                              critical: false));
                 }))
             {
                 Assert.Equal(2, GetExtendedKeyUsageCount(certificate));
@@ -262,7 +274,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void IsSelfIssued_WithNonSelfSignedCertificate_ReturnsFalse()
         {
             using (var certificate = _fixture.GetNonSelfSignedCertificate())
@@ -271,7 +283,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void IsSelfIssued_WithSelfSignedCertificate_ReturnsTrue()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -280,7 +292,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void IsSelfIssued_WithSelfIssuedCertificate_ReturnsTrue()
         {
             using (var certificate = _fixture.GetSelfIssuedCertificate())
@@ -289,7 +301,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void IsSelfIssued_WithRootCertificate_ReturnsTrue()
         {
             using (var certificate = _fixture.GetRootCertificate())
@@ -313,7 +325,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void GetHashString_UnknownHashAlgorithm_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -323,7 +335,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void GetHashString_UnsupportedHashAlgorithm_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())

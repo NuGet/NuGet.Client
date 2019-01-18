@@ -17,7 +17,5 @@ namespace Test.Utility.Signing
         public bool ConfigureCrl { get; set; } = true;
 
         public X509Certificate2 Issuer { get; set; }
-
-        public string IssuerDN => Issuer?.Subject;
     }
 }

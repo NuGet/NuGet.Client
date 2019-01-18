@@ -38,7 +38,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("certificate", exception.ParamName);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Create_WithCertificate_InitializesFields()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -56,7 +56,9 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = SigningTestUtility.GenerateCertificate("test", generator =>
                 {
-                    generator.SetSerialNumber(BigInteger.One);
+                    var bytes = BitConverter.GetBytes(1);
+                    Array.Reverse(bytes);
+                    generator.SetSerialNumber(bytes);
                 }))
             {
                 var issuerSerial = IssuerSerial.Create(certificate);
@@ -70,7 +72,9 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = SigningTestUtility.GenerateCertificate("test", generator =>
                 {
-                    generator.SetSerialNumber(BigInteger.ValueOf(long.MaxValue));
+                    var bytes = BitConverter.GetBytes(long.MaxValue);
+                    Array.Reverse(bytes);
+                    generator.SetSerialNumber(bytes);
                 }))
             {
                 var issuerSerial = IssuerSerial.Create(certificate);

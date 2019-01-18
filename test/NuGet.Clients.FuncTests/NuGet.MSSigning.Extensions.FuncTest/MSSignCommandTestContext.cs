@@ -52,7 +52,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            var key = certificate.PrivateKey as ICspAsymmetricAlgorithm;
+            var key = certificate.GetRSAPrivateKey() as ICspAsymmetricAlgorithm;
             if (key != null)
             {
                 var keyContainer = key.CspKeyContainerInfo;

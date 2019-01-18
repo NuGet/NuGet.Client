@@ -39,7 +39,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("request", exception.ParamName);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Verify_WhenLoggerNull_Throws()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -52,7 +52,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Verify_WithCertificateWithUnsupportedSignatureAlgorithm_Throws()
         {
             using (var certificate = _fixture.GetRsaSsaPssCertificate())
@@ -66,7 +66,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Verify_WithCertificateWithLifetimeSigningEku_Throws()
         {
             using (var certificate = _fixture.GetLifetimeSigningCertificate())
@@ -80,7 +80,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Verify_WithNotYetValidCertificate_Throws()
         {
             using (var certificate = _fixture.GetNotYetValidCertificate())
@@ -94,7 +94,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Verify_WhenChainBuildingFails_Throws()
         {
             using (var certificate = _fixture.GetExpiredCertificate())
@@ -111,11 +111,15 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(1, logger.Errors);
                 Assert.Equal(1, logger.Warnings);
 
-
                 if (RuntimeEnvironmentHelper.IsWindows)
                 {
                     AssertNotTimeValid(logger.LogMessages, LogLevel.Error);
                     SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
+                }
+                else if (RuntimeEnvironmentHelper.IsMacOSX)
+                {
+                    AssertExpiredCertificate(logger.LogMessages, LogLevel.Error);
+                    SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning); 
                 }
                 else
                 {
@@ -125,7 +129,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void Verify_WithUntrustedSelfSignedCertificate_Succeeds()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -136,11 +140,11 @@ namespace NuGet.Packaging.Test
                 SigningUtility.Verify(request, logger);
 
                 Assert.Equal(0, logger.Errors);
-                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Warnings);
+                Assert.Equal(RuntimeEnvironmentHelper.IsLinux ? 2 : 1, logger.Warnings);
 
                 SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
 
-                if (!RuntimeEnvironmentHelper.IsWindows)
+                if (RuntimeEnvironmentHelper.IsLinux)
                 {
                     SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
                 }
@@ -307,7 +311,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("request", exception.ParamName);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public void CreateCmsSigner_WhenLoggerNull_Throws()
         {
             using (var request = new AuthorSignPackageRequest(new X509Certificate2(), Common.HashAlgorithmName.SHA256))
@@ -463,7 +467,8 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate(
                 "test",
                 generator => { },
-                "SHA256WITHRSAANDMGF1"))
+                Common.HashAlgorithmName.SHA256,
+                System.Security.Cryptography.RSASignaturePaddingMode.Pss))
             using (var test = SignTest.Create(certificate, HashAlgorithmName.SHA256))
             {
                 var exception = await Assert.ThrowsAsync<SignatureException>(
@@ -537,7 +542,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [Fact]
         public async Task SignAsync_WithUntrustedSelfSignedCertificate_SucceedsAsync()
         {
             var package = new SimpleTestPackageContext();
@@ -695,6 +700,14 @@ namespace NuGet.Packaging.Test
                 certificate,
                 Common.HashAlgorithmName.SHA256,
                 Common.HashAlgorithmName.SHA256);
+        }
+
+        private static void AssertExpiredCertificate(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message.Contains("An expired certificate was detected"));
         }
 
         private static void AssertPartialChain(IEnumerable<ILogMessage> issues, LogLevel logLevel)

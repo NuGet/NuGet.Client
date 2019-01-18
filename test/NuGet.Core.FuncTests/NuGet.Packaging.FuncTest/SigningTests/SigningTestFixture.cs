@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using NuGet.Packaging.Signing;
@@ -103,19 +104,21 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_trustedTestCertificateWithReissuedCertificate == null)
                 {
-                    var keyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
-                    var certificateName = TestCertificate.GenerateCertificateName();
-                    var certificate1 = SigningTestUtility.GenerateCertificate(certificateName, keyPair);
-                    var certificate2 = SigningTestUtility.GenerateCertificate(certificateName, keyPair);
-
-                    var testCertificate1 = new TestCertificate() { Cert = certificate1 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine);
-                    var testCertificate2 = new TestCertificate() { Cert = certificate2 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine);
-
-                    _trustedTestCertificateWithReissuedCertificate = new[]
+                    using (var rsa = RSA.Create(keySizeInBits: 2048))
                     {
-                        testCertificate1,
-                        testCertificate2
-                    };
+                        var certificateName = TestCertificate.GenerateCertificateName();
+                        var certificate1 = SigningTestUtility.GenerateCertificate(certificateName, rsa);
+                        var certificate2 = SigningTestUtility.GenerateCertificate(certificateName, rsa);
+
+                        var testCertificate1 = new TestCertificate() { Cert = certificate1 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                        var testCertificate2 = new TestCertificate() { Cert = certificate2 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+
+                        _trustedTestCertificateWithReissuedCertificate = new[]
+                        {
+                            testCertificate1,
+                            testCertificate2
+                        };
+                    }
                 }
 
                 return _trustedTestCertificateWithReissuedCertificate;
