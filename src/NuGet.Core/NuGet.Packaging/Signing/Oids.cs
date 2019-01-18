@@ -89,13 +89,5 @@ namespace NuGet.Packaging.Signing
         public const string NuGetV3ServiceIndexUrl = "1.3.6.1.4.1.311.84.2.1.1.1";
 
         public const string NuGetPackageOwners = "1.3.6.1.4.1.311.84.2.1.1.2";
-
-        public const string IdKpClientAuth = "1.3.6.1.5.5.7.3.2";
-
-        public const string IdKpEmailProtection = "1.3.6.1.5.5.7.3.4";
-
-        public const string AnyExtendedKeyUsage = "2.5.29.37.0";
-
-        public const string CrlDistributionPoints = "2.5.29.31";
     }
 }

@@ -214,7 +214,7 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate("test",
                 generator =>
                 {
-                    var usages = new OidCollection { new Oid(Oids.IdKpEmailProtection) };
+                    var usages = new OidCollection { new Oid(TestOids.IdKpEmailProtection) };
 
                     generator.Extensions.Add(
                         new X509EnhancedKeyUsageExtension(
@@ -233,7 +233,7 @@ namespace NuGet.Packaging.Test
             using (var certificate = SigningTestUtility.GenerateCertificate("test",
                 generator =>
                 {
-                    var usages = new OidCollection { new Oid(Oids.IdKpEmailProtection), new Oid(Oids.AnyExtendedKeyUsage) };
+                    var usages = new OidCollection { new Oid(TestOids.IdKpEmailProtection), new Oid(TestOids.AnyExtendedKeyUsage) };
 
                     generator.Extensions.Add(
                         new X509EnhancedKeyUsageExtension(
