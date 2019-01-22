@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Packaging;
@@ -300,6 +301,11 @@ namespace Dotnet.Integration.Test
             {
                 return false;
             }
+            //add to see the actual ouput msg in devdiv
+            for (var i = 0; i <= sections.Length - 1; i++) {
+                Console.WriteLine(sections[i]);
+            }
+            
             for (var i = 1; i <= sections.Length - 2; i++)
             {
                 for (var j = i + 1; j <= sections.Length - 1; j++)

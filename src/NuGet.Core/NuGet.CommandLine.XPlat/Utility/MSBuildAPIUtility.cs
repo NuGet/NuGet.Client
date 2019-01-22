@@ -375,7 +375,6 @@ namespace NuGet.CommandLine.XPlat
                 requestedTargets = filteredTargets;
             }
 
-            // In 2.2.100 of CLI. DotNet list package would show a section for each TFM and for each TFM/RID.
             // Filtering the Targets to ignore TargetFramework + RID combination, only keep TargetFramework in requestedTargets.
             // So that only one section will be shown for each TFM.
             requestedTargets = requestedTargets.Where(target => target.RuntimeIdentifier == null).ToList();
