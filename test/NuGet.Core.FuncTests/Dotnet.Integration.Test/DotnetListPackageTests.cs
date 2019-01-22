@@ -232,6 +232,15 @@ namespace Dotnet.Integration.Test
 
                 //the assets file should generate 4 sections in Targets: 1 for TFM only , and 3 for TFM + RID combinations 
                 var assetsFile = projectA.AssetsFile;
+                //add for testing the assetsFile
+                var targets = assetsFile.Targets.GetEnumerator();
+                var i = 0;
+                while (targets.MoveNext()) {
+                    var currTarget = targets.Current;
+                    Console.WriteLine(i + "  Name : " + currTarget.Name + " RID : " + currTarget.RuntimeIdentifier);
+                    i++;
+                }
+                
                 Assert.Equal(4, assetsFile.Targets.Count);
 
                 var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
@@ -239,8 +248,8 @@ namespace Dotnet.Integration.Test
                     true);
 
                 //make sure there is no duplicate in output
-                Assert.True(NoDuplicateSection(listResult.AllOutput));
-
+                Assert.True(NoDuplicateSection(listResult.AllOutput), listResult.AllOutput);
+               
             }
         }
         
@@ -300,10 +309,6 @@ namespace Dotnet.Integration.Test
             if (sections.Length == 1)
             {
                 return false;
-            }
-            //add to see the actual ouput msg in devdiv
-            for (var i = 0; i <= sections.Length - 1; i++) {
-                Console.WriteLine(sections[i]);
             }
             
             for (var i = 1; i <= sections.Length - 2; i++)
