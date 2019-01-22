@@ -25,6 +25,12 @@ namespace NuGet.PackageManagement.Utility
             List<NuGetProjectAction> actionsList,
             CancellationToken token)
         {
+            if (msbuildProject == null)
+            {
+                // probably a `nuget.exe install` command, which doesn't support lock files until lock file arguments are implemented
+                return;
+            }
+
             var lockFileName = GetPackagesLockFilePath(msbuildProject);
             var lockFileExists = File.Exists(lockFileName);
             var enableLockFile = IsRestorePackagesWithLockFileEnabled(msbuildProject);
