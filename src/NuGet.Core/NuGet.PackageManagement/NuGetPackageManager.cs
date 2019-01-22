@@ -2340,8 +2340,6 @@ namespace NuGet.PackageManagement
 
                     await PackagesConfigLockFileUtility.UpdateLockFileAsync(msbuildProject,
                         actionsList,
-                        PackagesFolderSourceRepository,
-                        logger,
                         token);
 
                     // Post process

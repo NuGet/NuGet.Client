@@ -118,7 +118,7 @@ namespace NuGet.PackageManagement.Test.Utility
                 NuGetProjectAction.CreateInstallProjectAction(new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")), null, null)
             };
 
-            var contentHashUtility = new Mock<ISolutionPackagesContentHashUtility>();
+            var contentHashUtility = new Mock<IPackagesConfigContentHashProvider>();
 
             // Act
             await PackagesConfigLockFileUtility.ApplyChangesAsync(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
@@ -156,7 +156,7 @@ namespace NuGet.PackageManagement.Test.Utility
                 NuGetProjectAction.CreateUninstallProjectAction(new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")), null)
             };
 
-            var contentHashUtility = new Mock<ISolutionPackagesContentHashUtility>();
+            var contentHashUtility = new Mock<IPackagesConfigContentHashProvider>();
 
             // Act
             await PackagesConfigLockFileUtility.ApplyChangesAsync(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
@@ -193,7 +193,7 @@ namespace NuGet.PackageManagement.Test.Utility
                 NuGetProjectAction.CreateInstallProjectAction(new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0")), null, null)
             };
 
-            var contentHashUtility = new Mock<ISolutionPackagesContentHashUtility>();
+            var contentHashUtility = new Mock<IPackagesConfigContentHashProvider>();
 
             // Act
             await PackagesConfigLockFileUtility.ApplyChangesAsync(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
@@ -236,7 +236,7 @@ namespace NuGet.PackageManagement.Test.Utility
                 NuGetProjectAction.CreateInstallProjectAction(new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")), null, null)
             };
 
-            var contentHashUtility = new Mock<ISolutionPackagesContentHashUtility>();
+            var contentHashUtility = new Mock<IPackagesConfigContentHashProvider>();
 
             // Act
             await PackagesConfigLockFileUtility.ApplyChangesAsync(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
@@ -280,7 +280,7 @@ namespace NuGet.PackageManagement.Test.Utility
                 NuGetProjectAction.CreateInstallProjectAction(new PackageIdentity("packageC", NuGetVersion.Parse("1.0.0")), null, null)
             };
 
-            var contentHashUtility = new Mock<ISolutionPackagesContentHashUtility>();
+            var contentHashUtility = new Mock<IPackagesConfigContentHashProvider>();
 
             // Act
             await PackagesConfigLockFileUtility.ApplyChangesAsync(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
@@ -324,7 +324,7 @@ namespace NuGet.PackageManagement.Test.Utility
                 NuGetProjectAction.CreateInstallProjectAction(new PackageIdentity("packageE", NuGetVersion.Parse("1.0.0")), null, null)
             };
 
-            var contentHashUtility = new Mock<ISolutionPackagesContentHashUtility>();
+            var contentHashUtility = new Mock<IPackagesConfigContentHashProvider>();
 
             // Act
             await PackagesConfigLockFileUtility.ApplyChangesAsync(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);

@@ -8,25 +8,21 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement
 {
-    internal class SolutionPackagesContentHashUtility : ISolutionPackagesContentHashUtility
+    internal class PackagesConfigContentHashProvider : IPackagesConfigContentHashProvider
     {
-        private readonly FindLocalPackagesResource _packagesFolderFindPackagesResource;
-        private readonly ILogger _logger;
+        private readonly FolderNuGetProject _packagesFolder;
 
-        internal SolutionPackagesContentHashUtility(SourceRepository packagesFolderSourceRepository, ILogger logger)
+        internal PackagesConfigContentHashProvider(FolderNuGetProject packagesFolder)
         {
-            _packagesFolderFindPackagesResource = packagesFolderSourceRepository.GetResource<FindLocalPackagesResource>();
-            _logger = logger;
+            _packagesFolder = packagesFolder;
         }
 
         public async Task<string> GetContentHashAsync(PackageIdentity packageIdentity, CancellationToken token)
         {
-            // try to read the .nupkg.metadata file from the solution packages folder
             var nupkgPath = GetNupkgPath(packageIdentity, token);
             var result = TryGetNupkgMetadata(nupkgPath);
 
@@ -47,8 +43,8 @@ namespace NuGet.PackageManagement
 
         private string GetNupkgPath(PackageIdentity packageIdentity, CancellationToken token)
         {
-            var package = _packagesFolderFindPackagesResource.GetPackage(packageIdentity, _logger, token);
-            return package?.Path;
+            var packagePath = _packagesFolder.GetInstalledPackageFilePath(packageIdentity);
+            return packagePath;
         }
 
         private Result TryGetNupkgMetadata(string nupkgPath)

@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.Utility
@@ -24,8 +23,6 @@ namespace NuGet.PackageManagement.Utility
         internal static async Task UpdateLockFileAsync(
             MSBuildNuGetProject msbuildProject,
             List<NuGetProjectAction> actionsList,
-            SourceRepository packagesFolderSourceRepository,
-            ProjectContextLogger logger,
             CancellationToken token)
         {
             var lockFileName = GetPackagesLockFilePath(msbuildProject);
@@ -40,7 +37,7 @@ namespace NuGet.PackageManagement.Utility
             {
                 var lockFile = GetLockFile(lockFileExists, lockFileName);
                 lockFile.Targets[0].TargetFramework = msbuildProject.ProjectSystem.TargetFramework;
-                var contentHashUtil = new SolutionPackagesContentHashUtility(packagesFolderSourceRepository, logger);
+                var contentHashUtil = new PackagesConfigContentHashProvider(msbuildProject.FolderNuGetProject);
                 await ApplyChangesAsync(lockFile, actionsList, contentHashUtil, token);
                 PackagesLockFileFormat.Write(lockFileName, lockFile);
 
@@ -132,7 +129,7 @@ namespace NuGet.PackageManagement.Utility
         internal static async Task ApplyChangesAsync(
             PackagesLockFile lockFile,
             List<NuGetProjectAction> actionsList,
-            ISolutionPackagesContentHashUtility contentHashUtil,
+            IPackagesConfigContentHashProvider contentHashUtil,
             CancellationToken token)
         {
             RemoveUninstalledPackages(lockFile,
@@ -167,7 +164,7 @@ namespace NuGet.PackageManagement.Utility
         private static async Task AddInstalledPackagesAsync(
             PackagesLockFile lockFile,
             IEnumerable<NuGetProjectAction> actionsList,
-            ISolutionPackagesContentHashUtility contentHashUtil,
+            IPackagesConfigContentHashProvider contentHashUtil,
             CancellationToken token)
         {
             foreach (var toInstall in actionsList)
