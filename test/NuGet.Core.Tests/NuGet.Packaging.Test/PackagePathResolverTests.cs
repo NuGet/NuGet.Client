@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Test
 {
     public class PackagePathResolverTests
     {
-        private const string InMemoryRootDirectory = ".";
+        private static readonly string InMemoryRootDirectory = Directory.GetCurrentDirectory();
         private static readonly PackageIdentity PackageIdentity = new PackageIdentity("PackageA", new NuGetVersion("1.0.0.0-BETA"));
 
         [Fact]
@@ -34,6 +34,25 @@ namespace NuGet.Packaging.Test
                 rootDirectory: string.Empty,
                 useSideBySidePaths: true));
             Assert.Equal("rootDirectory", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_ThrowsForNonRootedRootDirectory()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var expectedPath = testDirectory.Path;
+                var relativePath = PathUtility.GetRelativePath(Directory.GetCurrentDirectory(), expectedPath);
+
+                // Act
+                var exception = Assert.Throws<ArgumentException>(() => new PackagePathResolver(
+                    rootDirectory: null,
+                    useSideBySidePaths: true));
+
+                // Assert
+                Assert.Equal("rootDirectory", exception.ParamName);
+            }
         }
 
         [Theory]
@@ -110,7 +129,7 @@ namespace NuGet.Packaging.Test
             var target = new PackagePathResolver(
                 rootDirectory: InMemoryRootDirectory,
                 useSideBySidePaths: useSideBySidePaths);
-            expected = PathUtility.GetAbsolutePath(Directory.GetCurrentDirectory(), Path.Combine(InMemoryRootDirectory, expected));
+            expected = Path.Combine(InMemoryRootDirectory, expected);
 
             // Act
             var actual = target.GetInstallPath(PackageIdentity);
@@ -269,22 +288,6 @@ namespace NuGet.Packaging.Test
                 var actualFilePath = target.GetInstalledPackageFilePath(PackageIdentity);
 
                 Assert.Equal("", actualFilePath);
-            }
-        }
-
-        [Fact]
-        public void Root_ReturnsAbsolutePath()
-        {
-            using (var testDirectory = TestDirectory.Create())
-            {
-                var expectedPath = testDirectory.Path;
-                var relativePath = PathUtility.GetRelativePath(Directory.GetCurrentDirectory(), expectedPath);
-
-                var target = new PackagePathResolver(relativePath);
-
-                var actualPath = target.Root;
-
-                Assert.Equal(expectedPath, actualPath);
             }
         }
     }
