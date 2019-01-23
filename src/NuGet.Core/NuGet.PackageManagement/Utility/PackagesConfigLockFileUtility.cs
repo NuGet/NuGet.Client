@@ -9,7 +9,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -20,7 +19,7 @@ namespace NuGet.PackageManagement.Utility
     {
         private static readonly IComparer _dependencyComparer = new DependencyComparer();
 
-        internal static async Task UpdateLockFileAsync(
+        internal static void UpdateLockFile(
             MSBuildNuGetProject msbuildProject,
             List<NuGetProjectAction> actionsList,
             CancellationToken token)
@@ -44,7 +43,7 @@ namespace NuGet.PackageManagement.Utility
                 var lockFile = GetLockFile(lockFileExists, lockFileName);
                 lockFile.Targets[0].TargetFramework = msbuildProject.ProjectSystem.TargetFramework;
                 var contentHashUtil = new PackagesConfigContentHashProvider(msbuildProject.FolderNuGetProject);
-                await ApplyChangesAsync(lockFile, actionsList, contentHashUtil, token);
+                ApplyChanges(lockFile, actionsList, contentHashUtil, token);
                 PackagesLockFileFormat.Write(lockFileName, lockFile);
 
                 // Add lock file to msbuild project, so it appears in solution explorer and is added to TFS source control.
@@ -132,7 +131,7 @@ namespace NuGet.PackageManagement.Utility
             return lockFile;
         }
 
-        internal static async Task ApplyChangesAsync(
+        internal static void ApplyChanges(
             PackagesLockFile lockFile,
             List<NuGetProjectAction> actionsList,
             IPackagesConfigContentHashProvider contentHashUtil,
@@ -140,7 +139,7 @@ namespace NuGet.PackageManagement.Utility
         {
             RemoveUninstalledPackages(lockFile,
                 actionsList.Where(a => a.NuGetProjectActionType == NuGetProjectActionType.Uninstall));
-            await AddInstalledPackagesAsync(lockFile,
+            AddInstalledPackages(lockFile,
                 actionsList.Where(a => a.NuGetProjectActionType == NuGetProjectActionType.Install),
                 contentHashUtil,
                 token);
@@ -167,7 +166,7 @@ namespace NuGet.PackageManagement.Utility
             }
         }
 
-        private static async Task AddInstalledPackagesAsync(
+        private static void AddInstalledPackages(
             PackagesLockFile lockFile,
             IEnumerable<NuGetProjectAction> actionsList,
             IPackagesConfigContentHashProvider contentHashUtil,
@@ -180,7 +179,7 @@ namespace NuGet.PackageManagement.Utility
                 var newDependency = new LockFileDependency
                 {
                     Id = toInstall.PackageIdentity.Id,
-                    ContentHash = await contentHashUtil.GetContentHashAsync(toInstall.PackageIdentity, token),
+                    ContentHash = contentHashUtil.GetContentHash(toInstall.PackageIdentity, token),
                     RequestedVersion = new VersionRange(toInstall.PackageIdentity.Version, true, toInstall.PackageIdentity.Version, true),
                     ResolvedVersion = toInstall.PackageIdentity.Version,
                     Type = PackageDependencyType.Direct

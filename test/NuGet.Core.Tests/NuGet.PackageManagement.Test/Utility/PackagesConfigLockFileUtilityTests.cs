@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using Moq;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.Utility;
@@ -102,7 +101,7 @@ namespace NuGet.PackageManagement.Test.Utility
         }
 
         [Fact]
-        public async Task ApplyChangesAsync_AddInstalledPackage()
+        public void ApplyChanges_AddInstalledPackage()
         {
             // Arrange
             var lockFile = new PackagesLockFile
@@ -121,7 +120,7 @@ namespace NuGet.PackageManagement.Test.Utility
             var contentHashUtility = new Mock<IPackagesConfigContentHashProvider>();
 
             // Act
-            await PackagesConfigLockFileUtility.ApplyChangesAsync(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
+            PackagesConfigLockFileUtility.ApplyChanges(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
 
             // Assert
             Assert.Equal(1, lockFile.Targets[0].Dependencies.Count);
@@ -130,7 +129,7 @@ namespace NuGet.PackageManagement.Test.Utility
         }
 
         [Fact]
-        public async Task ApplyChangesAsync_RemoveUninstalledPackage()
+        public void ApplyChanges_RemoveUninstalledPackage()
         {
             // Arrange
             var lockFile = new PackagesLockFile
@@ -159,14 +158,14 @@ namespace NuGet.PackageManagement.Test.Utility
             var contentHashUtility = new Mock<IPackagesConfigContentHashProvider>();
 
             // Act
-            await PackagesConfigLockFileUtility.ApplyChangesAsync(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
+            PackagesConfigLockFileUtility.ApplyChanges(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
 
             // Assert
             Assert.Equal(0, lockFile.Targets[0].Dependencies.Count);
         }
 
         [Fact]
-        public async Task ApplyChangesAsync_UpgradeInstalledPackage()
+        public void ApplyChanges_UpgradeInstalledPackage()
         {
             // Arrange
             var lockFile = new PackagesLockFile
@@ -196,7 +195,7 @@ namespace NuGet.PackageManagement.Test.Utility
             var contentHashUtility = new Mock<IPackagesConfigContentHashProvider>();
 
             // Act
-            await PackagesConfigLockFileUtility.ApplyChangesAsync(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
+            PackagesConfigLockFileUtility.ApplyChanges(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
 
              // Assert
             Assert.Equal(1, lockFile.Targets[0].Dependencies.Count);
@@ -205,7 +204,7 @@ namespace NuGet.PackageManagement.Test.Utility
         }
 
         [Fact]
-        public async Task ApplyChangesAsync_SortPackages_FirstPackage()
+        public void ApplyChanges_SortPackages_FirstPackage()
         {
             // Arrange
             var lockFile = new PackagesLockFile
@@ -239,7 +238,7 @@ namespace NuGet.PackageManagement.Test.Utility
             var contentHashUtility = new Mock<IPackagesConfigContentHashProvider>();
 
             // Act
-            await PackagesConfigLockFileUtility.ApplyChangesAsync(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
+            PackagesConfigLockFileUtility.ApplyChanges(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
 
             // Assert
             Assert.Equal(3, lockFile.Targets[0].Dependencies.Count);
@@ -249,7 +248,7 @@ namespace NuGet.PackageManagement.Test.Utility
         }
 
         [Fact]
-        public async Task ApplyChangesAsync_SortPackages_MiddleOfList()
+        public void ApplyChanges_SortPackages_MiddleOfList()
         {
             // Arrange
             var lockFile = new PackagesLockFile
@@ -283,7 +282,7 @@ namespace NuGet.PackageManagement.Test.Utility
             var contentHashUtility = new Mock<IPackagesConfigContentHashProvider>();
 
             // Act
-            await PackagesConfigLockFileUtility.ApplyChangesAsync(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
+            PackagesConfigLockFileUtility.ApplyChanges(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
 
             // Assert
             Assert.Equal(3, lockFile.Targets[0].Dependencies.Count);
@@ -293,7 +292,7 @@ namespace NuGet.PackageManagement.Test.Utility
         }
 
         [Fact]
-        public async Task ApplyChangesAsync_SortPackages_LastPackage()
+        public void ApplyChanges_SortPackages_LastPackage()
         {
             // Arrange
             var lockFile = new PackagesLockFile
@@ -327,7 +326,7 @@ namespace NuGet.PackageManagement.Test.Utility
             var contentHashUtility = new Mock<IPackagesConfigContentHashProvider>();
 
             // Act
-            await PackagesConfigLockFileUtility.ApplyChangesAsync(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
+            PackagesConfigLockFileUtility.ApplyChanges(lockFile, actionList, contentHashUtility.Object, CancellationToken.None);
 
             // Assert
             Assert.Equal(3, lockFile.Targets[0].Dependencies.Count);

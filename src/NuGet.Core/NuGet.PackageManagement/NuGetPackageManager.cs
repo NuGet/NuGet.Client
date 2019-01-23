@@ -2338,7 +2338,7 @@ namespace NuGet.PackageManagement
                         }
                     }
 
-                    await PackagesConfigLockFileUtility.UpdateLockFileAsync(msbuildProject,
+                    PackagesConfigLockFileUtility.UpdateLockFile(msbuildProject,
                         actionsList,
                         token);
 

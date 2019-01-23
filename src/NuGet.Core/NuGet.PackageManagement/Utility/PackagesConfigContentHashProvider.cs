@@ -1,11 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -21,19 +18,14 @@ namespace NuGet.PackageManagement
             _packagesFolder = packagesFolder;
         }
 
-        public async Task<string> GetContentHashAsync(PackageIdentity packageIdentity, CancellationToken token)
+        public string GetContentHash(PackageIdentity packageIdentity, CancellationToken token)
         {
             var nupkgPath = GetNupkgPath(packageIdentity, token);
             var result = TryGetNupkgMetadata(nupkgPath);
 
             if (!result.Found)
             {
-                result = TryGetSignedPackageHash(nupkgPath, token);
-                if (!result.Found)
-                {
-                    var contentHash = await GetArchiveHash(nupkgPath, token);
-                    result = new Result(true, contentHash);
-                }
+                var contentHash = GetContentHashFromNupkg(nupkgPath, token);
 
                 WriteNupkgMetadata(nupkgPath, result.ContentHash);
             }
@@ -64,27 +56,12 @@ namespace NuGet.PackageManagement
             return Path.Combine(Path.GetDirectoryName(nupkgPath), PackagingCoreConstants.NupkgMetadataFileExtension);
         }
 
-        private Result TryGetSignedPackageHash(string filePath, CancellationToken token)
+        private string GetContentHashFromNupkg(string filePath, CancellationToken token)
         {
             using (var reader = new PackageArchiveReader(filePath))
             {
-                var hashString = reader.GetContentHashForSignedPackage(token);
-                if (hashString != null)
-                {
-                    return new Result(true, hashString);
-                }
-            }
-
-            return Result.NotFound;
-        }
-
-        private async Task<string> GetArchiveHash(string filePath, CancellationToken token)
-        {
-            using (var reader = new PackageArchiveReader(filePath))
-            {
-                var hash = await reader.GetArchiveHashAsync(HashAlgorithmName.SHA512, token);
-                var hashString = Convert.ToBase64String(hash);
-                return hashString;
+                var hash = reader.GetContentHash(token);
+                return hash;
             }
         }
 
