@@ -375,6 +375,10 @@ namespace NuGet.CommandLine.XPlat
                 requestedTargets = filteredTargets;
             }
 
+            // Filtering the Targets to ignore TargetFramework + RID combination, only keep TargetFramework in requestedTargets.
+            // So that only one section will be shown for each TFM.
+            requestedTargets = requestedTargets.Where(target => target.RuntimeIdentifier == null).ToList();
+
             foreach (var target in requestedTargets)
             {
                 // Find the tfminformation corresponding to the target to

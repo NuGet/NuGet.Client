@@ -196,6 +196,54 @@ namespace Dotnet.Integration.Test
             }
         }
 
+
+        // In 2.2.100 of CLI. DotNet list package would show a section for each TFM and for each TFM/RID.
+        // This is testing to ensure that it only shows one section for each TFM.
+        [PlatformFact(Platform.Windows)]
+        public async void DotnetListPackage_ShowFrameworksOnly_SDK()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net461");
+
+                projectA.Properties.Add("RuntimeIdentifiers", "win;win-x86;win-x64");
+
+                var packageX = XPlatTestUtils.CreatePackage();
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                projectA.Save();
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var addResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} package packageX --no-restore");
+                Assert.True(addResult.Success);
+
+                var restoreResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"restore {projectA.ProjectName}.csproj");
+                Assert.True(restoreResult.Success);
+
+                //the assets file should generate 4 sections in Targets: 1 for TFM only , and 3 for TFM + RID combinations 
+                var assetsFile = projectA.AssetsFile;
+                Assert.Equal(4, assetsFile.Targets.Count);
+
+                var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package",
+                    true);
+
+                //make sure there is no duplicate in output
+                Assert.True(NoDuplicateSection(listResult.AllOutput), listResult.AllOutput);
+               
+            }
+        }
+        
+
         [PlatformTheory(Platform.Windows)]
         [InlineData("1.0.0", "", "2.1.0")]
         [InlineData("1.0.0", "--include-prerelease", "2.2.0-beta")]
@@ -243,6 +291,27 @@ namespace Dotnet.Integration.Test
             var commandResultNoSpaces = output.Replace(" ", "");
 
             return commandResultNoSpaces.ToLowerInvariant().Contains(pattern.ToLowerInvariant());
+        }
+
+        private static bool NoDuplicateSection(string output)
+        {
+            var sections = output.Replace(" ", "").Replace("\r", "").Replace("\n", "").Split("[");
+            if (sections.Length == 1)
+            {
+                return false;
+            }
+            
+            for (var i = 1; i <= sections.Length - 2; i++)
+            {
+                for (var j = i + 1; j <= sections.Length - 1; j++)
+                {
+                    if (sections[i].Equals(sections[j]))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     }
 }

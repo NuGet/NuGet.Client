@@ -260,6 +260,7 @@ namespace Dotnet.Integration.Test
                 {
                     var files = nupkg.GetFiles()
                     .Where(fileName => fileName.StartsWith("lib/netstandard")
+                                    || fileName.StartsWith("lib/netcoreapp")
                                     || fileName.Contains("NuGet.targets"));
 
                     CopyFlatlistOfFilesToTarget(nupkg, pathToSdkInCli, files);
