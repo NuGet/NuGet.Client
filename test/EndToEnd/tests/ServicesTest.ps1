@@ -1002,3 +1002,21 @@ function Test-InstallPackageAsyncWithPackageReferenceFormat {
     Assert-AreEqual $packageRefs[0].GetMetadataValue("Identity") 'owin' 
     Assert-AreEqual $packageRefs[0].GetMetadataValue("Version") '1.0.0'
 }
+
+function Test-BuildIntegratedProjectInstallPackage {
+
+    # Arrange
+    $project = New-Project BuildIntegratedClassLibrary Project1
+    $id = 'CustomBuildIntegratedProjectInstallPackage'
+    $version = '1.0.0'
+
+    $solutionFile = Get-SolutionFullName
+	$solutionDir = Split-Path $solutionFile -Parent
+    $source = Join-Path $solutionDir "CustomSource"
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApiFromSource($source, $id, $version)
+
+    # Assert
+    Assert-ProjectJsonLockFilePackage $project $id $version
+}

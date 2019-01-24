@@ -4,10 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -54,6 +58,49 @@ namespace API.Test
                         return;
                     }
                 });
+        }
+
+        public static void InstallPackageApiFromSource(string source, string id, string version)
+        {
+            CreatePackage(source, id, version);
+            InstallPackageApi(source, id, version, prerelease: false);
+        }
+
+        private static void CreatePackage(string path, string id, string version)
+        {
+            var builder = new NuGet.Packaging.PackageBuilder()
+            {
+                Id = id,
+                Version = NuGetVersion.Parse(version),
+                Description = "Description.",
+                DevelopmentDependency = false
+            };
+
+            builder.Authors.Add("testAuthor");
+            builder.Files.Add(CreatePackageFile("lib/net45/a.dll"));
+
+            Directory.CreateDirectory(path);
+
+            using (var stream = File.OpenWrite(Path.Combine(path, $"{id}.{version}.nupkg")))
+            {
+                builder.Save(stream);
+            }
+        }
+
+        private static IPackageFile CreatePackageFile(string name)
+        {
+            var file = new InMemoryFile
+            {
+                Path = name,
+                Stream = new MemoryStream()
+            };
+
+            string effectivePath;
+            var fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+            file.EffectivePath = effectivePath;
+            file.TargetFramework = fx;
+
+            return file;
         }
 
         public static void UninstallPackageApi(string id, bool dependency)
@@ -184,6 +231,27 @@ namespace API.Test
 
                     return false;
                 });
+        }
+
+        private class InMemoryFile : IPackageFile
+        {
+            private DateTimeOffset _lastWriteTime;
+
+            public string EffectivePath { get; set; }
+
+            public string Path { get; set; }
+
+            public FrameworkName TargetFramework { get; set; }
+
+            public MemoryStream Stream { get; set; }
+
+            public Stream GetStream()
+            {
+                _lastWriteTime = DateTimeOffset.UtcNow;
+                return Stream;
+            }
+
+            public DateTimeOffset LastWriteTime => _lastWriteTime;
         }
     }
 }
