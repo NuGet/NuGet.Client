@@ -986,10 +986,9 @@ namespace NuGet.CommandLine
                 {
                     throw new ArgumentNullException(nameof(extension));
                 }
-
                 var tempDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp);
 
-                Directory.CreateDirectory(tempDirectory);
+                DirectoryUtility.CreateSharedDirectory(tempDirectory);
 
                 var count = 0;
                 do
