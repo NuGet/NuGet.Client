@@ -104,7 +104,7 @@ namespace NuGet.Packaging
                 // If the package contains a file named {BinaryName}.xml.zip already exists, the result would be
                 // ambigious.
                 var targetZip = Path.ChangeExtension(target, ".xml.zip");
-                using (var outputStream = File.Create(targetZip))
+                using (var outputStream = NuGetExtractionFileIO.CreateFile(targetZip))
                 using (var zipArchive = new ZipArchive(outputStream, ZipArchiveMode.Create))
                 {
                     var entry = zipArchive.CreateEntry(Path.GetFileName(source));
