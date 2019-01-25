@@ -68,9 +68,17 @@ Try
     $nugetClientFilePath = GetAbsolutePath $nugetClientFilePath
     $solutionFilePath = GetAbsolutePath $solutionFilePath
     $resultsFilePath = GetAbsolutePath $resultsFilePath
+    $isClientDotnetExe = IsClientDotnetExe $nugetClientFilePath
 
     If ($isPackagesConfig)
     {
+        If ($isClientDotnetExe)
+        {
+            Log "dotnet.exe does not support packages.config restore." "Red"
+
+            Exit 1
+        }
+
         Log "Restores are expected to be packages.config restores."
 
         If (!$skipForceRestores)

@@ -327,9 +327,16 @@ Function RunRestore(
     [switch] $killMsBuildAndDotnetExeProcesses,
     [switch] $force)
 {
-    Log "Running $nugetClientFilePath restore with cleanGlobalPackagesFolder:$cleanGlobalPackagesFolder cleanHttpCache:$cleanHttpCache cleanPluginsCache:$cleanPluginsCache killMsBuildAndDotnetExeProcesses:$killMsBuildAndDotnetExeProcesses force:$force"
-
     $isClientDotnetExe = IsClientDotnetExe $nugetClientFilePath
+
+    If ($isClientDotnetExe -And $isPackagesConfig)
+    {
+        Log "dotnet.exe does not support packages.config restore." "Red"
+
+        Return
+    }
+
+    Log "Running $nugetClientFilePath restore with cleanGlobalPackagesFolder:$cleanGlobalPackagesFolder cleanHttpCache:$cleanHttpCache cleanPluginsCache:$cleanPluginsCache killMsBuildAndDotnetExeProcesses:$killMsBuildAndDotnetExeProcesses force:$force"
 
     $solutionPackagesFolderPath = $Env:NUGET_SOLUTION_PACKAGES_FOLDER_PATH
 
