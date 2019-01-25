@@ -1,4 +1,4 @@
-﻿function Test-PackageManagerServicesAreAvailableThroughMEF {
+function Test-PackageManagerServicesAreAvailableThroughMEF {
     # Arrange
     $cm = Get-VsComponentModel
 
@@ -939,4 +939,20 @@ function Test-CreateVsPathContextUsesAssetsFileIfAvailable {
 	# Assert
 	Assert-NotNull $context.UserPackageFolder
 	Assert-NotEqual $userPackageFolder $context.UserPackageFolder
+}
+
+function Test-InstallPackageAPIToLatestVersion
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+    Install-Package TestPackage.ListedStable -ProjectName $p.Name -version 1.0.0
+    Assert-Package $p TestPackage.ListedStable 1.0.0
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("TestPackage.ListedStable","")
+
+    # Assert
+    Assert-Package $p TestPackage.ListedStable 2.0.6
 }
