@@ -298,7 +298,6 @@ namespace Dotnet.Integration.Test
                     if (copiedFile != null)
                     {
                         entry.UpdateFileTimeFromEntry(copiedFile, logger);
-                        entry.UpdateFilePermissionsFromEntry(copiedFile, logger);
 
                         filesCopied.Add(copiedFile);
                     }
