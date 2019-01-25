@@ -27,7 +27,7 @@ namespace NuGet.Packaging
                 return fileFullPath;
             }
 
-            using (var outputStream = File.Create(fileFullPath))
+            using (var outputStream = NuGetExtractionFileIO.CreateFile(fileFullPath))
             {
                 inputStream.CopyTo(outputStream);
             }
