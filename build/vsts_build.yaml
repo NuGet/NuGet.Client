@@ -224,25 +224,6 @@ phases:
     inputs:
       TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
 
-  - task: PowerShell@1
-    displayName: "check curr folder to see if there is nuget.exe file"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        pwd
-        cd '$(Build.Repository.LocalPath)\\artifacts'
-        pwd
-        ls
-        cd VS15
-        ls
-
-  - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
-    displayName: 'Verify nuget.exe and mssign.exe are signed'
-    inputs:
-      TargetFolders: '$(Build.StagingDirectory)\\artifacts\\VS15'
-
-      WhiteListPathForCerts: 'NuGet*.exe'
-
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
     inputs:
