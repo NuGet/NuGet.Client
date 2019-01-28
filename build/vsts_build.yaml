@@ -239,7 +239,7 @@ phases:
   - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
     displayName: Verify nuget.exe and mssign.exe are signed
     inputs:
-      TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\VS15\\NuGet*.exe'
+      TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
 
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
