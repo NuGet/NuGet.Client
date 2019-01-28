@@ -956,3 +956,48 @@ function Test-InstallPackageAPIToLatestVersion
     # Assert
     Assert-Package $p TestPackage.ListedStable 2.0.6
 }
+
+function Test-InstallPackageAsyncWithPackageReferenceFormat {
+    param($context)
+
+	# Arrange
+	$p = New-ClassLibrary
+
+	$solutionFile = Get-SolutionFullName
+	$solutionDir = Split-Path $solutionFile -Parent
+
+	$userPackageFolder = Join-Path $solutionDir "userPackageFolder"
+
+	$settingFile = Join-Path $solutionDir "nuget.config"
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <config>
+    <add key="globalPackagesFolder" value="{0}" />
+  </config>
+  <packageManagement>
+    <add key="format" value="1" />
+    <add key="disabled" value="True" />
+  </packageManagement>
+</configuration>
+"@
+
+	$settingFileContent -f $userPackageFolder `
+	    | Out-File -Encoding "UTF8" $settingFile
+
+	SaveAs-Solution($solutionFile)
+	Close-Solution
+	Open-Solution $solutionFile
+
+	$p = Get-Project
+
+	# Act
+	$context = [API.Test.InternalAPITestHook]::InstallPackageApi("owin","1.0.0")
+    $p.Save($p.FullName)
+
+	# Assert
+    $packageRefs = @(Get-MsBuildItems $p 'PackageReference')
+    Assert-AreEqual 1 $packageRefs.Count
+    Assert-AreEqual $packageRefs[0].GetMetadataValue("Identity") 'owin' 
+    Assert-AreEqual $packageRefs[0].GetMetadataValue("Version") '1.0.0'
+}
