@@ -447,7 +447,16 @@ namespace NuGet.ProjectManagement
 
             PackageEventsProvider.Instance.NotifyUninstalling(packageEventArgs);
 
-            using (var packageStream = File.OpenRead(FolderNuGetProject.GetInstalledPackageFilePath(packageIdentity)))
+            var packagePath = FolderNuGetProject.GetInstalledPackageFilePath(packageIdentity);
+
+            if (string.IsNullOrEmpty(packagePath))
+            {
+                nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageDoesNotExistInFolder,
+                    packageIdentity, ProjectSystem.ProjectName);
+                return false;
+            }
+
+            using (var packageStream = File.OpenRead(packagePath))
             {
                 var zipArchive = new ZipArchive(packageStream);
                 var packageReader = new PackageArchiveReader(zipArchive);
@@ -534,7 +543,8 @@ namespace NuGet.ProjectManagement
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup))
                 {
                     var packagesPaths = (await GetInstalledPackagesAsync(token))
-                        .Select(pr => FolderNuGetProject.GetInstalledPackageFilePath(pr.PackageIdentity));
+                        .Select(pr => FolderNuGetProject.GetInstalledPackageFilePath(pr.PackageIdentity))
+                        .Where(path => !string.IsNullOrEmpty(path));
 
                     await MSBuildNuGetProjectSystemUtility.DeleteFilesAsync(
                         ProjectSystem,
