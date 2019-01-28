@@ -224,6 +224,16 @@ phases:
     inputs:
       TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
 
+  - task: PowerShell@1
+    displayName: "check curr folder to see if there is nuget.exe file"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        pwd
+        ls
+        cd VS15
+        ls
+
   - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
     displayName: Verify nuget.exe and mssign.exe are signed
     inputs:
