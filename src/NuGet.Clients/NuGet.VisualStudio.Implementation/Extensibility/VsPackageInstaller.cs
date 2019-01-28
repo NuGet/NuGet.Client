@@ -526,19 +526,10 @@ namespace NuGet.VisualStudio
                 foreach (var package in packages)
                 {
                     // Check if the package is already installed
-                    if (package.Version == null)
+                    if (package.Version != null &&
+                        _packageServices.IsPackageInstalledEx(project, package.Id, package.Version.ToString()))
                     {
-                        if (_packageServices.IsPackageInstalled(project, package.Id))
-                        {
                             continue;
-                        }
-                    }
-                    else
-                    {
-                        if (_packageServices.IsPackageInstalledEx(project, package.Id, package.Version.ToString()))
-                        {
-                            continue;
-                        }
                     }
 
                     // Perform the install
