@@ -230,6 +230,8 @@ phases:
       scriptType: "inlineScript"
       inlineScript: |
         pwd
+        cd '$(Build.Repository.LocalPath)\\artifacts'
+        pwd
         ls
         cd VS15
         ls
