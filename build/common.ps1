@@ -396,15 +396,10 @@ Function Test-BuildEnvironment {
 }
 
 Function Get-BuildNumber() {
-    $SemanticVersionDate = '2018-12-14' # Date format - yyyy-mm-dd
-    try {
-        [uint16](((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5)
-    }
-    catch {
-        # Build number is a 16-bit integer. The limitation is imposed by VERSIONINFO.
-        # https://msdn.microsoft.com/en-gb/library/aa381058.aspx
-        Error-Log "Build number is out of range! Consider advancing SemanticVersionDate in common.ps1." -Fatal
-    }
+    $NuGetEpoch = '2010-08-29T23:58:25-07:00' # NuGet client first commit!
+    # Build number is a 16-bit integer. The limitation is imposed by VERSIONINFO.
+    # https://msdn.microsoft.com/en-gb/library/aa381058.aspx
+    [uint16]((((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5) % [uint16]::MaxValue)
 }
 
 Function Clear-PackageCache {
