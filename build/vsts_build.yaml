@@ -224,7 +224,7 @@ phases:
     inputs:
       TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
 
-   - task: PowerShell@1
+  - task: PowerShell@1
     displayName: "test only : check curr folder to see if there is nuget.exe file"
     inputs:
       scriptType: "inlineScript"
