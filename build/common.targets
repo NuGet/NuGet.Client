@@ -94,7 +94,6 @@
       Properties="Configuration=$(Configuration);
                   VisualStudioVersion=$(VisualStudioVersion);
                   PackageOutputPath=$(NupkgOutputDirectory);
-                  NoPackageAnalysis=true;
                   IncludeSymbols=true;
                   NoBuild=true;">
     </MSBuild>
