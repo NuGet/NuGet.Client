@@ -229,6 +229,7 @@ namespace NuGet.Commands
                 {
                     AddFrameworkAssemblies(result, items);
                     AddPackageReferences(result, items);
+                    AddPackageDownloads(result, items);
 
                     // Store the original framework strings for msbuild conditionals
                     foreach (var originalFramework in GetFrameworksStrings(specItem))
@@ -546,6 +547,30 @@ namespace NuGet.Commands
             return new Tuple<List<NuGetFramework>, ProjectRestoreReference>(frameworks, reference);
         }
 
+        private static bool AddDownloadDependencyIfNotExist(PackageSpec spec, DownloadDependency dependency)
+        {
+            foreach (var framework in spec.TargetFrameworks.Select(e => e.FrameworkName))
+            {
+                AddDownloadDependencyIfNotExist(spec, framework, dependency);
+            }
+
+            return false;
+        }
+
+        private static bool AddDownloadDependencyIfNotExist(PackageSpec spec, NuGetFramework framework, DownloadDependency dependency)
+        {
+            var frameworkInfo = spec.GetTargetFramework(framework);
+
+            if (!frameworkInfo.DownloadDependencies.Contains(dependency))
+            {
+                frameworkInfo.DownloadDependencies.Add(dependency);
+
+                return true;
+            }
+            return false;
+        }
+
+
         private static bool AddDependencyIfNotExist(PackageSpec spec, LibraryDependency dependency)
         {
 
@@ -609,6 +634,37 @@ namespace NuGet.Commands
                     foreach (var framework in frameworks)
                     {
                         AddDependencyIfNotExist(spec, framework, dependency);
+                    }
+                }
+            }
+        }
+
+        private static void AddPackageDownloads(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        {
+            foreach (var item in GetItemByType(items, "DownloadDependency"))
+            {
+
+                var id = item.GetProperty("Id");
+                var versionRange = GetVersionRange(item);
+                if(!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
+                }
+
+                // TODO NK : Check version range. Does it throw here?
+                var downloadDependency = new DownloadDependency(id, versionRange);
+                
+                var frameworks = GetFrameworks(item);
+
+                if (frameworks.Count == 0)
+                {
+                    AddDownloadDependencyIfNotExist(spec, downloadDependency);
+                }
+                else
+                {
+                    foreach (var framework in frameworks)
+                    {
+                        AddDownloadDependencyIfNotExist(spec, framework, downloadDependency);
                     }
                 }
             }

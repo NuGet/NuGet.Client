@@ -871,4 +871,8 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Successfully synchronized the trusted repository '{0}'.</value>
     <comment>0 - name</comment>
   </data>
+  <data name="Error_PackageDownload_OnlyExactVersionsAreAllowed" xml:space="preserve">
+    <value>'{0}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
+    <comment>0 - the version string that's not exact</comment>
+  </data>
 </root>

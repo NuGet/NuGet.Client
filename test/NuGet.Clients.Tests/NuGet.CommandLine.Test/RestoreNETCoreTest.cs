@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -6302,6 +6303,374 @@ namespace NuGet.CommandLine.Test
                     Assert.NotNull(library);
                     Assert.False(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")));
                 }
+            }
+        }
+        
+        [Fact]
+        public async Task RestoreNetCore_SingleTFM_SimplePackageDownload()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projectFrameworks = "net46";
+                
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                            projectName: "a",
+                            solutionRoot: pathContext.SolutionRoot,
+                            frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net45/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                projectA.AddPackageDownloadToAllFrameworks(packageX);
+                
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(r.Success, r.AllOutput);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
+
+                var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
+                Assert.Equal(0, lockFile.Libraries.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
+                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id, packageX.Version)), $"{packageX.ToString()} is not installed");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_SingleTFM_SameIdMultiPackageDownload()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projectFrameworks = "net46";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                            projectName: "a",
+                            solutionRoot: pathContext.SolutionRoot,
+                            frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                var packageX1 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageX2 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "2.0.0"
+                };
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX1,
+                    packageX2);
+
+                projectA.AddPackageDownloadToAllFrameworks(packageX1);
+                projectA.AddPackageDownloadToAllFrameworks(packageX2);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(r.Success, r.AllOutput);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
+
+                var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
+                Assert.Equal(0, lockFile.Libraries.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
+                Assert.Equal($"[{packageX2.Version}, {packageX2.Version}]", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().VersionRange.ToNormalizedString());
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Last().Name);
+                Assert.Equal($"[{packageX1.Version}, {packageX1.Version}]", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Last().VersionRange.ToNormalizedString());
+                
+                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX1.Identity.Id, packageX1.Version)), $"{packageX1.ToString()} is not installed");
+                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX2.Identity.Id, packageX2.Version)), $"{packageX2.ToString()} is not installed");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_SingleTFM_SameIdSameVersionMultiDeclaration_MultiPackageDownload()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projectFrameworks = "net46";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                            projectName: "a",
+                            solutionRoot: pathContext.SolutionRoot,
+                            frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                var packageX1 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageX2 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "2.0.0"
+                };
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX1,
+                    packageX2);
+
+                projectA.AddPackageDownloadToAllFrameworks(packageX1);
+                projectA.AddPackageDownloadToAllFrameworks(packageX2);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Add one more - Adding them through the Test Context adds only exact versions.
+
+                var xml = projectA.GetXML();
+
+                var props = new Dictionary<string, string>();
+                var attributes = new Dictionary<string, string>();
+                attributes.Add("Version", "[1.0.0, 1.0.0]");
+                ProjectFileUtils.AddItem(
+                                    xml,
+                                    "PackageDownload",
+                                    packageX1.Id,
+                                    NuGetFramework.AnyFramework,
+                                    props,
+                                    attributes);
+
+                xml.Save(projectA.ProjectPath);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(r.Success, r.AllOutput);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
+
+                var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
+                Assert.Equal(0, lockFile.Libraries.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
+                Assert.Equal($"[{packageX2.Version}, {packageX2.Version}]", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().VersionRange.ToNormalizedString());
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Last().Name);
+                Assert.Equal($"[{packageX1.Version}, {packageX1.Version}]", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Last().VersionRange.ToNormalizedString());
+
+                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX1.Identity.Id, packageX1.Version)), $"{packageX1.ToString()} is not installed");
+                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX2.Identity.Id, packageX2.Version)), $"{packageX2.ToString()} is not installed");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_MultiTfm_PackageDownloadAndPackageReference()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projectFrameworks = "net45;net46";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                            projectName: "a",
+                            solutionRoot: pathContext.SolutionRoot,
+                            frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                var packageX1 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageX2 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "2.0.0"
+                };
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX1,
+                    packageX2);
+
+                projectA.AddPackageToFramework("net45", packageX1);
+
+                projectA.AddPackageDownloadToFramework("net46", packageX2);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(r.Success, r.AllOutput);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
+
+                var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
+
+                Assert.Equal(1, lockFile.Libraries.Count);
+                Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.First().Dependencies.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Count);
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
+                Assert.Equal($"[{packageX2.Version}, {packageX2.Version}]",
+                    lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().VersionRange.ToNormalizedString());
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.First().Dependencies.Last().Name);
+                Assert.Equal($"[{packageX1.Version}, )",
+                    lockFile.PackageSpec.TargetFrameworks.First().Dependencies.First().LibraryRange.VersionRange.ToNormalizedString());
+                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX1.Identity.Id, packageX1.Version)),
+                    $"{packageX1.ToString()} is not installed");
+                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX2.Identity.Id, packageX2.Version)),
+                    $"{packageX2.ToString()} is not installed");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_MultiTfm_MultiPackageDownload()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projectFrameworks = "net45;net46";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                            projectName: "a",
+                            solutionRoot: pathContext.SolutionRoot,
+                            frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                var packageX1 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageX2 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "2.0.0"
+                };
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX1,
+                    packageX2);
+
+                projectA.AddPackageDownloadToFramework("net45", packageX1);
+
+                projectA.AddPackageDownloadToFramework("net46", packageX2);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(r.Success, r.AllOutput);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
+
+                var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
+
+                Assert.Equal(0, lockFile.Libraries.Count);
+                Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(0, lockFile.PackageSpec.TargetFrameworks.First().Dependencies.Count);
+                Assert.Equal(0, lockFile.PackageSpec.TargetFrameworks.Last().Dependencies.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Count);
+
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
+                Assert.Equal($"[{packageX2.Version}, {packageX2.Version}]",
+                    lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().VersionRange.ToNormalizedString());
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Last().Name);
+                Assert.Equal($"[{packageX1.Version}, {packageX1.Version}]",
+                    lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.First().VersionRange.ToNormalizedString());
+                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX1.Identity.Id, packageX1.Version)),
+                    $"{packageX1.ToString()} is not installed");
+                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX2.Identity.Id, packageX2.Version)),
+                    $"{packageX2.ToString()} is not installed");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_SingleTFM_PackageDownload_NonExactVersion_Fails()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projectFrameworks = "net46";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                            projectName: "a",
+                            solutionRoot: pathContext.SolutionRoot,
+                            frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                var packageX1 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX1);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var xml = projectA.GetXML();
+
+                var props = new Dictionary<string, string>();
+                var attributes = new Dictionary<string, string>();
+                attributes.Add("Version", "1.0.0");
+                ProjectFileUtils.AddItem(
+                                    xml,
+                                    "PackageDownload",
+                                    packageX1.Id,
+                                    NuGetFramework.AnyFramework,
+                                    props,
+                                    attributes);
+
+                xml.Save(projectA.ProjectPath);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                Assert.False(r.Success, r.AllOutput);
+                Assert.False(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
             }
         }
     }
