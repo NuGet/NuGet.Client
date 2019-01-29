@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.7.2": {
+      "Microsoft.Web.Xdt": {
+        "type": "Transitive",
+        "resolved": "2.1.2",
+        "contentHash": "YIaNTOOtGzjF8CkQBOx3aUBWi0dD+g/nOjbpsVslx9G0/uldtpmoKLmyldmKdMv/gHs3qg40rBT3+wvEWoY5gg=="
+      },
+      "Newtonsoft.Json": {
+        "type": "Transitive",
+        "resolved": "9.0.1",
+        "contentHash": "U82mHQSKaIk+lpSVCbWYKNavmNH1i5xrExDEquU1i6I5pV6UMOqRnJRSlKO3cMPfcpp0RgDY+8jUXHdQ4IfXvw=="
+      },
+      "NuGet.Build.Tasks": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Commands": "5.0.0-preview3"
+        }
+      },
+      "NuGet.CommandLine": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Build.Tasks": "5.0.0-preview3",
+          "NuGet.PackageManagement": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Commands": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Credentials": "5.0.0-preview3",
+          "NuGet.ProjectModel": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Common": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Frameworks": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Configuration": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Common": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Credentials": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Protocol": "5.0.0-preview3"
+        }
+      },
+      "NuGet.DependencyResolver.Core": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.LibraryModel": "5.0.0-preview3",
+          "NuGet.Protocol": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Frameworks": {
+        "type": "Project"
+      },
+      "NuGet.LibraryModel": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Common": "5.0.0-preview3",
+          "NuGet.Versioning": "5.0.0-preview3"
+        }
+      },
+      "NuGet.PackageManagement": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Web.Xdt": "2.1.2",
+          "NuGet.Commands": "5.0.0-preview3",
+          "NuGet.Resolver": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Packaging": {
+        "type": "Project",
+        "dependencies": {
+          "Newtonsoft.Json": "9.0.1",
+          "NuGet.Configuration": "5.0.0-preview3",
+          "NuGet.Versioning": "5.0.0-preview3"
+        }
+      },
+      "NuGet.ProjectModel": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.DependencyResolver.Core": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Protocol": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Packaging": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Resolver": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Protocol": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Versioning": {
+        "type": "Project"
+      }
+    }
+  }
+}

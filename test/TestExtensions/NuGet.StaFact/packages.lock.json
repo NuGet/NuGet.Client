@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.7.2": {
+      "Xunit.StaFact": {
+        "type": "Direct",
+        "requested": "[0.2.9, )",
+        "resolved": "0.2.9",
+        "contentHash": "AkQPlJlfN0ziGHB2zR6IiC2hGPfGN+b1vAvnUcSHIGA8TsY9BC8dhtenmD6Cqd3gzVO04Mc6HDHuoRIhhs36IA==",
+        "dependencies": {
+          "xunit.extensibility.execution": "2.2.0"
+        }
+      },
+      "Microsoft.Web.Xdt": {
+        "type": "Transitive",
+        "resolved": "2.1.2",
+        "contentHash": "YIaNTOOtGzjF8CkQBOx3aUBWi0dD+g/nOjbpsVslx9G0/uldtpmoKLmyldmKdMv/gHs3qg40rBT3+wvEWoY5gg=="
+      },
+      "Newtonsoft.Json": {
+        "type": "Transitive",
+        "resolved": "9.0.1",
+        "contentHash": "U82mHQSKaIk+lpSVCbWYKNavmNH1i5xrExDEquU1i6I5pV6UMOqRnJRSlKO3cMPfcpp0RgDY+8jUXHdQ4IfXvw=="
+      },
+      "Portable.BouncyCastle": {
+        "type": "Transitive",
+        "resolved": "1.8.1.3",
+        "contentHash": "1jUpszv0ETm+hl78HKnYgY3wPzt6qRtjxaPENNrGCuB8nondbR/j75WAKdd6sxXzOzBcX07WMZhZEYc4s5jVWg=="
+      },
+      "xunit": {
+        "type": "Transitive",
+        "resolved": "2.3.1",
+        "contentHash": "IWux0xXfZ/bC7SgooK5rmW5KwCwFg9GFslmPxA7+pJsT+2SRyhOfOgNUXDd7B09UN4f6kogRT2TqNi6gbWEspA==",
+        "dependencies": {
+          "xunit.analyzers": "0.7.0",
+          "xunit.assert": "[2.3.1]",
+          "xunit.core": "[2.3.1]"
+        }
+      },
+      "xunit.abstractions": {
+        "type": "Transitive",
+        "resolved": "2.0.1",
+        "contentHash": "bDm/zdG5rnRDsobKuKwrvL4HccBdC0uvT12be6fG12P3d1U7u9Wkvfoq/PM2GeyIeb0Dtcmm/7k2oaawiqQ2Dg=="
+      },
+      "xunit.analyzers": {
+        "type": "Transitive",
+        "resolved": "0.7.0",
+        "contentHash": "pEjPJ/pd+r9blGBJ9bXg961phkAiCl4k2DwxwWGEZyYC/7Tb1xJ1az0H18uGANX7zFIkvE5ZO1eZZ4vU7gny7w=="
+      },
+      "xunit.assert": {
+        "type": "Transitive",
+        "resolved": "2.3.1",
+        "contentHash": "+mUMp3aJOS0ag3qJ2tUhVa930KhwjyypxXT4Ab8lQozEQN8/xgkblQnYs0woIWpr2NbzEOxsZojytl9NBVRKxg=="
+      },
+      "xunit.core": {
+        "type": "Transitive",
+        "resolved": "2.3.1",
+        "contentHash": "LOG4qOFuVQcjYcIuZbKeo03Uvng3lSb2gZJU9ANljwCf+PTd//iAMZS5qcJQZrjhndc4aOUlJGQy5wa0+/iZ6w==",
+        "dependencies": {
+          "xunit.extensibility.core": "[2.3.1]",
+          "xunit.extensibility.execution": "[2.3.1]"
+        }
+      },
+      "xunit.extensibility.core": {
+        "type": "Transitive",
+        "resolved": "2.3.1",
+        "contentHash": "1mgYqXeQfU+7zcSRW8/5Uf1jVZ5+5WELmi+BuRTh0xu/x0Q0gK0SuR3FLUF4BSd8sfZzvrRUrhWj3ltpyFxhrg==",
+        "dependencies": {
+          "xunit.abstractions": "2.0.1"
+        }
+      },
+      "xunit.extensibility.execution": {
+        "type": "Transitive",
+        "resolved": "2.3.1",
+        "contentHash": "i8xrHfKC5dyBWQ7I15FePzm0m8KNToBsTleCCQbOQuXRPZIvupd4nnfaCPeJuKHHe7yJ8JGtWxjIgw0ow/cMhg==",
+        "dependencies": {
+          "xunit.extensibility.core": "[2.3.1]"
+        }
+      },
+      "NuGet.Build.Tasks": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Commands": "5.0.0-preview3"
+        }
+      },
+      "NuGet.CommandLine": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Build.Tasks": "5.0.0-preview3",
+          "NuGet.PackageManagement": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Commands": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Credentials": "5.0.0-preview3",
+          "NuGet.ProjectModel": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Common": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Frameworks": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Configuration": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Common": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Credentials": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Protocol": "5.0.0-preview3"
+        }
+      },
+      "NuGet.DependencyResolver.Core": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.LibraryModel": "5.0.0-preview3",
+          "NuGet.Protocol": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Frameworks": {
+        "type": "Project"
+      },
+      "NuGet.LibraryModel": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Common": "5.0.0-preview3",
+          "NuGet.Versioning": "5.0.0-preview3"
+        }
+      },
+      "NuGet.PackageManagement": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Web.Xdt": "2.1.2",
+          "NuGet.Commands": "5.0.0-preview3",
+          "NuGet.Resolver": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Packaging": {
+        "type": "Project",
+        "dependencies": {
+          "Newtonsoft.Json": "9.0.1",
+          "NuGet.Configuration": "5.0.0-preview3",
+          "NuGet.Versioning": "5.0.0-preview3"
+        }
+      },
+      "NuGet.ProjectModel": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.DependencyResolver.Core": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Protocol": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Packaging": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Resolver": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Protocol": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Versioning": {
+        "type": "Project"
+      },
+      "Test.Utility": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.CommandLine": "5.0.0-preview3",
+          "NuGet.Commands": "5.0.0-preview3",
+          "NuGet.Resolver": "5.0.0-preview3",
+          "Portable.BouncyCastle": "1.8.1.3",
+          "xunit": "2.3.1"
+        }
+      }
+    }
+  }
+}

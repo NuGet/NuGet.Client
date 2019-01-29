@@ -155,6 +155,7 @@
     <BaseOutputPath>$(ArtifactsDirectory)$(MSBuildProjectName)\$(BuildVariationFolder)\bin\</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)$(Configuration)\</OutputPath>
     <AppxPackageDir>$(OutputPath)</AppxPackageDir>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
   <!-- Generate AssemblyFileVersion and AssemblyVersion attributes. -->

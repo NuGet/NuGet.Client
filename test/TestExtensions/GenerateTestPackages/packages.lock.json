@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.7.2": {
+      "NuGet.Core": {
+        "type": "Direct",
+        "requested": "[2.14.0-rtm-832, )",
+        "resolved": "2.14.0-rtm-832",
+        "contentHash": "0HyAyVEiSfdNEwXBtIFrZ8B6+Pggav7Nl+DLtQA51FrL7z/MT3RrmiZkJPrZJI/zSiHj/kUlp9bxHDxIL2N7gA==",
+        "dependencies": {
+          "Microsoft.Web.Xdt": "2.1.0"
+        }
+      },
+      "Microsoft.Web.Xdt": {
+        "type": "Transitive",
+        "resolved": "2.1.0",
+        "contentHash": "/ieJ02r4MEJM21Eyl+c5kwoJWPhy+qEEcN68JaqDoamabgxJI1jGi/kNLuKvHUCl6tU7E0rMvaR6FmEnDWtS4A=="
+      }
+    }
+  }
+}

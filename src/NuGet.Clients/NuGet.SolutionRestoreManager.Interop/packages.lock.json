@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.7.2": {
+      "PdbGit": {
+        "type": "Direct",
+        "requested": "[3.0.41, )",
+        "resolved": "3.0.41",
+        "contentHash": "LBeCjKYbWdrZHSNVOp/5VusxjmJg4xkU8Pnz9DgSHGXApPYW3RnsOTvfpDErtnACpRaB4W16lHN91id20D4i8w=="
+      }
+    }
+  }
+}

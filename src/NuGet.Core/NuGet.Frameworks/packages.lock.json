@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.0": {
+      "PdbGit": {
+        "type": "Direct",
+        "requested": "[3.0.41, )",
+        "resolved": "3.0.41",
+        "contentHash": "LBeCjKYbWdrZHSNVOp/5VusxjmJg4xkU8Pnz9DgSHGXApPYW3RnsOTvfpDErtnACpRaB4W16lHN91id20D4i8w=="
+      }
+    },
+    ".NETFramework,Version=v4.7.2": {
+      "PdbGit": {
+        "type": "Direct",
+        "requested": "[3.0.41, )",
+        "resolved": "3.0.41",
+        "contentHash": "LBeCjKYbWdrZHSNVOp/5VusxjmJg4xkU8Pnz9DgSHGXApPYW3RnsOTvfpDErtnACpRaB4W16lHN91id20D4i8w=="
+      }
+    },
+    ".NETStandard,Version=v2.0": {
+      "NETStandard.Library": {
+        "type": "Direct",
+        "requested": "[2.0.3, )",
+        "resolved": "2.0.3",
+        "contentHash": "st47PosZSHrjECdjeIzZQbzivYBJFv6P2nv4cj2ypdI204DO+vZ7l5raGMiX4eXMJ53RfOIg+/s4DHVZ54Nu2A==",
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0"
+        }
+      },
+      "PdbGit": {
+        "type": "Direct",
+        "requested": "[3.0.41, )",
+        "resolved": "3.0.41",
+        "contentHash": "LBeCjKYbWdrZHSNVOp/5VusxjmJg4xkU8Pnz9DgSHGXApPYW3RnsOTvfpDErtnACpRaB4W16lHN91id20D4i8w=="
+      },
+      "Microsoft.NETCore.Platforms": {
+        "type": "Transitive",
+        "resolved": "1.1.0",
+        "contentHash": "tI5H6Zg4DPqLcJNB232JMLACfX7UGawjTfMYdH8t6z5mXpDpHQVcFRzugqE6gG/EWrpQfAVJJzOVXeLJZ6ZZ+g=="
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.7.2": {
+      "Lucene.Net": {
+        "type": "Direct",
+        "requested": "[3.0.3, )",
+        "resolved": "3.0.3",
+        "contentHash": "A/70q4eDcuuafQeDB9eaiDP9FQG7X29T4VIYRphS7Wk8kAM9gNcfVqYyd0H8BJ1BTpA5C1ORm9RzFn4BiNavrw==",
+        "dependencies": {
+          "SharpZipLib": "0.86.0"
+        }
+      },
+      "PdbGit": {
+        "type": "Direct",
+        "requested": "[3.0.41, )",
+        "resolved": "3.0.41",
+        "contentHash": "LBeCjKYbWdrZHSNVOp/5VusxjmJg4xkU8Pnz9DgSHGXApPYW3RnsOTvfpDErtnACpRaB4W16lHN91id20D4i8w=="
+      },
+      "Newtonsoft.Json": {
+        "type": "Transitive",
+        "resolved": "9.0.1",
+        "contentHash": "U82mHQSKaIk+lpSVCbWYKNavmNH1i5xrExDEquU1i6I5pV6UMOqRnJRSlKO3cMPfcpp0RgDY+8jUXHdQ4IfXvw=="
+      },
+      "SharpZipLib": {
+        "type": "Transitive",
+        "resolved": "0.86.0",
+        "contentHash": "5DbS1SlKLMi+WG00Cm0ueYf2oyXJrowETQk8nx96rmdjTuHsA3laPykGV7Sxi0R5Xxfx0Kh/EfacAZ1f6M7y/g=="
+      },
+      "NuGet.Common": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Frameworks": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Configuration": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Common": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Frameworks": {
+        "type": "Project"
+      },
+      "NuGet.Packaging": {
+        "type": "Project",
+        "dependencies": {
+          "Newtonsoft.Json": "9.0.1",
+          "NuGet.Configuration": "5.0.0-preview3",
+          "NuGet.Versioning": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Protocol": {
+        "type": "Project",
+        "dependencies": {
+          "NuGet.Packaging": "5.0.0-preview3"
+        }
+      },
+      "NuGet.Versioning": {
+        "type": "Project"
+      }
+    }
+  }
+}
