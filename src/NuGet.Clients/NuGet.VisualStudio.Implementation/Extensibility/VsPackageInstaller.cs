@@ -522,6 +522,20 @@ namespace NuGet.VisualStudio
                 // find the project
                 var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);
 
+                var packageManagementFormat = new PackageManagementFormat(_settings);
+                // 1 means PackageReference
+                var preferPackageReference = packageManagementFormat.SelectedPackageManagementFormat == 1;
+
+                // Check if default package format is set to `PackageReference` and project has no
+                // package installed yet then upgrade it to `PackageReference` based project.
+                if(preferPackageReference &&
+                   (nuGetProject is MSBuildNuGetProject) &&
+                   !(await nuGetProject.GetInstalledPackagesAsync(token)).Any() &&
+                   await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject, project, needsAPackagesConfig: false))
+                {
+                    nuGetProject = await _solutionManager.UpgradeProjectToPackageReferenceAsync(nuGetProject);
+                }
+
                 // install the package
                 foreach (var package in packages)
                 {
