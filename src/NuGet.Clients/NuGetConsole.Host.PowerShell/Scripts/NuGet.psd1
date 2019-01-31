@@ -67,7 +67,6 @@ CmdletsToExport = @(
     'Update-Package',
     'Get-Package', 
     'Get-Project',
-    'Open-PackagePage', 
     'Sync-Package', 
 	'Find-Package'
 	'Add-BindingRedirect')
