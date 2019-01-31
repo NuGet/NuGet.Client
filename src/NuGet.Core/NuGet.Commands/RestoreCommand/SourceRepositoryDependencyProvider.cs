@@ -166,7 +166,7 @@ namespace NuGet.Commands
 
             if (targetFramework == null)
             {
-                throw new ArgumentNullException(nameof(targetFramework));
+                throw new ArgumentNullException(nameof(targetFramework)); 
             }
 
             if (cacheContext == null)
@@ -184,7 +184,7 @@ namespace NuGet.Commands
             AsyncLazy<LibraryIdentity> result = null;
 
             var action = new AsyncLazy<LibraryIdentity>(async () =>
-                await FindLibraryCoreAsync(libraryRange, targetFramework, cacheContext, logger, cancellationToken));
+                await FindLibraryCoreAsync(libraryRange, cacheContext, logger, cancellationToken));
 
             if (cacheContext.RefreshMemoryCache)
             {
@@ -200,7 +200,6 @@ namespace NuGet.Commands
 
         private async Task<LibraryIdentity> FindLibraryCoreAsync(
             LibraryRange libraryRange,
-            NuGetFramework targetFramework,
             SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -462,19 +461,13 @@ namespace NuGet.Commands
                 return Enumerable.Empty<LibraryDependency>();
             }
 
-            var dependencies = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
+            var dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
                 targetFramework,
                 item => item.TargetFramework);
 
-            return GetDependencies(targetFramework, dependencies);
-        }
-
-        private static IEnumerable<LibraryDependency> GetDependencies(NuGetFramework targetFramework,
-            PackageDependencyGroup dependencies)
-        {
-            if (dependencies != null)
+            if (dependencyGroup != null)
             {
-                return dependencies.Packages.Select(PackagingUtility.GetLibraryDependencyFromNuspec).ToArray();
+                return dependencyGroup.Packages.Select(PackagingUtility.GetLibraryDependencyFromNuspec).ToArray();
             }
 
             return Enumerable.Empty<LibraryDependency>();

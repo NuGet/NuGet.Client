@@ -27,18 +27,41 @@ namespace NuGet.Commands
         /// </summary>
         public static async Task LogAsync(IEnumerable<IRestoreTargetGraph> graphs, RemoteWalkContext context, ILogger logger, CancellationToken token)
         {
-            var tasks = graphs.SelectMany(graph => graph.Unresolved.Select(e => GetMessageAsync(graph, e, context, logger, token))).ToArray();
+            var tasks = graphs.SelectMany(graph => graph.Unresolved.Select(e => GetMessageAsync(graph.TargetGraphName, e, context.RemoteLibraryProviders, context.CacheContext, logger, token))).ToArray();
             var messages = await Task.WhenAll(tasks);
 
+            await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(messages));
+        }
+
+        public static async Task LogAsync(IList<DownloadDependencyResolutionResult> downloadDependencyResults, IList<IRemoteDependencyProvider> remoteLibraryProviders, SourceCacheContext sourceCacheContext,
+            ILogger logger, CancellationToken token)
+        {
+            var messageTasks = new List<Task<RestoreLogMessage>>();
+
+            foreach (var ddi in downloadDependencyResults)
+            {
+                foreach (var unresolved in ddi.Unresolved)
+                {
+                    messageTasks.Add(GetMessageAsync(
+                        ddi.Framework.ToString(),
+                        unresolved,
+                        remoteLibraryProviders, sourceCacheContext,
+                        logger,
+                        token));
+                }
+            }
+
+            var messages = await Task.WhenAll(messageTasks);
             await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(messages));
         }
 
         /// <summary>
         /// Create a specific error message for the unresolved dependency.
         /// </summary>
-        public static async Task<RestoreLogMessage> GetMessageAsync(IRestoreTargetGraph graph,
+        public static async Task<RestoreLogMessage> GetMessageAsync(string targetGraphName,
             LibraryRange unresolved,
-            RemoteWalkContext context,
+            IList<IRemoteDependencyProvider> remoteLibraryProviders,
+            SourceCacheContext sourceCacheContext,
             ILogger logger,
             CancellationToken token)
         {
@@ -64,12 +87,11 @@ namespace NuGet.Commands
                     message = string.Format(CultureInfo.CurrentCulture, Strings.Error_ProjectDoesNotExist, unresolved.Name);
                 }
             }
-            else if (unresolved.TypeConstraintAllows(LibraryDependencyTarget.Package)
-                        && context.RemoteLibraryProviders.Count > 0)
+            else if (unresolved.TypeConstraintAllows(LibraryDependencyTarget.Package) && remoteLibraryProviders.Count > 0)
             {
                 // Package
                 var range = unresolved.VersionRange ?? VersionRange.All;
-                var sourceInfo = await GetSourceInfosForIdAsync(unresolved.Name, range, context, logger, token);
+                var sourceInfo = await GetSourceInfosForIdAsync(unresolved.Name, range, remoteLibraryProviders, sourceCacheContext, logger, token);
                 var allVersions = new SortedSet<NuGetVersion>(sourceInfo.SelectMany(e => e.Value));
 
                 if (allVersions.Count == 0)
@@ -116,20 +138,20 @@ namespace NuGet.Commands
                 message = string.Format(CultureInfo.CurrentCulture,
                     Strings.Log_UnresolvedDependency,
                     unresolved.ToString(),
-                    graph.TargetGraphName);
+                    targetGraphName);
 
                 // Set again for clarity
                 code = NuGetLogCode.NU1100;
             }
 
-            return RestoreLogMessage.CreateError(code, message, unresolved.Name, graph.TargetGraphName);
+            return RestoreLogMessage.CreateError(code, message, unresolved.Name, targetGraphName);
         }
 
         /// <summary>
         /// True if no stable versions satisfy the range 
         /// but a pre-release version is found.
         /// </summary>
-        public static bool HasPrereleaseVersionsOnly(VersionRange range, IEnumerable<NuGetVersion> versions)
+        internal static bool HasPrereleaseVersionsOnly(VersionRange range, IEnumerable<NuGetVersion> versions)
         {
             var currentRange = range ?? VersionRange.All;
             var currentVersions = versions ?? Enumerable.Empty<NuGetVersion>();
@@ -141,7 +163,7 @@ namespace NuGet.Commands
         /// <summary>
         /// True if the range allows pre-release versions.
         /// </summary>
-        public static bool IsPrereleaseAllowed(VersionRange range)
+        internal static bool IsPrereleaseAllowed(VersionRange range)
         {
             return (range?.MaxVersion?.IsPrerelease == true
                 || range?.MinVersion?.IsPrerelease == true);
@@ -150,7 +172,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Found 2839 version(s) in nuget-build [ Nearest version: 1.0.0-beta ]
         /// </summary>
-        public static string FormatSourceInfo(KeyValuePair<PackageSource, SortedSet<NuGetVersion>> sourceInfo, VersionRange range)
+        internal static string FormatSourceInfo(KeyValuePair<PackageSource, SortedSet<NuGetVersion>> sourceInfo, VersionRange range)
         {
             var bestMatch = GetBestMatch(sourceInfo.Value, range);
 
@@ -172,18 +194,19 @@ namespace NuGet.Commands
         /// <summary>
         /// Get the complete set of source info for a package id.
         /// </summary>
-        public static async Task<List<KeyValuePair<PackageSource, SortedSet<NuGetVersion>>>> GetSourceInfosForIdAsync(
+        internal static async Task<List<KeyValuePair<PackageSource, SortedSet<NuGetVersion>>>> GetSourceInfosForIdAsync(
             string id,
             VersionRange range,
-            RemoteWalkContext context,
+            IList<IRemoteDependencyProvider> remoteLibraryProviders,
+            SourceCacheContext sourceCacheContext,
             ILogger logger,
             CancellationToken token)
         {
             var sources = new List<KeyValuePair<PackageSource, SortedSet<NuGetVersion>>>();
 
             // Get versions from all sources. These should be cached by the providers already.
-            var tasks = context.RemoteLibraryProviders
-                .Select(e => GetSourceInfoForIdAsync(e, id, context.CacheContext, logger, token))
+            var tasks = remoteLibraryProviders
+                .Select(e => GetSourceInfoForIdAsync(e, id, sourceCacheContext, logger, token))
                 .ToArray();
 
             foreach (var task in tasks)
@@ -200,7 +223,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Find all package versions from a source.
         /// </summary>
-        public static async Task<KeyValuePair<PackageSource, SortedSet<NuGetVersion>>> GetSourceInfoForIdAsync(
+        internal static async Task<KeyValuePair<PackageSource, SortedSet<NuGetVersion>>> GetSourceInfoForIdAsync(
             IRemoteDependencyProvider provider,
             string id,
             SourceCacheContext cacheContext,
@@ -218,7 +241,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Find the best match on the feed.
         /// </summary>
-        public static NuGetVersion GetBestMatch(SortedSet<NuGetVersion> versions, VersionRange range)
+        internal static NuGetVersion GetBestMatch(SortedSet<NuGetVersion> versions, VersionRange range)
         {
             if (versions.Count == 0)
             {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -45,7 +45,48 @@ namespace NuGet.RuntimeModel
             _currentContainer = newContainer;
         }
 
+        public void WriteObjectInArrayStart()
+        {
+            ThrowIfReadOnly();
+
+            _containers.Push(_currentContainer);
+
+            var newContainer = new JObject();
+
+            _currentContainer.Add(newContainer);
+            _currentContainer = newContainer;
+        }
+
+        public void WriteArrayStart(string name)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            ThrowIfReadOnly();
+
+            _containers.Push(_currentContainer);
+
+            var newContainer = new JArray();
+
+            _currentContainer[name] = newContainer;
+            _currentContainer = newContainer;
+        }
+
         public void WriteObjectEnd()
+        {
+            ThrowIfReadOnly();
+
+            if (_currentContainer == _root)
+            {
+                throw new InvalidOperationException();
+            }
+
+            _currentContainer = GetPreviousContainer();
+        }
+
+        public void WriteArrayEnd()
         {
             ThrowIfReadOnly();
 
