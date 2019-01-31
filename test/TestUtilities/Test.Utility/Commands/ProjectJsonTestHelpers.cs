@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -52,6 +52,7 @@ namespace NuGet.Commands.Test
 
         /// <summary>
         /// Add restore metadata only if not already set.
+        /// Sets the project style to PackageReference.
         /// </summary>
         public static PackageSpec EnsureRestoreMetadata(this PackageSpec spec)
         {
@@ -89,16 +90,16 @@ namespace NuGet.Commands.Test
         }
 
         /// <summary>
-        /// Add fake .NETCore restore metadata to an xproj project.json.
+        /// Add fake PackageReference restore metadata. 
         /// </summary>
         public static PackageSpec WithTestRestoreMetadata(this PackageSpec spec)
         {
             var updated = spec.Clone();
-            var projectJsonFile = new FileInfo(spec.FilePath);
-            var projectDir = projectJsonFile.Directory.FullName;
+            var packageSpecFile = new FileInfo(spec.FilePath);
+            var projectDir = packageSpecFile.Directory.FullName;
 
             var projectPath = Path.Combine(projectDir, spec.Name + ".csproj");
-            spec.FilePath = projectPath;
+            updated.FilePath = projectPath;
 
             updated.RestoreMetadata = new ProjectRestoreMetadata();
             updated.RestoreMetadata.CrossTargeting = updated.TargetFrameworks.Count > 0;

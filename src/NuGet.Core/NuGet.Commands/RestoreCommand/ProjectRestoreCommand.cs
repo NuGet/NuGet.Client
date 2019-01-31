@@ -27,6 +27,7 @@ namespace NuGet.Commands
 
         private const string WalkFrameworkDependencyDuration = "WalkFrameworkDependencyDuration";
         private const string WalkRuntimeDependencyDuration = "WalkRuntimeDependencyDuration";
+        private const string EvaluateDownloadDependenciesDuration = "EvaluateDownloadDependenciesDuration";
 
         public Guid ParentId { get; }
 
@@ -72,7 +73,25 @@ namespace NuGet.Commands
 
             telemetryActivity.EndIntervalMeasure(WalkFrameworkDependencyDuration);
 
+            telemetryActivity.StartIntervalMeasure();
+
+            var downloadDependencyResolutionTasks = new List<Task<DownloadDependencyResolutionResult>>();
+            var ddLibraryRangeToRemoteMatchCache = new ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange, RemoteMatch>>>();
+            foreach (var targetFrameworkInformation in _request.Project.TargetFrameworks)
+            {
+                downloadDependencyResolutionTasks.Add(ResolveDownloadDependencies(
+                    context,
+                    ddLibraryRangeToRemoteMatchCache,
+                    targetFrameworkInformation,
+                    token));
+            }
+
+            var downloadDependencyResolutionResults = await Task.WhenAll(downloadDependencyResolutionTasks);
+            
+            telemetryActivity.EndIntervalMeasure(EvaluateDownloadDependenciesDuration);
+
             success &= await InstallPackagesAsync(graphs,
+                downloadDependencyResolutionResults,
                 userPackageFolder,
                 token);
 
@@ -123,6 +142,7 @@ namespace NuGet.Commands
 
                 // Install runtime-specific packages
                 success &= await InstallPackagesAsync(runtimeGraphs,
+                    Array.Empty<DownloadDependencyResolutionResult>(),
                     userPackageFolder,
                     token);
             }
@@ -133,11 +153,22 @@ namespace NuGet.Commands
 
             // Warn for all dependencies that do not have exact matches or
             // versions that have been bumped up unexpectedly.
+            // TODO https://github.com/NuGet/Home/issues/7709: When ranges are implemented for download dependencies the bumped up dependencies need to be handled.
             await UnexpectedDependencyMessages.LogAsync(graphs, _request.Project, _logger);
 
-            success &= (await ResolutionSucceeded(graphs, context, token));
+            success &= (await ResolutionSucceeded(graphs, downloadDependencyResolutionResults, context, token));
 
             return Tuple.Create(success, graphs, allRuntimes);
+        }
+
+        private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependencies(RemoteWalkContext context, ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange,RemoteMatch>>> downloadDependenciesCache, ProjectModel.TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
+        {
+            var packageDownloadTasks = targetFrameworkInformation.DownloadDependencies.Select(downloadDependency => ResolverUtility.FindPackageLibraryMatchCachedAsync(
+                    downloadDependenciesCache, downloadDependency, context.RemoteLibraryProviders, context.LocalLibraryProviders, context.CacheContext, _logger, token));
+
+            var packageDownloadMatches = await Task.WhenAll(packageDownloadTasks);
+
+            return DownloadDependencyResolutionResult.Create(targetFrameworkInformation.FrameworkName, packageDownloadMatches, context.RemoteLibraryProviders);
         }
 
         private Task<RestoreTargetGraph> WalkDependenciesAsync(LibraryRange projectRange,
@@ -181,14 +212,14 @@ namespace NuGet.Commands
             return RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
         }
 
-        private async Task<bool> ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs, RemoteWalkContext context, CancellationToken token)
+        private async Task<bool> ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs, IList<DownloadDependencyResolutionResult> downloadDependencyResults, RemoteWalkContext context, CancellationToken token)
         {
-            var success = true;
+            var graphSuccess = true;
             foreach (var graph in graphs)
             {
                 if (graph.Conflicts.Any())
                 {
-                    success = false;
+                    graphSuccess = false;
 
                     foreach (var conflict in graph.Conflicts)
                     {
@@ -205,29 +236,40 @@ namespace NuGet.Commands
 
                 if (graph.Unresolved.Count > 0)
                 {
-                    success = false;
+                    graphSuccess = false;
                 }
             }
 
-            if (!success)
+            if (!graphSuccess)
             {
                 // Log message for any unresolved dependencies
                 await UnresolvedMessages.LogAsync(graphs, context, context.Logger, token);
             }
 
-            return success;
+            var ddSuccess = downloadDependencyResults.All(e => e.Unresolved.Count == 0);
+
+            if (!ddSuccess)
+            {
+                await UnresolvedMessages.LogAsync(downloadDependencyResults, context.RemoteLibraryProviders, context.CacheContext, context.Logger, token);
+            }
+
+            return graphSuccess && ddSuccess;
         }
 
         private async Task<bool> InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs,
+            IList<DownloadDependencyResolutionResult> downloadDependencyInformations,
             NuGetv3LocalRepository userPackageFolder,
             CancellationToken token)
         {
             var uniquePackages = new HashSet<LibraryIdentity>();
 
             var packagesToInstall = graphs
-                .SelectMany(g => g.Install.Where(match => uniquePackages.Add(match.Library)))
-                .ToList();
+                .SelectMany(g => g.Install.Where(match => uniquePackages.Add(match.Library))).ToList();
 
+            packagesToInstall.AddRange( 
+                downloadDependencyInformations.
+                    SelectMany(ddi => ddi.Install.Where(match => uniquePackages.Add(match.Library))));
+            
             var success = true;
 
             if (packagesToInstall.Count > 0)
