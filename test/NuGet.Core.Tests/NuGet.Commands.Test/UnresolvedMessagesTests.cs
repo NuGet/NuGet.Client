@@ -133,18 +133,15 @@ namespace NuGet.Commands.Test
             var provider1 = GetProvider("http://nuget.org/a/", versions);
             var provider2 = GetProvider("http://nuget.org/b/", versions);
             var cacheContext = new Mock<SourceCacheContext>();
-            var remoteWalkContext = new RemoteWalkContext(cacheContext.Object, NullLogger.Instance);
-            remoteWalkContext.RemoteLibraryProviders.Add(provider1.Object);
-            remoteWalkContext.RemoteLibraryProviders.Add(provider2.Object);
-            var graph = new Mock<IRestoreTargetGraph>();
-            graph.SetupGet(e => e.TargetGraphName).Returns("abc");
+            var remoteLibraryProviders = new List<IRemoteDependencyProvider>() { provider1.Object, provider2.Object };
+            var targetGraphName = "abc";
 
-            var message = await UnresolvedMessages.GetMessageAsync(graph.Object, range, remoteWalkContext, logger, token);
+            var message = await UnresolvedMessages.GetMessageAsync(targetGraphName, range, remoteLibraryProviders, cacheContext.Object, logger, token);
 
             message.Code.Should().Be(NuGetLogCode.NU1101);
             message.LibraryId.Should().Be("x");
             message.Message.Should().Be("Unable to find package x. No packages exist with this id in source(s): http://nuget.org/a/, http://nuget.org/b/");
-            message.TargetGraphs.ShouldBeEquivalentTo(new[] { "abc" });
+            message.TargetGraphs.ShouldBeEquivalentTo(new[] { targetGraphName });
             message.Level.Should().Be(LogLevel.Error);
         }
 
@@ -182,11 +179,9 @@ namespace NuGet.Commands.Test
             var provider2 = GetProvider("http://nuget.org/b/", versions2);
 
             var cacheContext = new Mock<SourceCacheContext>();
-            var remoteWalkContext = new RemoteWalkContext(cacheContext.Object, NullLogger.Instance);
-            remoteWalkContext.RemoteLibraryProviders.Add(provider1.Object);
-            remoteWalkContext.RemoteLibraryProviders.Add(provider2.Object);
+            var remoteLibraryProviders = new List<IRemoteDependencyProvider>() { provider1.Object, provider2.Object };
 
-            var infos = await UnresolvedMessages.GetSourceInfosForIdAsync("a", VersionRange.Parse("1.0.0"), remoteWalkContext, NullLogger.Instance, CancellationToken.None);
+            var infos = await UnresolvedMessages.GetSourceInfosForIdAsync("a", VersionRange.Parse("1.0.0"), remoteLibraryProviders, cacheContext.Object, NullLogger.Instance, CancellationToken.None);
 
             infos.Count.Should().Be(2);
             infos[0].Value.ShouldBeEquivalentTo(versions1);
@@ -450,11 +445,10 @@ namespace NuGet.Commands.Test
             var provider = GetProvider("http://nuget.org/a/", versions);
             var cacheContext = new Mock<SourceCacheContext>();
             var remoteWalkContext = new RemoteWalkContext(cacheContext.Object, NullLogger.Instance);
-            remoteWalkContext.RemoteLibraryProviders.Add(provider.Object);
-            var graph = new Mock<IRestoreTargetGraph>();
-            graph.SetupGet(e => e.TargetGraphName).Returns("abc");
+            var remoteLibraryProviders = new List<IRemoteDependencyProvider>() { provider.Object };
+            var targetGraphName = "abc";
 
-            var message = await UnresolvedMessages.GetMessageAsync(graph.Object, range, remoteWalkContext, logger, token);
+            var message = await UnresolvedMessages.GetMessageAsync(targetGraphName, range, remoteLibraryProviders, cacheContext.Object, logger, token);
             return message;
         }
     }
