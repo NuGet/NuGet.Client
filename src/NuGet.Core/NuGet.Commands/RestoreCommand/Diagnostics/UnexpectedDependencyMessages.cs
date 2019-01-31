@@ -37,12 +37,17 @@ namespace NuGet.Commands
             ignoreIds.UnionWith(projectMissingLowerBounds.Select(e => e.LibraryId));
             await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(projectMissingLowerBounds));
 
-            // 2. Detect dependency and source issues across the entire graph 
-            //    where the minimum version was not matched exactly.
-            //    Ignore packages already logged by #1
-            var missingMinimums = GetMissingLowerBounds(graphList, ignoreIds);
-            ignoreIds.UnionWith(missingMinimums.Select(e => e.LibraryId));
-            await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(missingMinimums));
+            // Ignore generating NU1603/NU1602 across entire graph if lock file is enabled. Because
+            // lock file enforce a fixed resolved version for all the different requests for the same package ID.
+            if (!PackagesLockFileUtilities.IsNuGetLockFileSupported(project))
+            {
+                // 2. Detect dependency and source issues across the entire graph 
+                //    where the minimum version was not matched exactly.
+                //    Ignore packages already logged by #1
+                var missingMinimums = GetMissingLowerBounds(graphList, ignoreIds);
+                ignoreIds.UnionWith(missingMinimums.Select(e => e.LibraryId));
+                await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(missingMinimums));
+            }
 
             // 3. Detect top level dependencies that have a version different from the specified version.
             //    Ignore packages already logged in #1 and #2 since those errors are more specific.

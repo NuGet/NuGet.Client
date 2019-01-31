@@ -779,6 +779,79 @@ namespace NuGet.Commands.Test
             UnexpectedDependencyMessages.DependencyRangeHasMissingExactMatch(dependency).Should().BeFalse("Project type should return false, regardless of the range.");
         }
 
+        [Fact]
+        public async Task ProjectWithoutLockFile_GeneratesNU1603()
+        {
+            var testLogger = new TestLogger();
+            var range = VersionRange.Parse("2.0.0");
+            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
+            var project = new PackageSpec(tfi)
+            {
+                Name = "proj"
+            };
+            var flattened = new HashSet<GraphItem<RemoteResolveResult>>
+            {
+                new GraphItem<RemoteResolveResult>(new LibraryIdentity("X", NuGetVersion.Parse("2.0.0"), LibraryType.Package))
+            };
+            var targetGraph = new Mock<IRestoreTargetGraph>();
+            targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
+            var parent = new LibraryIdentity("z", NuGetVersion.Parse("9.0.0"), LibraryType.Package);
+            var child = new LibraryIdentity("x", NuGetVersion.Parse("2.0.0"), LibraryType.Package);
+            var dependency = new ResolvedDependencyKey(parent, VersionRange.Parse("1.0.0"), child);
+            var dependencySet = new HashSet<ResolvedDependencyKey>() { dependency };
+            targetGraph.SetupGet(e => e.ResolvedDependencies).Returns(dependencySet);
+            var targetGraphs = new[] { targetGraph.Object };
+            var ignore = new HashSet<string>();
+
+            await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
+
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1604);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1601);
+            testLogger.LogMessages.Select(e => e.Code).Should().Contain(NuGetLogCode.NU1603);
+        }
+
+        [Fact]
+        public async Task ProjectWithLockFile_NU1603_NotGenerated()
+        {
+            var testLogger = new TestLogger();
+            var range = VersionRange.Parse("2.0.0");
+            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
+            var project = new PackageSpec(tfi)
+            {
+                Name = "proj",
+                RestoreMetadata = new ProjectRestoreMetadata()
+                {
+                    RestoreLockProperties = new RestoreLockProperties(
+                        restorePackagesWithLockFile: "true",
+                        nuGetLockFilePath: null,
+                        restoreLockedMode: true)
+                }
+            };
+            var flattened = new HashSet<GraphItem<RemoteResolveResult>>
+            {
+                new GraphItem<RemoteResolveResult>(new LibraryIdentity("X", NuGetVersion.Parse("2.0.0"), LibraryType.Package))
+            };
+            var targetGraph = new Mock<IRestoreTargetGraph>();
+            targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
+            var parent = new LibraryIdentity("z", NuGetVersion.Parse("9.0.0"), LibraryType.Package);
+            var child = new LibraryIdentity("x", NuGetVersion.Parse("2.0.0"), LibraryType.Package);
+            var dependency = new ResolvedDependencyKey(parent, VersionRange.Parse("1.0.0"), child);
+            var dependencySet = new HashSet<ResolvedDependencyKey>() { dependency };
+            targetGraph.SetupGet(e => e.ResolvedDependencies).Returns(dependencySet);
+            var targetGraphs = new[] { targetGraph.Object };
+            var ignore = new HashSet<string>();
+
+            await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
+
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1604);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1601);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1603);
+        }
+
         [Theory]
         [InlineData("(1.0.0, )")]
         [InlineData("(, 1.0.0]")]
