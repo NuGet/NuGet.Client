@@ -233,13 +233,13 @@ phases:
         cd '$(Build.Repository.LocalPath)\\artifacts'
         pwd
         ls
-        cd VS15
+        cd '$(VsixPublishDir)'
         ls
 
   - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
     displayName: 'Verify nuget.exe and mssign.exe are signed'
     inputs:
-      TargetFolders: '$(Build.StagingDirectory)\\artifacts\\VS15'
+      TargetFolders: '$(Build.StagingDirectory)\\artifacts\\$(VsixPublishDir)'
 
       WhiteListPathForCerts: 'NuGet*.exe'
 
