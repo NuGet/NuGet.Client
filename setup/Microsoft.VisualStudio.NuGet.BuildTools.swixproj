@@ -9,6 +9,7 @@
     <OutputName>$(MSBuildProjectName)</OutputName>
     <OutputType>vsix</OutputType>
     <IsPackage>true</IsPackage>
+    <MajorVSVersion>$([MSBuild]::Add($(MajorNuGetVersion), 11))</MajorVSVersion>
     <!-- We set this to false here so we can batch sign the vsix later -->
     <MicroBuild_SigningEnabled>false</MicroBuild_SigningEnabled>
   </PropertyGroup>
@@ -23,7 +24,7 @@
     <!-- Variables added here will be usable in the swr file.  This is a semi colon delimited
           list of name=value items.  Use $(name) in the swr file to reference the variable.
     -->
-    <PackagePreprocessorDefinitions>$(PackagePreprocessorDefinitions);ReferenceOutputPath=$(ReferenceOutputPath);NuGetTargetsPath=$(NuGetTargetsPath);XmlTransformPath=$(XmlTransformPath);BuildNumber=$(BuildNumber);MajorNuGetVersion=$(MajorNuGetVersion);MinorNuGetVersion=$(MinorNuGetVersion);PatchNuGetVersion=$(PatchNuGetVersion)</PackagePreprocessorDefinitions>
+    <PackagePreprocessorDefinitions>$(PackagePreprocessorDefinitions);ReferenceOutputPath=$(ReferenceOutputPath);NuGetTargetsPath=$(NuGetTargetsPath);XmlTransformPath=$(XmlTransformPath);BuildNumber=$(BuildNumber);MajorNuGetVersion=$(MajorNuGetVersion);MinorNuGetVersion=$(MinorNuGetVersion);PatchNuGetVersion=$(PatchNuGetVersion);MajorVSVersion=$(MajorVSVersion)</PackagePreprocessorDefinitions>
   </PropertyGroup>
 
   <ItemGroup>
