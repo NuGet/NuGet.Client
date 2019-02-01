@@ -28,7 +28,7 @@ namespace NuGet.Packaging.Test
         public CertificatesFixture()
         {
             DefaultKeyPair = RSA.Create(keySizeInBits: 2048);
-            _defaultCertificate = SigningTestUtility.GenerateCertificate("test", DefaultKeyPair);
+            _defaultCertificate = SigningTestUtility.GenerateSelfIssuedCertificate(DefaultKeyPair, "test");
             _rsaSsaPssCertificate = SigningTestUtility.GenerateCertificate("test",
                 generator => { },
                 hashAlgorithm: Common.HashAlgorithmName.SHA256,
@@ -52,8 +52,14 @@ namespace NuGet.Packaging.Test
                 "test non-self-signed certificate", // Must be different than the issuing certificate's subject name.
                 generator => { },
                 chainCertificateRequest: new ChainCertificateRequest() { Issuer = _defaultCertificate });
-            _selfIssuedCertificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false);
-            _rootCertificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: true);
+            using (var rsa = RSA.Create(keySizeInBits: 2048))
+            {
+                _selfIssuedCertificate = SigningTestUtility.GenerateSelfIssuedCertificate(rsa, isCa: false);
+            }
+            using (var rsa = RSA.Create(keySizeInBits: 2048))
+            {
+                _rootCertificate = SigningTestUtility.GenerateSelfIssuedCertificate(rsa, isCa: true);
+            }
 
             const string name1 = "NuGet Cyclic Test Certificate 1";
             const string name2 = "NuGet Cyclic Test Certificate 2";

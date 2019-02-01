@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if SUPPORTS_FULL_SIGNING
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -33,13 +33,13 @@ namespace NuGet.Packaging.FuncTest
         public async Task Timestamp_Verify_WithOfflineRevocation_ReturnsCorrectFlagsAndLogsAsync()
         {
             var nupkg = new SimpleTestPackageContext();
+            var testServer = await _testFixture.GetSigningTestServerAsync();
 
-            using (var testServer = await SigningTestServer.CreateAsync())
             using (var responders = new DisposableList<IDisposable>())
             using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var ca = CreateOfflineRevocationCA(testServer, responders);
+                var ca = await _testFixture.GetOfflineTrustedCertificateAuthorityAsync();
                 var timestampService = TimestampService.Create(ca);
 
                 responders.Add(testServer.RegisterResponder(timestampService));
@@ -84,29 +84,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        private CertificateAuthority CreateOfflineRevocationCA(ISigningTestServer testServer, DisposableList<IDisposable> responders)
-        {
-            var rootCa = CertificateAuthority.Create(testServer.Url);
-            var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
-
-            var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
-
-            var trustedServerRoot = TrustedTestCert.Create(
-                rootCertificate,
-                StoreName.Root,
-                StoreLocation.LocalMachine);
-
-            var ca = intermediateCa;
-
-            while (ca != null)
-            {
-                responders.Add(testServer.RegisterResponder(ca));
-
-                ca = ca.Parent;
-            }
-
-            return intermediateCa;
-        }
+   
     }
 }
+
 #endif

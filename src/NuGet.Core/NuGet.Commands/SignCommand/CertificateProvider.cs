@@ -116,7 +116,7 @@ namespace NuGet.Commands
             }
             else
             {
-#if IS_DESKTOP
+#if SUPPORTS_FULL_SIGNING
                 try
                 {
                     cert = new X509Certificate2(options.CertificatePath);
@@ -167,9 +167,7 @@ namespace NuGet.Commands
                 resultCollection = store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly);
             }
 
-#if IS_DESKTOP
             store.Close();
-#endif
 
             resultCollection = resultCollection ?? new X509Certificate2Collection();
             resultCollection = GetValidCertificates(resultCollection);

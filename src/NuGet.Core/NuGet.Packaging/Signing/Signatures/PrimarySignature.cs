@@ -4,16 +4,13 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
     public abstract class PrimarySignature : Signature
     {
-#if IS_DESKTOP
         /// <summary>
         /// A SignedCms object holding the signature and SignerInfo.
         /// </summary>
@@ -105,10 +102,11 @@ namespace NuGet.Packaging.Signing
 
         public override byte[] GetSignatureValue()
         {
-            using (var nativeCms = NativeCms.Decode(SignedCms.Encode()))
-            {
-                return nativeCms.GetPrimarySignatureSignatureValue();
-            }
+#if SUPPORTS_FULL_SIGNING
+            return SignerInfo.GetSignature();
+#else
+            throw new PlatformNotSupportedException();
+#endif
         }
 
         protected PrimarySignature(SignedCms signedCms, SignatureType signatureType)
@@ -171,15 +169,5 @@ namespace NuGet.Packaging.Signing
                 throw new CryptographicException(Strings.UnexpectedPackageSignatureVerificationError, ex);
             }
         }
-
-#else
-        /// <summary>
-        /// Retrieve the bytes of the signed cms signature.
-        /// </summary>
-        public byte[] GetBytes()
-        {
-            throw new NotSupportedException();
-        }
-#endif
     }
 }

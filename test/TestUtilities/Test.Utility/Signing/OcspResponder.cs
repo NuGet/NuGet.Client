@@ -5,12 +5,17 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
+using System.Numerics;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Ocsp;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Ocsp;
+using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
+using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
+using X509Extension = Org.BouncyCastle.Asn1.X509.X509Extension;
 
 namespace Test.Utility.Signing
 {
@@ -49,7 +54,6 @@ namespace Test.Utility.Signing
             return new OcspResponder(certificateAuthority, options);
         }
 
-#if IS_DESKTOP
         public override void Respond(HttpListenerContext context)
         {
             if (context == null)
@@ -67,7 +71,8 @@ namespace Test.Utility.Signing
             }
 
             var ocspReq = new OcspReq(bytes);
-            var respId = new RespID(CertificateAuthority.Certificate.SubjectDN);
+            var pKey = CertificateAuthority.Certificate.GetRSAPublicKey();
+            var respId = new RespID(DotNetUtilities.GetRsaPublicKey(pKey));
             var basicOcspRespGenerator = new BasicOcspRespGenerator(respId);
             var requests = ocspReq.GetRequestList();
             var nonce = ocspReq.GetExtensionValue(OcspObjectIdentifiers.PkixOcspNonce);
@@ -91,7 +96,8 @@ namespace Test.Utility.Signing
                 var thisUpdate = _options.ThisUpdate ?? now;
                 var nextUpdate = _options.NextUpdate ?? now.AddSeconds(1);
 
-                _responses.AddOrUpdate(certificateId.SerialNumber.ToString(), nextUpdate, (key, currentNextUpdate) =>
+                var serial = BigInteger.Parse(certificateId.SerialNumber.ToString()).ToString($"X{CertificateAuthority.Certificate.SerialNumber.Length}");
+                _responses.AddOrUpdate(serial, nextUpdate, (key, currentNextUpdate) =>
                 {
                     if (nextUpdate > currentNextUpdate)
                     {
@@ -105,7 +111,9 @@ namespace Test.Utility.Signing
             }
 
             var certificateChain = GetCertificateChain();
-            var basicOcspResp = basicOcspRespGenerator.Generate("SHA256WITHRSA", CertificateAuthority.KeyPair.Private, certificateChain, now.UtcDateTime);
+
+            var keypair = DotNetUtilities.GetRsaKeyPair(CertificateAuthority.KeyPair);
+            var basicOcspResp = basicOcspRespGenerator.Generate("SHA256WITHRSA", keypair.Private, certificateChain, now.UtcDateTime);
             var ocspRespGenerator = new OCSPRespGenerator();
             var ocspResp = ocspRespGenerator.Generate(OCSPRespGenerator.Successful, basicOcspResp);
 
@@ -136,16 +144,15 @@ namespace Test.Utility.Signing
 
             return null;
         }
-#endif
 
-        public Task WaitForResponseExpirationAsync(X509Certificate certificate)
+        public Task WaitForResponseExpirationAsync(X509Certificate2 certificate)
         {
             if (certificate == null)
             {
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            if (_responses.TryGetValue(certificate.SerialNumber.ToString(), out var nextUpdate))
+            if (_responses.TryGetValue(certificate.SerialNumber, out var nextUpdate))
             {
                 // Ensure expiration
                 var delay = nextUpdate.AddSeconds(1) - DateTimeOffset.UtcNow;
@@ -166,7 +173,8 @@ namespace Test.Utility.Signing
 
             while (certificateAuthority != null)
             {
-                certificates.Add(certificateAuthority.Certificate);
+                var cert = DotNetUtilities.FromX509Certificate(certificateAuthority.Certificate);
+                certificates.Add(cert);
 
                 certificateAuthority = certificateAuthority.Parent;
             }

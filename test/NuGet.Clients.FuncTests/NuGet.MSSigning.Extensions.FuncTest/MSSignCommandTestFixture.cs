@@ -5,6 +5,8 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using NuGet.CommandLine.Test;
+using NuGet.Common;
+using NuGet.Test.Utility;
 using Test.Utility.Signing;
 
 namespace NuGet.MSSigning.Extensions.FuncTest.Commands
@@ -23,7 +25,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
         private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
         private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
         private readonly DisposableList<IDisposable> _responders;
-
+        private readonly TestDirectory _certDir;
 
         public MSSignCommandTestFixture()
         {
@@ -31,6 +33,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
             _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
             _responders = new DisposableList<IDisposable>();
+            _certDir = TestDirectory.Create();
         }
 
         public TrustedTestCert<TestCertificate> TrustedTestCertificateWithPrivateKey
@@ -44,7 +47,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertWithPrivateKey = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertWithPrivateKey = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine, _certDir);
                 }
 
                 return _trustedTestCertWithPrivateKey;
@@ -62,7 +65,8 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertWithoutPrivateKey = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertWithoutPrivateKey = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine, _certDir);
+
                 }
 
                 return _trustedTestCertWithoutPrivateKey;
@@ -97,12 +101,13 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             var testServer = await _testServer.Value;
             var rootCa = CertificateAuthority.Create(testServer.Url);
             var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
-            var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
+            var rootCertificate = new X509Certificate2(rootCa.Certificate.RawData);
 
             _trustedTimestampRoot = TrustedTestCert.Create(
                 rootCertificate,
                 StoreName.Root,
-                StoreLocation.LocalMachine);
+                StoreLocation.LocalMachine,
+                _certDir);
 
             var ca = intermediateCa;
 
@@ -134,6 +139,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             _trustedTestCertWithoutPrivateKey?.Dispose();
             _trustedTimestampRoot?.Dispose();
             _responders.Dispose();
+            _certDir.Dispose();
 
             if (_testServer.IsValueCreated)
             {

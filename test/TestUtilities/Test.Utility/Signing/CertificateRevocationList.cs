@@ -24,7 +24,7 @@ namespace Test.Utility.Signing
 
         public BigInteger Version { get; private set; }
 
-#if IS_DESKTOP
+#if SUPPORTS_FULL_SIGNING
         public static CertificateRevocationList CreateCrl(
             X509CertificateWithKeyInfo issuerCert,
             string crlLocalUri)

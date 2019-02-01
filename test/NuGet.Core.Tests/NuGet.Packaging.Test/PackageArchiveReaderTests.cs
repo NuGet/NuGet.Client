@@ -1519,7 +1519,6 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if IS_DESKTOP
         [Fact]
         public async Task ValidateIntegrityAsync_WhenSignatureContentNull_Throws()
         {
@@ -1757,13 +1756,13 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if IS_DESKTOP
         [CIOnlyFact]
         public async Task GetContentHash_IsSameForUnsignedAndSignedPackageAsync()
         {
             // this test will create an unsigned package, copy it, then sign it. then compare the contentHash
             var nupkg = new SimpleTestPackageContext("Package.Content.Hash.Test", "1.0.0");
 
+            using (var certDir = TestDirectory.Create())
             using (var unsignedDir = TestDirectory.Create())
             {
                 var nupkgFileName = $"{nupkg.Identity.Id}.{nupkg.Identity.Version}.nupkg";
@@ -1777,7 +1776,7 @@ namespace NuGet.Packaging.Test
 
                     var signedPackagePath = Path.Combine(signedDir.Path, nupkgFileName);
 
-                    using (var trustedCert = SigningTestUtility.GenerateTrustedTestCertificate())
+                    using (var trustedCert = SigningTestUtility.GenerateTrustedTestCertificate(certDir))
                     using (var originalPackage = File.OpenRead(nupkgFileInfo.FullName))
                     using (var signedPackage = File.Open(signedPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                     using (var request = new AuthorSignPackageRequest(
@@ -1799,7 +1798,6 @@ namespace NuGet.Packaging.Test
                 }
             }
         }
-#endif 
 
         private static Zip CreateZipWithNestedStoredZipArchives()
         {
@@ -1866,7 +1864,6 @@ namespace NuGet.Packaging.Test
                 return stream.ToArray();
             }
         }
-#endif
 
         private static string ExtractFile(string sourcePath, string targetPath, Stream sourceStream)
         {

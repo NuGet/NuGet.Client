@@ -5,9 +5,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 using NuGet.Packaging.Signing.DerEncoding;
@@ -23,7 +21,6 @@ namespace NuGet.Packaging.Signing
             EitherOrBoth
         }
 
-#if IS_DESKTOP
         /// <summary>
         /// Gets certificates in the certificate chain for the primary signature.
         /// </summary>
@@ -678,6 +675,5 @@ namespace NuGet.Packaging.Signing
                 ChainBuildingFailed = chainBuildingFailed;
             }
         }
-#endif
     }
 }

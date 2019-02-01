@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using System.Web;
 using NuGet.CommandLine.Test;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
@@ -24,6 +26,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private const int _invalidCertChainLength = 2;
 
         private TrustedTestCert<TestCertificate> _trustedTestCert;
+        private TrustedTestCert<TestCertificate> _trustedRepoTestCert;
         private TrustedTestCert<TestCertificate> _trustedTestCertWithInvalidEku;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
@@ -44,6 +47,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
         private readonly DisposableList<IDisposable> _responders;
 
+        public TestDirectory CertificatesDirectory { get; }
+
         public TrustedTestCert<TestCertificate> TrustedTestCertificate
         {
             get
@@ -55,10 +60,29 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCert = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCert = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine, CertificatesDirectory);
+   
                 }
 
                 return _trustedTestCert;
+            }
+        }
+
+        public TrustedTestCert<TestCertificate> TrustedRepoTestCertificate
+        {
+            get
+            {
+                if (_trustedRepoTestCert == null)
+                {
+                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCodeSigningEkuCert;
+
+                    // Code Sign EKU needs trust to a root authority
+                    // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
+                    // This makes all the associated tests to require admin privilege
+                    _trustedRepoTestCert = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine, CertificatesDirectory);
+                }
+
+                return _trustedRepoTestCert;
             }
         }
 
@@ -72,7 +96,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertWithInvalidEku = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertWithInvalidEku = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine, CertificatesDirectory);
                 }
 
                 return _trustedTestCertWithInvalidEku;
@@ -90,7 +114,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertExpired = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertExpired = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine, CertificatesDirectory);
                 }
 
                 return _trustedTestCertExpired;
@@ -108,7 +132,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertNotYetValid = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertNotYetValid = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine, CertificatesDirectory);
                 }
 
                 return _trustedTestCertNotYetValid;
@@ -121,7 +145,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_trustedTestCertChain == null)
                 {
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path);
+                    var certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path, CertificatesDirectory);
 
                     _trustedTestCertChain = new TrustedTestCertificateChain()
                     {
@@ -141,7 +165,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_revokedTestCertChain == null)
                 {
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path);
+                    var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path, CertificatesDirectory);
 
                     _revokedTestCertChain = new TrustedTestCertificateChain()
                     {
@@ -164,7 +188,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_revocationUnknownTestCertChain == null)
                 {
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: false);
+                    var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path, CertificatesDirectory, configureLeafCrl: false);
 
                     _revocationUnknownTestCertChain = new TrustedTestCertificateChain()
                     {
@@ -184,12 +208,16 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_untrustedSelfIssuedCertificateInCertificateStore == null)
                 {
-                    var certificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false);
+                    using (var rsa = RSA.Create(keySizeInBits: 2048))
+                    {
+                        var certificate = SigningTestUtility.GenerateSelfIssuedCertificate(rsa, isCa: false);
 
-                    _untrustedSelfIssuedCertificateInCertificateStore = TrustedTestCert.Create(
-                        certificate,
-                        StoreName.My,
-                        StoreLocation.CurrentUser);
+                        _untrustedSelfIssuedCertificateInCertificateStore = TrustedTestCert.Create(
+                            certificate,
+                            StoreName.My,
+                            StoreLocation.CurrentUser,
+                            CertificatesDirectory);
+                    }
                 }
 
                 return new X509Certificate2(_untrustedSelfIssuedCertificateInCertificateStore.Source);
@@ -271,6 +299,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
             _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
             _responders = new DisposableList<IDisposable>();
+            CertificatesDirectory = TestDirectory.Create();
         }
 
         private void SetUpCrlDistributionPoint()
@@ -293,7 +322,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                             }
                             else
                             {
-                                var crlName = urlSplits[1];
+                                var crlName = HttpUtility.UrlDecode(urlSplits[1]);
                                 var crlPath = Path.Combine(TestDirectory, crlName);
                                 if (File.Exists(crlPath))
                                 {
@@ -339,6 +368,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void Dispose()
         {
             _trustedTestCert?.Dispose();
+            _trustedRepoTestCert?.Dispose();
             _trustedTestCertWithInvalidEku?.Dispose();
             _trustedTestCertExpired?.Dispose();
             _trustedTestCertNotYetValid?.Dispose();
@@ -351,6 +381,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             _crlServer?.Dispose();
             _testDirectory?.Dispose();
             _responders.Dispose();
+            CertificatesDirectory.Dispose();
 
             if (_testServer.IsValueCreated)
             {
@@ -363,12 +394,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
             var testServer = await _testServer.Value;
             var rootCa = CertificateAuthority.Create(testServer.Url);
             var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
-            var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
+            var rootCertificate = new X509Certificate2(rootCa.Certificate);
 
             _trustedTimestampRoot = TrustedTestCert.Create(
                 rootCertificate,
                 StoreName.Root,
-                StoreLocation.LocalMachine);
+                StoreLocation.LocalMachine,
+                CertificatesDirectory);
 
             var ca = intermediateCa;
 

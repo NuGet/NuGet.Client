@@ -69,7 +69,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(json.ToString(), jsonOutput.ToString());
             }
         }
-
+#if SUPPORTS_FULL_SIGNING
         [Fact]
         public async Task UWPRestore_VerifySatellitePackagesAreCompatibleInPCL()
         {
@@ -509,7 +509,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(140, result.GetAllInstalled().Count);
             }
         }
-
+#endif
         private Stream GetResource(string name)
         {
             return GetType().GetTypeInfo().Assembly.GetManifestResourceStream(name);

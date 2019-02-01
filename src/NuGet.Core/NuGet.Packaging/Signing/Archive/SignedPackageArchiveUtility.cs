@@ -8,9 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -226,7 +224,6 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-#if IS_DESKTOP
         /// <summary>
         /// Removes repository primary signature (if it exists) or any repository countersignature (if it exists).
         /// </summary>
@@ -501,32 +498,6 @@ namespace NuGet.Packaging.Signing
 
             return false;
         }
-#else
-
-        public static Task<bool> RemoveRepositorySignaturesAsync(
-            Stream input,
-            Stream output,
-            CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal static void SignZip(MemoryStream signatureStream, BinaryReader reader, BinaryWriter writer)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal static void UnsignZip(BinaryReader reader, BinaryWriter writer)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal static void VerifySignedZipIntegrity(BinaryReader reader, HashAlgorithm hashAlgorithm, byte[] expectedHash)
-        {
-            throw new NotImplementedException();
-        }
-
-#endif
 
         private static List<CentralDirectoryHeaderMetadata> RemoveSignatureAndOrderByOffset(SignedPackageArchiveMetadata metadata)
         {

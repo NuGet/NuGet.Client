@@ -9,8 +9,6 @@ namespace Test.Utility.Signing
     {
         Uri Url { get; }
 
-#if IS_DESKTOP
         IDisposable RegisterResponder(IHttpResponder responder);
-#endif
     }
 }

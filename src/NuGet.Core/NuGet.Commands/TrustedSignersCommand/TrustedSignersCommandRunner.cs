@@ -58,7 +58,6 @@ namespace NuGet.Commands
 
                     if (isPackagePathProvided)
                     {
-#if IS_DESKTOP
                         if (isServiceIndexProvided || isFingerprintProvided || isAlgorithmProvided)
                         {
                             throw new CommandLineArgumentCombinationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_CouldNotAdd, Strings.Error_InvalidCombinationOfArguments));
@@ -108,10 +107,6 @@ namespace NuGet.Commands
                         }
 
                         break;
-
-#else
-                        throw new NotSupportedException();
-#endif
                     }
 
                     if (isServiceIndexProvided)

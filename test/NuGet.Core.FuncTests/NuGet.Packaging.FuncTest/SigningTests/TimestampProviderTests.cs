@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if SUPPORTS_FULL_SIGNING
 
 using System;
 using System.Collections.Generic;
@@ -259,7 +259,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // OCSP are not supported on Linux
+        [CIOnlyPlatformFact(Platform.Windows, Platform.Darwin)]
         public async Task GetTimestamp_WhenTimestampSigningCertificateRevoked_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
@@ -353,7 +354,7 @@ namespace NuGet.Packaging.FuncTest
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
             var timestampServiceOptions = new TimestampServiceOptions() { SignatureHashAlgorithm = new Oid(Oids.Sha1) };
-            var issueCertificateOptions = IssueCertificateOptions.CreateDefaultForTimestampService();
+            var issueCertificateOptions = BCIssueCertificateOptions.CreateDefaultForTimestampService();
             issueCertificateOptions.SignatureAlgorithmName = "SHA1WITHRSA";
 
             var timestampService = TimestampService.Create(certificateAuthority, timestampServiceOptions, issueCertificateOptions);

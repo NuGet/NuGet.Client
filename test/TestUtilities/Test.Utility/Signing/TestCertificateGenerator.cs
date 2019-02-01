@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Numerics;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Test.Utility.Signing
@@ -13,18 +14,13 @@ namespace Test.Utility.Signing
 
         public DateTimeOffset NotAfter { get; set; }
 
-        public byte[] SerialNumber { get; private set; }
+        public BigInteger SerialNumber { get; set; }
 
         public Collection<X509Extension> Extensions { get; }
 
         public TestCertificateGenerator()
         {
             Extensions = new Collection<X509Extension>();
-        }
-
-        public void SetSerialNumber(byte[] serialNumber)
-        {
-            SerialNumber = serialNumber ?? throw new ArgumentNullException(nameof(serialNumber));
         }
     }
 }

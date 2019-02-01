@@ -2,7 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Common;
+using NuGet.Test.Utility;
 
 namespace Test.Utility.Signing
 {
@@ -10,8 +14,9 @@ namespace Test.Utility.Signing
     {
         public static TrustedTestCert<X509Certificate2> Create(
             X509Certificate2 cert,
-            StoreName storeName = StoreName.TrustedPeople,
-            StoreLocation storeLocation = StoreLocation.CurrentUser,
+            StoreName storeName,
+            StoreLocation storeLocation,
+            TestDirectory dir,
             TimeSpan? maximumValidityPeriod = null)
         {
             return new TrustedTestCert<X509Certificate2>(
@@ -19,6 +24,7 @@ namespace Test.Utility.Signing
                 x => x,
                 storeName,
                 storeLocation,
+                dir,
                 maximumValidityPeriod);
         }
     }
@@ -40,10 +46,13 @@ namespace Test.Utility.Signing
 
         private bool _isDisposed;
 
+        private string _systemTrustedCertPath;
+
         public TrustedTestCert(T source,
             Func<T, X509Certificate2> getCert,
-            StoreName storeName = StoreName.TrustedPeople,
-            StoreLocation storeLocation = StoreLocation.CurrentUser,
+            StoreName storeName,
+            StoreLocation storeLocation,
+            TestDirectory dir,
             TimeSpan? maximumValidityPeriod = null)
         {
             Source = source;
@@ -54,16 +63,47 @@ namespace Test.Utility.Signing
                 maximumValidityPeriod = TimeSpan.FromHours(2);
             }
 
-#if IS_DESKTOP
             if (TrustedCert.NotAfter - TrustedCert.NotBefore > maximumValidityPeriod.Value)
             {
                 throw new InvalidOperationException($"The certificate used is valid for more than {maximumValidityPeriod}.");
             }
-#endif
-            StoreName = storeName;
-            StoreLocation = storeLocation;
+
+            StoreName = GetPlatformSpecificStoreName(storeName, dir);
+            StoreLocation = GetPlatformSpecificStoreLocation(storeLocation);
             AddCertificateToStore();
+
             ExportCrl();
+        }
+
+        private StoreLocation GetPlatformSpecificStoreLocation(StoreLocation requestedLocation)
+        {
+            if (requestedLocation == StoreLocation.LocalMachine &&
+                (RuntimeEnvironmentHelper.IsMacOSX || RuntimeEnvironmentHelper.IsLinux))
+            {
+                return StoreLocation.CurrentUser;
+            }
+
+            return requestedLocation;
+        }
+
+        private StoreName GetPlatformSpecificStoreName(StoreName requestedStoreName, TestDirectory dir)
+        {
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                if (requestedStoreName == StoreName.Root || requestedStoreName == StoreName.CertificateAuthority)
+                {
+                    TrustCertInMac(dir);
+                }
+
+                return StoreName.My;
+            }
+
+            if (requestedStoreName == StoreName.CertificateAuthority && RuntimeEnvironmentHelper.IsLinux)
+            {
+                return StoreName.Root;
+            }
+
+            return requestedStoreName;
         }
 
         private void AddCertificateToStore()
@@ -83,6 +123,34 @@ namespace Test.Utility.Signing
             }
         }
 
+        private void TrustCertInMac(TestDirectory dir)
+        {
+            var exportedCert = TrustedCert.Export(X509ContentType.Cert);
+
+            var tempCertFileName = GetCertificateName() + ".cer";
+
+            _systemTrustedCertPath = Path.Combine(dir, tempCertFileName);
+            File.WriteAllBytes(_systemTrustedCertPath, exportedCert);
+
+            var trustProcess = Process.Start(@"/usr/bin/sudo", $@"security -v add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain {_systemTrustedCertPath}");
+            trustProcess.WaitForExit();
+        }
+
+        private string GetCertificateName()
+        {
+            var parts = TrustedCert.SubjectName.Name.Split('=');
+
+            for (var i = 0; i < parts.Length; i++)
+            {
+                if (string.Equals(parts[i], "CN") && i + 1 < parts.Length)
+                {
+                    return parts[i + 1];
+                }
+            }
+
+            return "NuGetTest-" + Guid.NewGuid().ToString();
+        }
+
         private void DisposeCrl()
         {
             var testCertificate = Source as TestCertificate;
@@ -97,6 +165,12 @@ namespace Test.Utility.Signing
         {
             if (!_isDisposed)
             {
+                if (_systemTrustedCertPath != null && RuntimeEnvironmentHelper.IsMacOSX)
+                {
+                    var untrustProcess = Process.Start(@"/usr/bin/sudo", $@"security -v remove-trusted-cert -d {_systemTrustedCertPath}");
+                    untrustProcess.WaitForExit();
+                }
+
                 using (_store)
                 {
                     _store.Remove(TrustedCert);

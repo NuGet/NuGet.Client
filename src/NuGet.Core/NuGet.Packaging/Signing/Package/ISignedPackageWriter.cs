@@ -14,7 +14,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public interface ISignedPackageWriter
     {
-#if IS_DESKTOP
         /// <summary>
         /// Removes a signature if it exists.
         /// </summary>
@@ -39,6 +38,5 @@ namespace NuGet.Packaging.Signing
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="token" />
         /// is cancelled.</exception>
         Task<bool> IsZip64Async(CancellationToken token);
-#endif
     }
 }

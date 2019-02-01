@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -151,7 +151,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal("2.0.0", project2Target.Dependencies.Single().VersionRange.ToLegacyShortString());
             }
         }
-
+#if SUPPORTS_FULL_SIGNING
         [Fact]
         public async Task Project2ProjectInLockFile_PackageReferenceConflict()
         {
@@ -227,7 +227,7 @@ namespace NuGet.Commands.Test
                 Assert.True(result.Success, logger.ShowMessages());
             }
         }
-
+#endif
         [Fact]
         public async Task Project2ProjectInLockFile_VerifyP2PWithNonProjectJsonReference()
         {

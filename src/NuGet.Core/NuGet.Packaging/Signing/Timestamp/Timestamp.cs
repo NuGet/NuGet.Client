@@ -5,19 +5,15 @@ using System;
 using NuGet.Common;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Linq;
 
-#if IS_DESKTOP
-using System.Security.Cryptography.Pkcs;
-#endif
 
 namespace NuGet.Packaging.Signing
 {
     public sealed class Timestamp
     {
-#if IS_DESKTOP
-
         /// <summary>
         /// Upper limit of Timestamp.
         /// </summary>
@@ -271,6 +267,5 @@ namespace NuGet.Packaging.Signing
 
             return flags;
         }
-#endif
     }
 }

@@ -66,7 +66,7 @@ namespace NuGet.Test.Utility
             Platforms = platforms.ToList();
         }
 
-        private string[] GetAllPlatforms()
+        protected string[] GetAllPlatforms()
         {
             var platforms = new HashSet<string>(Platforms ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase)
             {

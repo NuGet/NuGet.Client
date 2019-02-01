@@ -6,9 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +20,6 @@ namespace Test.Utility.Signing
 {
     public static class SignedArchiveTestUtility
     {
-#if IS_DESKTOP
         /// <summary>
         /// Generates an author signed copy of a package and returns the path to that package
         /// This method can timestamp a package and should only be used with tests marked with [CIOnlyFact]
@@ -158,7 +155,6 @@ namespace Test.Utility.Signing
 
             return outputPackagePath;
         }
-#endif
 
         public static async Task CreateSignedPackageAsync(
             SignPackageRequest request,
@@ -242,7 +238,6 @@ namespace Test.Utility.Signing
             return await signatureProvider.CreateRepositoryCountersignatureAsync(request, signature, testLogger, CancellationToken.None);
         }
 
-#if IS_DESKTOP
         // This generates a package with a basic signed CMS.
         // The signature MUST NOT have any signed or unsigned attributes.
         public static async Task<FileInfo> SignPackageFileWithBasicSignedCmsAsync(
@@ -304,7 +299,6 @@ namespace Test.Utility.Signing
 
             return timestampProvider.TimestampSignatureAsync(primarySignature, timestampRequest, logger, CancellationToken.None);
         }
-#endif
 
         public static async Task<bool> IsSignedAsync(Stream package)
         {
@@ -327,9 +321,7 @@ namespace Test.Utility.Signing
                 var primarySignature = await reader.GetPrimarySignatureAsync(CancellationToken.None);
                 if (primarySignature != null)
                 {
-#if IS_DESKTOP
                     return SignatureUtility.HasRepositoryCountersignature(primarySignature);
-#endif
                 }
 
                 return false;

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
@@ -27,14 +28,21 @@ namespace NuGet.CommandLine.FuncTest.Commands
     [Collection(SignCommandTestCollection.Name)]
     public class TrustedSignersCommandTests
     {
-        private readonly string _nugetExePath;
         private const string _trustedSignersHelpStringFragment = "usage: NuGet trusted-signers <List|Add|Remove|Sync> [options]";
         private const string _successfulActionTrustedSigner = "Successfully {0} the trusted {1} '{2}'.";
         private const string _successfulAddTrustedSigner = "Successfully added a trusted {0} '{1}'.";
 
-        public TrustedSignersCommandTests()
+        private SignCommandTestFixture _testFixture;
+        private TrustedTestCert<TestCertificate> _trustedTestCert;
+        private TrustedTestCert<TestCertificate> _trustedRepoTestCert;
+        private readonly string _nugetExePath;
+
+        public TrustedSignersCommandTests(SignCommandTestFixture fixture)
         {
-            _nugetExePath = Util.GetNuGetExePath();
+            _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+            _trustedTestCert = fixture.TrustedTestCertificate;
+            _trustedRepoTestCert = fixture.TrustedRepoTestCertificate;
+            _nugetExePath = _testFixture.NuGetExePath;
         }
 
         [Fact]
@@ -259,10 +267,10 @@ namespace NuGet.CommandLine.FuncTest.Commands
             var package = new SimpleTestPackageContext();
             using (var dir = TestDirectory.Create())
             using (var zipStream = await package.CreateAsStreamAsync())
-            using (var trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
+            using (var cert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
-                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(trustedTestCert.Source.Cert, package, dir);
+                var certFingerprint = SignatureTestUtility.GetFingerprint(cert, HashAlgorithmName.SHA256);
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(cert, package, dir);
 
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigFileName, dir, config);
                 var nugetConfigPath = Path.Combine(dir, nugetConfigFileName);
@@ -309,11 +317,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
             var package = new SimpleTestPackageContext();
             using (var dir = TestDirectory.Create())
             using (var zipStream = await package.CreateAsStreamAsync())
-            using (var trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
+            using (var cert = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
+                var certFingerprint = SignatureTestUtility.GetFingerprint(cert, HashAlgorithmName.SHA256);
                 var repoServiceIndex = "https://serviceindex.test/v3/index.json";
-                var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(trustedTestCert.Source.Cert, package, dir, new Uri(repoServiceIndex));
+                var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(cert, package, dir, new Uri(repoServiceIndex));
 
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigFileName, dir, config);
                 var nugetConfigPath = Path.Combine(dir, nugetConfigFileName);
@@ -369,13 +377,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
             var package = new SimpleTestPackageContext();
             using (var dir = TestDirectory.Create())
             using (var zipStream = await package.CreateAsStreamAsync())
-            using (var authorTrustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
-            using (var repoTrustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
+            using (var authorCert = new X509Certificate2(_trustedTestCert.Source.Cert))
+            using (var repoCert = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
-                var certFingerprint = SignatureTestUtility.GetFingerprint(repoTrustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
+                var certFingerprint = SignatureTestUtility.GetFingerprint(repoCert, HashAlgorithmName.SHA256);
                 var repoServiceIndex = "https://serviceindex.test/v3/index.json";
-                var authorSignedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(authorTrustedTestCert.Source.Cert, package, dir);
-                var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoTrustedTestCert.Source.Cert, authorSignedPackagePath, dir, new Uri(repoServiceIndex));
+                var authorSignedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(authorCert, package, dir);
+                var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoCert, authorSignedPackagePath, dir, new Uri(repoServiceIndex));
 
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigFileName, dir, config);
                 var nugetConfigPath = Path.Combine(dir, nugetConfigFileName);

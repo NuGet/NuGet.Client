@@ -6,9 +6,7 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
 using System.Security.Cryptography.X509Certificates;
 
 namespace NuGet.Packaging.Signing
@@ -19,7 +17,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public sealed class Rfc3161TimestampTokenInfo : AsnEncodedData
     {
-#if IS_DESKTOP
         public const string TimestampTokenInfoId = "1.2.840.113549.1.9.16.1.4";
 
         private TstInfo _decoded;
@@ -43,7 +40,7 @@ namespace NuGet.Packaging.Signing
         internal Rfc3161TimestampTokenInfo(IntPtr pTsContext)
         {
             var context = (Rfc3161TimestampWin32.CRYPT_TIMESTAMP_CONTEXT)Marshal.PtrToStructure(pTsContext, typeof(Rfc3161TimestampWin32.CRYPT_TIMESTAMP_CONTEXT));
-            byte[] encoded = new byte[context.cbEncoded];
+            var encoded = new byte[context.cbEncoded];
             Marshal.Copy(context.pbEncoded, encoded, 0, context.cbEncoded);
 
             var cms = new SignedCms();
@@ -68,7 +65,7 @@ namespace NuGet.Packaging.Signing
         {
             get
             {
-                Oid value = Decoded.MessageImprint.HashAlgorithm.Algorithm;
+                var value = Decoded.MessageImprint.HashAlgorithm.Algorithm;
 
                 return new Oid(value.Value, value.FriendlyName);
             }
@@ -159,10 +156,9 @@ namespace NuGet.Packaging.Signing
             if (blob.cbData == 0)
                 return null;
 
-            byte[] answer = new byte[blob.cbData];
+            var answer = new byte[blob.cbData];
             Marshal.Copy(blob.pbData, answer, 0, answer.Length);
             return answer;
         }
-#endif
     }
 }

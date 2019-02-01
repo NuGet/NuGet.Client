@@ -18,7 +18,6 @@ namespace NuGet.Packaging.Signing
             return VerifyPackageIntegrityAsync(package, signature, settings);
         }
 
-#if IS_DESKTOP
         private async Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             var status = SignatureVerificationStatus.Unknown;
@@ -50,11 +49,5 @@ namespace NuGet.Packaging.Signing
 
             return new SignedPackageVerificationResult(status, signature, issues);
         }
-#else
-        private Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
-        {
-            throw new NotSupportedException();
-        }
-#endif
     }
 }

@@ -6,9 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -109,21 +107,20 @@ namespace NuGet.Packaging.Test
                 Assert.Equal("Certificate chain validation failed.", exception.Message);
 
                 Assert.Equal(1, logger.Errors);
-                Assert.Equal(1, logger.Warnings);
+                Assert.Equal(RuntimeEnvironmentHelper.IsLinux ? 2 : 1, logger.Warnings);
+                SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
 
                 if (RuntimeEnvironmentHelper.IsWindows)
                 {
                     AssertNotTimeValid(logger.LogMessages, LogLevel.Error);
-                    SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
                 }
-                else if (RuntimeEnvironmentHelper.IsMacOSX)
+                else 
                 {
                     AssertExpiredCertificate(logger.LogMessages, LogLevel.Error);
-                    SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning); 
                 }
-                else
+
+                if (RuntimeEnvironmentHelper.IsLinux)
                 {
-                    AssertPartialChain(logger.LogMessages, LogLevel.Error);
                     SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
                 }
             }
@@ -151,7 +148,6 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if IS_DESKTOP
         [Fact]
         public void CreateSignedAttributes_SignPackageRequest_WhenRequestNull_Throws()
         {
@@ -530,15 +526,22 @@ namespace NuGet.Packaging.Test
                 Assert.Equal("Certificate chain validation failed.", exception.Message);
 
                 Assert.Equal(1, test.Logger.Errors);
-                Assert.Equal(1, test.Logger.Warnings);
-                Assert.Contains(test.Logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Error &&
-                    message.Message == "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.");
-                Assert.Contains(test.Logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Warning &&
-                    message.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
+                Assert.Equal(RuntimeEnvironmentHelper.IsLinux ? 2 : 1, test.Logger.Warnings);
+                SigningTestUtility.AssertUntrustedRoot(test.Logger.LogMessages, LogLevel.Warning);
+
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    AssertNotTimeValid(test.Logger.LogMessages, LogLevel.Error);
+                }
+                else
+                {
+                    AssertExpiredCertificate(test.Logger.LogMessages, LogLevel.Error);
+                }
+
+                if (RuntimeEnvironmentHelper.IsLinux)
+                {
+                    SigningTestUtility.AssertOfflineRevocation(test.Logger.LogMessages, LogLevel.Warning);
+                }
             }
         }
 
@@ -559,9 +562,14 @@ namespace NuGet.Packaging.Test
                 Assert.True(await SignedArchiveTestUtility.IsSignedAsync(test.Options.OutputPackageStream));
 
                 Assert.Equal(0, test.Logger.Errors);
-                Assert.Equal(1, test.Logger.Warnings);
-                Assert.Equal(1, test.Logger.Messages.Count());
-                Assert.True(test.Logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
+                Assert.Equal(RuntimeEnvironmentHelper.IsLinux ? 2 : 1, test.Logger.Warnings);
+
+                SigningTestUtility.AssertUntrustedRoot(test.Logger.LogMessages, LogLevel.Warning);
+
+                if (RuntimeEnvironmentHelper.IsLinux)
+                {
+                    SigningTestUtility.AssertOfflineRevocation(test.Logger.LogMessages, LogLevel.Warning);
+                }
             }
         }
 
@@ -603,9 +611,14 @@ namespace NuGet.Packaging.Test
 
                     Assert.Equal(0, test.Options.OutputPackageStream.Length);
                     Assert.Equal(0, test.Logger.Errors);
-                    Assert.Equal(1, test.Logger.Warnings);
-                    Assert.Equal(1, test.Logger.Messages.Count());
-                    Assert.True(test.Logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
+                    Assert.Equal(RuntimeEnvironmentHelper.IsLinux ? 2 : 1, test.Logger.Warnings);
+
+                    SigningTestUtility.AssertUntrustedRoot(test.Logger.LogMessages, LogLevel.Warning);
+
+                    if (RuntimeEnvironmentHelper.IsLinux)
+                    {
+                        SigningTestUtility.AssertOfflineRevocation(test.Logger.LogMessages, LogLevel.Warning);
+                    }
                 }
             }
         }
@@ -684,7 +697,6 @@ namespace NuGet.Packaging.Test
                     logger);
             }
         }
-#endif
 
         private static void AssertNotTimeValid(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
@@ -704,10 +716,20 @@ namespace NuGet.Packaging.Test
 
         private static void AssertExpiredCertificate(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
+            string expiredCertificate;
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                expiredCertificate = "An expired certificate was detected";
+            }
+            else
+            {
+                expiredCertificate = "certificate has expired";
+            }
+
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message.Contains("An expired certificate was detected"));
+                issue.Message.Contains(expiredCertificate));
         }
 
         private static void AssertPartialChain(IEnumerable<ILogMessage> issues, LogLevel logLevel)

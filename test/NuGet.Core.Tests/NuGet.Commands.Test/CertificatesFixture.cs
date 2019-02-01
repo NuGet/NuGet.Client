@@ -10,12 +10,15 @@ namespace NuGet.Commands.Test
     public sealed class CertificatesFixture : IDisposable
     {
         private readonly X509Certificate2 _defaultCertificate;
+        private readonly X509Certificate2 _repositoryCertificate;
+
 
         private bool _isDisposed;
 
         public CertificatesFixture()
         {
             _defaultCertificate = SigningTestUtility.GenerateCertificate("test", generator => { });
+            _repositoryCertificate = SigningTestUtility.GenerateCertificate("test repo", generator => { });
         }
 
         public void Dispose()
@@ -23,6 +26,7 @@ namespace NuGet.Commands.Test
             if (!_isDisposed)
             {
                 _defaultCertificate.Dispose();
+                _repositoryCertificate.Dispose();
 
                 GC.SuppressFinalize(this);
 
@@ -33,6 +37,11 @@ namespace NuGet.Commands.Test
         public X509Certificate2 GetDefaultCertificate()
         {
             return new X509Certificate2(_defaultCertificate.RawData);
+        }
+
+        public X509Certificate2 GetRepositoryCertificate()
+        {
+            return new X509Certificate2(_repositoryCertificate.RawData);
         }
 
         public X509Certificate2 GetCertificateWithPassword(string password)

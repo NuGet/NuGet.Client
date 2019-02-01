@@ -3,10 +3,8 @@
 
 using System;
 using System.Runtime.InteropServices;
-#if IS_DESKTOP
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
-#endif
 
 namespace NuGet.Packaging.Signing
 {
@@ -27,8 +25,7 @@ namespace NuGet.Packaging.Signing
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
         }
-
-#if IS_DESKTOP
+#if SUPPORTS_FULL_SIGNING
         internal static SignedCms NativeSign(CmsSigner cmsSigner, byte[] data, CngKey privateKey)
         {
             using (var hb = new HeapBlockRetainer())

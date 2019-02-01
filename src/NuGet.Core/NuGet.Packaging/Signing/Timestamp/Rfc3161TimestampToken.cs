@@ -6,11 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
-
 using System.Security.Cryptography.X509Certificates;
 
 namespace NuGet.Packaging.Signing
@@ -21,9 +17,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     internal sealed class Rfc3161TimestampToken
     {
-
-#if IS_DESKTOP
-
         private readonly byte[] _encoded;
 
         public Rfc3161TimestampTokenInfo TokenInfo { get; }
@@ -50,7 +43,7 @@ namespace NuGet.Packaging.Signing
 
         public SignedCms AsSignedCms()
         {
-            SignedCms signedCms = new SignedCms();
+            var signedCms = new SignedCms();
             signedCms.Decode(_encoded);
 
             return signedCms;
@@ -81,7 +74,7 @@ namespace NuGet.Packaging.Signing
             if (hash == null)
                 throw new ArgumentNullException(nameof(hash));
 
-            Rfc3161TimestampToken token = CryptVerifyTimeStampSignature(encodedToken, null);
+            var token = CryptVerifyTimeStampSignature(encodedToken, null);
 
             if (!token.TokenInfo.HasMessageHash(hash))
             {
@@ -102,9 +95,9 @@ namespace NuGet.Packaging.Signing
 
         private static Rfc3161TimestampToken CryptVerifyTimeStampSignature(byte[] encodedToken, byte[] data)
         {
-            IntPtr pTsContext = IntPtr.Zero;
-            IntPtr pTsSigner = IntPtr.Zero;
-            IntPtr hStore = IntPtr.Zero;
+            var pTsContext = IntPtr.Zero;
+            var pTsSigner = IntPtr.Zero;
+            var hStore = IntPtr.Zero;
 
             try
             {
@@ -121,12 +114,12 @@ namespace NuGet.Packaging.Signing
                     throw new CryptographicException(Marshal.GetLastWin32Error());
                 }
 
-                Rfc3161TimestampTokenInfo tstInfo = new Rfc3161TimestampTokenInfo(pTsContext);
-                X509Certificate2 signerCert = new X509Certificate2(pTsSigner);
+                var tstInfo = new Rfc3161TimestampTokenInfo(pTsContext);
+                var signerCert = new X509Certificate2(pTsSigner);
 
-                using (X509Store extraCerts = new X509Store(hStore))
+                using (var extraCerts = new X509Store(hStore))
                 {
-                    X509Certificate2Collection additionalCertsColl = new X509Certificate2Collection();
+                    var additionalCertsColl = new X509Certificate2Collection();
 
                     foreach (var cert in extraCerts.Certificates)
                     {
@@ -155,6 +148,5 @@ namespace NuGet.Packaging.Signing
                     Rfc3161TimestampWin32.CertCloseStore(hStore, 0);
             }
         }
-#endif
     }
 }

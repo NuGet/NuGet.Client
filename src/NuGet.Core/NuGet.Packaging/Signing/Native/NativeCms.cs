@@ -4,12 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-#if IS_DESKTOP
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
-#endif
 using NuGet.Common;
-
 
 namespace NuGet.Packaging.Signing
 {
@@ -260,7 +257,7 @@ namespace NuGet.Packaging.Signing
                 }
             }
         }
-#if IS_DESKTOP
+#if SUPPORTS_FULL_SIGNING
         internal unsafe void AddCountersignature(CmsSigner cmsSigner, CngKey privateKey)
         {
             using (var hb = new HeapBlockRetainer())
@@ -277,8 +274,6 @@ namespace NuGet.Packaging.Signing
             }
         }
 #endif
-
-#if IS_DESKTOP
         internal unsafe void AddTimestampToRepositoryCountersignature(SignedCms timestamp)
         {
             using (var hb = new HeapBlockRetainer())
@@ -431,7 +426,6 @@ namespace NuGet.Packaging.Signing
                 }
             }
         }
-#endif
 
         private static CRYPT_ATTRIBUTE GetCryptAttributeForData(byte[] data, string attributeOid, HeapBlockRetainer hb)
         {

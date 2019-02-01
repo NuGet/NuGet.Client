@@ -351,7 +351,7 @@ namespace NuGet.CommandLine.Test
                     if (ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED ||
                         ex.ErrorCode == ErrorConstants.ERROR_INVALID_HANDLE ||
                         ex.ErrorCode == ErrorConstants.ERROR_INVALID_FUNCTION ||
-                        RuntimeEnvironmentHelper.IsMono && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_MONO)
+                        ((RuntimeEnvironmentHelper.IsMono || !RuntimeEnvironmentHelper.IsWindows) && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_XPLAT)) 
                     {
                         return;
                     }

@@ -6,11 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
-
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
-
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,8 +26,6 @@ namespace NuGet.Packaging.Signing
 
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
         {
-#if IS_DESKTOP
-            // Uri.UriSchemeHttp and Uri.UriSchemeHttps are not available in netstandard 1.3
             if (!string.Equals(timeStampServerUrl.Scheme, Uri.UriSchemeHttp, StringComparison.Ordinal) &&
                 !string.Equals(timeStampServerUrl.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal))
             {
@@ -42,12 +36,11 @@ namespace NuGet.Packaging.Signing
                     nameof(Uri.UriSchemeHttp),
                     nameof(Uri.UriSchemeHttps)));
             }
-#endif
+
             _timestamperUrl = timeStampServerUrl ?? throw new ArgumentNullException(nameof(timeStampServerUrl));
         }
 
-#if IS_DESKTOP
-
+#if SUPPORTS_FULL_SIGNING
         /// <summary>
         /// Timestamps data present in the TimestampRequest.
         /// </summary>
@@ -67,6 +60,16 @@ namespace NuGet.Packaging.Signing
                 return Task.FromResult(PrimarySignature.Load(signatureNativeCms.Encode()));
             }
         }
+#else
+
+        /// <summary>
+        /// Timestamp a signature.
+        /// </summary>
+        public Task<PrimarySignature> TimestampSignatureAsync(PrimarySignature primarySignature, TimestampRequest timestampRequest, ILogger logger, CancellationToken token)
+        {
+            throw new PlatformNotSupportedException();
+        }
+#endif
 
         /// <summary>
         /// Timestamps data present in the TimestampRequest.
@@ -127,6 +130,7 @@ namespace NuGet.Packaging.Signing
             SignedCms timestampCms,
             IReadOnlyList<X509Certificate2> chain)
         {
+#if SUPPORTS_FULL_SIGNING
             using (var timestampNativeCms = NativeCms.Decode(timestampCms.Encode()))
             {
                 timestampNativeCms.AddCertificates(
@@ -140,6 +144,9 @@ namespace NuGet.Packaging.Signing
 
                 return updatedCms;
             }
+#else
+            throw new PlatformNotSupportedException();
+#endif
         }
 
         private static void ValidateTimestampCms(SigningSpecifications spec, SignedCms timestampCms, Rfc3161TimestampToken timestampToken)
@@ -250,16 +257,5 @@ namespace NuGet.Packaging.Signing
 
             return nonce;
         }
-
-#else
-
-        /// <summary>
-        /// Timestamp a signature.
-        /// </summary>
-        public Task<PrimarySignature> TimestampSignatureAsync(PrimarySignature primarySignature, TimestampRequest timestampRequest, ILogger logger, CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
-#endif
     }
 }

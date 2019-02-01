@@ -8,10 +8,8 @@ namespace NuGet.Packaging.Signing
 {
     public interface IRepositorySignature : ISignature
     {
-#if IS_DESKTOP
         Uri V3ServiceIndexUrl { get; }
 
         IReadOnlyList<string> PackageOwners { get; }
-#endif
     }
 }

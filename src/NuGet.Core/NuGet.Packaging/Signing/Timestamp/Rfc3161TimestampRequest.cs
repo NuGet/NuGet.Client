@@ -18,8 +18,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     internal sealed class Rfc3161TimestampRequest : AsnEncodedData
     {
-
-#if IS_DESKTOP
         private class DataType
         {
             internal int _version;
@@ -144,7 +142,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentException("Nonce must be null or non-empty", nameof(nonce));
             }
 
-            DataType data = new DataType
+            var data = new DataType
             {
                 _version = 1,
                 _hash = (byte[])messageHash.Clone(),
@@ -189,10 +187,10 @@ namespace NuGet.Packaging.Signing
             if (timestampUri.Scheme != Uri.UriSchemeHttp && timestampUri.Scheme != Uri.UriSchemeHttps)
                 throw new ArgumentException("HTTP/HTTPS required", nameof(timestampUri));
 
-            IntPtr requestedPolicyPtr = IntPtr.Zero;
-            IntPtr pTsContext = IntPtr.Zero;
-            IntPtr pTsSigner = IntPtr.Zero;
-            IntPtr hStore = IntPtr.Zero;
+            var requestedPolicyPtr = IntPtr.Zero;
+            var pTsContext = IntPtr.Zero;
+            var pTsSigner = IntPtr.Zero;
+            var hStore = IntPtr.Zero;
 
             const Rfc3161TimestampWin32.CryptRetrieveTimeStampFlags flags =
                 Rfc3161TimestampWin32.CryptRetrieveTimeStampFlags.TIMESTAMP_VERIFY_CONTEXT_SIGNATURE |
@@ -202,7 +200,7 @@ namespace NuGet.Packaging.Signing
             {
                 requestedPolicyPtr = Marshal.StringToHGlobalAnsi(Data._requestedPolicyId?.Value);
 
-                Rfc3161TimestampWin32.CRYPT_TIMESTAMP_PARA para = new Rfc3161TimestampWin32.CRYPT_TIMESTAMP_PARA()
+                var para = new Rfc3161TimestampWin32.CRYPT_TIMESTAMP_PARA()
                 {
                     fRequestCerts = Data._requestSignerCertificate,
                     pszTSAPolicyId = requestedPolicyPtr,
@@ -236,15 +234,15 @@ namespace NuGet.Packaging.Signing
                 }
 
                 var content = (Rfc3161TimestampWin32.CRYPT_TIMESTAMP_CONTEXT)Marshal.PtrToStructure(pTsContext, typeof(Rfc3161TimestampWin32.CRYPT_TIMESTAMP_CONTEXT));
-                byte[] encoded = new byte[content.cbEncoded];
+                var encoded = new byte[content.cbEncoded];
                 Marshal.Copy(content.pbEncoded, encoded, 0, content.cbEncoded);
 
-                Rfc3161TimestampTokenInfo tstInfo = new Rfc3161TimestampTokenInfo(pTsContext);
-                X509Certificate2 signerCert = new X509Certificate2(pTsSigner);
+                var tstInfo = new Rfc3161TimestampTokenInfo(pTsContext);
+                var signerCert = new X509Certificate2(pTsSigner);
 
-                using (X509Store extraCerts = new X509Store(hStore))
+                using (var extraCerts = new X509Store(hStore))
                 {
-                    X509Certificate2Collection additionalCertsColl = new X509Certificate2Collection();
+                    var additionalCertsColl = new X509Certificate2Collection();
 
                     foreach (var cert in extraCerts.Certificates)
                     {
@@ -279,16 +277,16 @@ namespace NuGet.Packaging.Signing
 
         private static unsafe byte[] Encode(DataType data)
         {
-            IntPtr algorithmOidPtr = IntPtr.Zero;
-            IntPtr policyOidPtr = IntPtr.Zero;
-            IntPtr encodedDataPtr = IntPtr.Zero;
+            var algorithmOidPtr = IntPtr.Zero;
+            var policyOidPtr = IntPtr.Zero;
+            var encodedDataPtr = IntPtr.Zero;
 
             try
             {
                 algorithmOidPtr = Marshal.StringToHGlobalAnsi(data._hashAlgorithm.Value);
                 policyOidPtr = Marshal.StringToHGlobalAnsi(data._requestedPolicyId?.Value);
 
-                Rfc3161TimestampWin32.CRYPT_TIMESTAMP_REQUEST request = new Rfc3161TimestampWin32.CRYPT_TIMESTAMP_REQUEST
+                var request = new Rfc3161TimestampWin32.CRYPT_TIMESTAMP_REQUEST
                 {
                     dwVersion = data._version,
                     fCertReq = data._requestSignerCertificate,
@@ -319,7 +317,7 @@ namespace NuGet.Packaging.Signing
                         throw new CryptographicException(Marshal.GetLastWin32Error());
                     }
 
-                    byte[] encoded = new byte[cbEncoded];
+                    var encoded = new byte[cbEncoded];
                     Marshal.Copy(encodedDataPtr, encoded, 0, (int)cbEncoded);
                     return encoded;
                 }
@@ -341,8 +339,8 @@ namespace NuGet.Packaging.Signing
         {
             fixed (byte* pbData = rawData)
             {
-                IntPtr decodedPtr = IntPtr.Zero;
-                int cbStruct = 0;
+                var decodedPtr = IntPtr.Zero;
+                var cbStruct = 0;
 
                 try
                 {
@@ -363,7 +361,7 @@ namespace NuGet.Packaging.Signing
 
                     var request = (Rfc3161TimestampWin32.CRYPT_TIMESTAMP_REQUEST)Marshal.PtrToStructure(decodedPtr, typeof(Rfc3161TimestampWin32.CRYPT_TIMESTAMP_REQUEST));
 
-                    DataType dataType = new DataType
+                    var dataType = new DataType
                     {
                         _version = request.dwVersion,
                         _hashAlgorithm = OpportunisticOid(Marshal.PtrToStringAnsi(request.HashAlgorithm.pszOid)),
@@ -423,6 +421,5 @@ namespace NuGet.Packaging.Signing
             _data = null;
             base.CopyFrom(asnEncodedData);
         }
-#endif
     }
 }

@@ -41,7 +41,7 @@ namespace NuGet.Packaging.Signing
 
         internal IX509CertificateChain Chain { get; private set; }
 
-#if IS_DESKTOP
+#if SUPPORTS_FULL_SIGNING
         /// <summary>
         /// PrivateKey is only used in mssign command.
         /// </summary>
@@ -86,7 +86,7 @@ namespace NuGet.Packaging.Signing
                 Certificate?.Dispose();
                 Chain?.Dispose();
 
-#if IS_DESKTOP
+#if SUPPORTS_FULL_SIGNING
                 PrivateKey?.Dispose();
 #endif
 

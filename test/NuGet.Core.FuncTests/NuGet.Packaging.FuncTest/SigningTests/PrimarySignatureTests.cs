@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,7 +35,7 @@ namespace NuGet.Packaging.FuncTest
             _trustProviders = _testFixture.TrustProviders;
             _signingSpecifications = _testFixture.SigningSpecifications;
         }
-
+#if SUPPORTS_FULL_SIGNING
         [CIOnlyFact]
         public async Task Signature_HasTimestampAsync()
         {
@@ -66,7 +64,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
         }
-
+#endif
         [CIOnlyFact]
         public async Task Signature_HasNoTimestampAsync()
         {
@@ -210,4 +208,3 @@ namespace NuGet.Packaging.FuncTest
         }
     }
 }
-#endif

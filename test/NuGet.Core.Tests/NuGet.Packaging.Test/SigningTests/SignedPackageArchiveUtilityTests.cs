@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
-using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -256,7 +255,6 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if IS_DESKTOP
         [Fact]
         public async Task RemoveRepositorySignaturesAsync_WithNullInput_Throws()
         {
@@ -364,11 +362,24 @@ namespace NuGet.Packaging.Test
                 Assert.True(wasSomethingRemoved);
                 Assert.InRange(newLastWriteTime, originalLastWriteTime, originalLastWriteTime.Add(TimeSpan.FromMinutes(5)));
 
+                uint offsetOfLocalFileHeaderLastModifiedDateTime;
+                uint offsetOfCentralDirectoryHeaderLastModifiedDateTime;
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    offsetOfLocalFileHeaderLastModifiedDateTime = 0x1df;
+                    offsetOfCentralDirectoryHeaderLastModifiedDateTime = 0x851;
+                }
+                else
+                {
+                    offsetOfLocalFileHeaderLastModifiedDateTime = 0x1d5;
+                    offsetOfCentralDirectoryHeaderLastModifiedDateTime = 0x91c;
+                }
+
                 ZeroPackageSignatureFileLastModifiedDateTimes(
                     expectedPackage,
                     actualPackage,
-                    offsetOfLocalFileHeaderLastModifiedDateTime: 0x1df,
-                    offsetOfCentralDirectoryHeaderLastModifiedDateTime: 0x851);
+                    offsetOfLocalFileHeaderLastModifiedDateTime: offsetOfLocalFileHeaderLastModifiedDateTime,
+                    offsetOfCentralDirectoryHeaderLastModifiedDateTime: offsetOfCentralDirectoryHeaderLastModifiedDateTime);
 
                 Assert.Equal(expectedPackage, actualPackage);
             }
@@ -399,11 +410,24 @@ namespace NuGet.Packaging.Test
                 Assert.True(wasSomethingRemoved);
                 Assert.InRange(newLastWriteTime, originalLastWriteTime, originalLastWriteTime.Add(TimeSpan.FromMinutes(5)));
 
+                uint offsetOfLocalFileHeaderLastModifiedDateTime;
+                uint offsetOfCentralDirectoryHeaderLastModifiedDateTime;
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    offsetOfLocalFileHeaderLastModifiedDateTime = 0x1df;
+                    offsetOfCentralDirectoryHeaderLastModifiedDateTime = 0xa7a;
+                }
+                else
+                {
+                    offsetOfLocalFileHeaderLastModifiedDateTime = 0x1d5;
+                    offsetOfCentralDirectoryHeaderLastModifiedDateTime = 0xb68;
+                }
+
                 ZeroPackageSignatureFileLastModifiedDateTimes(
                     expectedPackage,
                     actualPackage,
-                    offsetOfLocalFileHeaderLastModifiedDateTime: 0x1df,
-                    offsetOfCentralDirectoryHeaderLastModifiedDateTime: 0xa7a);
+                    offsetOfLocalFileHeaderLastModifiedDateTime,
+                    offsetOfCentralDirectoryHeaderLastModifiedDateTime);
 
                 Assert.Equal(expectedPackage, actualPackage);
             }
@@ -428,7 +452,6 @@ namespace NuGet.Packaging.Test
                 package2.SetValue((byte)0, offsetOfCentralDirectoryHeaderLastModifiedDateTime + i);
             }
         }
-#endif
 
         private static byte[] GetEmptyZip()
         {
@@ -498,7 +521,6 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if IS_DESKTOP
         private sealed class RemoveTest : IDisposable
         {
             private bool _isDisposed;
@@ -662,6 +684,5 @@ namespace NuGet.Packaging.Test
                 }
             }
         }
-#endif
     }
 }

@@ -14,24 +14,19 @@ namespace Test.Utility.Signing
     public sealed class SigningTestServer : ISigningTestServer, IDisposable
     {
         private readonly ConcurrentDictionary<string, IHttpResponder> _responders = new ConcurrentDictionary<string, IHttpResponder>();
-#if IS_DESKTOP
         private readonly HttpListener _listener;
         private bool _isDisposed;
-#endif
 
         public Uri Url { get; }
 
-#if IS_DESKTOP
         private SigningTestServer(HttpListener listener, Uri url)
         {
             _listener = listener;
             Url = url;
         }
-#endif
 
         public void Dispose()
         {
-#if IS_DESKTOP
             if (!_isDisposed)
             {
                 _listener.Stop();
@@ -41,7 +36,6 @@ namespace Test.Utility.Signing
 
                 _isDisposed = true;
             }
-#endif
         }
 
         public IDisposable RegisterResponder(IHttpResponder responder)
@@ -56,7 +50,6 @@ namespace Test.Utility.Signing
 
         public static Task<SigningTestServer> CreateAsync()
         {
-#if IS_DESKTOP
             var portReserver = new PortReserver();
 
             return portReserver.ExecuteAsync(
@@ -81,13 +74,8 @@ namespace Test.Utility.Signing
                     return Task.FromResult(server);
                 },
                 CancellationToken.None);
-#else
-
-            throw new NotImplementedException();
-#endif
         }
 
-#if IS_DESKTOP
         private static string GetBaseAbsolutePath(Uri url)
         {
             var path = url.PathAndQuery;
@@ -133,7 +121,7 @@ namespace Test.Utility.Signing
                     if (ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED ||
                         ex.ErrorCode == ErrorConstants.ERROR_INVALID_HANDLE ||
                         ex.ErrorCode == ErrorConstants.ERROR_INVALID_FUNCTION ||
-                        RuntimeEnvironmentHelper.IsMono && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_MONO)
+                        ((RuntimeEnvironmentHelper.IsMono || !RuntimeEnvironmentHelper.IsWindows) && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_XPLAT))
                     {
                         return;
                     }
@@ -144,7 +132,6 @@ namespace Test.Utility.Signing
                 }
             }
         }
-#endif
 
         private sealed class Responder : IDisposable
         {

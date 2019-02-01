@@ -51,7 +51,6 @@ namespace NuGet.Packaging.Signing
             return Task.FromResult(result);
         }
 
-#if IS_DESKTOP
         private PackageVerificationResult Verify(
             PrimarySignature signature,
             SignedPackageVerifierSettings settings)
@@ -65,12 +64,13 @@ namespace NuGet.Packaging.Signing
             var status = SignatureVerificationStatus.Unknown;
             var issues = Enumerable.Empty<SignatureLog>();
             var isUntrustedRootAllowed = IsUntrustedRootAllowed(signature);
+            var isUnknownRevocationAllowed = RuntimeEnvironmentHelper.IsLinux && isUntrustedRootAllowed;
 
             var verifySettings = new SignatureVerifySettings(
                 allowIllegal: settings.AllowIllegal,
                 allowUntrusted: settings.AllowUntrusted || isUntrustedRootAllowed,
-                allowUnknownRevocation: settings.AllowUnknownRevocation,
-                reportUnknownRevocation: settings.ReportUnknownRevocation,
+                allowUnknownRevocation: settings.AllowUnknownRevocation || isUnknownRevocationAllowed,
+                reportUnknownRevocation: settings.ReportUnknownRevocation && !isUnknownRevocationAllowed,
                 reportUntrustedRoot: !isUntrustedRootAllowed,
                 revocationMode: settings.RevocationMode);
 
@@ -282,14 +282,5 @@ namespace NuGet.Packaging.Signing
         {
             return summary.SignatureType != SignatureType.Repository && summary.ExpirationTime.HasValue;
         }
-
-#else
-        private PackageVerificationResult Verify(
-            PrimarySignature signature,
-            SignedPackageVerifierSettings settings)
-        {
-            throw new NotSupportedException();
-        }
-#endif
     }
 }

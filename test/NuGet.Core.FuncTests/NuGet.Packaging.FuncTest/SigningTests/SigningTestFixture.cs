@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
+using NuGet.Test.Utility;
 using Test.Utility.Signing;
 
 namespace NuGet.Packaging.FuncTest
@@ -21,22 +23,29 @@ namespace NuGet.Packaging.FuncTest
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
         private TrustedTestCert<X509Certificate2> _trustedServerRoot;
+        private TrustedTestCert<X509Certificate2> _offlineTrustedServerRoot;
         private TestCertificate _untrustedTestCert;
         private IReadOnlyList<TrustedTestCert<TestCertificate>> _trustedTestCertificateWithReissuedCertificate;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
         private Lazy<Task<SigningTestServer>> _testServer;
         private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
+        private Lazy<Task<CertificateAuthority>> _offlineTrustedCertificateAuthority;
         private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
         private readonly DisposableList<IDisposable> _responders;
+        private readonly TestDirectory _certDir;
 
         public SigningTestFixture()
         {
             _testServer = new Lazy<Task<SigningTestServer>>(SigningTestServer.CreateAsync);
             _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
+            _offlineTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateOfflineRevocationCertificateAuthorityAsync);
             _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
             _responders = new DisposableList<IDisposable>();
+            _certDir = TestDirectory.Create();
         }
+
+        public TestDirectory CertificatesDirectory => _certDir;
 
         public TrustedTestCert<TestCertificate> TrustedTestCertificate
         {
@@ -44,7 +53,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_trustedTestCert == null)
                 {
-                    _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
+                    _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate(_certDir);
                 }
 
                 return _trustedTestCert;
@@ -59,7 +68,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_trustedRepositoryCertificate == null)
                 {
-                    _trustedRepositoryCertificate = SigningTestUtility.GenerateTrustedTestCertificate();
+                    _trustedRepositoryCertificate = SigningTestUtility.GenerateTrustedTestCertificate(_certDir);
                 }
 
                 return _trustedRepositoryCertificate;
@@ -72,7 +81,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_trustedTestCertExpired == null)
                 {
-                    _trustedTestCertExpired = SigningTestUtility.GenerateTrustedTestCertificateExpired();
+                    _trustedTestCertExpired = SigningTestUtility.GenerateTrustedTestCertificateExpired(_certDir);
                 }
 
                 return _trustedTestCertExpired;
@@ -85,7 +94,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_trustedTestCertNotYetValid == null)
                 {
-                    _trustedTestCertNotYetValid = SigningTestUtility.GenerateTrustedTestCertificateNotYetValid();
+                    _trustedTestCertNotYetValid = SigningTestUtility.GenerateTrustedTestCertificateNotYetValid(_certDir);
                 }
 
                 return _trustedTestCertNotYetValid;
@@ -93,7 +102,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         // We should not memoize this call because it is a time-sensitive operation.
-        public TrustedTestCert<TestCertificate> TrustedTestCertificateWillExpireIn10Seconds => SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn10Seconds();
+        public TrustedTestCert<TestCertificate> TrustedTestCertificateWillExpireIn10Seconds => SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn10Seconds(_certDir);
 
         // We should not memoize this call because it is a time-sensitive operation.
         public TestCertificate UntrustedTestCertificateWillExpireIn10Seconds => TestCertificate.Generate(SigningTestUtility.CertificateModificationGeneratorExpireIn10Seconds);
@@ -107,11 +116,11 @@ namespace NuGet.Packaging.FuncTest
                     using (var rsa = RSA.Create(keySizeInBits: 2048))
                     {
                         var certificateName = TestCertificate.GenerateCertificateName();
-                        var certificate1 = SigningTestUtility.GenerateCertificate(certificateName, rsa);
-                        var certificate2 = SigningTestUtility.GenerateCertificate(certificateName, rsa);
+                        var certificate1 = SigningTestUtility.GenerateSelfIssuedCertificate(rsa, certificateName);
+                        var certificate2 = SigningTestUtility.GenerateSelfIssuedCertificate(rsa, certificateName);
 
-                        var testCertificate1 = new TestCertificate() { Cert = certificate1 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine);
-                        var testCertificate2 = new TestCertificate() { Cert = certificate2 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                        var testCertificate1 = new TestCertificate() { Cert = certificate1 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine, _certDir);
+                        var testCertificate2 = new TestCertificate() { Cert = certificate2 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine, _certDir);
 
                         _trustedTestCertificateWithReissuedCertificate = new[]
                         {
@@ -178,6 +187,11 @@ namespace NuGet.Packaging.FuncTest
             return await _defaultTrustedCertificateAuthority.Value;
         }
 
+        public async Task<CertificateAuthority> GetOfflineTrustedCertificateAuthorityAsync()
+        {
+            return await _offlineTrustedCertificateAuthority.Value;
+        }
+
         public async Task<TimestampService> GetDefaultTrustedTimestampServiceAsync()
         {
             return await _defaultTrustedTimestampService.Value;
@@ -188,12 +202,13 @@ namespace NuGet.Packaging.FuncTest
             var testServer = await _testServer.Value;
             var rootCa = CertificateAuthority.Create(testServer.Url);
             var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
-            var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
+            var rootCertificate = new X509Certificate2(rootCa.Certificate);
 
             _trustedServerRoot = TrustedTestCert.Create(
                 rootCertificate,
                 StoreName.Root,
-                StoreLocation.LocalMachine);
+                StoreLocation.LocalMachine,
+                _certDir);
 
             var ca = intermediateCa;
 
@@ -201,6 +216,32 @@ namespace NuGet.Packaging.FuncTest
             {
                 _responders.Add(testServer.RegisterResponder(ca));
                 _responders.Add(testServer.RegisterResponder(ca.OcspResponder));
+
+                ca = ca.Parent;
+            }
+
+            return intermediateCa;
+        }
+
+        private async Task<CertificateAuthority> CreateOfflineRevocationCertificateAuthorityAsync()
+        {
+            var testServer = await _testServer.Value;
+            var rootCa = CertificateAuthority.Create(testServer.Url);
+            var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
+
+            var rootCertificate = new X509Certificate2(rootCa.Certificate);
+
+            _offlineTrustedServerRoot = TrustedTestCert.Create(
+                rootCertificate,
+                StoreName.Root,
+                StoreLocation.LocalMachine,
+                _certDir);
+
+                var ca = intermediateCa;
+
+            while (ca != null)
+            {
+                _responders.Add(testServer.RegisterResponder(ca));
 
                 ca = ca.Parent;
             }
@@ -226,7 +267,9 @@ namespace NuGet.Packaging.FuncTest
             _trustedTestCertExpired?.Dispose();
             _trustedTestCertNotYetValid?.Dispose();
             _trustedServerRoot?.Dispose();
+            _offlineTrustedServerRoot?.Dispose();
             _responders.Dispose();
+            _certDir.Dispose();
 
             if (_trustedTestCertificateWithReissuedCertificate != null)
             {

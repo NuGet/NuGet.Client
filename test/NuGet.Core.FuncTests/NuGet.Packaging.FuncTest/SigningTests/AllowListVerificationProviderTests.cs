@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,7 +33,7 @@ namespace NuGet.Packaging.FuncTest
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedAuthorTestCert = _testFixture.TrustedTestCertificate;
-            _trustedRepoTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
+            _trustedRepoTestCert = _testFixture.TrustedRepositoryCertificate;
         }
 
         [CIOnlyFact]
@@ -561,7 +559,6 @@ namespace NuGet.Packaging.FuncTest
             // Arrange
             using (var dir = TestDirectory.Create())
             using (var repoCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
-            using (var packageSignatureCertificate = SigningTestUtility.GenerateTrustedTestCertificate().Source.Cert)
             {
                 var hashAlgorithmName = HashAlgorithmName.SHA256;
                 var fingerprint = "abcdefg";
@@ -1125,4 +1122,3 @@ namespace NuGet.Packaging.FuncTest
         }
     }
 }
-#endif

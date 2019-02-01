@@ -3,11 +3,7 @@
 
 using System;
 using System.IO;
-
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
-
 using System.Security.Cryptography.X509Certificates;
 
 namespace NuGet.Packaging.Signing
@@ -19,8 +15,6 @@ namespace NuGet.Packaging.Signing
     {
         private const double _millisecondsPerMicrosecond = 0.001;
 
-#if IS_DESKTOP
-
         internal static bool ValidateSignerCertificateAgainstTimestamp(
             X509Certificate2 signerCertificate,
             Timestamp timestamp)
@@ -28,8 +22,8 @@ namespace NuGet.Packaging.Signing
             DateTimeOffset signerCertExpiry = DateTime.SpecifyKind(signerCertificate.NotAfter, DateTimeKind.Local);
             DateTimeOffset signerCertBegin = DateTime.SpecifyKind(signerCertificate.NotBefore, DateTimeKind.Local);
 
-            return timestamp.UpperLimit < signerCertExpiry &&
-                timestamp.LowerLimit > signerCertBegin;
+            return timestamp.UpperLimit <= signerCertExpiry &&
+                timestamp.LowerLimit >= signerCertBegin;
         }
 
         internal static bool TryReadTSTInfoFromSignedCms(
@@ -73,6 +67,5 @@ namespace NuGet.Packaging.Signing
 
             return accuracyInMilliseconds;
         }
-#endif
     }
 }

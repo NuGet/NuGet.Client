@@ -12,5 +12,7 @@ namespace Test.Utility.Signing
         public const string AnyExtendedKeyUsage = "2.5.29.37.0";
 
         public const string CrlDistributionPoints = "2.5.29.31";
+
+        public const string AuthorityInfoAccess = "1.3.6.1.5.5.7.1.1";
     }
 }

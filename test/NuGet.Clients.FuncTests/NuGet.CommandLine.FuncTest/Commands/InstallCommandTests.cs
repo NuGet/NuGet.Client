@@ -35,11 +35,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private SignCommandTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private string _nugetExePath;
+        private readonly TestDirectory _certDir;
 
         public InstallCommandTests(SignCommandTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
+            _certDir = fixture.CertificatesDirectory;
+            _trustedTestCert = _testFixture.TrustedTestCertificate;
             _nugetExePath = _testFixture.NuGetExePath;
         }
 
@@ -178,39 +180,38 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyFact]
+        // OCSP are not supported on Linux
+        [CIOnlyPlatformFact(Platform.Windows, Platform.Darwin)]
         public async Task Install_TamperedAndRevokedCertificateSignaturePackage_FailsAsync()
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext("A", "1.0.0");
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
+
             var issueOptions = IssueCertificateOptions.CreateDefaultForEndCertificate();
-            var bcCertificate = certificateAuthority.IssueCertificate(issueOptions);
 
             using (var context = new SimpleTestPathContext())
-            using (var testCertificate = new X509Certificate2(bcCertificate.GetEncoded()))
+            using (var testCertificate = certificateAuthority.IssueCertificate(issueOptions))
             {
-                testCertificate.PrivateKey = DotNetUtilities.ToRSA(issueOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
-
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, context.WorkingDirectory);
                 SignedArchiveTestUtility.TamperWithPackage(signedPackagePath);
                 certificateAuthority.Revoke(
-                    bcCertificate,
+                    testCertificate,
                     RevocationReason.KeyCompromise,
                     DateTimeOffset.UtcNow);
 
                 var args = new string[]
                 {
-                    nupkg.Id,
-                    "-Version",
-                    nupkg.Version,
-                    "-DirectDownload",
-                    "-NoCache",
-                    "-Source",
-                    context.WorkingDirectory,
-                    "-OutputDirectory",
-                    Path.Combine(context.WorkingDirectory, "packages")
+                nupkg.Id,
+                "-Version",
+                nupkg.Version,
+                "-DirectDownload",
+                "-NoCache",
+                "-Source",
+                context.WorkingDirectory,
+                "-OutputDirectory",
+                Path.Combine(context.WorkingDirectory, "packages")
                 };
 
                 // Act

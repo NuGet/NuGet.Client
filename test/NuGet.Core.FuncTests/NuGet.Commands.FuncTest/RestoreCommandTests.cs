@@ -29,6 +29,7 @@ namespace NuGet.Commands.FuncTest
 {
     public class RestoreCommandTests
     {
+#if SUPPORTS_FULL_SIGNING
         [Theory]
         [InlineData("https://www.nuget.org/api/v2/", new Type[0])]
         [InlineData("https://api.nuget.org/v3/index.json", new[] { typeof(RemoteV3FindPackageByIdResourceProvider) })]
@@ -68,7 +69,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal("6.1.3-beta1", targetLibrary.Version.ToNormalizedString());
             }
         }
-
+#endif
         [Fact]
         public async Task RestoreCommand_LockFileHasOriginalVersionCaseAsync()
         {
@@ -178,7 +179,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.NotNull(libraryRange);
             }
         }
-
+#if SUPPORTS_FULL_SIGNING
         /// <summary>
         /// This test fixes https://github.com/NuGet/Home/issues/2901.
         /// </summary>
@@ -262,7 +263,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.True(result.Success, "The restore should have been successful.");
             }
         }
-
+#endif
         [Fact]
         public async Task RestoreCommand_VerifyMinClientVersionV2SourceAsync()
         {
@@ -478,7 +479,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.False(File.Exists(request.LockFilePath));
             }
         }
-
+#if SUPPORTS_FULL_SIGNING
         [Fact]
         public async Task RestoreCommand_FrameworkImportRulesAreAppliedAsync()
         {
@@ -1176,7 +1177,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.NotNull(jsonNetReference);
             }
         }
-
+#endif
         [Fact]
         public async Task RestoreCommand_InstallPackageWithManyDependenciesAsync()
         {
@@ -1255,7 +1256,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, unresolved.Count);
             }
         }
-
+#if SUPPORTS_FULL_SIGNING
         [Fact]
         public async Task RestoreCommand_InstallPackageWithReferenceDependenciesAsync()
         {
@@ -1583,7 +1584,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, runtimeAssemblies.Count);
             }
         }
-
+#endif
         [Fact]
         public async Task RestoreCommand_CorrectlyIdentifiesUnresolvedPackagesAsync()
         {
@@ -1624,7 +1625,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, installed.Count);
             }
         }
-
+#if SUPPORTS_FULL_SIGNING
         [Fact]
         public async Task RestoreCommand_PopulatesProjectFileDependencyGroupsCorrectlyAsync()
         {
@@ -1852,7 +1853,6 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-#if IS_DESKTOP
         // TODO: To work on coreclr we need to address https://github.com/NuGet/Home/issues/7588
         [Fact]
         public async Task RestoreCommand_PathTooLongException()
@@ -1892,7 +1892,6 @@ namespace NuGet.Commands.FuncTest
                 new Func<Task>(async () => await command.ExecuteAsync()).ShouldThrow<PathTooLongException>();
             }
         }
-#endif
 
         [Fact]
         public async Task RestoreCommand_RestoreExactVersionWithFailingSourceAsync()
@@ -1936,7 +1935,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.True(result.Success);
             }
         }
-
+#endif
         [Fact]
         public async Task RestoreCommand_RestoreFloatingVersionWithFailingHttpSourceAsync()
         {

@@ -4,15 +4,18 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Cmp;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Tsp;
 using Org.BouncyCastle.X509;
 using Org.BouncyCastle.X509.Extension;
 using Org.BouncyCastle.X509.Store;
+using GeneralName = Org.BouncyCastle.Asn1.X509.GeneralName;
 
 namespace Test.Utility.Signing
 {
@@ -30,7 +33,7 @@ namespace Test.Utility.Signing
         /// <summary>
         /// Gets this certificate authority's certificate.
         /// </summary>
-        public X509Certificate Certificate { get; }
+        public X509Certificate2 Certificate { get; }
 
         /// <summary>
         /// Gets the base URI specific to this HTTP responder.
@@ -44,12 +47,13 @@ namespace Test.Utility.Signing
 
         private TimestampService(
             CertificateAuthority certificateAuthority,
-            X509Certificate certificate,
+            X509Certificate2 certificate,
             AsymmetricCipherKeyPair keyPair,
             Uri uri,
             TimestampServiceOptions options)
         {
             CertificateAuthority = certificateAuthority;
+
             Certificate = certificate;
             _keyPair = keyPair;
             Url = uri;
@@ -61,7 +65,7 @@ namespace Test.Utility.Signing
         public static TimestampService Create(
             CertificateAuthority certificateAuthority,
             TimestampServiceOptions serviceOptions = null,
-            IssueCertificateOptions issueCertificateOptions = null)
+            BCIssueCertificateOptions issueCertificateOptions = null)
         {
             if (certificateAuthority == null)
             {
@@ -72,7 +76,7 @@ namespace Test.Utility.Signing
 
             if (issueCertificateOptions == null)
             {
-                issueCertificateOptions = IssueCertificateOptions.CreateDefaultForTimestampService();
+                issueCertificateOptions = BCIssueCertificateOptions.CreateDefaultForTimestampService();
             }
 
             void customizeCertificate(X509V3CertificateGenerator generator)
@@ -85,10 +89,12 @@ namespace Test.Utility.Signing
                             new GeneralName(GeneralName.UniformResourceIdentifier, certificateAuthority.OcspResponderUri.OriginalString)),
                         new AccessDescription(AccessDescription.IdADCAIssuers,
                             new GeneralName(GeneralName.UniformResourceIdentifier, certificateAuthority.CertificateUri.OriginalString))));
+
+                var bcCACert = DotNetUtilities.FromX509Certificate(certificateAuthority.Certificate);
                 generator.AddExtension(
                     X509Extensions.AuthorityKeyIdentifier,
                     critical: false,
-                    extensionValue: new AuthorityKeyIdentifierStructure(certificateAuthority.Certificate));
+                    extensionValue: new AuthorityKeyIdentifierStructure(bcCACert));
                 generator.AddExtension(
                     X509Extensions.SubjectKeyIdentifier,
                     critical: false,
@@ -98,9 +104,9 @@ namespace Test.Utility.Signing
                     critical: true,
                     extensionValue: new BasicConstraints(cA: false));
                 generator.AddExtension(
-                    X509Extensions.KeyUsage,
-                    critical: true,
-                    extensionValue: new KeyUsage(KeyUsage.DigitalSignature));
+                   X509Extensions.KeyUsage,
+                   critical: true,
+                   extensionValue: new KeyUsage(KeyUsage.DigitalSignature));
                 generator.AddExtension(
                     X509Extensions.ExtendedKeyUsage,
                     critical: true,
@@ -122,13 +128,13 @@ namespace Test.Utility.Signing
                 issueCertificateOptions.NotAfter = serviceOptions.IssuedCertificateNotAfter.Value;
             }
 
-            var certificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
+            var certificate = certificateAuthority.IssueCertificateWithBC(issueCertificateOptions);
+
             var uri = certificateAuthority.GenerateRandomUri();
 
             return new TimestampService(certificateAuthority, certificate, issueCertificateOptions.KeyPair, uri, serviceOptions);
         }
 
-#if IS_DESKTOP
         public override void Respond(HttpListenerContext context)
         {
             if (context == null)
@@ -145,9 +151,11 @@ namespace Test.Utility.Signing
 
             var bytes = ReadRequestBody(context.Request);
             var request = new TimeStampRequest(bytes);
+            var bcCert = DotNetUtilities.FromX509Certificate(Certificate);
+
             var tokenGenerator = new TimeStampTokenGenerator(
                 _keyPair.Private,
-                Certificate,
+                bcCert,
                 _options.SignatureHashAlgorithm.Value,
                 _options.Policy.Value);
 
@@ -155,7 +163,7 @@ namespace Test.Utility.Signing
             {
                 var certificates = X509StoreFactory.Create(
                     "Certificate/Collection",
-                    new X509CollectionStoreParameters(new[] { Certificate }));
+                    new X509CollectionStoreParameters(new[] { bcCert }));
 
                 tokenGenerator.SetCertificates(certificates);
             }
@@ -211,6 +219,5 @@ namespace Test.Utility.Signing
                 }
             }
         }
-#endif
     }
 }

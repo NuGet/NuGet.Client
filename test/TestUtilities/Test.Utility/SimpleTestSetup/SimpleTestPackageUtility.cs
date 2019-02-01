@@ -235,7 +235,6 @@ namespace NuGet.Test.Utility
 
             if (isUsingTempStream)
             {
-#if IS_DESKTOP
                 using (var signPackage = new SignedPackageArchive(tempStream, stream))
                 {
                     using (var request = GetPrimarySignRequest(packageContext))
@@ -255,7 +254,6 @@ namespace NuGet.Test.Utility
                         }
                     }
                 }
-#endif
 
                 tempStream.Dispose();
             }
@@ -264,7 +262,6 @@ namespace NuGet.Test.Utility
             stream.Position = 0;
         }
 
-#if IS_DESKTOP
         private static SignPackageRequest GetPrimarySignRequest(SimpleTestPackageContext packageContext)
         {
             if (packageContext.V3ServiceIndexUrl != null)
@@ -315,7 +312,6 @@ namespace NuGet.Test.Utility
                 }
             }
         }
-#endif
 
         /// <summary>
         /// Create packages.

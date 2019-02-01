@@ -127,11 +127,8 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(bytes));
             }
-#if IS_DESKTOP
+
             hashAlgorithm.TransformBlock(bytes, 0, bytes.Length, outputBuffer: null, outputOffset: 0);
-#else
-            throw new NotImplementedException();
-#endif
         }
 
 

@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -71,7 +69,7 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(test.Request.PackageOwners, repositoryCountersignature.PackageOwners);
             }
         }
-
+#if SUPPORTS_FULL_SIGNING
         [Fact]
         public async Task GetSignatureValue_WithSha256_ReturnsValue()
         {
@@ -84,7 +82,7 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(expectedValue, actualValue);
             }
         }
-
+#endif
         private static byte[] GetRepositoryCountersignatureSignatureValue(SignedCms signedCms)
         {
             var cmsSignedData = new CmsSignedData(signedCms.Encode());
@@ -182,4 +180,3 @@ namespace NuGet.Packaging.FuncTest
         }
     }
 }
-#endif

@@ -4,18 +4,14 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
-#endif
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
     public sealed class AuthorPrimarySignature : PrimarySignature
     {
-#if IS_DESKTOP
-
         public AuthorPrimarySignature(SignedCms signedCms)
             : base(signedCms, SignatureType.Author)
         {
@@ -44,6 +40,5 @@ namespace NuGet.Packaging.Signing
                 summary.ExpirationTime,
                 issues.Concat(summary.Issues));
         }
-#endif
     }
 }

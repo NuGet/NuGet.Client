@@ -3,7 +3,6 @@
 
 using System;
 using System.Security.Cryptography;
-using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Math;
@@ -56,9 +55,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = SigningTestUtility.GenerateCertificate("test", generator =>
                 {
-                    var bytes = BitConverter.GetBytes(1);
-                    Array.Reverse(bytes);
-                    generator.SetSerialNumber(bytes);
+                    generator.SerialNumber = 1;
                 }))
             {
                 var issuerSerial = IssuerSerial.Create(certificate);
@@ -72,9 +69,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = SigningTestUtility.GenerateCertificate("test", generator =>
                 {
-                    var bytes = BitConverter.GetBytes(long.MaxValue);
-                    Array.Reverse(bytes);
-                    generator.SetSerialNumber(bytes);
+                    generator.SerialNumber = long.MaxValue;
                 }))
             {
                 var issuerSerial = IssuerSerial.Create(certificate);
