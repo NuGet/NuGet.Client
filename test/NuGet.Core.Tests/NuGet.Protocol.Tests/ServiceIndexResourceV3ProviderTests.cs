@@ -251,7 +251,7 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             var endpoints = resource.GetServiceEntryUris(new NuGetVersion(4, 0, 0), "Chocolate", "Vegetable");
 
-            // Assert.True(endpoints.Count == 1);
+            Assert.True(endpoints.Count == 1);
 
             var endpointSet = new HashSet<string>(endpoints.Select(u => u.AbsoluteUri));
             Assert.True(endpointSet.Contains("http://tempuri.org/chocolate"));
