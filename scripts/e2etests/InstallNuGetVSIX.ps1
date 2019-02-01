@@ -8,7 +8,7 @@ param (
     [Parameter(Mandatory = $true)]
     [int]$ProcessExitTimeoutInSeconds,
     [Parameter(Mandatory = $true)]
-    [ValidateSet("15.0")]
+    [ValidateSet("16.0")]
     [string]$VSVersion)
 
 . "$PSScriptRoot\VSUtils.ps1"
