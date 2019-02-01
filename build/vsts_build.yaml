@@ -490,10 +490,9 @@ phases:
 
 - phase: End_To_End_Tests_On_Windows
   dependsOn: Build_and_UnitTest
-  condition: "succeeded()"
+  condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
   variables:
     BuildNumber: $[dependencies.Build_and_UnitTest.outputs['RTM.configuration.BuildNumber']]
-  condition: "succeeded()"
   queue:
     name: DDNuGet-Windows
     timeoutInMinutes: 75
