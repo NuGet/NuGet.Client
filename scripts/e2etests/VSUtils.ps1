@@ -15,7 +15,7 @@ function GetVSFolderPath {
     }
 
 
-    $VS16PreviewRelativePath = "Microsoft Visual Studio\2019\Preview\Enterprise"
+    $VS16PreviewRelativePath = "Microsoft Visual Studio\2019\Preview"
 
     if (Test-Path (Join-Path $ProgramFilesPath $VS16PreviewRelativePath)) {
         $VSFolderPath = Join-Path $ProgramFilesPath $VS16PreviewRelativePath
