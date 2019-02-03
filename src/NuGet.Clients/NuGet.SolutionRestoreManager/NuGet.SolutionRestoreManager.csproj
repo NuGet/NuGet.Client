@@ -50,6 +50,7 @@
     <Compile Include="SolutionRestoreJobContext.cs" />
     <Compile Include="SolutionRestoreWorker.cs" />
     <Compile Include="VerbosityLevel.cs" />
+    <Compile Include="VSNominationUtilities.cs" />
     <Compile Include="VsSolutionRestoreService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VsSolutionRestoreStatusProvider.cs" />

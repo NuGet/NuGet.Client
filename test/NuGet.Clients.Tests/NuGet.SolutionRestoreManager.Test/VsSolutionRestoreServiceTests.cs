@@ -299,7 +299,7 @@ namespace NuGet.SolutionRestoreManager.Test
         ""netstandard1.4"": {
             ""imports"": [""dotnet5.3"",""portable-net452+win81""]
         }
-    }
+    },
 }";
             var cps = NewCpsProject(projectJson);
             var projectFullPath = cps.ProjectFullPath;
@@ -799,6 +799,63 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal(restorePackagesWithLockFile, actualProjectSpec.RestoreMetadata.RestoreLockProperties.RestorePackagesWithLockFile);
             Assert.Equal(lockFilePath, actualProjectSpec.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath);
             Assert.Equal(MSBuildStringUtility.IsTrue(restoreLockedMode), actualProjectSpec.RestoreMetadata.RestoreLockProperties.RestoreLockedMode);
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_RuntimeGraph()
+        {
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] {
+                            new VsProjectProperty("RuntimeIdentifier", "win10-x64")
+                        }))
+                .Build();
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal("win10-x64", actualProjectSpec.RuntimeGraph.Runtimes.Single().Key);
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_WarningProperties()
+        {
+            var packageReference = new VsReferenceItem("NuGet.Protocol", new VsReferenceProperties() { new VsReferenceProperty("NoWarn", "NU1605") } );
+
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        new IVsReferenceItem[] { packageReference },
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] {
+                            new VsProjectProperty("TreatWarningsAsErrors", "true")
+                        }))
+                .Build();
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.True(actualProjectSpec.RestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors);
+            Assert.True(actualProjectSpec.TargetFrameworks.First().Dependencies.First().NoWarn.First().Equals(NuGetLogCode.NU1605));
         }
 
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
