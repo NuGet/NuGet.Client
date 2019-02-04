@@ -651,21 +651,13 @@ namespace NuGet.Commands
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
                 }
 
-                // TODO NK : Check version range. Does it throw here?
                 var downloadDependency = new DownloadDependency(id, versionRange);
                 
                 var frameworks = GetFrameworks(item);
 
-                if (frameworks.Count == 0)
+                foreach (var framework in frameworks)
                 {
-                    AddDownloadDependencyIfNotExist(spec, downloadDependency);
-                }
-                else
-                {
-                    foreach (var framework in frameworks)
-                    {
-                        AddDownloadDependencyIfNotExist(spec, framework, downloadDependency);
-                    }
+                    AddDownloadDependencyIfNotExist(spec, framework, downloadDependency);
                 }
             }
         }

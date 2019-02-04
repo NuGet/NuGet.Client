@@ -83,7 +83,7 @@ namespace NuGet.DependencyResolver
                                                  match.Provider.Source,
                                                 ex.PackageIdentity.ToString());
 
-                    throw new FatalProtocolException(message, ex); // check how this would work in the PackageDownload case. 
+                    throw new FatalProtocolException(message, ex);
                 }
             }
 
