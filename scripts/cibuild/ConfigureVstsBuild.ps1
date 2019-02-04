@@ -39,10 +39,13 @@ Function Get-Version {
         [string]$build
     )
         Write-Host "Evaluating the new VSIX Version : ProductVersion $ProductVersion, build $build"
-        # Generate the new minor version: 4.0.0 => 40000, 4.11.5 => 41105. 
-        # This assumes we only get to NuGet major/minor 99 at worst, otherwise the logic breaks. 
-        #The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
-        $finalVersion = "15.0.$((-join ($ProductVersion -split '\.' | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"    
+        # The major version is NuGetMajorVersion + 11, to match VS's number.
+        # The new minor version is: 4.0.0 => 40000, 4.11.5 => 41105. 
+        # This assumes we only get to NuGet major/minor/patch 99 at worst, otherwise the logic breaks. 
+        # The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
+        $versionParts = $ProductVersion -split '\.'
+        $major = $($versionParts[0] / 1) + 11
+        $finalVersion = "$major.0.$((-join ($versionParts | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"    
     
         Write-Host "The new VSIX Version is: $finalVersion"
         return $finalVersion    
