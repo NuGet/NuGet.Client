@@ -44,7 +44,7 @@ Function Get-Version {
         # This assumes we only get to NuGet major/minor/patch 99 at worst, otherwise the logic breaks. 
         # The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
         $versionParts = $ProductVersion -split '\.'
-        $major = $($versionParts / 1) + 11
+        $major = $($versionParts[0] / 1) + 11
         $finalVersion = "$major.0.$((-join ($versionParts | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"    
     
         Write-Host "The new VSIX Version is: $finalVersion"
