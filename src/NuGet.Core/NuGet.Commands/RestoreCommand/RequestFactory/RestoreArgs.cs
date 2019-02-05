@@ -172,16 +172,6 @@ namespace NuGet.Commands
                 // Create a shared caching provider if one does not exist already
                 CachingSourceProvider = new CachingSourceProvider(packageSourceProvider);
             }
-            else
-            {
-                foreach(var source in CachingSourceProvider.GetRepositories())
-                {
-                    if (!sourceObjects.ContainsKey(source.PackageSource.Source))
-                    {
-                        sourceObjects.Add(source.PackageSource.Source, source.PackageSource);
-                    }
-                }
-            }
 
             return sourceObjects.Select(entry => CachingSourceProvider.CreateRepository(entry.Value)).ToList();
         }

@@ -285,10 +285,6 @@ namespace NuGet.PackageManagement
             bool restoreForceEvaluate)
         {
             var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings));
-            foreach( var source in sources)
-            {
-                caching.AddSourceRepository(source);
-            }
 
             var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile);
 
@@ -301,7 +297,8 @@ namespace NuGet.PackageManagement
                 CachingSourceProvider = caching,
                 ParentId = parentId,
                 IsRestoreOriginalAction = isRestoreOriginalAction,
-                RestoreForceEvaluate = restoreForceEvaluate
+                RestoreForceEvaluate = restoreForceEvaluate,
+                Sources = sources.Select(source => source.PackageSource.Source).ToList()
             };
 
             return restoreContext;
