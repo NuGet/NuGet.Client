@@ -248,19 +248,16 @@ namespace NuGet.Frameworks.Test
             // positive
             Assert.Contains(".NETCoreApp,Version=v3.0", actual);
             Assert.Contains(".NETStandard,Version=v2.1", actual);
-            Assert.Contains(".NETStandardApp,Version=v2.1", actual);
 
             // negative
-            Assert.DoesNotContain(".NETFramework,Version=v4.7", actual); // only the minimum support version is returned
-            Assert.DoesNotContain(".NETFramework,Version=v4.6", actual); // versions that are too small are not returned
+            Assert.DoesNotContain(".NETFramework,Version=v4.7", actual); // frameworks with no relationship are not returned
             Assert.DoesNotContain(".NETPlatform,Version=v5.6", actual); // frameworks with no relationship are not returned
             Assert.DoesNotContain("DNXCore,Version=v5.0", actual);
-            Assert.DoesNotContain(".NETFramework,Version=v4.6.1", actual);
             Assert.DoesNotContain("DNX,Version=v4.6.1", actual);
             Assert.DoesNotContain("MonoAndroid,Version=v0.0", actual);
             Assert.DoesNotContain("MonoMac,Version=v0.0", actual);
             Assert.DoesNotContain("MonoTouch,Version=v0.0", actual);
-            Assert.DoesNotContain("Xamarin.iOS,Version=v0.0", actual);
+            Assert.DoesNotContain("Xamarin.iOS,Version=v0.0", actual); 
             Assert.DoesNotContain("Xamarin.Mac,Version=v0.0", actual);
             Assert.DoesNotContain("Xamarin.PlayStation3,Version=v0.0", actual);
             Assert.DoesNotContain("Xamarin.PlayStation4,Version=v0.0", actual);
