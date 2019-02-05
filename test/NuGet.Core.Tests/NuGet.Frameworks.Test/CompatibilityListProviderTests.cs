@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -231,6 +231,49 @@ namespace NuGet.Frameworks.Test
 
             // count
             Assert.Equal(19, actual.Length);
+        }
+        [Fact]
+        public void CompatibilityListProvider_NetStandard21Supporting()
+        {
+            // Arrange
+            var provider = CompatibilityListProvider.Default;
+
+            // Act
+            var actual = provider
+                .GetFrameworksSupporting(FrameworkConstants.CommonFrameworks.NetStandard21)
+                .Select(f => f.ToString())
+                .ToArray();
+
+            // Assert
+            // positive
+            Assert.Contains(".NETCoreApp,Version=v3.0", actual);
+            Assert.Contains(".NETStandard,Version=v2.1", actual);
+            Assert.Contains(".NETStandardApp,Version=v2.1", actual);
+
+            // negative
+            Assert.DoesNotContain(".NETFramework,Version=v4.7", actual); // only the minimum support version is returned
+            Assert.DoesNotContain(".NETFramework,Version=v4.6", actual); // versions that are too small are not returned
+            Assert.DoesNotContain(".NETPlatform,Version=v5.6", actual); // frameworks with no relationship are not returned
+            Assert.DoesNotContain("DNXCore,Version=v5.0", actual);
+            Assert.DoesNotContain(".NETFramework,Version=v4.6.1", actual);
+            Assert.DoesNotContain("DNX,Version=v4.6.1", actual);
+            Assert.DoesNotContain("MonoAndroid,Version=v0.0", actual);
+            Assert.DoesNotContain("MonoMac,Version=v0.0", actual);
+            Assert.DoesNotContain("MonoTouch,Version=v0.0", actual);
+            Assert.DoesNotContain("Xamarin.iOS,Version=v0.0", actual);
+            Assert.DoesNotContain("Xamarin.Mac,Version=v0.0", actual);
+            Assert.DoesNotContain("Xamarin.PlayStation3,Version=v0.0", actual);
+            Assert.DoesNotContain("Xamarin.PlayStation4,Version=v0.0", actual);
+            Assert.DoesNotContain("Xamarin.PlayStationVita,Version=v0.0", actual);
+            Assert.DoesNotContain("Xamarin.TVOS,Version=v0.0", actual);
+            Assert.DoesNotContain("Xamarin.WatchOS,Version=v0.0", actual);
+            Assert.DoesNotContain("Xamarin.Xbox360,Version=v0.0", actual);
+            Assert.DoesNotContain("Xamarin.XboxOne,Version=v0.0", actual);
+            Assert.DoesNotContain("Tizen,Version=v4.0", actual);
+            Assert.DoesNotContain("UAP,Version=v10.0.15064", actual);
+
+            // count
+            Assert.Equal(3, actual.Length);
         }
     }
 }

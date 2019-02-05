@@ -157,6 +157,8 @@ namespace NuGet.Frameworks
                 = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 7, 0, 0));
             public static readonly NuGetFramework NetStandard20
                 = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(2, 0, 0, 0));
+            public static readonly NuGetFramework NetStandard21
+                = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(2, 1, 0, 0));
 
             public static readonly NuGetFramework NetStandardApp15
                 = new NuGetFramework(FrameworkIdentifiers.NetStandardApp, new Version(1, 5, 0, 0));
@@ -174,6 +176,8 @@ namespace NuGet.Frameworks
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(2, 1, 0, 0));
             public static readonly NuGetFramework NetCoreApp22
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(2, 2, 0, 0));
+            public static readonly NuGetFramework NetCoreApp30
+                = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(3, 0, 0, 0));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,7 +34,8 @@ namespace NuGet.Test
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard16, versions[6]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard17, versions[7]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, versions[8]);
-            Assert.Equal(9, versions.Length);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard21, versions[9]);
+            Assert.Equal(10, versions.Length);
         }
 
         [Fact]

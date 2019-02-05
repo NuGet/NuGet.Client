@@ -229,10 +229,12 @@ namespace NuGet.Test
         [InlineData("netstandardapp1.0", ".NETStandardApp,Version=v1.0")]
         [InlineData("netstandardapp1.5", ".NETStandardApp,Version=v1.5")]
         [InlineData("netstandardapp2.0", ".NETStandardApp,Version=v2.0")]
+        [InlineData("netstandardapp2.1", ".NETStandardApp,Version=v2.1")]
         [InlineData("netcoreapp", ".NETCoreApp,Version=v0.0")]
         [InlineData("netcoreapp1.0", ".NETCoreApp,Version=v1.0")]
         [InlineData("netcoreapp1.5", ".NETCoreApp,Version=v1.5")]
         [InlineData("netcoreapp2.0", ".NetCoreApp,Version=v2.0")]
+        [InlineData("netcoreapp3.0", ".NetCoreApp,Version=v3.0")]
         public void NuGetFramework_ParseToShortName(string expected, string fullName)
         {
             // Arrange
@@ -276,11 +278,13 @@ namespace NuGet.Test
         [InlineData("netstandardapp1", ".NETStandardApp,Version=v1.0")]
         [InlineData("netstandardapp1.5", ".NETStandardApp,Version=v1.5")]
         [InlineData("netstandardapp2", ".NETStandardApp,Version=v2.0")]
+        [InlineData("netstandardapp2.1", ".NETStandardApp,Version=v2.1")]
         [InlineData("netcoreapp", ".NETCoreApp,Version=v0.0")]
         [InlineData("netcoreapp0.0", ".NETCoreApp,Version=v0.0")]
         [InlineData("netcoreapp1", ".NETCoreApp,Version=v1.0")]
         [InlineData("netcoreapp1.5", ".NETCoreApp,Version=v1.5")]
         [InlineData("netcoreapp2", ".NETCoreApp,Version=v2.0")]
+        [InlineData("netcoreapp3", ".NETCoreApp,Version=v3.0")]
         public void NuGetFramework_Basic(string folderName, string fullName)
         {
             string output = NuGetFramework.Parse(folderName).DotNetFrameworkName;
@@ -407,6 +411,10 @@ namespace NuGet.Test
         [InlineData("netstandard2.0", "netstandard20")]
         [InlineData("netstandard20", "netstandard2.0")]
         [InlineData("netstandard20", "netstandard20")]
+        [InlineData("netstandard2.1", "netstandard2.1")]
+        [InlineData("netstandard2.1", "netstandard21")]
+        [InlineData("netstandard21", "netstandard2.1")]
+        [InlineData("netstandard21", "netstandard21")]
         [InlineData("netstandardapp1.5", "netstandardapp1.5")]
         [InlineData("netstandardapp1.5", "netstandardapp15")]
         [InlineData("netstandardapp15", "netstandardapp1.5")]
@@ -419,6 +427,10 @@ namespace NuGet.Test
         [InlineData("netcoreapp2.0", "netcoreapp20")]
         [InlineData("netcoreapp20", "netcoreapp2.0")]
         [InlineData("netcoreapp20", "netcoreapp20")]
+        [InlineData("netcoreapp3.0", "netcoreapp3.0")]
+        [InlineData("netcoreapp3.0", "netcoreapp30")]
+        [InlineData("netcoreapp30", "netcoreapp3.0")]
+        [InlineData("netcoreapp30", "netcoreapp30")]
         public void NuGetFramework_TryParseCommonFramework_ParsesCommonFrameworks(string frameworkString1, string frameworkString2)
         {
             var framework1 = NuGetFramework.Parse(frameworkString1);

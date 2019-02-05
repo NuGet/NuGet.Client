@@ -555,7 +555,7 @@ namespace NuGet.Test
         [InlineData("netstandardapp1.5", "win8", false)]
 
         // netcoreapp only supports netstandard
-        [InlineData("netcoreapp9.0", "netstandard2.1", false)]
+        [InlineData("netcoreapp9.0", "netstandard2.1", true)]
         [InlineData("netcoreapp9.0", "netstandard2.0", true)]
         [InlineData("netcoreapp9.0", "netstandard1.7", true)]
         [InlineData("netcoreapp9.0", "netstandard1.6", true)]
