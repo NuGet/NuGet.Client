@@ -251,9 +251,8 @@ phases:
     inputs:
       TargetFolders: 
         $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)
-      inputs:
-        WhiteListPathForCerts: $(Build.Repository.LocalPath)\artifacts\TempWhiteList.csv
-        WhiteListPathForSigs: $(Build.Repository.LocalPath)\artifacts\TempWhiteList.csv
+      WhiteListPathForCerts: $(Build.Repository.LocalPath)\artifacts\TempWhiteList.csv
+      WhiteListPathForSigs: $(Build.Repository.LocalPath)\artifacts\TempWhiteList.csv
 
   - task: PowerShell@1
     displayName: "test : remove whitelist file"
