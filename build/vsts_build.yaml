@@ -242,13 +242,13 @@ phases:
       TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
 
       WhiteListPathForCerts: 
-        '*.pdb,ignore pdb files'
-        '*.json,ignore json files'
-        '*.vsix,ignore vsix files'
+        *.pdb,ignore pdb files
+        *.json,ignore json files
+        *.vsix,ignore vsix files
       WhiteListPathForSigs:
-        '*.pdb,ignore pdb files'
-        '*.json,ignore json files'
-        '*.vsix,ignore vsix files'
+        *.pdb,ignore pdb files
+        *.json,ignore json files
+        *.vsix,ignore vsix files
 
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
