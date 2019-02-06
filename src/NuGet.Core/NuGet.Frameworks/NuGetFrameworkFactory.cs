@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -504,6 +504,10 @@ namespace NuGet.Frameworks
                 case "netstandard20":
                     framework = FrameworkConstants.CommonFrameworks.NetStandard20;
                     break;
+                case "netstandard2.1":
+                case "netstandard21":
+                    framework = FrameworkConstants.CommonFrameworks.NetStandard21;
+                    break;
                 case "netstandardapp1.5":
                 case "netstandardapp15":
                     framework = FrameworkConstants.CommonFrameworks.NetStandardApp15;
@@ -515,6 +519,10 @@ namespace NuGet.Frameworks
                 case "netcoreapp2.0":
                 case "netcoreapp20":
                     framework = FrameworkConstants.CommonFrameworks.NetCoreApp20;
+                    break;
+                case "netcoreapp3.0":
+                case "netcoreapp30":
+                    framework = FrameworkConstants.CommonFrameworks.NetCoreApp30;
                     break;
             }
 
