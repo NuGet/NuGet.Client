@@ -237,11 +237,18 @@ phases:
         ls
 
   - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
-    displayName: 'Verify nuget.exe and mssign.exe are signed'
+    displayName: 'Verify nuget.exe and mssign.exe Signatures and StrongName'
     inputs:
       TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
 
-      WhiteListPathForCerts: 'NuGet*.exe'
+      WhiteListPathForCerts: 
+        '*.pdb,ignore pdb files'
+        '*.json,ignore json files'
+        '*.vsix,ignore vsix files'
+      WhiteListPathForSigs:
+        '*.pdb,ignore pdb files'
+        '*.json,ignore json files'
+        '*.vsix,ignore vsix files'
 
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"

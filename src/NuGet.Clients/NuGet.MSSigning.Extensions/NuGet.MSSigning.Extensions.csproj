@@ -44,7 +44,8 @@
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
 
-  
+   <Import Project="$(BuildCommonDirectory)common.targets"/>
+
   <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
     <ItemGroup>
       <DllsToSign Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.Mssign.exe">
@@ -61,6 +62,5 @@
     </ItemGroup>
   </Target>
   
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
