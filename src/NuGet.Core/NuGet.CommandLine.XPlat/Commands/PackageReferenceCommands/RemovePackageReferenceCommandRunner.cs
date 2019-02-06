@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using NuGet.Credentials;
 using NuGet.LibraryModel;
 
 namespace NuGet.CommandLine.XPlat
@@ -16,6 +17,9 @@ namespace NuGet.CommandLine.XPlat
                 Strings.Info_RemovePkgRemovingReference,
                 packageReferenceArgs.PackageDependency.Id,
                 packageReferenceArgs.ProjectPath));
+
+            //Setup the Credential Service - This allows the msbuild sdk resolver to auth if needed.
+            DefaultCredentialServiceUtility.SetupDefaultCredentialService(packageReferenceArgs.Logger, !packageReferenceArgs.Interactive);
 
             var libraryDependency = new LibraryDependency
             {
