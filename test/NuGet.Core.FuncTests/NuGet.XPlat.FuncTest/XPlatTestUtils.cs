@@ -147,7 +147,6 @@ namespace NuGet.XPlat.FuncTest
             var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     projectName: projectName,
                     solutionRoot: pathContext.SolutionRoot,
-                    isToolingVersion15: true,
                     frameworks: MSBuildStringUtility.Split(projectFrameworks));
 
             if (packageFramework == null)
@@ -170,7 +169,6 @@ namespace NuGet.XPlat.FuncTest
             var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     projectName: projectName,
                     solutionRoot: pathContext.SolutionRoot,
-                    isToolingVersion15: true,
                     frameworks: MSBuildStringUtility.Split(projectFrameworks));
 
             project.FallbackFolders = (IList<string>) SettingsUtility.GetFallbackPackageFolders(settings);
