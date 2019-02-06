@@ -254,7 +254,7 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Remove-Item -Path '$(Build.Repository.LocalPath)\\artifacts\\tempVerifySign'
+        Remove-Item -Path '$(Build.Repository.LocalPath)\\artifacts\\tempVerifySign -Recurse'
 
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
