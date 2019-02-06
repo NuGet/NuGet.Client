@@ -1,5 +1,29 @@
 phases:
+- phase: Initialize_Build
+  queue:
+    name: VSEng-MicroBuildVS2017
+
+  steps:
+  - task: PowerShell@1
+    displayName: "Update Build Number"
+    name: "updatebuildnumber"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        $revision = Get-Content $env:BUILDCOUNTERFILE
+        $newBuildCounter = [System.Decimal]::Parse($revision)
+        $newBuildCounter++
+        Set-Content $env:BUILDCOUNTERFILE $newBuildCounter
+        $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
+        $productVersion = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
+        $productVersion = $productVersion.Trim()
+        $FullBuildNumber = "$productVersion.$newBuildCounter"
+        Write-Host "##vso[build.updatebuildnumber]$FullBuildNumber"
+        Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
+        Write-Host "##vso[task.setvariable variable=FullVstsBuildNumber;isOutput=true]$FullBuildNumber"
+
 - phase: Build
+  dependsOn: Initialize_Build
   queue:
     name: VSEng-MicroBuildVS2017
     parallel: 2
@@ -14,8 +38,18 @@ phases:
   variables:
     FunctionalTestBuildId: '6954'
     VstsRestApiRootUrl: 'https://devdiv.visualstudio.com/DefaultCollection/devdiv/_apis'
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
 
   steps:
+  - task: PowerShell@1
+    displayName: "Update Build Number"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
+        gci env:* | sort-object name
+
   - task: PowerShell@1
     displayName: Configure.ps1
     inputs:
@@ -26,7 +60,7 @@ phases:
     displayName: 'Configure VSTS CI Environment'
     inputs:
       scriptName: '$(Build.Repository.LocalPath)\scripts\cibuild\ConfigureVstsBuild.ps1'
-      arguments: '-BuildCounterFile $(BuildCounterFile) -BuildInfoJsonFile $(BuildInfoJsonFile) -BuildRTM $(BuildRTM) -FunctionalTestBuildId $(FunctionalTestBuildId) -VstsRestApiRootUrl $(VstsRestApiRootUrl)'
+      arguments: '-BuildCounterFile $(BuildCounterFile) -BuildInfoJsonFile $(BuildInfoJsonFile) -BuildRTM $(BuildRTM) -FunctionalTestBuildId $(FunctionalTestBuildId) -VstsRestApiRootUrl $(VstsRestApiRootUrl) -SkipUpdateBuildNumber'
 
   - task: ms-vseng.MicroBuildTasks.a0262b21-fb8f-46f8-bb9a-60ed560d4a87.MicroBuildLocalizationPlugin@1
     displayName: 'Install Localization Plugin'
@@ -47,7 +81,7 @@ phases:
       solution: 'build\build.proj'
       msbuildVersion: 15.0
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/t:RestoreVS15 /p:BuildNumber=$(Revision) /p:BuildRTM=$(BuildRTM) /v:m'
+      msbuildArguments: '/t:RestoreVS15 /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m'
 
   - task: MSBuild@1
     displayName: 'Build for VS15'
@@ -55,15 +89,16 @@ phases:
       solution: 'build\build.proj'
       msbuildVersion: 15.0
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\keys\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\keys\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Revision)'
+      msbuildArguments: '/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\keys\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\keys\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber)'
 
   - task: MSBuild@1
     displayName: 'Run Unit Tests'
+    continueOnError: "true"
     inputs:
       solution: 'build\build.proj'
       msbuildVersion: 15.0
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/t:CoreUnitTests;UnitTestsVS15 /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\keys\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\keys\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Revision) /p:TestResultOutputFormat=xml'
+      msbuildArguments: '/t:CoreUnitTests;UnitTestsVS15 /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\keys\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\keys\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml'
     condition:  and(succeeded(),eq(variables['BuildRTM'], 'true')) 
 
   - task: PublishTestResults@2
@@ -114,7 +149,7 @@ phases:
       solution: 'build\build.proj'
       msbuildVersion: 15.0
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/t:Pack  /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(Revision)'
+      msbuildArguments: '/t:Pack  /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)'
 
   - task: CopyFiles@2
     displayName: 'Copy Nupkgs'
@@ -176,7 +211,7 @@ phases:
       solution: setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj
       msbuildVersion: 15.0
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/p:BuildNumber=$(Revision)'
+      msbuildArguments: '/p:BuildNumber=$(BuildNumber)'
     condition:  and(succeeded(), eq(variables['BuildRTM'], 'false'))
 
   - task: CopyFiles@2
