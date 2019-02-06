@@ -1,293 +1,259 @@
-#Multi-configuration and multi-agent job options are not exported to YAML. Configure these options using documentation guidance: https://docs.microsoft.com/vsts/pipelines/process/phases
+phases:
+- phase: Build
+  queue:
+    name: VSEng-MicroBuildVS2017
+    parallel: 2
+    matrix:
+      RTM:
+        BuildRTM: "true"
+      NonRTM:
+        BuildRTM: "false"
+    demands:
+    - DotNetFramework
+    - msbuild
+  variables:
+    FunctionalTestBuildId: '6954'
+    VstsRestApiRootUrl: 'https://devdiv.visualstudio.com/DefaultCollection/devdiv/_apis'
 
-pool:
-  name: VSEng-MicroBuildVS2017
-  demands:
-  - DotNetFramework
-  - msbuild
+  steps:
+  - task: PowerShell@1
+    displayName: Configure.ps1
+    inputs:
+      scriptName: '.\configure.ps1'
+      arguments: '-Force -CI'
 
-#Your build pipeline references the ‘SigningType’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references an undefined variable named ‘NuGetSharePublicKeys’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references an undefined variable named ‘BuildOutputTargetPath’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references an undefined variable named ‘BuildOutputTargetPath’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references an undefined variable named ‘CIRoot’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references a secret variable named ‘NuGetBuildApiKey’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it secret. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references a secret variable named ‘DotnetCoreApiKey’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it secret. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references the ‘BuildConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
-#Your build pipeline references an undefined variable named ‘BuildOutputTargetPath’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘BuildOutputTargetPath’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘BuildOutputTargetPath’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘BuildOutputTargetPath’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-variables:
-  BuildCounterFile: '$(DropRoot)\buildcounter_official.txt'
-  BuildInfoJsonFile: '$(BuildOutputTargetPath)\buildinfo.json'
-  BuildRTM: 'true,false'
-  FunctionalTestBuildId: '6954'
-  VstsRestApiRootUrl: 'https://devdiv.visualstudio.com/DefaultCollection/devdiv/_apis'
+  - task: PowerShell@1
+    displayName: 'Configure VSTS CI Environment'
+    inputs:
+      scriptName: '$(Build.Repository.LocalPath)\scripts\cibuild\ConfigureVstsBuild.ps1'
+      arguments: '-BuildCounterFile $(BuildCounterFile) -BuildInfoJsonFile $(BuildInfoJsonFile) -BuildRTM $(BuildRTM) -FunctionalTestBuildId $(FunctionalTestBuildId) -VstsRestApiRootUrl $(VstsRestApiRootUrl)'
 
-steps:
-- task: PowerShell@1
-  displayName: Configure.ps1
-  inputs:
-    scriptName: '.\configure.ps1'
-    arguments: '-Force -CI'
+  - task: ms-vseng.MicroBuildTasks.a0262b21-fb8f-46f8-bb9a-60ed560d4a87.MicroBuildLocalizationPlugin@1
+    displayName: 'Install Localization Plugin'
+    inputs:
+      version: 1.0.388
 
-- task: PowerShell@1
-  displayName: 'Configure VSTS CI Environment'
-  inputs:
-    scriptName: '$(Build.Repository.LocalPath)\scripts\cibuild\ConfigureVstsBuild.ps1'
-    arguments: '-BuildCounterFile $(BuildCounterFile) -BuildInfoJsonFile $(BuildInfoJsonFile) -BuildRTM $(BuildRTM) -FunctionalTestBuildId $(FunctionalTestBuildId) -VstsRestApiRootUrl $(VstsRestApiRootUrl)'
+  - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
+    displayName: 'Install Signing Plugin'
+    inputs:
+      signType: '$(SigningType)'
 
-- task: ms-vseng.MicroBuildTasks.a0262b21-fb8f-46f8-bb9a-60ed560d4a87.MicroBuildLocalizationPlugin@1
-  displayName: 'Install Localization Plugin'
-  inputs:
-    version: 1.0.388
+  - task: ms-vseng.MicroBuildTasks.32f78468-e895-4f47-962c-58a699361df8.MicroBuildSwixPlugin@1
+    displayName: 'Install Swix Plugin'
 
-- task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
-  displayName: 'Install Signing Plugin'
-  inputs:
-    signType: '$(SigningType)'
+  - task: MSBuild@1
+    displayName: 'Restore for VS15'
+    inputs:
+      solution: 'build\build.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/t:RestoreVS15 /p:BuildNumber=$(Revision) /p:BuildRTM=$(BuildRTM) /v:m'
 
-- task: ms-vseng.MicroBuildTasks.32f78468-e895-4f47-962c-58a699361df8.MicroBuildSwixPlugin@1
-  displayName: 'Install Swix Plugin'
+  - task: MSBuild@1
+    displayName: 'Build for VS15'
+    inputs:
+      solution: 'build\build.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\keys\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\keys\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Revision)'
 
-- task: CopyFiles@2
-  displayName: 'Copy Files to: $(Build.Repository.LocalPath)\keys'
-  inputs:
-    SourceFolder: '$(NuGetSharePublicKeys)'
-    Contents: |
-     35MSSharedLib1024.snk
-     NuGetKey.snk
-    TargetFolder: '$(Build.Repository.LocalPath)\keys'
-    CleanTargetFolder: true
-    OverWrite: true
-    flattenFolders: true
+  - task: MSBuild@1
+    displayName: 'Run Unit Tests'
+    inputs:
+      solution: 'build\build.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/t:CoreUnitTests;UnitTestsVS15 /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\keys\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\keys\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Revision) /p:TestResultOutputFormat=xml'
+    condition:  and(succeeded(),eq(variables['BuildRTM'], 'true')) 
 
-- task: MSBuild@1
-  displayName: 'Restore for VS15'
-  inputs:
-    solution: 'build\build.proj'
-    msbuildVersion: 15.0
-    configuration: '$(BuildConfiguration)'
-    msbuildArguments: '/t:RestoreVS15 /p:BuildNumber=$(Revision) /p:BuildRTM=$(BuildRTM) /v:m'
+  - task: PublishTestResults@2
+    displayName: 'Publish Desktop Test results'
+    inputs:
+      testResultsFormat: XUnit
+      testResultsFiles: '*.xml'
+      searchFolder: '$(Build.Repository.LocalPath)\artifacts\TestResults'
+      mergeTestResults: true
+    condition:  and(succeededOrFailed(),eq(variables['BuildRTM'], 'true')) 
 
-- task: MSBuild@1
-  displayName: 'Build for VS15'
-  inputs:
-    solution: 'build\build.proj'
-    msbuildVersion: 15.0
-    configuration: '$(BuildConfiguration)'
-    msbuildArguments: '/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\keys\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\keys\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Revision)'
+  - task: PublishTestResults@2
+    displayName: 'Publish NETCore Test Results'
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '*.trx'
+      searchFolder: '$(Build.Repository.LocalPath)\artifacts\TestResults'
+      mergeTestResults: true
+    condition:  and(succeededOrFailed(),eq(variables['BuildRTM'], 'true')) 
 
-- task: MSBuild@1
-  displayName: 'Run Unit Tests'
-  inputs:
-    solution: 'build\build.proj'
-    msbuildVersion: 15.0
-    configuration: '$(BuildConfiguration)'
-    msbuildArguments: '/t:CoreUnitTests;UnitTestsVS15 /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\keys\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\keys\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Revision) /p:TestResultOutputFormat=xml'
-  condition:  and(succeeded(),eq(variables['BuildRTM'], 'true')) 
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: NuGet.CommandLine.Test'
+    inputs:
+      PathtoPublish: '$(Build.Repository.LocalPath)\test\NuGet.Clients.Tests\NuGet.CommandLine.Test\bin\$(BuildConfiguration)\net46\win7-x64'
+      ArtifactName: NuGet.CommandLine.Test
+    condition:  and(succeeded(),eq(variables['BuildRTM'], 'true')) 
 
-- task: PublishTestResults@2
-  displayName: 'Publish Desktop Test results'
-  inputs:
-    testResultsFormat: XUnit
-    testResultsFiles: '*.xml'
-    searchFolder: '$(Build.Repository.LocalPath)\artifacts\TestResults'
-    mergeTestResults: true
-  condition:  and(succeededOrFailed(),eq(variables['BuildRTM'], 'true')) 
+  - task: MSBuild@1
+    displayName: 'Localize assemblies'
+    inputs:
+      solution: 'build\loc.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/t:AfterBuild'
+    condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
 
-- task: PublishTestResults@2
-  displayName: 'Publish NETCore Test Results'
-  inputs:
-    testResultsFormat: VSTest
-    testResultsFiles: '*.trx'
-    searchFolder: '$(Build.Repository.LocalPath)\artifacts\TestResults'
-    mergeTestResults: true
-  condition:  and(succeededOrFailed(),eq(variables['BuildRTM'], 'true')) 
+  - task: MSBuild@1
+    displayName: 'Sign assemblies'
+    inputs:
+      solution: 'build\sign.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/t:AfterBuild'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: NuGet.CommandLine.Test'
-  inputs:
-    PathtoPublish: '$(Build.Repository.LocalPath)\test\NuGet.Clients.Tests\NuGet.CommandLine.Test\bin\$(BuildConfiguration)\net46\win7-x64'
-    ArtifactName: NuGet.CommandLine.Test
-  condition:  and(succeeded(),eq(variables['BuildRTM'], 'true')) 
+  - task: MSBuild@1
+    displayName: 'Pack Nupkgs'
+    inputs:
+      solution: 'build\build.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/t:Pack  /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(Revision)'
 
-- task: MSBuild@1
-  displayName: 'Localize assemblies'
-  inputs:
-    solution: 'build\loc.proj'
-    msbuildVersion: 15.0
-    configuration: '$(BuildConfiguration)'
-    msbuildArguments: '/t:AfterBuild'
-  condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
+  - task: CopyFiles@2
+    displayName: 'Copy Nupkgs'
+    inputs:
+      SourceFolder: 'artifacts\$(NupkgOutputDir)'
+      Contents: '*.nupkg'
+      TargetFolder: '$(BuildOutputTargetPath)\artifacts\$(VsixPublishDir)\$(NupkgOutputDir)'
 
-- task: MSBuild@1
-  displayName: 'Sign assemblies'
-  inputs:
-    solution: 'build\sign.proj'
-    msbuildVersion: 15.0
-    configuration: '$(BuildConfiguration)'
-    msbuildArguments: '/t:AfterBuild'
+  - task: MSBuild@1
+    displayName: 'Pack VSIX'
+    inputs:
+      solution: 'build\build.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/t:BuildVS15VSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true'
+    condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
 
-- task: MSBuild@1
-  displayName: 'Pack Nupkgs'
-  inputs:
-    solution: 'build\build.proj'
-    msbuildVersion: 15.0
-    configuration: '$(BuildConfiguration)'
-    msbuildArguments: '/t:Pack  /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(Revision)'
+  - task: MSBuild@1
+    displayName: 'Sign VSIX'
+    inputs:
+      solution: 'build\sign.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/t:AfterBuild /p:SignVsix=true'
+    condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
 
-- task: CopyFiles@2
-  displayName: 'Copy Nupkgs'
-  inputs:
-    SourceFolder: 'artifacts\$(NupkgOutputDir)'
-    Contents: '*.nupkg'
-    TargetFolder: '$(BuildOutputTargetPath)\artifacts\$(VsixPublishDir)\$(NupkgOutputDir)'
+  - task: MSBuild@1
+    displayName: 'Generate VSMAN file'
+    inputs:
+      solution: 'setup\Microsoft.VisualStudio.NuGet.Core.vsmanproj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+    condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
 
-- task: MSBuild@1
-  displayName: 'Pack VSIX'
-  inputs:
-    solution: 'build\build.proj'
-    msbuildVersion: 15.0
-    configuration: '$(BuildConfiguration)'
-    msbuildArguments: '/t:BuildVS15VSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true'
-  condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
+  - task: PowerShell@1
+    displayName: 'Create EndToEnd Test Package'
+    inputs:
+      scriptName: '$(Build.Repository.LocalPath)\scripts\cibuild\CreateEndToEndTestPackage.ps1'
+      arguments: '-c $(BuildConfiguration) -tv 15 -out $(Build.Repository.LocalPath)\artifacts\VS15'
+      failOnStandardError: false
+    continueOnError: true
+    condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
 
-- task: MSBuild@1
-  displayName: 'Sign VSIX'
-  inputs:
-    solution: 'build\sign.proj'
-    msbuildVersion: 15.0
-    configuration: '$(BuildConfiguration)'
-    msbuildArguments: '/t:AfterBuild /p:SignVsix=true'
-  condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
+  - task: CopyFiles@2
+    displayName: 'Copy NuGet.exe, VSIX and EndToEnd'
+    inputs:
+      SourceFolder: artifacts
+      Contents: |
+        $(VsixPublishDir)\NuGet.exe
+        $(VsixPublishDir)\NuGet.pdb
+        $(VsixPublishDir)\Microsoft.VisualStudio.NuGet.Core.json
+        $(VsixPublishDir)\NuGet.Tools.vsix
+        $(VsixPublishDir)\EndToEnd.zip
+      TargetFolder: '$(BuildOutputTargetPath)\artifacts'
 
-- task: MSBuild@1
-  displayName: 'Generate VSMAN file'
-  inputs:
-    solution: 'setup\Microsoft.VisualStudio.NuGet.Core.vsmanproj'
-    msbuildVersion: 15.0
-    configuration: '$(BuildConfiguration)'
-  condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
+  - task: MSBuild@1
+    displayName: 'Generate BuildTools package'
+    inputs:
+      solution: setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/p:BuildNumber=$(Revision)'
+    condition:  and(succeeded(), eq(variables['BuildRTM'], 'false'))
 
-- task: PowerShell@1
-  displayName: 'Create EndToEnd Test Package'
-  inputs:
-    scriptName: '$(Build.Repository.LocalPath)\scripts\cibuild\CreateEndToEndTestPackage.ps1'
-    arguments: '-c $(BuildConfiguration) -tv 15 -out $(Build.Repository.LocalPath)\artifacts\VS15'
-    failOnStandardError: false
-  continueOnError: true
-  condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
+  - task: CopyFiles@2
+    displayName: 'Copy LCG Files '
+    inputs:
+      SourceFolder: 'artifacts\'
+      Contents: '**\*.lcg'
+      TargetFolder: '$(CIRoot)\PLOC\$(Build.BuildNumber)'
+    condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
 
-- task: CopyFiles@2
-  displayName: 'Copy NuGet.exe, VSIX and EndToEnd'
-  inputs:
-    SourceFolder: artifacts
-    Contents: |
-     $(VsixPublishDir)\NuGet.exe
-     $(VsixPublishDir)\NuGet.pdb
-     $(VsixPublishDir)\Microsoft.VisualStudio.NuGet.Core.json
-     $(VsixPublishDir)\NuGet.Tools.vsix
-     $(VsixPublishDir)\EndToEnd.zip
-    TargetFolder: '$(BuildOutputTargetPath)\artifacts'
+  - task: PowerShell@1
+    displayName: 'Publish Artifacts to MyGet'
+    inputs:
+      scriptName: '$(Build.Repository.LocalPath)\scripts\cibuild\PublishArtifactsFromVsts.ps1'
+      arguments: '-NuGetBuildFeedUrl $(NuGetBuildFeed) -NuGetBuildSymbolsFeedUrl $(NuGetBuildSymbolsFeed) -DotnetCoreFeedUrl $(DotnetCoreBuildFeed) -DotnetCoreSymbolsFeedUrl $(DotnetCoreSymbolsFeed) -NuGetBuildFeedApiKey $(NuGetBuildFeedApiKey) -DotnetCoreFeedApiKey $(DotnetCoreFeedApiKey)'
+      failOnStandardError: false
+    continueOnError: true
+    condition:  and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'),eq(variables['BuildRTM'], 'false')) 
 
-- task: MSBuild@1
-  displayName: 'Generate BuildTools package'
-  inputs:
-    solution: setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj
-    msbuildVersion: 15.0
-    configuration: '$(BuildConfiguration)'
-    msbuildArguments: '/p:BuildNumber=$(Revision)'
-  condition:  and(succeeded(), eq(variables['BuildRTM'], 'false'))
+  - task: MSBuild@1
+    displayName: 'Collect Build Symbols'
+    inputs:
+      solution: 'build\symbols.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+    condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
 
-- task: CopyFiles@2
-  displayName: 'Copy LCG Files '
-  inputs:
-    SourceFolder: 'artifacts\'
-    Contents: '**\*.lcg'
-    TargetFolder: '$(CIRoot)\PLOC\$(Build.BuildNumber)'
-  condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
+  - task: CopyFiles@2
+    displayName: 'Copy Symbols'
+    inputs:
+      SourceFolder: '$(Build.Repository.LocalPath)\artifacts\symbolstoindex'
+      Contents: '**\*'
+      TargetFolder: '$(BuildOutputTargetPath)\symbols'
+    condition: and(succeeded(),eq(variables['BuildRTM'], 'false'))
 
-- task: PowerShell@1
-  displayName: 'Publish Artifacts to MyGet'
-  inputs:
-    scriptName: '$(Build.Repository.LocalPath)\scripts\cibuild\PublishArtifactsFromVsts.ps1'
-    arguments: '-NuGetBuildFeedUrl $(NuGetBuildFeed) -NuGetBuildSymbolsFeedUrl $(NuGetBuildSymbolsFeed) -DotnetCoreFeedUrl $(DotnetCoreBuildFeed) -DotnetCoreSymbolsFeedUrl $(DotnetCoreSymbolsFeed) -NuGetBuildFeedApiKey $(NuGetBuildApiKey) -DotnetCoreFeedApiKey $(DotnetCoreApiKey)'
-    failOnStandardError: false
-  continueOnError: true
-  condition:  and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'),eq(variables['BuildRTM'], 'false')) 
+  - task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
+    displayName: 'Publish Symbols on Symweb'
+    inputs:
+      symbolServiceURI: 'https://microsoft.artifacts.visualstudio.com/DefaultCollection'
+      requestName: 'CollectionId/$(System.CollectionId)/ProjectId/$(System.TeamProjectId)/$(TeamName)/BuildId/$(Build.BuildId)'
+      sourcePath: '$(Build.Repository.LocalPath)\artifacts\symbolstoindex'
+      detailedLog: true
+      expirationInDays: 45
+      usePat: false
+    condition: and(succeeded(),eq(variables['BuildRTM'], 'false'))
 
-- task: MSBuild@1
-  displayName: 'Collect Build Symbols'
-  inputs:
-    solution: 'build\symbols.proj'
-    msbuildVersion: 15.0
-    configuration: '$(BuildConfiguration)'
-  condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
+  - task: ms-vseng.MicroBuildTasks.4305a8de-ba66-4d8b-b2d1-0dc4ecbbf5e8.MicroBuildUploadVstsDropFolder@1
+    displayName: 'Upload VSTS Drop'
+    inputs:
+      DropFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
+      DropServiceUri: 'https://devdiv.artifacts.visualstudio.com/DefaultCollection'
+    condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
 
-- task: CopyFiles@2
-  displayName: 'Copy Symbols'
-  inputs:
-    SourceFolder: '$(Build.Repository.LocalPath)\artifacts\symbolstoindex'
-    Contents: '**\*'
-    TargetFolder: '$(BuildOutputTargetPath)\symbols'
-  condition: and(succeeded(),eq(variables['BuildRTM'], 'false'))
+  - task: PowerShell@1
+    displayName: 'Validate Vsix Localization'
+    inputs:
+      scriptName: '$(Build.Repository.LocalPath)\scripts\cibuild\BuildValidator.ps1'
+      arguments: '-BuildRTM $(BuildRTM) -BuildOutputTargetPath $(BuildOutputTargetPath) -ValidateVsix'
 
-- task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
-  displayName: 'Publish Symbols on Symweb'
-  inputs:
-    symbolServiceURI: 'https://microsoft.artifacts.visualstudio.com/DefaultCollection'
-    requestName: 'CollectionId/$(System.CollectionId)/ProjectId/$(System.TeamProjectId)/$(TeamName)/BuildId/$(Build.BuildId)'
-    sourcePath: '$(Build.Repository.LocalPath)\artifacts\symbolstoindex'
-    detailedLog: true
-    expirationInDays: 45
-    usePat: false
-  condition: and(succeeded(),eq(variables['BuildRTM'], 'false'))
+  - task: PowerShell@1
+    displayName: 'Validate Repository Artifacts Localization'
+    inputs:
+      scriptName: '$(Build.Repository.LocalPath)\scripts\cibuild\BuildValidator.ps1'
+      arguments: '-BuildRTM $(BuildRTM) -BuildOutputTargetPath $(BuildOutputTargetPath)'
 
-- task: ms-vseng.MicroBuildTasks.4305a8de-ba66-4d8b-b2d1-0dc4ecbbf5e8.MicroBuildUploadVstsDropFolder@1
-  displayName: 'Upload VSTS Drop'
-  inputs:
-    DropFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
-    DropServiceUri: 'https://devdiv.artifacts.visualstudio.com/DefaultCollection'
-  condition:  and(succeeded(),eq(variables['BuildRTM'], 'false')) 
+  - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
+    displayName: 'Perform Cleanup Tasks'
+    condition: succeededOrFailed()
 
-- task: PowerShell@1
-  displayName: 'Validate Vsix Localization'
-  inputs:
-    scriptName: '$(Build.Repository.LocalPath)\scripts\cibuild\BuildValidator.ps1'
-    arguments: '-BuildRTM $(BuildRTM) -BuildOutputTargetPath $(BuildOutputTargetPath) -ValidateVsix'
-
-- task: PowerShell@1
-  displayName: 'Validate Repository Artifacts Localization'
-  inputs:
-    scriptName: '$(Build.Repository.LocalPath)\scripts\cibuild\BuildValidator.ps1'
-    arguments: '-BuildRTM $(BuildRTM) -BuildOutputTargetPath $(BuildOutputTargetPath)'
-
-- task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
-  displayName: 'Perform Cleanup Tasks'
-  condition: succeededOrFailed()
-
-- task: PowerShell@1
-  displayName: 'Clean up on failure'
-  inputs:
-    scriptType: inlineScript
-    arguments: '-BuildOutputTargetPath $(BuildOutputTargetPath)'
-    inlineScript: |
-     param(
-     [string]$BuildOutputTargetPath
-     )
-     Remove-Item -Path $BuildOutputTargetPath -Force -Recurse
-  condition: failed()
+  - task: PowerShell@1
+    displayName: 'Clean up on failure'
+    inputs:
+      scriptType: inlineScript
+      arguments: '-BuildOutputTargetPath $(BuildOutputTargetPath)'
+      inlineScript: |
+        param(
+        [string]$BuildOutputTargetPath
+        )
+        Remove-Item -Path $BuildOutputTargetPath -Force -Recurse
+    condition: failed()
