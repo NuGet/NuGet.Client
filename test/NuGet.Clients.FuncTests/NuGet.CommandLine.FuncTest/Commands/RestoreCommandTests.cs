@@ -198,6 +198,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
+        // Disabled this test for now. TODO: https://github.com/NuGet/Home/issues/7745
         [Fact]
         public async Task Restore_LegacyPackageReference_BuildTransitive()
         {
@@ -258,8 +259,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 {
                     var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("y"));
                     Assert.NotNull(library);
-                    Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")));
-                    Assert.False(library.Build.Any(build => build.Path.Equals("build/y.props")));
+                    Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}");
+                    Assert.False(library.Build.Any(build => build.Path.Equals("build/y.props")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}");
                 }
             }
         }
