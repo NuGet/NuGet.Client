@@ -7,7 +7,7 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet
         file source=$(NuGetTargetsPath)
         file source=$(ReferenceOutputPath)Microsoft.Web.XmlTransform.dll
         file source=$(ReferenceOutputPath)Microsoft.Build.NuGetSdkResolver.dll
-        file source=$(ReferenceOutputPath)Newtonsoft.Json.dll
+        file source=$(NewtonsoftJsonPath)Newtonsoft.Json.dll
         file source=$(ReferenceOutputPath)NuGet.Build.Tasks.dll  
         file source=$(ReferenceOutputPath)NuGet.Commands.dll  
         file source=$(ReferenceOutputPath)NuGet.Common.dll  

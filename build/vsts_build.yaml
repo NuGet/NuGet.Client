@@ -442,7 +442,7 @@ phases:
   condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "  	
   queue:
     name: DDNuGet-Linux
-    timeoutInMinutes: 45
+    timeoutInMinutes: 60
     demands: sh
 
   steps:
@@ -493,7 +493,7 @@ phases:
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "  	
   queue:
     name: VSEng-MicroBuildMacSierra
-    timeoutInMinutes: 60
+    timeoutInMinutes: 75
     demands: sh
 
   steps:
