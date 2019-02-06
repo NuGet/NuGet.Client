@@ -73,7 +73,7 @@ namespace NuGet.LibraryModel
         {
             var hashCode = new HashCodeCombiner();
 
-            hashCode.AddObject(Name);
+            hashCode.AddObject(Name.ToLowerInvariant());
             hashCode.AddObject(VersionRange);
 
             return hashCode.CombinedHash;
@@ -96,7 +96,7 @@ namespace NuGet.LibraryModel
                 return true;
             }
 
-            return Name == other.Name &&
+            return Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase) &&
                    EqualityUtility.EqualsWithNullCheck(VersionRange, other.VersionRange);
         }
 
