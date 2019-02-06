@@ -244,15 +244,6 @@ phases:
       inlineScript: |
         Remove-Item -Path '$(Build.Repository.LocalPath)\\artifacts\\tempVerifySign' -Recurse 
 
-  - task: PowerShell@1
-    displayName: "test only : make sure temp folder is removed"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        cd '$(Build.Repository.LocalPath)\\artifacts'
-        pwd
-        ls
-
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
     inputs:
