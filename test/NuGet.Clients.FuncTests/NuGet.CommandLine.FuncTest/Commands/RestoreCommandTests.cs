@@ -226,7 +226,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 packageY.AddFile("build/y.props");
                 packageY.AddFile("buildCrossTargeting/y.props");
                 packageY.AddFile("buildTransitive/y.targets");
-                packageY.Exclude = "build;analyzer";
+                packageY.Exclude = "build,analyzers";
 
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -258,8 +258,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 {
                     var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("y"));
                     Assert.NotNull(library);
-                    Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")));
-                    Assert.False(library.Build.Any(build => build.Path.Equals("build/y.props")));
+                    Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}");
+                    Assert.False(library.Build.Any(build => build.Path.Equals("build/y.props")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}");
                 }
             }
         }

@@ -1666,17 +1666,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        // Disabled this test for now. Needs investigation. Logged bug# https://github.com/NuGet/Home/issues/7745
-        //[Fact]
+        // Disabled this test for now. TODO: https://github.com/NuGet/Home/issues/7745
+        // [Fact]
         public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_BuildTransitive()
         {
             using (var packageSource = TestDirectory.Create())
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
-                    new List<Configuration.PackageSource>()
+                    new List<PackageSource>()
                     {
-                        new Configuration.PackageSource(packageSource.Path)
+                        new PackageSource(packageSource.Path)
                     });
 
                 using (var testSolutionManager = new TestSolutionManager(true))
@@ -1798,8 +1798,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     {
                         var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("packageB"));
                         Assert.NotNull(library);
-                        Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/packageB.targets")));
-                        Assert.False(library.Build.Any(build => build.Path.Equals("build/packageB.props")));
+                        Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/packageB.targets")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}");
+                        Assert.False(library.Build.Any(build => build.Path.Equals("build/packageB.props")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}");
                     }
                 }
             }
