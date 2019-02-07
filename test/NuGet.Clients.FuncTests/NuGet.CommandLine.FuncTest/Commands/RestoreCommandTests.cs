@@ -198,7 +198,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        // Disabled this test for now. TODO: https://github.com/NuGet/Home/issues/7745
         [Fact]
         public async Task Restore_LegacyPackageReference_BuildTransitive()
         {
