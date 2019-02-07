@@ -224,25 +224,60 @@ phases:
     inputs:
       TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
 
-  - task: CopyFiles@2
-    displayName: "Copy NuGet*.exe To a Temp file folder"
+  - task: PowerShell@1
+    displayName: "test only : check curr folder to see if there is nuget.exe file"
     inputs:
-      SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
-      Contents: "NuGet*.exe"
-      TargetFolder: "$(Build.Repository.LocalPath)\\artifacts\\tempVerifySign"
+      scriptType: "inlineScript"
+      inlineScript: |
+        pwd
+        cd '$(Build.Repository.LocalPath)\\artifacts'
+        pwd
+        ls
+        cd '$(VsixPublishDir)'
+        ls
+
+  - task: PowerShell@1
+    displayName: "test : create whitelist file and show contents in the whitelist"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        pwd
+        cd '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
+        Get-ChildItem -Name -Include NuGet*.exe
+        Get-ChildItem -Name -Include NuGet*.exe| Out-File -filepath '$(Build.Repository.LocalPath)\\artifacts\\TempWhiteList.csv' 
 
   - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
     displayName: 'Verify nuget.exe and mssign.exe Signatures and StrongName'
     inputs:
       TargetFolders: 
-        $(Build.Repository.LocalPath)\\artifacts\\tempVerifySign
+        $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)
+      WhiteListPathForCerts: $(Build.Repository.LocalPath)\artifacts\TempWhiteList.csv
+      WhiteListPathForSigs: $(Build.Repository.LocalPath)\artifacts\TempWhiteList.csv
 
   - task: PowerShell@1
-    displayName: "Remove temp folder"
+    displayName: "test : remove whitelist file"
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Remove-Item -Path '$(Build.Repository.LocalPath)\\artifacts\\tempVerifySign' -Recurse 
+        Remove-Item -Path '$(Build.Repository.LocalPath)\\artifacts\\TempWhiteList.csv'
+
+   - task: PowerShell@1
+    displayName: "test : create whitelist file and show contents in the whitelist"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        pwd
+        cd '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
+        Get-ChildItem -Name -Exclude NuGet*.exe
+        Get-ChildItem -Name -Exclude NuGet*.exe| Out-File -filepath '$(Build.Repository.LocalPath)\\artifacts\\TempWhiteList.csv' 
+ 
+ - task: PowerShell@1
+    displayName: "test : remove whitelist file"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Remove-Item -Path '$(Build.Repository.LocalPath)\\artifacts\\TempWhiteList.csv'
+
 
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
