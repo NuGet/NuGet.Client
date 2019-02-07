@@ -261,7 +261,7 @@ phases:
       inlineScript: |
         Remove-Item -Path '$(Build.Repository.LocalPath)\\artifacts\\TempWhiteList.csv'
 
-   - task: PowerShell@1
+  - task: PowerShell@1
     displayName: "test : create whitelist file and show contents in the whitelist"
     inputs:
       scriptType: "inlineScript"
@@ -271,7 +271,7 @@ phases:
         Get-ChildItem -Name -Exclude NuGet*.exe
         Get-ChildItem -Name -Exclude NuGet*.exe| Out-File -filepath '$(Build.Repository.LocalPath)\\artifacts\\TempWhiteList.csv' 
  
- - task: PowerShell@1
+  - task: PowerShell@1
     displayName: "test : remove whitelist file"
     inputs:
       scriptType: "inlineScript"
