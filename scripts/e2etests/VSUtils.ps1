@@ -185,7 +185,8 @@ function GetVSIXInstallerPath {
     $VSIDEFolderPath = GetVSIDEFolderPath $VSVersion
     $VSIXInstallerPath = Join-Path $VSIDEFolderPath "$VSInstallerProcessName.exe"
 
-    return $VSIXInstallerPath
+    # TODO: This needs to be removed when https://developercommunity.visualstudio.com/content/problem/441998/vsixinstallerexe-not-working-in-vs2019-preview-20.html is fixed (it should be in Preview 4)
+    return "C:\Program Files (x86)\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service\VSIXInstaller.exe"
 }
 
 function GetDev15MEFCachePath {
