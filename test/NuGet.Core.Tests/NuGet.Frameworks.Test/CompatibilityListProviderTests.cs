@@ -248,6 +248,7 @@ namespace NuGet.Frameworks.Test
             // positive
             Assert.Contains(".NETCoreApp,Version=v3.0", actual);
             Assert.Contains(".NETStandard,Version=v2.1", actual);
+            Assert.Contains("Tizen,Version=v6.0", actual);
 
             // negative
             Assert.DoesNotContain(".NETFramework,Version=v4.7", actual); // frameworks with no relationship are not returned
@@ -257,7 +258,7 @@ namespace NuGet.Frameworks.Test
             Assert.DoesNotContain("MonoAndroid,Version=v0.0", actual);
             Assert.DoesNotContain("MonoMac,Version=v0.0", actual);
             Assert.DoesNotContain("MonoTouch,Version=v0.0", actual);
-            Assert.DoesNotContain("Xamarin.iOS,Version=v0.0", actual); 
+            Assert.DoesNotContain("Xamarin.iOS,Version=v0.0", actual);
             Assert.DoesNotContain("Xamarin.Mac,Version=v0.0", actual);
             Assert.DoesNotContain("Xamarin.PlayStation3,Version=v0.0", actual);
             Assert.DoesNotContain("Xamarin.PlayStation4,Version=v0.0", actual);
@@ -266,11 +267,10 @@ namespace NuGet.Frameworks.Test
             Assert.DoesNotContain("Xamarin.WatchOS,Version=v0.0", actual);
             Assert.DoesNotContain("Xamarin.Xbox360,Version=v0.0", actual);
             Assert.DoesNotContain("Xamarin.XboxOne,Version=v0.0", actual);
-            Assert.DoesNotContain("Tizen,Version=v4.0", actual);
             Assert.DoesNotContain("UAP,Version=v10.0.15064", actual);
 
             // count
-            Assert.Equal(3, actual.Length);
+            Assert.Equal(4, actual.Length);
         }
     }
 }
