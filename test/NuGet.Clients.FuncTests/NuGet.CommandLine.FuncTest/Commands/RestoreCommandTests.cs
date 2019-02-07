@@ -227,7 +227,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 packageY.AddFile("build/y.props");
                 packageY.AddFile("buildCrossTargeting/y.props");
                 packageY.AddFile("buildTransitive/y.targets");
-                packageY.Exclude = "build;analyzer";
+                packageY.Exclude = "build,analyzers";
 
                 var packageX = new SimpleTestPackageContext()
                 {
