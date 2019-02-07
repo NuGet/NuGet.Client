@@ -1667,7 +1667,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         // Disabled this test for now. TODO: https://github.com/NuGet/Home/issues/7745
-        [Fact]
+        // [Fact]
         public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_BuildTransitive()
         {
             using (var packageSource = TestDirectory.Create())
