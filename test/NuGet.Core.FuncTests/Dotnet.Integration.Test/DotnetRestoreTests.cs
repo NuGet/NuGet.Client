@@ -121,7 +121,7 @@ EndGlobal";
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task DotnetRestore_WarnsForNonRestoreableProjects()
+        public async Task DotnetRestore_OneLinePerRestore()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -193,7 +193,7 @@ EndGlobal";
 
                 // Assert
                 Assert.True(result.Item1 == 0);
-                Assert.Equal(1, result.AllOutput.Split(Environment.NewLine).Length);
+                Assert.Equal(1, result.AllOutput.Split(Environment.NewLine).Length, result.AllOutput);
 
             }
         }
