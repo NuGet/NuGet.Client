@@ -237,25 +237,6 @@ phases:
         ls
 
   - task: CopyFiles@2
-    displayName: "Copy NuGet.Tools.vsix To a Temp file folder"
-    inputs:
-      SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
-      Contents: "NuGet.Tools.vsix"
-      TargetFolder: "$(Build.Repository.LocalPath)\\artifacts\\tempVsix"
-
-  - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
-    displayName: 'Verify NuGet.Tools.vsix Signatures and StrongName'
-    inputs:
-      TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\tempVsix'
-
-  - task: PowerShell@1
-    displayName: "Remove temp folder"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        Remove-Item -Path '$(Build.Repository.LocalPath)\\artifacts\\tempVsix' -Recurse 
-
-  - task: CopyFiles@2
     displayName: "Copy Microsoft.VisualStudio.NuGet.BuildTools.vsix To a Temp file folder"
     inputs:
       SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
