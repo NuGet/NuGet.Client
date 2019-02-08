@@ -29,12 +29,8 @@ param
 
     [Parameter(Mandatory=$True)]
     [string]$BuildRTM,
-
-    [Parameter(Mandatory=$True)]
-    [string]$FunctionalTestBuildId,
-
-    [Parameter(Mandatory=$True)]
-    [string]$VstsRestApiRootUrl
+    
+    [switch]$SkipUpdateBuildNumber
 )
 
 Function Get-Version {
@@ -43,13 +39,16 @@ Function Get-Version {
         [string]$build
     )
         Write-Host "Evaluating the new VSIX Version : ProductVersion $ProductVersion, build $build"
-        # Generate the new minor version: 4.0.0 => 40000, 4.11.5 => 41105.
-        # This assumes we only get to NuGet major/minor 99 at worst, otherwise the logic breaks.
-        #The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
-        $finalVersion = "15.0.$((-join ($ProductVersion -split '\.' | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"
-
+        # The major version is NuGetMajorVersion + 11, to match VS's number.
+        # The new minor version is: 4.0.0 => 40000, 4.11.5 => 41105. 
+        # This assumes we only get to NuGet major/minor/patch 99 at worst, otherwise the logic breaks. 
+        # The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
+        $versionParts = $ProductVersion -split '\.'
+        $major = $($versionParts[0] / 1) + 11
+        $finalVersion = "$major.0.$((-join ($versionParts | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"    
+    
         Write-Host "The new VSIX Version is: $finalVersion"
-        return $finalVersion
+        return $finalVersion    
 }
 
 Function Update-VsixVersion {
@@ -70,39 +69,13 @@ Function Update-VsixVersion {
     # Evaluate the new version
     $newVersion = Get-Version $ReleaseProductVersion $buildNumber
     Write-Host "Updating the VSIX version [$oldVersion] => [$newVersion]"
+    Write-Host "##vso[task.setvariable variable=VsixBuildNumber;]$newVersion"
     # setting the revision to the new version
     $root.Metadata.Identity.Version = "$newVersion"
 
     $xml.Save($vsixManifest)
 
     Write-Host "Updated the VSIX version [$oldVersion] => [$($root.Metadata.Identity.Version)]"
-}
-
-Function Update-BuildNumberForFunctionalTests {
-    param(
-        [string]$BuildId,
-        [string]$BuildNumber
-    )
-    $url = "{0}/build/builds/{1}?api-version=2.0" -f $VstsRestApiRootUrl, $BuildId
-    $b = @{
-        buildNumber = $BuildNumber
-        sourceVersion = $env:BUILD_SOURCEVERSION
-    } | convertto-json
-    Write-Host $b
-    $build = Invoke-RestMethod -Uri $url -Method PATCH -Body $b -Headers @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" } -ContentType "application/json" 
-    $build
-}
-
-Function Queue-FunctionalTests {
-    param(
-        [string]$BuildNumber
-    )
-    $url = "{0}/build/builds?api-version=2.0" -f $VstsRestApiRootUrl
-    $b = @{definition=@{id=$FunctionalTestBuildId};sourceBranch=$env:BUILD_SOURCEBRANCH} | convertto-json 
-    $build = Invoke-RestMethod -Uri $url -Method POST -Body $b -Headers @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" } -ContentType "application/json" 
-    $build 
-    $funcTestId = $build.id
-    Update-BuildNumberForFunctionalTests -BuildId $funcTestId -BuildNumber $BuildNumber
 }
 
 $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
@@ -116,13 +89,15 @@ $regKeyNuGet = "HKLM:SOFTWARE\Microsoft\StrongName\Verification\*,31bf3856ad364e
 $regKeyNuGet32 = "HKLM:SOFTWARE\Wow6432Node\Microsoft\StrongName\Verification\*,31bf3856ad364e35"
 
 $has32bitNode = Test-Path "HKLM:SOFTWARE\Wow6432Node"
+$regKeyFileSystem = "HKLM:SYSTEM\CurrentControlSet\Control\FileSystem"
+$enableLongPathSupport = "LongPathsEnabled"
 
 # update submodule NuGet.Build.Localization
 $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
 $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
-$NuGetLocalizationRepoBranch = 'release-4.3.1'
+$NuGetLocalizationRepoBranch = 'master'
 $updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
 
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
@@ -152,53 +127,80 @@ if (-not (Test-Path $regKeyNuGet) -or ($has32bitNode -and -not (Test-Path $regKe
     }
 }
 
+if (-not (Test-Path $regKeyFileSystem)) 
+{
+	Write-Host "Enabling long path support on the build machine"
+	Set-ItemProperty -Path $regKeyFileSystem -Name $enableLongPathSupport -Value 1
+}
+
 
 if ($BuildRTM -eq 'true')
 {
     # Set the $(NupkgOutputDir) build variable in VSTS build
     Write-Host "##vso[task.setvariable variable=NupkgOutputDir;]ReleaseNupkgs"
-    $numberOfTries = 0
-    do{
-        Write-Host "Waiting for buildinfo.json to be generated..."
-        $numberOfTries++
-        Start-Sleep -s 15
-    }
-    until ((Test-Path $BuildInfoJsonFile) -or ($numberOfTries -gt 50))
-    $json = (Get-Content $BuildInfoJsonFile -Raw) | ConvertFrom-Json
-    $currentBuild = [System.Decimal]::Parse($json.BuildNumber)
-    # Set the $(Revision) build variable in VSTS build
-    Write-Host "##vso[task.setvariable variable=Revision;]$currentBuild"
-    Write-Host "##vso[build.updatebuildnumber]$currentBuild"
-    $oldBuildOutputDirectory = Split-Path -Path $BuildInfoJsonFile
-    $branchDirectory = Split-Path -Path $oldBuildOutputDirectory
-    $newBuildOutputFolder =  Join-Path $branchDirectory $currentBuild
-    if(Test-Path $newBuildOutputFolder)
+    Write-Host "##vso[task.setvariable variable=VsixPublishDir;]VS15-RTM"
+    # Only for backward compatibility with orchestrated builds
+    if(-not $SkipUpdateBuildNumber)
     {
-        Move-Item -Path $BuildInfoJsonFile -Destination $newBuildOutputFolder
-        Remove-Item -Path $oldBuildOutputDirectory -Force
-    }
-    else
-    {
-        Rename-Item $oldBuildOutputDirectory $currentBuild
-    }
-
+        $numberOfTries = 0
+        do{
+            Write-Host "Waiting for buildinfo.json to be generated..."
+            $numberOfTries++
+            Start-Sleep -s 15
+        }
+        until ((Test-Path $BuildInfoJsonFile) -or ($numberOfTries -gt 50))
+        $json = (Get-Content $BuildInfoJsonFile -Raw) | ConvertFrom-Json
+        $currentBuild = [System.Decimal]::Parse($json.BuildNumber)
+        # Set the $(Revision) build variable in VSTS build
+        Write-Host "##vso[task.setvariable variable=Revision;]$currentBuild"
+        Write-Host "##vso[build.updatebuildnumber]$currentBuild" 
+        $oldBuildOutputDirectory = Split-Path -Path $BuildInfoJsonFile
+        $branchDirectory = Split-Path -Path $oldBuildOutputDirectory
+        $newBuildOutputFolder =  Join-Path $branchDirectory $currentBuild
+        if(Test-Path $newBuildOutputFolder)
+        {
+            Move-Item -Path $BuildInfoJsonFile -Destination $newBuildOutputFolder
+            Remove-Item -Path $oldBuildOutputDirectory -Force
+        }
+        else
+        {
+            Rename-Item $oldBuildOutputDirectory $currentBuild
+        }   
+    }    
 }
 else
 {
-    $revision = Get-Content $BuildCounterFile
-    $newBuildCounter = [System.Decimal]::Parse($revision)
-    $newBuildCounter++
-    Set-Content $BuildCounterFile $newBuildCounter
-    # Set the $(Revision) build variable in VSTS build
-    Write-Host "##vso[task.setvariable variable=Revision;]$newBuildCounter"
-    Write-Host "##vso[build.updatebuildnumber]$newBuildCounter"
+    # Only for backward compatibility with orchestrated builds
+    if(-not $SkipUpdateBuildNumber)
+    {
+        $revision = Get-Content $BuildCounterFile
+        $newBuildCounter = [System.Decimal]::Parse($revision)
+        $newBuildCounter++
+        Set-Content $BuildCounterFile $newBuildCounter
+        # Set the $(Revision) build variable in VSTS build
+        Write-Host "##vso[task.setvariable variable=Revision;]$newBuildCounter"
+        Write-Host "##vso[build.updatebuildnumber]$newBuildCounter"
+        Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
+    }
+    else
+    {
+        $newBuildCounter = $env:BUILD_BUILDNUMBER        
+    }
+
+    $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
+    $CliTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranches
+    $SdkTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranches
+    Write-Host $VsTargetBranch
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
         CommitHash = $env:BUILD_SOURCEVERSION
         BuildBranch = $env:BUILD_SOURCEBRANCHNAME
         LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
         LocalizationRepositoryCommitHash = $LocalizationRepoCommitHash
-    }
+        VsTargetBranch = $VsTargetBranch.Trim()
+        CliTargetBranches = $CliTargetBranches.Trim()
+        SdkTargetBranches = $SdkTargetBranches.Trim()
+    }   
 
     New-Item $BuildInfoJsonFile -Force
     $jsonRepresentation | ConvertTo-Json | Set-Content $BuildInfoJsonFile
@@ -208,7 +210,5 @@ else
         Write-Error "Failed to get product version."
         exit 1
     }
-    Update-VsixVersion -manifestName source.extension.vs15.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $newBuildCounter
-    Update-VsixVersion -manifestName source.extension.vs15.insertable.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $newBuildCounter
-    Queue-FunctionalTests -BuildNumber $newBuildCounter
+    Update-VsixVersion -manifestName source.extension.vs15.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $env:BUILDNUMBER
 }
