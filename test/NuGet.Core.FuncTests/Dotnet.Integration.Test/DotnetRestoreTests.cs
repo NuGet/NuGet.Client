@@ -193,7 +193,7 @@ EndGlobal";
 
                 // Assert
                 Assert.True(result.Item1 == 0);
-                Assert.Equal(1, result.AllOutput.Split(Environment.NewLine).Length, result.AllOutput);
+                Assert.True(1 == result.AllOutput.Split(Environment.NewLine).Length, result.AllOutput);
 
             }
         }
