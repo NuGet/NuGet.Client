@@ -243,7 +243,7 @@ phases:
       Contents: "Microsoft.VisualStudio.NuGet.BuildTools.vsix"
       TargetFolder: "$(Build.Repository.LocalPath)\\artifacts\\tempVsix2"
 
-  - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
+  - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
     displayName: 'Verify Microsoft.VisualStudio.NuGet.BuildTools.vsix Signatures and StrongName'
     inputs:
       TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\tempVsix2'
@@ -254,6 +254,25 @@ phases:
       scriptType: "inlineScript"
       inlineScript: |
         Remove-Item -Path '$(Build.Repository.LocalPath)\\artifacts\\tempVsix2' -Recurse 
+
+   - task: CopyFiles@2
+    displayName: "Copy NuGet.Tools.vsix To a Temp file folder"
+    inputs:
+      SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+      Contents: "NuGet.Tools.vsix"
+      TargetFolder: "$(Build.Repository.LocalPath)\\artifacts\\tempVsix1"
+
+  - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
+    displayName: 'Verify Microsoft.VisualStudio.NuGet.BuildTools.vsix Signatures and StrongName'
+    inputs:
+      TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\tempVsix1'
+
+  - task: PowerShell@1
+    displayName: "Remove temp folder"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Remove-Item -Path '$(Build.Repository.LocalPath)\\artifacts\\tempVsix1' -Recurse 
 
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
