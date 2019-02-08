@@ -255,7 +255,7 @@ phases:
       inlineScript: |
         Remove-Item -Path '$(Build.Repository.LocalPath)\\artifacts\\tempVsix2' -Recurse 
 
-   - task: CopyFiles@2
+  - task: CopyFiles@2
     displayName: "Copy NuGet.Tools.vsix To a Temp file folder"
     inputs:
       SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
