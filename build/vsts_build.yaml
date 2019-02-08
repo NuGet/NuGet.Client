@@ -244,9 +244,9 @@ phases:
       TargetFolder: "$(Build.Repository.LocalPath)\\artifacts\\tempVsix"
 
   - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
-    displayName: 'Verify nuget.exe and mssign.exe Signatures and StrongName'
+    displayName: 'Verify NuGet.Tools.vsix Signatures and StrongName'
     inputs:
-      TargetFolders: $(Build.Repository.LocalPath)\\artifacts\\tempVsix
+      TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\tempVsix'
 
   - task: PowerShell@1
     displayName: "Remove temp folder"
@@ -263,9 +263,9 @@ phases:
       TargetFolder: "$(Build.Repository.LocalPath)\\artifacts\\tempVsix2"
 
   - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
-    displayName: 'Verify nuget.exe and mssign.exe Signatures and StrongName'
+    displayName: 'Verify Microsoft.VisualStudio.NuGet.BuildTools.vsix Signatures and StrongName'
     inputs:
-      TargetFolders: $(Build.Repository.LocalPath)\\artifacts\\tempVsix2
+      TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\tempVsix2'
 
   - task: PowerShell@1
     displayName: "Remove temp folder"
