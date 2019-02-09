@@ -19,6 +19,7 @@
     <MergeInclude Include="$(OutputPath)NuGet.Versioning.dll"/>
     <MergeInclude Include="$(OutputPath)NuGet.Core.dll"/>
 
+    <MergeExclude Include="$(OutputPath)Microsoft.VisualStudio.Setup.Configuration.Interop.dll"/>
     <MergeExclude Include="$(OutputPath)Microsoft.CSharp.dll"/>
     <MergeExclude Include="$(OutputPath)mscorlib.dll"/>
     <MergeExclude Include="$(OutputPath)System.Collections.Concurrent.dll"/>
