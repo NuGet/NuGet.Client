@@ -44,7 +44,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
-    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.Interop" Version="1.0.0">
+    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" Version="15.0.751">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201">
