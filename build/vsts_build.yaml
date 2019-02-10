@@ -438,7 +438,7 @@ phases:
     displayName: "Run Configure.ps1"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
-      arguments: "-Force -CleanCache"
+      arguments: "-Force"
 
   - task: MSBuild@1
     displayName: "Restore for VS2017"
