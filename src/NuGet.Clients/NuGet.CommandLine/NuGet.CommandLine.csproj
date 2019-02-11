@@ -107,7 +107,7 @@
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
     </ItemGroup>
-    <Error Text="Build dependencies are inconsistent with mergeinclude specified in ilmerge.props @(BuildArtifacts)" Condition="'@(BuildArtifacts-&gt;Count())' != '@(MergeInclude-&gt;Count())'" />
+    <Error Text="Build dependencies are inconsistent with mergeinclude specified in ilmerge.props" Condition="'@(BuildArtifacts-&gt;Count())' != '@(MergeInclude-&gt;Count())'" />
     <PropertyGroup>
       <PathToBuiltNuGetExe>$(OutputPath)NuGet.exe</PathToBuiltNuGetExe>
       <IlmergeCommand>$(ILMergeExePath) /lib:$(OutputPath) /out:$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe @(MergeAllowDup -> '/allowdup:%(Identity)', ' ') /log:$(OutputPath)IlMergeLog.txt</IlmergeCommand>
