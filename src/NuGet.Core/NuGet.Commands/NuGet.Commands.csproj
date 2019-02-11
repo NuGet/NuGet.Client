@@ -6,7 +6,7 @@
     <Description>Complete commands common to command-line and GUI NuGet clients</Description>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
     <TargetFramework />
-    <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1584;CS1658</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1584;CS1658;CS1998</NoWarn>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(NetStandardPackageVersion)</NetStandardImplicitPackageVersion>
     <PackProject>true</PackProject>
     <IncludeInVSIX>true</IncludeInVSIX>
