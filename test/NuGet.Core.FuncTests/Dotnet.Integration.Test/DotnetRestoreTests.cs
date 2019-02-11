@@ -186,14 +186,14 @@ EndGlobal";
 
                 // Assert
                 Assert.True(result.Item1 == 0);
-                Assert.Equal(1, result.AllOutput.Split(Environment.NewLine).Length);
+                Assert.True(1 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
 
                 // Act - make sure no-op does the same thing.
                 result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"restore proj.sln {$"--source \"{pathContext.PackageSource}\""}", ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.Item1 == 0);
-                Assert.True(1 == result.AllOutput.Split(Environment.NewLine).Length, result.AllOutput);
+                Assert.True(1 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
 
             }
         }
