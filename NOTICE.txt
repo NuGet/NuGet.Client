@@ -932,7 +932,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 
-Licence notice for xunit.abstractions.dll, xunit.assert.dll, xunit.core.dll, xunit.execution.desktop.dll
+License notice for xunit.abstractions.dll, xunit.assert.dll, xunit.core.dll, xunit.execution.desktop.dll
 --------------------------------------------------------------------------------------------------------
 
 Unless otherwise noted, the source code here is covered by the following license:
