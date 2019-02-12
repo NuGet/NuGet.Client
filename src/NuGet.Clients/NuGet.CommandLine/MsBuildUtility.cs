@@ -482,7 +482,7 @@ namespace NuGet.CommandLine
                 }
 
                 // If the userVersion is not specified, favor the value in the $Path Env variable
-                if (!string.IsNullOrEmpty(userVersion))
+                if (string.IsNullOrEmpty(userVersion))
                 {
                     var msbuildExe = GetMSBuild();
 
