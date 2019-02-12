@@ -18,7 +18,7 @@ General Public License.
 
 
 
-License notices for BouncyCastle.Crypto.dll
+License notice for BouncyCastle.Crypto.dll
 -------------------------------------------
 
 Copyright (c) 2000 - 2017 The Legion of the Bouncy Castle Inc. (http://www.bouncycastle.org)
@@ -85,7 +85,7 @@ Artem Storozhuk <storojs72@gmail.com> initial implementation of DSTU7564 (digest
 
 
 
-License Notice for ICSharpCode.SharpZipLib.dll
+License notice for ICSharpCode.SharpZipLib.dll
 ----------------------------------------------
 
 Copyright © 2000-2018 SharpZipLib Contributors
@@ -108,7 +108,7 @@ DEALINGS IN THE SOFTWARE.
 
 
 
-License Notice for Lucene.Net.dll
+License notice for Lucene.Net.dll
 ---------------------------------
 
                                  Apache License
