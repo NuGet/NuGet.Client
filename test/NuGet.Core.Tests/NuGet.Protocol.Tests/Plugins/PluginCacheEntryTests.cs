@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using NuGet.Protocol.Plugins;
 using NuGet.Shared;
@@ -22,6 +24,24 @@ namespace NuGet.Protocol.Tests.Plugins
                 var entry = new PluginCacheEntry(testDirectory.Path, "a", "b");
                 entry.LoadFromFile();
                 Assert.Null(entry.OperationClaims);
+            }
+        }
+
+        [Fact]
+        public void PluginCacheEntry_UsesShorterPaths()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var pluginPath = @"C:\Users\Roki2\.nuget\plugins\netfx\CredentialProvider.Microsoft\CredentialProvider.Microsoft.exe";
+                var url = @"https:\\nugetsspecialfeed.pkgs.visualstudio.com\packaging\ea8caa50-9cf8-4ed7-b410-5bca3b71ec1c\nuget\v3\index.json";
+
+                var entry = new PluginCacheEntry(testDirectory.Path, pluginPath, url);
+                entry.LoadFromFile();
+
+                Assert.Equal(86, entry.CacheFileName.Length - testDirectory.Path.Length);
+                // This makes it about as long as http cache which is more important.
+                // The http cache is 40 + 1 + [1,32] + packageName
+                Assert.True(200 > entry.CacheFileName.Length, "The cache file should be short");
             }
         }
 

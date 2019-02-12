@@ -14,11 +14,12 @@ namespace NuGet.Protocol
         public const int BufferSize = 8192;
 
         /// <summary>
-        /// Given a string, it hashes said string and appends identifiable characters to make the root of the cache more human readable
+        /// Given a string, it hashes said string and if <paramref name="addIdentifiableCharacters"/> is true appends identifiable characters to make the root of the cache more human readable
         /// </summary>
         /// <param name="value"></param>
+        /// <param name="addIdentifiableCharacters">whether to addIdentifiableCharacters. The default is true</param>
         /// <returns>hash</returns>
-        public static string ComputeHash(string value)
+        public static string ComputeHash(string value, bool addIdentifiableCharacters = true)
         {
             var trailing = value.Length > 32 ? value.Substring(value.Length - 32) : value;
             byte[] hash;
@@ -28,7 +29,7 @@ namespace NuGet.Protocol
             }
 
             const string hex = "0123456789abcdef";
-            return hash.Aggregate("$" + trailing, (result, ch) => "" + hex[ch / 0x10] + hex[ch % 0x10] + result);
+            return hash.Aggregate(addIdentifiableCharacters ? "$" + trailing : string.Empty, (result, ch) => "" + hex[ch / 0x10] + hex[ch % 0x10] + result);
         }
 
         public static Stream ReadCacheFile(TimeSpan maxAge, string cacheFile)
