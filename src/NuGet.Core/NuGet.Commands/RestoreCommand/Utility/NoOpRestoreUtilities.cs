@@ -239,7 +239,7 @@ namespace NuGet.Commands
             }
 
             DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(dgPath));
-            log.LogMinimal($"Persisting no-op dg to {dgPath}");
+            log.LogVerbose($"Persisting no-op dg to {dgPath}");
             spec.Save(dgPath);
         }
 
