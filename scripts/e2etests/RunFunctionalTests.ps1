@@ -13,10 +13,8 @@ param (
     [string]$RunCounter,
     [Parameter(Mandatory=$true)]
 	[ValidateSet("16.0")]
-    [string]$VSVersion,
-    [Parameter(Mandatory=$true)]
-    [int]$OpenFolderWaitTimeInSecs
-    )
+    [string]$VSVersion)
+
 trap
 {
     Write-Host "RunFunctionalTests.ps1 threw an exception: " $_.Exception -ForegroundColor Red
@@ -55,9 +53,6 @@ if (!$dte2)
     KillRunningInstancesOfVS
     exit 1
 }
-
-Write-Host "Opening the current folder in Visual Studio. This will allow the NuGet Package Manager Console to become reachable."
-ExecuteCommand $dte2 "File.OpenFolder" $PSScriptRoot "Openining the current folder in Visual Studio and waiting "
 
 Write-Host "Launching the Package Manager Console inside VS and waiting for $PMCLaunchWaitTimeInSecs seconds"
 ExecuteCommand $dte2 "View.PackageManagerConsole" $null "Opening NuGet Package Manager Console" $PMCLaunchWaitTimeInSecs
