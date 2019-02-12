@@ -125,6 +125,7 @@ phases:
 
   - task: MSBuild@1
     displayName: 'Run Unit Tests'
+    timeoutInMinutes: 15
     continueOnError: "true"
     inputs:
       solution: 'build\\build.proj'
