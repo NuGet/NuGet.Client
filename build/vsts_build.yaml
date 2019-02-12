@@ -125,7 +125,7 @@ phases:
 
   - task: MSBuild@1
     displayName: 'Run Unit Tests'
-    timeoutInMinutes: 15
+    timeoutInMinutes: 10
     continueOnError: "true"
     inputs:
       solution: 'build\\build.proj'
@@ -155,13 +155,13 @@ phases:
         SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Unit Tests On Windows"
     condition: "and(always(),eq(variables['BuildRTM'], 'true'))"
 
-  - task: PublishBuildArtifacts@1
-    displayName: "Publish NuGet.CommandLine.Test as artifact"
-    inputs:
-      PathtoPublish: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472\\win7-x64"
-      ArtifactName: "NuGet.CommandLine.Test"
-      ArtifactType: "Container"
-    condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
+  # - task: PublishBuildArtifacts@1
+  #   displayName: "Publish NuGet.CommandLine.Test as artifact"
+  #   inputs:
+  #     PathtoPublish: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472\\win7-x64"
+  #     ArtifactName: "NuGet.CommandLine.Test"
+  #     ArtifactType: "Container"
+  #   condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
   - task: MSBuild@1
     displayName: 'Localize assemblies'
@@ -179,6 +179,7 @@ phases:
       msbuildVersion: 15.0
       configuration: '$(BuildConfiguration)'
       msbuildArguments: '/t:AfterBuild'
+    condition: not(eq(variables['SigningType'], 'Test'))
 
   - task: MSBuild@1
     displayName: 'Pack Nupkgs'
@@ -197,14 +198,14 @@ phases:
       msbuildArguments: '/t:BuildVS15VSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true'
     condition:  and(succeeded(),eq(variables['BuildRTM'], 'false'))
 
-  - task: MSBuild@1
-    displayName: "Generate Build Tools package"
-    inputs:
-      solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-      msbuildVersion: "15.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
-    condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  # - task: MSBuild@1
+  #   displayName: "Generate Build Tools package"
+  #   inputs:
+  #     solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
+  #     msbuildVersion: "15.0"
+  #     configuration: "$(BuildConfiguration)"
+  #     msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
+  #   condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   - task: MSBuild@1
     displayName: "Sign Nupkgs and VSIX"
@@ -213,17 +214,20 @@ phases:
       msbuildVersion: 15.0
       configuration: '$(BuildConfiguration)'
       msbuildArguments: "/t:AfterBuild /p:SignPackages=true"
+    condition: not(eq(variables['SigningType'], 'Test'))
 
   - task: NuGetCommand@2
     displayName: "Verify Nupkg Signatures"
     inputs:
       command: "custom"
       arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
+    condition: not(eq(variables['SigningType'], 'Test'))
 
   - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
     displayName: Verify Assembly Signatures and StrongName
     inputs:
       TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
+    condition: not(eq(variables['SigningType'], 'Test'))
 
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
@@ -240,13 +244,13 @@ phases:
       configuration: "$(BuildConfiguration)"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
-  - task: MSBuild@1
-    displayName: "Generate VSMAN file for Build Tools VSIX"
-    inputs:
-      solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-      msbuildVersion: "15.0"
-      configuration: "$(BuildConfiguration)"
-    condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+  # - task: MSBuild@1
+  #   displayName: "Generate VSMAN file for Build Tools VSIX"
+  #   inputs:
+  #     solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
+  #     msbuildVersion: "15.0"
+  #     configuration: "$(BuildConfiguration)"
+  #   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
   - task: PowerShell@1
     displayName: 'Create EndToEnd Test Package'

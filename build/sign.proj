@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="AfterBuild" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="$(SolutionPackagesFolder)microbuild.core.0.2.0\build\MicroBuild.Core.props"/>
-  
+  <Import Project="$(MicroBuildDirectory)MicroBuild.Core.props"/>
+
   <!-- Configuration/global properties -->
   <PropertyGroup>
     <CommonMSBuildProperties>
@@ -13,7 +13,8 @@
     </CommonMSBuildProperties>
     <OutDir>$(RepositoryRootDirectory)</OutDir>
     <SignTargetsDependOn>BatchSign</SignTargetsDependOn>
-    <SignTargetsDependOn Condition="'$(SignVsix)' == 'true'">GetOutputVsix</SignTargetsDependOn>
+    <SignTargetsDependOn Condition="'$(SignPackages)' == 'true'">GetOutputNupkgs</SignTargetsDependOn>
+    <SignTargetsDependOn Condition="'$(SignPackages)' == 'true' AND '$(BuildRTM)' != 'true'">GetOutputNupkgs;GetOutputVsix</SignTargetsDependOn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -25,9 +26,9 @@
       <FilesToSign Include="$(SolutionPackagesFolder)Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll">
         <Authenticode>3PartySHA2</Authenticode>
       </FilesToSign>
-      <FilesToSign Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.1\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll">
+      <FilesToSign Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.2\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll">
         <Authenticode>Microsoft</Authenticode>
-        <StrongName>25</StrongName>
+        <StrongName>67</StrongName>
       </FilesToSign>
     </ItemGroup>
     <MSBuild
@@ -43,12 +44,20 @@
 
   <Target Name="GetOutputVsix">
     <ItemGroup>
-      <FilesToSign Include="$(VsixPublishDestination)**\NuGet.Tools.vsix">
-        <Authenticode>100040160</Authenticode>
+      <FilesToSign Include="$(VsixPublishDestination)**\*.vsix">
+        <Authenticode>VsixSHA2</Authenticode>
+      </FilesToSign>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetOutputNupkgs">
+    <ItemGroup>
+      <FilesToSign Include="$(NupkgOutputDirectory)**\*.nupkg">
+        <Authenticode>NuGet</Authenticode>
       </FilesToSign>
     </ItemGroup>
   </Target>
 
   <Target Name="AfterBuild" DependsOnTargets="$(SignTargetsDependOn)"/>
-  <Import Project="$(SolutionPackagesFolder)microbuild.core.0.2.0\build\MicroBuild.Core.targets" />
+  <Import Project="$(MicroBuildDirectory)MicroBuild.Core.targets" />
 </Project>
