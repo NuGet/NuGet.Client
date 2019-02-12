@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using NuGet.Protocol.Plugins;
 using NuGet.Shared;
@@ -82,7 +80,9 @@ namespace NuGet.Protocol.Tests.Plugins
                 entry.OperationClaims = list;
                 await entry.UpdateCacheFileAsync();
 
-                var CacheFileName = Path.Combine(Path.Combine(testDirectory.Path, CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash("a"))), CachingUtility.RemoveInvalidFileNameChars("b") + ".dat");
+                var CacheFileName = Path.Combine(
+                    Path.Combine(testDirectory.Path, CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash("a", false))),
+                    CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash("b", false)) + ".dat");
 
                 Assert.True(File.Exists(CacheFileName));
 
