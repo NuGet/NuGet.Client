@@ -19,7 +19,7 @@ namespace NuGet.Commands {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -1196,11 +1196,29 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restore completed in {0}..
+        /// </summary>
+        internal static string Log_RestoreCompleteDotnetTool {
+            get {
+                return ResourceManager.GetString("Log_RestoreCompleteDotnetTool", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Restore failed in {0} for {1}..
         /// </summary>
         internal static string Log_RestoreFailed {
             get {
                 return ResourceManager.GetString("Log_RestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore failed in {0}..
+        /// </summary>
+        internal static string Log_RestoreFailedDotnetTool {
+            get {
+                return ResourceManager.GetString("Log_RestoreFailedDotnetTool", resourceCulture);
             }
         }
         
@@ -1237,15 +1255,6 @@ namespace NuGet.Commands {
         internal static string Log_RestoringPackagesForCompat {
             get {
                 return ResourceManager.GetString("Log_RestoringPackagesForCompat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Restoring packages for tool &apos;{0}&apos; in {1}....
-        /// </summary>
-        internal static string Log_RestoringToolPackages {
-            get {
-                return ResourceManager.GetString("Log_RestoringToolPackages", resourceCulture);
             }
         }
         

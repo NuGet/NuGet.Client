@@ -111,6 +111,8 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 Assert.True(result.Item1 == 0, result.AllOutput);
+                Assert.True(1 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Count(), result.AllOutput);
+                Assert.DoesNotContain("csproj", result.AllOutput); // The output for tool restore should not contain csproj mentions
                 // Verify the assets file
                 var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);

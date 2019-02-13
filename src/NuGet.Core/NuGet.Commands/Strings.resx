@@ -269,12 +269,6 @@
   <data name="Error_InvalidCommandLineInputConfig" xml:space="preserve">
     <value>Invalid input '{0}'. Valid file names are 'packages.config' or 'packages.*.config'.</value>
   </data>
-  <data name="Log_RestoringToolPackages" xml:space="preserve">
-    <value>Restoring packages for tool '{0}' in {1}...</value>
-    <comment>String format parameters:
-{0} is replaced with the tool ID.
-{1} is replaced with a path to the project that is being restored.</comment>
-  </data>
   <data name="Error_UnableToLocateRestoreTarget" xml:space="preserve">
     <value>The folder '{0}' does not contain a project to restore.</value>
   </data>
@@ -870,5 +864,13 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="SuccessfullySynchronizedTrustedRepository" xml:space="preserve">
     <value>Successfully synchronized the trusted repository '{0}'.</value>
     <comment>0 - name</comment>
+  </data>
+  <data name="Log_RestoreCompleteDotnetTool" xml:space="preserve">
+    <value>Restore completed in {0}.</value>
+    <comment>{0} is the restore duration.</comment>
+  </data>
+  <data name="Log_RestoreFailedDotnetTool" xml:space="preserve">
+    <value>Restore failed in {0}.</value>
+    <comment>{0} is the restore duration.</comment>
   </data>
 </root>

@@ -279,6 +279,8 @@ namespace NuGet.Commands
             {
                 log.LogMinimal(string.Format(
                     CultureInfo.CurrentCulture,
+                    summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference ?
+                    Strings.Log_RestoreCompleteDotnetTool :
                     Strings.Log_RestoreComplete,
                     DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
                     summaryRequest.InputPath));
@@ -287,6 +289,8 @@ namespace NuGet.Commands
             {
                 log.LogMinimal(string.Format(
                     CultureInfo.CurrentCulture,
+                    summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference ?
+                    Strings.Log_RestoreFailedDotnetTool :
                     Strings.Log_RestoreFailed,
                     DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
                     summaryRequest.InputPath));
