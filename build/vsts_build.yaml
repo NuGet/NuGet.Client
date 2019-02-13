@@ -692,13 +692,13 @@ phases:
     displayName: "SetupFunctionalTests.ps1"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
-      arguments: "-VSVersion 15.0"
+      arguments: "-VSVersion 16.0"
 
   - task: PowerShell@1
     displayName: "InstallNuGetVSIX.ps1"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
-      arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
+      arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 16.0"
       failOnStandardError: "false"
 
   # - task: PowerShell@1
