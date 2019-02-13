@@ -29,5 +29,11 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
+
+  <PropertyGroup>
+    <PublicSign>false</PublicSign>
+    <DelaySign>true</DelaySign>
+  </PropertyGroup>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

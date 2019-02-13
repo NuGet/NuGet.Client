@@ -58,7 +58,7 @@ param (
 
 If (-Not $SkipDelaySigning)
 {
-    & "$PSScriptRoot\scripts\utils\DisableStrongNameVerification.ps1" -skipNoOpMessage
+  #  & "$PSScriptRoot\scripts\utils\DisableStrongNameVerification.ps1" -skipNoOpMessage
 }
 
 if (-not $Configuration) {
@@ -84,6 +84,8 @@ if (-not $VSToolsetInstalled) {
     exit 1
 }
 
+$currentDirectory = split-path $MyInvocation.MyCommand.Definition
+
 $BuildErrors = @()
 
 Invoke-BuildStep 'Cleaning artifacts' {
@@ -106,7 +108,7 @@ Invoke-BuildStep 'Running Restore' {
 
     # Restore
     Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
+    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1 /p:MS_PFX_PATH=$currentDirectory\keys\35MSSharedLib1024.snk /p:NUGET_PFX_PATH=$currentDirectory\keys\NuGetKey.snk
 
     if (-not $?)
     {
@@ -119,12 +121,12 @@ Invoke-BuildStep 'Running Restore' {
 
 Invoke-BuildStep $VSMessage {
 
-    $args = 'build\build.proj', "/t:$VSTarget", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", '/v:m', '/m:1'
+    $args = 'build\build.proj', "/t:$VSTarget", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", '/v:m', '/m:1', "/p:MS_PFX_PATH=$currentDirectory\keys\35MSSharedLib1024.snk", "/p:NUGET_PFX_PATH=$currentDirectory\keys\NuGetKey.snk"
 
     If ($SkipDelaySigning)
     {
-        $args += "/p:MS_PFX_PATH="
-        $args += "/p:NUGET_PFX_PATH="
+        #$args += "/p:MS_PFX_PATH="
+        #$args += "/p:NUGET_PFX_PATH="
     }
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
@@ -154,7 +156,7 @@ Invoke-BuildStep 'Running Restore RTM' {
 
     # Restore for VS
     Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1 "
-    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1
+    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1 /p:MS_PFX_PATH=$currentDirectory\keys\35MSSharedLib1024.snk /p:NUGET_PFX_PATH=$currentDirectory\keys\NuGetKey.snk
 
     if (-not $?)
     {
@@ -170,7 +172,7 @@ Invoke-BuildStep 'Packing RTM' {
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
     Trace-Log ". `"$MSBuildExe`" build\build.proj /t:BuildVS`;Pack /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:BuildVS`;Pack /p:Configuration=$Configuration /p:BuildRTM=true  /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1
+    & $MSBuildExe build\build.proj /t:BuildVS`;Pack /p:Configuration=$Configuration /p:BuildRTM=true  /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1 /p:MS_PFX_PATH=$currentDirectory\keys\35MSSharedLib1024.snk /p:NUGET_PFX_PATH=$currentDirectory\keys\NuGetKey.snk
 
     if (-not $?)
     {
