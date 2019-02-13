@@ -656,8 +656,6 @@ function Test-BuildIntegratedVSandMSBuildNoOp {
 }
 
 function Test-PackageReferenceProjectWithLockFile{
-    [SkipTestForVS14()]
-    param()
 
     $projectT = New-Project PackageReferenceClassLibraryWithLockFile
     $projectT | Install-Package Newtonsoft.Json -Version 9.0.1
