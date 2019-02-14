@@ -260,9 +260,10 @@
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
           <IncludeInVSIX>true</IncludeInVSIX>
         </Content>
-        <Content Include="..\..\..\NOTICE.txt">
+        <Content Include="$(RepositoryRootDirectory)NOTICE.txt">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
           <IncludeInVSIX>true</IncludeInVSIX>
+          <Link>%(Filename)%(Extension)</Link>
         </Content>
       </ItemGroup>
     </Otherwise>
