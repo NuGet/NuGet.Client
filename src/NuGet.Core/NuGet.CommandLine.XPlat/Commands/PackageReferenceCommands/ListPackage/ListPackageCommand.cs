@@ -83,7 +83,7 @@ namespace NuGet.CommandLine.XPlat
                 var interactive = listpkg.Option(
                     "--interactive",
                     Strings.NuGetXplatCommand_Interactive,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.NoValue);
 
                 listpkg.OnExecute(async () =>
                 {
