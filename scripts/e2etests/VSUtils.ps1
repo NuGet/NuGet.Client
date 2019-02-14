@@ -20,7 +20,6 @@ function GetVSFolderPath {
     if (Test-Path (Join-Path $ProgramFilesPath $VS16PreviewRelativePath)) {
         $VSFolderPath = Join-Path $ProgramFilesPath $VS16PreviewRelativePath
     }
-   
     
     return $VSFolderPath
 }
@@ -189,7 +188,7 @@ function GetVSIXInstallerPath {
     return "C:\Program Files (x86)\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service\VSIXInstaller.exe"
 }
 
-function GetDev15MEFCachePath {
+function GetMEFCachePath {
     $cachePath = $env:localappdata
     @( "Microsoft", "VisualStudio", "16.*", "ComponentModelCache" ) | % { $cachePath = Join-Path $cachePath $_ }
 
@@ -295,10 +294,10 @@ function InstallVSIX {
 }
 
 
-function ClearDev15MEFCache {
-    $dev15MEFCachePath = GetDev15MEFCachePath
+function ClearMEFCache {
+    $mefCachePath = GetMEFCachePath
 
-    Write-Host "rm -r $dev15MEFCachePath..."
-    rm -r $dev15MEFCachePath
-    Write-Host "Done clearing dev15 MEF cache..."
+    Write-Host "rm -r $mefCachePath..."
+    rm -r $mefCachePath
+    Write-Host "Done clearing MEF cache..."
 }

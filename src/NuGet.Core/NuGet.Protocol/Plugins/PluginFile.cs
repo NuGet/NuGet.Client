@@ -35,5 +35,10 @@ namespace NuGet.Protocol.Plugins
             Path = filePath;
             State = state;
         }
+
+        public override string ToString()
+        {
+            return $"{Path} : {State}";
+        }
     }
 }

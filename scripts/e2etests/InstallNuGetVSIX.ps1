@@ -28,21 +28,20 @@ $VSIXPath = Join-Path $FuncTestRoot 'NuGet.Tools.vsix'
 
 Copy-Item $VSIXSrcPath $VSIXPath
 
-# For dev 15, we upgrade an installed system component vsix
-if ($VSVersion -eq '15.0') {
-    $numberOfTries = 0
-    $success = $false
-    do {
-        KillRunningInstancesOfVS
-        $numberOfTries++
-        Write-Host "Attempt # $numberOfTries to downgrade VSIX..."
-        $success = DowngradeVSIX $NuGetVSIXID $VSVersion $ProcessExitTimeoutInSeconds
-    }
-    until (($success -eq $true) -or ($numberOfTries -gt 3))    
-
-    # Clearing MEF cache helps load the right dlls for vsix
-    ClearDev15MEFCache
+# Because we are upgrading an installed system component vsix, we need to downgrade first.
+$numberOfTries = 0
+$success = $false
+do {
+    KillRunningInstancesOfVS
+    $numberOfTries++
+    Write-Host "Attempt # $numberOfTries to downgrade VSIX..."
+    $success = DowngradeVSIX $NuGetVSIXID $VSVersion $ProcessExitTimeoutInSeconds
 }
+until (($success -eq $true) -or ($numberOfTries -gt 3))    
+
+# Clearing MEF cache helps load the right dlls for vsix
+ClearMEFCache
+
 
 $numberOfTries = 0
 $success = $false

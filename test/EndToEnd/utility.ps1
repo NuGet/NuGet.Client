@@ -22,12 +22,6 @@ class SkipTest : Attribute {
     [bool] ShouldRun() { return $False }
 }
 
-class SkipTestForVS15 : Attribute {
-    [bool] ShouldRun() {
-        return $global:VSVersion -ne '15.0'
-    }
-}
-
 function ShouldRunTest {
     param(
         [System.Management.Automation.CommandInfo]
