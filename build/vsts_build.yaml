@@ -267,8 +267,6 @@ phases:
       Contents: |
         $(VsixPublishDir)\\NuGet.exe
         $(VsixPublishDir)\\NuGet.pdb
-        $(VsixPublishDir)\\NuGet.Mssign.exe
-        $(VsixPublishDir)\\NuGet.Mssign.pdb
         $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.Core.json 
         $(VsixPublishDir)\\NuGet.Tools.vsix
         $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.BuildTools.vsix
