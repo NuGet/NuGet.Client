@@ -5,6 +5,8 @@
     <version>$version$</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
+    <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
+    <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
     <description>NuGet pack for dotnet CLI</description>
   </metadata>
   <files>

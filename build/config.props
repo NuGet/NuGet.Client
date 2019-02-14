@@ -28,14 +28,14 @@
 
   <!-- Nuspec defaults -->
   <PropertyGroup>
-    <Authors>NuGet</Authors>
-    <ProjectUrl>https://github.com/NuGet/NuGet.Client</ProjectUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
+    <Authors>Microsoft</Authors>
+    <ProjectUrl>https://aka.ms/nugetprj</ProjectUrl>
+    <PackageLicenseUrl>https://aka.ms/nugetlicense</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NuGet/NuGet.Client</RepositoryUrl>
     <PackageTags>nuget</PackageTags>
     <Description>NuGet client library.</Description>
-    <Copyright>Copyright .NET Foundation. All rights reserved.</Copyright>
+    <Copyright>&#169; Microsoft Corporation. All rights reserved.</Copyright>
     <Serviceable>true</Serviceable>
   </PropertyGroup>
 
