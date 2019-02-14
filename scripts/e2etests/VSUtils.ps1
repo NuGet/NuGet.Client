@@ -20,7 +20,6 @@ function GetVSFolderPath {
     if (Test-Path (Join-Path $ProgramFilesPath $VS16PreviewRelativePath)) {
         $VSFolderPath = Join-Path $ProgramFilesPath $VS16PreviewRelativePath
     }
-   
     
     return $VSFolderPath
 }
