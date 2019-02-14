@@ -53,12 +53,7 @@ function Test-GetMachineWideSettingBaseDirectoryInVSIX {
 	[string]$vsVersionString = Get-VSVersion
 	[string]$machineWideSettingsBaseDirExpected
 
-	if($vsVersionString -ge "15.0") {
-		$machineWideSettingsBaseDirExpected = Join-Path (Get-ChildItem Env:PROGRAMFILES).Value "\NuGet"
-	}
-	else {
-		$machineWideSettingsBaseDirExpected = Join-Path (Get-ChildItem Env:PROGRAMDATA).Value "\NuGet"
-	}
+	$machineWideSettingsBaseDirExpected = Join-Path (Get-ChildItem Env:PROGRAMFILES).Value "\NuGet"
 
 	# Act
 	$machineWideSettingsBaseDirActual = [NuGet.Common.NuGetEnvironment]::GetFolderPath([NuGet.Common.NuGetFolderPath]::MachineWideSettingsBaseDirectory)
