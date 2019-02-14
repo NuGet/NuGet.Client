@@ -22,8 +22,9 @@
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' != 'true' ">$(ArtifactsDirectory)nupkgs\</NupkgOutputDirectory>
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' == 'true' ">$(ArtifactsDirectory)ReleaseNupkgs\</NupkgOutputDirectory>
     <SolutionPackagesFolder>$(RepositoryRootDirectory)packages\</SolutionPackagesFolder>
-    <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console.2.2.0\tools\xunit.console.x86.exe</XunitConsoleExePath>
+    <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console.2.3.1\tools\net452\xunit.console.x86.exe</XunitConsoleExePath>
     <ILMergeExePath>$(SolutionPackagesFolder)ILMerge.2.14.1208\tools\ILMerge.exe</ILMergeExePath>
+    <XunitXmlLoggerDirectory>$(SolutionPackagesFolder)XunitXml.TestLogger.2.0.0\build\_common</XunitXmlLoggerDirectory>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>
@@ -32,11 +33,13 @@
     <NuGetBuildLocalizationRepository>$(RepositoryRootDirectory)submodules\NuGet.Build.Localization\</NuGetBuildLocalizationRepository>
     <LocalizationRootDirectory>$(NuGetBuildLocalizationRepository)localize</LocalizationRootDirectory>
     <LocalizationFilesDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationFilesDirectory>
+    <MicroBuildDirectory>$(SolutionPackagesFolder)MicroBuild.Core.0.2.0\build\</MicroBuildDirectory>
   </PropertyGroup>
 
   <!-- Defaults -->
   <PropertyGroup>
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);NU1605;NU3005</NoWarn>
   </PropertyGroup>
 
   <!-- Default project configuration -->
@@ -181,7 +184,7 @@
       <_Parameter1>NuGet</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="AssemblyCopyright">
-      <_Parameter1>Microsoft Corporation. All rights reserved.</_Parameter1>
+      <_Parameter1>&#169; Microsoft Corporation. All rights reserved.</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="System.Resources.NeutralResourcesLanguage">
       <_Parameter1>en-US</_Parameter1>
@@ -195,7 +198,7 @@
     <InformationalVersion>$(SemanticVersion)$(PreReleaseInformationVersion)</InformationalVersion>
     <Company>Microsoft Corporation</Company>
     <Product>NuGet</Product>
-    <Copyright>Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>&#169; Microsoft Corporation. All rights reserved.</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
 
     <SchemaVersion>2.0</SchemaVersion>
