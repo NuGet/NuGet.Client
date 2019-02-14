@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement
                     // Update cache context
                     cacheContextModifier(sourceCacheContext);
 
-                    var restoreContext = GetRestoreContext(
+                    var restoreContext = GetRestoreArgs(
                         context,
                         providerCache,
                         sourceCacheContext,
@@ -74,28 +74,6 @@ namespace NuGet.PackageManagement
             }
 
             return new List<RestoreSummary>();
-        }
-
-        private static async Task PersistDGSpec(DependencyGraphSpec dgSpec)
-        {
-            try
-            {
-                var filePath = Path.Combine(
-                        NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
-                        "nuget-dg",
-                        "nugetSpec.dg");
-
-                // create nuget temp folder if not exists
-                DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(filePath));
-
-                // delete existing dg spec file (if exists) then replace it with new file.
-                await FileUtility.ReplaceWithLock(
-                    (tempFile) => dgSpec.Save(tempFile), filePath);
-            }
-            catch (Exception)
-            {
-                //ignore any failure if it fails to write or replace dg spec file.
-            }
         }
 
         /// <summary>
@@ -130,7 +108,7 @@ namespace NuGet.PackageManagement
                 cacheContextModifier(sourceCacheContext);
 
                 // Settings passed here will be used to populate the restore requests.
-                var restoreContext = GetRestoreContext(
+                var restoreContext = GetRestoreArgs(
                     context,
                     providerCache,
                     sourceCacheContext,
@@ -148,7 +126,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Restore a build integrated project(PackageReference and Project.Json only) and update the lock file
+        /// Restore a build integrated project(PackageReference and Project.Json only) and update the assets file
         /// </summary>
         public static async Task<RestoreResult> RestoreProjectAsync(
             ISolutionManager solutionManager,
@@ -187,18 +165,6 @@ namespace NuGet.PackageManagement
             RestoreSummary.Log(log, new[] { summary });
 
             return result.Result;
-        }
-
-        public static bool IsRestoreRequired(
-            DependencyGraphSpec solutionDgSpec)
-        {
-            if (solutionDgSpec.Restore.Count < 1)
-            {
-                // Nothing to restore
-                return false;
-            }
-            // NO Op will be checked in the restore command 
-            return true;
         }
 
         public static async Task<PackageSpec> GetProjectSpec(IDependencyGraphProject project, DependencyGraphCacheContext context)
@@ -273,7 +239,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Create a restore context.
         /// </summary>
-        private static RestoreArgs GetRestoreContext(
+        private static RestoreArgs GetRestoreArgs(
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
             SourceCacheContext sourceCacheContext,
@@ -302,6 +268,28 @@ namespace NuGet.PackageManagement
             };
 
             return restoreContext;
+        }
+
+        private static async Task PersistDGSpec(DependencyGraphSpec dgSpec)
+        {
+            try
+            {
+                var filePath = Path.Combine(
+                        NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
+                        "nuget-dg",
+                        "nugetSpec.dg");
+
+                // create nuget temp folder if not exists
+                DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(filePath));
+
+                // delete existing dg spec file (if exists) then replace it with new file.
+                await FileUtility.ReplaceWithLock(
+                    (tempFile) => dgSpec.Save(tempFile), filePath);
+            }
+            catch (Exception)
+            {
+                //ignore any failure if it fails to write or replace dg spec file.
+            }
         }
     }
 }

@@ -310,7 +310,7 @@ namespace NuGet.SolutionRestoreManager
                 var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(_solutionManager, cacheContext);
 
                 // Avoid restoring solutions with zero potential PackageReference projects.
-                if (DependencyGraphRestoreUtility.IsRestoreRequired(dgSpec))
+                if (dgSpec.Restore.Count > 0)
                 {
                     // NOTE: During restore for build integrated projects,
                     //       We might show the dialog even if there are no packages to restore
