@@ -260,6 +260,10 @@
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
           <IncludeInVSIX>true</IncludeInVSIX>
         </Content>
+        <Content Include="..\..\..\NOTICE.txt">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+          <IncludeInVSIX>true</IncludeInVSIX>
+        </Content>
       </ItemGroup>
     </Otherwise>
   </Choose>
