@@ -474,21 +474,24 @@ namespace NuGet.CommandLine
 
             try
             {
-                // first try from $Path Env variable
-                var msbuildExe = GetMSBuild();
-
-                if (msbuildExe != null)
-                {
-                    var msBuildDirectory = Path.GetDirectoryName(msbuildExe);
-                    var msbuildVersion = FileVersionInfo.GetVersionInfo(msbuildExe)?.FileVersion;
-                    return toolset = new MsBuildToolset(msbuildVersion, msBuildDirectory);
-                }
-
                 // If Mono, test well known paths and bail if found
                 toolset = GetMsBuildFromMonoPaths(userVersion);
                 if (toolset != null)
                 {
                     return toolset;
+                }
+
+                // If the userVersion is not specified, favor the value in the $Path Env variable
+                if (string.IsNullOrEmpty(userVersion))
+                {
+                    var msbuildExe = GetMSBuild();
+
+                    if (msbuildExe != null)
+                    {
+                        var msBuildDirectory = Path.GetDirectoryName(msbuildExe);
+                        var msbuildVersion = FileVersionInfo.GetVersionInfo(msbuildExe)?.FileVersion;
+                        return toolset = new MsBuildToolset(msbuildVersion, msBuildDirectory);
+                    }
                 }
 
                 using (var projectCollection = LoadProjectCollection())

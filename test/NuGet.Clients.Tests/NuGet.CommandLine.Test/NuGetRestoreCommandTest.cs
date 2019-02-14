@@ -441,7 +441,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(_successCode, r.Item1);
+                Assert.True(_successCode == r.Item1, $"Expected: {_successCode} - Actual: {r.Item1}{Environment.NewLine} {r.AllOutput}");
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
