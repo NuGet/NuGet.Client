@@ -260,6 +260,11 @@
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
           <IncludeInVSIX>true</IncludeInVSIX>
         </Content>
+        <Content Include="$(RepositoryRootDirectory)THIRD-PARTY-NOTICES.txt">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+          <IncludeInVSIX>true</IncludeInVSIX>
+          <Link>%(Filename)%(Extension)</Link>
+        </Content>
       </ItemGroup>
     </Otherwise>
   </Choose>
