@@ -34,8 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     var version = dte.Version;
                     var sku = dte.GetSKU();
 
-                    await TaskScheduler.Default; // the naive solution solution - https://devdiv.visualstudio.com/DevDiv/_workitems/edit/792375
-                    // similar to powershellhost.DefaultProject
+                    await TaskScheduler.Default;
                     return Configuration.Settings.LoadMachineWideSettings(
                         baseDirectory,
                         "VisualStudio",
