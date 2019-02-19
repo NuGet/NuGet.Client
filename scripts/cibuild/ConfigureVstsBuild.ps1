@@ -29,13 +29,7 @@ param
 
     [Parameter(Mandatory=$True)]
     [string]$BuildRTM,
-
-    [Parameter(Mandatory=$True)]
-    [string]$FunctionalTestBuildId,
-
-    [Parameter(Mandatory=$True)]
-    [string]$VstsRestApiRootUrl,
-
+    
     [switch]$SkipUpdateBuildNumber
 )
 
@@ -72,6 +66,7 @@ Function Update-VsixVersion {
     # Evaluate the new version
     $newVersion = Get-Version $ReleaseProductVersion $buildNumber
     Write-Host "Updating the VSIX version [$oldVersion] => [$newVersion]"
+    Write-Host "##vso[task.setvariable variable=VsixBuildNumber;]$newVersion"
     # setting the revision to the new version
     $root.Metadata.Identity.Version = "$newVersion"
 
@@ -91,6 +86,8 @@ $regKeyNuGet = "HKLM:SOFTWARE\Microsoft\StrongName\Verification\*,31bf3856ad364e
 $regKeyNuGet32 = "HKLM:SOFTWARE\Wow6432Node\Microsoft\StrongName\Verification\*,31bf3856ad364e35"
 
 $has32bitNode = Test-Path "HKLM:SOFTWARE\Wow6432Node"
+$regKeyFileSystem = "HKLM:SYSTEM\CurrentControlSet\Control\FileSystem"
+$enableLongPathSupport = "LongPathsEnabled"
 
 # update submodule NuGet.Build.Localization
 $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
@@ -127,6 +124,12 @@ if (-not (Test-Path $regKeyNuGet) -or ($has32bitNode -and -not (Test-Path $regKe
     }
 }
 
+if (-not (Test-Path $regKeyFileSystem)) 
+{
+	Write-Host "Enabling long path support on the build machine"
+	Set-ItemProperty -Path $regKeyFileSystem -Name $enableLongPathSupport -Value 1
+}
+
 
 if ($BuildRTM -eq 'true')
 {
@@ -144,7 +147,7 @@ if ($BuildRTM -eq 'true')
         }
         until ((Test-Path $BuildInfoJsonFile) -or ($numberOfTries -gt 50))
         $json = (Get-Content $BuildInfoJsonFile -Raw) | ConvertFrom-Json
-        $currentBuild = $json.BuildNumber
+        $currentBuild = [System.Decimal]::Parse($json.BuildNumber)
         # Set the $(Revision) build variable in VSTS build
         Write-Host "##vso[task.setvariable variable=Revision;]$currentBuild"
         Write-Host "##vso[build.updatebuildnumber]$currentBuild" 
@@ -159,8 +162,8 @@ if ($BuildRTM -eq 'true')
         else
         {
             Rename-Item $oldBuildOutputDirectory $currentBuild
-        }
-    }
+        }   
+    }    
 }
 else
 {
@@ -172,14 +175,13 @@ else
         $newBuildCounter++
         Set-Content $BuildCounterFile $newBuildCounter
         # Set the $(Revision) build variable in VSTS build
-        $productVersion = $productVersion.Trim()
-        $FullBuildNumber = "$productVersion.$newBuildCounter"
         Write-Host "##vso[task.setvariable variable=Revision;]$newBuildCounter"
-        Write-Host "##vso[build.updatebuildnumber]$FullBuildNumber"
+        Write-Host "##vso[build.updatebuildnumber]$newBuildCounter"
+        Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
     }
     else
     {
-        $newBuildCounter = $env:BUILD_BUILDNUMBER
+        $newBuildCounter = $env:BUILD_BUILDNUMBER        
     }
 
     $jsonRepresentation = @{

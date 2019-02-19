@@ -24,13 +24,13 @@
   <ImportGroup Condition=" '$(SkipSigning)' != 'true' ">
     <Import Project="sign.targets" />
   </ImportGroup>
+  
   <PropertyGroup Condition="'$(Shipping)' == 'true'">
     <SignTargetsForRealSigning>GetBuildOutputWithSigningMetadata</SignTargetsForRealSigning>
     <SymbolTargetsToGetPdbs>GetDebugSymbolsProjectOutput</SymbolTargetsToGetPdbs>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Shipping)' == 'true'">
     <LocTargets>GetBuildOutputWithLocMetadata</LocTargets>
   </PropertyGroup>
+
   <!-- Write out .XML files for projects that will be packed. -->
   <PropertyGroup Condition=" '$(PackProject)' == 'true' ">
     <GenerateDocumentationFile Condition=" '$(GenerateDocumentationFile)' == '' ">true</GenerateDocumentationFile>
@@ -142,6 +142,14 @@
     </MsBuild>
   </Target>
 
+  <Target Name="GetXPLATProject" Returns="@(XPLATProjects)">
+    <ItemGroup Condition="'$(XPLATProject)' == 'true'">
+      <XPLATProjects Include="$(MSBuildProjectFullPath)">
+      </XPLATProjects>
+    </ItemGroup>
+  </Target>
+
+
   <Target Name="_GetLocalizedDllsForSigning" Returns="@(LocalizedDllsToSign)">
     <ItemGroup>
       <LocalizedDllsToSign Include="$(OutputPath)**\$(AssemblyName).resources.dll">
@@ -151,11 +159,14 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GetBuildOutputWithSigningMetadata" DependsOnTargets="BuiltProjectOutputGroup" Returns="@(DllsToSignWithMetadata)">
+  <Target Name="GetBuildOutputWithSigningMetadata" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup" Returns="@(DllsToSignWithMetadata)">
     <ItemGroup>
-      <DllsToSignWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' != '.json'" KeepDuplicates="false">
+      <DllsToSignWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' == '.dll' OR '%(Extension)' == '.exe'" KeepDuplicates="false">
         <StrongName>$(StrongNameCert)</StrongName>
         <Authenticode>Microsoft</Authenticode>
+      </DllsToSignWithMetadata>
+      <DllsToSignWithMetadata Include="@(DocumentationProjectOutputGroupOutput->'%(FinalOutputPath)')" KeepDuplicates="false">
+        <Authenticode>XML94</Authenticode>
       </DllsToSignWithMetadata>
     </ItemGroup>
   </Target>
@@ -238,52 +249,6 @@
 
   <!--
     ============================================================
-    RunTests for the current project
-    Top level entry point for tests
-    ============================================================
-  -->
-  <Target Name="RunTests"
-          DependsOnTargets="Build;GetTargetFrameworkSet"
-          Condition=" '$(TestProject)' == 'true' AND '$(SkipTests)' != 'true' ">
-    <Message Text="Running tests for $(ProjectName)" Importance="high" />
-    
-    <!-- Execute tests for each framework -->
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="RunTestsInner"
-      Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
-                  Configuration=$(Configuration);
-                  VisualStudioVersion=$(VisualStudioVersion);">
-    </MSBuild>
-  </Target>
-
-  <!--
-    ============================================================
-    RunTests for the current framework
-    Called by RunTests, this calls XUnit
-    ============================================================
-  -->
-  <Target Name="RunTestsInner">
-    <PropertyGroup>
-      <TestAssemblyPath>$(OutputPath)$(AssemblyName).exe</TestAssemblyPath>
-    </PropertyGroup>
-    <Message Text="Running tests on $(TestAssemblyPath)" Importance="high" />
-
-    <!-- Ensure the test results dir exists -->
-    <MakeDir Directories="$(TestResultsDirectory)"
-      Condition=" '$(IsDesktop)' == 'true' AND '$(SkipDesktopTests)' != 'true' " />
-
-    <!-- For desktop frameworks use the console runner -->
-    <Exec Command="$(XunitConsoleExePath) $(TestAssemblyPath) -html $(TestResultsDirectory)$(ProjectName).VS$(VisualStudioVersion).html"
-          Condition=" '$(IsDesktop)' == 'true' AND '$(SkipDesktopTests)' != 'true' " />
-
-    <!-- For other frameworks call dotnet test -->
-    <Exec Command="$(DotnetExePath) test -f $(TargetFramework) --no-build -c $(Configuration)"
-          Condition=" '$(IsDesktop)' != 'true' AND '$(SkipCoreTests)' != 'true' " />
-  </Target>
-
-  <!--
-    ============================================================
     GetTestAssemblies
     ============================================================
   -->
@@ -314,8 +279,7 @@
           Returns="@(TestAssemblyPath)">
 
     <PropertyGroup>
-      <TestAssemblyRelativePath Condition=" '$(IsDesktop)' == 'true' ">$(OutputPath)$(AssemblyName).exe</TestAssemblyRelativePath>
-      <TestAssemblyRelativePath Condition=" '$(IsDesktop)' != 'true' ">$(OutputPath)$(AssemblyName).dll</TestAssemblyRelativePath>
+      <TestAssemblyRelativePath>$(OutputPath)$(AssemblyName).dll</TestAssemblyRelativePath>
     </PropertyGroup>
 
     <ConvertToAbsolutePath Paths="$(TestAssemblyRelativePath)">

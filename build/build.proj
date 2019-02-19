@@ -95,36 +95,6 @@
     Run VS15 apex tests
     ============================================================
   -->
-  <Target Name="ApexTestsVS15">
-    <ItemGroup>
-      <ApexTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj" />
-    </ItemGroup>
-    
-    <!-- Test inputs -->
-    <PropertyGroup>
-      <TestProjectPaths>@(ApexTestProjects)</TestProjectPaths>
-      <TestResultsFileName>ApexTestsVS15</TestResultsFileName>
-      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
-    </PropertyGroup>
-
-    <!-- Run tests as a batch -->
-    <MSBuild
-        Projects="$(MSBuildThisFileFullPath)"
-        Targets="RunTestsOnProjects"
-        Properties="$(CommonMSBuildProperties);
-                    VisualStudioVersion=$(TestVisualStudioVersion);
-                    TestResultsFileName=$(TestResultsFileName);
-                    TestProjectPaths=$(TestProjectPaths)">
-      <Output TaskParameter="TargetOutputs"
-              ItemName="TestAssemblyPath" />
-    </MSBuild>
-  </Target>
-
-  <!--
-    ============================================================
-    Run VS15 apex tests
-    ============================================================
-  -->
   <Target Name="ApexTestsStandalone">
 
     <!-- Test inputs -->
@@ -141,33 +111,8 @@
         Properties="$(CommonMSBuildProperties);
                     VisualStudioVersion=$(TestVisualStudioVersion);
                     TestResultsFileName=$(TestResultsFileName);
-                    TestProjectPaths=$(TestProjectPaths)">
-      <Output TaskParameter="TargetOutputs"
-              ItemName="TestAssemblyPath" />
-    </MSBuild>
-  </Target>
-
-  <!--
-    ============================================================
-    Run VS14 unit tests
-    ============================================================
-  -->
-  <Target Name="UnitTestsVS14">
-    <!-- Test inputs -->
-    <PropertyGroup>
-      <TestProjectPaths>@(VSUnitTestProjects)</TestProjectPaths>
-      <TestResultsFileName>UnitTestsVS14</TestResultsFileName>
-      <TestVisualStudioVersion>14.0</TestVisualStudioVersion>
-    </PropertyGroup>
-
-    <!-- Run tests as a batch -->
-    <MSBuild
-        Projects="$(MSBuildThisFileFullPath)"
-        Targets="RunTestsOnProjects"
-        Properties="$(CommonMSBuildProperties);
-                    VisualStudioVersion=$(TestVisualStudioVersion);
-                    TestResultsFileName=$(TestResultsFileName);
-                    TestProjectPaths=$(TestProjectPaths)">
+                    TestProjectPaths=$(TestProjectPaths);
+                    Verbosity=-verbose">
       <Output TaskParameter="TargetOutputs"
               ItemName="TestAssemblyPath" />
     </MSBuild>
@@ -184,42 +129,11 @@
 
   <!--
     ============================================================
-    Build, Pack, Unit tests for VS 14
-    ============================================================
-  -->
-  <Target Name="RunVS14"  DependsOnTargets="BuildVS14;UnitTestsVS14">
-    <Message Text="Running NuGet Build for VS 14" Importance="high" />
-  </Target>
-
-  <!--
-    ============================================================
-    Build for VS14
-    ============================================================
-  -->
-  <Target Name="BuildVS14" Condition=" '$(IsXPlat)' != 'true' " >
-    <Message Text="Building for VS14" Importance="high" />
-  </Target>
-
-  <!--
-    ============================================================
     Build for VS15 
     ============================================================
   -->
   <Target Name="BuildVS15"  Condition=" '$(IsXPlat)' != 'true' " >
     <Message Text="Building for VS15" Importance="high" />
-  </Target>
-
-  <!--
-    ============================================================
-    Build for VS14
-    ============================================================
-  -->
-  <Target Name="BuildVS14NoVSIX" AfterTargets="BuildVS14" Condition=" '$(IsXPlat)' != 'true' ">
-    <Message Text="Building for VS14" Importance="high" />
-    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
-             Targets="Build"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=14.0;" />
   </Target>
 
   <!--
@@ -234,22 +148,6 @@
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=15.0;" />
-  </Target>
-
-  <!--
-    ============================================================
-    Build the VS14 VSIX
-    This target always needs to be below BuildVS14NoVSIX so that
-    BuildVS14 runs the NoVSIX targets before this one.
-    ============================================================
-  -->
-  <Target Name="BuildVS14VSIX" AfterTargets= "BuildVS14" Condition=" '$(IsXPlat)' != 'true' ">
-    <Message Text="Building the VSIX for VS14" Importance="high" />
-
-    <MSBuild Projects="$(VSIXProject)"
-             Targets="Build"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=14.0;" />
   </Target>
 
   <!--
@@ -348,22 +246,6 @@
 
   <!--
     ============================================================
-    Restore for VS14
-    ============================================================
-  -->
-  <Target Name="RestoreVS14">
-    <Message Text="Restoring for Visual Studio 14.0" Importance="high" />
-
-    <MSBuild
-      Projects="$(MSBuildThisFileFullPath)"
-      Targets="Restore"
-      Properties="$(CommonMSBuildProperties);
-                  VisualStudioVersion=14.0">
-    </MSBuild>
-  </Target>
-
-  <!--
-    ============================================================
     Restore Apex 
     ============================================================
   -->
@@ -408,7 +290,7 @@
     </MSBuild>
 
     <PropertyGroup>
-      <TestResultsDirectory>$(ArtifactsDirectory)TestResults\</TestResultsDirectory>
+      <TestResultsDirectory>$(BuildCommonDirectory)TestResults</TestResultsDirectory>
     </PropertyGroup>
 
     <!-- Ensure the test results dir exists -->
@@ -421,12 +303,14 @@
       <CoreInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsCore", "true"))</CoreInputTestAssemblies>
       <CoreInputTestAssembliesSpaced>$(CoreInputTestAssemblies.Replace(';', ' '))</CoreInputTestAssembliesSpaced>
       
-      <TestResultOutputFormat Condition="'$(TestResultOutputFormat)' == ''">html</TestResultOutputFormat>
+      <TestResultOutputFormat Condition="'$(TestResultOutputFormat)' == ''">xml</TestResultOutputFormat>
       <!-- Build exe commands -->
-      <TestResultsHtml Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)$(TestResultsFileName).$(TestResultOutputFormat)</TestResultsHtml>
-      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) /logger:trx;LogFileName=$(TestResultsDirectory)$(TestResultsFileName).trx</VSTestCommand>
+      <TestResultsXunit Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)\$(TestResultsFileName)-xunit.$(TestResultOutputFormat)</TestResultsXunit>
+      <TestResultsVsts Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)\$(TestResultsFileName)-vsts.$(TestResultOutputFormat)</TestResultsVsts>
+      <VsTestLogger>--TestAdapterPath:$(XunitXmlLoggerDirectory) --logger:xunit;LogFileName=$(TestResultsFileName)-vsts.$(TestResultOutputFormat)</VsTestLogger>
+      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) $(VsTestLogger)</VSTestCommand>
       <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
-      <DesktopTestCommand Condition=" '$(TestResultsHtml)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsHtml)</DesktopTestCommand>
+      <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit) $(Verbosity)</DesktopTestCommand>
     </PropertyGroup>
 
     <!-- Desktop -->
@@ -443,10 +327,10 @@
       <Output TaskParameter="ExitCode" PropertyName="VSTestErrorCode"/>
     </Exec>
 
-    <Error Text="Desktop $(TestResultsFileName) tests failed! Results: $(TestResultsHtml)" Condition=" '$(DesktopTestErrorCode)' != '0' AND '$(DesktopTestErrorCode)' != '' " />
-    <Error Text="NETCore $(TestResultsFileName) tests failed!" Condition=" '$(VSTestErrorCode)' != '0' AND '$(VSTestErrorCode)' != '' " />
+    <Error Text="Desktop $(TestResultsFileName) tests failed! Results: $(TestResultsXunit)" Condition=" '$(DesktopTestErrorCode)' != '0' AND '$(DesktopTestErrorCode)' != '' " />
+    <Error Text="NETCore $(TestResultsFileName) tests failed! Results: $(TestResultsVsts)" Condition=" '$(VSTestErrorCode)' != '0' AND '$(VSTestErrorCode)' != '' " />
 
-    <Message Text="Desktop $(TestResultsFileName) tests passed!" Condition=" '$(DesktopTestErrorCode)' == '0' " />
-    <Message Text="NETCore $(TestResultsFileName) tests passed!" Condition=" '$(VSTestErrorCode)' == '0' " />
+    <Message Text="Desktop $(TestResultsFileName) tests passed! Results: $(TestResultsXunit)" Condition=" '$(DesktopTestErrorCode)' == '0' " Importance="High" />
+    <Message Text="NETCore $(TestResultsFileName) tests passed! Results: $(TestResultsVsts)" Condition=" '$(VSTestErrorCode)' == '0' " Importance="High" />
   </Target>
 </Project>
