@@ -6,9 +6,9 @@
     <title>NuGet.Localization</title>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
-    <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</licenseUrl>
-    <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
-    <copyright>&#169; .NET Foundation. All rights reserved.</copyright>
+    <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+    <projectUrl>https://aka.ms/nugetprj</projectUrl>
+    <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
     <description>NuGet localization package.</description>
     <tags>nuget</tags>
   </metadata>
