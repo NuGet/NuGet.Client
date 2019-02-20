@@ -12,6 +12,7 @@ namespace NuGet.Protocol
         public static readonly string Versioned = "/Versioned";
         public static readonly string Version470 = "/4.7.0";
         public static readonly string Version490 = "/4.9.0";
+        public static readonly string Version500 = "/5.0.0";
 
         public static readonly string[] SearchQueryService = { "SearchQueryService" + Versioned, "SearchQueryService" + Version340, "SearchQueryService" + Version300beta };
         public static readonly string[] RegistrationsBaseUrl = { "RegistrationsBaseUrl" + Versioned, "RegistrationsBaseUrl" + Version340, "RegistrationsBaseUrl" + Version300beta };
@@ -20,7 +21,7 @@ namespace NuGet.Protocol
         public static readonly string[] LegacyGallery = { "LegacyGallery" + Versioned, "LegacyGallery" + Version200 };
         public static readonly string[] PackagePublish = { "PackagePublish" + Versioned, "PackagePublish" + Version200 };
         public static readonly string[] PackageBaseAddress = { "PackageBaseAddress" + Versioned, "PackageBaseAddress" + Version300 };
-        public static readonly string[] RepositorySignatures = { "RepositorySignatures" + Version490, "RepositorySignatures" + Version470 };
+        public static readonly string[] RepositorySignatures = { "RepositorySignatures" + Version500, "RepositorySignatures" + Version490, "RepositorySignatures" + Version470 };
         public static readonly string[] SymbolPackagePublish = { "SymbolPackagePublish" + Version490 };
     }
 }
