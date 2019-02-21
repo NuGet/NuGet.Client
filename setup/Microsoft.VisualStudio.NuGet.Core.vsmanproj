@@ -3,16 +3,16 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
 
   <PropertyGroup>
-    <!-- Define properties that drive the manifest creation here. -->
-    <FinalizeManifest>true</FinalizeManifest>
-    <FinalizeSkipLayout>true</FinalizeSkipLayout>
-    <BuildNumber>$(SemanticVersion).$(BuildNumber)</BuildNumber>
-    <TargetName>$(MSBuildProjectName)</TargetName>
-    <OutputPath>$(VsixPublishDestination)Insertable</OutputPath>
+      <!-- Define properties that drive the manifest creation here. -->
+      <FinalizeManifest>true</FinalizeManifest>
+      <FinalizeSkipLayout>true</FinalizeSkipLayout>
+      <BuildNumber>$(SemanticVersion).$(BuildNumber)</BuildNumber>
+      <TargetName>$(MSBuildProjectName)</TargetName>
+      <OutputPath>$(VsixPublishDestination)</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <MergeManifest Include="$(VsixPublishDestination)Insertable\Microsoft.VisualStudio.NuGet.Core.json" />
+    <MergeManifest Include="$(VsixPublishDestination)Microsoft.VisualStudio.NuGet.Core.json" />
   </ItemGroup>
 
   <Import Project="$(MicroBuildDirectory)MicroBuild.Core.targets"/>

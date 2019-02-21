@@ -2,7 +2,10 @@
 <Project ToolsVersion="15.0">
   <!-- Version -->
   <PropertyGroup>
-    <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">4.4.2</SemanticVersion>
+    <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">4</MajorNuGetVersion>
+    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">4</MinorNuGetVersion>
+    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">2</PatchNuGetVersion>
+    <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">0</NetCoreAssemblyBuildNumber>
@@ -28,15 +31,17 @@
 
   <!-- Nuspec defaults -->
   <PropertyGroup>
-    <Authors>NuGet</Authors>
-    <ProjectUrl>https://github.com/NuGet/NuGet.Client</ProjectUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
+    <Authors>Microsoft</Authors>
+    <PackageProjectUrl>https://aka.ms/nugetprj</PackageProjectUrl>
+    <PackageLicenseUrl>https://aka.ms/nugetlicense</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NuGet/NuGet.Client</RepositoryUrl>
     <PackageTags>nuget</PackageTags>
     <Description>NuGet client library.</Description>
-    <Copyright>Copyright .NET Foundation. All rights reserved.</Copyright>
+    <Copyright>&#169; Microsoft Corporation. All rights reserved.</Copyright>
     <Serviceable>true</Serviceable>
+    <PackageIconUrl>https://raw.githubusercontent.com/NuGet/Media/master/Images/MainLogo/256x256/nuget_256.png</PackageIconUrl>
   </PropertyGroup>
 
   <Target Name="GetSemanticVersion">
