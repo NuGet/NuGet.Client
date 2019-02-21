@@ -1692,15 +1692,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // set up projects
                     var projectTargetFrameworkStr = "net45";
-                    var fullProjectPathB = Path.Combine(randomProjectFolderPath, "ProjectB", "project2.csproj");
-                    var projectNamesB = new ProjectNames(
-                        fullName: fullProjectPathB,
-                        uniqueName: Path.GetFileName(fullProjectPathB),
-                        shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
-                        customUniqueName: Path.GetFileName(fullProjectPathB));
-                    var vsProjectAdapterB = new TestVSProjectAdapter(
-                        fullProjectPathB,
-                        projectNamesB,
+                    var fullProjectPath2 = Path.Combine(randomProjectFolderPath, "Project2", "project2.csproj");
+                    var projectNames2 = new ProjectNames(
+                        fullName: fullProjectPath2,
+                        uniqueName: Path.GetFileName(fullProjectPath2),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPath2),
+                        customUniqueName: Path.GetFileName(fullProjectPath2));
+                    var vsProjectAdapter2 = new TestVSProjectAdapter(
+                        fullProjectPath2,
+                        projectNames2,
                         projectTargetFrameworkStr);
 
                     var projectServicesB = new TestProjectSystemServices();
@@ -1714,39 +1714,39 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package),
                         });
 
-                    var legacyPRProjectB = new LegacyPackageReferenceProject(
-                        vsProjectAdapterB,
+                    var legacyPRProject2 = new LegacyPackageReferenceProject(
+                        vsProjectAdapter2,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
                         _threadingService);
 
-                    var projectPathA = Path.Combine(randomProjectFolderPath, "ProjectA");
-                    var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
-                    var projectNamesA = new ProjectNames(
-                        fullName: fullProjectPathA,
-                        uniqueName: Path.GetFileName(fullProjectPathA),
-                        shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                    var projectPath1 = Path.Combine(randomProjectFolderPath, "Project1");
+                    var fullProjectPath1 = Path.Combine(projectPath1, "project1.csproj");
+                    var projectNames1 = new ProjectNames(
+                        fullName: fullProjectPath1,
+                        uniqueName: Path.GetFileName(fullProjectPath1),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPath1),
+                        customUniqueName: Path.GetFileName(fullProjectPath1));
                     var vsProjectAdapterA = new TestVSProjectAdapter(
-                        fullProjectPathA,
-                        projectNamesA,
+                        fullProjectPath1,
+                        projectNames1,
                         projectTargetFrameworkStr);
 
-                    var projectServicesA = new TestProjectSystemServices();
-                    projectServicesA.SetupProjectDependencies(
+                    var projectServices1 = new TestProjectSystemServices();
+                    projectServices1.SetupProjectDependencies(
                         new ProjectRestoreReference
                         {
-                            ProjectUniqueName = fullProjectPathB,
-                            ProjectPath = fullProjectPathB
+                            ProjectUniqueName = fullProjectPath2,
+                            ProjectPath = fullProjectPath2
                         });
 
-                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                    var legacyPRProject1 = new LegacyPackageReferenceProject(
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
-                        projectServicesA,
+                        projectServices1,
                         _threadingService);
-                    testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
-                    testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProject1);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProject2);
 
                     var testLogger = new TestLogger();
                     var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
@@ -1797,8 +1797,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     {
                         var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("packageB"));
                         Assert.NotNull(library);
-                        Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/packageB.targets")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}");
-                        Assert.False(library.Build.Any(build => build.Path.Equals("build/packageB.props")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}");
+                        Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/packageB.targets")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}" + Environment.NewLine + string.Join(Environment.NewLine, testLogger.Messages));
+                        Assert.False(library.Build.Any(build => build.Path.Equals("build/packageB.props")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}" + Environment.NewLine + string.Join(Environment.NewLine, testLogger.Messages));
                     }
                 }
             }
