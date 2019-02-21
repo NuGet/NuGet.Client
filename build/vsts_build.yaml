@@ -223,6 +223,10 @@ phases:
     displayName: Verify Assembly Signatures and StrongName
     inputs:
       TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
+  
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
