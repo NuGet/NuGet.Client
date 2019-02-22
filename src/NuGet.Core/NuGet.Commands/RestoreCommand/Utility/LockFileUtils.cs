@@ -25,6 +25,8 @@ namespace NuGet.Commands
     {
         public static readonly string LIBANY = nameof(LIBANY);
 
+        public static ILogger Logger;
+
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
             LockFileLibrary library,
             LocalPackageInfo package,
@@ -223,20 +225,28 @@ namespace NuGet.Commands
             IReadOnlyList<SelectionCriteria> orderedCriteria,
             ContentItemCollection contentItems)
         {
+            Logger?.LogInformation(library.Name + " adding build items!");
             // Build Transitive
             var btGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
                 targetGraph.Conventions.Patterns.MSBuildTransitiveFiles);
 
+            Logger?.LogInformation("Build transitive group: " + string.Join(",", btGroup.Select(e => e.Path)));
+
             var filteredBTGroup = GetBuildItemsForPackageId(btGroup, library.Name);
             lockFileLib.Build.AddRange(filteredBTGroup);
+
+            Logger?.LogInformation("Filtered build transitive group: " + string.Join(",", filteredBTGroup.Select(e => e.Path)));
 
             // Build
             var buildGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
                 targetGraph.Conventions.Patterns.MSBuildFiles);
+
+            Logger?.LogInformation("buildGroup : " + string.Join(",", buildGroup.Select(e => e.Path)));
+
 
             // filter any build asset already being added as part of build transitive
             var filteredBuildGroup = GetBuildItemsForPackageId(buildGroup, library.Name).
@@ -1001,14 +1011,22 @@ namespace NuGet.Commands
             if ((dependencyType & LibraryIncludeFlags.BuildTransitive) == LibraryIncludeFlags.None &&
                 (dependencyType & LibraryIncludeFlags.Build) == LibraryIncludeFlags.None)
             {
+                Logger?.LogInformation(lockFileLib.Name + " Clearing the build transitive and build assets.");
+                Logger?.LogInformation("Current assets: ");
+                Logger?.LogInformation("Build: " + string.Join(",", lockFileLib.Build.Select(e => e.Path)));
+
                 // If BuildTransitive is excluded then all build assets are cleared.
                 ClearIfExists(lockFileLib.Build);
                 ClearIfExists(lockFileLib.BuildMultiTargeting);
             }
             else if ((dependencyType & LibraryIncludeFlags.Build) == LibraryIncludeFlags.None)
             {
+                Logger?.LogInformation(lockFileLib.Name + "Clearing only the build assets.");
+                Logger?.LogInformation("Build: " + string.Join(",", lockFileLib.Build.Select(e => e.Path)));
+
                 if (!lockFileLib.Build.Any(item => item.Path.StartsWith("buildTransitive/", StringComparison.OrdinalIgnoreCase)))
                 {
+                    Logger?.LogInformation("all build assets are from /build folder so just clear them all.");
                     // all build assets are from /build folder so just clear them all.
                     ClearIfExists(lockFileLib.Build);
                     ClearIfExists(lockFileLib.BuildMultiTargeting);
@@ -1017,6 +1035,9 @@ namespace NuGet.Commands
                 {
                     // only clear /build assets, leaving /BuildTransitive behind
                     var newBuildAssets = new List<LockFileItem>();
+
+                    Logger?.LogInformation("only clear /build assets, leaving /BuildTransitive behind");
+
 
                     for (var i = 0; i < lockFileLib.Build.Count; i++)
                     {

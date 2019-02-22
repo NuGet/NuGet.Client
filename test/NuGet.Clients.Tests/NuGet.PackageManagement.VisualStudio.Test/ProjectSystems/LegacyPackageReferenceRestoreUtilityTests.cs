@@ -1749,6 +1749,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     testSolutionManager.NuGetProjects.Add(legacyPRProject2);
 
                     var testLogger = new TestLogger();
+                    LockFileUtils.Logger = testLogger;
+
                     var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
                     var providersCache = new RestoreCommandProvidersCache();
 
