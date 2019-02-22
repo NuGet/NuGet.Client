@@ -1333,7 +1333,8 @@ namespace NuGet.Packaging.Test
                     var outputDll = Path.Combine(installPath, "lib", "net45", "A.dll");
 
                     // Assert
-                    Assert.Equal("766", StatPermissions(outputDll));
+                    var expected = PermissionWithUMaskApplied("766");
+                    Assert.Equal(expected, StatPermissions(outputDll));
                 }
             }
         }
@@ -3522,6 +3523,38 @@ namespace NuGet.Packaging.Test
             }
         }
 #endif
+
+        private string PermissionWithUMaskApplied(string permission)
+        {
+            var permissionBits = Convert.ToInt32(permission, 8);
+            string umask;
+
+            var startInfo = new ProcessStartInfo
+            {
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                UseShellExecute = false,
+                FileName = "sh",
+                Arguments = "-c umask"
+            };
+
+            using (var process = new Process())
+            {
+                process.StartInfo = startInfo;
+
+                process.Start();
+                umask = process.StandardOutput.ReadLine();
+
+                process.WaitForExit();
+            }
+
+            var umaskBits = Convert.ToInt32(umask, 8);
+            permissionBits = permissionBits & ~umaskBits;
+
+            return Convert.ToString(permissionBits, 8);
+        }
+
         private string StatPermissions(string path)
         {
             string permissions;
