@@ -182,7 +182,7 @@ Function Install-NuGet {
     if ($Force -or -not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
 
-        wget https://dist.nuget.org/win-x86-commandline/v4.0.0/nuget.exe -OutFile $NuGetExe
+        wget https://dist.nuget.org/win-x86-commandline/v4.4.1/nuget.exe -OutFile $NuGetExe
     }
 
     # Display nuget info
@@ -198,15 +198,8 @@ Function Install-DotnetCLI {
     $cli = @{
             Root = $CLIRoot
             DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
-            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/8c5e955252f93f54e239e5f1c978700b97fc21c1/scripts/obtain/dotnet-install.ps1'
+            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/4bd9bb92cc3636421cd01baedbd8ef3e41aa1e22/scripts/obtain/dotnet-install.ps1'
         }
-
-    if ([Environment]::Is64BitOperatingSystem) {
-        $arch = "x64";
-    }
-    else {
-        $arch = "x86";
-    }
 
     $env:DOTNET_HOME=$cli.Root
     $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
@@ -219,8 +212,7 @@ Function Install-DotnetCLI {
         $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
 
         Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
-
-        & $DotNetInstall -Channel 2.0 -i $cli.Root -Architecture $arch
+        & $DotNetInstall -Channel 2.0 -i $cli.Root
     }
 
     if (-not (Test-Path $cli.DotNetExe)) {
@@ -326,7 +318,9 @@ Function Test-BuildEnvironment {
         [switch]$CI
     )
     if (-not (Test-Path $ConfigureJson)) {
-        Error-Log 'Build environment is not configured. Please run configure.ps1 first.' -Fatal
+        # Run the configure script if it hasn't been executed
+        $configureScriptPath = Join-Path $NuGetClientRoot configure.ps1
+        Invoke-Expression $configureScriptPath
     }
 
     $Installed = (Test-Path $DotNetExe) -and (Test-Path $NuGetExe)

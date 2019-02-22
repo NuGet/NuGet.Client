@@ -6,8 +6,12 @@
   </Target>
 
   <!-- Import the existing NuGet targets file -->
-  <Import Project="$(MSBuildExtensionsPath)/NuGet.targets" Condition=" '$(IsXPlat)' == 'true' " />
-  <Import Project="$(MSBuildExtensionsPath)\..\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.targets" Condition=" '$(IsXPlat)' != 'true' " />
+  <PropertyGroup>
+    <VSNuGetTargetsExist Condition=" Exists('$(MSBuildExtensionsPath)\..\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.targets')">true</VSNuGetTargetsExist>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildExtensionsPath)/NuGet.targets" Condition=" '$(IsXPlat)' == 'true' OR '$(VSNuGetTargetsExist)' != 'true'" />
+  <Import Project="$(MSBuildExtensionsPath)\..\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.targets" Condition=" '$(IsXPlat)' != 'true' AND '$(VSNuGetTargetsExist)' == 'true'" />
   
   <Target Name="_SplitProjectReferencesByFileExistence">
   	<!-- Noop -->
