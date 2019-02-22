@@ -188,7 +188,7 @@
       <_Parameter1>NuGet</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="AssemblyCopyright">
-      <_Parameter1>Microsoft Corporation. All rights reserved.</_Parameter1>
+      <_Parameter1>&#169; Microsoft Corporation. All rights reserved.</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="System.Resources.NeutralResourcesLanguage">
       <_Parameter1>en-US</_Parameter1>
@@ -203,7 +203,7 @@
     <InformationalVersion Condition="'$(BUILD_SOURCEVERSION)' != ''">$(SemanticVersion)$(PreReleaseInformationVersion)+$(BUILD_SOURCEVERSION)</InformationalVersion>
     <Company>Microsoft Corporation</Company>
     <Product>NuGet</Product>
-    <Copyright>Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>&#169; Microsoft Corporation. All rights reserved.</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
 
     <SchemaVersion>2.0</SchemaVersion>
