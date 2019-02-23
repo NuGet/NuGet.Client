@@ -31,42 +31,46 @@ namespace NuGet.PackageManagement.VisualStudio
 
             SolutionManager = solutionManager;
             SolutionManager.NuGetProjectAdded += OnNuGetProjectAdded;
-            SolutionManager.SolutionOpened += OnSolutionOpenedOrClosed;
-            SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
+            SolutionManager.SolutionOpened += OnSolutionOpened;
+            SolutionManager.SolutionClosed += OnSolutionClosed;
         }
 
-        private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
+        private void OnSolutionOpened(object sender, EventArgs e)
         {
             // This is a solution event. Should be on the UI thread
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            var solutionDirectory = SolutionManager.SolutionDirectory;
+
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                {
-                    // We can only get the solution directory while on the main thread.
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            {
+                await TaskScheduler.Default;
+                await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+            });
+        }
 
-                    // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
-                    // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-                    var solutionDirectory = SolutionManager.SolutionDirectory;
+        private void OnSolutionClosed(object sender, EventArgs e)
+        {
+            // This is a solution event. Should be on the UI thread
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-                    // go off the UI thread to raise missing packages event
-                    await TaskScheduler.Default;
-
-                    await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
-                });
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
+                // is showing and the user closes the solution; in that case, we want to hide the Update bar.
+                var solutionDirectory = SolutionManager.SolutionDirectory;
+                await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+            });
         }
 
         private void OnNuGetProjectAdded(object sender, NuGetProjectEventArgs e)
         {
             // This is a solution event. Should be on the UI thread
             ThreadHelper.ThrowIfNotOnUIThread();
+            var solutionDirectory = SolutionManager.SolutionDirectory;
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
-                    // We can only get the solution directory while on the main thread.
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    var solutionDirectory = SolutionManager.SolutionDirectory;
-
                     // go off the UI thread to raise missing packages event
                     await TaskScheduler.Default;
 
