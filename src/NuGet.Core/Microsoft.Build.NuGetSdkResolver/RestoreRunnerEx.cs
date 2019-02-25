@@ -57,7 +57,14 @@ namespace NuGet.Commands
                     {
                         new LibraryDependency
                         {
-                            LibraryRange = new LibraryRange(libraryIdentity.Name, new VersionRange(libraryIdentity.Version), LibraryDependencyTarget.Package),
+                            LibraryRange = new LibraryRange(
+                                libraryIdentity.Name,
+                                new VersionRange(
+                                    minVersion: libraryIdentity.Version,
+                                    includeMinVersion: true,
+                                    maxVersion: libraryIdentity.Version,
+                                    includeMaxVersion: true),
+                                LibraryDependencyTarget.Package),
                             SuppressParent = LibraryIncludeFlags.All,
                             AutoReferenced = true,
                             IncludeType = LibraryIncludeFlags.None,
