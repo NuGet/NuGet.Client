@@ -56,8 +56,8 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "ForceRestoreCommand")]
         public bool Force { get; set; }
 
-        [Option(typeof(NuGetCommand), "RestoreCommandSkipMSBuild")]
-        public bool SkipMSBuild { get; set; }
+        [Option(typeof(NuGetCommand), "RestoreCommandPackagesConfigOnly")]
+        public bool PackagesConfigOnly { get; set; }
 
         [ImportingConstructor]
         public RestoreCommand()
@@ -503,7 +503,7 @@ namespace NuGet.CommandLine
 
                 try
                 {
-                    if (SkipMSBuild)
+                    if (PackagesConfigOnly)
                     {
                         // We still need a (blank) DependencyGraphSpec or AddInputsFromDependencyGraphSpec below
                         // won't run, and that does important processing on packageRestoreInputs even if there's

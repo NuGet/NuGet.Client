@@ -2313,7 +2313,7 @@ EndProject";
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void RestoreCommand_HonorsSkipMSBuildFlag(bool skipMSBuild)
+        public void RestoreCommand_HonorsPackagesConfigOnlyFlag(bool packagesConfigOnly)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -2332,14 +2332,14 @@ EndProject";
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    "restore -Source " + repositoryPath + (skipMSBuild ? " -SkipMSBuild" : ""),
+                    "restore -Source " + repositoryPath + (packagesConfigOnly ? " -PackagesConfigOnly" : ""),
                     waitForExit: true);
 
                 Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
                 var packageFileA = Path.Combine(workingPath, @"GlobalPackages", "packageA", "1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"GlobalPackages", "packageB", "2.2.0", "packageB.2.2.0.nupkg");
                 var packageFileC = Path.Combine(workingPath, @"packages", "packageC.3.3.0", "packageC.3.3.0.nupkg");
-                if (skipMSBuild)
+                if (packagesConfigOnly)
                 {
                     Assert.False(File.Exists(packageFileA));
                     Assert.False(File.Exists(packageFileB));

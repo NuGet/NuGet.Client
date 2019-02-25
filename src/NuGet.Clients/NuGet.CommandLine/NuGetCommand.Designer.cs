@@ -10099,6 +10099,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Do not analyze projects for ProjectReference-style package references with MSBuild. This is significantly faster if all of your packages are found in old-style packages.config files..
+        /// </summary>
+        internal static string RestoreCommandPackagesConfigOnly {
+            get {
+                return ResourceManager.GetString("RestoreCommandPackagesConfigOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the packages folder..
         /// </summary>
         internal static string RestoreCommandPackagesDirectory {
@@ -10356,15 +10365,6 @@ namespace NuGet.CommandLine {
         internal static string RestoreCommandRequireConsent_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandRequireConsent_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not analyze projects for ProjectReference-style package references with MSBuild. This is significantly faster if all of your packages are found in old-style packages.config files..
-        /// </summary>
-        internal static string RestoreCommandSkipMSBuild {
-            get {
-                return ResourceManager.GetString("RestoreCommandSkipMSBuild", resourceCulture);
             }
         }
         
