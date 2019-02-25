@@ -50,7 +50,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
     `.\runTests.ps1`
 
 
-> In case you have build issues try cleaning the local repository using `git clean -xdf` and retry steps 3 and 4.
+> In case we have build issues try cleaning the local repository using `git clean -xdf` and retry steps 3 and 4.
 
 #### Notable `build.ps1` switches
 - `-SkipUnitTest` - skips running unit tests.
