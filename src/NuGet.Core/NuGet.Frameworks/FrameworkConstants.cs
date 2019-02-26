@@ -107,6 +107,7 @@ namespace NuGet.Frameworks
 
             public static readonly NuGetFramework Tizen3 = new NuGetFramework(FrameworkIdentifiers.Tizen, new Version(3, 0, 0, 0));
             public static readonly NuGetFramework Tizen4 = new NuGetFramework(FrameworkIdentifiers.Tizen, new Version(4, 0, 0, 0));
+            public static readonly NuGetFramework Tizen6 = new NuGetFramework(FrameworkIdentifiers.Tizen, new Version(6, 0, 0, 0));
 
             public static readonly NuGetFramework AspNet = new NuGetFramework(FrameworkIdentifiers.AspNet, EmptyVersion);
             public static readonly NuGetFramework AspNetCore = new NuGetFramework(FrameworkIdentifiers.AspNetCore, EmptyVersion);
