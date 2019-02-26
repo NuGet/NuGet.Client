@@ -34,12 +34,11 @@ namespace NuGet.Commands
         /// <summary>
         /// Restores a package by querying, downloading, and unzipping it without generating any other files (like project.assets.json).
         /// </summary>
-        /// <param name="id">The ID of the package.</param>
-        /// <param name="version">The version of the package.</param>
+        /// <param name="libraryIdentity">The <see cref="LibraryIdentity"/> of the package.</param>
         /// <param name="settings">The NuGet settings to use.</param>
         /// <param name="logger">An <see cref="ILogger"/> to use for logging.</param>
         /// <returns></returns>
-        public static Task<IReadOnlyList<RestoreResultPair>> RunWithoutCommit(string id, string version, ISettings settings, ILogger logger)
+        public static Task<IReadOnlyList<RestoreResultPair>> RunWithoutCommit(LibraryIdentity libraryIdentity, ISettings settings, ILogger logger)
         {
             using (var sourceCacheContext = new SourceCacheContext
             {
@@ -58,7 +57,14 @@ namespace NuGet.Commands
                     {
                         new LibraryDependency
                         {
-                            LibraryRange = new LibraryRange(id, new VersionRange(NuGetVersion.Parse(version)), LibraryDependencyTarget.Package),
+                            LibraryRange = new LibraryRange(
+                                libraryIdentity.Name,
+                                new VersionRange(
+                                    minVersion: libraryIdentity.Version,
+                                    includeMinVersion: true,
+                                    maxVersion: libraryIdentity.Version,
+                                    includeMaxVersion: true),
+                                LibraryDependencyTarget.Package),
                             SuppressParent = LibraryIncludeFlags.All,
                             AutoReferenced = true,
                             IncludeType = LibraryIncludeFlags.None,

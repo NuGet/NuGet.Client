@@ -11,6 +11,7 @@ using Microsoft.Build.Framework;
 using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Credentials;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
@@ -122,8 +123,10 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                 var fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
 
+                var libraryIdentity = new LibraryIdentity(sdk.Name, parsedSdkVersion, LibraryType.Package);
+
                 // Attempt to find a package if its already installed
-                if (!TryGetMSBuildSdkPackageInfo(fallbackPackagePathResolver, sdk.Name, parsedSdkVersion, out var installedPath, out var installedVersion))
+                if (!TryGetMSBuildSdkPackageInfo(fallbackPackagePathResolver, libraryIdentity, out var installedPath, out var installedVersion))
                 {
                     try
                     {
@@ -134,8 +137,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                         // This must be run in its own task because legacy project system evaluates projects on the UI thread which can cause RunWithoutCommit() to deadlock
                         // https://developercommunity.visualstudio.com/content/problem/311379/solution-load-never-completes-when-project-contain.html
                         var restoreTask = Task.Run(() => RestoreRunnerEx.RunWithoutCommit(
-                            sdk.Name,
-                            parsedSdkVersion.ToFullString(),
+                            libraryIdentity,
                             settings,
                             nugetSDKLogger));
 
@@ -147,16 +149,18 @@ namespace Microsoft.Build.NuGetSdkResolver
                         foreach (var result in results.Select(i => i.Result).Where(i => i.Success))
                         {
                             // Find the information about the package that was installed.  In some cases, the version can be different than what was specified (like you specify 1.0 but get 1.0.0)
-                            var installedPackage = result.GetAllInstalled().FirstOrDefault(i => i.Name.Equals(sdk.Name));
+                            var installedPackage = result.GetAllInstalled().FirstOrDefault(i => i == libraryIdentity);
 
                             if (installedPackage != null)
                             {
-                                if (!TryGetMSBuildSdkPackageInfo(fallbackPackagePathResolver, installedPackage.Name, installedPackage.Version, out installedPath, out installedVersion))
+                                if (TryGetMSBuildSdkPackageInfo(fallbackPackagePathResolver, installedPackage, out installedPath, out installedVersion))
                                 {
-                                    // This should never happen because we were told the package was successfully installed.
-                                    // If we can't find it, we probably did something wrong with the NuGet API
-                                    errors.Add(string.Format(CultureInfo.CurrentCulture, Strings.CouldNotFindInstalledPackage, sdk));
+                                    break;
                                 }
+
+                                // This should never happen because we were told the package was successfully installed.
+                                // If we can't find it, we probably did something wrong with the NuGet API
+                                errors.Add(string.Format(CultureInfo.CurrentCulture, Strings.CouldNotFindInstalledPackage, sdk));
                             }
                             else
                             {
@@ -199,10 +203,10 @@ namespace Microsoft.Build.NuGetSdkResolver
             /// <summary>
             /// Attempts to find a NuGet package if it is already installed.
             /// </summary>
-            private static bool TryGetMSBuildSdkPackageInfo(FallbackPackagePathResolver fallbackPackagePathResolver, string id, NuGetVersion version, out string installedPath, out string installedVersion)
+            private static bool TryGetMSBuildSdkPackageInfo(FallbackPackagePathResolver fallbackPackagePathResolver, LibraryIdentity libraryIdentity, out string installedPath, out string installedVersion)
             {
                 // Find the package
-                var packageInfo = fallbackPackagePathResolver.GetPackageInfo(id, version);
+                var packageInfo = fallbackPackagePathResolver.GetPackageInfo(libraryIdentity.Name, libraryIdentity.Version);
 
                 if (packageInfo == null)
                 {
