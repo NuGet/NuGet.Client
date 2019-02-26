@@ -22,6 +22,9 @@ namespace NuGet.ProjectModel
         /// </summary>
         public IList<ProjectRestoreReference> ProjectReferences { get; set; } = new List<ProjectRestoreReference>();
 
+        // Represent the framework references here.
+
+        public IList<string> FrameworkReferences { get; set; } = new List<string>();
         public ProjectRestoreMetadataFrameworkInfo()
         {
         }

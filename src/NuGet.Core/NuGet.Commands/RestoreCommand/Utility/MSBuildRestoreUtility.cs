@@ -169,7 +169,7 @@ namespace NuGet.Commands
                 // Get base spec
                 if (restoreType == ProjectStyle.ProjectJson)
                 {
-                    result = GetUAPSpec(specItem);
+                    result = GetProjectJsonSpec(specItem);
                 }
                 else
                 {
@@ -227,7 +227,6 @@ namespace NuGet.Commands
                     || restoreType == ProjectStyle.DotnetCliTool
                     || restoreType == ProjectStyle.DotnetToolReference)
                 {
-                    AddFrameworkAssemblies(result, items);
                     AddPackageReferences(result, items);
                     AddPackageDownloads(result, items);
 
@@ -681,35 +680,6 @@ namespace NuGet.Commands
             }
         }
 
-        private static void AddFrameworkAssemblies(PackageSpec spec, IEnumerable<IMSBuildItem> items)
-        {
-            foreach (var item in GetItemByType(items, "FrameworkAssembly"))
-            {
-                var dependency = new LibraryDependency();
-
-                dependency.LibraryRange = new LibraryRange(
-                    name: item.GetProperty("Id"),
-                    versionRange: GetVersionRange(item),
-                    typeConstraint: LibraryDependencyTarget.Reference);
-
-                ApplyIncludeFlags(dependency, item);
-
-                var frameworks = GetFrameworks(item);
-
-                if (frameworks.Count == 0)
-                {
-                    AddDependencyIfNotExist(spec, dependency);
-                }
-                else
-                {
-                    foreach (var framework in frameworks)
-                    {
-                        AddDependencyIfNotExist(spec, framework, dependency);
-                    }
-                }
-            }
-        }
-
         private static VersionRange GetVersionRange(IMSBuildItem item)
         {
             var rangeString = item.GetProperty("VersionRange");
@@ -722,7 +692,7 @@ namespace NuGet.Commands
             return VersionRange.All;
         }
 
-        private static PackageSpec GetUAPSpec(IMSBuildItem specItem)
+        private static PackageSpec GetProjectJsonSpec(IMSBuildItem specItem)
         {
             PackageSpec result;
             var projectPath = specItem.GetProperty("ProjectPath");

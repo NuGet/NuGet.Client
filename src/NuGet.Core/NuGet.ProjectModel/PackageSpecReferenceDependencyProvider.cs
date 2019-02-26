@@ -253,6 +253,23 @@ namespace NuGet.ProjectModel
                     // Add reference
                     dependencies.Add(dependency);
                 }
+
+                foreach (var reference in referencesForFramework.FrameworkReferences)
+                {
+                    var dependency = new LibraryDependency()
+                    {
+                        LibraryRange = new LibraryRange(
+                            dependencyName,
+                            range,
+                            LibraryDependencyTarget.ExternalProject),
+                    };
+
+                    // Remove existing reference if one exists, projects override
+                    dependencies.RemoveAll(e => StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, e.Name));
+
+                    // Add reference
+                    dependencies.Add(dependency);
+                }
             }
 
             return dependencies;
