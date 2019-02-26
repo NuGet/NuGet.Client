@@ -228,7 +228,8 @@
     <comment>0 - Signature friendly name</comment>
   </data>
   <data name="VerifyError_TimestampUnsupportedDigestAlgorithm" xml:space="preserve">
-    <value>The timestamp signature has an unsupported digest algorithm.</value>
+    <value>The {0}'s timestamp signature has an unsupported digest algorithm.</value>
+    <comment>0 - Signature friendly name</comment>
   </data>
   <data name="TimestampFailureInvalidHttpScheme" xml:space="preserve">
     <value>The timestamper URL '{0}' has an invalid URI scheme. The supported schemes are '{1}' and '{2}'.</value>
