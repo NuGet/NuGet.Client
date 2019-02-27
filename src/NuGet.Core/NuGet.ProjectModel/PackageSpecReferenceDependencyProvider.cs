@@ -194,14 +194,17 @@ namespace NuGet.ProjectModel
 
                 library[KnownLibraryProperties.TargetFrameworkInformation] = targetFrameworkInfo;
 
-                // Add framework references
-                var frameworkReferences = targetFrameworkInfo.Dependencies
+                // Add framework assemblies - TODO NK - This is probably not useful anymore. - I can remove it an no tests will fail.
+                var frameworkAssemblies = targetFrameworkInfo.Dependencies
                     .Where(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
                     .Select(d => d.Name)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
-                library[KnownLibraryProperties.FrameworkAssemblies] = frameworkReferences;
+                library[KnownLibraryProperties.FrameworkAssemblies] = frameworkAssemblies;
+
+                // Add framework references
+                library[KnownLibraryProperties.FrameworkReferences] = targetFrameworkInfo.FrameworkReferences;
             }
         }
 
@@ -241,23 +244,6 @@ namespace NuGet.ProjectModel
                     {
                         IncludeType = (reference.IncludeAssets & ~reference.ExcludeAssets),
                         SuppressParent = reference.PrivateAssets,
-                        LibraryRange = new LibraryRange(
-                            dependencyName,
-                            range,
-                            LibraryDependencyTarget.ExternalProject),
-                    };
-
-                    // Remove existing reference if one exists, projects override
-                    dependencies.RemoveAll(e => StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, e.Name));
-
-                    // Add reference
-                    dependencies.Add(dependency);
-                }
-
-                foreach (var reference in referencesForFramework.FrameworkReferences)
-                {
-                    var dependency = new LibraryDependency()
-                    {
                         LibraryRange = new LibraryRange(
                             dependencyName,
                             range,

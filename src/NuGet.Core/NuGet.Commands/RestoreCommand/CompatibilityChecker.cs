@@ -414,6 +414,7 @@ namespace NuGet.Commands
                 targetLibrary.RuntimeAssemblies.Count > 0 ||                          // Runtime Assemblies, or
                 targetLibrary.CompileTimeAssemblies.Count > 0 ||                      // Compile-time Assemblies, or
                 targetLibrary.FrameworkAssemblies.Count > 0 ||                        // Framework Assemblies, or
+                targetLibrary.FrameworkReferences.Count > 0 ||                        // Framework References, or
                 targetLibrary.ContentFiles.Count > 0 ||                               // Shared content
                 targetLibrary.ResourceAssemblies.Count > 0 ||                         // Resources (satellite package)
                 targetLibrary.Build.Count > 0 ||                                      // Build

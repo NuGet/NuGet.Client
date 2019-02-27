@@ -38,6 +38,8 @@ namespace NuGet.ProjectModel
         /// </summary>
         public IList<DownloadDependency> DownloadDependencies { get; } = new List<DownloadDependency>();
 
+        public IList<string> FrameworkReferences { get; } = new List<string>();
+
         public override string ToString()
         {
             return FrameworkName.GetShortFolderName();
