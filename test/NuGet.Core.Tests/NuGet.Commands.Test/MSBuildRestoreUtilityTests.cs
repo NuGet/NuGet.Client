@@ -1557,7 +1557,7 @@ namespace NuGet.Commands.Test
                     { "CrossTargeting", "true" },
                 };
 
-                items.Add(frameworkAssembly);
+                items.Add(frameworkAssembly); // TODO NK - This could be cleared out.
                 items.Add(frameworkAssembly);
 
                 // TFM info

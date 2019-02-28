@@ -363,11 +363,11 @@ namespace NuGet.Commands
                 }
             }
 
-            // TODO NK - Add the stuff from the nuspec.
+            var frameworkRef = nuspec.GetFrameworkRefGroups().GetNearest(framework);
 
-            if (framework.Equals(NuGetFramework.Parse("netcoreapp3.0")))
+            if (frameworkRef != null)
             {
-                lockFileLib.FrameworkReferences.Add("defaultNetCore-frameworkreference-coming-from-a-package");
+                lockFileLib.FrameworkReferences.AddRange(frameworkRef.FrameworkReferences); // TODO NK - somewhere there should be a set.
             }
         }
 
