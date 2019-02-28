@@ -3776,13 +3776,13 @@ namespace ClassLibrary
         }
 
         [PlatformTheory(Platform.Windows)]
-
-        [InlineData("Microsoft.DesktopUI", true, "netstandard1.4;net461", "", "net461")]
-        [InlineData("Microsoft.DesktopUI", false, "netstandard1.4;net461", "", "net461")]
-        [InlineData("System.IO", true, "netstandard1.4;net46", "", "net46")]
-        [InlineData("System.IO", true, "net46;net461", "net461", "net461")]
-        [InlineData("System.IO", true, "net461", "", "net461")]
-        public void PackCommand_PackProject_PacksFrameworkReferences(string referenceAssembly, bool pack, string targetFrameworks, string conditionalFramework, string expectedTargetFramework)
+        [InlineData("Microsoft.NETCore.App", "true", "netstandard1.4;net461", "", "net461")]
+        [InlineData("Microsoft.NETCore.App", "false", "netstandard1.4;net461", "", "net461")]
+        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms", "true", "netstandard1.4;net46", "", "net46")]
+        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms", "true", "net46;net461", "net461", "net461")]
+        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms", "true", "net461", "", "net461")]
+        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms;Microsoft.WindowsDesktop.App|WPF", "true;false", "netstandard1.4;net461", "", "net461")]
+        public void PackCommand_PackProject_PacksFrameworkReferences(string frameworkReferences, string packForFrameworkRefs, string targetFrameworks, string conditionalFramework, string expectedTargetFramework)
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -3792,6 +3792,15 @@ namespace ClassLibrary
 
                 // Create the subdirectory structure for testing possible source paths for the content file
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                var frameworkReftoPack = new Dictionary<string, bool>();
+                var frameworkRefs = frameworkReferences.Split(";");
+                var pack = packForFrameworkRefs.Split(";").Select(e => bool.Parse(e)).ToArray();
+                Assert.Equal(frameworkRefs.Length, pack.Length);
+                for (var i = 0; i < frameworkRefs.Length; i++)
+                {
+                    frameworkReftoPack.Add(frameworkRefs[i], pack[i]);
+                }
 
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
@@ -3805,20 +3814,24 @@ namespace ClassLibrary
                     }
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, frameworkProperty, targetFrameworks);
 
-                    var attributes = new Dictionary<string, string>();
-
-                    var properties = new Dictionary<string, string>();
-                    if (!pack) // TODO NK - Add pack=false support
+                    foreach(var frameworkRef in frameworkReftoPack)
                     {
-                        attributes["Pack"] = "false";
+                        var attributes = new Dictionary<string, string>();
+
+                        var properties = new Dictionary<string, string>();
+                        if (!frameworkRef.Value)
+                        {
+                            attributes["Pack"] = "false";
+                        }
+                        ProjectFileUtils.AddItem(
+                            xml,
+                            "FrameworkReference",
+                            frameworkRef.Key,
+                            conditionalFramework,
+                            properties,
+                            attributes);
                     }
-                    ProjectFileUtils.AddItem(
-                        xml,
-                        "FrameworkReference",
-                        referenceAssembly,
-                        conditionalFramework,
-                        properties,
-                        attributes);
+
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
@@ -3842,15 +3855,19 @@ namespace ClassLibrary
                     {
                         var nugetFramework = NuGetFramework.Parse(framework);
                         var frameworkSpecificGroup = frameworkItems.Where(t => t.TargetFramework.Equals(nugetFramework)).FirstOrDefault();
-                        if (pack)
-                        {
-                            Assert.True(frameworkSpecificGroup?.FrameworkReferences.Contains(referenceAssembly));
-                        }
-                        else
-                        {
-                            Assert.Null(frameworkSpecificGroup);
-                        }
 
+                        foreach (var frameworkRef in frameworkReftoPack)
+                        {
+                            if (frameworkRef.Value)
+                            {
+                                Assert.True(frameworkSpecificGroup?.FrameworkReferences.Contains(frameworkRef.Key));
+                            }
+                            else
+                            {
+
+                                Assert.False(frameworkSpecificGroup == null ? false : frameworkSpecificGroup.FrameworkReferences.Contains(frameworkRef.Key));
+                            }
+                        }
                     }
                 }
             }
