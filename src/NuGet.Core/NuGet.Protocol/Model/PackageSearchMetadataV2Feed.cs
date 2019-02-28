@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -122,9 +123,7 @@ namespace NuGet.Protocol
 
         public NuGetVersion Version { get; private set; }
 
-        public Lazy<VersionInfo[]> OnDemandParsedVersions { get; private set; }
-
-        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(OnDemandParsedVersions.Value);
+        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult(Enumerable.Empty<VersionInfo>());
 
         private static Uri GetUriSafe(string url)
         {
