@@ -14,6 +14,33 @@ namespace NuGet.Protocol
 {
     public class PackageSearchMetadataV2Feed : IPackageSearchMetadata
     {
+        public PackageSearchMetadataV2Feed(V2FeedPackageInfo package)
+        {
+            Authors = string.Join(", ", package.Authors);
+            DependencySets = package.DependencySets;
+            Description = package.Description;
+            IconUrl = GetUriSafe(package.IconUrl);
+            LicenseUrl = GetUriSafe(package.LicenseUrl);
+            Owners = string.Join(", ", package.Owners);
+            PackageId = package.Id;
+            ProjectUrl = GetUriSafe(package.ProjectUrl);
+            Created = package.Created;
+            LastEdited = package.LastEdited;
+            Published = package.Published;
+            ReportAbuseUrl = GetUriSafe(package.ReportAbuseUrl);
+            RequireLicenseAcceptance = package.RequireLicenseAcceptance;
+            Summary = package.Summary;
+            Tags = package.Tags;
+            Title = package.Title;
+            Version = package.Version;
+            IsListed = package.IsListed;
+
+            long count;
+            if (long.TryParse(package.DownloadCount, out count))
+            {
+                DownloadCount = count;
+            }
+        }
         public PackageSearchMetadataV2Feed(V2FeedPackageInfo package, MetadataReferenceCache metadataCache)
         {
             Authors = metadataCache.GetString(string.Join(", ", package.Authors));
