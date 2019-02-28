@@ -355,13 +355,13 @@ namespace NuGet.Build.Tasks.Pack
             {
                 var targetFramework = tfmRef.GetProperty("TargetFramework");
 
-                if (tfmSpecificRefs.ContainsKey(tfmRef.Identity))
+                if (tfmSpecificRefs.ContainsKey(targetFramework))
                 {
                     tfmSpecificRefs[targetFramework].Add(tfmRef.Identity);
                 }
                 else
                 {
-                    tfmSpecificRefs.Add(tfmRef.Identity, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { targetFramework });
+                    tfmSpecificRefs.Add(targetFramework, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { tfmRef.Identity });
                 }
             }
 
