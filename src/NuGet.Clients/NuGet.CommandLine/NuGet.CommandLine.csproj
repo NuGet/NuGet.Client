@@ -123,6 +123,9 @@
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
 
+  <!-- Do nothing. This basically strips away the framework assemblies from the resulting nuspec.-->
+  <Target Name ="_GetFrameworkAssemblyReferences" DependsOnTargets="ResolveReferences"/>
+
   <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
     <ItemGroup>
       <DllsToSign Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe">

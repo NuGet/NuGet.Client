@@ -25,7 +25,7 @@ namespace NuGet.Commands
     {
         // Clear keyword for properties.
         public static readonly string Clear = nameof(Clear);
-        private static readonly string[] _httpPrefixes = new string[] { "http:", "https:" };
+        private static readonly string[] HttpPrefixes = new string[] { "http:", "https:" };
         private const string DoubleSlash = "//";
 
         /// <summary>
@@ -227,6 +227,7 @@ namespace NuGet.Commands
                     || restoreType == ProjectStyle.DotnetCliTool
                     || restoreType == ProjectStyle.DotnetToolReference)
                 {
+                    AddFrameworkAssemblies(result, items); // Check if this is ever true for PackageReference restore.
                     AddPackageReferences(result, items);
                     AddPackageDownloads(result, items);
 
@@ -680,6 +681,35 @@ namespace NuGet.Commands
             }
         }
 
+        private static void AddFrameworkAssemblies(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        {
+            foreach (var item in GetItemByType(items, "FrameworkAssembly"))
+            {
+                var dependency = new LibraryDependency();
+
+                dependency.LibraryRange = new LibraryRange(
+                   name: item.GetProperty("Id"),
+                   versionRange: GetVersionRange(item),
+                   typeConstraint: LibraryDependencyTarget.Reference);
+
+                ApplyIncludeFlags(dependency, item);
+
+                var frameworks = GetFrameworks(item);
+
+                if (frameworks.Count == 0)
+                {
+                    AddDependencyIfNotExist(spec, dependency);
+                }
+                else
+                {
+                    foreach (var framework in frameworks)
+                    {
+                        AddDependencyIfNotExist(spec, framework, dependency);
+                    }
+                }
+            }
+        }
+
         private static VersionRange GetVersionRange(IMSBuildItem item)
         {
             var rangeString = item.GetProperty("VersionRange");
@@ -833,9 +863,9 @@ namespace NuGet.Commands
 
             if (result.IndexOf('/') >= -1 && result.IndexOf(DoubleSlash) == -1)
             {
-                for (var i = 0; i < _httpPrefixes.Length; i++)
+                for (var i = 0; i < HttpPrefixes.Length; i++)
                 {
-                    result = FixSourcePath(result, _httpPrefixes[i], DoubleSlash);
+                    result = FixSourcePath(result, HttpPrefixes[i], DoubleSlash);
                 }
 
                 // For non-windows machines use file:///
