@@ -421,7 +421,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name ="_GetFrameworkReferences" DependsOnTargets="_CollectFrameworkReferences" Returns="@(TfmSpecificFrameworkReferences)">
     <ItemGroup>
-      <TfmSpecificFrameworkReferences Include="@(ReferencePath->'%(OriginalItemSpec)')">
+      <TfmSpecificFrameworkReferences Include="@(FrameworkReference)">
         <TargetFramework>$(TargetFramework)</TargetFramework>
       </TfmSpecificFrameworkReferences>
     </ItemGroup>

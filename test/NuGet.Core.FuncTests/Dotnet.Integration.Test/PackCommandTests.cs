@@ -3774,5 +3774,86 @@ namespace ClassLibrary
                 }
             }
         }
+
+        [PlatformTheory(Platform.Windows)]
+
+        [InlineData("Microsoft.DesktopUI", true, "netstandard1.4;net461", "", "net461")]
+        [InlineData("Microsoft.DesktopUI", false, "netstandard1.4;net461", "", "net461")]
+        [InlineData("System.IO", true, "netstandard1.4;net46", "", "net46")]
+        [InlineData("System.IO", true, "net46;net461", "net461", "net461")]
+        [InlineData("System.IO", true, "net461", "", "net461")]
+        public void PackCommand_PackProject_PacksFrameworkReferences(string referenceAssembly, bool pack, string targetFrameworks, string conditionalFramework, string expectedTargetFramework)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+
+                // Create the subdirectory structure for testing possible source paths for the content file
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    var frameworkProperty = "TargetFrameworks";
+                    if (targetFrameworks.Split(';').Count() == 1)
+                    {
+                        frameworkProperty = "TargetFramework";
+                    }
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, frameworkProperty, targetFrameworks);
+
+                    var attributes = new Dictionary<string, string>();
+
+                    var properties = new Dictionary<string, string>();
+                    if (!pack) // TODO NK - Add pack=false support
+                    {
+                        attributes["Pack"] = "false";
+                    }
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "FrameworkReference",
+                        referenceAssembly,
+                        conditionalFramework,
+                        properties,
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                // Assert
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+                //XPlatTestUtils.WaitForDebugger();
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var expectedFrameworks = expectedTargetFramework.Split(';');
+                    //TODO NK - Do we want the same thing? Should the extra API be propagated?
+                    var frameworkItems = nupkgReader.NuspecReader.GetFrameworkRefGroups();
+                    foreach (var framework in expectedFrameworks)
+                    {
+                        var nugetFramework = NuGetFramework.Parse(framework);
+                        var frameworkSpecificGroup = frameworkItems.Where(t => t.TargetFramework.Equals(nugetFramework)).FirstOrDefault();
+                        if (pack)
+                        {
+                            Assert.True(frameworkSpecificGroup?.FrameworkReferences.Contains(referenceAssembly));
+                        }
+                        else
+                        {
+                            Assert.Null(frameworkSpecificGroup);
+                        }
+
+                    }
+                }
+            }
+        }
     }
 }

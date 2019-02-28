@@ -357,7 +357,7 @@ namespace NuGet.Build.Tasks.Pack
 
                 if (tfmSpecificRefs.ContainsKey(tfmRef.Identity))
                 {
-                    tfmSpecificRefs[tfmRef.Identity].Add(targetFramework);
+                    tfmSpecificRefs[targetFramework].Add(tfmRef.Identity);
                 }
                 else
                 {
