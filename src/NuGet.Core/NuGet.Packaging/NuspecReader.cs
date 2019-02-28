@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
@@ -41,6 +40,7 @@ namespace NuGet.Packaging
         private const string ExcludeFlags = "exclude";
         private const string LicenseUrl = "licenseUrl";
         private const string Repository = "repository";
+
         private static readonly char[] CommaArray = new char[] { ',' };
         private readonly IFrameworkNameProvider _frameworkProvider;
 
@@ -552,6 +552,14 @@ namespace NuGet.Packaging
         public bool GetRequireLicenseAcceptance()
         {
             return StringComparer.OrdinalIgnoreCase.Equals(bool.TrueString, GetMetadataValue("requireLicenseAcceptance"));
+        }
+
+        /// <summary>
+        /// Read package dependencies for all frameworks
+        /// </summary>
+        public IEnumerable<FrameworkReferenceGroup> GetFrameworkRefGroups()
+        {
+            return NuspecUtility.GetFrameworkReferenceGroups(MetadataNode, _frameworkProvider, true);
         }
 
         private static bool? AttributeAsNullableBool(XElement element, string attributeName)

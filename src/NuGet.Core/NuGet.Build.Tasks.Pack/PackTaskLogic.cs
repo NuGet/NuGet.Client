@@ -226,6 +226,7 @@ namespace NuGet.Build.Tasks.Pack
                 frameworksWithSuppressedDependencies);
 
             PopulateFrameworkAssemblyReferences(builder, request);
+            PopulateFrameworkReferences(builder, request);
 
             return builder;
         }
@@ -344,6 +345,27 @@ namespace NuGet.Build.Tasks.Pack
                         t.Key, t.Value.Select(
                             k => NuGetFramework.Parse(k))
                             )));
+        }
+
+        private void PopulateFrameworkReferences(PackageBuilder builder, IPackTaskRequest<IMSBuildItem> request)
+        {
+            var tfmSpecificRefs = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase); // TODO NK: Make sure you test case sensitivity of the Framework References
+
+            foreach (var tfmRef in request.FrameworkReferences)
+            {
+                var targetFramework = tfmRef.GetProperty("TargetFramework");
+
+                if (tfmSpecificRefs.ContainsKey(tfmRef.Identity))
+                {
+                    tfmSpecificRefs[tfmRef.Identity].Add(targetFramework);
+                }
+                else
+                {
+                    tfmSpecificRefs.Add(tfmRef.Identity, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { targetFramework });
+                }
+            }
+
+            builder.FrameworkReferenceGroups.AddRange(tfmSpecificRefs.Select(e => new FrameworkReferenceGroup(NuGetFramework.Parse(e.Key), e.Value)));
         }
 
         public PackCommandRunner GetPackCommandRunner(

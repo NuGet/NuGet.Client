@@ -630,21 +630,6 @@ namespace NuGet.ProjectModel
                 WriteArray(frameworkInfo.Dependencies, JsonUtility.WriteString));
         }
 
-        private static PackageDependencyGroup ReadPackageDependencyGroup(string property, JToken json)
-        {
-            var targetFramework = string.Equals(property, "*") ? null : new NuGetFramework(property);
-            return new PackageDependencyGroup(
-                targetFramework,
-                JsonUtility.ReadObject(json as JObject, JsonUtility.ReadPackageDependency));
-        }
-
-        private static JProperty WritePackageDependencyGroup(PackageDependencyGroup item)
-        {
-            return new JProperty(
-                item.TargetFramework?.ToString() ?? "*",
-                JsonUtility.WriteObject(item.Packages, JsonUtility.WritePackageDependency));
-        }
-
         private static LockFileItem ReadFileItem(string property, JToken json)
         {
             return ReadFileItem(property, json, path => new LockFileItem(path));

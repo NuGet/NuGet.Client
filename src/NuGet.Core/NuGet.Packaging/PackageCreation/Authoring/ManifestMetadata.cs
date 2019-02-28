@@ -50,6 +50,7 @@ namespace NuGet.Packaging
             Language = copy.Language?.Trim();
             DependencyGroups = copy.DependencyGroups;
             FrameworkReferences = copy.FrameworkReferences;
+            FrameworkReferenceGroups = copy.FrameworkReferenceGroups;
             PackageAssemblyReferences = copy.PackageAssemblyReferences;
             PackageTypes = copy.PackageTypes;
             MinClientVersionString = copy.MinClientVersion?.ToString();
@@ -186,6 +187,8 @@ namespace NuGet.Packaging
                 _dependencyGroups = MergeDependencyGroups(value);
             }
         }
+
+        public IEnumerable<FrameworkReferenceGroup> FrameworkReferenceGroups { get; set; } = new List<FrameworkReferenceGroup>();
 
         public IEnumerable<FrameworkAssemblyReference> FrameworkReferences { get; set; } = new List<FrameworkAssemblyReference>();
 

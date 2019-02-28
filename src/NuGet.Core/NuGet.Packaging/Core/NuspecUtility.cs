@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Frameworks;
 
 namespace NuGet.Packaging.Core
 {
@@ -17,7 +18,7 @@ namespace NuGet.Packaging.Core
     {
         public static readonly string PackageTypes = "packageTypes";
         public static readonly string PackageType = "packageType";
-        public static readonly string PackageTypeName = "name";
+        public static readonly string Name = "name";
         public static readonly string Version = "version";
         public static readonly string Serviceable = "serviceable";
         public static readonly string Repository = "repository";
@@ -26,6 +27,10 @@ namespace NuGet.Packaging.Core
         public static readonly string RepositoryBranch = "branch";
         public static readonly string RepositoryCommit = "commit";
         public static readonly string License = "license";
+        public static readonly string Group = "group";
+        public static readonly string FrameworkReferences = "frameworkReferences";
+        public static readonly string FrameworkReference = "frameworkReference";
+        public static readonly string TargetFramework = "targetFramework";
 
         /// <summary>
         /// Gets the package types from a .nuspec metadata XML element.
@@ -64,7 +69,7 @@ namespace NuGet.Packaging.Core
             foreach (var node in nodes)
             {
                 // Get the required package type name.
-                var nameAttribute = node.Attribute(XName.Get(PackageTypeName));
+                var nameAttribute = node.Attribute(XName.Get(Name));
 
                 if (nameAttribute == null || string.IsNullOrWhiteSpace(nameAttribute.Value))
                 {
@@ -114,8 +119,51 @@ namespace NuGet.Packaging.Core
                 return false;
             }
 
-            string value = element.Value ?? element.Value.Trim();
+            var value = element.Value ?? element.Value.Trim();
             return System.Xml.XmlConvert.ToBoolean(value);
+        }
+
+        public static IEnumerable<FrameworkReferenceGroup> GetFrameworkReferenceGroups(XElement metadataNode, IFrameworkNameProvider frameworkProvider, bool useMetadataNamespace)
+        {
+            var ns = useMetadataNamespace ? metadataNode.GetDefaultNamespace().NamespaceName : null;
+            IEnumerable<XElement> frameworkReferenceGroups;
+            if (useMetadataNamespace)
+            {
+                var frameworkReferencesNode = metadataNode
+                    .Elements(XName.Get(FrameworkReferences, ns));
+                frameworkReferenceGroups = frameworkReferencesNode
+                .Elements(XName.Get(Group, ns));
+            }
+            else
+            {
+                frameworkReferenceGroups = metadataNode.Elements(XName.Get(Group));
+            }
+
+            foreach (var frameworkRefGroup in frameworkReferenceGroups)
+            {
+                var groupFramework = GetAttributeValue(frameworkRefGroup, TargetFramework);
+
+                var frameworkReferences = frameworkRefGroup
+                    .Elements(useMetadataNamespace ?
+                        XName.Get(FrameworkReference, ns) :
+                        XName.Get(FrameworkReference));
+
+                var framework = NuGetFramework.Parse(groupFramework, frameworkProvider);
+                var frameworkRefs = GetFrameworkReferences(frameworkReferences);
+
+                yield return new FrameworkReferenceGroup(framework, frameworkRefs);
+            }
+        }
+
+        private static IEnumerable<string> GetFrameworkReferences(IEnumerable<XElement> nodes)
+        {
+            return nodes.Select(e => GetAttributeValue(e, Name));
+        }
+
+        private static string GetAttributeValue(XElement element, string attributeName)
+        {
+            var attribute = element.Attribute(XName.Get(attributeName));
+            return attribute == null ? null : attribute.Value;
         }
     }
 }

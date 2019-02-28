@@ -69,6 +69,7 @@ namespace NuGet.Packaging
             Files = new Collection<IPackageFile>();
             DependencyGroups = new Collection<PackageDependencyGroup>();
             FrameworkReferences = new Collection<FrameworkAssemblyReference>();
+            FrameworkReferenceGroups = new Collection<FrameworkReferenceGroup>();
             ContentFiles = new Collection<ManifestContentFiles>();
             PackageAssemblyReferences = new Collection<PackageReferenceSet>();
             PackageTypes = new Collection<PackageType>();
@@ -226,6 +227,12 @@ namespace NuGet.Packaging
             private set;
         }
 
+        public Collection<FrameworkReferenceGroup> FrameworkReferenceGroups
+        {
+            get;
+            private set;
+        }
+
         public IList<NuGetFramework> TargetFrameworks
         {
             get;
@@ -316,6 +323,8 @@ namespace NuGet.Packaging
                 return PackageTypes;
             }
         }
+
+        IEnumerable<FrameworkReferenceGroup> IPackageMetadata.FrameworkReferenceGroups => FrameworkReferenceGroups;
 
         public Version MinClientVersion
         {
@@ -551,7 +560,7 @@ namespace NuGet.Packaging
 
             DependencyGroups.AddRange(metadata.DependencyGroups);
             FrameworkReferences.AddRange(metadata.FrameworkReferences);
-
+            FrameworkReferenceGroups.AddRange(metadata.FrameworkReferenceGroups);
             if (manifestMetadata.PackageAssemblyReferences != null)
             {
                 PackageAssemblyReferences.AddRange(manifestMetadata.PackageAssemblyReferences);

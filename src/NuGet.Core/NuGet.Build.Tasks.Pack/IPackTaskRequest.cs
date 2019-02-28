@@ -28,6 +28,7 @@ namespace NuGet.Build.Tasks.Pack
         bool DevelopmentDependency { get; }
         TItem[] FrameworkAssemblyReferences { get; }
         TItem[] FrameworksWithSuppressedDependencies { get; }
+        TItem[] FrameworkReferences { get; }
         string IconUrl { get; }
         bool IncludeBuildOutput { get; }
         bool IncludeSource { get; }
