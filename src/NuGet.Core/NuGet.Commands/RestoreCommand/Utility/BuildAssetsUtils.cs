@@ -501,7 +501,7 @@ namespace NuGet.Commands
                 var projectGraph = targetGraph.Graphs.FirstOrDefault();
 
                 // Distinct union of tool packages and packages with GeneratePathProperty=true
-                var packageIdsToCreatePropertiesFor = packagesWithTools.Union(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name)).Distinct(StringComparer.OrdinalIgnoreCase);
+                var packageIdsToCreatePropertiesFor = new HashSet<string>(packagesWithTools.Union(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name)), StringComparer.OrdinalIgnoreCase);
 
                 var localPackages = sortedPackages.Select(e => e.Value);
 
