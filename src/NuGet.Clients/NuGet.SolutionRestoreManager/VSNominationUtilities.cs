@@ -31,17 +31,17 @@ namespace NuGet.SolutionRestoreManager
         * ToolReferences *
         ******************/
 
-        internal static void ProcessToolReferences(ProjectNames projectNames, IEnumerable TargetFrameworks, IVsReferenceItems ToolReferences, DependencyGraphSpec dgSpec)
+        internal static void ProcessToolReferences(ProjectNames projectNames, IEnumerable targetFrameworks, IVsReferenceItems toolReferences, DependencyGraphSpec dgSpec)
         {
-            var toolFramework = GetToolFramework(TargetFrameworks);
-            var packagesPath = GetRestoreProjectPath(TargetFrameworks);
-            var fallbackFolders = GetRestoreFallbackFolders(TargetFrameworks).AsList();
-            var sources = GetRestoreSources(TargetFrameworks)
+            var toolFramework = GetToolFramework(targetFrameworks);
+            var packagesPath = GetRestoreProjectPath(targetFrameworks);
+            var fallbackFolders = GetRestoreFallbackFolders(targetFrameworks).AsList();
+            var sources = GetRestoreSources(targetFrameworks)
                 .Select(e => new PackageSource(e))
                 .ToList();
 
             
-            ToolReferences
+            toolReferences
                 .Cast<IVsReferenceItem>()
                 .Select(r => ToolRestoreUtility.GetSpec(
                     projectNames.FullName,
@@ -345,7 +345,7 @@ namespace NuGet.SolutionRestoreManager
             var versionRange = GetVersionRange(item);
             if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed TODO NK", versionRange.OriginalString));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
             }
 
             var downloadDependency = new DownloadDependency(id, versionRange);

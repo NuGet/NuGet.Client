@@ -106,22 +106,22 @@ namespace NuGet.SolutionRestoreManager.Test
         public ProjectRestoreInfoBuilder WithTargetFrameworkInfo(
             IVsTargetFrameworkInfo tfi)
         {
-            if(_projectRestoreInfo.TargetFrameworks is VsTargetFrameworks && tfi is VsTargetFrameworkInfo)
+            if(_projectRestoreInfo.TargetFrameworks is VsTargetFrameworks vsTargetFrameworks && tfi is VsTargetFrameworkInfo)
             {
-                (_projectRestoreInfo.TargetFrameworks as VsTargetFrameworks).Add(tfi);
+                vsTargetFrameworks.Add(tfi);
             }
 
-            if (_projectRestoreInfo2.TargetFrameworks is VsTargetFrameworks2 && tfi is VsTargetFrameworkInfo2)
+            if (_projectRestoreInfo2.TargetFrameworks is VsTargetFrameworks2 vsTargetFrameworks2 && tfi is VsTargetFrameworkInfo2)
             {
-                (_projectRestoreInfo2.TargetFrameworks as VsTargetFrameworks2).Add((IVsTargetFrameworkInfo2) tfi);
+                vsTargetFrameworks2.Add((IVsTargetFrameworkInfo2) tfi);
             }
 
             return this;
         }
 
-        public VsProjectRestoreInfo Build() => _projectRestoreInfo;
+        public VsProjectRestoreInfo ProjectRestoreInfo => _projectRestoreInfo;
 
-        public VsProjectRestoreInfo2 Build2() => _projectRestoreInfo2;
+        public VsProjectRestoreInfo2 ProjectRestoreInfo2 => _projectRestoreInfo2;
 
         private static VsTargetFrameworkInfo ToTargetFrameworkInfo(
             TargetFrameworkInformation tfm, 

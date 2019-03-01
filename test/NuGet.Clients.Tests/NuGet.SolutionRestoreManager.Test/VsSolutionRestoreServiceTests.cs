@@ -149,8 +149,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Act
             var actualRestoreSpec = isV2Nomination ?
-                await CaptureNominateResultAsync(projectFullPath, builder.Build2()) :
-                await CaptureNominateResultAsync(projectFullPath, builder.Build());
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
 
 
             // Assert
@@ -226,8 +226,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Act
             var actualRestoreSpec = isV2Nominate ?
-                await CaptureNominateResultAsync(projectFullPath, builder.Build2()) :
-                await CaptureNominateResultAsync(projectFullPath, builder.Build());
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
 
             // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
@@ -423,7 +423,7 @@ namespace NuGet.SolutionRestoreManager.Test
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         new[] { new VsProjectProperty("PackageVersion", version2) }))
-                .Build();
+                .ProjectRestoreInfo;
 
             // Act
             var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo);
@@ -459,7 +459,7 @@ namespace NuGet.SolutionRestoreManager.Test
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         new[] { new VsProjectProperty("PackageVersion", version2) }))
-                .Build2();
+                .ProjectRestoreInfo2;
 
             // Act
             var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
@@ -509,8 +509,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Act
             var actualRestoreSpec = isV2Nominate ?
-                await CaptureNominateResultAsync(projectFullPath, builder.Build2()) :
-                await CaptureNominateResultAsync(projectFullPath, builder.Build());
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
 
             // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
@@ -561,8 +561,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Act
             var actualRestoreSpec = isV2Nominate ?
-                await CaptureNominateResultAsync(projectFullPath, builder.Build2()) :
-                await CaptureNominateResultAsync(projectFullPath, builder.Build());
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
             // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
 
@@ -606,8 +606,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Act
            var actualRestoreSpec = isV2Nominate ?
-                        await CaptureNominateResultAsync(projectFullPath, builder.Build2()) :
-                        await CaptureNominateResultAsync(projectFullPath, builder.Build());
+                        await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                        await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
 
             // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
@@ -639,7 +639,7 @@ namespace NuGet.SolutionRestoreManager.Test
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         new[] { new VsProjectProperty("PackageVersion", version2) }))
-                .Build();
+                .ProjectRestoreInfo;
 
             var cache = Mock.Of<IProjectSystemCache>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
@@ -677,7 +677,7 @@ namespace NuGet.SolutionRestoreManager.Test
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         new[] { new VsProjectProperty("PackageVersion", version2) }))
-                .Build2();
+                .ProjectRestoreInfo2;
 
             var cache = Mock.Of<IProjectSystemCache>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
@@ -716,8 +716,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Act
            var actualRestoreSpec = isV2Nominate ?
-                        await CaptureNominateResultAsync(projectFullPath, builder.Build2()) :
-                        await CaptureNominateResultAsync(projectFullPath, builder.Build());
+                        await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                        await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
 
             // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
@@ -759,7 +759,7 @@ namespace NuGet.SolutionRestoreManager.Test
                                 new VsProjectProperty("RestoreFallbackFolders", "base"),
                                 new VsProjectProperty("RestoreAdditionalProjectSources", "b"),
                                 new VsProjectProperty("RestoreAdditionalProjectFallbackFolders", "y")}))
-                .Build();
+                .ProjectRestoreInfo;
             var projectFullPath = cps.ProjectFullPath;
 
             // Act
@@ -806,7 +806,7 @@ namespace NuGet.SolutionRestoreManager.Test
                                 new VsProjectProperty("RestoreFallbackFolders", "base"),
                                 new VsProjectProperty("RestoreAdditionalProjectSources", "b"),
                                 new VsProjectProperty("RestoreAdditionalProjectFallbackFolders", "y")}))
-                .Build2();
+                .ProjectRestoreInfo2;
             var projectFullPath = cps.ProjectFullPath;
 
             // Act
@@ -840,7 +840,7 @@ namespace NuGet.SolutionRestoreManager.Test
                                 new VsProjectProperty("RestoreFallbackFolders", "base"),
                                 new VsProjectProperty("RestoreAdditionalProjectSources", "a"),
                                 new VsProjectProperty("RestoreAdditionalProjectFallbackFoldersExcludes", "x")})) // Remove FF
-                .Build();
+                .ProjectRestoreInfo;
             var projectFullPath = cps.ProjectFullPath;
 
             // Act
@@ -876,7 +876,7 @@ namespace NuGet.SolutionRestoreManager.Test
                                 new VsProjectProperty("RestoreFallbackFolders", "base"),
                                 new VsProjectProperty("RestoreAdditionalProjectSources", "a"),
                                 new VsProjectProperty("RestoreAdditionalProjectFallbackFoldersExcludes", "x")})) // Remove FF
-                .Build2();
+                .ProjectRestoreInfo2;
             var projectFullPath = cps.ProjectFullPath;
 
             // Act
@@ -911,7 +911,7 @@ namespace NuGet.SolutionRestoreManager.Test
                                 new VsProjectProperty("RestoreFallbackFolders", "base"),
                                 new VsProjectProperty("RestoreAdditionalProjectSources", "a"),
                                 new VsProjectProperty("RestoreAdditionalProjectFallbackFoldersExcludes", "y")}))
-                .Build();
+                .ProjectRestoreInfo;
             var projectFullPath = cps.ProjectFullPath;
 
             // Act
@@ -950,7 +950,7 @@ namespace NuGet.SolutionRestoreManager.Test
                                 new VsProjectProperty("RestoreFallbackFolders", "base"),
                                 new VsProjectProperty("RestoreAdditionalProjectSources", "a"),
                                 new VsProjectProperty("RestoreAdditionalProjectFallbackFoldersExcludes", "y")}))
-                .Build2();
+                .ProjectRestoreInfo2;
             var projectFullPath = cps.ProjectFullPath;
 
             // Act
@@ -1006,8 +1006,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Act
             var actualRestoreSpec = isV2Nominate ?
-                await CaptureNominateResultAsync(projectFullPath, builder.Build2()) :
-                await CaptureNominateResultAsync(projectFullPath, builder.Build());
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
 
             // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
@@ -1089,8 +1089,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Act
             var actualRestoreSpec = isV2Nominate ?
-                await CaptureNominateResultAsync(projectFullPath, builder.Build2()) :
-                await CaptureNominateResultAsync(projectFullPath, builder.Build());
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
 
             // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
@@ -1154,8 +1154,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Act
             var actualRestoreSpec = isV2Nominate ?
-                await CaptureNominateResultAsync(projectFullPath, builder.Build2()) :
-                await CaptureNominateResultAsync(projectFullPath, builder.Build());
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
 
             // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
@@ -1197,8 +1197,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Act
             var actualRestoreSpec = isV2Nominate ?
-                await CaptureNominateResultAsync(projectFullPath, builder.Build2()) :
-                await CaptureNominateResultAsync(projectFullPath, builder.Build());
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
 
             // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
@@ -1384,8 +1384,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Act
             var actualRestoreSpec = isV2Nominate ?
-                    await CaptureNominateResultAsync(projectFullPath, builder.Build2()) :
-                    await CaptureNominateResultAsync(projectFullPath, builder.Build());
+                    await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                    await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
             // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
 
@@ -1518,9 +1518,9 @@ namespace NuGet.SolutionRestoreManager.Test
             public string ProjectFullPath { get; set; }
             public ProjectRestoreInfoBuilder Builder { get; set; }
 
-            public VsProjectRestoreInfo ProjectRestoreInfo => Builder.Build();
+            public VsProjectRestoreInfo ProjectRestoreInfo => Builder.ProjectRestoreInfo;
 
-            public VsProjectRestoreInfo2 ProjectRestoreInfo2 => Builder.Build2();
+            public VsProjectRestoreInfo2 ProjectRestoreInfo2 => Builder.ProjectRestoreInfo2;
 
         }
     }

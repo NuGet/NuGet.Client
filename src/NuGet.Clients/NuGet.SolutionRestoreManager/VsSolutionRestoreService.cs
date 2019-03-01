@@ -27,6 +27,7 @@ namespace NuGet.SolutionRestoreManager
     [PartCreationPolicy(CreationPolicy.Shared)]
     [Export(typeof(IVsSolutionRestoreService))]
     [Export(typeof(IVsSolutionRestoreService2))]
+    [Export(typeof(IVsSolutionRestoreService3))]
     public sealed class VsSolutionRestoreService : IVsSolutionRestoreService, IVsSolutionRestoreService2, IVsSolutionRestoreService3
     {
         private readonly IProjectSystemCache _projectSystemCache;
@@ -76,7 +77,7 @@ namespace NuGet.SolutionRestoreManager
         /// <param name="projectRestoreInfo">projectRestoreInfo. Can be null</param>
         /// <param name="projectRestoreInfo2">proectRestoreInfo2. Can be null</param>
         /// <param name="token"></param>
-        /// <remarks>Only and exactly one of projectRestoreInfos can be null.</remarks>
+        /// <remarks>Exactly one of projectRestoreInfos has to null.</remarks>
         /// <returns>The task that scheduled restore</returns>
         private Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2, CancellationToken token)
         {
@@ -159,7 +160,7 @@ namespace NuGet.SolutionRestoreManager
             return dgSpec;
         }
 
-        private static PackageSpec ToPackageSpec(ProjectNames projectNames, IEnumerable TargetFrameworks, string OriginalTargetFrameworks, string BaseIntermediatePath)
+        private static PackageSpec ToPackageSpec(ProjectNames projectNames, IEnumerable TargetFrameworks, string originalTargetFrameworkstr, string msbuildProjectExtensionsPath)
         {
             var tfis = TargetFrameworks
                 .Cast<IVsTargetFrameworkInfo>()
@@ -176,10 +177,10 @@ namespace NuGet.SolutionRestoreManager
             var crossTargeting = originalTargetFrameworks.Length > 1;
 
             // if "TargetFrameworks" property presents in the project file prefer the raw value.
-            if (!string.IsNullOrWhiteSpace(OriginalTargetFrameworks))
+            if (!string.IsNullOrWhiteSpace(originalTargetFrameworkstr))
             {
                 originalTargetFrameworks = MSBuildStringUtility.Split(
-                    OriginalTargetFrameworks);
+                    originalTargetFrameworkstr);
                 // cross-targeting is always ON even in case of a single tfm in the list.
                 crossTargeting = true;
             }
@@ -187,7 +188,7 @@ namespace NuGet.SolutionRestoreManager
             var outputPath = Path.GetFullPath(
                                 Path.Combine(
                                     projectDirectory,
-                                    BaseIntermediatePath));
+                                    msbuildProjectExtensionsPath));
 
             var projectName = VSNominationUtilities.GetPackageId(projectNames, TargetFrameworks);
 

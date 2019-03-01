@@ -17,6 +17,7 @@ namespace NuGet.SolutionRestoreManager
     {
         /// <summary>
         /// A task providing last/current restore operation status.
+        /// Could be null if restore has not started yet.
         /// </summary>
         /// <remarks>
         /// This task is a reflection of the current state of the current-restore-operation or
@@ -32,7 +33,7 @@ namespace NuGet.SolutionRestoreManager
         /// This entry point also handles PackageDownload items
         /// </summary>
         /// <param name="projectUniqueName">
-        /// Unique identificator of the project. Should be a full path to project file.
+        /// Unique identifier of the project. Should be a full path to project file.
         /// </param>
         /// <param name="projectRestoreInfo">Metadata <see cref="IVsProjectRestoreInfo2"/> needed for restoring the project.</param>
         /// <param name="token">Cancellation token.</param>
@@ -41,6 +42,9 @@ namespace NuGet.SolutionRestoreManager
         /// NuGet will batch restore requests so it's possible the same restore task will be returned for multiple projects.
         /// When the requested restore operation for the given project completes the task will indicate operation success or failure.
         /// </returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="projectUniqueName" /> is not the path of a project file.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="projectRestoreInfo" /> is <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="token" /> is cancelled.</exception>
         Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo2 projectRestoreInfo, CancellationToken token);
     }
 }
