@@ -51,6 +51,8 @@ namespace NuGet.ProjectModel
         private const string PackageSpecProperty = "project";
         private const string LogsProperty = "logs";
         private const string EmbedProperty = "embed";
+        private const string FrameworkReferencesProperty = "frameworkReferences";
+
 
         // Legacy property names
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";
@@ -487,6 +489,7 @@ namespace NuGet.ProjectModel
             library.RuntimeTargets = JsonUtility.ReadObject(json[RuntimeTargetsProperty] as JObject, ReadRuntimeTarget);
             library.ToolsAssemblies = JsonUtility.ReadObject(json[ToolsProperty] as JObject, ReadFileItem);
             library.EmbedAssemblies = JsonUtility.ReadObject(json[EmbedProperty] as JObject, ReadFileItem);
+            library.FrameworkReferences = ReadArray(json[FrameworkReferencesProperty] as JArray, ReadString);
 
             return library;
         }
@@ -531,6 +534,13 @@ namespace NuGet.ProjectModel
                 var ordered = library.RuntimeAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
                 json[RuntimeProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+            }
+
+            if(library.FrameworkReferences.Count > 0)
+            {
+                var ordered = library.FrameworkReferences.OrderBy(reference => reference, StringComparer.Ordinal);
+
+                json[FrameworkReferencesProperty] = WriteArray(ordered, JsonUtility.WriteString);
             }
 
             if (library.ResourceAssemblies.Count > 0)
