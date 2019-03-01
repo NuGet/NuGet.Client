@@ -213,6 +213,7 @@ namespace NuGet.SolutionRestoreManager.Test
                         "netcoreapp2.0",
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
                         new[] { new VsProjectProperty("RestorePackagesPath", restorePackagesPath),
                                 new VsProjectProperty("RestoreSources", restoreSources),
                                 new VsProjectProperty("RestoreFallbackFolders", fallbackFolders),
@@ -498,6 +499,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
                 new VsTargetFrameworkInfo(
                         "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         new[] {new VsProjectProperty("RestorePackagesPath", restorePackagesPath),
@@ -819,6 +821,53 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        public async Task NominateProjectAsync_PRI2_VerifySourcesAreCombinedAcrossFrameworks()
+        {
+            var cps = NewCpsProject(@"{ }");
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo2(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("RestoreSources", "base"),
+                                new VsProjectProperty("RestoreFallbackFolders", "base"),
+                                new VsProjectProperty("RestoreAdditionalProjectSources", "a;d"),
+                                new VsProjectProperty("RestoreAdditionalProjectFallbackFolders", "x;z")}))
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo2(
+                        "netcoreapp2.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("RestoreSources", "base"),
+                                new VsProjectProperty("RestoreFallbackFolders", "base"),
+                                new VsProjectProperty("RestoreAdditionalProjectSources", "b"),
+                                new VsProjectProperty("RestoreAdditionalProjectFallbackFolders", "y")}))
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo2(
+                        "netcoreapp2.1",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("RestoreSources", "base"),
+                                new VsProjectProperty("RestoreFallbackFolders", "base"),
+                                new VsProjectProperty("RestoreAdditionalProjectSources", "b"),
+                                new VsProjectProperty("RestoreAdditionalProjectFallbackFolders", "y")}))
+                .Build2();
+            var projectFullPath = cps.ProjectFullPath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
+            var metadata = actualRestoreSpec.Projects.Single().RestoreMetadata;
+
+            // Assert
+            metadata.Sources.Select(e => e.Source).ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a", "b", "d" });
+            metadata.FallbackFolders.ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "x", "y", "z" });
+        }
+
+        [Fact]
         public async Task NominateProjectAsync_VerifyExcludedFallbackFoldersAreRemoved()
         {
             var cps = NewCpsProject(@"{ }");
@@ -877,6 +926,42 @@ namespace NuGet.SolutionRestoreManager.Test
                                 new VsProjectProperty("RestoreAdditionalProjectSources", "a"),
                                 new VsProjectProperty("RestoreAdditionalProjectFallbackFoldersExcludes", "x")})) // Remove FF
                 .ProjectRestoreInfo2;
+            var projectFullPath = cps.ProjectFullPath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
+            var metadata = actualRestoreSpec.Projects.Single().RestoreMetadata;
+
+            // Assert
+            metadata.Sources.Select(e => e.Source).ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a" });
+            metadata.FallbackFolders.ShouldBeEquivalentTo(new[] { "base" });
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_PRI2_VerifyExcludedFallbackFoldersAreRemoved()
+        {
+            var cps = NewCpsProject(@"{ }");
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo2(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("RestoreSources", "base"),
+                                new VsProjectProperty("RestoreFallbackFolders", "base"),
+                                new VsProjectProperty("RestoreAdditionalProjectFallbackFolders", "x")})) // Add FF
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo2(
+                        "netcoreapp2.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("RestoreSources", "base"),
+                                new VsProjectProperty("RestoreFallbackFolders", "base"),
+                                new VsProjectProperty("RestoreAdditionalProjectSources", "a"),
+                                new VsProjectProperty("RestoreAdditionalProjectFallbackFoldersExcludes", "x")})) // Remove FF
+                .Build2();
             var projectFullPath = cps.ProjectFullPath;
 
             // Act
@@ -1184,6 +1269,7 @@ namespace NuGet.SolutionRestoreManager.Test
                         }) :
                 new VsTargetFrameworkInfo(
                         "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         new[] {
