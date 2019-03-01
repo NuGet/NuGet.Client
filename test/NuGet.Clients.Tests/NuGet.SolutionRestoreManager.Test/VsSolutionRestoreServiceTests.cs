@@ -1395,6 +1395,32 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.True(actualProjectSpec.TargetFrameworks.First().Dependencies.First().NoWarn.First().Equals(NuGetLogCode.NU1605));
         }
 
+        [Fact]
+        public void NominateProjectAsync_ThrowsNullReferenceException()
+        {
+            var cache = Mock.Of<IProjectSystemCache>();
+
+            Mock.Get(cache)
+                .Setup(x => x.AddProjectRestoreInfo(
+                    It.IsAny<ProjectNames>(),
+                    It.IsAny<DependencyGraphSpec>()))
+                .Returns(true);
+
+            var completedRestoreTask = Task.FromResult(true);
+
+            var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
+
+            var service = new VsSolutionRestoreService(
+                cache, restoreWorker, NullLogger.Instance);
+
+            // Act
+            _ = Assert.ThrowsAsync<ArgumentNullException>(async () => await service.NominateProjectAsync(@"F:\project\project.csproj", (IVsProjectRestoreInfo)null, CancellationToken.None));
+
+            _ = Assert.ThrowsAsync<ArgumentNullException>(async () => await service.NominateProjectAsync(@"F:\project\project.csproj", (IVsProjectRestoreInfo2)null, CancellationToken.None));
+
+
+        }
+
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
             string projectFullPath, IVsProjectRestoreInfo pri)
         {

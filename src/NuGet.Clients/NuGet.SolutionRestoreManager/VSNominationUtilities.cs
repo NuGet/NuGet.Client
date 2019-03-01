@@ -62,7 +62,7 @@ namespace NuGet.SolutionRestoreManager
 
         #region IVSTargetFrameworksAPIs
         /**********************************************************************
-         * IVSTargetFrameworks based APIs (1st iteration of the nominate API.) * 
+         * IVSTargetFrameworks based APIs                                     * 
          **********************************************************************/
 
         internal static RuntimeGraph GetRuntimeGraph(IEnumerable targetFrameworks)

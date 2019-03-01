@@ -91,6 +91,11 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(projectRestoreInfo));
             }
 
+            if (projectRestoreInfo == null && projectRestoreInfo2 == null)
+            {
+                throw new ArgumentException($"Internal error: Both {nameof(projectRestoreInfo)} and {nameof(projectRestoreInfo2)} cannot have values. Please file an issue at NuGet/Home if you see this exception.");
+            }
+
             if (projectRestoreInfo != null)
             {
                 if (projectRestoreInfo.TargetFrameworks == null)
