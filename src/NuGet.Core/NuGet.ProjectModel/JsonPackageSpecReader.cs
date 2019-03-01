@@ -13,6 +13,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
@@ -793,11 +794,30 @@ namespace NuGet.ProjectModel
                 "frameworkAssemblies",
                 isGacOrFrameworkReference: true);
 
+            PopulateFrameworkReferences(
+                targetFrameworkInformation.FrameworkReferences,
+                properties,
+                "frameworkReferences"
+                );
             frameworkAssemblies.ForEach(d => targetFrameworkInformation.Dependencies.Add(d));
 
             packageSpec.TargetFrameworks.Add(targetFrameworkInformation);
 
             return true;
+        }
+
+        private static void PopulateFrameworkReferences(IList<string> frameworkReferences, JObject properties, string frameworkReferenceName)
+        {
+            var frameworkRefProperty = properties[frameworkReferenceName];
+
+            if (frameworkRefProperty != null)
+            {
+                IEnumerable<string> frameworkRefArray;
+                if (TryGetStringEnumerableFromJArray(frameworkRefProperty, out frameworkRefArray))
+                {
+                    frameworkReferences.AddRange(frameworkRefArray);
+                }
+            }
         }
 
         private static void PopulateDownloadDependencies(IList<DownloadDependency> downloadDependencies, JObject properties, string packageSpecPath)

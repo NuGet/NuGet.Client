@@ -495,11 +495,20 @@ namespace NuGet.ProjectModel
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfTrue(writer, "warn", framework.Warn);
                     SetDownloadDependencies(writer, framework.DownloadDependencies);
+                    SetFrameworkReferences(writer, framework.FrameworkReferences);
 
                     writer.WriteObjectEnd();
                 }
 
                 writer.WriteObjectEnd();
+            }
+        }
+
+        private static void SetFrameworkReferences(IObjectWriter writer, IList<string> frameworkReferences)
+        {
+            if (frameworkReferences?.Any() == true)
+            {
+                writer.WriteNameArray("frameworkReferences", frameworkReferences);
             }
         }
 
