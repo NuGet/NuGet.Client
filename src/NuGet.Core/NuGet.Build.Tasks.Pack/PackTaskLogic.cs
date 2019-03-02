@@ -365,7 +365,7 @@ namespace NuGet.Build.Tasks.Pack
                 }
             }
 
-            builder.FrameworkReferenceGroups.AddRange(tfmSpecificRefs.Select(e => new FrameworkReferenceGroup(NuGetFramework.Parse(e.Key), e.Value)));
+            builder.FrameworkReferenceGroups.AddRange(tfmSpecificRefs.Select(e => new FrameworkSpecificGroup(NuGetFramework.Parse(e.Key), e.Value)));
         }
 
         public PackCommandRunner GetPackCommandRunner(

@@ -8,7 +8,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Shared;
 
-namespace NuGet.Packaging // TODO NK - Consider reusing this model for the FrameworkReferenceGroup (it kind of does the same thing)
+namespace NuGet.Packaging
 {
     /// <summary>
     /// A group of items/files from a nupkg with the same target framework.

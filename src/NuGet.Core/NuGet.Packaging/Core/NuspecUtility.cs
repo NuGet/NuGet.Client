@@ -123,7 +123,7 @@ namespace NuGet.Packaging.Core
             return System.Xml.XmlConvert.ToBoolean(value);
         }
 
-        public static IEnumerable<FrameworkReferenceGroup> GetFrameworkReferenceGroups(XElement metadataNode, IFrameworkNameProvider frameworkProvider, bool useMetadataNamespace)
+        public static IEnumerable<FrameworkSpecificGroup> GetFrameworkReferenceGroups(XElement metadataNode, IFrameworkNameProvider frameworkProvider, bool useMetadataNamespace)
         {
             var ns = useMetadataNamespace ? metadataNode.GetDefaultNamespace().NamespaceName : null;
             IEnumerable<XElement> frameworkReferenceGroups;
@@ -151,7 +151,7 @@ namespace NuGet.Packaging.Core
                 var framework = NuGetFramework.Parse(groupFramework, frameworkProvider);
                 var frameworkRefs = GetFrameworkReferences(frameworkReferences);
 
-                yield return new FrameworkReferenceGroup(framework, frameworkRefs);
+                yield return new FrameworkSpecificGroup(framework, frameworkRefs);
             }
         }
 

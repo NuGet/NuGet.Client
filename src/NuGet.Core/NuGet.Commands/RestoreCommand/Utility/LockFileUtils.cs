@@ -363,11 +363,12 @@ namespace NuGet.Commands
                 }
             }
 
+            // Related to: FrameworkReference item, added first in .NET Core 3.0
             var frameworkRef = nuspec.GetFrameworkRefGroups().GetNearest(framework);
 
             if (frameworkRef != null)
             {
-                lockFileLib.FrameworkReferences.AddRange(frameworkRef.FrameworkReferences);
+                lockFileLib.FrameworkReferences.AddRange(frameworkRef.Items);
             }
         }
 
