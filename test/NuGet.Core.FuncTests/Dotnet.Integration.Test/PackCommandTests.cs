@@ -3860,12 +3860,12 @@ namespace ClassLibrary
                         {
                             if (frameworkRef.Value)
                             {
-                                Assert.True(frameworkSpecificGroup?.FrameworkReferences.Contains(frameworkRef.Key));
+                                Assert.True(frameworkSpecificGroup?.Items.Contains(frameworkRef.Key));
                             }
                             else
                             {
 
-                                Assert.False(frameworkSpecificGroup == null ? false : frameworkSpecificGroup.FrameworkReferences.Contains(frameworkRef.Key));
+                                Assert.False(frameworkSpecificGroup == null ? false : frameworkSpecificGroup.Items.Contains(frameworkRef.Key));
                             }
                         }
                     }

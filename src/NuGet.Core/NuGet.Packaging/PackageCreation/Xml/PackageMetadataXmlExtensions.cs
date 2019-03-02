@@ -112,7 +112,7 @@ namespace NuGet.Packaging.Xml
                 objectSets: metadata.FrameworkReferenceGroups,
                 isGroupable: set => true, // the TFM is required for framework references
                 getGroupIdentifer: set => set.TargetFramework.GetFrameworkString(),
-                getItems: set => set.FrameworkReferences,
+                getItems: set => set.Items,
                 getXElementFromItem : GetXElementFromFrameworkReference,
                 parentName: NuspecUtility.FrameworkReferences,
                 identifierAttributeName : TargetFramework));
