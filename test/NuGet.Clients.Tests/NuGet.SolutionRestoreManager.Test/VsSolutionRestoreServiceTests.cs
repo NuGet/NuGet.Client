@@ -903,44 +903,6 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public async Task NominateProjectAsync_PRI2_VerifyExcludedFallbackFoldersAreRemoved()
-        {
-            var cps = NewCpsProject(@"{ }");
-            var pri = cps.Builder
-                .WithTargetFrameworkInfo(
-                    new VsTargetFrameworkInfo2(
-                        "netcoreapp1.0",
-                        Enumerable.Empty<IVsReferenceItem>(),
-                        Enumerable.Empty<IVsReferenceItem>(),
-                        Enumerable.Empty<IVsReferenceItem>(),
-                        Enumerable.Empty<IVsReferenceItem>(),
-                        new[] { new VsProjectProperty("RestoreSources", "base"),
-                                new VsProjectProperty("RestoreFallbackFolders", "base"),
-                                new VsProjectProperty("RestoreAdditionalProjectFallbackFolders", "x")})) // Add FF
-                .WithTargetFrameworkInfo(
-                    new VsTargetFrameworkInfo2(
-                        "netcoreapp2.0",
-                        Enumerable.Empty<IVsReferenceItem>(),
-                        Enumerable.Empty<IVsReferenceItem>(),
-                        Enumerable.Empty<IVsReferenceItem>(),
-                        Enumerable.Empty<IVsReferenceItem>(),
-                        new[] { new VsProjectProperty("RestoreSources", "base"),
-                                new VsProjectProperty("RestoreFallbackFolders", "base"),
-                                new VsProjectProperty("RestoreAdditionalProjectSources", "a"),
-                                new VsProjectProperty("RestoreAdditionalProjectFallbackFoldersExcludes", "x")})) // Remove FF
-                .Build2();
-            var projectFullPath = cps.ProjectFullPath;
-
-            // Act
-            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri);
-            var metadata = actualRestoreSpec.Projects.Single().RestoreMetadata;
-
-            // Assert
-            metadata.Sources.Select(e => e.Source).ShouldBeEquivalentTo(new[] { "base", VSRestoreSettingsUtilities.AdditionalValue, "a" });
-            metadata.FallbackFolders.ShouldBeEquivalentTo(new[] { "base" });
-        }
-
-        [Fact]
         public async Task NominateProjectAsync_VerifyToolRestoresUseAdditionalSourcesAndFallbackFolders()
         {
             var cps = NewCpsProject(@"{ }");
@@ -1035,6 +997,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 (IVsTargetFrameworkInfo)
                 new VsTargetFrameworkInfo2(
                         "netcoreapp2.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
@@ -1409,6 +1372,169 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.False(result, "Project restore nomination must fail.");
         }
 
+        [Fact]
+        public async Task NominateProjectAsync_BasicFrameworkReferences()
+        {
+            var consoleAppProjectJson = @"{
+    ""frameworks"": {
+        ""netcoreapp3.0"": {
+            ""dependencies"": {
+                ""NuGet.Protocol"": {
+                    ""target"": ""Package"",
+                    ""version"": ""5.1.0""
+                },
+            },
+            ""frameworkReferences"": [
+                ""Microsoft.WindowsDesktop.App|WPF"",
+                ""Microsoft.WindowsDesktop.App|WinForms""
+            ]
+            }
+        }
+    }";
+            var projectName = "ConsoleApp1";
+            var cps = NewCpsProject(consoleAppProjectJson, projectName);
+            var projectFullPath = cps.ProjectFullPath;
+            var expectedBaseIntermediate = cps.ProjectRestoreInfo2.BaseIntermediatePath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo2);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal("1.0.0", actualProjectSpec.Version.ToString());
+
+            var actualMetadata = actualProjectSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
+            Assert.Equal(projectName, actualMetadata.ProjectName);
+            Assert.Equal(ProjectStyle.PackageReference, actualMetadata.ProjectStyle);
+            Assert.Equal(expectedBaseIntermediate, actualMetadata.OutputPath);
+
+            Assert.Single(actualProjectSpec.TargetFrameworks);
+            var actualTfi = actualProjectSpec.TargetFrameworks.Single();
+
+            var expectedFramework = NuGetFramework.Parse("netcoreapp3.0");
+            Assert.Equal(expectedFramework, actualTfi.FrameworkName);
+
+            AssertFrameworkReferences(actualTfi,
+                "Microsoft.WindowsDesktop.App|WPF",
+                "Microsoft.WindowsDesktop.App|WinForms");
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_FrameworkReferencesAreCaseInsensitive()
+        {
+            var consoleAppProjectJson = @"{
+    ""frameworks"": {
+        ""netcoreapp3.0"": {
+            ""dependencies"": {
+                ""NuGet.Protocol"": {
+                    ""target"": ""Package"",
+                    ""version"": ""5.1.0""
+                },
+            },
+            ""frameworkReferences"": [
+                ""Microsoft.WindowsDesktop.App|WinForms"",
+                ""Microsoft.WindowsDesktop.App|WINFORMS""
+            ]
+            }
+        }
+    }";
+            var projectName = "ConsoleApp1";
+            var cps = NewCpsProject(consoleAppProjectJson, projectName);
+            var projectFullPath = cps.ProjectFullPath;
+            var expectedBaseIntermediate = cps.ProjectRestoreInfo2.BaseIntermediatePath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo2);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal("1.0.0", actualProjectSpec.Version.ToString());
+
+            var actualMetadata = actualProjectSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
+            Assert.Equal(projectName, actualMetadata.ProjectName);
+            Assert.Equal(ProjectStyle.PackageReference, actualMetadata.ProjectStyle);
+            Assert.Equal(expectedBaseIntermediate, actualMetadata.OutputPath);
+
+            Assert.Single(actualProjectSpec.TargetFrameworks);
+            var actualTfi = actualProjectSpec.TargetFrameworks.Single();
+
+            var expectedFramework = NuGetFramework.Parse("netcoreapp3.0");
+            Assert.Equal(expectedFramework, actualTfi.FrameworkName);
+
+            AssertFrameworkReferences(actualTfi,
+                "Microsoft.WindowsDesktop.App|WinForms");
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_FrameworkReferencesMultiTargeting()
+        {
+            var consoleAppProjectJson = @"{
+    ""frameworks"": {
+        ""netcoreapp3.0"": {
+            ""frameworkReferences"": [
+                ""Microsoft.WindowsDesktop.App|WPF"",
+                ""Microsoft.WindowsDesktop.App|WinForms""
+            ]
+        },
+         ""netcoreapp3.1"": {
+            ""frameworkReferences"": [
+                ""Microsoft.ASPNetCore.App""
+            ]
+            }
+        }
+        },
+    }";
+            var projectName = "ConsoleApp1";
+            var cps = NewCpsProject(consoleAppProjectJson, projectName);
+            var projectFullPath = cps.ProjectFullPath;
+            var expectedBaseIntermediate = cps.ProjectRestoreInfo2.BaseIntermediatePath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo2);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal("1.0.0", actualProjectSpec.Version.ToString());
+
+            var actualMetadata = actualProjectSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
+            Assert.Equal(projectName, actualMetadata.ProjectName);
+            Assert.Equal(ProjectStyle.PackageReference, actualMetadata.ProjectStyle);
+            Assert.Equal(expectedBaseIntermediate, actualMetadata.OutputPath);
+
+            Assert.Equal(2, actualProjectSpec.TargetFrameworks.Count);
+
+            var tfi = actualProjectSpec.TargetFrameworks.First();
+
+            var expectedFramework = NuGetFramework.Parse("netcoreapp3.0");
+            Assert.Equal(expectedFramework, tfi.FrameworkName);
+
+            AssertFrameworkReferences(tfi,
+                "Microsoft.WindowsDesktop.App|WPF",
+                "Microsoft.WindowsDesktop.App|WinForms");
+
+            tfi = actualProjectSpec.TargetFrameworks.Last();
+            expectedFramework = NuGetFramework.Parse("netcoreapp3.1");
+            Assert.Equal(expectedFramework, tfi.FrameworkName);
+
+            AssertFrameworkReferences(tfi,
+                "Microsoft.ASPNetCore.App");
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -1595,6 +1721,11 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Select(ld => $"{ld.Name}:{ld.VersionRange.OriginalString}");
 
             Assert.Equal(expectedPackages, actualPackages);
+        }
+
+        private static void AssertFrameworkReferences(TargetFrameworkInformation actualTfi, params string[] expectedPackages)
+        {
+            Assert.Equal(expectedPackages, actualTfi.FrameworkReferences);
         }
 
         private class TestContext
