@@ -351,7 +351,7 @@ namespace NuGet.Commands
         private static void AddFrameworkReferences(LockFileTargetLibrary lockFileLib, NuGetFramework framework, NuspecReader nuspec)
         {
             // Exclude framework references for package based frameworks.
-            if (!framework.IsPackageBased) // TODO NK - Check what happens if you write framework assemblies during the average net core build. We can always say .NET Core 3.0 and up are package based so this would work outside of the box. The problem is that get nearest might return net45 as a compatible one. Check what happesn with ATF and framework assemblies.
+            if (!framework.IsPackageBased)
             {
                 var frameworkAssemblies = nuspec.GetFrameworkReferenceGroups().GetNearest(framework);
                 if (frameworkAssemblies != null)
@@ -367,7 +367,7 @@ namespace NuGet.Commands
 
             if (frameworkRef != null)
             {
-                lockFileLib.FrameworkReferences.AddRange(frameworkRef.FrameworkReferences); // TODO NK - somewhere there should be a set.
+                lockFileLib.FrameworkReferences.AddRange(frameworkRef.FrameworkReferences);
             }
         }
 
