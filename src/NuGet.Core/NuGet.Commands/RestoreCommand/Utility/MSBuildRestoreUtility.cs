@@ -230,6 +230,7 @@ namespace NuGet.Commands
                     AddFrameworkAssemblies(result, items); // Check if this is ever true for PackageReference restore.
                     AddPackageReferences(result, items);
                     AddPackageDownloads(result, items);
+                    AddFrameworkReferences(result, items);
 
                     // Store the original framework strings for msbuild conditionals
                     foreach (var originalFramework in GetFrameworksStrings(specItem))
@@ -547,16 +548,6 @@ namespace NuGet.Commands
             return new Tuple<List<NuGetFramework>, ProjectRestoreReference>(frameworks, reference);
         }
 
-        private static bool AddDownloadDependencyIfNotExist(PackageSpec spec, DownloadDependency dependency)
-        {
-            foreach (var framework in spec.TargetFrameworks.Select(e => e.FrameworkName))
-            {
-                AddDownloadDependencyIfNotExist(spec, framework, dependency);
-            }
-
-            return false;
-        }
-
         private static bool AddDownloadDependencyIfNotExist(PackageSpec spec, NuGetFramework framework, DownloadDependency dependency)
         {
             var frameworkInfo = spec.GetTargetFramework(framework);
@@ -679,6 +670,32 @@ namespace NuGet.Commands
             {
                 return defaultValue;
             }
+        }
+
+        private static void AddFrameworkReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        {
+            foreach (var item in GetItemByType(items, "FrameworkReference"))
+            {
+                var frameworkReference = item.GetProperty("Id");
+                var frameworks = GetFrameworks(item);
+
+                foreach (var framework in frameworks)
+                {
+                    AddDependencyIfNotExist(spec, framework, frameworkReference);
+                }
+            }
+        }
+
+        private static bool AddDependencyIfNotExist(PackageSpec spec, NuGetFramework framework, string frameworkReference)
+        {
+            var frameworkInfo = spec.GetTargetFramework(framework);
+
+            if (!frameworkInfo.FrameworkReferences.Contains(frameworkReference, StringComparer.OrdinalIgnoreCase))
+            {
+                frameworkInfo.FrameworkReferences.Add(frameworkReference);
+                return true;
+            }
+            return false;
         }
 
         private static void AddFrameworkAssemblies(PackageSpec spec, IEnumerable<IMSBuildItem> items)

@@ -483,6 +483,31 @@ namespace NuGet.ProjectModel.Test
             VerifyPackageSpecWrite(json, expectedJson);
         }
 
+        [Fact]
+        public void RoundTripFrameworkReferences()
+        {
+            // Arrange
+            var json = @"{
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                                ""autoReferenced"": true
+                            }
+                        },
+                        ""frameworkReferences"": [
+                            ""Microsoft.WindowsDesktop.App|WPF"",
+                            ""Microsoft.WindowsDesktop.App|WinForms""
+                        ]
+                    }
+                  }
+                }";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
         private static string GetJsonString(PackageSpec packageSpec)
         {
             var writer = new JsonObjectWriter();

@@ -832,6 +832,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         ItemName="_RestoreGraphEntry" />
     </GetRestorePackageDownloadsTask>
 
+    <!-- Write out Framework References-->
     <GetRestoreFrameworkReferencesTask
       Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' "
       ProjectUniqueName="$(MSBuildProjectFullPath)"

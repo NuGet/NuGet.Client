@@ -419,7 +419,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name ="_GetFrameworkReferences" DependsOnTargets="_CollectFrameworkReferences" Returns="@(TfmSpecificFrameworkReferences)">
+  <Target Name ="_GetFrameworkReferences" Returns="@(TfmSpecificFrameworkReferences)">
     <ItemGroup>
       <TfmSpecificFrameworkReferences Include="@(FrameworkReference)"
                                       Condition="'%(FrameworkReference.Pack)' != 'false' ">

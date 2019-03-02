@@ -44,9 +44,9 @@ namespace NuGet.Build.Tasks
 
             foreach (var msbuildItem in FrameworkReferences)
             {
-                var packageId = msbuildItem.ItemSpec;
+                var frameworkReference = msbuildItem.ItemSpec;
 
-                if (string.IsNullOrEmpty(packageId) || !seenIds.Add(packageId))
+                if (string.IsNullOrEmpty(frameworkReference) || !seenIds.Add(frameworkReference))
                 {
                     // Skip empty or already processed ids
                     continue;
@@ -54,7 +54,8 @@ namespace NuGet.Build.Tasks
 
                 var properties = new Dictionary<string, string>();
                 properties.Add("ProjectUniqueName", ProjectUniqueName);
-                properties.Add("Id", packageId);
+                properties.Add("Type", "FrameworkReference");
+                properties.Add("Id", frameworkReference);
 
                 if (!string.IsNullOrEmpty(TargetFrameworks))
                 {
