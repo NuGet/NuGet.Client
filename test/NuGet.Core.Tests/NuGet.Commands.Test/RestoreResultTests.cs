@@ -42,8 +42,9 @@ namespace NuGet.Commands.Test
                 await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
+                Assert.Empty(logger.MinimalMessages);
                 Assert.Contains(
-                    $"Writing lock file to disk. Path: {path}",
+                    $"Writing assets file to disk. Path: {path}",
                     logger.Messages);
                 Assert.True(File.Exists(path), $"The lock file should have been written: {path}");
                 Assert.Equal(1, logger.Messages.Count);
@@ -113,8 +114,9 @@ namespace NuGet.Commands.Test
                 await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
+                Assert.Empty(logger.MinimalMessages);
                 Assert.Contains(
-                    $"Writing lock file to disk. Path: {path}",
+                    $"Writing assets file to disk. Path: {path}",
                     logger.Messages);
                 Assert.Contains(
                     $"Writing cache file to disk. Path: {cachePath}",

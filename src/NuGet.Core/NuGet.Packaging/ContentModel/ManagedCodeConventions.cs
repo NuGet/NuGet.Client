@@ -395,6 +395,16 @@ namespace NuGet.Client
             /// </summary>
             public PatternSet ToolsAssemblies { get; }
 
+            /// <summary>
+            /// Pattern used to locate embed interop types assemblies
+            /// </summary>
+            public PatternSet EmbedAssemblies { get; }
+
+            /// <summary>
+            /// Pattern used to identify MSBuild transitive targets and props files
+            /// </summary>
+            public PatternSet MSBuildTransitiveFiles { get; }
+
             internal ManagedCodePatterns(ManagedCodeConventions conventions)
             {
                 AnyTargettedFile = new PatternSet(
@@ -525,6 +535,30 @@ namespace NuGet.Client
                     pathPatterns: new PatternDefinition[]
                         {
                             new PatternDefinition("tools/{tfm}/{rid}/{any?}", table: AnyTable),
+                    });
+
+                EmbedAssemblies = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                        {
+                            new PatternDefinition("embed/{tfm}/{any?}", table: DotnetAnyTable),
+                        },
+                    pathPatterns: new PatternDefinition[]
+                        {
+                            new PatternDefinition("embed/{tfm}/{assembly}", table: DotnetAnyTable),
+                        });
+
+                MSBuildTransitiveFiles = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+                        new PatternDefinition("buildTransitive/{tfm}/{msbuild?}", table: DotnetAnyTable),
+                        new PatternDefinition("buildTransitive/{msbuild?}", table: null, defaults: DefaultTfmAny)
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+                        new PatternDefinition("buildTransitive/{tfm}/{msbuild}", table: DotnetAnyTable),
+                        new PatternDefinition("buildTransitive/{msbuild}", table: null, defaults: DefaultTfmAny)
                     });
             }
         }

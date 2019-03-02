@@ -450,7 +450,10 @@ namespace NuGet.Commands
 
                 // invalid input since packages.lock.json file exists along with RestorePackagesWithLockFile is set to false.
                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidLockFileInput, packagesLockFilePath);
-                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message));
+
+                // directly log to the request logger when we're not going to rewrite the assets file otherwise this log will
+                // be skipped for netcore projects.
+                await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message));
 
                 return Tuple.Create(success, Tuple.Create(isLockFileValid, packagesLockFile));
             }
@@ -488,7 +491,9 @@ namespace NuGet.Commands
                         success = false;
 
                         // bail restore since it's the locked mode but required to update the lock file.
-                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode));
+                        // directly log to the request logger when we're not going to rewrite the assets file otherwise this log will
+                        // be skipped for netcore projects.
+                        await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode));
                     }
                 }
             }
@@ -835,8 +840,7 @@ namespace NuGet.Commands
                 _success = false;
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
-
-            _logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath));
+            _logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath)); 
 
             // Get external project references
             // If the top level project already exists, update the package spec provided

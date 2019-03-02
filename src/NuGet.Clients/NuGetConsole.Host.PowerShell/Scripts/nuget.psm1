@@ -115,20 +115,6 @@ Register-TabExpansion 'Update-Package' @{
 	}
 }
 
-Register-TabExpansion 'Open-PackagePage' @{
-    'Id' = {
-        param($context)
-        GetRemotePackageIds $context
-    }
-    'Version' = {
-        param($context)
-        GetRemotePackageVersions $context
-    }
-    'Source' = {
-        GetPackageSources
-    }
-}
-
 Register-TabExpansion 'Add-BindingRedirect' @{ 'ProjectName' = { GetProjectNames } }
 Register-TabExpansion 'Get-Project' @{ 'Name' = { GetProjectNames } }
 

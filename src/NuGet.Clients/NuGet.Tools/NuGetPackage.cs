@@ -68,7 +68,7 @@ namespace NuGetVSExtension
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "4.6.0";
+        public const string ProductVersion = "5.1.0";
         private const string F1KeywordValuePmUI = "VS.NuGet.PackageManager.UI";
         private static readonly object _credentialsPromptLock = new object();
         private readonly HashSet<Uri> _credentialRequested = new HashSet<Uri>();
@@ -90,9 +90,6 @@ namespace NuGetVSExtension
 
         public NuGetPackage()
         {
-#if VS14
-            NuGet.Common.RuntimeEnvironmentHelper.IsDev14 = true;
-#endif
             ServiceLocator.InitializePackageServiceProvider(this);
         }
 

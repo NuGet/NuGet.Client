@@ -7,4 +7,5 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Microsoft.Design", "CA1020:AvoidNamespacesWithFewTypes", Scope = "namespace", Target = "NuGetConsole.Host")]
 [assembly: SuppressMessage("Microsoft.Design", "CA1020:AvoidNamespacesWithFewTypes", Scope = "namespace", Target = "NuGetConsole.Host.PowerShell.Implementation")]
 [assembly: SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "isSync", Scope = "member", Target = "NuGetConsole.Host.PowerShell.Implementation.PowerShellHost.#GetPathExpansionsAsyncCore(System.String,System.Boolean,System.Threading.CancellationToken)")]
+[assembly: SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Home/issues/7674", Scope = "member", Target = "~M:NuGetConsole.Host.PowerShell.Implementation.PowerShellHost.HandleSolutionOpened")]
 

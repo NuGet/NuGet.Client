@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
-using NuGet.Test.Utility;
 
 namespace NuGet.Protocol.FuncTest
 {
@@ -109,6 +109,35 @@ namespace NuGet.Protocol.FuncTest
 
             Assert.NotNull(ex);
             Assert.Equal($"Unable to load the service index for source https://www.{randomName}.org/api/v2/.", ex.Message);
+        }
+
+        [Fact]
+        public async Task PackageMetadataVersionsFromIdentity()
+        {
+            // Arrange
+            var repo = Repository.Factory.GetCoreV3(TestSources.NuGetV2Uri);
+
+            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
+
+            var package = new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0"));
+
+            // Act & Assert
+            using (var cacheContext = new SourceCacheContext())
+            {
+                var packageMetadata = await packageMetadataResource.GetMetadataAsync(
+                    package,
+                    cacheContext,
+                    NullLogger.Instance,
+                    CancellationToken.None);
+
+                Assert.NotNull(packageMetadata);
+                Assert.Equal(package.Id, packageMetadata.Identity.Id);
+
+                var versions = await packageMetadata.GetVersionsAsync();
+
+                Assert.NotNull(versions);
+                Assert.True(versions.Count() > 0);
+            }
         }
     }
 }

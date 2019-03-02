@@ -2,7 +2,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Shipping>true</Shipping>
     <Pack>true</Pack>
     <IncludeInVsix>true</IncludeInVsix>
@@ -18,11 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
   </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <PackageReference Include="Microsoft.VisualStudio.Shell.14.0" Version="14.2.25123" />
-    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost.NuGet" Version="14.0.0.0" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+  <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26201" />
   </ItemGroup>

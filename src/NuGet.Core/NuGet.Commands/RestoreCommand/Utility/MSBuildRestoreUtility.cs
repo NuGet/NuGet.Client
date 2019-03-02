@@ -788,40 +788,6 @@ namespace NuGet.Commands
             }
         }
 
-        /// <summary>
-        /// Write the dg file to a temp location if NUGET_PERSIST_DG.
-        /// </summary>
-        /// <remarks>This is a noop if NUGET_PERSIST_DG is not set to true.</remarks>
-        public static void PersistDGFileIfDebugging(DependencyGraphSpec spec, ILogger log)
-        {
-            if (_isPersistDGSet.Value)
-            {
-                string path;
-                var envPath = Environment.GetEnvironmentVariable("NUGET_PERSIST_DG_PATH");
-                if (!string.IsNullOrEmpty(envPath))
-                {
-                    path = envPath;
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
-                }
-                else
-                {
-                    path = Path.Combine(
-                        NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
-                        "nuget-dg",
-                        $"{Guid.NewGuid()}.dg");
-                    DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(path));
-                }
-
-                log.LogMinimal(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.PersistDGFile,
-                        path));
-
-                spec.Save(path);
-            }
-        }
-
         private static WarningProperties GetWarningProperties(IMSBuildItem specItem)
         {
             return WarningProperties.GetWarningProperties(

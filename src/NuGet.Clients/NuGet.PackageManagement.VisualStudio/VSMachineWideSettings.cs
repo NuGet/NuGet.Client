@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
@@ -30,12 +31,15 @@ namespace NuGet.PackageManagement.VisualStudio
                         Common.NuGetFolderPath.MachineWideConfigDirectory);
 
                     var dte = await _asyncServiceProvider.GetDTEAsync();
+                    var version = dte.Version;
+                    var sku = dte.GetSKU();
 
+                    await TaskScheduler.Default;
                     return Configuration.Settings.LoadMachineWideSettings(
                         baseDirectory,
                         "VisualStudio",
-                        dte.Version,
-                        dte.GetSKU());
+                        version,
+                        sku);
                 }, 
                 ThreadHelper.JoinableTaskFactory);
         }

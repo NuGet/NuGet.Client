@@ -218,11 +218,15 @@ namespace NuGet.PackageManagement
         {
             var dgSpec = new DependencyGraphSpec();
 
-            var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>();
+            var stringComparer = PathUtility.GetStringComparerBasedOnOS();
 
-            foreach (var project in projects)
+            var uniqueProjectDependencies = new HashSet<string>(stringComparer);
+
+            var projects = ((await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>()).ToList();
+
+            for (var i=0; i< projects.Count; i++)
             {
-                var packageSpecs = await project.GetPackageSpecsAsync(context);
+                var packageSpecs = await projects[i].GetPackageSpecsAsync(context);
 
                 foreach (var packageSpec in packageSpecs)
                 {
@@ -234,9 +238,34 @@ namespace NuGet.PackageManagement
                         packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone) // Don't add global tools to restore specs for solutions
                     {
                         dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+
+                        var projFileName = Path.GetFileName(packageSpec.RestoreMetadata.ProjectPath);
+                        var dgFileName = DependencyGraphSpec.GetDGSpecFileName(projFileName);
+                        var outputPath = packageSpec.RestoreMetadata.OutputPath;
+
+                        if (!string.IsNullOrEmpty(outputPath))
+                        {
+                            var persistedDGSpecPath = Path.Combine(outputPath, dgFileName);
+
+                            if (File.Exists(persistedDGSpecPath))
+                            {
+                                var persistedDGSpec = DependencyGraphSpec.Load(persistedDGSpecPath);
+
+                                foreach (var dependentPackageSpec in persistedDGSpec.GetClosure(packageSpec.RestoreMetadata.ProjectUniqueName))
+                                {
+                                    if (!(uniqueProjectDependencies.Contains(dependentPackageSpec.RestoreMetadata.ProjectPath) ||
+                                        projects.Any(p => stringComparer.Equals(p.MSBuildProjectPath, dependentPackageSpec.RestoreMetadata.ProjectPath))))
+                                    {
+                                        uniqueProjectDependencies.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
+                                        dgSpec.AddProject(dependentPackageSpec);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
+
             // Return dg file
             return dgSpec;
         }

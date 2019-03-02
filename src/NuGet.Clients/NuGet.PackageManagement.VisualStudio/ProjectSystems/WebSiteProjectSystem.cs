@@ -91,8 +91,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <remarks>This is identical to VsProjectSystem.RemoveReference except in the way we process exceptions.</remarks>
         private void RemoveDTEReference(string name)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             // Get the reference name without extension
             var referenceName = Path.GetFileNameWithoutExtension(name);
 

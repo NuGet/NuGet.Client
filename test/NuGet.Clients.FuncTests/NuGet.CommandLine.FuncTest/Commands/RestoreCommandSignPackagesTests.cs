@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -285,6 +286,84 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 errors.First().Code.Should().Be(NuGetLogCode.NU3005);
                 errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
                 errors.First().LibraryId.Should().Be(packageX.Id);
+
+                warnings.Count().Should().Be(0);
+
+                var installedPackageDir = Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id);
+                Directory.Exists(installedPackageDir).Should().BeFalse();
+            }
+        }
+
+
+        [CIOnlyFact]
+        public async Task Restore_PackageWithCompressedSignature_RequireMode_FailsAndDoesNotExpandAsync()
+        {
+            // Arrange
+            var packageX = new SimpleTestPackageContext();
+
+            using (var pathContext = new SimpleTestPathContext())
+            using (var packageStream = await packageX.CreateAsStreamAsync())
+            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
+            {
+                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
+                {
+                    var signatureEntry = package.CreateEntry(SigningSpecifications.V1.SignaturePath);
+                    using (var signatureStream = new MemoryStream(signature.GetBytes()))
+                    using (var signatureEntryStream = signatureEntry.Open())
+                    {
+                        signatureStream.CopyTo(signatureEntryStream);
+                    }
+                }
+
+                var packagePath = Path.Combine(pathContext.PackageSource, $"{packageX.ToString()}.nupkg");
+                packageStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    packageStream.CopyTo(fileStream);
+                }
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var propsFile = Path.Combine(pathContext.SolutionRoot, "NuGet.Config");
+
+                using (var stream = File.OpenWrite(propsFile))
+                using (var textWritter = new StreamWriter(stream))
+                {
+                    textWritter.Write(@"<configuration><config><add key=""signatureValidationMode"" value=""require"" /></config></configuration>");
+                }
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard2.0"));
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var args = new string[]
+                {
+                    projectA.ProjectPath
+                };
+
+                // Act
+                var result = RunRestore(_nugetExePath, pathContext, expectedExitCode: 1, additionalArgs: args);
+                var assetFileReader = new LockFileFormat();
+                var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
+                var errors = assetsFile.LogMessages.Where(m => m.Level == LogLevel.Error);
+                var warnings = assetsFile.LogMessages.Where(m => m.Level == LogLevel.Warning);
+
+                // Assert
+                result.ExitCode.Should().Be(1);
+                result.Errors.Should().Contain(string.Format(_NU3005, SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource)));
+
+                errors.Count().Should().Be(1);
+                errors.First().Code.Should().Be(NuGetLogCode.NU3005);
+                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
+                errors.First().LibraryId.Should().Be(packageX.Identity.Id.ToString());
 
                 warnings.Count().Should().Be(0);
 

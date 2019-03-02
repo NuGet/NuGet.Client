@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -55,18 +55,16 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = RestoreSolution(pathContext);
 
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var dgSpec = DependencyGraphSpec.Load(dgPath);
-
                 var propsXML = XDocument.Load(projectA.PropsOutput);
                 var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
 
-                var projectSpec = dgSpec.Projects.Single();
-
                 // Assert
-                Assert.Equal(ProjectStyle.PackageReference, projectSpec.RestoreMetadata.ProjectStyle);
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+
+                Assert.Equal(ProjectStyle.PackageReference, assetsFile.PackageSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
-                Assert.Equal(NuGetFramework.Parse("UAP10.0.10586.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
+                Assert.Equal(NuGetFramework.Parse("UAP10.0.10586.0"), assetsFile.PackageSpec.TargetFrameworks.Single().FrameworkName);
             }
         }
 
@@ -108,18 +106,16 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = RestoreSolution(pathContext);
 
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var dgSpec = DependencyGraphSpec.Load(dgPath);
-
                 var propsXML = XDocument.Load(projectA.PropsOutput);
                 var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
 
-                var projectSpec = dgSpec.Projects.Single();
-
                 // Assert
-                Assert.Equal(ProjectStyle.PackageReference, projectSpec.RestoreMetadata.ProjectStyle);
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+
+                Assert.Equal(ProjectStyle.PackageReference, assetsFile.PackageSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
-                Assert.Equal(NuGetFramework.Parse("UAP10.0.14393.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
+                Assert.Equal(NuGetFramework.Parse("UAP10.0.14393.0"), assetsFile.PackageSpec.TargetFrameworks.Single().FrameworkName);
             }
         }
 
@@ -162,18 +158,16 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = RestoreSolution(pathContext);
 
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var dgSpec = DependencyGraphSpec.Load(dgPath);
-
                 var propsXML = XDocument.Load(projectA.PropsOutput);
                 var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
 
-                var projectSpec = dgSpec.Projects.Single();
-
                 // Assert
-                Assert.Equal(ProjectStyle.PackageReference, projectSpec.RestoreMetadata.ProjectStyle);
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+
+                Assert.Equal(ProjectStyle.PackageReference, assetsFile.PackageSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
-                Assert.Equal(NuGetFramework.Parse("UAP10.0.10586.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
+                Assert.Equal(NuGetFramework.Parse("UAP10.0.10586.0"), assetsFile.PackageSpec.TargetFrameworks.Single().FrameworkName);
 
                 Assert.DoesNotContain("a.txt", propsXML.ToString());
             }
@@ -204,18 +198,16 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = RestoreSolution(pathContext);
 
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var dgSpec = DependencyGraphSpec.Load(dgPath);
-
                 var propsXML = XDocument.Load(projectA.PropsOutput);
                 var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
 
-                var projectSpec = dgSpec.Projects.Single();
-
                 // Assert
-                Assert.Equal(ProjectStyle.PackageReference, projectSpec.RestoreMetadata.ProjectStyle);
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+
+                Assert.Equal(ProjectStyle.PackageReference, assetsFile.PackageSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
-                Assert.Equal(NuGetFramework.Parse("UAP10.0.10586.0"), projectSpec.TargetFrameworks.Single().FrameworkName);
+                Assert.Equal(NuGetFramework.Parse("UAP10.0.10586.0"), assetsFile.PackageSpec.TargetFrameworks.Single().FrameworkName);
             }
         }
 
@@ -270,9 +262,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = RestoreSolution(pathContext);
 
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var dgSpec = DependencyGraphSpec.Load(dgPath);
-
                 var assetsFile = projectA.AssetsFile;
 
                 // Assert
@@ -283,14 +272,6 @@ namespace NuGet.CommandLine.Test
         private static CommandRunnerResult RestoreSolution(SimpleTestPathContext pathContext, int exitCode = 0)
         {
             var nugetexe = Util.GetNuGetExePath();
-
-            // Store the dg file for debugging
-            var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-            var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
 
             string[] args = new string[] {
                     "restore",
@@ -304,8 +285,7 @@ namespace NuGet.CommandLine.Test
                 nugetexe,
                 pathContext.WorkingDirectory.Path,
                 string.Join(" ", args),
-                waitForExit: true,
-                environmentVariables: envVars);
+                waitForExit: true);
 
             // Assert
             Assert.True(exitCode == r.Item1, r.Item3 + "\n\n" + r.Item2);

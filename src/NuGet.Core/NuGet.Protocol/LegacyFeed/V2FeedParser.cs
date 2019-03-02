@@ -334,26 +334,26 @@ namespace NuGet.Protocol
             // If 'Id' element exist, use its value as accurate package Id
             // Otherwise, use the value of 'title' if it exist
             // Use the given Id as final fallback if all elements above don't exist
-            string identityId = metadataCache.GetString(idElement?.Value ?? titleElement?.Value ?? id);
-            string versionString = properties.Element(_xnameVersion).Value;
-            NuGetVersion version = metadataCache.GetVersion(metadataCache.GetString(versionString));
-            string downloadUrl = metadataCache.GetString(element.Element(_xnameContent).Attribute("src").Value);
+            var identityId = metadataCache.GetString(idElement?.Value ?? titleElement?.Value ?? id);
+            var versionString = properties.Element(_xnameVersion).Value;
+            var version = metadataCache.GetVersion(metadataCache.GetString(versionString));
+            var downloadUrl = metadataCache.GetString(element.Element(_xnameContent).Attribute("src").Value);
 
-            string title = metadataCache.GetString(titleElement?.Value);
-            string summary = metadataCache.GetString(GetString(element, _xnameSummary));
-            string description = metadataCache.GetString(GetString(properties, _xnameDescription));
-            string iconUrl = metadataCache.GetString(GetString(properties, _xnameIconUrl));
-            string licenseUrl = metadataCache.GetString(GetString(properties, _xnameLicenseUrl));
-            string projectUrl = metadataCache.GetString(GetString(properties, _xnameProjectUrl));
-            string reportAbuseUrl = metadataCache.GetString(GetString(properties, _xnameReportAbuseUrl));
-            string tags = metadataCache.GetString(GetString(properties, _xnameTags));
-            string dependencies = metadataCache.GetString(GetString(properties, _xnameDependencies));
+            var title = metadataCache.GetString(titleElement?.Value);
+            var summary = metadataCache.GetString(GetString(element, _xnameSummary));
+            var description = metadataCache.GetString(GetString(properties, _xnameDescription));
+            var iconUrl = metadataCache.GetString(GetString(properties, _xnameIconUrl));
+            var licenseUrl = metadataCache.GetString(GetString(properties, _xnameLicenseUrl));
+            var projectUrl = metadataCache.GetString(GetString(properties, _xnameProjectUrl));
+            var reportAbuseUrl = metadataCache.GetString(GetString(properties, _xnameReportAbuseUrl));
+            var tags = metadataCache.GetString(GetString(properties, _xnameTags));
+            var dependencies = metadataCache.GetString(GetString(properties, _xnameDependencies));
 
-            string downloadCount = metadataCache.GetString(GetString(properties, _xnameDownloadCount));
-            bool requireLicenseAcceptance = StringComparer.OrdinalIgnoreCase.Equals(bool.TrueString, GetString(properties, _xnameRequireLicenseAcceptance));
+            var downloadCount = metadataCache.GetString(GetString(properties, _xnameDownloadCount));
+            var requireLicenseAcceptance = StringComparer.OrdinalIgnoreCase.Equals(bool.TrueString, GetString(properties, _xnameRequireLicenseAcceptance));
 
-            string packageHash = metadataCache.GetString(GetString(properties, _xnamePackageHash));
-            string packageHashAlgorithm = metadataCache.GetString(GetString(properties, _xnamePackageHashAlgorithm));
+            var packageHash = metadataCache.GetString(GetString(properties, _xnamePackageHash));
+            var packageHashAlgorithm = metadataCache.GetString(GetString(properties, _xnamePackageHashAlgorithm));
 
             NuGetVersion minClientVersion = null;
 
@@ -366,9 +366,9 @@ namespace NuGet.Protocol
                 }
             }
 
-            DateTimeOffset? created = GetDate(properties, _xnameCreated);
-            DateTimeOffset? lastEdited = GetDate(properties, _xnameLastEdited);
-            DateTimeOffset? published = GetDate(properties, _xnamePublished);
+            var created = GetDate(properties, _xnameCreated);
+            var lastEdited = GetDate(properties, _xnameLastEdited);
+            var published = GetDate(properties, _xnamePublished);
 
             IEnumerable<string> owners = null;
             IEnumerable<string> authors = null;
@@ -394,7 +394,7 @@ namespace NuGet.Protocol
 
             if (parent != null)
             {
-                XElement child = parent.Element(childName);
+                var child = parent.Element(childName);
 
                 if (child != null)
                 {
@@ -496,6 +496,14 @@ namespace NuGet.Protocol
                 results = results.Take(max).ToList();
             }
 
+            if (docRequest != null)
+            {
+                // explicitly ignore exception to prevent it from going unobserved
+                _ = docRequest.ContinueWith(t => { _ = t.Exception; },
+                    TaskContinuationOptions.OnlyOnFaulted |
+                    TaskContinuationOptions.ExecuteSynchronously);
+            }
+
             return new V2FeedPage(
                 results,
                 string.IsNullOrEmpty(nextUri) ? null : nextUri);
@@ -539,13 +547,13 @@ namespace NuGet.Protocol
                         {
                             if (ignoreNotFounds && response.Status == HttpSourceResultStatus.NotFound)
                             {
-                            // Treat "404 Not Found" as an empty response.
-                            return null;
+                                // Treat "404 Not Found" as an empty response.
+                                return null;
                             }
                             else if (response.Status == HttpSourceResultStatus.NoContent)
                             {
-                            // Always treat "204 No Content" as exactly that.
-                            return null;
+                                // Always treat "204 No Content" as exactly that.
+                                return null;
                             }
                             else
                             {

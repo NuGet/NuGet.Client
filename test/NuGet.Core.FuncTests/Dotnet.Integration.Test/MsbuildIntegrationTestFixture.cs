@@ -236,7 +236,7 @@ namespace Dotnet.Integration.Test
             var nupkgsDirectory = DotnetCliUtil.GetNupkgDirectoryInRepo();
             var pathToPackNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks.Pack");
 
-            var nupkgsToCopy = new List<string> { "NuGet.Build.Tasks", "NuGet.Versioning", "NuGet.Protocol", "NuGet.ProjectModel", "NuGet.Packaging", "NuGet.Packaging.Core", "NuGet.LibraryModel", "NuGet.Frameworks", "NuGet.DependencyResolver.Core", "NuGet.Configuration", "NuGet.Common", "NuGet.Commands", "NuGet.CommandLine.XPlat", "NuGet.Credentials" };
+            var nupkgsToCopy = new List<string> { "NuGet.Build.Tasks", "NuGet.Versioning", "NuGet.Protocol", "NuGet.ProjectModel", "NuGet.Packaging", "NuGet.LibraryModel", "NuGet.Frameworks", "NuGet.DependencyResolver.Core", "NuGet.Configuration", "NuGet.Common", "NuGet.Commands", "NuGet.CommandLine.XPlat", "NuGet.Credentials" };
 
             var pathToSdkInCli = Path.Combine(
                     Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
@@ -260,6 +260,7 @@ namespace Dotnet.Integration.Test
                 {
                     var files = nupkg.GetFiles()
                     .Where(fileName => fileName.StartsWith("lib/netstandard")
+                                    || fileName.StartsWith("lib/netcoreapp")
                                     || fileName.Contains("NuGet.targets"));
 
                     CopyFlatlistOfFilesToTarget(nupkg, pathToSdkInCli, files);
@@ -315,7 +316,6 @@ namespace Dotnet.Integration.Test
                     if (copiedFile != null)
                     {
                         entry.UpdateFileTimeFromEntry(copiedFile, logger);
-                        entry.UpdateFilePermissionsFromEntry(copiedFile, logger);
 
                         filesCopied.Add(copiedFile);
                     }

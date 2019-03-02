@@ -2,31 +2,32 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel;
+using System.Windows.Documents;
 
 namespace NuGet.PackageManagement.UI
 {
     public class LicenseFileData : INotifyPropertyChanged
     {
         private string _header { get; set; }
-        private string _content { get; set; }
+        private FlowDocument _content { get; set; }
 
-        public string Header
+        public string LicenseHeader
         {
             get => _header;
             set
             {
                 _header = value;
-                OnPropertyChanged("Header");
+                OnPropertyChanged("LicenseHeader");
             }
         }
 
-        public string LicenseContent
+        public FlowDocument LicenseText
         {
             get => _content;
             set
             {
                 _content = value;
-                OnPropertyChanged("LicenseContent");
+                OnPropertyChanged("LicenseText");
             }
         }
 

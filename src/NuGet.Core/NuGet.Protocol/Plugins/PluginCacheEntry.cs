@@ -25,8 +25,8 @@ namespace NuGet.Protocol.Plugins
         /// <param name="requestKey">A unique request key for the operation claims. Ideally the packageSourceRepository value of the PluginRequestKey. Example https://protected.package.feed/index.json, or Source-Agnostic</param>
         public PluginCacheEntry(string rootCacheFolder, string pluginFilePath, string requestKey)
         {
-            RootFolder = Path.Combine(rootCacheFolder, CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash(pluginFilePath)));
-            CacheFileName = Path.Combine(RootFolder, CachingUtility.RemoveInvalidFileNameChars(requestKey) + ".dat");
+            RootFolder = Path.Combine(rootCacheFolder, CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash(pluginFilePath, addIdentifiableCharacters: false)));
+            CacheFileName = Path.Combine(RootFolder, CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash(requestKey, addIdentifiableCharacters: false)) + ".dat");
             NewCacheFileName = CacheFileName + "-new";
         }
 

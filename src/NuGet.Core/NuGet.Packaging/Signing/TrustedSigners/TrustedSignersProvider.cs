@@ -10,8 +10,58 @@ using NuGet.Configuration;
 
 namespace NuGet.Packaging.Signing
 {
-    public static class TrustedSignersProvider
+    public sealed class TrustedSignersProvider : ITrustedSignersProvider
     {
+        private readonly ISettings _settings;
+
+        public TrustedSignersProvider(ISettings settings)
+        {
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        }
+
+        public IReadOnlyList<TrustedSignerItem> GetTrustedSigners()
+        {
+            var trustedSignersSection = _settings.GetSection(ConfigurationConstants.TrustedSigners);
+            if (trustedSignersSection == null)
+            {
+                return Enumerable.Empty<TrustedSignerItem>().ToList();
+            }
+
+            return trustedSignersSection.Items.OfType<TrustedSignerItem>().ToList();
+        }
+
+        public void Remove(IReadOnlyList<TrustedSignerItem> trustedSigners)
+        {
+            if (trustedSigners == null || !trustedSigners.Any())
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(trustedSigners));
+            }
+
+            foreach (var signer in trustedSigners)
+            {
+                try
+                {
+                    _settings.Remove(ConfigurationConstants.TrustedSigners, signer);
+                }
+                // An error means the item doesn't exist or is in a machine wide config, therefore just ignore it
+                catch { }
+            }
+
+            _settings.SaveToDisk();
+        }
+
+        public void AddOrUpdateTrustedSigner(TrustedSignerItem trustedSigner)
+        {
+            if (trustedSigner == null)
+            {
+                throw new ArgumentNullException(nameof(trustedSigner));
+            }
+
+            _settings.AddOrUpdate(ConfigurationConstants.TrustedSigners, trustedSigner);
+
+            _settings.SaveToDisk();
+        }
+
         public static IReadOnlyList<TrustedSignerAllowListEntry> GetAllowListEntries(ISettings settings, ILogger logger)
         {
             if (settings == null)

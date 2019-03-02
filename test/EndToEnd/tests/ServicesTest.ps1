@@ -1,4 +1,4 @@
-﻿function Test-PackageManagerServicesAreAvailableThroughMEF {
+function Test-PackageManagerServicesAreAvailableThroughMEF {
     # Arrange
     $cm = Get-VsComponentModel
 
@@ -574,6 +574,7 @@ function Test-GetNetStandardVersions
     Assert-AreEqual ".NETStandard,Version=v1.6" ($actual | Select-Object -Index 6)
     Assert-AreEqual ".NETStandard,Version=v1.7" ($actual | Select-Object -Index 7)
     Assert-AreEqual ".NETStandard,Version=v2.0" ($actual | Select-Object -Index 8)
+    Assert-AreEqual ".NETStandard,Version=v2.1" ($actual | Select-Object -Index 9)
 }
 
 function Test-GetFrameworksSupportingNetStandard
@@ -939,4 +940,65 @@ function Test-CreateVsPathContextUsesAssetsFileIfAvailable {
 	# Assert
 	Assert-NotNull $context.UserPackageFolder
 	Assert-NotEqual $userPackageFolder $context.UserPackageFolder
+}
+
+function Test-InstallPackageAPIToLatestVersion
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+    Install-Package TestPackage.ListedStable -ProjectName $p.Name -version 1.0.0
+    Assert-Package $p TestPackage.ListedStable 1.0.0
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("TestPackage.ListedStable","")
+
+    # Assert
+    Assert-Package $p TestPackage.ListedStable 2.0.6
+}
+
+function Test-InstallPackageAsyncWithPackageReferenceFormat {
+    param($context)
+
+	# Arrange
+	$p = New-ClassLibrary
+
+	$solutionFile = Get-SolutionFullName
+	$solutionDir = Split-Path $solutionFile -Parent
+
+	$userPackageFolder = Join-Path $solutionDir "userPackageFolder"
+
+	$settingFile = Join-Path $solutionDir "nuget.config"
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <config>
+    <add key="globalPackagesFolder" value="{0}" />
+  </config>
+  <packageManagement>
+    <add key="format" value="1" />
+    <add key="disabled" value="True" />
+  </packageManagement>
+</configuration>
+"@
+
+	$settingFileContent -f $userPackageFolder `
+	    | Out-File -Encoding "UTF8" $settingFile
+
+	SaveAs-Solution($solutionFile)
+	Close-Solution
+	Open-Solution $solutionFile
+
+	$p = Get-Project
+
+	# Act
+	$context = [API.Test.InternalAPITestHook]::InstallPackageApi("owin","1.0.0")
+    $p.Save($p.FullName)
+
+	# Assert
+    $packageRefs = @(Get-MsBuildItems $p 'PackageReference')
+    Assert-AreEqual 1 $packageRefs.Count
+    Assert-AreEqual $packageRefs[0].GetMetadataValue("Identity") 'owin' 
+    Assert-AreEqual $packageRefs[0].GetMetadataValue("Version") '1.0.0'
 }

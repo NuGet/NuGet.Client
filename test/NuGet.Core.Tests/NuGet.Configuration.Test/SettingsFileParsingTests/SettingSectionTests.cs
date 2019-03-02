@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Test.Utility;
 using Xunit;
@@ -429,11 +430,30 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void VirtualSection_AsXNode_WithSpaceOnName_IsCorrect()
+        {
+            var section = new VirtualSettingSection("section name", new AddItem("key1", "val"));
+
+            var xNode = section.AsXNode();
+            xNode.Should().BeOfType<XElement>();
+            var xelement = xNode as XElement;
+            xelement.Name.LocalName.Should().Be("section_x0020_name");
+        }
+
+        [Fact]
         public void VirtualSection_ElementName_IsCorrect()
         {
             var settingSection = new VirtualSettingSection("section", new AddItem("key1", "val"));
 
             settingSection.ElementName.Should().Be("section");
+        }
+
+        [Fact]
+        public void VirtualSection_ElementName_WithSpaceOnName_IsCorrect()
+        {
+            var section = new VirtualSettingSection("section name", new AddItem("key1", "val"));
+
+            section.ElementName.Should().Be("section name");
         }
 
         [Fact]

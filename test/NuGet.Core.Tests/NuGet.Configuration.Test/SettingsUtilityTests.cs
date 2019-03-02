@@ -289,23 +289,5 @@ namespace NuGet.Configuration.Test
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
         }
-
-        [Fact]
-        public void GetConfigFilePaths_WithNullSettings_Throws()
-        {
-            var ex = Record.Exception(() => SettingsUtility.GetConfigFilePaths(settings: null));
-
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentNullException>();
-        }
-
-        [Fact]
-        public void GetConfigRoots_WithNullSettings_Throws()
-        {
-            var ex = Record.Exception(() => SettingsUtility.GetConfigRoots(settings: null));
-
-            ex.Should().NotBeNull();
-            ex.Should().BeOfType<ArgumentNullException>();
-        }
     }
 }

@@ -176,6 +176,21 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void AsCredentialsItem_WithSpaceOnSourceName_WorksCorrectly()
+        {
+            var credentials = new PackageSourceCredential(
+                "source name",
+                "user",
+                "password",
+                isPasswordClearText: true,
+                validAuthenticationTypesText: null);
+
+            var expectedItem = new CredentialsItem("source name", "user", "password", isPasswordClearText: true, validAuthenticationTypes: null);
+
+            SettingsTestUtils.DeepEquals(credentials.AsCredentialsItem(), expectedItem).Should().BeTrue();
+        }
+
+        [Fact]
         public void AsCredentialsItem_WithAuthenticationTypes_WorksCorrectly()
         {
             var credentials = new PackageSourceCredential(

@@ -11,20 +11,14 @@ Release label to use for package and assemblies versioning (zlocal by default)
 .PARAMETER BuildNumber
 Build number to use for package and assemblies versioning (auto-generated if not provided)
 
-.PARAMETER MSPFXPath
-Path to a code signing certificate for delay-sigining (optional)
-
-.PARAMETER NuGetPFXPath
-Path to a code signing certificate for delay-sigining (optional)
-
-.PARAMETER SkipVS15
-Skips building binaries targeting Visual Studio "15"
-
 .PARAMETER Fast
 Runs minimal incremental build. Skips end-to-end packaging step.
 
 .PARAMETER CI
 Indicates the build script is invoked from CI
+
+.PARAMETER PackageEndToEnd
+Indicates whether to create the end to end package.
 
 .EXAMPLE
 .\build.ps1
@@ -33,10 +27,6 @@ To run full clean build, e.g after switching branches
 .EXAMPLE
 .\build.ps1 -f
 Fast incremental build
-
-.EXAMPLE
-.\build.ps1 -s15
-To only run unit tests
 
 .EXAMPLE
 .\build.ps1 -v -ea Stop
@@ -52,18 +42,12 @@ param (
     [string]$ReleaseLabel = 'zlocal',
     [Alias('n')]
     [int]$BuildNumber,
-    [Alias('mspfx')]
-    [string]$MSPFXPath,
-    [Alias('nugetpfx')]
-    [string]$NuGetPFXPath,
-    [Alias('s15')]
-    [switch]$SkipVS15,
     [Alias('su')]
     [switch]$SkipUnitTest,
     [Alias('f')]
     [switch]$Fast,
     [switch]$CI,
-    [switch]$Rebuild
+    [switch]$PackageEndToEnd
 )
 
 . "$PSScriptRoot\build\common.ps1"
@@ -86,10 +70,9 @@ Trace-Log "Build #$BuildNumber started at $startTime"
 
 Test-BuildEnvironment -CI:$CI
 
-# Adjust version skipping if only one version installed - if VS15 is not installed, no need to specify SkipVS15
-if (-not $SkipVS15 -and -not $VS15Installed) {
-    Warning-Log "VS15 build is requested but it appears not to be installed."
-    $SkipVS15 = $True
+if (-not $VSToolsetInstalled) {
+    Warning-Log "The build is requested, but no toolset is available"
+    exit 1
 }
 
 $BuildErrors = @()
@@ -99,11 +82,6 @@ Invoke-BuildStep 'Cleaning artifacts' {
     Clear-Nupkgs
 } `
 -skip:$Fast `
--ev +BuildErrors
-
-Invoke-BuildStep 'Set delay signing options' {
-    Set-DelaySigning $MSPFXPath $NuGetPFXPath
-} `
 -ev +BuildErrors
 
 if($SkipUnitTest){
@@ -127,7 +105,6 @@ Invoke-BuildStep 'Running Restore for VS 15.0' {
         exit 1
     }
 } `
--skip:$SkipVS15 `
 -ev +BuildErrors
 
 
@@ -143,17 +120,16 @@ Invoke-BuildStep $VS15Message {
         exit 1
     }
 } `
--skip:$SkipVS15 `
 -ev +BuildErrors
 
 Invoke-BuildStep 'Publishing the VS15 EndToEnd test package' {
         param($Configuration)
         $EndToEndScript = Join-Path $PSScriptRoot scripts\cibuild\CreateEndToEndTestPackage.ps1 -Resolve
         $OutDir = Join-Path $Artifacts VS15
-        & $EndToEndScript -c $Configuration -tv 15 -out $OutDir
+        & $EndToEndScript -c $Configuration -tv 16 -out $OutDir
     } `
     -args $Configuration `
-    -skip:($Fast -or $SkipVS15) `
+    -skip:(-not $PackageEndToEnd) `
     -ev +BuildErrors
 
 
@@ -169,7 +145,7 @@ Invoke-BuildStep 'Running Restore for VS 15.0 RTM' {
         exit 1
     }
 } `
--skip:($SkipVS15 -or (-not $CI))`
+-skip:(-not $CI)`
 -ev +BuildErrors
 
 
@@ -185,7 +161,7 @@ Invoke-BuildStep 'Packing VS15 RTM' {
         exit 1
     }
 } `
--skip:($SkipVS15 -or (-not $CI))`
+-skip:(-not $CI)`
 -ev +BuildErrors
 
 ## Calculating Build time

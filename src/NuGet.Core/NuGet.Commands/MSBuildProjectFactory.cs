@@ -128,7 +128,7 @@ namespace NuGet.Commands
 
         private void AddOutputLibFiles(IEnumerable<OutputLibFile> libFiles, HashSet<string> allowedExtensions)
         {
-            var targetFolder = PackTargetArgs.BuildOutputFolder;
+            var targetFolders = PackTargetArgs.BuildOutputFolder;
             foreach (var file in libFiles)
             {
                 var extension = Path.GetExtension(file.FinalOutputPath);
@@ -140,13 +140,16 @@ namespace NuGet.Commands
                 }
                 var tfm = NuGetFramework.Parse(file.TargetFramework).GetShortFolderName();
                 var targetPath = file.TargetPath;
-                var packageFile = new ManifestFile()
+                for (var i=0; i<targetFolders.Length; i++)
                 {
-                    Source = file.FinalOutputPath,
-                    Target = IsTool ? Path.Combine(targetFolder, targetPath) : Path.Combine(targetFolder, tfm, targetPath)
-                };
+                    var packageFile = new ManifestFile()
+                    {
+                        Source = file.FinalOutputPath,
+                        Target = IsTool ? Path.Combine(targetFolders[i], targetPath) : Path.Combine(targetFolders[i], tfm, targetPath)
+                    };
 
-                AddFileToBuilder(packageFile);
+                    AddFileToBuilder(packageFile);
+                }
             }
         }
 

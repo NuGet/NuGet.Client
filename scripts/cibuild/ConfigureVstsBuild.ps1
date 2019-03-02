@@ -39,10 +39,13 @@ Function Get-Version {
         [string]$build
     )
         Write-Host "Evaluating the new VSIX Version : ProductVersion $ProductVersion, build $build"
-        # Generate the new minor version: 4.0.0 => 40000, 4.11.5 => 41105. 
-        # This assumes we only get to NuGet major/minor 99 at worst, otherwise the logic breaks. 
-        #The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
-        $finalVersion = "15.0.$((-join ($ProductVersion -split '\.' | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"    
+        # The major version is NuGetMajorVersion + 11, to match VS's number.
+        # The new minor version is: 4.0.0 => 40000, 4.11.5 => 41105. 
+        # This assumes we only get to NuGet major/minor/patch 99 at worst, otherwise the logic breaks. 
+        # The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
+        $versionParts = $ProductVersion -split '\.'
+        $major = $($versionParts[0] / 1) + 11
+        $finalVersion = "$major.0.$((-join ($versionParts | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"    
     
         Write-Host "The new VSIX Version is: $finalVersion"
         return $finalVersion    
@@ -185,8 +188,8 @@ else
     }
 
     $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
-    $CliTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranch
-    $SdkTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranch
+    $CliTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranches
+    $SdkTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranches
     Write-Host $VsTargetBranch
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
@@ -195,8 +198,8 @@ else
         LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
         LocalizationRepositoryCommitHash = $LocalizationRepoCommitHash
         VsTargetBranch = $VsTargetBranch.Trim()
-        CliTargetBranch = $CliTargetBranch.Trim()
-        SdkTargetBranch = $SdkTargetBranch.Trim()
+        CliTargetBranches = $CliTargetBranches.Trim()
+        SdkTargetBranches = $SdkTargetBranches.Trim()
     }   
 
     New-Item $BuildInfoJsonFile -Force

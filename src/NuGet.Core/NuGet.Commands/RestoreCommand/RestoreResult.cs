@@ -191,7 +191,7 @@ namespace NuGet.Commands
                 if (toolCommit)
                 {
                     log.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.Log_ToolWritingLockFile,
+                    Strings.Log_ToolWritingAssetsFile,
                     result.LockFilePath));
 
                     await FileUtility.ReplaceWithLock(
@@ -201,7 +201,7 @@ namespace NuGet.Commands
                 else
                 {
                     log.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_WritingLockFile,
+                        Strings.Log_WritingAssetsFile,
                         result.LockFilePath));
 
                     FileUtility.Replace(

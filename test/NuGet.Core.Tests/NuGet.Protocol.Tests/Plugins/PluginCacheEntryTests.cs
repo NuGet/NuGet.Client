@@ -25,6 +25,24 @@ namespace NuGet.Protocol.Tests.Plugins
             }
         }
 
+        [Fact]
+        public void PluginCacheEntry_UsesShorterPaths()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var pluginPath = @"C:\Users\Roki2\.nuget\plugins\netfx\CredentialProvider.Microsoft\CredentialProvider.Microsoft.exe";
+                var url = @"https:\\nugetsspecialfeed.pkgs.visualstudio.com\packaging\ea8caa50-9cf8-4ed7-b410-5bca3b71ec1c\nuget\v3\index.json";
+
+                var entry = new PluginCacheEntry(testDirectory.Path, pluginPath, url);
+                entry.LoadFromFile();
+
+                Assert.Equal(86, entry.CacheFileName.Length - testDirectory.Path.Length);
+                // This makes it about as long as http cache which is more important.
+                // The http cache is 40 + 1 + [1,32] + packageName
+                Assert.True(200 > entry.CacheFileName.Length, "The cache file should be short");
+            }
+        }
+
         [Theory]
         [MemberData(nameof(GetsRoundTripsValuesData))]
         public async Task PluginCacheEntry_RoundTripsValuesAsync(string[] values)
@@ -62,7 +80,9 @@ namespace NuGet.Protocol.Tests.Plugins
                 entry.OperationClaims = list;
                 await entry.UpdateCacheFileAsync();
 
-                var CacheFileName = Path.Combine(Path.Combine(testDirectory.Path, CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash("a"))), CachingUtility.RemoveInvalidFileNameChars("b") + ".dat");
+                var CacheFileName = Path.Combine(
+                    Path.Combine(testDirectory.Path, CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash("a", false))),
+                    CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash("b", false)) + ".dat");
 
                 Assert.True(File.Exists(CacheFileName));
 

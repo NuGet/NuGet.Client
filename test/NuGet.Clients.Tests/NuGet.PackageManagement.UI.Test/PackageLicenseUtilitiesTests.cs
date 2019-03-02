@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Documents;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
 using Xunit;
@@ -86,7 +87,7 @@ namespace NuGet.PackageManagement.UI.Test
             var licenseText = links[0] as LicenseText;
 
             Assert.NotNull(licenseText);
-            Assert.Equal(originalUri, licenseText.Text);
+            Assert.Equal(Resources.Text_ViewLicense, licenseText.Text);
             Assert.Equal(uri, licenseText.Link);
         }
 
@@ -164,7 +165,26 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.True(links[0] is LicenseFileText);
             var licenseFileText = links[0] as LicenseFileText;
             Assert.Equal(Resources.Text_ViewLicense, licenseFileText.Text);
-            Assert.Equal(Resources.LicenseFile_Loading, licenseFileText.LicenseText);
+            Assert.Equal(Resources.LicenseFile_Loading, ((Run)((Paragraph)licenseFileText.LicenseText.Blocks.AsEnumerable().First()).Inlines.First()).Text);
+        }
+
+        [Fact]
+        public void PackageLicenseUtility_GenerateCorrectLink()
+        {
+            // Setup
+            var license = "MIT";
+            var expression = NuGetLicenseExpression.Parse(license);
+            var licenseData = new LicenseMetadata(LicenseType.Expression, license, expression, null, LicenseMetadata.EmptyVersion);
+
+            // Act
+            var links = PackageLicenseUtilities.GenerateLicenseLinks(licenseData, null, null);
+
+            // Assert
+            Assert.Equal(1, links.Count);
+            var licenseText = links[0] as LicenseText;
+            Assert.NotNull(licenseText);
+            Assert.Equal(license, licenseText.Text);
+            Assert.Equal("https://licenses.nuget.org/MIT", licenseText.Link.AbsoluteUri);
         }
     }
 }

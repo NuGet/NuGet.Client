@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Windows.Documents;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
 using NuGet.Protocol;
@@ -13,8 +14,6 @@ namespace NuGet.PackageManagement.UI
 {
     internal class PackageLicenseUtilities
     {
-        private static string LicenseFormat = "https://licenses.nuget.org/{0}";
-
         internal static IReadOnlyList<IText> GenerateLicenseLinks(DetailedPackageMetadata metadata)
         {
             return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, string.Format(CultureInfo.CurrentCulture, Resources.WindowTitle_LicenseFileWindow, metadata.Id), metadata.LoadFileAsText);
@@ -37,9 +36,23 @@ namespace NuGet.PackageManagement.UI
             }
             else if (licenseUrl != null)
             {
-                return new List<IText>() { new LicenseText(licenseUrl.OriginalString, licenseUrl) };
+                return new List<IText>() { new LicenseText(Resources.Text_ViewLicense, licenseUrl) };
             }
             return new List<IText>();
+        }
+
+        internal static Paragraph[] GenerateParagraphs(string licenseContent)
+        {
+            var textParagraphs = licenseContent.Split(
+                new[] { "\n\n", "\r\n\r\n" }, // Take care of paragraphs regardless of the name ending. It's a best effort, so weird line ending combinations might not work too well.
+                StringSplitOptions.None);
+
+            var paragraphs = new Paragraph[textParagraphs.Length];
+            for (var i = 0; i < textParagraphs.Length; i++)
+            {
+                paragraphs[i] = new Paragraph(new Run(textParagraphs[i]));
+            }
+            return paragraphs;
         }
 
         // Internal for testing purposes.
@@ -71,7 +84,7 @@ namespace NuGet.PackageManagement.UI
                                 list.Add(new FreeText(licenseToBeProcessed.Substring(0, licenseStart)));
                             }
                             var license = licenseToBeProcessed.Substring(licenseStart, identifier.Length);
-                            list.Add(new LicenseText(license, new Uri(string.Format(LicenseFormat, license))));
+                            list.Add(new LicenseText(license, new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, license))));
                             licenseToBeProcessed = licenseToBeProcessed.Substring(licenseStart + identifier.Length);
                         }
 

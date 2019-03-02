@@ -192,13 +192,12 @@ namespace NuGet.PackageManagement.VisualStudio
 #pragma warning restore CS4014
                 }
             });
-#if !VS14
+
             if (retargetedProject is LegacyPackageReferenceProject)
             {
                 // trigger solution restore and don't wait for it to be complete and hold the UI thread
                 System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
             }
-#endif
             return VSConstants.S_OK;
         }
 
@@ -297,13 +296,13 @@ namespace NuGet.PackageManagement.VisualStudio
                     _platformRetargetingProject = null;
                 }
             });
-#if !VS14
+
             if (nuGetProject is LegacyPackageReferenceProject)
             {
                 // trigger solution restore and don't wait for it to be complete and hold the UI thread
                 System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
             }
-#endif
+
             return VSConstants.S_OK;
         }
         #endregion

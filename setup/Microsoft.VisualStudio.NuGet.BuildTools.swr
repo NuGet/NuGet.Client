@@ -1,13 +1,13 @@
 use vs
 
 package name=Microsoft.VisualStudio.NuGet.BuildTools
-        version=15.0.40800.$(BuildNumber)
+        version=$(MajorVSVersion).0.$(MajorNuGetVersion)0$(MinorNuGetVersion)0$(PatchNuGetVersion).$(BuildNumber)
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet 
         file source=$(NuGetTargetsPath)
         file source=$(ReferenceOutputPath)Microsoft.Web.XmlTransform.dll
         file source=$(ReferenceOutputPath)Microsoft.Build.NuGetSdkResolver.dll
-        file source=$(ReferenceOutputPath)Newtonsoft.Json.dll
+        file source=$(NewtonsoftJsonPath)Newtonsoft.Json.dll
         file source=$(ReferenceOutputPath)NuGet.Build.Tasks.dll  
         file source=$(ReferenceOutputPath)NuGet.Commands.dll  
         file source=$(ReferenceOutputPath)NuGet.Common.dll  
@@ -16,7 +16,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet
         file source=$(ReferenceOutputPath)NuGet.Frameworks.dll  
         file source=$(ReferenceOutputPath)NuGet.LibraryModel.dll  
         file source=$(ReferenceOutputPath)NuGet.PackageManagement.dll  
-        file source=$(ReferenceOutputPath)NuGet.Packaging.Core.dll  
         file source=$(ReferenceOutputPath)NuGet.Packaging.dll  
         file source=$(ReferenceOutputPath)NuGet.ProjectModel.dll  
         file source=$(ReferenceOutputPath)NuGet.Protocol.dll  
@@ -35,7 +34,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\cs
         file source=$(ReferenceOutputPath)cs\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)cs\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)cs\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)cs\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)cs\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)cs\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)cs\NuGet.Protocol.resources.dll
@@ -54,7 +52,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\de
         file source=$(ReferenceOutputPath)de\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)de\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)de\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)de\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)de\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)de\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)de\NuGet.Protocol.resources.dll
@@ -73,7 +70,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\es
         file source=$(ReferenceOutputPath)es\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)es\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)es\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)es\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)es\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)es\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)es\NuGet.Protocol.resources.dll
@@ -92,7 +88,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\fr
         file source=$(ReferenceOutputPath)fr\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)fr\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)fr\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)fr\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)fr\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)fr\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)fr\NuGet.Protocol.resources.dll
@@ -111,7 +106,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\it
         file source=$(ReferenceOutputPath)it\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)it\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)it\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)it\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)it\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)it\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)it\NuGet.Protocol.resources.dll
@@ -130,7 +124,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\ja
         file source=$(ReferenceOutputPath)ja\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)ja\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)ja\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)ja\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)ja\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)ja\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)ja\NuGet.Protocol.resources.dll
@@ -149,7 +142,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\ko
         file source=$(ReferenceOutputPath)ko\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)ko\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)ko\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)ko\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)ko\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)ko\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)ko\NuGet.Protocol.resources.dll
@@ -168,7 +160,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\pl
         file source=$(ReferenceOutputPath)pl\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)pl\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)pl\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)pl\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)pl\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)pl\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)pl\NuGet.Protocol.resources.dll
@@ -187,7 +178,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\pt-BR
         file source=$(ReferenceOutputPath)pt-BR\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)pt-BR\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)pt-BR\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)pt-BR\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)pt-BR\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)pt-BR\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)pt-BR\NuGet.Protocol.resources.dll
@@ -206,7 +196,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\ru
         file source=$(ReferenceOutputPath)ru\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)ru\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)ru\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)ru\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)ru\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)ru\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)ru\NuGet.Protocol.resources.dll
@@ -225,7 +214,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\tr
         file source=$(ReferenceOutputPath)tr\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)tr\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)tr\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)tr\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)tr\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)tr\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)tr\NuGet.Protocol.resources.dll
@@ -244,7 +232,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\zh-Hans
         file source=$(ReferenceOutputPath)zh-Hans\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)zh-Hans\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)zh-Hans\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)zh-Hans\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)zh-Hans\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)zh-Hans\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)zh-Hans\NuGet.Protocol.resources.dll
@@ -263,7 +250,6 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet\zh-Hant
         file source=$(ReferenceOutputPath)zh-Hant\NuGet.Frameworks.resources.dll
         file source=$(ReferenceOutputPath)zh-Hant\NuGet.LibraryModel.resources.dll
         file source=$(ReferenceOutputPath)zh-Hant\NuGet.PackageManagement.resources.dll
-        file source=$(ReferenceOutputPath)zh-Hant\NuGet.Packaging.Core.resources.dll
         file source=$(ReferenceOutputPath)zh-Hant\NuGet.Packaging.resources.dll
         file source=$(ReferenceOutputPath)zh-Hant\NuGet.ProjectModel.resources.dll
         file source=$(ReferenceOutputPath)zh-Hant\NuGet.Protocol.resources.dll

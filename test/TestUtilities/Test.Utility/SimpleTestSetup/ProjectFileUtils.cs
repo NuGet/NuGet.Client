@@ -59,6 +59,12 @@ namespace NuGet.Test.Utility
             lastPropGroup.Add(element);
         }
 
+        public static void ChangeProperty(XDocument document, string propertyName, string newValue)
+        {
+            var property = document.Descendants(propertyName).Single();
+            property.Value = newValue;
+        }
+
         public static bool HasCondition(XElement element, string condition)
         {
             var elementCondition = MSBuildStringUtility.TrimAndGetNullForEmpty(element.Attribute(XName.Get("Condition"))?.Value);

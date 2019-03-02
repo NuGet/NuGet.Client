@@ -657,6 +657,30 @@
   </Style>
 
   <Style
+    TargetType="{x:Type Hyperlink}"
+    x:Key="WindowHyperlinkStyle">
+    <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ControlLinkTextKey}}" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
+    <Style.Triggers>
+      <Trigger
+        Property="IsMouseOver"
+        Value="True">
+        <Setter
+          Property="Foreground"
+          Value="{DynamicResource {x:Static nuget:Brushes.ControlLinkTextHoverKey}}" />
+      </Trigger>
+
+      <Trigger
+        Property="IsMouseOver"
+        Value="False">
+        <Setter
+          Property="TextBlock.TextDecorations"
+          Value="{x:Null}" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+  
+  <Style
     x:Key="PackageIconImageStyle"
     TargetType="{x:Type Image}">
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>

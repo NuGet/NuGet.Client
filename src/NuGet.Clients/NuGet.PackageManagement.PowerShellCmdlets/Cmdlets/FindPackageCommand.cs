@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -58,11 +58,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public SwitchParameter StartWith { get; set; }
 
         [Parameter]
-        [ValidateRange(0, Int32.MaxValue)]
+        [ValidateRange(0, int.MaxValue)]
         public virtual int First { get; set; }
 
         [Parameter]
-        [ValidateRange(0, Int32.MaxValue)]
+        [ValidateRange(0, int.MaxValue)]
         public int Skip { get; set; }
 
         protected void Preprocess()

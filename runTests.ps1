@@ -14,12 +14,6 @@ Build number to use for package and assemblies versioning (auto-generated if not
 .PARAMETER SkipCore
 Skips running NuGet.Core.Tests and NuGet.Core.FuncTests
 
-.PARAMETER SkipVS14
-Skips running NuGet.Clients.Tests and NuGet.Clients.FuncTests with VS14 toolset
-
-.PARAMETER SkipVS15
-Skips running NuGet.Clients.Tests and NuGet.Clients.FuncTests with VS15 toolset
-
 .PARAMETER CI
 Indicates the build script is invoked from CI
 
@@ -52,10 +46,6 @@ param (
     [switch]$SkipBuild,
     [Alias('sc')]
     [switch]$SkipCore,
-    [Alias('s14')]
-    [switch]$SkipVS14,
-    [Alias('s15')]
-    [switch]$SkipVS15,
     [switch]$CI
 )
 
@@ -84,15 +74,9 @@ Trace-Log "Test suite run #$BuildNumber started at $startTime"
 
 Test-BuildEnvironment -CI:$CI
 
-# Adjust version skipping if only one version installed - if VS15 is not installed, no need to specify SkipVS15
-if (-not $SkipVS14 -and -not $VS14Installed) {
-    Warning-Log "VS14 build is requested but it appears not to be installed."
-    $SkipVS14 = $True
-}
-
-if (-not $SkipVS15 -and -not $VS15Installed) {
-    Warning-Log "VS15 build is requested but it appears not to be installed."
-    $SkipVS15 = $True
+if (-not $VSToolsetInstalled) {
+    Warning-Log "The build is requested, but no toolset is available"
+    exit 1
 }
 
 $BuildErrors = @()

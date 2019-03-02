@@ -1,5 +1,4 @@
 function Test-UwpNativeAppInstallPackage {
-    [SkipTestForVS14()]
     param($context)
 
     $projectT = New-Project UwpNativeApp
@@ -10,7 +9,6 @@ function Test-UwpNativeAppInstallPackage {
 }
 
 function Test-UwpNativeAppUninstallPackage {
-    [SkipTestForVS14()]
     param($context)
 
     $projectT = New-Project UwpNativeApp
@@ -23,7 +21,6 @@ function Test-UwpNativeAppUninstallPackage {
 }
 
 function Test-UwpNativeProjectJsonBuild {
-    [SkipTestForVS14()]
     param($context)
 
     $projectT = New-Project UwpNativeProjectJson

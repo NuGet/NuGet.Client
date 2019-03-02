@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using NuGet.Packaging.Licenses;
 using NuGet.Shared;
 
@@ -16,7 +17,8 @@ namespace NuGet.Packaging
     {
         public static readonly Version EmptyVersion = new Version(1, 0, 0);
         public static readonly Version CurrentVersion = new Version(1, 0, 0);
-        public static readonly Uri DeprecateUrl = new Uri("https://aka.ms/deprecateLicenseUrl");
+        public static readonly Uri LicenseFileDeprecationUrl = new Uri("https://aka.ms/deprecateLicenseUrl");
+        public static readonly string LicenseServiceLinkTemplate = "https://licenses.nuget.org/{0}";
 
         /// <summary>
         /// The LicenseType, never null
@@ -42,7 +44,7 @@ namespace NuGet.Packaging
         /// LicenseMetadata (expression) version. Never null.
         /// </summary>
         public Version Version { get; }
-        
+
         public LicenseMetadata(LicenseType type, string license, NuGetLicenseExpression expression, IReadOnlyList<string> warningsAndErrors, Version version)
         {
             Type = type;
@@ -51,8 +53,6 @@ namespace NuGet.Packaging
             WarningsAndErrors = warningsAndErrors;
             Version = version ?? throw new ArgumentNullException(nameof(version));
         }
-
-
 
         public bool Equals(LicenseMetadata other)
         {
@@ -89,6 +89,29 @@ namespace NuGet.Packaging
             combiner.AddObject(Version);
 
             return combiner.CombinedHash;
+        }
+
+        public Uri LicenseUrl 
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case LicenseType.File:
+                        return LicenseFileDeprecationUrl;
+
+                    case LicenseType.Expression:
+                        return new Uri(GenerateLicenseServiceLink(License));
+
+                    default:
+                        return null;
+                }
+            }
+        }
+
+        private string GenerateLicenseServiceLink(string license)
+        {
+            return new Uri(string.Format(LicenseServiceLinkTemplate, License)).AbsoluteUri;
         }
     }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
 using Moq;
 using NuGet.Common;
@@ -16,6 +17,381 @@ namespace NuGet.Packaging.Test
 {
     public class TrustedSignersProviderTests
     {
+        [Fact]
+        public void TrustedSignersProvider_Constructor_WithNullSettings_Throws()
+        {
+            // Act and Assert
+            var ex = Record.Exception(() => new TrustedSignersProvider(settings: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetTrustedSigners_WithoutTrustedSignersSection_ReturnsEmptyList()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignerProvider = new TrustedSignersProvider(settings);
+
+                var trustedSigners = trustedSignerProvider.GetTrustedSigners();
+                trustedSigners.Should().NotBeNull();
+                trustedSigners.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public void GetTrustedSigner_WithEmptyTrustedSignersSection_ReturnsEmptyList()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <trustedSigners>
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignerProvider = new TrustedSignersProvider(settings);
+
+                var trustedSigners = trustedSignerProvider.GetTrustedSigners();
+                trustedSigners.Should().NotBeNull();
+                trustedSigners.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public void GetTrustedSigner_WithNonEmptyTrustedSignersSection_ReturnsAllTrustedSignersInSection()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <trustedSigners>
+        <author name=""author1"">
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <author name=""author2"">
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <repository name=""repo1"" serviceIndex=""https://serviceIndex.test/v3/api.json"">
+            <certificate fingerprint=""ghi"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </repository>
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                var expectedTrustedSigners = new List<TrustedSignerItem>()
+                {
+                    new AuthorItem("author1", new CertificateItem("abc", HashAlgorithmName.SHA256)),
+                    new AuthorItem("author2", new CertificateItem("def", HashAlgorithmName.SHA256)),
+                    new RepositoryItem("repo1", "https://serviceIndex.test/v3/api.json", new CertificateItem("ghi", HashAlgorithmName.SHA256))
+                };
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignerProvider = new TrustedSignersProvider(settings);
+
+                var trustedSigners = trustedSignerProvider.GetTrustedSigners();
+                trustedSigners.Should().NotBeNull();
+                trustedSigners.Count.Should().Be(3);
+                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners);
+            }
+        }
+
+        [Fact]
+        public void GetTrustedSigner_WithItemsDifferentThanTrustedSigners_IgnoresThemAndOnlyReturnsTrustedSigners()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <trustedSigners>
+        <add key=""oneKey"" value=""val"" />
+        <author name=""author1"">
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <author name=""author2"">
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <certificate fingerprint=""ghi"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        <repository name=""repo1"" serviceIndex=""https://serviceIndex.test/v3/api.json"">
+            <certificate fingerprint=""ghi"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </repository>
+        <add key=""otherKey"" value=""val"" />
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                var expectedTrustedSigners = new List<TrustedSignerItem>()
+                {
+                    new AuthorItem("author1", new CertificateItem("abc", HashAlgorithmName.SHA256)),
+                    new AuthorItem("author2", new CertificateItem("def", HashAlgorithmName.SHA256)),
+                    new RepositoryItem("repo1", "https://serviceIndex.test/v3/api.json", new CertificateItem("ghi", HashAlgorithmName.SHA256))
+                };
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignerProvider = new TrustedSignersProvider(settings);
+
+                var trustedSigners = trustedSignerProvider.GetTrustedSigners();
+                trustedSigners.Should().NotBeNull();
+                trustedSigners.Count.Should().Be(3);
+                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners);
+            }
+        }
+
+        [Fact]
+        public void Remove_WithNullListOFSignersToRemove_Throws()
+        {
+            var trustedSignersProvider = new TrustedSignersProvider(settings: NullSettings.Instance);
+
+            // Act and Assert
+            var ex = Record.Exception(() => trustedSignersProvider.Remove(trustedSigners: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentException>();
+        }
+
+
+        [Fact]
+        public void Remove_WithEmptyListOFSignersToRemove_Throws()
+        {
+            var trustedSignersProvider = new TrustedSignersProvider(settings: NullSettings.Instance);
+
+            // Act and Assert
+            var ex = Record.Exception(() => trustedSignersProvider.Remove(trustedSigners: new List<TrustedSignerItem>()));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentException>();
+        }
+
+        [Fact]
+        public void Remove_SuccesffullyRemovesTrustedSigners()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <trustedSigners>
+        <author name=""author1"">
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <author name=""author2"">
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <repository name=""repo1"" serviceIndex=""https://serviceIndex.test/v3/api.json"">
+            <certificate fingerprint=""ghi"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </repository>
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                var expectedTrustedSigners = new List<TrustedSignerItem>()
+                {
+                    new AuthorItem("author2", new CertificateItem("def", HashAlgorithmName.SHA256)),
+                    new RepositoryItem("repo1", "https://serviceIndex.test/v3/api.json", new CertificateItem("ghi", HashAlgorithmName.SHA256))
+                };
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignerProvider = new TrustedSignersProvider(settings);
+
+                var trustedSigners = trustedSignerProvider.GetTrustedSigners();
+                trustedSignerProvider.Remove(new[] { trustedSigners.First() });
+
+                trustedSigners = trustedSignerProvider.GetTrustedSigners();
+                trustedSigners.Should().NotBeNull();
+                trustedSigners.Count.Should().Be(2);
+                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners);
+            }
+        }
+
+        [Fact]
+        public void Remove_IgnoresAnyUnexistantTrustedSigner()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <trustedSigners>
+        <author name=""author1"">
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <author name=""author2"">
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <repository name=""repo1"" serviceIndex=""https://serviceIndex.test/v3/api.json"">
+            <certificate fingerprint=""ghi"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </repository>
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                var expectedTrustedSigners = new List<TrustedSignerItem>()
+                {
+                    new AuthorItem("author2", new CertificateItem("def", HashAlgorithmName.SHA256)),
+                    new RepositoryItem("repo1", "https://serviceIndex.test/v3/api.json", new CertificateItem("ghi", HashAlgorithmName.SHA256))
+                };
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignerProvider = new TrustedSignersProvider(settings);
+
+                var trustedSigners = trustedSignerProvider.GetTrustedSigners();
+                trustedSignerProvider.Remove(new[] { trustedSigners.First(), new AuthorItem("DontExist", new CertificateItem("abc", HashAlgorithmName.SHA256)) });
+
+                trustedSigners = trustedSignerProvider.GetTrustedSigners();
+                trustedSigners.Should().NotBeNull();
+                trustedSigners.Count.Should().Be(2);
+                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners);
+            }
+        }
+
+        [Fact]
+        public void AddOrUpdateTrustedSigner_WithNullItem_Throws()
+        {
+            var trustedSignersProvider = new TrustedSignersProvider(settings: NullSettings.Instance);
+
+            // Act and Assert
+            var ex = Record.Exception(() => trustedSignersProvider.AddOrUpdateTrustedSigner(trustedSigner: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void AddOrUpdateTrustedSigner_WithNewTrustedSigner_AddsItSuccesfully()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <trustedSigners>
+        <author name=""author1"">
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <author name=""author2"">
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <repository name=""repo1"" serviceIndex=""https://serviceIndex.test/v3/api.json"">
+            <certificate fingerprint=""ghi"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </repository>
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                var expectedTrustedSigners = new List<TrustedSignerItem>()
+                {
+                    new AuthorItem("author1", new CertificateItem("abc", HashAlgorithmName.SHA256)),
+                    new AuthorItem("author2", new CertificateItem("def", HashAlgorithmName.SHA256)),
+                    new RepositoryItem("repo1", "https://serviceIndex.test/v3/api.json", new CertificateItem("ghi", HashAlgorithmName.SHA256)),
+                    new AuthorItem("author3", new CertificateItem("jkl", HashAlgorithmName.SHA256)),
+                };
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignerProvider = new TrustedSignersProvider(settings);
+
+                trustedSignerProvider.AddOrUpdateTrustedSigner(new AuthorItem("author3", new CertificateItem("jkl", HashAlgorithmName.SHA256)));
+
+                var trustedSigners = trustedSignerProvider.GetTrustedSigners();
+                trustedSigners.Should().NotBeNull();
+                trustedSigners.Count.Should().Be(4);
+                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners);
+            }
+        }
+
+        [Fact]
+        public void AddOrUpdateTrustedSigner_WithExistingTrustedSigner_UpdatesItSuccesfully()
+        {
+            // Arrange
+            var config = @"
+<configuration>
+    <trustedSigners>
+        <author name=""author1"">
+            <certificate fingerprint=""abc"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <author name=""author2"">
+            <certificate fingerprint=""def"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+        <repository name=""repo1"" serviceIndex=""https://serviceIndex.test/v3/api.json"">
+            <certificate fingerprint=""ghi"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </repository>
+    </trustedSigners>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                var expectedTrustedSigners = new List<TrustedSignerItem>()
+                {
+                    new AuthorItem("author1", new CertificateItem("abc", HashAlgorithmName.SHA256), new CertificateItem("jkl", HashAlgorithmName.SHA256)),
+                    new AuthorItem("author2", new CertificateItem("def", HashAlgorithmName.SHA256)),
+                    new RepositoryItem("repo1", "https://serviceIndex.test/v3/api.json", new CertificateItem("ghi", HashAlgorithmName.SHA256))
+                };
+
+                // Act and Assert
+                var settings = new Settings(mockBaseDirectory);
+                settings.Should().NotBeNull();
+
+                var trustedSignerProvider = new TrustedSignersProvider(settings);
+
+                trustedSignerProvider.AddOrUpdateTrustedSigner(new AuthorItem("author1", new CertificateItem("jkl", HashAlgorithmName.SHA256)));
+
+                var trustedSigners = trustedSignerProvider.GetTrustedSigners();
+                trustedSigners.Should().NotBeNull();
+                trustedSigners.Count.Should().Be(3);
+                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners);
+            }
+        }
+
         [Fact]
         public void GetAllowListEntries_WithNullSettings_Throws()
         {

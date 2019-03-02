@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -349,6 +349,11 @@ namespace NuGet.Frameworks
                             FrameworkConstants.CommonFrameworks.Tizen4,
                             FrameworkConstants.CommonFrameworks.NetStandard20),
 
+                        // Tizen6 projects support NETStandard2.1
+                        CreateStandardMapping(
+                            FrameworkConstants.CommonFrameworks.Tizen6,
+                            FrameworkConstants.CommonFrameworks.NetStandard21),
+
                         // UAP 10.0.15064.0 projects support NETStandard2.0
                         CreateStandardMapping(
                             new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, new Version(10, 0, 15064, 0)),
@@ -368,6 +373,11 @@ namespace NuGet.Frameworks
                         CreateStandardMapping(
                             FrameworkConstants.CommonFrameworks.NetCoreApp20,
                             FrameworkConstants.CommonFrameworks.NetStandard20),
+
+                        // NetCoreApp3.0 projects support NetStandard2.1
+                        CreateStandardMapping(
+                            FrameworkConstants.CommonFrameworks.NetCoreApp30,
+                            FrameworkConstants.CommonFrameworks.NetStandard21),
 
                         // net463 projects support NetStandard2.0
                         CreateStandardMapping(

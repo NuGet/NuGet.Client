@@ -286,12 +286,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static bool ShouldReadFromSettings(IEnumerable<string> values)
         {
-            return !values.Any() && values.All(e => !StringComparer.OrdinalIgnoreCase.Equals("CLEAR", e));
+            return !values.Any();
         }
 
         private IList<string> GetConfigFilePaths(ISettings settings)
         {
-            return SettingsUtility.GetConfigFilePaths(settings).ToList();
+            return settings.GetConfigFilePaths();
         }
 
         private static PackageReference[] GetPackageReferences(PackageSpec packageSpec)

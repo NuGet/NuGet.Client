@@ -24,6 +24,7 @@
   FocusManager.FocusedElement="{Binding ElementName=_acceptButton}">
   <Window.Resources>
     <ResourceDictionary>
+
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
@@ -35,6 +36,7 @@
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
                     Style="{StaticResource HyperlinkStyle}"
+                    ToolTip="{Binding Link}"
                     RequestNavigate="OnViewLicenseTermsRequestNavigate"
                     NavigateUri="{Binding Link}">
                     <Run Text="{Binding Text}"></Run>
@@ -50,10 +52,10 @@
       </DataTemplate>
 
       <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
-        <TextBlock
-            Margin="8,8,0,0">
+        <TextBlock>
                 <Hyperlink
-                  AutomationProperties.AutomationId="{Binding Text}"
+                    AutomationProperties.AutomationId="{Binding Text}"
+                    Style="{StaticResource WindowHyperlinkStyle}"
                     Click="ViewLicense_Click">
                   <Run Text="{Binding Text}"/>
                 </Hyperlink>
@@ -100,10 +102,6 @@
     </ResourceDictionary>
   </Window.Resources>
   <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition MinWidth="400"/>
-      <ColumnDefinition Name="LicenseFileColumn" Width="0" MinWidth="0" />
-    </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition
         Height="Auto" />
@@ -198,43 +196,5 @@
           AutomationProperties.AutomationId="DeclineButton"
           Click="OnDeclineButtonClick" />
     </Grid>
-
-    <TextBlock
-      Name="EmbeddedLicenseHeader"
-      Grid.Row="1"
-      Grid.Column="1"
-      Margin="12,4,12,0"
-      Visibility="Collapsed"
-      AutomationProperties.Name="{Binding Text}"
-      Text="{Binding LicenseHeader, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-      FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
-      TextWrapping="Wrap"
-      />
-    
-    <Border
-      Name="EmbeddedLicense"
-      Grid.Column="1"
-      Grid.Row="2"
-      Margin="12,8"
-      MinHeight="130"
-      BorderThickness="1"
-      Visibility="Collapsed"
-      BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
-      >
-      <ScrollViewer
-              Padding="3"
-              CanContentScroll="True"
-              VerticalScrollBarVisibility="Visible"
-              HorizontalScrollBarVisibility="Disabled"
-        >
-        <TextBlock
-          Margin="12,0,12,12"
-          x:Name="_licenseFileText"
-          AutomationProperties.Name="{Binding Text}"
-          Text="{Binding LicenseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-          TextWrapping="Wrap" />
-      </ScrollViewer>
-    </Border>
-    
   </Grid>
 </nuget:VsDialogWindow>

@@ -3,11 +3,11 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <Description>Complete commands common to command-line and GUI NuGet clients</Description>
-    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <Description>Complete commands common to command-line and GUI NuGet clients.</Description>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1584;CS1658</NoWarn>
-    <NoWarn Condition="'$(TargetFramework)' == 'netstandard1.6'">$(NoWarn);CS1998</NoWarn>
+    <NoWarn Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">$(NoWarn);CS1998</NoWarn>
     <PackProject>true</PackProject>
     <IncludeInVSIX>true</IncludeInVSIX>
     <Shipping>true</Shipping>
@@ -16,7 +16,7 @@
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
     <TargetFrameworks />
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,11 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Clients\NuGet.Credentials\NuGet.Credentials.csproj" />
-    <ProjectReference Include="..\NuGet.ProjectModel\NuGet.ProjectModel.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Credentials\NuGet.Credentials.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ProjectModel\NuGet.ProjectModel.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.IO.Compression" />

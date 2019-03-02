@@ -396,7 +396,7 @@ namespace NuGet.Test
         [InlineData("win8", "dotnet5.2", true)]
         [InlineData("win8", "dotnet5.1", true)]
 
-        // tizen3/tizen4 -> netstandard
+        // tizen -> netstandard
         [InlineData("tizen3.0", "netstandard1.7", false)]
         [InlineData("tizen3.0", "netstandard1.6", true)]
         [InlineData("tizen3.0", "netstandard1.5", true)]
@@ -427,6 +427,23 @@ namespace NuGet.Test
         [InlineData("tizen4.0", "dotnet5.3", false)]
         [InlineData("tizen4.0", "dotnet5.2", false)]
         [InlineData("tizen4.0", "dotnet5.1", false)]
+        [InlineData("tizen6.0", "netstandard2.2", false)]
+        [InlineData("tizen6.0", "netstandard2.1", true)]
+        [InlineData("tizen6.0", "netstandard2.0", true)]
+        [InlineData("tizen6.0", "netstandard1.7", true)]
+        [InlineData("tizen6.0", "netstandard1.6", true)]
+        [InlineData("tizen6.0", "netstandard1.5", true)]
+        [InlineData("tizen6.0", "netstandard1.4", true)]
+        [InlineData("tizen6.0", "netstandard1.3", true)]
+        [InlineData("tizen6.0", "netstandard1.2", true)]
+        [InlineData("tizen6.0", "netstandard1.1", true)]
+        [InlineData("tizen6.0", "netstandard1.0", true)]
+        [InlineData("tizen6.0", "dotnet5.6", false)]
+        [InlineData("tizen6.0", "dotnet5.5", false)]
+        [InlineData("tizen6.0", "dotnet5.4", false)]
+        [InlineData("tizen6.0", "dotnet5.3", false)]
+        [InlineData("tizen6.0", "dotnet5.2", false)]
+        [InlineData("tizen6.0", "dotnet5.1", false)]
 
         // Older things don't support dotnet, netstandard, netstandardapp, or netcoreapp at all
         [InlineData("sl4", "netcoreapp1.0", false)]
@@ -555,7 +572,8 @@ namespace NuGet.Test
         [InlineData("netstandardapp1.5", "win8", false)]
 
         // netcoreapp only supports netstandard
-        [InlineData("netcoreapp9.0", "netstandard2.1", false)]
+        [InlineData("netcoreapp9.0", "netstandard2.2", false)]
+        [InlineData("netcoreapp9.0", "netstandard2.1", true)]
         [InlineData("netcoreapp9.0", "netstandard2.0", true)]
         [InlineData("netcoreapp9.0", "netstandard1.7", true)]
         [InlineData("netcoreapp9.0", "netstandard1.6", true)]
@@ -594,7 +612,7 @@ namespace NuGet.Test
         [InlineData("netcoreapp1.0", "net4", false)]
         [InlineData("netcoreapp1.0", "win8", false)]
 
-        // UAP 10.0.15064.0 is compatible with netstandard2.0 
+        // UAP 10.0.15064.0 is compatible with netstandard2.0
         [InlineData("uap10.0.15064.0", "netstandard2.0", true)]
         [InlineData("uap10.0.15064.0", "netstandard1.9", true)]
         [InlineData("uap10.0.15064.0", "netstandard1.5", true)]

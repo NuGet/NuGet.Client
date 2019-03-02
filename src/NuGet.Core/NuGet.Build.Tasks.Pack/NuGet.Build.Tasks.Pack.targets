@@ -236,7 +236,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               ContinuePackingAfterGeneratingNuspec="$(ContinuePackingAfterGeneratingNuspec)"
               NuspecOutputPath="$(NuspecOutputAbsolutePath)"
               IncludeBuildOutput="$(IncludeBuildOutput)"
-              BuildOutputFolder="$(BuildOutputTargetFolder)"
+              BuildOutputFolders="$(BuildOutputTargetFolder)"
               ContentTargetFolders="$(ContentTargetFolders)"
               RestoreOutputPath="$(RestoreOutputAbsolutePath)"
               NuspecFile="$(NuspecFileAbsolutePath)"

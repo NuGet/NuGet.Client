@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -24,9 +25,12 @@ namespace NuGet.Commands
 
         // OpenSSL:  error:23076071:PKCS12 routines:PKCS12_parse:mac verify failure
         private const int OPENSSL_PKCS12_R_MAC_VERIFY_FAILURE = 0x23076071;
+        private const int MACOS_PKCS12_MAC_VERIFY_FAILURE = -25264;
 
         // "The specified certificate file is not correct." (CRYPT_E_NO_MATCH)
         private const int CRYPT_E_NO_MATCH_HRESULT = unchecked((int)0x80092009);
+
+        private const int MACOS_INVALID_CERT = -25257;
 
         // OpenSSL:  error:0D07803A:asn1 encoding routines:ASN1_ITEM_EX_D2I:nested asn1 error
         private const int OPENSSL_ERR_R_NESTED_ASN1_ERROR = 0x0D07803A;
@@ -56,6 +60,7 @@ namespace NuGet.Commands
                     {
                         case ERROR_INVALID_PASSWORD_HRESULT:
                         case OPENSSL_PKCS12_R_MAC_VERIFY_FAILURE:
+                        case MACOS_PKCS12_MAC_VERIFY_FAILURE:
                             throw new SignCommandException(
                                 LogMessage.CreateError(NuGetLogCode.NU3001,
                                 string.Format(CultureInfo.CurrentCulture,
@@ -73,6 +78,7 @@ namespace NuGet.Commands
 
                         case CRYPT_E_NO_MATCH_HRESULT:
                         case OPENSSL_ERR_R_NESTED_ASN1_ERROR:
+                        case MACOS_INVALID_CERT:
                             throw new SignCommandException(
                                 LogMessage.CreateError(NuGetLogCode.NU3001,
                                 string.Format(CultureInfo.CurrentCulture,
@@ -82,6 +88,14 @@ namespace NuGet.Commands
                         default:
                             throw;
                     }
+                }
+                catch (FileNotFoundException)
+                {
+                    throw new SignCommandException(
+                            LogMessage.CreateError(NuGetLogCode.NU3001,
+                            string.Format(CultureInfo.CurrentCulture,
+                                Strings.SignCommandCertificateFileNotFound,
+                                options.CertificatePath)));
                 }
             }
             else

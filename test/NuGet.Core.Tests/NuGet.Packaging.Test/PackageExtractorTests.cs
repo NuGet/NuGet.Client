@@ -1333,7 +1333,8 @@ namespace NuGet.Packaging.Test
                     var outputDll = Path.Combine(installPath, "lib", "net45", "A.dll");
 
                     // Assert
-                    Assert.Equal("766", StatPermissions(outputDll));
+                    var expected = PermissionWithUMaskApplied("766");
+                    Assert.Equal(expected, StatPermissions(outputDll));
                 }
             }
         }
@@ -2102,7 +2103,7 @@ namespace NuGet.Packaging.Test
                 }
             }
         }
-#endif
+
 
         [Fact]
         public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_PackageArchiveReader_WhenUnsignedPackagesDisallowed_ErrorsAsync()
@@ -2356,6 +2357,88 @@ namespace NuGet.Packaging.Test
                 }
             }
         }
+#endif
+
+#if IS_CORECLR
+        [Fact]
+        public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_InCoreCLR_SkipsSigningVerificationAsync()
+        {
+            // Arrange
+            var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
+
+            signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
+                It.IsAny<ISignedPackageReader>(),
+                It.IsAny<SignedPackageVerifierSettings>(),
+                It.IsAny<CancellationToken>(),
+                It.IsAny<Guid>())).
+                ReturnsAsync(new VerifySignaturesResult(isValid: false, isSigned: false));
+
+            var extractionContext = new PackageExtractionContext(
+                packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                clientPolicyContext: new ClientPolicyContext(SignatureValidationMode.Require, allowList: null),
+                logger: NullLogger.Instance)
+            {
+                SignedPackageVerifier = signedPackageVerifier.Object
+            };
+
+            using (var test = new ExtractPackageAsyncTest(extractionContext))
+            {
+
+                var packageContext = new SimpleTestPackageContext();
+                await SimpleTestPackageUtility.CreatePackagesAsync(test.Source, packageContext);
+
+                var packageFile = new FileInfo(Path.Combine(test.Source,
+                    $"{packageContext.Identity.Id}.{packageContext.Identity.Version.ToNormalizedString()}.nupkg"));
+
+                using (var packageReader = new PackageArchiveReader(File.OpenRead(packageFile.FullName)))
+                {
+                    // Act
+                    SignatureException exception = null;
+                    IEnumerable<string> files = null;
+
+                    try
+                    {
+                        files = await PackageExtractor.ExtractPackageAsync(
+                            test.Source,
+                            packageReader,
+                            test.Resolver,
+                            test.Context,
+                            CancellationToken.None);
+                    }
+                    catch (SignatureException e)
+                    {
+                        exception = e;
+                    }
+
+                    // Assert
+                    exception.Should().BeNull();
+                    files.Should().NotBeNull();
+                    files.Count().Should().Be(8);
+                    var packagePath = Path.Combine(test.DestinationDirectory.FullName,
+                        $"{packageContext.Identity.Id}.{packageContext.Identity.Version.ToNormalizedString()}");
+
+                    Directory.Exists(packagePath).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        $"{packageContext.Id}.nuspec")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        "contentFiles/any/any/config.xml")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        "contentFiles/cs/net45/code.cs")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        "lib/net45/a.dll")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        "lib/netstandard1.0/a.dll")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        $"build/net45/{packageContext.Id}.targets")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        "runtimes/any/native/a.dll")).Should().BeTrue();
+                    File.Exists(Path.Combine(packagePath,
+                        "tools/a.exe")).Should().BeTrue();
+                }
+            }
+        }
+#endif
 
         [Fact]
         public async Task InstallFromSourceAsync_WithoutPackageSaveModeNuspec_DoesNotExtractNuspecAsync()
@@ -2527,7 +2610,7 @@ namespace NuGet.Packaging.Test
                     })
                 .ReturnsAsync(() => copiedFilePaths);
 
-            signedReader.Setup(x => x.GetContentHashForSignedPackage(It.IsAny<CancellationToken>()))
+            signedReader.Setup(x => x.GetContentHash(It.IsAny<CancellationToken>(), It.IsAny<Func<string>>()))
                 .Returns(string.Empty);
 
             var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
@@ -2602,7 +2685,7 @@ namespace NuGet.Packaging.Test
                     })
                 .ReturnsAsync(() => copiedFilePaths);
 
-            signedReader.Setup(x => x.GetContentHashForSignedPackage(It.IsAny<CancellationToken>()))
+            signedReader.Setup(x => x.GetContentHash(It.IsAny<CancellationToken>(), It.IsAny<Func<string>>()))
                 .Returns(string.Empty);
 
             var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
@@ -2635,6 +2718,7 @@ namespace NuGet.Packaging.Test
             packageDownloader.Verify();
         }
 
+#if IS_DESKTOP
         [Fact]
         public async Task InstallFromSourceAsyncByPackageDownloader_TrustedSignPackageAsync()
         {
@@ -3437,6 +3521,38 @@ namespace NuGet.Packaging.Test
                         It.IsAny<Guid>()));
                 }
             }
+        }
+#endif
+
+        private string PermissionWithUMaskApplied(string permission)
+        {
+            var permissionBits = Convert.ToInt32(permission, 8);
+            string umask;
+
+            var startInfo = new ProcessStartInfo
+            {
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                UseShellExecute = false,
+                FileName = "sh",
+                Arguments = "-c umask"
+            };
+
+            using (var process = new Process())
+            {
+                process.StartInfo = startInfo;
+
+                process.Start();
+                umask = process.StandardOutput.ReadLine();
+
+                process.WaitForExit();
+            }
+
+            var umaskBits = Convert.ToInt32(umask, 8);
+            permissionBits = permissionBits & ~umaskBits;
+
+            return Convert.ToString(permissionBits, 8);
         }
 
         private string StatPermissions(string path)

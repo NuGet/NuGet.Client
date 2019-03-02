@@ -211,7 +211,8 @@ namespace NuGet.DependencyResolver
                     // check for the exact library through local repositories
                     var localMatch = await FindLibraryByVersionAsync(library, framework, localProviders, cacheContext, logger, cancellationToken);
 
-                    if (localMatch != null)
+                    if (localMatch != null
+                        && localMatch.Library.Version.Equals(library.Version))
                     {
                         return localMatch;
                     }
@@ -219,9 +220,12 @@ namespace NuGet.DependencyResolver
                     // if not found in local repositories, then check the remote repositories
                     var remoteMatch = await FindLibraryByVersionAsync(library, framework, remoteProviders, cacheContext, logger, cancellationToken);
 
-                    // either found or not, we must return from here since we dont want to resolve to any other version
-                    // then defined in packages.lock.json file
-                    return remoteMatch;
+                    if (remoteMatch != null
+                        && remoteMatch.Library.Version.Equals(library.Version))
+                    {
+                        // Only return the result if the version is same as defined in packages.lock.json file
+                        return remoteMatch;
+                    }
                 }
 
                 // it should never come to this, but as a fail-safe if it ever fails to resolve a package from lock file when

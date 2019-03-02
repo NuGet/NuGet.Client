@@ -46,7 +46,11 @@ namespace NuGet.Common
                     {
                         throw;
                     }
-                    catch (UnauthorizedAccessException)
+                    catch(PathTooLongException)
+                    {
+                        throw;
+                    }
+                    catch(UnauthorizedAccessException)
                     {
                         token.ThrowIfCancellationRequested();
 
@@ -122,7 +126,11 @@ namespace NuGet.Common
                     {
                         throw;
                     }
-                    catch (UnauthorizedAccessException)
+                    catch(PathTooLongException)
+                    {
+                        throw;
+                    }
+                    catch(UnauthorizedAccessException)
                     {
                         if (unauthorizedAttemptsLeft < 1)
                         {

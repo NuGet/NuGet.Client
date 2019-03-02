@@ -316,8 +316,6 @@ namespace NuGet.VisualStudio
 
         private void RunStarted(object automationObject, Dictionary<string, string> replacementsDictionary, WizardRunKind runKind, object[] customParams)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             if (runKind != WizardRunKind.AsNewProject
                 && runKind != WizardRunKind.AsNewItem)
             {

@@ -335,14 +335,6 @@ function Test-GetPackageCommandShowTabExpansionForSourceParameter {
     Assert-True ($suggestions.Count -gt 0)
 }
 
-function Test-OpenPackagePageCommandShowTabExpansionForSourceParameter {
-    # Act
-    $suggestions = @(TabExpansion 'Open-PackagePage -Source ')
-
-    # Assert
-    Assert-True ($suggestions.Count -gt 0)
-}
-
 function Test-InstallPackageCommandShowTabExpansionForSourceParameter {
     # Act
     $suggestions = @(TabExpansion 'Install-Package -Source ')

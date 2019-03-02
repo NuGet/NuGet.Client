@@ -10,10 +10,11 @@
   MinHeight="450"
   Width="450"
   Height="450"
+  WindowStartupLocation="CenterOwner"
   Background="{DynamicResource {x:Static nuget:Brushes.BackgroundBrushKey}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
-  Title="{Binding Header}"
+  Title="{Binding LicenseHeader}"
   d:DesignHeight="300"
   d:DesignWidth="300"
   >
@@ -22,6 +23,9 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
+      <Style TargetType="{x:Type FlowDocument}">
+        <Setter Property="FontSize" Value="12"/>
+      </Style>
     </ResourceDictionary>
   </Window.Resources>
 
@@ -29,19 +33,13 @@
     <Border
       Name="borderLicenseFile"
       BorderThickness="1"
+      AutomationProperties.Name="{Binding LicenseHeader, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
-      <ScrollViewer
-        Name="scrollViewerLicenseFile"
-              CanContentScroll="True"
-              VerticalScrollBarVisibility="Visible"
-              HorizontalScrollBarVisibility="Disabled">
-        <TextBlock
-            Name="textBlockLicenseFile"
-            Margin="12,8,12,8"
-            TextWrapping="Wrap">
-          <Run Text="{Binding LicenseContent, Mode=TwoWay,  UpdateSourceTrigger=PropertyChanged}"/>
-        </TextBlock>
-      </ScrollViewer>
+      <FlowDocumentScrollViewer
+          Name="_flowDocumentViewer"
+          AutomationProperties.LabeledBy="{Binding ElementName=borderLicenseFile}"
+          Document="{Binding LicenseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+      </FlowDocumentScrollViewer>
     </Border>
   </Grid>
 </nuget:VsDialogWindow>

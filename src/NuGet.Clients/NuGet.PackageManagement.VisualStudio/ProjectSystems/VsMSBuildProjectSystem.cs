@@ -190,8 +190,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private Task AddFileCoreAsync(string path, Action addFile)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
             // Do not try to add file to project, if the path is null or empty.
             if (string.IsNullOrEmpty(path))
             {

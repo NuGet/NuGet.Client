@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
+using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1;
 using Test.Utility.Signing;
 using Xunit;

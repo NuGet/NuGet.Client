@@ -52,9 +52,6 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(dgFile));
             }
 
-            // Write the dg file to disk of the NUGET_PERSIST_DG is set.
-            MSBuildRestoreUtility.PersistDGFileIfDebugging(dgFile, restoreContext.Log);
-
             // Validate the dg file input, this throws if errors are found.
             SpecValidationUtility.ValidateDependencySpec(dgFile);
 
@@ -173,7 +170,7 @@ namespace NuGet.Commands
             var summaryRequest = new RestoreSummaryRequest(
                 request,
                 project.MSBuildProjectPath,
-                SettingsUtility.GetConfigFilePaths(settings),
+                settings.GetConfigFilePaths(),
                 sources);
 
             return summaryRequest;

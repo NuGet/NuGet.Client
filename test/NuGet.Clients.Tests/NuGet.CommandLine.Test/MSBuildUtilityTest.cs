@@ -196,6 +196,41 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public void TestGetMsbuildDirectoryFromPATHENV()
+        {
+            using (var vsPath = TestDirectory.Create())
+            {
+
+                if (RuntimeEnvironmentHelper.IsMono)
+                { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
+                    return;
+                }
+
+                var msBuild159BinPath = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "15.9", "Bin")).FullName;
+
+                var msBuild159ExePath = Path.Combine(msBuild159BinPath, "msbuild.exe").ToString();
+
+                using (var fs15 = File.CreateText(msBuild159ExePath))
+                {
+                    fs15.Write("foo 15.9");
+                }
+
+                var pathValue = Environment.GetEnvironmentVariable("PATH");
+                var newPathValue = msBuild159BinPath + ";" + pathValue;
+
+                Environment.SetEnvironmentVariable("PATH", newPathValue);
+
+                // Act;
+                var toolset = MsBuildUtility.GetMsBuildToolset(userVersion: null, console: null);
+                Environment.SetEnvironmentVariable("PATH", pathValue);
+
+                // Assert
+                Assert.NotNull(toolset);
+                Assert.Equal(msBuild159BinPath, toolset.Path);
+            }
+        }
+
         public static class ToolsetDataSource
         {
             // Legacy toolsets

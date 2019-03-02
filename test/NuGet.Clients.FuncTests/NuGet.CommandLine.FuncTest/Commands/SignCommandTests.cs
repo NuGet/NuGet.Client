@@ -27,6 +27,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private readonly string _chainBuildFailureErrorCode = NuGetLogCode.NU3018.ToString();
         private readonly string _noCertFoundErrorCode = NuGetLogCode.NU3001.ToString();
         private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3002.ToString();
+        private readonly string _timestampUnsupportedHashAlgorithmCode = NuGetLogCode.NU3024.ToString();
 
         private SignCommandTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
@@ -705,6 +706,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         waitForExit: true);
 
                     Assert.False(result.Success);
+                    Assert.Contains(_timestampUnsupportedHashAlgorithmCode, result.AllOutput);
                     Assert.Contains("The timestamp response has an unsupported digest algorithm (SHA1). The following algorithms are supported: SHA256, SHA384, SHA512.", result.AllOutput);
 
                     var resultingFile = File.ReadAllBytes(packageFile.FullName);

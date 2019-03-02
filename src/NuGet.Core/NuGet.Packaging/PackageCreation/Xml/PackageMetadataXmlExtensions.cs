@@ -40,22 +40,25 @@ namespace NuGet.Packaging.Xml
                 AddElementIfNotNull(elem, ns, "authors", metadata.Authors, authors => string.Join(",", authors));
                 AddElementIfNotNull(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
             }
-            elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
             if (metadata.DevelopmentDependency)
             {
                 elem.Add(new XElement(ns + "developmentDependency", metadata.DevelopmentDependency));
             }
-            var licenseUrlToWrite = metadata.LicenseUrl;
-            if (metadata.LicenseMetadata != null)
+            if (!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
             {
-                var licenseElement = GetXElementFromLicenseMetadata(ns, metadata.LicenseMetadata);
-                if (licenseElement != null)
+                elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
+                var licenseUrlToWrite = metadata.LicenseUrl?.ToString();
+                if (metadata.LicenseMetadata != null)
                 {
-                    elem.Add(licenseElement);
+                    var licenseElement = GetXElementFromLicenseMetadata(ns, metadata.LicenseMetadata);
+                    if (licenseElement != null)
+                    {
+                        elem.Add(licenseElement);
+                    }
+                    licenseUrlToWrite = metadata.LicenseMetadata.LicenseUrl.OriginalString;
                 }
-                licenseUrlToWrite = LicenseMetadata.DeprecateUrl;
+                AddElementIfNotNull(elem, ns, "licenseUrl", licenseUrlToWrite);
             }
-            AddElementIfNotNull(elem, ns, "licenseUrl", licenseUrlToWrite);
             AddElementIfNotNull(elem, ns, "projectUrl", metadata.ProjectUrl);
             AddElementIfNotNull(elem, ns, "iconUrl", metadata.IconUrl);
             AddElementIfNotNull(elem, ns, "description", metadata.Description);

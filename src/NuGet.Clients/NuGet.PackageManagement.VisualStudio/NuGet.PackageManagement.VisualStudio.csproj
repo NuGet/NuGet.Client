@@ -15,16 +15,12 @@
     <FileAlignment>512</FileAlignment>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '16.0'">
+    <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
   </ItemGroup>
@@ -32,6 +28,8 @@
     <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Composition">
       <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Composition.15.8.98\lib\net45\Microsoft.VisualStudio.Composition.dll</HintPath>
     </Reference>
@@ -50,17 +48,9 @@
       <HintPath>$(SolutionPackagesFolder)VSLangProj150.1.0.0\lib\net46\VSLangProj150.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.15.0.26201\lib\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime.14.3.25407\lib\Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
@@ -74,24 +64,17 @@
     <Reference Include="WindowsBase" />
     <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <Reference Include="Microsoft.Build">
-      <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+  <ItemGroup>
     <Reference Include="Microsoft.Build">
       <HintPath>$(SolutionPackagesFolder)Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+  <ItemGroup>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProject.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProjectProvider.cs" />
     <Compile Include="Migrate\ProjectJsonToPackageRefMigrator.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="CommonResources.cs" />
     <Compile Include="Common\AsyncLockAwaiter.cs" />
     <Compile Include="Common\AsyncLockReleaser.cs" />
@@ -129,17 +112,17 @@
     <Compile Include="PackageFeeds\SearchResult.cs" />
     <Compile Include="PackageFeeds\SourceRepositoryExtensions.cs" />
     <Compile Include="PackageFeeds\UpdatePackageFeed.cs" />
-    <Compile Include="Services\DeferredProjectWorkspaceService.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
+    <Compile Include="Services\DeferredProjectWorkspaceService.cs" />
     <Compile Include="IDE\ExtensibleSourceRepositoryProvider.cs" />
     <Compile Include="IInteractiveLoginProvider.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />
-    <Compile Include="Projects\NetCorePackageReferenceProject.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
+    <Compile Include="Projects\NetCorePackageReferenceProject.cs" />
     <Compile Include="Projects\INuGetProjectProvider.cs" />
     <Compile Include="Projects\MSBuildNuGetProjectProvider.cs" />
     <Compile Include="Projects\ProjectJsonProjectProvider.cs" />
     <Compile Include="Projects\ProjectKNuGetProjectProvider.cs" />
     <Compile Include="Projects\ProjectSystemCache.cs" />
-    <Compile Include="Projects\NetCorePackageReferenceProjectProvider.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
+    <Compile Include="Projects\NetCorePackageReferenceProjectProvider.cs" />
     <Compile Include="Projects\ProjectProviderContext.cs" />
     <Compile Include="ProjectServices\VsProjectScriptHostService.cs" />
     <Compile Include="Prompts\DeprecatedFrameworkModel.cs" />
@@ -219,7 +202,7 @@
     <Compile Include="Projects\IVsProjectAdapterProvider.cs" />
     <Compile Include="Services\IVsProjectThreadingService.cs" />
     <Compile Include="ProjectServices\VsProjectBuildProperties.cs" />
-    <Compile Include="ProjectServices\VsManagedLanguagesProjectSystemServices.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
+    <Compile Include="ProjectServices\VsManagedLanguagesProjectSystemServices.cs" />
     <Compile Include="Projects\VsProjectAdapter.cs" />
     <Compile Include="Projects\VsProjectAdapterProvider.cs" />
     <Compile Include="ProjectServices\VsCoreProjectSystemServices.cs" />
@@ -238,11 +221,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Indexing\NuGet.Indexing.csproj">
       <Project>{a2b06fa8-bdbc-4459-a92a-161862b2aa97}</Project>
       <Name>NuGet.Indexing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NuGet.Credentials\NuGet.Credentials.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Credentials\NuGet.Credentials.csproj">
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
     </ProjectReference>
@@ -256,47 +239,43 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Commands\NuGet.Commands.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Commands\NuGet.Commands.csproj">
       <Project>{567e8582-0e73-4a34-a7d3-ed9486415523}</Project>
       <Name>NuGet.Commands</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Common\NuGet.Common.csproj">
       <Project>{98bee375-a5a0-4fc2-9b7a-25db41c8045d}</Project>
       <Name>NuGet.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Configuration\NuGet.Configuration.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Configuration\NuGet.Configuration.csproj">
       <Project>{e3ef26e1-80a7-4573-b3a4-1d4b0042616e}</Project>
       <Name>NuGet.Configuration</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Frameworks\NuGet.Frameworks.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Frameworks\NuGet.Frameworks.csproj">
       <Project>{9a9a9f26-597a-4fa6-a4f1-415063484d9c}</Project>
       <Name>NuGet.Frameworks</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.LibraryModel\NuGet.LibraryModel.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.LibraryModel\NuGet.LibraryModel.csproj">
       <Project>{13883e8e-7de1-4edd-8e4a-c5357ba8cd81}</Project>
       <Name>NuGet.LibraryModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj">
       <Project>{394aeb96-493c-4839-a5ac-8d93cd2fad40}</Project>
       <Name>NuGet.PackageManagement</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj">
-      <Project>{d65583e4-8084-466a-ba4b-55a797ea047b}</Project>
-      <Name>NuGet.Packaging.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Packaging\NuGet.Packaging.csproj">
       <Project>{bd6bbc90-60be-4e7d-8458-91e9cda66abe}</Project>
       <Name>NuGet.Packaging</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.ProjectModel\NuGet.ProjectModel.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ProjectModel\NuGet.ProjectModel.csproj">
       <Project>{f013e43f-b6d5-4f59-acf0-eecec2c794f5}</Project>
       <Name>NuGet.ProjectModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Protocol\NuGet.Protocol.csproj">
       <Project>{020f4c88-3a5c-4b89-9868-089e867cc223}</Project>
       <Name>NuGet.Protocol</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj">
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Versioning\NuGet.Versioning.csproj">
       <Project>{24e62ab7-64e4-4975-9417-883559d1bc19}</Project>
       <Name>NuGet.Versioning</Name>
     </ProjectReference>
@@ -307,22 +286,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration">
-      <Version>15.0.198-pre</Version>
-    </PackageReference>
-    <PackageReference Include="VSLangProj110">
-      <Version>11.0.61030</Version>
-    </PackageReference>
-    <PackageReference Include="VSLangProj2">
-      <Version>7.0.5000</Version>
-    </PackageReference>
-    <PackageReference Include="VSLangProj157">
-      <Version>15.7.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="4.4.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="15.0.198-pre" />
+    <!-- can this be removed?, upgraded version-->
+    <PackageReference Include="VSLangProj110" Version="11.0.61030" />
+    <PackageReference Include="VSLangProj2" Version="7.0.5000" />
+    <PackageReference Include="VSLangProj157" Version="15.7.0" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
+  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

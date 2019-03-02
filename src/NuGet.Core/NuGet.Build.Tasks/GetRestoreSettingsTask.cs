@@ -120,7 +120,7 @@ namespace NuGet.Build.Tasks
                 // is something that could happen, but it is not supported.
                 var absoluteConfigFilePath = GetGlobalAbsolutePath(RestoreConfigFile);
                 var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, string.IsNullOrEmpty(RestoreRootConfigDirectory) ? Path.GetDirectoryName(ProjectUniqueName) : RestoreRootConfigDirectory, absoluteConfigFilePath, _machineWideSettings);
-                OutputConfigFilePaths = SettingsUtility.GetConfigFilePaths(settings).ToArray();
+                OutputConfigFilePaths = settings.GetConfigFilePaths().ToArray();
 
                 // PackagesPath
                 OutputPackagesPath = RestoreSettingsUtils.GetValue(

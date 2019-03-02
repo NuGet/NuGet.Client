@@ -178,7 +178,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     var resolutionContext = new ResolutionContext(
                         GetDependencyBehavior(),
                         _allowPrerelease,
-                        false,
+                        ShouldAllowDelistedPackages(),
                         DetermineVersionConstraints(),
                         new GatherCache(),
                         sourceCacheContext);
@@ -289,7 +289,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 var resolutionContext = new ResolutionContext(
                     GetDependencyBehavior(),
                     _allowPrerelease,
-                    false,
+                    ShouldAllowDelistedPackages(),
                     DetermineVersionConstraints(),
                     new GatherCache(),
                     sourceCacheContext);
@@ -453,6 +453,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 return VersionConstraints.None;
             }
+        }
+
+        /// <summary>
+        /// Determine if the update action should allow use of delisted packages
+        /// </summary>        
+        private bool ShouldAllowDelistedPackages()
+        {
+            // If a delisted package is already installed, it should be reinstallable too.
+            if (Reinstall.IsPresent)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

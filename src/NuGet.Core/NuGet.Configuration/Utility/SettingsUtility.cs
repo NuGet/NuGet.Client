@@ -408,42 +408,6 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Get a list of all the paths of the settings files used as part of this settings object
-        /// </summary>
-        public static IEnumerable<string> GetConfigFilePaths(ISettings settings)
-        {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            if (settings is Settings settingsImpl)
-            {
-                return settingsImpl.Priority.Select(config => Path.GetFullPath(Path.Combine(config.DirectoryPath, config.FileName)));
-            }
-
-            return Enumerable.Empty<string>();
-        }
-
-        /// <summary>
-        /// Get a list of all the roots of the settings files used as part of this settings object
-        /// </summary>
-        public static IEnumerable<string> GetConfigRoots(ISettings settings)
-        {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            if (settings is Settings settingsImpl)
-            {
-                return settingsImpl.Priority.Select(config => config.DirectoryPath);
-            }
-
-            return Enumerable.Empty<string>();
-        }
-
-        /// <summary>
         /// Throw if a path is relative.
         /// </summary>
         private static void VerifyPathIsRooted(string key, string path)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,13 +34,21 @@ namespace NuGet.CommandLine.XPlat
                     Strings.RemovePkg_ProjectPathDescription,
                     CommandOptionType.SingleValue);
 
+                var interactive = removePkg.Option(
+                    "--interactive",
+                    Strings.AddPkg_InteractiveDescription,
+                    CommandOptionType.NoValue);
+
                 removePkg.OnExecute(() =>
                 {
                     ValidateArgument(id, removePkg.Name);
                     ValidateArgument(projectPath, removePkg.Name);
                     ValidateProjectPath(projectPath, removePkg.Name);
                     var logger = getLogger();
-                    var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), id.Value(), logger);
+                    var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), id.Value(), logger)
+                    {
+                        Interactive = interactive.HasValue()
+                    };
                     var msBuild = new MSBuildAPIUtility(logger);
                     var removePackageRefCommandRunner = getCommandRunner();
                     return removePackageRefCommandRunner.ExecuteCommand(packageRefArgs, msBuild);

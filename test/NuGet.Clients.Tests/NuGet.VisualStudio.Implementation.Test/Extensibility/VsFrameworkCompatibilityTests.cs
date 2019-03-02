@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Runtime.Versioning;
 using Xunit;
@@ -179,7 +179,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             Assert.Equal(".NETStandard,Version=v1.6", actual[6].ToString());
             Assert.Equal(".NETStandard,Version=v1.7", actual[7].ToString());
             Assert.Equal(".NETStandard,Version=v2.0", actual[8].ToString());
-            Assert.Equal(9, actual.Length);
+            Assert.Equal(".NETStandard,Version=v2.1", actual[9].ToString());
+            Assert.Equal(10, actual.Length);
         }
     }
 }

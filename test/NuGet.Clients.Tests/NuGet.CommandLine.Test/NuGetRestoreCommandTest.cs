@@ -441,35 +441,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(_successCode, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
-                Assert.True(File.Exists(packageFileA));
-                Assert.True(File.Exists(packageFileB));
-            }
-        }
-
-        [CIOnlyTheory]
-        [InlineData("packages.config")]
-        [InlineData("packages.proj2.config")]
-        public void RestoreCommand_FromSolutionFileWithMsbuild14(string configFileName)
-        {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
-            {
-                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", configFileName);
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    "restore -Source " + repositoryPath + @" -MSBuildVersion 14.0",
-                    waitForExit: true);
-
-                // Assert
-                Assert.True(_successCode == r.Item1, r.Item2);
+                Assert.True(_successCode == r.Item1, $"Expected: {_successCode} - Actual: {r.Item1}{Environment.NewLine} {r.AllOutput}");
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));

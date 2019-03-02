@@ -18,10 +18,12 @@ namespace NuGet.Protocol.Tests.Providers
 {
     public class RepositorySignatureResourceProviderTests
     {
-        private const string _resourceType47 = "RepositorySignatures/4.7.0";
-        private const string _resourceType49 = "RepositorySignatures/4.9.0";
-        private const string _resourceUri47 = "https://unit.test/4.7.0";
-        private const string _resourceUri49 = "https://unit.test/4.9.0";
+        private const string _resourceType470 = "RepositorySignatures/4.7.0";
+        private const string _resourceType490 = "RepositorySignatures/4.9.0";
+        private const string _resourceType500 = "RepositorySignatures/5.0.0";
+        private const string _resourceUri470 = "https://unit.test/4.7.0";
+        private const string _resourceUri490 = "https://unit.test/4.9.0";
+        private const string _resourceUri500 = "https://unit.test/5.0.0";
 
         private static readonly SemanticVersion _defaultVersion = new SemanticVersion(0, 0, 0);
 
@@ -51,8 +53,8 @@ namespace NuGet.Protocol.Tests.Providers
         }
 
         [Theory]
-        [InlineData("http://unit.test/4.9.0", _resourceType49)]
-        [InlineData(@"\\localhost\unit\test\4.9.0", _resourceType49)]
+        [InlineData("http://unit.test/4.9.0", _resourceType490)]
+        [InlineData(@"\\localhost\unit\test\4.9.0", _resourceType490)]
         public async Task TryCreate_WhenUrlIsInvalid_Throws(string resourceUrl, string resourceType)
         {
             var serviceEntry = new ServiceIndexEntry(new Uri(resourceUrl), resourceType, _defaultVersion);
@@ -75,8 +77,9 @@ namespace NuGet.Protocol.Tests.Providers
         }
 
         [Theory]
-        [InlineData(_resourceUri49, _resourceType49)]
-        [InlineData(_resourceUri47, _resourceType47)]
+        [InlineData(_resourceUri500, _resourceType500)]
+        [InlineData(_resourceUri490, _resourceType490)]
+        [InlineData(_resourceUri470, _resourceType470)]
         public async Task TryCreate_WhenOnlyOneResourceIsPresent_ReturnsThatResource(string resourceUrl, string resourceType)
         {
             var serviceEntry = new ServiceIndexEntry(new Uri(resourceUrl), resourceType, _defaultVersion);
@@ -104,18 +107,20 @@ namespace NuGet.Protocol.Tests.Providers
         }
 
         [Fact]
-        public async Task TryCreate_WhenMultipleResourcesArePresent_Returns49Resource()
+        public async Task TryCreate_WhenMultipleResourcesArePresent_Returns500Resource()
         {
-            var serviceEntry47 = new ServiceIndexEntry(new Uri(_resourceUri47), _resourceType47, _defaultVersion);
-            var serviceEntry49 = new ServiceIndexEntry(new Uri(_resourceUri49), _resourceType49, _defaultVersion);
+            var serviceEntry470 = new ServiceIndexEntry(new Uri(_resourceUri470), _resourceType470, _defaultVersion);
+            var serviceEntry490 = new ServiceIndexEntry(new Uri(_resourceUri490), _resourceType490, _defaultVersion);
+            var serviceEntry500 = new ServiceIndexEntry(new Uri(_resourceUri500), _resourceType500, _defaultVersion);
             var resourceProviders = new ResourceProvider[]
             {
-                CreateServiceIndexResourceV3Provider(serviceEntry47, serviceEntry49),
+                CreateServiceIndexResourceV3Provider(serviceEntry470, serviceEntry490, serviceEntry500),
                 StaticHttpSource.CreateHttpSource(
                     new Dictionary<string, string>()
                     {
-                        { serviceEntry47.Uri.AbsoluteUri, GetRepositorySignaturesResourceJson(serviceEntry47.Uri.AbsoluteUri) },
-                        { serviceEntry49.Uri.AbsoluteUri, GetRepositorySignaturesResourceJson(serviceEntry49.Uri.AbsoluteUri) }
+                        { serviceEntry470.Uri.AbsoluteUri, GetRepositorySignaturesResourceJson(serviceEntry470.Uri.AbsoluteUri) },
+                        { serviceEntry490.Uri.AbsoluteUri, GetRepositorySignaturesResourceJson(serviceEntry490.Uri.AbsoluteUri) },
+                        { serviceEntry500.Uri.AbsoluteUri, GetRepositorySignaturesResourceJson(serviceEntry500.Uri.AbsoluteUri) }
                     }),
                 _repositorySignatureResourceProvider
             };
@@ -130,7 +135,7 @@ namespace NuGet.Protocol.Tests.Providers
             Assert.NotNull(resource);
             Assert.Equal(_packageSource.Source, resource.Source);
             Assert.Single(resource.RepositoryCertificateInfos);
-            Assert.StartsWith(serviceEntry49.Uri.AbsoluteUri, resource.RepositoryCertificateInfos.Single().ContentUrl);
+            Assert.StartsWith(serviceEntry500.Uri.AbsoluteUri, resource.RepositoryCertificateInfos.Single().ContentUrl);
         }
 
         private static ServiceIndexResourceV3Provider CreateServiceIndexResourceV3Provider(params ServiceIndexEntry[] entries)

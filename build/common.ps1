@@ -2,6 +2,7 @@
 $DefaultConfiguration = 'debug'
 $DefaultReleaseLabel = 'zlocal'
 $DefaultMSBuildVersion = 15
+$DefaultVSVersion = "15.0"
 
 # The pack version can be inferred from the .nuspec files on disk. This is only necessary as long
 # as the following issue is open: https://github.com/NuGet/Home/issues/3530
@@ -9,13 +10,12 @@ $PackageReleaseVersion = "4.6.0"
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $CLIRoot = Join-Path $NuGetClientRoot cli
-$CLIRootForPack = Join-Path $NuGetClientRoot "cli1.0.4"
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $Nupkgs = Join-Path $Artifacts nupkgs
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
 $ConfigureJson = Join-Path $Artifacts configure.json
-$ILMergeOutputDir = Join-Path $Artifacts "VS14"
-
+$VsWhereExe = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+$VSVersion = $env:VisualStudioVersion
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.exe'
@@ -176,13 +176,12 @@ Function Update-Submodules {
 Function Install-NuGet {
     [CmdletBinding()]
     param(
-        [switch]$Force,
-        [switch]$CI
+        [switch]$Force
     )
     if ($Force -or -not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
 
-        wget https://dist.nuget.org/win-x86-commandline/v4.7.0/nuget.exe -OutFile $NuGetExe
+        wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $NuGetExe
     }
 
     # Display nuget info
@@ -194,50 +193,16 @@ Function Install-DotnetCLI {
     param(
         [switch]$Force
     )
-    $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
-    $CliTargetBranch = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliTargetBranch
+    $MSBuildExe = Get-MSBuildExe
+    $CliBranchForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
 
     $cli = @{
-            Root = $CLIRoot
-            DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
-            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/4bd9bb92cc3636421cd01baedbd8ef3e41aa1e22/scripts/obtain/dotnet-install.ps1'
-        }
-
-    $env:DOTNET_HOME=$cli.Root
-    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
-
-    if ($Force -or -not (Test-Path $cli.DotNetExe)) {
-        Trace-Log 'Downloading .NET CLI'
-
-        New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
-
-        $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
-
-        Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
-        $channel = $CliTargetBranch.Trim()
-        & $DotNetInstall -Channel $channel  -i $cli.Root
+        Root = $CLIRoot
+        Version = 'latest'
+        Channel = $CliBranchForTesting.Trim()
     }
-
-    if (-not (Test-Path $cli.DotNetExe)) {
-        Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
-    }
-
-    # Display build info
-    & $cli.DotNetExe --info
-}
-
-Function Install-DotnetCLIToILMergePack {
-    [CmdletBinding()]
-    param(
-        [switch]$Force
-    )
-
-    $cli = @{
-            Root = $CLIRootForPack
-            DotNetExe = Join-Path $CLIRootForPack 'dotnet.exe'
-            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
-            Version = '1.0.1'
-        }
+    
+    $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
 
     if ([Environment]::Is64BitOperatingSystem) {
         $arch = "x64";
@@ -249,42 +214,112 @@ Function Install-DotnetCLIToILMergePack {
     $env:DOTNET_HOME=$cli.Root
     $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-    if ($Force -or -not (Test-Path $cli.DotNetExe)) {
+    if ($Force -or -not (Test-Path $DotNetExe)) {
         Trace-Log 'Downloading .NET CLI'
 
         New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
 
         $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
 
-        Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
-
-        & $DotNetInstall -Channel preview -i $cli.Root -Version $cli.Version -Architecture $arch
+        Invoke-WebRequest 'https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1' -OutFile $DotNetInstall
+        & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch
     }
 
-    if (-not (Test-Path $cli.DotNetExe)) {
+    if (-not (Test-Path $DotNetExe)) {
         Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
     }
 
     # Display build info
-    & $cli.DotNetExe --info
+    & $DotNetExe --info
+}
+
+Function Get-LatestVisualStudioRoot {
+    # First try to use vswhere to find the latest version of Visual Studio.
+    if (Test-Path $VsWhereExe) {
+        $installationPath = & $VsWhereExe -latest -prerelease -property installationPath
+        Verbose-Log "Found Visual Studio at '$installationPath' using vswhere"
+
+        return $installationPath
+    }
+
+    $cachePath = "${Env:ProgramData}\Microsoft\VisualStudio\Packages"
+
+    # Fall back to reading JSON directly (not recommended).
+    'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\VisualStudio\Setup',
+    'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\Setup',
+    'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\Setup' | ForEach-Object {
+        if (Test-Path $_) {
+            $key = Get-ItemProperty $_
+
+            if ($key.CachePath) {
+                $cachePath = $key.CachePath
+                return
+            }
+        }
+    }
+
+    $instances = Get-ChildItem "$cachePath\_Instances" -Filter state.json -Recurse | Get-Content | ConvertFrom-Json
+    foreach ($instance in $instances) {
+        if (-not $maxInstance) {
+            $maxInstance = $instance
+        } elseif ([Version]$instance.installationVersion -gt [Version]$maxInstance.installationVersion) {
+            $maxInstance = $instance
+        } elseif (([Version]$instance.installationVersion -eq [Version]$maxInstance.installationVersion) -and ([DateTime]$instance.installDate -gt [DateTime]$maxInstance.installDate)) {
+            $maxInstance = $instance
+        }
+    }
+
+    if ($maxInstance) {
+        $installationPath = $maxInstance.installationPath
+        Verbose-Log "Found Visual Studio at '$installationPath' using machine configuration"
+
+        return $installationPath
+    }
+
+    Error-Log 'Cannot find an instance of Visual Studio 2017 or newer' -Fatal
+}
+
+Function Get-VSVersion() {
+    if (-not $VSVersion) {
+        $VSVersion = $DefaultVSVersion
+    }
+    return $VSVersion
+}
+
+Function Get-VSMajorVersion() {
+    $vsVersion = Get-VSVersion
+    $vsMajorVersion = "${vsVersion}".Split('.')[0]
+    return $vsMajorVersion
 }
 
 Function Get-MSBuildRoot {
     param(
-        [ValidateSet(14,15)]
-        [int]$MSBuildVersion,
         [switch]$Default
     )
+
+    $vsMajorVersion = Get-VSMajorVersion
+
     # Willow install workaround
-    if (-not $Default -and $MSBuildVersion -eq 15 -and (Test-Path Env:\VS150COMNTOOLS)) {
-        # If VS "15" is installed get msbuild from VS install path
-        $MSBuildRoot = Join-Path $env:VS150COMNTOOLS ..\..\MSBuild
+    if (-not $Default) {
+
+        # Find version 15.0 or newer
+        $CommonToolsVar = "Env:VS${vsMajorVersion}0COMNTOOLS"
+        if (Test-Path $CommonToolsVar) {
+            # If VS "15" is installed get msbuild from VS install path
+            $CommonToolsValue = gci $CommonToolsVar | select -expand value -ea Ignore
+            $MSBuildRoot = Join-Path $CommonToolsValue '..\..\MSBuild' -Resolve
+        } else {
+            $VisualStudioRoot = Get-LatestVisualStudioRoot
+            if ($VisualStudioRoot -and (Test-Path $VisualStudioRoot)) {
+                $MSBuildRoot = Join-Path $VisualStudioRoot 'MSBuild'
+            }
+        }
     }
 
     # If not found before
     if (-not $MSBuildRoot -or -not (Test-Path $MSBuildRoot)) {
         # Assume msbuild is installed at default location
-        $MSBuildRoot = Join-Path ${env:ProgramFiles(x86)} MSBuild
+        $MSBuildRoot = Join-Path ${env:ProgramFiles(x86)} 'MSBuild'
     }
 
     $MSBuildRoot
@@ -292,16 +327,26 @@ Function Get-MSBuildRoot {
 
 Function Get-MSBuildExe {
     param(
-        [ValidateSet(15)]
         [int]$MSBuildVersion
     )
     # Get the highest msbuild version if version was not specified
     if (-not $MSBuildVersion) {
-        return Get-MSBuildExe 15
+        return Get-MSBuildExe $DefaultMSBuildVersion
     }
 
-    $MSBuildRoot = Get-MSBuildRoot $MSBuildVersion
-    Join-Path $MSBuildRoot "${MSBuildVersion}.0\bin\msbuild.exe"
+    $MSBuildRoot = Get-MSBuildRoot
+    $MSBuildExe = Join-Path $MSBuildRoot 'Current\bin\msbuild.exe'
+
+    if (-not (Test-Path $MSBuildExe)) {
+        $MSBuildExe = Join-Path $MSBuildRoot "${MSBuildVersion}.0\bin\msbuild.exe"
+    }
+
+    if (Test-Path $MSBuildExe) {
+        Verbose-Log "Found MSBuild.exe at `"$MSBuildExe`""
+        $MSBuildExe
+    } else {
+        Error-Log 'Could not find MSBuild.exe' -Fatal
+    }
 }
 
 Function Test-MSBuildVersionPresent {
@@ -336,8 +381,7 @@ Function Test-BuildEnvironment {
     Set-Alias msbuild $script:MSBuildExe -Scope Script -Force
     Set-Variable BuildToolsets -Value $ConfigureObject.Toolsets -Scope Script -Force
 
-    $script:VS14Installed = ($BuildToolsets | where vs14 -ne $null)
-    $script:VS15Installed = ($BuildToolsets | where vs15 -ne $null)
+    $script:VSToolsetInstalled = ($BuildToolsets | where vstoolset -ne $null)
 
     $ConfigureObject |
          select -expand envvars -ea Ignore |
@@ -351,80 +395,11 @@ Function Test-BuildEnvironment {
     }
 }
 
-function Enable-DelaySigningForDotNet {
-    param(
-        $xproject,
-        $KeyFile
-    )
-    Verbose-Log "Adding keyFile '$KeyFile' to buildOptions"
-
-    $buildOptions = $xproject.buildOptions
-
-    if ($buildOptions -eq $null) {
-        $newSection = ConvertFrom-Json -InputObject '{ }'
-        $xproject | Add-Member -Name "buildOptions" -value $newSection -MemberType NoteProperty
-        $buildOptions = $xproject.buildOptions
-    }
-
-    if (-not $xproject.buildOptions.keyFile) {
-        $buildOptions | Add-Member -Name "keyFile" -value $KeyFile -MemberType NoteProperty
-    }
-    else {
-        Warning-Log "keyFile already exists"
-    }
-
-    if (-not $xproject.buildOptions.delaySign) {
-        $buildOptions | Add-Member -Name "delaySign" -value $true -MemberType NoteProperty
-    }
-    else {
-        Warning-Log "delaySign already exists"
-    }
-}
-
-Function Save-ProjectFile ($xproject, $fileName) {
-    Trace-Log "Saving project to '$fileName'"
-    $xproject | ConvertTo-Json -Depth 100 | Out-File $fileName
-}
-
-Function Set-DelaySigning {
-    [CmdletBinding()]
-    param(
-        [string]$MSPFXPath,
-        [string]$NuGetPFXPath
-    )
-
-    if ($MSPFXPath -and (Test-Path $MSPFXPath)) {
-
-        Trace-Log "Setting NuGet.Core projects to delay sign using $MSPFXPath"
-        $env:MS_PFX_PATH=$MSPFXPath
-    }
-    else {
-        Remove-Item Env:\MS_PFX_PATH -ErrorAction Ignore
-    }
-
-    if ($NuGetPFXPath -and (Test-Path $NuGetPFXPath)) {
-        Trace-Log "Setting NuGet.Clients projects to delay sign using $NuGetPFXPath"
-        $env:NUGET_PFX_PATH= $NuGetPFXPath
-    }
-    else {
-        Remove-Item Env:\NUGET_PFX_PATH -ErrorAction Ignore
-    }
-}
-
 Function Get-BuildNumber() {
-    $SemanticVersionDate = '2018-05-30' # Date format - yyyy-mm-dd
-    try {
-        [uint16](((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5)
-    }
-    catch {
-        # Build number is a 16-bit integer. The limitation is imposed by VERSIONINFO.
-        # https://msdn.microsoft.com/en-gb/library/aa381058.aspx
-        Error-Log "Build number is out of range! Consider advancing SemanticVersionDate in common.ps1." -Fatal
-    }
-}
-
-Function Format-BuildNumber([int]$BuildNumber) {
-    '{0:D4}' -f $BuildNumber
+    $NuGetEpoch = '2010-08-29T23:58:25-07:00' # NuGet client first commit!
+    # Build number is a 16-bit integer. The limitation is imposed by VERSIONINFO.
+    # https://msdn.microsoft.com/en-gb/library/aa381058.aspx
+    [uint16]((((Get-Date) - (Get-Date $NuGetEpoch)).TotalMinutes / 5) % [uint16]::MaxValue)
 }
 
 Function Clear-PackageCache {
@@ -450,299 +425,6 @@ Function Clear-Nupkgs {
     if (Test-Path $Nupkgs) {
         Trace-Log 'Cleaning nupkgs folder'
         Remove-Item $Nupkgs\*.nupkg -Force
-    }
-}
-
-Function Find-Projects([string]$ProjectsLocation) {
-    Get-ChildItem $ProjectsLocation -Recurse -Filter '*.csproj' |
-        %{ if(-Not($_.FullName -match "compiler\\resources" -or $_.FullName -match "Dotnet.Integration")) {Split-Path $_.FullName -Parent} }
-}
-
-Function Publish-CoreProject {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$True)]
-        [string]$XProjectLocation,
-        [Parameter(Mandatory=$True)]
-        [string]$PublishLocation,
-        [string]$Configuration = $DefaultConfiguration
-    )
-    $opts = @()
-
-    if ($VerbosePreference) {
-        $opts += '-v'
-    }
-
-    $opts += 'publish', $XProjectLocation
-    $opts += '--configuration', $Configuration, '--framework', 'netcoreapp1.0'
-    $opts += '--no-build'
-
-    $opts += '--build-base-path', $Artifacts
-
-    $OutputDir = Join-Path $PublishLocation "$Configuration\netcoreapp1.0"
-    $opts += '--output', $OutputDir
-
-    Trace-Log "$DotNetExe $opts"
-    & $DotNetExe $opts
-
-    if (-not $?) {
-        Error-Log "Publish project failed @""$XProjectLocation"". Code: $LASTEXITCODE"
-    }
-}
-
-Function Pack-NuGetBuildTasksPack {
-    [CmdletBinding()]
-    param(
-        [Alias('config')]
-        [string]$Configuration,
-        [Alias('label')]
-        [string]$ReleaseLabel,
-        [Alias('buildNum')]
-        [string]$BuildNumber,
-        [switch]$CI
-    )
-
-    $prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
-    if ($ReleaseLabel -Ne 'rtm') {
-        $releaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel"
-    } else {
-        $releaseNupkgVersion = "$PackageReleaseVersion"
-    }
-
-    $PackProjectLocation = Join-Path $NuGetClientRoot src\NuGet.Core\NuGet.Build.Tasks.Pack.Library
-    $PackBuildTaskNuspecLocation = Join-Path $PackProjectLocation NuGet.Build.Tasks.Pack.nuspec
-
-    New-NuGetPackage `
-        -NuspecPath $PackBuildTaskNuspecLocation `
-        -BasePath $PackProjectLocation `
-        -OutputDir $Nupkgs `
-        -Version $prereleaseNupkgVersion `
-        -Configuration $Configuration
-
-    if ($CI) {
-        New-NuGetPackage `
-            -NuspecPath $PackBuildTaskNuspecLocation `
-            -BasePath $PackProjectLocation `
-            -OutputDir $ReleaseNupkgs `
-            -Version $releaseNupkgVersion `
-            -Configuration $Configuration
-    }
-}
-
-Function Publish-NuGetExePackage {
-    [CmdletBinding()]
-    param(
-        [string]$Configuration = $DefaultConfiguration,
-        [string]$ReleaseLabel = $DefaultReleaseLabel,
-        [int]$BuildNumber = (Get-BuildNumber),
-        [ValidateSet(15)]
-        [int]$ToolsetVersion = $DefaultMSBuildVersion,
-        [string]$KeyFile,
-        [switch]$CI
-    )
-
-    $prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
-    if ($ReleaseLabel -Ne 'rtm') {
-        $releaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel"
-    } else {
-        $releaseNupkgVersion = "$PackageReleaseVersion"
-    }
-
-    $exeProjectDir = [io.path]::combine($NuGetClientRoot, "src", "NuGet.Clients", "NuGet.CommandLine")
-    $exeProject = Join-Path $exeProjectDir "NuGet.CommandLine.csproj"
-    $exeNuspec = Join-Path $exeProjectDir "NuGet.CommandLine.nuspec"
-    $exeInputDir = [io.path]::combine($Artifacts, "NuGet.CommandLine", "15.0", "bin", $Configuration, "net45")
-    $exeOutputDir = Join-Path $Artifacts "VS15"
-    $exeInputDirRTM = [io.path]::combine($Artifacts, "NuGet.CommandLine", "15.0-RTM", "bin", $Configuration, "net45")
-    $exeOutputDirRTM = Join-Path $Artifacts "VS15-RTM"
-
-    Invoke-ILMerge `
-        -InputDir $exeInputDir `
-        -OutputDir $exeOutputDir `
-        -KeyFile $KeyFile
-
-    New-NuGetPackage `
-        -NuspecPath $exeNuspec `
-        -BasePath $exeOutputDir `
-        -OutputDir $Nupkgs `
-        -Version $prereleaseNupkgVersion `
-        -Configuration $Configuration
-
-    # Build the RTM version of the package
-    if (Test-Path $exeInputDirRTM)
-    {
-        New-Item -ItemType Directory -Force -Path $exeOutputDirRTM
-
-        Invoke-ILMerge `
-            -InputDir $exeInputDirRTM `
-            -OutputDir $exeOutputDirRTM `
-            -KeyFile $KeyFile
-
-        New-NuGetPackage `
-            -NuspecPath $exeNuspec `
-            -BasePath $exeOutputDirRTM `
-            -OutputDir $ReleaseNupkgs `
-            -Version $PackageReleaseVersion `
-            -Configuration $Configuration
-    }
-}
-
-Function Publish-ClientsPackages {
-    [CmdletBinding()]
-    param(
-        [string]$Configuration = $DefaultConfiguration,
-        [string]$ReleaseLabel = $DefaultReleaseLabel,
-        [int]$BuildNumber = (Get-BuildNumber),
-        [ValidateSet(14,15)]
-        [int]$ToolsetVersion = $DefaultMSBuildVersion,
-        [string]$KeyFile,
-        [switch]$CI
-    )
-
-    $prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
-    if ($ReleaseLabel -Ne 'rtm') {
-        $releaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel"
-    } else {
-        $releaseNupkgVersion = "$PackageReleaseVersion"
-    }
-
-    $exeProjectDir = [io.path]::combine($NuGetClientRoot, "src", "NuGet.Clients", "NuGet.CommandLine")
-    $exeProject = Join-Path $exeProjectDir "NuGet.CommandLine.csproj"
-    $exeNuspec = Join-Path $exeProjectDir "NuGet.CommandLine.nuspec"
-    $exeInputDir = [io.path]::combine($Artifacts, "NuGet.CommandLine", "${ToolsetVersion}.0", "bin", $Configuration, "net45")
-    $exeOutputDir = Join-Path $Artifacts "VS${ToolsetVersion}"
-
-    # Build and pack the NuGet.CommandLine project with the build number and release label.
-    Build-ClientsProjectHelper `
-        -SolutionOrProject $exeProject `
-        -Configuration $Configuration `
-        -ReleaseLabel $ReleaseLabel `
-        -BuildNumber $BuildNumber `
-        -ToolsetVersion $ToolsetVersion `
-        -Rebuild
-
-    Invoke-ILMerge `
-        -InputDir $exeInputDir `
-        -OutputDir $exeOutputDir `
-        -KeyFile $KeyFile
-
-    New-NuGetPackage `
-        -NuspecPath $exeNuspec `
-        -BasePath $exeOutputDir `
-        -OutputDir $Nupkgs `
-        -Version $prereleaseNupkgVersion `
-        -Configuration $Configuration
-
-    # Build and pack the NuGet.CommandLine project with just the release label.
-    Build-ClientsProjectHelper `
-        -SolutionOrProject $exeProject `
-        -Configuration $Configuration `
-        -ReleaseLabel $ReleaseLabel `
-        -BuildNumber $BuildNumber `
-        -ToolsetVersion $ToolsetVersion `
-        -ExcludeBuildNumber `
-        -Rebuild
-
-    Invoke-ILMerge `
-        -InputDir $exeInputDir `
-        -OutputDir $exeOutputDir `
-        -KeyFile $KeyFile
-
-    if ($CI) {
-        New-NuGetPackage `
-            -NuspecPath $exeNuspec `
-            -BasePath $exeOutputDir `
-            -OutputDir $ReleaseNupkgs `
-            -Version $releaseNupkgVersion `
-            -Configuration $Configuration
-    }
-}
-
-Function New-NuGetPackage {
-    [CmdletBinding()]
-    param(
-        [string]$NuspecPath,
-        [string]$BasePath,
-        [string]$OutputDir,
-        [string]$Version,
-        [string]$Configuration=$DefaultConfiguration
-    )
-
-    $opts = 'pack', $NuspecPath
-    $opts += '-BasePath', $BasePath
-    $opts += '-OutputDirectory', $OutputDir
-    $opts += '-Symbols'
-    $opts += '-Version', $Version
-    $opts += '-Properties', "Configuration=$Configuration"
-
-    if ($VerbosePreference) {
-        $opts += '-verbosity', 'detailed'
-    }
-    else {
-        $opts += '-verbosity', 'quiet'
-    }
-
-    Trace-Log "$NuGetExe $opts"
-    & $NuGetExe $opts
-}
-
-Function Read-FileList($FilePath) {
-    Get-Content $FilePath | ?{ -not $_.StartsWith('#') } | %{ $_.Trim() } | ?{ $_ -ne '' }
-}
-
-# Merges the NuGet.exe
-Function Invoke-ILMerge {
-    [CmdletBinding()]
-    param(
-        [string]$InputDir,
-        [string]$OutputDir,
-        [string]$KeyFile
-    )
-
-    $ignoreList = Read-FileList (Join-Path $InputDir '.mergeignore')
-    $buildArtifacts = Get-ChildItem $InputDir -Exclude $ignoreList | %{ $_.Name }
-
-    $includeList = Read-FileList (Join-Path $InputDir '.mergeinclude')
-    $notInList = $buildArtifacts | ?{ -not ($includeList -contains $_) }
-    if ($notInList) {
-        Error-Log "Found build artifacts NOT listed in include list: $($notInList -join ', ')"
-    }
-    $notFound = $includeList | ?{ -not ($buildArtifacts -contains $_) }
-    if ($notFound) {
-        Error-Log "Missing build artifacts listed in include list: $($notFound -join ', ')"
-    }
-
-    # Sort merged assemblies by the order in the .mergeinclude file.
-    $buildArtifacts = $includeList + $notInList
-
-    $allowDupList = Read-FileList (Join-Path $InputDir '.mergeallowdup')
-
-    Trace-Log 'Creating the ilmerged nuget.exe'
-    $opts = , "$InputDir\NuGet.exe"
-    $opts += "/lib:$InputDir"
-    $opts += $buildArtifacts
-    if ($KeyFile) {
-        $opts += "/delaysign"
-        $opts += "/keyfile:$KeyFile"
-    }
-
-    $opts += "/out:$OutputDir\NuGet.exe"
-
-    foreach ($allowDup in $allowDupList) {
-        # /allowDup operates on type name, not namespace and type name
-        $typeName = $allowDup.Split('.')[-1]
-        $opts += "/allowDup:$typeName"
-    }
-
-    if ($VerbosePreference) {
-        $opts += '/log'
-    }
-
-    Trace-Log "$ILMerge $opts"
-    & $ILMerge $opts 2>&1
-
-    if (-not $?) {
-        Error-Log "ILMerge has failed. Code: $LASTEXITCODE"
     }
 }
 

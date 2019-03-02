@@ -96,14 +96,18 @@ namespace NuGet.Packaging.Test
                 Assert.Equal("Certificate chain validation failed.", exception.Message);
 
                 Assert.Equal(1, logger.Errors);
-                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 2 : 1, logger.Warnings);
-
                 SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Error);
-                SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
 
-                if (RuntimeEnvironmentHelper.IsWindows)
+                if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsLinux)
                 {
-                    SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
+                    Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 2 : 1, logger.Warnings);
+
+                    SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+
+                    if (RuntimeEnvironmentHelper.IsWindows)
+                    {
+                        SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
+                    }
                 }
             }
         }
@@ -127,11 +131,11 @@ namespace NuGet.Packaging.Test
                 }
 
                 Assert.Equal(0, logger.Errors);
-                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 1 : 2, logger.Warnings);
+                Assert.Equal(RuntimeEnvironmentHelper.IsLinux ? 2 : 1, logger.Warnings);
 
                 SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
 
-                if (!RuntimeEnvironmentHelper.IsWindows)
+                if (RuntimeEnvironmentHelper.IsLinux)
                 {
                     SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
                 }

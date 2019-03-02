@@ -1,11 +1,11 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>net46;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <NoWarn Condition="'$(TargetFramework)' == 'netstandard1.6'">$(NoWarn);CS1998</NoWarn>
+    <NoWarn Condition="'$(TargetFramework)' == '$(NETCoreTargetFramework)'">$(NoWarn);CS1998</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IsPackable>true</IsPackable>
@@ -15,7 +15,7 @@
     <EmbeddedResource Include="compiler\resources\*" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.CommandLine\NuGet.CommandLine.csproj" />
   </ItemGroup>
 
@@ -43,28 +43,16 @@
     <PackageReference Include="Portable.BouncyCastle" Version="1.8.1.3" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.Interop" Version="1.0.0">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
 
-  <Choose>
-    <When Condition="$(VisualStudioVersion)=='14.0'">
-      <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-        <PackageReference Include="Microsoft.VisualStudio.Shell.14.0" Version="14.2.25123" />
-      </ItemGroup>
-    </When>
-    <When Condition="$(VisualStudioVersion)=='15.0'">
-      <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-        <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201">
-          <PrivateAssets>All</PrivateAssets>
-        </PackageReference>
-      </ItemGroup>
-    </When>
-  </Choose>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
@@ -77,13 +65,14 @@
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
-    <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
+    <PackageReference Include="System.Diagnostics.Process" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.IO.Compression.ZipFile" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.5.2" />
   </ItemGroup>
 
-  <!-- Remove files that do not support netstandard -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+  <!-- Remove files that do not support netcore -->
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
     <Compile Remove="PackageManagement\*.cs" />
     <Compile Remove="ProjectManagement\*.cs" />
     <Compile Remove="Threading\*.cs" />

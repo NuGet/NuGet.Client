@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Xml.Linq;
 using NuGet.Commands;
@@ -480,6 +481,99 @@ namespace NuGet.CommandLine.Test
                         Path.Combine("lib", "uap10.0", "packageA.pdb").Replace('\\','/'),
                     },
                     symbolFiles);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_SymbolPackageWithNuspecFileAndPackageType()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "lib", "uap10.0"),
+                    "packageA.dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "lib", "uap10.0"),
+                    "packageA.pdb",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles", "any", "any"),
+                    "image.jpg",
+                    "");
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles", "cs", "net45"),
+                    "code.cs",
+                    "");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <packageTypes>
+        <packageType name=""Dependency""/>
+    </packageTypes>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec -symbols -SymbolPackageFormat snupkg",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
+                var symbolPath = Path.Combine(workingDirectory, "packageA.1.0.0.snupkg");
+
+                using (var package = new PackageArchiveReader(path))
+                using (var symbolPackage = new PackageArchiveReader(symbolPath))
+                {
+                    var files = package.GetFiles()
+                        .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
+                        .ToArray();
+                    var symbolFiles = symbolPackage.GetFiles()
+                        .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
+                        .ToArray();
+                    Array.Sort(files);
+                    Array.Sort(symbolFiles);
+
+                    Assert.Equal(package.GetPackageTypes().Count, 1);
+                    Assert.Equal(package.GetPackageTypes()[0], NuGet.Packaging.Core.PackageType.Dependency);
+                    Assert.Equal(symbolPackage.GetPackageTypes().Count, 1);
+                    Assert.Equal(symbolPackage.GetPackageTypes()[0], NuGet.Packaging.Core.PackageType.SymbolsPackage);
+                    Assert.Equal(
+                        new string[]
+                        {
+                        "contentFiles/any/any/image.jpg",
+                        "contentFiles/cs/net45/code.cs",
+                        Path.Combine("lib", "uap10.0", "packageA.dll").Replace('\\', '/'),
+                        },
+                        files);
+                    Assert.Equal(
+                        new string[]
+                        {
+                        Path.Combine("lib", "uap10.0", "packageA.pdb").Replace('\\','/'),
+                        },
+                        symbolFiles);
+                }
             }
         }
 
@@ -4430,6 +4524,7 @@ namespace Proj1
         [Theory]
         [InlineData("MIT", true)]
         [InlineData("MIT OR Apache-2.0", false)]
+        [InlineData("MIT+ OR Apache-2.0", false)]
         public void PackCommand_PackLicense_SimpleExpression_StandardLicense(string licenseExpr, bool requireLicenseAcceptance)
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -4476,9 +4571,11 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(packageName, nuspecReader.GetId());
                     Assert.Equal(version, nuspecReader.GetVersion().ToFullString());
                     Assert.Equal(requireLicenseAcceptance, nuspecReader.GetRequireLicenseAcceptance());
-                    Assert.Equal(LicenseMetadata.DeprecateUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
+                    Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, licenseExpr)), new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.NotNull(licenseMetadata);
+                    Assert.Equal(licenseMetadata.LicenseUrl.OriginalString, nuspecReader.GetLicenseUrl());
+                    Assert.Equal(licenseMetadata.LicenseUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.Equal(licenseMetadata.Type, LicenseType.Expression);
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseExpr);
@@ -4538,9 +4635,11 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(packageName, nuspecReader.GetId());
                     Assert.Equal(version, nuspecReader.GetVersion().ToFullString());
                     Assert.Equal(requireLicenseAcceptance, nuspecReader.GetRequireLicenseAcceptance());
-                    Assert.Equal(LicenseMetadata.DeprecateUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, licenseExpr)), new Uri(nuspecReader.GetLicenseUrl()));
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
                     Assert.NotNull(licenseMetadata);
+                    Assert.Equal(licenseMetadata.LicenseUrl.OriginalString, nuspecReader.GetLicenseUrl());
+                    Assert.Equal(licenseMetadata.LicenseUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.Equal(licenseMetadata.Type, LicenseType.Expression);
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseExpr);
@@ -4754,9 +4853,10 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(packageName, nuspecReader.GetId());
                     Assert.Equal(version, nuspecReader.GetVersion().ToFullString());
                     Assert.Equal(requireLicenseAcceptance, nuspecReader.GetRequireLicenseAcceptance());
-                    Assert.Equal(LicenseMetadata.DeprecateUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
                     Assert.NotNull(licenseMetadata);
+                    Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, licenseMetadata.LicenseUrl);
                     Assert.Equal(licenseMetadata.Type, LicenseType.File);
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseFileName);
@@ -5089,9 +5189,10 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(packageName, nuspecReader.GetId());
                     Assert.Equal(version, nuspecReader.GetVersion().ToFullString());
                     Assert.Equal(requireLicenseAcceptance, nuspecReader.GetRequireLicenseAcceptance());
-                    Assert.Equal(LicenseMetadata.DeprecateUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
                     Assert.NotNull(licenseMetadata);
+                    Assert.Equal(licenseMetadata.LicenseUrl.OriginalString, nuspecReader.GetLicenseUrl());
                     Assert.Equal(licenseMetadata.Type, LicenseType.File);
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseFileName);
@@ -5105,6 +5206,132 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                         Assert.Equal(new FileInfo(Path.Combine(workingDirectory, licenseFileName)).Length, licenseFileEntry.Length);
                         Assert.Equal(licenseText, value);
                     }
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(SymbolPackageFormat.Snupkg, true)]
+        [InlineData(SymbolPackageFormat.Snupkg, false)]
+        [InlineData(SymbolPackageFormat.SymbolsNupkg, true)]
+
+        public void PackCommand_PackLicense_LicenseInformationIsNotIncludedInTheSnupkg(SymbolPackageFormat symbolPackageFormat, bool requireLicenseAcceptance)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "A";
+            var version = "1.0.0";
+            var licenseFileName = "LICENSE.txt";
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                Util.CreateFile(
+                    workingDirectory,
+                    $"{packageName}.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+   <PropertyGroup>
+     <OutputType>library</OutputType>
+     <OutputPath>out</OutputPath>
+     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+   </PropertyGroup>
+   <ItemGroup>
+     <Compile Include='B.cs' />
+   </ItemGroup>
+   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+ </Project>");
+                Util.CreateFile(
+                    workingDirectory,
+                    "B.cs",
+@"public class B
+ {
+     public int C { get; set; }
+ }");
+
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    licenseFileName,
+                    "The best license ever.");
+                Util.CreateFile(
+                    workingDirectory,
+                    $"{packageName}.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+   <metadata>
+     <id>{packageName}</id>
+     <version>{version}</version>
+     <title>packageA</title>
+     <authors>test</authors>
+     <owners>test</owners>
+     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
+     <description>Description</description>
+     <copyright>Copyright ©  2013</copyright>
+     <license type=""file"">{licenseFileName}</license>
+   </metadata>
+  <files>
+    <file src=""{licenseFileName}"" target=""""/>
+  </files>
+ </package>");
+
+                var extension = symbolPackageFormat == SymbolPackageFormat.Snupkg ? "snupkg" : "symbols.nupkg";
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    $"pack {packageName}.csproj -build -symbols -SymbolPackageFormat {extension}",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
+                var symbolsPath = Path.Combine(workingDirectory, $"{packageName}.{version}.{extension}");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+                    // Validate the output .nuspec.
+                    Assert.Equal(packageName, nuspecReader.GetId());
+                    Assert.Equal(version, nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal(requireLicenseAcceptance, nuspecReader.GetRequireLicenseAcceptance());
+                    Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    var licenseMetadata = nuspecReader.GetLicenseMetadata();
+                    Assert.NotNull(licenseMetadata);
+                    Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, licenseMetadata.LicenseUrl);
+                    Assert.Equal(licenseMetadata.Type, LicenseType.File);
+                    Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
+                    Assert.Equal(licenseMetadata.License, licenseFileName);
+                    Assert.Null(licenseMetadata.LicenseExpression);
+                }
+
+                using (var symbolsReader = new PackageArchiveReader(symbolsPath))
+                {
+                    if (symbolPackageFormat == SymbolPackageFormat.Snupkg)
+                    {
+                        Assert.False(symbolsReader.NuspecReader.GetRequireLicenseAcceptance());
+                        Assert.Null(symbolsReader.NuspecReader.GetLicenseMetadata());
+                        Assert.Null(symbolsReader.NuspecReader.GetLicenseUrl());
+                    }
+
+                    var files = symbolsReader.GetFiles()
+                  .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))
+                  .ToArray();
+                    Array.Sort(files);
+                    var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
+                        {
+                         $"{packageName}.nuspec",
+                         $"lib/net40/{packageName}.dll",
+                         $"lib/net40/{packageName}.pdb",
+                         "LICENSE.txt",
+                         "src/B.cs"
+                        }
+                        : new string[]
+                        {
+                         $"{packageName}.nuspec",
+                         $"lib/net40/{packageName}.pdb",
+                         "LICENSE.txt"
+                        };
+                    actual = actual.Select(t => Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
+                    Assert.Equal(actual, files);
                 }
             }
         }

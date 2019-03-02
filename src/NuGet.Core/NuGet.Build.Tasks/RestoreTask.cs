@@ -184,6 +184,15 @@ namespace NuGet.Build.Tasks
                     RestoreForceEvaluate = RestoreForceEvaluate
                 };
 
+                // 'dotnet restore' fails on slow machines (https://github.com/NuGet/Home/issues/6742)
+                // The workaround is to pass the '--disable-parallel' option.
+                // We apply the workaround by default when the system has 1 cpu.
+                // This will fix restore failures on VMs with 1 CPU and containers with less or equal to 1 CPU assigned.
+                if (Environment.ProcessorCount == 1)
+                {
+                    restoreContext.DisableParallel = true;
+                }
+
                 if (restoreContext.DisableParallel)
                 {
                     HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();

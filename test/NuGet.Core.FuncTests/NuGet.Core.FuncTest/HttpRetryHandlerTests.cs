@@ -96,11 +96,11 @@ namespace NuGet.Core.FuncTest
             Assert.NotNull(exception.InnerException);
             if (!RuntimeEnvironmentHelper.IsWindows)
             {
-                Assert.Equal("Couldn't connect to server", exception.InnerException.Message);
+                Assert.Equal("Connection refused", exception.InnerException.Message);
             }
             else
             {
-                Assert.Equal("A connection with the server could not be established", exception.InnerException.Message);
+                Assert.Equal("No connection could be made because the target machine actively refused it", exception.InnerException.Message);
             }
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
@@ -117,16 +117,8 @@ namespace NuGet.Core.FuncTest
             // Act & Assert
             var exception = await ThrowsException<HttpRequestException>(server);
 #if IS_CORECLR
-            if (!RuntimeEnvironmentHelper.IsWindows)
-            {
-                Assert.Null(exception.InnerException);
-                Assert.Equal("The server returned an invalid or unrecognized response.", exception.Message);
-            }
-            else
-            {
-                Assert.NotNull(exception.InnerException);
-                Assert.Equal("The server returned an invalid or unrecognized response", exception.InnerException.Message);
-            }
+            Assert.Null(exception.InnerException);
+            Assert.Equal("The server returned an invalid or unrecognized response.", exception.Message);
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
             Assert.Equal(WebExceptionStatus.ServerProtocolViolation, innerException.Status);
@@ -143,13 +135,18 @@ namespace NuGet.Core.FuncTest
             var exception = await ThrowsException<HttpRequestException>(server);
 #if IS_CORECLR
             Assert.NotNull(exception.InnerException);
-            if (!RuntimeEnvironmentHelper.IsWindows)
+
+            if (RuntimeEnvironmentHelper.IsMacOSX)
             {
-                Assert.Equal("Couldn't resolve host name", exception.InnerException.Message);
+                Assert.Equal("Device not configured", exception.InnerException.Message);
+            }
+            else if (!RuntimeEnvironmentHelper.IsWindows)
+            {
+                Assert.Equal("No such device or address", exception.InnerException.Message);
             }
             else
             {
-                Assert.Equal("The server name or address could not be resolved", exception.InnerException.Message);
+                Assert.Equal("No such host is known", exception.InnerException.Message);
             }
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);

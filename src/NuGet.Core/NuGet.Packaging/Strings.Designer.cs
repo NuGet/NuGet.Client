@@ -10,7 +10,6 @@
 
 namespace NuGet.Packaging {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -40,7 +39,7 @@ namespace NuGet.Packaging {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Packaging.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Packaging.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -665,6 +664,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nuspec file contains a package type with an invalid package version &apos;{0}&apos;..
+        /// </summary>
+        internal static string InvalidPackageTypeVersion {
+            get {
+                return ResourceManager.GetString("InvalidPackageTypeVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The primary signature is invalid..
         /// </summary>
         internal static string InvalidPrimarySignature {
@@ -728,11 +736,29 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nuspec file does not contain the &apos;{0}&apos; node..
+        /// </summary>
+        internal static string MissingMetadataNode {
+            get {
+                return ResourceManager.GetString("MissingMetadataNode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Nuspec file does not exist in package..
         /// </summary>
         internal static string MissingNuspec {
             get {
                 return ResourceManager.GetString("MissingNuspec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nuspec file contains a package type that is missing the name attribute..
+        /// </summary>
+        internal static string MissingPackageTypeName {
+            get {
+                return ResourceManager.GetString("MissingPackageTypeName", resourceCulture);
             }
         }
         
@@ -760,6 +786,15 @@ namespace NuGet.Packaging {
         internal static string MultiplePackageSignatureFiles {
             get {
                 return ResourceManager.GetString("MultiplePackageSignatureFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nuspec file contains multiple package types. Zero or one package type nodes are allowed..
+        /// </summary>
+        internal static string MultiplePackageTypes {
+            get {
+                return ResourceManager.GetString("MultiplePackageTypes", resourceCulture);
             }
         }
         
@@ -935,7 +970,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The license identifier(s) {0} is(are) not recognized by the current toolset..
+        ///   Looks up a localized string similar to The license identifier(s) &apos;{0}&apos; is(are) not recognized by the current toolset..
         /// </summary>
         internal static string NuGetLicenseExpression_NonStandardIdentifier {
             get {

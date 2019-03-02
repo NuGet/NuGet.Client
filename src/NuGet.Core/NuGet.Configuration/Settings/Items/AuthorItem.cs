@@ -14,8 +14,6 @@ namespace NuGet.Configuration
 
         protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.NameAttribute };
 
-        public string Name => Attributes[ConfigurationConstants.NameAttribute];
-
         public AuthorItem(string name, params CertificateItem[] certificates)
             : base(name, certificates)
         {
@@ -26,7 +24,7 @@ namespace NuGet.Configuration
         {
         }
 
-        internal override SettingBase Clone()
+        public override SettingBase Clone()
         {
             var newItem = new AuthorItem(Name, Certificates.Select(c => c.Clone() as CertificateItem).ToArray());
 
