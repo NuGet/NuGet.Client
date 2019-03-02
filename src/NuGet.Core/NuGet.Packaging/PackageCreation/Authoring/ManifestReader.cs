@@ -171,7 +171,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private static IEnumerable<FrameworkReferenceGroup> ReadFrameworkReferenceGroups(XElement frameworkReferenceGroupsElement)
+        private static IEnumerable<FrameworkSpecificGroup> ReadFrameworkReferenceGroups(XElement frameworkReferenceGroupsElement)
         {
             return NuspecUtility.GetFrameworkReferenceGroups(frameworkReferenceGroupsElement, DefaultFrameworkNameProvider.Instance, false);
 

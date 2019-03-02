@@ -557,7 +557,7 @@ namespace NuGet.Packaging
         /// <summary>
         /// Read package dependencies for all frameworks
         /// </summary>
-        public IEnumerable<FrameworkReferenceGroup> GetFrameworkRefGroups()
+        public IEnumerable<FrameworkSpecificGroup> GetFrameworkRefGroups()
         {
             return NuspecUtility.GetFrameworkReferenceGroups(MetadataNode, _frameworkProvider, true);
         }
