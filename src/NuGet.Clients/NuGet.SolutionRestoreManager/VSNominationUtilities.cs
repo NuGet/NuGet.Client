@@ -129,10 +129,13 @@ namespace NuGet.SolutionRestoreManager
 
                 if(targetFrameworkInfo2.FrameworkReferences != null)
                 {
-                    tfi.FrameworkReferences.AddRange(
+                    var uniqueFrameworkRefs = new HashSet<string>(
                         targetFrameworkInfo2.FrameworkReferences
-                        .Cast<IVsReferenceItem>()
-                        .Select(e => e.Name));
+                            .Cast<IVsReferenceItem>()
+                            .Select(e => e.Name),
+                        StringComparer.OrdinalIgnoreCase);
+
+                    tfi.FrameworkReferences.AddRange(uniqueFrameworkRefs);
                 }
             }
 
