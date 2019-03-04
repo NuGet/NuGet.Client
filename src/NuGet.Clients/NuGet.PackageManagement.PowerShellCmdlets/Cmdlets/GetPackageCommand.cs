@@ -148,7 +148,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Filter = string.Empty;
                 }
 
-                // Find avaiable packages from the current source and not taking targetframeworks into account.
+                // Find available packages from the current source and not taking targetframeworks into account.
                 if (UseRemoteSourceOnly)
                 {
                     var errors = new List<string>();
@@ -174,7 +174,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         LogCore(MessageLevel.Error, error);
                     }
                 }
-                // Get package udpates from the current source and taking targetframeworks into account.
+                // Get package updates from the current source and taking targetframeworks into account.
                 else
                 {
                     CheckSolutionState();
@@ -268,7 +268,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         private void WritePackagesFromRemoteSource(IEnumerable<IPackageSearchMetadata> packages, bool outputWarning, bool outputOnEmpty)
         {
-            // Write warning message for Get-Package -ListAvaialble -Filter being obsolete
+            // Write warning message for Get-Package -ListAvailable -Filter being obsolete
             // and will be replaced by Find-Package [-Id]
             VersionType versionType;
             string message;

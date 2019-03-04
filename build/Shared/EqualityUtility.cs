@@ -11,7 +11,7 @@ namespace NuGet.Shared
     internal static class EqualityUtility
     {
         /// <summary>
-        /// Compares two enumberables for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
+        /// Compares two <see cref="IEnumerable{T}"/>s for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
         /// </summary>
         /// <typeparam name="TSource">The type of the list</typeparam>
         /// <typeparam name="TKey">The type of the sorting key</typeparam>

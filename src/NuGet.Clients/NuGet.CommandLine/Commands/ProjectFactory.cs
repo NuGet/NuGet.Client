@@ -752,7 +752,7 @@ namespace NuGet.CommandLine
             // use only metadata from the project and json file.
             if (!Directory.Exists(TargetPath))
             {
-                // If building a project targeting netstandard, asssembly metadata extraction fails
+                // If building a project targeting netstandard, assembly metadata extraction fails
                 // because it tries to load system.runtime version 4.1.0 which is not present in the local
                 // path or the gac. In this case, we should just skip it and extract metadata from the project.
                 try

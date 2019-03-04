@@ -417,7 +417,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Return dependecy behavior for Update-Package command.
+        /// Return <see cref="DependencyBehavior"/> for Update-Package command.
         /// </summary>
         /// <returns></returns>
         protected override DependencyBehavior GetDependencyBehavior()

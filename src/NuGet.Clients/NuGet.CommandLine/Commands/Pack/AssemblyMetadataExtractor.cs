@@ -146,11 +146,11 @@ namespace NuGet.CommandLine
             {
                 var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 // NOTE: we make this check only by attribute type fullname, and we try to duck
-                // type it, therefore enabling the same metadata extesibility behavior for other platforms
-                // that don't define the attribute already as part of the framework. 
-                // A package author could simply declare this attribute in his own project, using 
-                // the same namespace and members, and we'd pick it up automatically. This is consistent 
-                // with what MS did in the past with the System.Runtime.CompilerServices.ExtensionAttribute 
+                // type it, therefore enabling the same metadata extensibility behavior for other platforms
+                // that don't define the attribute already as part of the framework.
+                // A package author could simply declare this attribute in his own project, using
+                // the same namespace and members, and we'd pick it up automatically. This is consistent
+                // with what MS did in the past with the System.Runtime.CompilerServices.ExtensionAttribute
                 // which allowed Linq to be re-implemented for .NET 2.0 :).
                 var attributeName = typeof(AssemblyMetadataAttribute).FullName;
                 foreach (var attribute in attributes.Where(x =>

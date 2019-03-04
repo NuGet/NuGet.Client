@@ -92,7 +92,7 @@ namespace NuGet.CommandLine
         /// <param name="token">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="bool" />
-        /// indication successfulness of the operation.</returns>
+        /// that indicates if the operation is successful.</returns>
         public override async Task<bool> UninstallPackageAsync(
             PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,

@@ -317,7 +317,7 @@ namespace NuGet.SolutionRestoreManager
                     using (_joinableCollection.Join())
                     {
                         // when there is no current background restore job running, then it will start a new one.
-                        // else, current requrest will also await the existing job to be completed.
+                        // else, current request will also await the existing job to be completed.
                         if (shouldStartNewBGJobRunner)
                         {
                             _backgroundJobRunner = new AsyncLazy<bool>(
@@ -436,7 +436,7 @@ namespace NuGet.SolutionRestoreManager
                     try
                     {
                         // Blocks the execution until first request is scheduled
-                        // Monitors the cancelllation token as well.
+                        // Monitors the cancellation token as well.
                         var request = _pendingRequests.Value.Take(token);
 
                         token.ThrowIfCancellationRequested();

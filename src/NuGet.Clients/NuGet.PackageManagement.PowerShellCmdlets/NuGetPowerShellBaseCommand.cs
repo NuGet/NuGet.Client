@@ -238,7 +238,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Derived classess must implement this method instead of ProcessRecord(), which is sealed by
+        /// Derived classes must implement this method instead of ProcessRecord(), which is sealed by
         /// NuGetPowerShellBaseCommand.
         /// </summary>
         protected abstract void ProcessRecordCore();
@@ -491,7 +491,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Get default project in the type of <see cref="IVsProjectAdapter"/>, to keep PowerShell scripts backward-compatbility.
+        /// Get default project in the type of <see cref="IVsProjectAdapter"/>, to keep PowerShell scripts backward-compatibility.
         /// </summary>
         /// <returns></returns>
         protected async Task<IVsProjectAdapter> GetDefaultProjectAsync()

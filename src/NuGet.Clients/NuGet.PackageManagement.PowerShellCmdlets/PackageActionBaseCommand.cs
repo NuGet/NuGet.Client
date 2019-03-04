@@ -376,7 +376,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Determine file confliction action based on user input
+        /// Determine file conflict action based on user input
         /// </summary>
         private void DetermineFileConflictAction()
         {

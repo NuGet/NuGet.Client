@@ -125,7 +125,7 @@ namespace NuGet.PackageManagement.UI
             var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.IsPrerelease);
             var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.IsPrerelease);
 
-            // Add lastest prerelease if neeeded
+            // Add latest prerelease if needed
             if (latestPrerelease != null
                 && (latestStableVersion == null || latestPrerelease > latestStableVersion) &&
                 !latestPrerelease.Equals(installedVersion))
@@ -154,7 +154,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (installed && _projectVersionConstraints.Any(e => e.IsAutoReferenced && e.VersionRange?.Satisfies(version) == true))
                 {
-                    // do not allow auto referenced packatges
+                    // do not allow auto referenced packages
                     autoReferenced = true;
                 }
 

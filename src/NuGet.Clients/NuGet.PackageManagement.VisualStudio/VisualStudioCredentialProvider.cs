@@ -98,9 +98,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 // Set the static property WebRequest.DefaultWebProxy so that the right host name
-                // is displayed in the UI by IVsWebProxy. Note that this is just a UI thing, 
-                // so this is needed no matter wether we're prompting for proxy credentials 
-                // or request credentials. 
+                // is displayed in the UI by IVsWebProxy. Note that this is just a UI thing,
+                // so this is needed no matter whether we're prompting for proxy credentials
+                // or request credentials.
                 WebRequest.DefaultWebProxy = new WebProxy(uriToDisplay);
 
                 return await PromptForCredentialsAsync(uri, cancellationToken);

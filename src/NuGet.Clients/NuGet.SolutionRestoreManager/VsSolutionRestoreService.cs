@@ -393,7 +393,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         // Trying to fetch a property value from tfm property bags.
-        // If defined the property should have identical values in all of the occurances.
+        // If defined the property should have identical values in all of the occurrences.
         private static TValue GetSingleNonEvaluatedPropertyOrNull<TValue>(
             IVsTargetFrameworks tfms,
             string propertyName,

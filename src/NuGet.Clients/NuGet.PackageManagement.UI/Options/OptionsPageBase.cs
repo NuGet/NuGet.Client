@@ -53,7 +53,7 @@ namespace NuGet.Options
         }
 
         // We override the base implementation of LoadSettingsFromStorage and SaveSettingsToStorage
-        // since we already provide settings persistance using the SettingsManager. These two APIs
+        // since we already provide settings persistence using the SettingsManager. These two APIs
         // will read/write the tools/options properties to an alternate location, which can cause
         // incorrect behavior if the two copies of the data are out of sync.
         public override void LoadSettingsFromStorage()

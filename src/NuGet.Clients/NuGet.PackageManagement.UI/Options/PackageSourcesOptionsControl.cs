@@ -25,7 +25,7 @@ namespace NuGet.Options
     /// Represents the Tools - Options - Package Manager dialog
     /// </summary>
     /// <remarks>
-    /// The code in this class assumes that while the dialog is open, noone is modifying the
+    /// The code in this class assumes that while the dialog is open, no one is modifying the
     /// VSPackageSourceProvider directly.
     /// Otherwise, we have a problem with synchronization with the package source provider.
     /// </remarks>

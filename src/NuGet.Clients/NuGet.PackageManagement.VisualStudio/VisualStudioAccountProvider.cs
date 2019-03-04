@@ -53,22 +53,22 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Determines if the endpoint is a Visual Studio Online endpoint.  If so, uses the keychain to get a
         /// session token for the endpoint and returns that as a ICredentials object
         /// </summary>
-        /// <param name="uri">URI for the feed endponint to use</param>
-        /// <param name="proxy">Web proxy to use when comunicating on the network.  Null if there is no proxy
+        /// <param name="uri">URI for the feed endpoint to use</param>
+        /// <param name="proxy">Web proxy to use when communicating on the network.  Null if there is no proxy
         /// authentication configured</param>
         /// <param name="type">
         /// The type of credential request that is being made. Note that this implementation of
-        /// <see cref="ICredentialProvider"/> does not support providing proxy credenitials and treats
+        /// <see cref="ICredentialProvider"/> does not support providing proxy credentials and treats
         /// all other types the same.
         /// </param>
         /// <param name="message">A message provided by NuGet to show to the user when prompting.</param>
         /// <param name="isRetry">Flag to indicate if this is the first time the URI has been looked up.
         /// If this is true we check to see if the account has access to the feed.
-        /// First time we assume that is true to minimize network trafic.</param>
+        /// First time we assume that is true to minimize network traffic.</param>
         /// <param name="nonInteractive">Flag to indicate if UI can be shown.  If true, we will fail in cases
         /// where we need to show UI instead of prompting</param>
-        /// <param name="cancellationToken">Cancelation token used to comunicate cancelation to the async tasks</param>
-        /// <returns>If a credentials can be obtained a credentails object with a session token for the URI,
+        /// <param name="cancellationToken">Cancellation token used to communicate cancellation to the async tasks</param>
+        /// <returns>If a credentials can be obtained a credentials object with a session token for the URI,
         /// if not NULL</returns>
         public async Task<CredentialResponse> GetAsync(
             Uri uri,
@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return new CredentialResponse(CredentialStatus.ProviderNotApplicable);
             }
 
-            var posibleAccounts = new List<AccountAndTenant>();
+            var possibleAccounts = new List<AccountAndTenant>();
 
             //  Check to see if this is a VSO endpoint before we do anything else
             var uriTenantId = await _loginProvider.LookupTenant(uri, proxy, cancellationToken);
@@ -132,16 +132,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 var tenant = _loginProvider.FindTenantInAccount(account, uriTenantId, provider);
                 if (tenant != null)
                 {
-                    posibleAccounts.Add(new AccountAndTenant(account, tenant));
+                    possibleAccounts.Add(new AccountAndTenant(account, tenant));
                 }
             }
 
             ICredentials credentials;
-            if (posibleAccounts.Count == 1)
+            if (possibleAccounts.Count == 1)
             {
-                //  If we only have one posible account use it
+                //  If we only have one possible account use it
                 credentials = await _loginProvider.GetTokenFromAccount(
-                        posibleAccounts[0],
+                        possibleAccounts[0],
                         provider,
                         nonInteractive,
                         cancellationToken);
@@ -171,10 +171,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
             }
-            else if (posibleAccounts.Count > 1)
+            else if (possibleAccounts.Count > 1)
             {
                 var accountsWithAccess = new List<ICredentials>();
-                foreach (var account in posibleAccounts)
+                foreach (var account in possibleAccounts)
                 {
                     ICredentials cred = null;
 
@@ -201,7 +201,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else
                 {
-                    // we couldn't finde a unique account with access to the endpoint so we are going to have
+                    // we couldn't find a unique account with access to the endpoint so we are going to have
                     // to ask the user...
                     credentials = await _loginProvider.PromptUserForAccount(
                         uriTenantId, 

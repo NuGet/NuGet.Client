@@ -61,7 +61,7 @@ namespace NuGet.CommandLine
                 {
                     if (!propInfo.CanWrite && !TypeHelper.IsMultiValuedProperty(propInfo))
                     {
-                        // If the property has neither a setter nor is of a type that can be cast to ICollection<> then there's no way to assign 
+                        // If the property has neither a setter nor is of a type that can be cast to ICollection<> then there's no way to assign
                         // values to it. In this case throw.
                         throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("OptionInvalidWithoutSetter"), command.GetType().FullName + "." + propInfo.Name));
@@ -75,8 +75,8 @@ namespace NuGet.CommandLine
 
         public void RegisterCommand(ICommand command)
         {
-            var attrib = command.CommandAttribute;
-            if (attrib != null)
+            var attribute = command.CommandAttribute;
+            if (attribute != null)
             {
                 _commands.Add(command);
             }

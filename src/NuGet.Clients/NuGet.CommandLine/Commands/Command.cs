@@ -156,7 +156,7 @@ namespace NuGet.CommandLine
         }
 
         /// <summary>
-        /// Outputs the current NuGet version (by default, only when vebosity is detailed).
+        /// Outputs the current NuGet version (by default, only when verbosity is detailed).
         /// </summary>
         private void OutputNuGetVersion()
         {

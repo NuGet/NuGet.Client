@@ -44,7 +44,7 @@ namespace NuGetConsole
         Literal,
 
         /// <summary>
-        /// Natual language.
+        /// Natural language.
         /// </summary>
         NaturalLanguage,
 
