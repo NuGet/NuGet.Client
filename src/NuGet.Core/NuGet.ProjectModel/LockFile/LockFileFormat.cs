@@ -10,8 +10,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
@@ -19,7 +17,7 @@ namespace NuGet.ProjectModel
 {
     public class LockFileFormat
     {
-        public static readonly int Version = 3;
+        public static readonly int Version = 3; // TODO NK - update to version 4 here.
         public static readonly string LockFileName = "project.lock.json";
         public static readonly string AssetsFileName = "project.assets.json";
 
@@ -46,17 +44,11 @@ namespace NuGet.ProjectModel
         private const string MSBuildProjectProperty = "msbuildProject";
         private const string FrameworkProperty = "framework";
         private const string ToolsProperty = "tools";
-        private const string ProjectFileToolGroupsProperty = "projectFileToolGroups";
         private const string PackageFoldersProperty = "packageFolders";
         private const string PackageSpecProperty = "project";
         private const string LogsProperty = "logs";
         private const string EmbedProperty = "embed";
         private const string FrameworkReferencesProperty = "frameworkReferences";
-
-
-        // Legacy property names
-        private const string RuntimeAssembliesProperty = "runtimeAssemblies";
-        private const string CompileAssembliesProperty = "compileAssemblies";
 
         public LockFile Parse(string lockFileContent, string path)
         {
