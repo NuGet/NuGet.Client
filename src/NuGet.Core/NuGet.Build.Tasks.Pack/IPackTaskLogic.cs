@@ -8,8 +8,8 @@ namespace NuGet.Build.Tasks.Pack
 {
     /// <summary>
     /// The logic for converting the set of pack MSBuild task parameters to a fully initialized package builder. The
-    /// set of parameters provided to the MSBuild pask task is <see cref="IPackTaskRequest{TItem}"/>. This interface
-    /// allows the logic of the pack task to be seperated from the MSBuild-specific types. The motivation is
+    /// set of parameters provided to the MSBuild pack task is <see cref="IPackTaskRequest{TItem}"/>. This interface
+    /// allows the logic of the pack task to be separated from the MSBuild-specific types. The motivation is
     /// testability.
     /// </summary>
     public interface IPackTaskLogic

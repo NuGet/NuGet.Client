@@ -32,7 +32,7 @@ namespace NuGetConsole
         { }
 
         OutputConsoleProvider(
-            Microsoft.VisualStudio.Shell.IAsyncServiceProvider asyncServiceProvider, // ambigiuous reference
+            Microsoft.VisualStudio.Shell.IAsyncServiceProvider asyncServiceProvider, // ambiguous reference
             IEnumerable<Lazy<IHostProvider, IHostMetadata>> hostProviders)
         {
             if (asyncServiceProvider == null)

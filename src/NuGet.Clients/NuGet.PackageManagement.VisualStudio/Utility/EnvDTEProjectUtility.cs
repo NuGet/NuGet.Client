@@ -165,7 +165,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     if (succeeded)
                     {
                         // IMPORTANT: after including the folder into project, we need to get 
-                        // a new EnvDTEProjecItems snapshot from the parent item. Otherwise, reusing 
+                        // a new EnvDTEProjectItems snapshot from the parent item. Otherwise, reusing 
                         // the old snapshot from above won't have access to the added folder.
                         envDTEProjectItems = GetProjectItems(parentItem);
                         if (TryGetFolder(envDTEProjectItems, folderName, out subFolder))

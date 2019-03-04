@@ -62,7 +62,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private bool _initialized;
         private bool _cacheInitialized;
 
-        //add solutionOpenedRasied to make sure ProjectRename and ProjectAdded event happen after solutionOpened event
+        //add solutionOpenedRaised to make sure ProjectRename and ProjectAdded event happen after solutionOpened event
         private bool _solutionOpenedRaised;
 
         private string _solutionDirectoryBeforeSaveSolution;

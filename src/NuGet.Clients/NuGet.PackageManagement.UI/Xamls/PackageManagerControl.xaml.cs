@@ -310,7 +310,7 @@ namespace NuGet.PackageManagement.UI
             return null;
         }
 
-        private void SetSelectedDepencyBehavior(DependencyBehavior dependencyBehavior)
+        private void SetSelectedDependencyBehavior(DependencyBehavior dependencyBehavior)
         {
             var selectedDependencyBehavior = _detailModel.Options.DependencyBehaviors
                 .FirstOrDefault(d => d.Behavior == dependencyBehavior);
@@ -338,7 +338,7 @@ namespace NuGet.PackageManagement.UI
             if (settings == null)
             {
                 // set depency behavior to the value from nugetSettings
-                SetSelectedDepencyBehavior(dependencySetting ?? DependencyBehavior.Lowest);
+                SetSelectedDependencyBehavior(dependencySetting ?? DependencyBehavior.Lowest);
                 return;
             }
 
@@ -350,7 +350,7 @@ namespace NuGet.PackageManagement.UI
             _packageDetail._optionsControl.IsExpanded = settings.OptionsExpanded;
             _packageDetail._solutionView.RestoreUserSettings(settings);
 
-            SetSelectedDepencyBehavior(dependencySetting ?? settings.DependencyBehavior);
+            SetSelectedDependencyBehavior(dependencySetting ?? settings.DependencyBehavior);
 
             var selectedFileConflictAction = _detailModel.Options.FileConflictActions.
                 FirstOrDefault(a => a.Action == settings.FileConflictAction);

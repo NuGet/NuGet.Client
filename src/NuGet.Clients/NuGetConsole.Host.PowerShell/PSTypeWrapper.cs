@@ -60,12 +60,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         }
 
         /// <summary>
-        /// Inovke method helper. PowerShell has .NET object adapter and COM object adapters. These adapters
+        /// Invoke method helper. PowerShell has .NET object adapter and COM object adapters. These adapters
         /// have different behavior. When calling some COM interface members, PowerShell does not unwrap the
         /// parameters, resulting in PSObject being passed to COM methods. This helper method ensures the
         /// parameters are unwrapped, and also handles [ref] parameters.
         /// </summary>
-        /// <param name="target">The target object to invoke a methed.</param>
+        /// <param name="target">The target object to invoke a method.</param>
         /// <param name="method">The method info.</param>
         /// <param name="parameters">
         /// Raw arguments. If it contains [ref] args, this method will set their result

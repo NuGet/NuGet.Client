@@ -22,7 +22,7 @@ namespace NuGet.VisualStudio
         /// <param name="uri">The NuGet package source Uri for which credentials are being requested. Implementors are
         /// expected to first determine if this is a package source for which they can supply credentials.
         /// If not, then Null should be returned.</param>
-        /// <param name="proxy">Web proxy to use when comunicating on the network.  Null if there is no proxy
+        /// <param name="proxy">Web proxy to use when communicating on the network.  Null if there is no proxy
         /// authentication configured.</param>
         /// <param name="isProxyRequest">True if if this request is to get proxy authentication
         /// credentials. If the implementation is not valid for acquiring proxy credentials, then

@@ -25,7 +25,7 @@ namespace NuGet.Common
 
         /// <summary>
         /// Finds the projectName.project.json in a directory. If no projectName.project.json exists
-        /// the default project.json path will be returned regardless of existance.
+        /// the default project.json path will be returned regardless of existence.
         /// </summary>
         /// <returns>Returns the full path to the project.json file.</returns>
         public static string GetProjectConfigPath(string directoryPath, string projectName)

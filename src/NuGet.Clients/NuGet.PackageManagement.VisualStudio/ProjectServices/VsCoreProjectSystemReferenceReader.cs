@@ -179,7 +179,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         // We only need to go farther if the flag exists and is not true
                         if (!string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase))
                         {
-                            // Get the DTE Project reference for the item id. This checks for nulls incase this is
+                            // Get the DTE Project reference for the item id. This checks for nulls in case this is
                             // somehow not a project reference that had the ReferenceOutputAssembly flag.
                             object childObject;
                             if (ErrorHandler.Succeeded(hierarchy.GetProperty(

@@ -71,7 +71,7 @@ namespace NuGet.Credentials
         /// <param name="proxy">Ignored.  Proxy information will not be passed to plugins.</param>
         /// <param name="type">
         /// The type of credential request that is being made. Note that this implementation of
-        /// <see cref="ICredentialProvider"/> does not support providing proxy credenitials and treats
+        /// <see cref="ICredentialProvider"/> does not support providing proxy credentials and treats
         /// all other types the same.
         /// </param>
         /// <param name="isRetry">If true, credentials were previously supplied by this

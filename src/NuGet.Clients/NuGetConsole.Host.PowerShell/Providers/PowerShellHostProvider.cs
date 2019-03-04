@@ -52,7 +52,7 @@ namespace NuGetConsole.Host
         [MethodImpl(MethodImplOptions.NoInlining)]
         private IHost CreatePowerShellHost(bool @async)
         {
-            // backdoor: allow turning off async mode by setting enviroment variable NuGetSyncMode=1
+            // backdoor: allow turning off async mode by setting environment variable NuGetSyncMode=1
             string syncModeFlag = Environment.GetEnvironmentVariable("NuGetSyncMode", EnvironmentVariableTarget.User);
             if (syncModeFlag == "1")
             {

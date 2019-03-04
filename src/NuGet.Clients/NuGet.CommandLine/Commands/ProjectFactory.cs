@@ -947,7 +947,7 @@ namespace NuGet.CommandLine
         private bool FindDependency(PackageIdentity projectPackage, IEnumerable<Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
         {
             // returns true if the dependency should be added to the package
-            // This happens if the dependency is not a dependency of a dependecy
+            // This happens if the dependency is not a dependency of a dependency
             // Or if the project dependency version is != the dependency's dependency version
             bool found = false;
             foreach (var reader in packagesAndDependencies)

@@ -60,7 +60,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Get warnings for packages that have dependencies on non-existant versions of packages
+        /// Get warnings for packages that have dependencies on non-existent versions of packages
         /// and also for packages with ranges that have missing minimum versions.
         /// </summary>
         public static IEnumerable<RestoreLogMessage> GetMissingLowerBounds(IEnumerable<IRestoreTargetGraph> graphs, ISet<string> ignoreIds)

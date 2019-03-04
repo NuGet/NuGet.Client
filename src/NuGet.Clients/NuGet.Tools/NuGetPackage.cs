@@ -194,7 +194,7 @@ namespace NuGetVSExtension
             }
 
             // when NuGet loads, if the current solution has some package
-            // folders marked for deletion (because a previous uninstalltion didn't succeed),
+            // folders marked for deletion (because a previous uninstallation didn't succeed),
             // delete them now.
             if (SolutionManager.Value.IsSolutionOpen)
             {
@@ -408,7 +408,7 @@ namespace NuGetVSExtension
                     out cookie);
                 if (hr != VSConstants.S_OK)
                 {
-                    // the docuemnt window is not registered yet. So use the project as the
+                    // the document window is not registered yet. So use the project as the
                     // hierarchy.
                     hier = vsProject;
                     itemId = (uint)VSConstants.VSITEMID.Root;
@@ -423,7 +423,7 @@ namespace NuGetVSExtension
                 }
             }
 
-            // Create the doc window using the hiearchy & item id.
+            // Create the doc window using the hierarchy & item id.
             return await CreateDocWindowAsync(project, documentName, hier, itemId);
         }
 
