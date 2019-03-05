@@ -37,7 +37,7 @@
     <PropertyGroup>
       <TestProjectPaths>@(CoreFuncTestProjects)</TestProjectPaths>
       <TestResultsFileName>CoreFuncTests</TestResultsFileName>
-      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
+      <TestVisualStudioVersion>$(VisualStudioVersion)</TestVisualStudioVersion>
     </PropertyGroup>
 
     <!-- Run tests as a batch -->
@@ -63,7 +63,7 @@
     <PropertyGroup>
       <TestProjectPaths>@(CoreUnitTestProjects)</TestProjectPaths>
       <TestResultsFileName>CoreUnitTests</TestResultsFileName>
-      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
+      <TestVisualStudioVersion>$(VisualStudioVersion)</TestVisualStudioVersion>
     </PropertyGroup>
 
     <!-- Run tests as a batch -->
@@ -89,7 +89,7 @@
     <PropertyGroup>
       <TestProjectPaths>@(VSUnitTestProjects)</TestProjectPaths>
       <TestResultsFileName>UnitTestsVS15</TestResultsFileName>
-      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
+      <TestVisualStudioVersion>$(VisualStudioVersion)</TestVisualStudioVersion>
     </PropertyGroup>
 
     <!-- Run tests as a batch -->
@@ -116,7 +116,7 @@
     <PropertyGroup>
       <TestProjectPaths>$(RepositoryRootDirectory)test\NuGet.Tests.Apex\NuGet.Tests.Apex\NuGet.Tests.Apex.csproj</TestProjectPaths>
       <TestResultsFileName>ApexTestsVS15</TestResultsFileName>
-      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
+      <TestVisualStudioVersion>$(VisualStudioVersion)</TestVisualStudioVersion>
     </PropertyGroup>
 
     <!-- Run tests as a batch -->
