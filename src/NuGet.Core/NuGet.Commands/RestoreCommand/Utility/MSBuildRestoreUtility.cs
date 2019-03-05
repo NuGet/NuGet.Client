@@ -227,7 +227,6 @@ namespace NuGet.Commands
                     || restoreType == ProjectStyle.DotnetCliTool
                     || restoreType == ProjectStyle.DotnetToolReference)
                 {
-                    AddFrameworkAssemblies(result, items); // Check if this is ever true for PackageReference restore.
                     AddPackageReferences(result, items);
                     AddPackageDownloads(result, items);
                     AddFrameworkReferences(result, items);
