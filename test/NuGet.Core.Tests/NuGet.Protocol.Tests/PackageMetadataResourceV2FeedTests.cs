@@ -35,7 +35,7 @@ namespace NuGet.Protocol.Tests
 
             // Act
             var metadata = await packageMetadataResource.GetMetadataAsync("WindowsAzure.Storage", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
-            var latestPackage = (PackageSearchMetadataV2Feed) metadata.OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease).FirstOrDefault();
+            var latestPackage = metadata.OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease).FirstOrDefault();
 
             // Assert
             Assert.Equal(44, metadata.Count());
@@ -51,8 +51,6 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=331471", latestPackage.LicenseUrl.AbsoluteUri);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=235168", latestPackage.ProjectUrl.AbsoluteUri);
             Assert.Equal(DateTimeOffset.Parse("2015-12-11T01:25:11.37"), latestPackage.Published.Value);
-            Assert.Equal(DateTimeOffset.Parse("2015-12-11T01:25:11.37"), latestPackage.Created.Value);
-            Assert.Null(latestPackage.LastEdited);
             Assert.Equal("https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/6.2.2-preview", latestPackage.ReportAbuseUrl.AbsoluteUri);
             Assert.True(latestPackage.RequireLicenseAcceptance);
             Assert.Equal("A client library for working with Microsoft Azure storage services including blobs, files, tables, and queues.", latestPackage.Summary);
@@ -77,7 +75,7 @@ namespace NuGet.Protocol.Tests
             var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
 
             // Act
-            var metadata = (IEnumerable<PackageSearchMetadataV2Feed>) await packageMetadataResource.GetMetadataAsync("afine", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
+            var metadata = await packageMetadataResource.GetMetadataAsync("afine", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             var first = metadata.ElementAt(0);
             var second = metadata.ElementAt(1);
