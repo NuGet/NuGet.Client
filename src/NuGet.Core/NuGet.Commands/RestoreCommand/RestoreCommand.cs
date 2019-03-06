@@ -542,9 +542,9 @@ namespace NuGet.Commands
 
             }
 
-            // We only persist the dg spec file if it's not dirty or if it doesn't exist
+            // We only persist the dg spec file if it nooped or the dg spec does not exist.
             var dgPath = NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request);
-            if (!noOp || (dgPath != null && !File.Exists(dgPath))) 
+            if (dgPath != null && (!noOp || !File.Exists(dgPath)))
             {
                 NoOpRestoreUtilities.PersistDGSpecFile(noOpDgSpec, dgPath, _logger);
             }
