@@ -112,7 +112,7 @@ namespace NuGet.ProjectModel.Test
                 "netstandard1.3",
                 "packagea.nuget.cache");
 
-            // Acts
+            // Act
             var actual = NoOpRestoreUtilities.GetToolCacheFilePath(
                 target.GetToolDirectoryPath(
                 package,
