@@ -214,41 +214,53 @@ namespace NuGet.Protocol.Core.Types
                 {
                     if (cacheEntry.OperationClaims == null || cacheEntry.OperationClaims.Contains(requestedOperationClaim))
                     {
-                        if (result.PluginFile.State.Value == PluginFileState.Valid)
+                        try
                         {
-                            var plugin = await _pluginFactory.GetOrCreateAsync(
-                                result.PluginFile.Path,
-                                PluginConstants.PluginArguments,
-                                new RequestHandlers(),
-                                _connectionOptions,
-                                cancellationToken);
-
-                            var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
-
-                            // We still make the GetOperationClaims call even if we have the operation claims cached. This is a way to self-update the cache.
-                            var operationClaims = await _pluginOperationClaims.GetOrAdd(
-                                   requestKey,
-                                   key => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() =>
-                                   GetPluginOperationClaimsAsync(
-                                       plugin,
-                                       packageSourceRepository,
-                                       serviceIndex,
-                                       cancellationToken))).Value;
-
-                            if (!EqualityUtility.SequenceEqualWithNullCheck(operationClaims, cacheEntry.OperationClaims))
+                            if (result.PluginFile.State.Value == PluginFileState.Valid)
                             {
-                                cacheEntry.OperationClaims = operationClaims;
-                                await cacheEntry.UpdateCacheFileAsync();
-                            }
+                                var plugin = await _pluginFactory.GetOrCreateAsync(
+                                    result.PluginFile.Path,
+                                    PluginConstants.PluginArguments,
+                                    new RequestHandlers(),
+                                    _connectionOptions,
+                                    cancellationToken);
 
-                            pluginCreationResult = new PluginCreationResult(
-                                plugin,
-                                utilities.Value,
-                                operationClaims);
+                                var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
+
+                                // We still make the GetOperationClaims call even if we have the operation claims cached. This is a way to self-update the cache.
+                                var operationClaims = await _pluginOperationClaims.GetOrAdd(
+                                       requestKey,
+                                       key => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() =>
+                                       GetPluginOperationClaimsAsync(
+                                           plugin,
+                                           packageSourceRepository,
+                                           serviceIndex,
+                                           cancellationToken))).Value;
+
+                                if (!EqualityUtility.SequenceEqualWithNullCheck(operationClaims, cacheEntry.OperationClaims))
+                                {
+                                    cacheEntry.OperationClaims = operationClaims;
+                                    await cacheEntry.UpdateCacheFileAsync();
+                                }
+
+                                pluginCreationResult = new PluginCreationResult(
+                                    plugin,
+                                    utilities.Value,
+                                    operationClaims);
+                            }
+                            else
+                            {
+                                pluginCreationResult = new PluginCreationResult(result.Message);
+                            }
                         }
-                        else
+                        catch (Exception e)
                         {
-                            pluginCreationResult = new PluginCreationResult(result.Message);
+                            // Have a clear error message when the plugin creation fails.
+                            pluginCreationResult = new PluginCreationResult(
+                                string.Format(CultureInfo.CurrentCulture,
+                                Strings.Plugin_ProblemStartingPlugin,
+                                result.PluginFile.Path,
+                                e.Message));
                         }
                     }
                     return new Tuple<bool, PluginCreationResult>(pluginCreationResult != null, pluginCreationResult);
