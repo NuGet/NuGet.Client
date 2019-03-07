@@ -44,5 +44,14 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(testApiKey, actualApiKey);
             }
         }
+
+        [Theory]
+        [InlineData("setapikey")]
+        [InlineData("setApiKey k1 k2")]
+        [InlineData("setapikey a -ConfigFile b c d")]
+        public void SetApiKey_Failure_InvalidArguments(string cmd)
+        {
+            Util.TestCommandInvalidArguments(cmd);
+        }
     }
 }

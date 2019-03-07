@@ -1615,6 +1615,43 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        /// <summary>
+        /// Unit test that proves non-zero exit code functionality when the number of
+        /// arguments for install command are not appropiate
+        /// </summary>
+        [Fact]
+        public void InstallCommand_Failure_WrongArguments()
+        {
+            // prepare
+            string[] args = {
+                "install",
+                "mypackage",
+                "-version",
+                "-outputdirectory",
+            };
+
+            var nugetexe = Util.GetNuGetExePath();
+
+            // act & assert
+            using (var testDir = TestDirectory.Create())
+            {
+                var result = CommandRunner.Run(
+                   nugetexe,
+                   testDir,
+                   string.Join(" ", args),
+                   true);
+                Util.VerifyResultFailure(result, "'-outputdirectory' is not a valid version string.");
+            }
+        }
+
+        [Theory]
+        [InlineData("install mypackage -version -outputdirectory SomeDir")] // Invalid args for -version flag
+        [InlineData("install a b")]
+        public void InstallCommand_Failure_InvalidArguments_HelpMessage(string args)
+        {
+            Util.TestCommandInvalidArguments(args);
+        }
+
         [Fact]
         public void TestInstallWhenNoFeedAvailable()
         {

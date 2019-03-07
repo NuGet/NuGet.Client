@@ -9,8 +9,29 @@ namespace NuGet.Test.Utility
     public class CommandRunnerResult
     {
         public Process Process { get; }
+
+        /// <summary>
+        /// Item 1. Multi-purpose
+        /// </summary>
+        /// <remarks>
+        /// In occasions, it refers to Exit Status Code of the command execution result
+        /// </remarks>
         public int Item1 { get; }
+
+        /// <summary>
+        /// Item 2. Multi-purpose
+        /// </summary>
+        /// <remarks>
+        /// In occasions, it refers to the Standard Output of the command execution
+        /// </remarks>
         public string Item2 { get; }
+
+        /// <summary>
+        /// Item 3. Multi-purpose
+        /// </summary>
+        /// <remarks>
+        /// In occasions, it refers to the Standard Error of the command execution
+        /// </remarks>
         public string Item3 { get; }
 
         public int ExitCode => Item1;

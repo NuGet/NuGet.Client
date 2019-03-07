@@ -2310,6 +2310,16 @@ EndProject";
             }
         }
 
+
+        [Theory]
+        [InlineData("restore a b -PackagesDirectory x")]
+        [InlineData("restore a b")]
+        public void RestoreCommand_Failure_InvalidArguments(string cmd)
+        {
+            Util.TestCommandInvalidArguments(cmd);
+        }
+
+
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(

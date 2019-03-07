@@ -130,10 +130,13 @@ namespace NuGet.CommandLine
                     // Get the command name and add it to the argument list of the help command
                     var commandName = command.CommandAttribute.CommandName;
 
-                    // Print invalid command then show help
-                    console.WriteLine(LocalizedResourceManager.GetString("InvalidArguments"), commandName);
+                    // Print invalid arguments command error message in stderr
+                    console.WriteError(LocalizedResourceManager.GetString("InvalidArguments"), commandName);
 
+                    // then show help
                     p.HelpCommand.ViewHelpForCommand(commandName);
+
+                    return 1;
                 }
                 else
                 {
