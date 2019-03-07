@@ -90,17 +90,6 @@ namespace NuGet.PackageManagement.Test.Utility
         }
 
         [Fact]
-        public void GetLockFile_NewLockFileContainsAnyFramework()
-        {
-            // Act
-            var lockFile = PackagesConfigLockFileUtility.GetLockFile(false, null);
-
-            // Assert
-            Assert.Equal(1, lockFile.Targets.Count);
-            Assert.Equal(FrameworkConstants.SpecialIdentifiers.Any, lockFile.Targets[0].TargetFramework.Framework);
-        }
-
-        [Fact]
         public void ApplyChanges_AddInstalledPackage()
         {
             // Arrange
