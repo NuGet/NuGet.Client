@@ -38,6 +38,19 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public void Constructor_ThrowsForNullLogger()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new InboundRequestContext(
+                    Mock.Of<IConnection>(),
+                    requestId: "a",
+                    cancellationToken: CancellationToken.None,
+                    logger: null));
+
+            Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
         public void Constructor_InitializesRequestIdProperty()
         {
             using (var test = new InboundRequestContextTest())
@@ -53,6 +66,16 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 test.Context.Dispose();
                 test.Connection.Verify();
+            }
+        }
+
+        [Fact]
+        public void Dispose_DoesNotDisposeLogger()
+        {
+            using (var test = new InboundRequestContextTest())
+            {
+                test.Context.Dispose();
+                test.Logger.Verify();
             }
         }
 
@@ -354,17 +377,20 @@ namespace NuGet.Protocol.Plugins.Tests
             internal CancellationTokenSource CancellationTokenSource { get; }
             internal Mock<IConnection> Connection { get; }
             internal InboundRequestContext Context { get; }
+            internal Mock<IPluginLogger> Logger { get; }
             internal string RequestId { get; }
 
             internal InboundRequestContextTest()
             {
                 CancellationTokenSource = new CancellationTokenSource();
                 Connection = new Mock<IConnection>(MockBehavior.Strict);
+                Logger = new Mock<IPluginLogger>();
                 RequestId = "a";
                 Context = new InboundRequestContext(
                     Connection.Object,
                     RequestId,
-                    CancellationTokenSource.Token);
+                    CancellationTokenSource.Token,
+                    Logger.Object);
             }
 
             public void Dispose()
@@ -385,6 +411,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 GC.SuppressFinalize(this);
 
                 Connection.Verify();
+                Logger.Verify();
             }
         }
     }

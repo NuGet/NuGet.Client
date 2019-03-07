@@ -19,6 +19,7 @@ namespace NuGet.Protocol.Plugins
     public sealed class PluginFactory : IPluginFactory
     {
         private bool _isDisposed;
+        private readonly IPluginLogger _logger;
         private readonly TimeSpan _pluginIdleTimeout;
         private readonly ConcurrentDictionary<string, Lazy<Task<IPlugin>>> _plugins;
 
@@ -38,6 +39,7 @@ namespace NuGet.Protocol.Plugins
                     Strings.Plugin_IdleTimeoutMustBeGreaterThanOrEqualToInfiniteTimeSpan);
             }
 
+            _logger = PluginLogger.DefaultInstance;
             _pluginIdleTimeout = pluginIdleTimeout;
             _plugins = new ConcurrentDictionary<string, Lazy<Task<IPlugin>>>();
         }
@@ -63,6 +65,8 @@ namespace NuGet.Protocol.Plugins
                     plugin.Dispose();
                 }
             }
+
+            _logger.Dispose();
 
             GC.SuppressFinalize(this);
 
@@ -170,8 +174,14 @@ namespace NuGet.Protocol.Plugins
             var process = Process.Start(startInfo);
             var sender = new Sender(process.StandardInput);
             var receiver = new StandardOutputReceiver(new PluginProcess(process));
-            var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator());
-            var connection = new Connection(messageDispatcher, sender, receiver, options);
+
+            if (_logger.IsEnabled)
+            {
+                WriteCommonLogMessages(_logger);
+            }
+
+            var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), _logger);
+            var connection = new Connection(messageDispatcher, sender, receiver, options, _logger);
             var pluginProcess = new PluginProcess(process);
 
             var plugin = new Plugin(
@@ -243,9 +253,15 @@ namespace NuGet.Protocol.Plugins
             var standardOutput = new StreamWriter(Console.OpenStandardOutput(), encoding);
             var sender = new Sender(standardOutput);
             var receiver = new StandardInputReceiver(standardInput);
-            var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator());
-            var connection = new Connection(messageDispatcher, sender, receiver, options);
+            var logger = PluginLogger.DefaultInstance;
 
+            if (logger.IsEnabled)
+            {
+                WriteCommonLogMessages(logger);
+            }
+
+            var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), logger);
+            var connection = new Connection(messageDispatcher, sender, receiver, options, logger);
             var process = Process.GetCurrentProcess();
             var filePath = process.MainModule.FileName;
             var pluginProcess = new PluginProcess(process);
@@ -353,6 +369,13 @@ namespace NuGet.Protocol.Plugins
                 plugin.Faulted -= OnPluginFaulted;
                 plugin.Idle -= OnPluginIdle;
             }
+        }
+
+        private static void WriteCommonLogMessages(IPluginLogger logger)
+        {
+            logger.Write(new AssemblyLogMessage());
+            logger.Write(new MachineLogMessage());
+            logger.Write(new ThreadPoolLogMessage());
         }
     }
 }

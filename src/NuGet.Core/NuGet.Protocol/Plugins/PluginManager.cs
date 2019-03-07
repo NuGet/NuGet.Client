@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,9 +26,6 @@ namespace NuGet.Protocol.Core.Types
     {
         private static readonly Lazy<IPluginManager> Lazy = new Lazy<IPluginManager>(() => new PluginManager());
         public static IPluginManager Instance => Lazy.Value;
-
-        private const string _idleTimeoutEnvironmentVariable = "NUGET_PLUGIN_IDLE_TIMEOUT_IN_SECONDS";
-        private const string _pluginPathsEnvironmentVariable = "NUGET_PLUGIN_PATHS";
 
         private ConnectionOptions _connectionOptions;
         private Lazy<IPluginDiscoverer> _discoverer;
@@ -291,11 +287,11 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(pluginFactoryCreator));
             }
 
-            _rawPluginPaths = reader.GetEnvironmentVariable(_pluginPathsEnvironmentVariable);
+            _rawPluginPaths = reader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
 
             _connectionOptions = ConnectionOptions.CreateDefault(reader);
 
-            var idleTimeoutInSeconds = EnvironmentVariableReader.GetEnvironmentVariable(_idleTimeoutEnvironmentVariable);
+            var idleTimeoutInSeconds = EnvironmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.IdleTimeout);
             var idleTimeout = TimeoutUtilities.GetTimeout(idleTimeoutInSeconds, PluginConstants.IdleTimeout);
 
             _pluginFactory = pluginFactoryCreator(idleTimeout);
