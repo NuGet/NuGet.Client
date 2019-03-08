@@ -173,8 +173,7 @@ namespace NuGet.Packaging
 
         private static IEnumerable<FrameworkSpecificGroup> ReadFrameworkReferenceGroups(XElement frameworkReferenceGroupsElement)
         {
-            return NuspecUtility.GetFrameworkReferenceGroups(frameworkReferenceGroupsElement, DefaultFrameworkNameProvider.Instance, false);
-
+            return NuspecUtility.GetFrameworkReferenceGroups(frameworkReferenceGroupsElement, DefaultFrameworkNameProvider.Instance, useMetadataNamespace: false);
         }
 
         private static LicenseMetadata ReadLicenseMetadata(XElement licenseNode)

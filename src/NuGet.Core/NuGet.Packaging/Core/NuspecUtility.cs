@@ -123,7 +123,17 @@ namespace NuGet.Packaging.Core
             return System.Xml.XmlConvert.ToBoolean(value);
         }
 
-        public static IEnumerable<FrameworkSpecificGroup> GetFrameworkReferenceGroups(XElement metadataNode, IFrameworkNameProvider frameworkProvider, bool useMetadataNamespace)
+        /// <summary>
+        /// Gets the FrameworkReference groups. This refers to the FrameworkReference concept added in .NET Core 3.0
+        /// </summary>
+        /// <param name="metadataNode">The metadata node</param>
+        /// <param name="frameworkProvider">A FrameworkNameProvider</param>
+        /// <param name="useMetadataNamespace">Whether or not to use the metadata element's namespace when getting the framework reference nodes.
+        /// If false is specified, only the local names of the FrameworkReference nodes are used
+        /// for comparison. If true is specified, the fremeworkreference nodes must have the same
+        /// namespace as the metadata node.</param>
+        /// <returns></returns>
+        internal static IEnumerable<FrameworkSpecificGroup> GetFrameworkReferenceGroups(XElement metadataNode, IFrameworkNameProvider frameworkProvider, bool useMetadataNamespace)
         {
             var ns = useMetadataNamespace ? metadataNode.GetDefaultNamespace().NamespaceName : null;
             IEnumerable<XElement> frameworkReferenceGroups;

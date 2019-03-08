@@ -3790,7 +3790,6 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
 
-                // Create the subdirectory structure for testing possible source paths for the content file
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 var frameworkReftoPack = new Dictionary<string, bool>();
@@ -3883,7 +3882,6 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
 
-                // Create the subdirectory structure for testing possible source paths for the content file
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 var frameworkReftoPack = new Dictionary<string, bool>();

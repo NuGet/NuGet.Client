@@ -17,7 +17,7 @@ namespace NuGet.ProjectModel
 {
     public class LockFileFormat
     {
-        public static readonly int Version = 3; // TODO NK - update to version 4 here.
+        public static readonly int Version = 4;
         public static readonly string LockFileName = "project.lock.json";
         public static readonly string AssetsFileName = "project.assets.json";
 
@@ -779,16 +779,6 @@ namespace NuGet.ProjectModel
         private static void WriteBool(JToken token, string property, bool value)
         {
             token[property] = new JValue(value);
-        }
-
-        private static NuGetFramework ReadFrameworkName(JToken json)
-        {
-            return json == null ? null : new NuGetFramework(json.Value<string>());
-        }
-
-        private static JToken WriteFrameworkName(NuGetFramework item)
-        {
-            return item != null ? new JValue(item.ToString()) : JValue.CreateNull();
         }
 
         private static string GetPathWithForwardSlashes(string path)

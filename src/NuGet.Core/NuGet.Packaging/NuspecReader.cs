@@ -559,7 +559,7 @@ namespace NuGet.Packaging
         /// </summary>
         public IEnumerable<FrameworkSpecificGroup> GetFrameworkRefGroups()
         {
-            return NuspecUtility.GetFrameworkReferenceGroups(MetadataNode, _frameworkProvider, true);
+            return NuspecUtility.GetFrameworkReferenceGroups(MetadataNode, _frameworkProvider, useMetadataNamespace : true);
         }
 
         private static bool? AttributeAsNullableBool(XElement element, string attributeName)

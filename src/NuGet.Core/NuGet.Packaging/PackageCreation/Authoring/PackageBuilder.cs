@@ -561,6 +561,7 @@ namespace NuGet.Packaging
             DependencyGroups.AddRange(metadata.DependencyGroups);
             FrameworkReferences.AddRange(metadata.FrameworkReferences);
             FrameworkReferenceGroups.AddRange(metadata.FrameworkReferenceGroups);
+
             if (manifestMetadata.PackageAssemblyReferences != null)
             {
                 PackageAssemblyReferences.AddRange(manifestMetadata.PackageAssemblyReferences);

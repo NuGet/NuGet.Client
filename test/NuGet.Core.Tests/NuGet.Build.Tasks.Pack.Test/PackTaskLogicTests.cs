@@ -660,7 +660,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                     })},
                     Logger = new TestLogger(),
                     SymbolPackageFormat = "symbols.nupkg",
-                    FrameworkAssemblyReferences = new MSBuildItem[]{},
+                    FrameworkAssemblyReferences = new MSBuildItem[] { },
                     FrameworkReferences = new MSBuildItem[] { },
                 };
             }

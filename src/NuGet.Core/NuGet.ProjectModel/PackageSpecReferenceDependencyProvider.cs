@@ -194,7 +194,7 @@ namespace NuGet.ProjectModel
 
                 library[KnownLibraryProperties.TargetFrameworkInformation] = targetFrameworkInfo;
 
-                // Add framework assemblies - TODO NK - This is probably not useful anymore. - I can remove it an no tests will fail.
+                // Add framework assemblies
                 var frameworkAssemblies = targetFrameworkInfo.Dependencies
                     .Where(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
                     .Select(d => d.Name)
