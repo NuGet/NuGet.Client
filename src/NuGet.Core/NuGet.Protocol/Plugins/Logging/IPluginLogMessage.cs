@@ -3,7 +3,7 @@
 
 namespace NuGet.Protocol.Plugins
 {
-    public interface IPluginLogMessage
+    internal interface IPluginLogMessage
     {
     }
 }

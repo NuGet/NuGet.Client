@@ -6,6 +6,7 @@ namespace NuGet.Protocol.Plugins
     internal enum TaskState
     {
         Queued,
-        Executing
+        Executing,
+        Completed
     }
 }

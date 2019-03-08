@@ -16,7 +16,7 @@ namespace NuGet.Protocol.Plugins.Tests
             DateParseHandling = DateParseHandling.None
         };
 
-        protected JObject VerifyOuterMessageAndReturnInnerMessage(IPluginLogMessage logMessage, string expectedType)
+        internal JObject VerifyOuterMessageAndReturnInnerMessage(IPluginLogMessage logMessage, string expectedType)
         {
             var json = logMessage.ToString();
 

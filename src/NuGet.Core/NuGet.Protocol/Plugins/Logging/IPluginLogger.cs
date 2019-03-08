@@ -5,7 +5,7 @@ using System;
 
 namespace NuGet.Protocol.Plugins
 {
-    public interface IPluginLogger : IDisposable
+    internal interface IPluginLogger : IDisposable
     {
         bool IsEnabled { get; }
 

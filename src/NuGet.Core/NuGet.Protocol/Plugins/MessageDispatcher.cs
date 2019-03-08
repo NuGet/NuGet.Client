@@ -53,7 +53,7 @@ namespace NuGet.Protocol.Plugins
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
         /// is <c>null</c>.</exception>
-        public MessageDispatcher(IRequestHandlers requestHandlers, IIdGenerator idGenerator, IPluginLogger logger)
+        internal MessageDispatcher(IRequestHandlers requestHandlers, IIdGenerator idGenerator, IPluginLogger logger)
         {
             if (requestHandlers == null)
             {

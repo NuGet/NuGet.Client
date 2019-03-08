@@ -75,7 +75,7 @@ namespace NuGet.Protocol.Plugins
         /// is cancelled.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
         /// is <c>null</c>.</exception>
-        public OutboundRequestContext(
+        internal OutboundRequestContext(
             IConnection connection,
             Message request,
             TimeSpan? timeout,
@@ -271,6 +271,13 @@ namespace NuGet.Protocol.Plugins
                         }
                         catch (Exception)
                         {
+                        }
+                        finally
+                        {
+                            if (_logger.IsEnabled)
+                            {
+                                _logger.Write(new TaskLogMessage(_request.RequestId, _request.Method, MessageType.Cancel, TaskState.Completed));
+                            }
                         }
                     });
                 }

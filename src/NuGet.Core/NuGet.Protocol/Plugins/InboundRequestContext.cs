@@ -54,7 +54,7 @@ namespace NuGet.Protocol.Plugins
         /// is either <c>null</c> or an empty string.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
         /// is <c>null</c>.</exception>
-        public InboundRequestContext(
+        internal InboundRequestContext(
             IConnection connection,
             string requestId,
             CancellationToken cancellationToken,
@@ -163,6 +163,13 @@ namespace NuGet.Protocol.Plugins
                     catch (Exception)
                     {
                     }
+                    finally
+                    {
+                        if (_logger.IsEnabled)
+                        {
+                            _logger.Write(new TaskLogMessage(response.RequestId, response.Method, response.Type, TaskState.Completed));
+                        }
+                    }
                 },
                 _cancellationToken);
         }
@@ -229,6 +236,13 @@ namespace NuGet.Protocol.Plugins
                     catch (Exception ex)
                     {
                         BeginFaultAsync(request, ex);
+                    }
+                    finally
+                    {
+                        if (_logger.IsEnabled)
+                        {
+                            _logger.Write(new TaskLogMessage(request.RequestId, request.Method, request.Type, TaskState.Completed));
+                        }
                     }
                 },
                 _cancellationToken);
