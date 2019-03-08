@@ -426,7 +426,7 @@ namespace NuGet.Commands
             var ridlessTargets = assetsFile.Targets
                 .Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
 
-            var packagesWithTools = new HashSet<string>(assetsFile.Libraries.Where(i => i.HasTools).Select(i => i.Name));
+            var packagesWithTools = new HashSet<string>(assetsFile.Libraries.Where(i => i.HasTools).Select(i => i.Name), StringComparer.OrdinalIgnoreCase);
 
             foreach (var ridlessTarget in ridlessTargets)
             {
@@ -500,14 +500,14 @@ namespace NuGet.Commands
 
                 var projectGraph = targetGraph.Graphs.FirstOrDefault();
 
-                // Distinct union of tool packages and packages with GeneratePathProperty=true
-                var packageIdsToCreatePropertiesFor = new HashSet<string>(packagesWithTools.Union(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name)), StringComparer.OrdinalIgnoreCase);
+                // Packages with GeneratePathProperty=true
+                var packageIdsToCreatePropertiesFor = new HashSet<string>(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name), StringComparer.OrdinalIgnoreCase);
 
                 var localPackages = sortedPackages.Select(e => e.Value);
 
                 // Find the packages with matching IDs in the list of sorted packages, filtering out ones that there was no match for or that don't exist
                 var packagePathProperties = localPackages
-                    .Where(pkg => pkg?.Value?.Package != null && packageIdsToCreatePropertiesFor.Contains(pkg.Value.Package.Id) && pkg.Exists())
+                    .Where(pkg => pkg?.Value?.Package != null && (packagesWithTools.Contains(pkg.Value.Package.Id) || packageIdsToCreatePropertiesFor.Contains(pkg.Value.Package.Id)) && pkg.Exists())
                     .Select(pkg => pkg.Value.Package)
                     // Get the property
                     .Select(GeneratePackagePathProperty);
