@@ -13,9 +13,6 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public sealed class ConnectionOptions
     {
-        private const string _handshakeTimeoutEnvironmentVariable = "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS";
-        private const string _requestTimeoutEnvironmentVariable = "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS";
-
         /// <summary>
         /// Gets the plugin handshake timeout.
         /// </summary>
@@ -136,8 +133,8 @@ namespace NuGet.Protocol.Plugins
         {
             reader = reader ?? new EnvironmentVariableWrapper();
 
-            var handshakeTimeoutInSeconds = reader.GetEnvironmentVariable(_handshakeTimeoutEnvironmentVariable);
-            var requestTimeoutInSeconds = reader.GetEnvironmentVariable(_requestTimeoutEnvironmentVariable);
+            var handshakeTimeoutInSeconds = reader.GetEnvironmentVariable(EnvironmentVariableConstants.HandshakeTimeout);
+            var requestTimeoutInSeconds = reader.GetEnvironmentVariable(EnvironmentVariableConstants.RequestTimeout);
 
             var handshakeTimeout = TimeoutUtilities.GetTimeout(handshakeTimeoutInSeconds, ProtocolConstants.HandshakeTimeout);
             var requestTimeout = TimeoutUtilities.GetTimeout(requestTimeoutInSeconds, ProtocolConstants.RequestTimeout);

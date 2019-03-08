@@ -16,6 +16,7 @@ namespace NuGet.Protocol.Plugins
         private bool _isDisposed;
         private readonly IReceiver _receiver;
         private readonly ISender _sender;
+        private readonly IPluginLogger _logger;
 
         private int _state = (int)ConnectionState.ReadyToConnect;
 
@@ -61,6 +62,24 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="receiver" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="options" /> is <c>null</c>.</exception>
         public Connection(IMessageDispatcher dispatcher, ISender sender, IReceiver receiver, ConnectionOptions options)
+            : this(dispatcher, sender, receiver, options, PluginLogger.DefaultInstance)
+        {
+        }
+
+        /// <summary>
+        /// Instantiates a new instance of the <see cref="Connection" /> class.
+        /// </summary>
+        /// <param name="dispatcher">A message dispatcher.</param>
+        /// <param name="sender">A sender.</param>
+        /// <param name="receiver">A receiver.</param>
+        /// <param name="options">Connection options.</param>
+        /// <param name="logger">A plugin logger.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="dispatcher" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="sender" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="receiver" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="options" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
+        internal Connection(IMessageDispatcher dispatcher, ISender sender, IReceiver receiver, ConnectionOptions options, IPluginLogger logger)
         {
             if (dispatcher == null)
             {
@@ -82,10 +101,16 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(options));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             MessageDispatcher = dispatcher;
             _sender = sender;
             _receiver = receiver;
             Options = options;
+            _logger = logger;
 
             MessageDispatcher.SetConnection(this);
         }
@@ -102,6 +127,8 @@ namespace NuGet.Protocol.Plugins
                 _receiver.Dispose();
                 _sender.Dispose();
                 MessageDispatcher.Dispose();
+
+                // Do not dispose of _logger.  This connection does not own it.
 
                 GC.SuppressFinalize(this);
 
@@ -215,7 +242,17 @@ namespace NuGet.Protocol.Plugins
                 throw new InvalidOperationException(Strings.Plugin_NotConnected);
             }
 
+            if (_logger.IsEnabled)
+            {
+                _logger.Write(new CommunicationsLogMessage(message.RequestId, message.Method, message.Type, MessageState.Sending));
+            }
+
             await _sender.SendAsync(message, cancellationToken);
+
+            if (_logger.IsEnabled)
+            {
+                _logger.Write(new CommunicationsLogMessage(message.RequestId, message.Method, message.Type, MessageState.Sent));
+            }
         }
 
         /// <summary>
@@ -257,6 +294,11 @@ namespace NuGet.Protocol.Plugins
 
         private void OnMessageReceived(object sender, MessageEventArgs e)
         {
+            if (_logger.IsEnabled)
+            {
+                _logger.Write(new CommunicationsLogMessage(e.Message.RequestId, e.Message.Method, e.Message.Type, MessageState.Received));
+            }
+
             MessageReceived?.Invoke(this, e);
         }
 

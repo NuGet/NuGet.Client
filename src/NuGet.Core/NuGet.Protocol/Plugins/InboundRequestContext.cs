@@ -16,6 +16,7 @@ namespace NuGet.Protocol.Plugins
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly IConnection _connection;
         private bool _isDisposed;
+        private readonly IPluginLogger _logger;
 
         /// <summary>
         /// Gets the request ID.
@@ -36,6 +37,28 @@ namespace NuGet.Protocol.Plugins
             IConnection connection,
             string requestId,
             CancellationToken cancellationToken)
+            : this(connection, requestId, cancellationToken, PluginLogger.DefaultInstance)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="InboundRequestContext" /> class.
+        /// </summary>
+        /// <param name="connection">A connection.</param>
+        /// <param name="requestId">A request ID.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <param name="logger">A plugin logger.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="connection" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="requestId" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
+        /// is <c>null</c>.</exception>
+        internal InboundRequestContext(
+            IConnection connection,
+            string requestId,
+            CancellationToken cancellationToken,
+            IPluginLogger logger)
         {
             if (connection == null)
             {
@@ -47,6 +70,11 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(requestId));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             _connection = connection;
             RequestId = requestId;
 
@@ -55,6 +83,8 @@ namespace NuGet.Protocol.Plugins
             // Capture the cancellation token now because if the cancellation token source
             // is disposed race conditions may cause an exception acccessing its Token property.
             _cancellationToken = _cancellationTokenSource.Token;
+
+            _logger = logger;
         }
 
         /// <summary>
@@ -78,7 +108,7 @@ namespace NuGet.Protocol.Plugins
             {
             }
 
-            // Do not dispose of _connection.
+            // Do not dispose of _connection or _logger.  This context does not own them.
 
             GC.SuppressFinalize(this);
 
@@ -113,15 +143,32 @@ namespace NuGet.Protocol.Plugins
                 request.Method,
                 JsonSerializationUtilities.FromObject(responsePayload));
 
+            if (_logger.IsEnabled)
+            {
+                _logger.Write(new TaskLogMessage(response.RequestId, response.Method, response.Type, TaskState.Queued));
+            }
+
             Task.Run(async () =>
                 {
                     // Top-level exception handler for a worker pool thread.
                     try
                     {
+                        if (_logger.IsEnabled)
+                        {
+                            _logger.Write(new TaskLogMessage(response.RequestId, response.Method, response.Type, TaskState.Executing));
+                        }
+
                         await _connection.SendAsync(response, _cancellationToken);
                     }
                     catch (Exception)
                     {
+                    }
+                    finally
+                    {
+                        if (_logger.IsEnabled)
+                        {
+                            _logger.Write(new TaskLogMessage(response.RequestId, response.Method, response.Type, TaskState.Completed));
+                        }
                     }
                 },
                 _cancellationToken);
@@ -159,11 +206,21 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(responseHandler));
             }
 
+            if (_logger.IsEnabled)
+            {
+                _logger.Write(new TaskLogMessage(request.RequestId, request.Method, request.Type, TaskState.Queued));
+            }
+
             Task.Run(async () =>
                 {
                     // Top-level exception handler for a worker pool thread.
                     try
                     {
+                        if (_logger.IsEnabled)
+                        {
+                            _logger.Write(new TaskLogMessage(request.RequestId, request.Method, request.Type, TaskState.Executing));
+                        }
+
                         await requestHandler.HandleResponseAsync(
                             _connection,
                             request,
@@ -179,6 +236,13 @@ namespace NuGet.Protocol.Plugins
                     catch (Exception ex)
                     {
                         BeginFaultAsync(request, ex);
+                    }
+                    finally
+                    {
+                        if (_logger.IsEnabled)
+                        {
+                            _logger.Write(new TaskLogMessage(request.RequestId, request.Method, request.Type, TaskState.Completed));
+                        }
                     }
                 },
                 _cancellationToken);
