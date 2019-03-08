@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -132,7 +133,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             Util.ClearWebCache();
-            var testCount = 100;
+            var testCount = 75;
 
             using (var server2 = new MockServer())
             using (var server = new MockServer())

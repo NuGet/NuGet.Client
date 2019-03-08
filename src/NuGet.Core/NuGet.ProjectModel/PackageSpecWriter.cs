@@ -354,7 +354,7 @@ namespace NuGet.ProjectModel
             }
 
             writer.WriteObjectEnd();
-        }
+        } 
 
         private static void SetDependencies(IObjectWriter writer, IList<LibraryDependency> libraryDependencies)
         {
