@@ -517,6 +517,6 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   </data>
   <data name="Plugin_ProblemStartingPlugin" xml:space="preserve">
     <value>Problem starting the plugin  '{0}'. {1}</value>
-    <comment>0 - plugin path, 1 - </comment>
+    <comment>0 - plugin path, 1 - error message </comment>
   </data>
 </root>
