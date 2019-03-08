@@ -506,13 +506,15 @@ namespace NuGet.Commands
             CacheFile cacheFile;
             var noOp = false;
 
-            var newDgSpecHash = NoOpRestoreUtilities.GetHash(_request);
+            var noOpDgSpec = NoOpRestoreUtilities.GetNoOpDgSpec(_request);
 
             if (_request.ProjectStyle == ProjectStyle.DotnetCliTool && _request.AllowNoOp)
             {
                 // No need to attempt to resolve the tool if no-op is not allowed.
                 NoOpRestoreUtilities.UpdateRequestBestMatchingToolPathsIfAvailable(_request);
             }
+
+            var newDgSpecHash = noOpDgSpec.GetHash();
 
             // if --force-evaluate flag is passed then restore noop check will also be skipped.
             // this will also help us to get rid of -force flag in near future.
@@ -538,6 +540,13 @@ namespace NuGet.Commands
             {
                 cacheFile = new CacheFile(newDgSpecHash);
 
+            }
+
+            // We only persist the dg spec file if it nooped or the dg spec does not exist.
+            var dgPath = NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request);
+            if (dgPath != null && (!noOp || !File.Exists(dgPath)))
+            {
+                NoOpRestoreUtilities.PersistDGSpecFile(noOpDgSpec, dgPath, _logger);
             }
 
             if (_request.ProjectStyle == ProjectStyle.DotnetCliTool)

@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -69,7 +68,7 @@ namespace NuGet.Commands
             return null;
         }
 
-        public static string GetToolCacheFilePath(string toolDirectory, string toolName)
+        internal static string GetToolCacheFilePath(string toolDirectory, string toolName)
         {
             return Path.Combine(
                 toolDirectory,
@@ -111,7 +110,7 @@ namespace NuGet.Commands
         /// This method verifies that the props/targets files and all the packages written out in the lock file are present on disk
         /// This does not account if the files were manually modified since the last restore
         /// </summary>
-        public static bool VerifyAssetsAndMSBuildFilesAndPackagesArePresent(RestoreRequest request)
+        internal static bool VerifyAssetsAndMSBuildFilesAndPackagesArePresent(RestoreRequest request)
         {
 
             if (!File.Exists(request.ExistingLockFile?.Path))
@@ -146,7 +145,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Read out all the packages specified in the existing lock file and verify that they are in the cache
         /// </summary>
-        public static bool VerifyPackagesOnDisk(RestoreRequest request)
+        internal static bool VerifyPackagesOnDisk(RestoreRequest request)
         {
             var packageFolderPaths = new List<string>();
             packageFolderPaths.Add(request.Project.RestoreMetadata.PackagesPath);
@@ -194,11 +193,13 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Calculates the hash value, used for the no-op optimization, for the request
-        /// This methods handles the deduping of tools
-        /// Handles the ignoring of RestoreSettings
+        /// Generates the dgspec to be used for the no-op optimization
+        /// This methods handles the deduping of tools and the ignoring of RestoreSettings
         /// </summary>
-        public static string GetHash(RestoreRequest request)
+        /// <param name="request">The restore request</param>
+        /// <returns>The noop happy dg spec</returns>
+        /// <remarks> Could be the same instance if no changes were made to the original dgspec</remarks>
+        internal static DependencyGraphSpec GetNoOpDgSpec(RestoreRequest request)
         {
             var dgSpec = request.DependencyGraphSpec;
 
@@ -207,7 +208,8 @@ namespace NuGet.Commands
                 var uniqueName = request.DependencyGraphSpec.Restore.First();
                 dgSpec = request.DependencyGraphSpec.WithProjectClosure(uniqueName);
 
-                foreach (var projectSpec in dgSpec.Projects){
+                foreach (var projectSpec in dgSpec.Projects)
+                {
                     // The project path where the tool is declared does not affect restore and is only used for logging and transparency.
                     if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
                     {
@@ -225,25 +227,31 @@ namespace NuGet.Commands
                 }
             }
 
-            PersistDGSpecFile(dgSpec, request, request.Log);
-            return dgSpec.GetHash();
+            return dgSpec;
         }
 
-        private static void PersistDGSpecFile(DependencyGraphSpec spec, RestoreRequest request, ILogger log)
+        /// <summary>
+        /// Persists the dg file for the given restore request.
+        /// This does not do a dirty check!
+        /// </summary>
+        /// <param name="spec">spec</param>
+        /// <param name="dgPath">the dg path</param>
+        /// <param name="log">logger</param>
+        internal static void PersistDGSpecFile(DependencyGraphSpec spec, string dgPath, ILogger log)
         {
-            var dgPath = GetPersistedDGSpecFilePath(request);
-
-            if (dgPath == null)
-            {
-                return;
-            }
-
             DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(dgPath));
             log.LogVerbose($"Persisting no-op dg to {dgPath}");
             spec.Save(dgPath);
         }
 
-        private static string GetPersistedDGSpecFilePath(RestoreRequest request)
+        /// <summary>
+        /// Gets the path for dgpsec.json.
+        /// The project style that support dgpsec.json persistance are
+        /// <see cref="ProjectStyle.PackageReference"/>, <see cref="ProjectStyle.ProjectJson"/>, <see cref="ProjectStyle.Standalone"/>
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>The path for the dgspec.json. Null if not appropriate.</returns>
+        internal static string GetPersistedDGSpecFilePath(RestoreRequest request)
         {
             if (request.ProjectStyle == ProjectStyle.ProjectJson
                 || request.ProjectStyle == ProjectStyle.PackageReference
@@ -262,7 +270,7 @@ namespace NuGet.Commands
         /// This method will resolve the cache/lock file paths for the tool if available in the cache
         /// This method will set the CacheFilePath and the LockFilePath in the RestoreMetadat if a matching tool is available
         /// </summary>
-        public static void UpdateRequestBestMatchingToolPathsIfAvailable(RestoreRequest request)
+        internal static void UpdateRequestBestMatchingToolPathsIfAvailable(RestoreRequest request)
         {
             if (request.ProjectStyle == ProjectStyle.DotnetCliTool)
             {
@@ -275,7 +283,7 @@ namespace NuGet.Commands
 
                 if (toolDirectory != null) // Only set the paths if a good enough match was found. 
                 {
-                    request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetToolCacheFilePath(toolDirectory, ToolRestoreUtility.GetToolIdOrNullFromSpec(request.Project));
+                    request.Project.RestoreMetadata.CacheFilePath = GetToolCacheFilePath(toolDirectory, ToolRestoreUtility.GetToolIdOrNullFromSpec(request.Project));
                     request.LockFilePath = toolPathResolver.GetLockFilePath(toolDirectory);
                 }
             }
