@@ -12,6 +12,7 @@ namespace NuGet.Protocol.Plugins
     {
         private bool _isDisposed;
         private readonly Lazy<StreamWriter> _streamWriter;
+        private readonly string _logDirectoryPath;
         private readonly object _streamWriterLock;
 
         internal static PluginLogger DefaultInstance { get; } = new PluginLogger(new EnvironmentVariableWrapper());
@@ -28,6 +29,16 @@ namespace NuGet.Protocol.Plugins
             var value = environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.EnableLog);
 
             IsEnabled = bool.TryParse(value, out var enable) && enable;
+
+            if (IsEnabled)
+            {
+                _logDirectoryPath = environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.LogDirectoryPath);
+
+                if (string.IsNullOrWhiteSpace(_logDirectoryPath))
+                {
+                    _logDirectoryPath = Environment.CurrentDirectory;
+                }
+            }
 
             _streamWriter = new Lazy<StreamWriter>(CreateStreamWriter);
             _streamWriterLock = new object();
@@ -75,14 +86,17 @@ namespace NuGet.Protocol.Plugins
             if (IsEnabled)
             {
                 FileInfo file;
+                int processId;
 
                 using (var process = Process.GetCurrentProcess())
                 {
                     file = new FileInfo(process.MainModule.FileName);
+                    processId = process.Id;
                 }
 
-                var fileName = $"NuGet_PluginLogFor_{Path.GetFileNameWithoutExtension(file.Name)}.log";
-                var stream = File.OpenWrite(fileName);
+                var fileName = $"NuGet_PluginLogFor_{Path.GetFileNameWithoutExtension(file.Name)}_{DateTime.UtcNow.Ticks:x}.log";
+                var filePath = Path.Combine(_logDirectoryPath, fileName);
+                var stream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.Read);
 
                 try
                 {

@@ -178,6 +178,8 @@ namespace NuGet.Protocol.Plugins
             if (_logger.IsEnabled)
             {
                 WriteCommonLogMessages(_logger);
+
+                _logger.Write(new PluginInstanceLogMessage(process.Id));
             }
 
             var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), _logger);
@@ -375,6 +377,8 @@ namespace NuGet.Protocol.Plugins
         {
             logger.Write(new AssemblyLogMessage());
             logger.Write(new MachineLogMessage());
+            logger.Write(new EnvironmentVariablesLogMessage());
+            logger.Write(new ProcessLogMessage());
             logger.Write(new ThreadPoolLogMessage());
         }
     }

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using Moq;
 using NuGet.Common;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
@@ -36,80 +37,75 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void IsEnabled_WhenLoggingIsEnabled_ReturnsTrue()
         {
-            var environmentVariableReader = CreateEnvironmentVariableReaderMock(isLoggingEnabled: true);
-
-            using (var logger = new PluginLogger(environmentVariableReader.Object))
+            using (var testDirectory = TestDirectory.Create())
             {
-                Assert.True(logger.IsEnabled);
-            }
+                var environmentVariableReader = CreateEnvironmentVariableReaderMock(
+                    isLoggingEnabled: true,
+                    testDirectory: testDirectory);
 
-            environmentVariableReader.VerifyAll();
+                using (var logger = new PluginLogger(environmentVariableReader.Object))
+                {
+                    Assert.True(logger.IsEnabled);
+                }
+
+                environmentVariableReader.VerifyAll();
+            }
         }
 
         [Fact]
         public void Write_WhenLoggingIsNotEnabled_DoesNotCreateLogFile()
         {
-            var environmentVariableReader = CreateEnvironmentVariableReaderMock(isLoggingEnabled: false);
-            var logMessage = new RandomLogMessage();
-            var logFile = GetLogFile();
-
-            if (logFile.Exists)
+            using (var testDirectory = TestDirectory.Create())
             {
-                logFile.Delete();
-            }
+                var environmentVariableReader = CreateEnvironmentVariableReaderMock(
+                    isLoggingEnabled: false,
+                    testDirectory: testDirectory);
+                var logMessage = new RandomLogMessage();
 
-            using (var logger = new PluginLogger(environmentVariableReader.Object))
-            {
-                logger.Write(logMessage);
-            }
-
-            logFile.Refresh();
-
-            Assert.False(logFile.Exists);
-
-            environmentVariableReader.VerifyAll();
-        }
-
-        [Fact]
-        public void Write_WhenLoggingIsEnabled_WritesToStringResult()
-        {
-            var environmentVariableReader = CreateEnvironmentVariableReaderMock(isLoggingEnabled: true);
-            var logMessage = new RandomLogMessage();
-            var logFile = GetLogFile();
-
-            if (logFile.Exists)
-            {
-                logFile.Delete();
-            }
-
-            try
-            {
                 using (var logger = new PluginLogger(environmentVariableReader.Object))
                 {
                     logger.Write(logMessage);
                 }
 
-                logFile.Refresh();
+                var files = Directory.GetFiles(testDirectory.Path, "*", SearchOption.TopDirectoryOnly);
 
+                Assert.Empty(files);
+
+                environmentVariableReader.VerifyAll();
+            }
+        }
+
+        [Fact]
+        public void Write_WhenLoggingIsEnabled_WritesToStringResult()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var environmentVariableReader = CreateEnvironmentVariableReaderMock(
+                    isLoggingEnabled: true,
+                    testDirectory: testDirectory);
+                var logMessage = new RandomLogMessage();
+
+                using (var logger = new PluginLogger(environmentVariableReader.Object))
+                {
+                    logger.Write(logMessage);
+                }
+
+                var logFile = GetLogFile(testDirectory);
+
+                Assert.NotNull(logFile);
                 Assert.True(logFile.Exists);
 
                 var actualContent = File.ReadAllText(logFile.FullName);
 
                 Assert.Equal(logMessage.Message + Environment.NewLine, actualContent);
-            }
-            finally
-            {
-                if (logFile.Exists)
-                {
-                    logFile.Delete();
-                }
-            }
 
-
-            environmentVariableReader.VerifyAll();
+                environmentVariableReader.VerifyAll();
+            }
         }
 
-        private static Mock<IEnvironmentVariableReader> CreateEnvironmentVariableReaderMock(bool isLoggingEnabled)
+        private static Mock<IEnvironmentVariableReader> CreateEnvironmentVariableReaderMock(
+            bool isLoggingEnabled,
+            TestDirectory testDirectory = null)
         {
             var environmentVariableReader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
 
@@ -117,10 +113,17 @@ namespace NuGet.Protocol.Plugins.Tests
                     It.Is<string>(value => value == EnvironmentVariableConstants.EnableLog)))
                 .Returns(isLoggingEnabled ? bool.TrueString : bool.FalseString);
 
+            if (isLoggingEnabled && testDirectory != null)
+            {
+                environmentVariableReader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == EnvironmentVariableConstants.LogDirectoryPath)))
+                    .Returns(testDirectory.Path);
+            }
+
             return environmentVariableReader;
         }
 
-        private static FileInfo GetLogFile()
+        private static FileInfo GetLogFile(TestDirectory directory)
         {
             FileInfo file;
 
@@ -129,9 +132,12 @@ namespace NuGet.Protocol.Plugins.Tests
                 file = new FileInfo(process.MainModule.FileName);
             }
 
-            var fileName = $"NuGet_PluginLogFor_{Path.GetFileNameWithoutExtension(file.Name)}.log";
+            var partialFileName = $"NuGet_PluginLogFor_{Path.GetFileNameWithoutExtension(file.Name)}_*.log";
+            var files = Directory.GetFiles(directory, partialFileName, SearchOption.TopDirectoryOnly);
 
-            return new FileInfo(fileName);
+            Assert.Single(files);
+
+            return new FileInfo(files[0]);
         }
 
         private sealed class RandomLogMessage : IPluginLogMessage

@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace NuGet.Protocol.Plugins
 {
     internal sealed class TaskLogMessage : PluginLogMessage
     {
+        private readonly int? _currentTaskId;
         private readonly MessageMethod _method;
         private readonly string _requestId;
         private readonly TaskState _state;
@@ -18,6 +20,7 @@ namespace NuGet.Protocol.Plugins
             _method = method;
             _type = type;
             _state = state;
+            _currentTaskId = Task.CurrentId;
         }
 
         public override string ToString()
@@ -27,6 +30,11 @@ namespace NuGet.Protocol.Plugins
                 new JProperty("method", _method),
                 new JProperty("type", _type),
                 new JProperty("state", _state));
+
+            if (_currentTaskId.HasValue)
+            {
+                message.Add(new JProperty("current task ID", _currentTaskId.Value));
+            }
 
             return ToString("task", message);
         }

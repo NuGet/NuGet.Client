@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
@@ -20,17 +21,19 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, "task");
 
-            Assert.Equal(4, message.Count);
+            Assert.Equal(5, message.Count);
 
             var actualRequestId = message.Value<string>("request ID");
             var actualMethod = Enum.Parse(typeof(MessageMethod), message.Value<string>("method"));
             var actualType = Enum.Parse(typeof(MessageType), message.Value<string>("type"));
             var actualState = Enum.Parse(typeof(TaskState), message.Value<string>("state"));
+            var actualCurrentTaskId = message.Value<int>("current task ID");
 
             Assert.Equal(requestId, actualRequestId);
             Assert.Equal(method, actualMethod);
             Assert.Equal(type, actualType);
             Assert.Equal(state, actualState);
+            Assert.Equal(Task.CurrentId, actualCurrentTaskId);
         }
     }
 }
