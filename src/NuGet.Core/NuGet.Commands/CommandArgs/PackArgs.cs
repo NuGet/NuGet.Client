@@ -27,7 +27,7 @@ namespace NuGet.Commands
         public bool InstallPackageToOutputPath { get; set; }
         public IMachineWideSettings MachineWideSettings { get; set; }
         public Version MinClientVersion { get; set; }
-        public SymbolPackageFormat SymbolPackageFormat { get; set; } = SymbolPackageFormat.SymbolsNupkg;
+        public SymbolPackageFormat SymbolPackageFormat { get; set; } = SymbolPackageFormat.Snupkg;
         public Lazy<string> MsBuildDirectory { get; set; }
         public bool NoDefaultExcludes { get; set; }
         public bool NoPackageAnalysis { get; set; }
