@@ -7,6 +7,7 @@
     <owners>Microsoft</owners>
     <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
     <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+    <projectUrl>https://aka.ms/nugetprj</projectUrl>
     <description>NuGet pack for dotnet CLI</description>
   </metadata>
   <files>
