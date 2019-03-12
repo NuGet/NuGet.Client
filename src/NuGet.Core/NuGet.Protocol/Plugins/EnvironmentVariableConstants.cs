@@ -6,6 +6,7 @@ namespace NuGet.Protocol.Plugins
     internal static class EnvironmentVariableConstants
     {
         internal const string EnableLog = "NUGET_PLUGIN_ENABLE_LOG";
+        internal const string LogDirectoryPath = "NUGET_PLUGIN_LOG_DIRECTORY_PATH";
         internal const string HandshakeTimeout = "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS";
         internal const string IdleTimeout = "NUGET_PLUGIN_IDLE_TIMEOUT_IN_SECONDS";
         internal const string PluginPaths = "NUGET_PLUGIN_PATHS";
