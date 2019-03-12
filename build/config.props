@@ -36,7 +36,7 @@
   <!-- Nuspec defaults -->
   <PropertyGroup>
     <Authors>Microsoft</Authors>
-    <ProjectUrl>https://aka.ms/nugetprj</ProjectUrl>
+    <PackageProjectUrl>https://aka.ms/nugetprj</PackageProjectUrl>
     <PackageLicenseUrl>https://aka.ms/nugetlicense</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>

@@ -8,6 +8,7 @@
     <description>NuGet pack for dotnet CLI</description>
     <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
     <licenseUrl>https://aka.ms/nugetlicense</licenseUrl>
+    <projectUrl>https://aka.ms/nugetprj</projectUrl>
   </metadata>
   <files>
     <file src="net46\ilmerge\NuGet.Build.Tasks.Pack.dll" target="Desktop\" />
