@@ -15,11 +15,19 @@ using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Test
 {
     public class NetworkCallCountTest
     {
+        private readonly ITestOutputHelper _logger;
+
+        public NetworkCallCountTest(ITestOutputHelper logger)
+        {
+            _logger = logger;
+        }
+
         [Fact]
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesWithAllMissingPackages()
         {
@@ -237,18 +245,29 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true,
-                    timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
+                CommandRunnerResult result;
+
+                try
+                {
+                    result = CommandRunner.Run(
+                        nugetexe,
+                        workingPath,
+                        string.Join(" ", args),
+                        waitForExit: true,
+                        timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
+                }
+                catch (TimeoutException ex)
+                {
+                    LogDiagnosticData(ex);
+
+                    throw;
+                }
 
                 var packagesFolder = new LocalPackageRepository(packagesFolderPath);
                 var allPackages = packagesFolder.GetPackages().ToList();
 
                 // Assert
-                Assert.True(0 != r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 != result.Item1, result.Item2 + " " + result.Item3);
 
                 Assert.Equal(1, hitsByUrl["/index.json"]);
 
@@ -1714,6 +1733,22 @@ namespace NuGet.CommandLine.Test
             {
                 // Debug here
                 throw;
+            }
+        }
+
+        private void LogDiagnosticData(TimeoutException ex)
+        {
+            LogDiagnosticDatum(ex, "StandardOutput");
+            LogDiagnosticDatum(ex, "StandardError");
+        }
+
+        private void LogDiagnosticDatum(TimeoutException ex, string key)
+        {
+            var value = ex.Data[key] as string;
+
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                _logger.WriteLine($"{key}:  {value}");
             }
         }
     }

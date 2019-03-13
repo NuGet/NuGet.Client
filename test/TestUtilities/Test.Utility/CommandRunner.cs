@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -73,19 +73,27 @@ namespace NuGet.Test.Utility
 
                 if (waitForExit)
                 {
-#if DEBUG
-                    var processExited = true;
-                    p.WaitForExit();
-#else
                     var processExited = p.WaitForExit(timeOutInMilliseconds);
-#endif
+
                     if (!processExited)
                     {
                         p.Kill();
 
                         var processName = Path.GetFileName(process);
 
-                        throw new TimeoutException($"{processName} timed out: " + psi.Arguments);
+                        var exception = new TimeoutException($"{processName} timed out: " + psi.Arguments);
+
+                        if (output.Length > 0)
+                        {
+                            exception.Data.Add("StandardOutput", output.ToString());
+                        }
+
+                        if (errors.Length > 0)
+                        {
+                            exception.Data.Add("StandardError", errors.ToString());
+                        }
+
+                        throw exception;
                     }
 
                     if (processExited)
