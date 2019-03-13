@@ -5,7 +5,7 @@
     <IsEscrowMode>true</IsEscrowMode>
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">4</MajorNuGetVersion>
     <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">5</MinorNuGetVersion>
-    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">2</PatchNuGetVersion>
+    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">3</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
