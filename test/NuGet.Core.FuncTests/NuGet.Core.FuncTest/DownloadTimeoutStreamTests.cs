@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,7 +25,7 @@ namespace NuGet.Core.FuncTest
                     timeout: TimeSpan.Zero));
             Assert.Equal("downloadName", exception.ParamName);
         }
-        
+
         [Fact]
         public void DownloadTimeoutStream_RejectsNullStream()
         {
@@ -38,19 +38,19 @@ namespace NuGet.Core.FuncTest
 
             Assert.Equal("networkStream", exception.ParamName);
         }
-        
+
         [Fact]
         public async Task DownloadTimeoutStream_SuccessAsync()
         {
             await VerifySuccessfulReadAsync(ReadStreamAsync);
         }
-        
+
         [Fact]
         public async Task DownloadTimeoutStream_TimeoutAsync()
         {
             await VerifyTimeoutOnReadAsync(ReadStreamAsync);
         }
-        
+
         [Fact]
         public async Task DownloadTimeoutStream_FailureAsync()
         {
@@ -64,31 +64,31 @@ namespace NuGet.Core.FuncTest
             // Arrange
             var memoryStream = GetStream("foobar");
             var timeoutStream = new DownloadTimeoutStream("download", memoryStream, TimeSpan.FromSeconds(1));
-            
+
             // Act & Assert
             await Assert.ThrowsAsync<NotSupportedException>(() =>
                 ReadStreamApm(timeoutStream));
         }
 #endif
-        
+
         [Fact]
         public async Task DownloadTimeoutStream_SuccessSync()
         {
             await VerifySuccessfulReadAsync(stream => Task.FromResult(ReadStream(stream)));
         }
-        
+
         [Fact]
         public async Task DownloadTimeoutStream_TimeoutSync()
         {
             await VerifyTimeoutOnReadAsync(stream => Task.FromResult(ReadStream(stream)));
         }
-        
+
         [Fact]
         public async Task DownloadTimeoutStream_FailureSync()
         {
             await VerifyFailureOnReadAsync(stream => Task.FromResult(ReadStream(stream)));
         }
-        
+
         public async Task VerifyFailureOnReadAsync(Func<Stream, Task<string>> readAsync)
         {
             // Arrange
@@ -96,44 +96,50 @@ namespace NuGet.Core.FuncTest
             var memoryStream = GetStream("foobar");
             var slowStream = new SlowStream(memoryStream)
             {
-                OnRead = (buffer, offset, count) => { throw expected; } 
+                OnRead = (buffer, offset, count) => { throw expected; }
             };
             var timeoutStream = new DownloadTimeoutStream(
                 "download",
                 slowStream,
                 TimeSpan.FromSeconds(10));
-            
+
             // Act & Assert
             var actual = await Assert.ThrowsAsync<IOException>(() =>
                 readAsync(timeoutStream));
             Assert.Same(expected, actual);
         }
-        
+
         public async Task VerifyTimeoutOnReadAsync(Func<Stream, Task<string>> readAsync)
         {
             // Arrange
             var expectedDownload = "download";
-            var expectedMilliseconds = 25;
+            var timeout = TimeSpan.FromMilliseconds(25);
             var memoryStream = GetStream("foobar");
-            var slowStream = new SlowStream(memoryStream)
+
+            using (var cancellationTokenSource = new CancellationTokenSource())
             {
-                DelayPerByte = TimeSpan.FromMilliseconds(expectedMilliseconds * 2)
-            };
-            var timeoutStream = new DownloadTimeoutStream(
-                expectedDownload,
-                slowStream,
-                TimeSpan.FromMilliseconds(expectedMilliseconds));
-            
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<IOException>(() =>
-                readAsync(timeoutStream));
-            Assert.Equal(
-                $"The download of '{expectedDownload}' timed out because " +
-                $"no data was received for {expectedMilliseconds}ms.",
-                exception.Message);
-            Assert.IsType<TimeoutException>(exception.InnerException);
+                var slowStream = new SlowStream(memoryStream, cancellationTokenSource.Token)
+                {
+                    DelayPerByte = TimeSpan.FromSeconds(10)
+                };
+                var timeoutStream = new DownloadTimeoutStream(
+                    expectedDownload,
+                    slowStream,
+                    timeout);
+
+                // Act & Assert
+                var exception = await Assert.ThrowsAsync<IOException>(() =>
+                    readAsync(timeoutStream));
+                Assert.Equal(
+                    $"The download of '{expectedDownload}' timed out because " +
+                    $"no data was received for {timeout.TotalMilliseconds}ms.",
+                    exception.Message);
+                Assert.IsType<TimeoutException>(exception.InnerException);
+
+                cancellationTokenSource.Cancel();
+            }
         }
-        
+
         private async Task VerifySuccessfulReadAsync(Func<Stream, Task<string>> readAsync)
         {
             // Arrange
@@ -143,19 +149,19 @@ namespace NuGet.Core.FuncTest
                 "download",
                 memoryStream,
                 TimeSpan.FromMilliseconds(100));
-            
+
             // Act
             var actual = await readAsync(timeoutStream);
-            
+
             // Assert
             Assert.Equal(expected, actual);
         }
-        
+
         private MemoryStream GetStream(string content)
         {
             return new MemoryStream(Encoding.ASCII.GetBytes(content));
         }
-        
+
         private string ReadStream(Stream stream)
         {
             var destination = new MemoryStream();
@@ -181,7 +187,7 @@ namespace NuGet.Core.FuncTest
                 Console.WriteLine(read);
                 destination.Write(buffer, 0, read);
             }
-            
+
             return Encoding.ASCII.GetString(destination.ToArray());
         }
 #endif

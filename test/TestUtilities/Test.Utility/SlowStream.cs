@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Test.Utility
@@ -10,14 +11,21 @@ namespace Test.Utility
     public class SlowStream : Stream
     {
         private readonly Stream _innerStream;
+        private readonly CancellationToken _cancellationToken;
 
         public SlowStream(Stream innerStream)
+            : this(innerStream, CancellationToken.None)
+        {
+        }
+
+        public SlowStream(Stream innerStream, CancellationToken cancellationToken)
         {
             _innerStream = innerStream;
+            _cancellationToken = cancellationToken;
         }
 
         public TimeSpan DelayPerByte { get; set; }
-        public Action<byte[], int, int> OnRead { get; set;}
+        public Action<byte[], int, int> OnRead { get; set; }
 
         public override void Flush()
         {
@@ -37,7 +45,15 @@ namespace Test.Utility
         {
             OnRead?.Invoke(buffer, offset, count);
             var read = _innerStream.Read(buffer, offset, count);
-            Task.Delay(new TimeSpan(DelayPerByte.Ticks * read)).Wait();
+
+            try
+            {
+                Task.Delay(new TimeSpan(DelayPerByte.Ticks * read)).Wait(_cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
             return read;
         }
 
