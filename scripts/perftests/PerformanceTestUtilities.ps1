@@ -231,12 +231,19 @@ Function RunPerformanceTestsOnGitRepository(
     [string] $repoUrl,
     [string] $commitHash,
     [string] $resultsFilePath,
+    [string] $testRootFolderPath,
     [string] $logsFolderPath,
     [int] $iterationCount)
 {
     $solutionFilePath = SetupGitRepository -repository $repoUrl -commitHash $commitHash -sourceFolderPath $([System.IO.Path]::Combine($sourceRootFolderPath, $testCaseName))
     SetupNuGetFolders $nugetClientFilePath
-    . "$PSScriptRoot\RunPerformanceTests.ps1" $nugetClientFilePath $solutionFilePath $resultsFilePath $logsFolderPath -iterationCount $iterationCount
+    . "$PSScriptRoot\RunPerformanceTests.ps1" `
+        -nugetClientFilePath $nugetClientFilePath `
+        -solutionFilePath $solutionFilePath `
+        -resultsFilePath $resultsFilePath `
+        -logsFolderPath $logsFolderPath `
+        -testRootFolderPath $testRootFolderPath `
+        -iterationCount $iterationCount
 }
 
 Function GetProcessorInfo()

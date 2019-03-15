@@ -7,6 +7,7 @@ Param(
     [string] $resultsFolderPath,
     [Parameter(Mandatory = $True)]
     [string] $logsFolderPath,
+    [string] $testRootFolderPath,
     [int] $iterationCount
 )
 
@@ -16,4 +17,13 @@ $repoUrl = "https://github.com/OrchardCMS/OrchardCore.git"
 $testCaseName = GenerateNameFromGitUrl $repoUrl
 $resultsFilePath = [System.IO.Path]::Combine($resultsFolderPath, "$testCaseName.csv")
 
-RunPerformanceTestsOnGitRepository -nugetClientFilePath $nugetClientFilePath -sourceRootFolderPath $sourceRootFolderPath -testCaseName $testCaseName -repoUrl $repoUrl -commitHash "991ff7b536811c8ff2c603e30d754b858d009fa2" -resultsFilePath $resultsFilePath -logsFolderPath $logsFolderPath -iterationCount $iterationCount
+RunPerformanceTestsOnGitRepository `
+    -nugetClientFilePath $nugetClientFilePath `
+    -sourceRootFolderPath $sourceRootFolderPath `
+    -testCaseName $testCaseName `
+    -repoUrl $repoUrl `
+    -commitHash "991ff7b536811c8ff2c603e30d754b858d009fa2" `
+    -resultsFilePath $resultsFilePath `
+    -logsFolderPath $logsFolderPath `
+    -testRootFolderPath $testRootFolderPath `
+    -iterationCount $iterationCount

@@ -7,6 +7,7 @@ Param(
     [string] $resultsFolderPath,
     [Parameter(Mandatory = $True)]
     [string] $logsFolderPath,
+    [string] $testRootFolderPath,
     [int] $iterationCount
 )
 
@@ -33,4 +34,10 @@ Finally
     Set-Location $currentWorkingDirectory
 }
 
-. "$PSScriptRoot\..\RunPerformanceTests.ps1" $nugetClientFilePath $solutionFilePath $resultsFilePath $logsFolderPath -iterationCount $iterationCount
+. "$PSScriptRoot\..\RunPerformanceTests.ps1" `
+    -nugetClientFilePath $nugetClientFilePath `
+    -solutionFilePath $solutionFilePath `
+    -resultsFilePath $resultsFilePath `
+    -logsFolderPath $logsFolderPath `
+    -testRootFolderPath $testRootFolderPath `
+    -iterationCount $iterationCount

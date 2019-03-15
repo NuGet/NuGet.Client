@@ -2,24 +2,21 @@ Param(
     [Parameter(Mandatory = $true)]
     [string] $resultsFolderPath,
     [string[]] $nugetClientFilePaths,
-    [string] $testFolderPath,
+    [string] $testRootFolderPath,
+    [string] $logsFolderPath,
     [int] $iterationCount = 3,
-    [switch] $SkipCleanup
+    [switch] $skipCleanup
 )
 
 . "$PSScriptRoot\PerformanceTestUtilities.ps1"
 
-If ([string]::IsNullOrEmpty($testFolderPath))
-{
-    $testFolderPath = [System.IO.Path]::Combine($env:TEMP, "np")
-}
-
 $resultsFolderPath = GetAbsolutePath $resultsFolderPath
-$testFolderPath = GetAbsolutePath $testFolderPath
+$testRootFolderPath = GetNuGetFoldersPath $testRootFolderPath
+$testRootFolderPath = GetAbsolutePath $testRootFolderPath
 
-If (![string]::IsNullOrEmpty($testFolderPath) -And [System.IO.Path]::GetDirectoryName($resultsFolderPath).StartsWith($testFolderPath))
+If ([System.IO.Path]::GetDirectoryName($resultsFolderPath).StartsWith($testRootFolderPath))
 {
-    Log "$resultsFolderPath cannot be a subdirectory of $testFolderPath" "red"
+    Log "$resultsFolderPath cannot be a subdirectory of $testRootFolderPath" "red"
 
     Exit 1
 }
@@ -49,7 +46,9 @@ Try
                 $testCase = $_
                 Try
                 {
-                    . $_ -nugetClientFilePath $nugetClientFilePath -sourceRootFolderPath $([System.IO.Path]::Combine($testFolderPath, "source")) -resultsFolderPath $resultsFolderPath -logsFolderPath $([System.IO.Path]::Combine($testFolderPath, "logs")) -iterationCount $iterationCount
+                    $sourceRootFolderPath = [System.IO.Path]::Combine($testRootFolderPath, "source")
+
+                    . $_ -nugetClientFilePath $nugetClientFilePath $sourceRootFolderPath $resultsFolderPath $logsFolderPath $testFolderPath $iterationCount
                 }
                 Catch
                 {
