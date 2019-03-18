@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -110,7 +111,8 @@ namespace NuGet.Credentials
                 };
                 PluginCredentialResponse response;
 
-                // TODO: Extend the plug protocol to pass in the credential request type.
+                _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Resources.PluginWarning_PluginIsBeingDeprecated, Path));
+
                 try
                 {
                     response = GetPluginResponse(request, cancellationToken);

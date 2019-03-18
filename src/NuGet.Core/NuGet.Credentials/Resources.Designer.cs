@@ -10,7 +10,6 @@
 
 namespace NuGet.Credentials {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -20,7 +19,7 @@ namespace NuGet.Credentials {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -40,7 +39,7 @@ namespace NuGet.Credentials {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Credentials.Resources", typeof(Resources).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Credentials.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -139,6 +138,15 @@ namespace NuGet.Credentials {
         internal static string PluginException_UnreadableResponse_Format {
             get {
                 return ResourceManager.GetString("PluginException_UnreadableResponse_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The credential plugin model used by &apos;{0}&apos; is getting deprecated. Please contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at https://docs.microsoft.com/en-us/nuget/reference/extensibility/nuget-cross-platform-authentication-plugin..
+        /// </summary>
+        internal static string PluginWarning_PluginIsBeingDeprecated {
+            get {
+                return ResourceManager.GetString("PluginWarning_PluginIsBeingDeprecated", resourceCulture);
             }
         }
         
