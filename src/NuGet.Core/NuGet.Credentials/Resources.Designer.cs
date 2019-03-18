@@ -142,7 +142,7 @@ namespace NuGet.Credentials {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The credential plugin model used by &apos;{0}&apos; is getting deprecated. Please contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at &apos;{1}&apos;..
+        ///   Looks up a localized string similar to The credential plugin model used by &apos;{0}&apos; is deprecated. Please contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at &apos;{1}&apos;..
         /// </summary>
         internal static string PluginWarning_PluginIsBeingDeprecated {
             get {
