@@ -7,7 +7,7 @@ Param(
     [string] $resultsFolderPath,
     [Parameter(Mandatory = $True)]
     [string] $logsFolderPath,
-    [string] $testRootFolderPath,
+    [string] $nugetFoldersPath,
     [int] $iterationCount
 )
 
@@ -25,5 +25,5 @@ RunPerformanceTestsOnGitRepository `
     -commitHash "991ff7b536811c8ff2c603e30d754b858d009fa2" `
     -resultsFilePath $resultsFilePath `
     -logsFolderPath $logsFolderPath `
-    -testRootFolderPath $testRootFolderPath `
+    -nugetFoldersPath $nugetFoldersPath `
     -iterationCount $iterationCount

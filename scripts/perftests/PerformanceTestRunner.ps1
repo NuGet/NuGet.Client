@@ -5,18 +5,20 @@ Param(
     [string] $testRootFolderPath,
     [string] $logsFolderPath,
     [int] $iterationCount = 3,
-    [switch] $skipCleanup
+    [bool] $skipRepoCleanup
 )
 
 . "$PSScriptRoot\PerformanceTestUtilities.ps1"
 
 $resultsFolderPath = GetAbsolutePath $resultsFolderPath
-$testRootFolderPath = GetNuGetFoldersPath $testRootFolderPath
 $testRootFolderPath = GetAbsolutePath $testRootFolderPath
+$nugetFoldersPath = GetNuGetFoldersPath $testRootFolderPath
+$nugetFoldersPath = GetAbsolutePath $nugetFoldersPath
+$sourceRootFolderPath = [System.IO.Path]::Combine($testRootFolderPath, "source")
 
-If ([System.IO.Path]::GetDirectoryName($resultsFolderPath).StartsWith($testRootFolderPath))
+If ([System.IO.Path]::GetDirectoryName($resultsFolderPath).StartsWith($nugetFoldersPath))
 {
-    Log "$resultsFolderPath cannot be a subdirectory of $testRootFolderPath" "red"
+    Log "$resultsFolderPath cannot be a subdirectory of $nugetFoldersPath" "red"
 
     Exit 1
 }
@@ -46,9 +48,13 @@ Try
                 $testCase = $_
                 Try
                 {
-                    $sourceRootFolderPath = [System.IO.Path]::Combine($testRootFolderPath, "source")
-
-                    . $_ -nugetClientFilePath $nugetClientFilePath $sourceRootFolderPath $resultsFolderPath $logsFolderPath $testFolderPath $iterationCount
+                    . $_ `
+                        -nugetClientFilePath $nugetClientFilePath `
+                        -sourceRootFolderPath $sourceRootFolderPath `
+                        -resultsFolderPath $resultsFolderPath `
+                        -logsFolderPath $logsFolderPath `
+                        -nugetFoldersPath $nugetFoldersPath `
+                        -iterationCount $iterationCount
                 }
                 Catch
                 {
@@ -64,8 +70,10 @@ Try
 }
 Finally
 {
-    If (!$SkipCleanup)
+    Remove-Item -Recurse -Force $nugetFoldersPath -ErrorAction Ignore > $Null
+
+    If (!$skipRepoCleanup)
     {
-        Remove-Item -r -force $testFolderPath -ErrorAction Ignore > $null
+        Remove-Item -Recurse -Force $sourceRootFolderPath -ErrorAction Ignore > $Null
     }
 }

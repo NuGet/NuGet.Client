@@ -7,7 +7,7 @@ Param(
     [string] $resultsFolderPath,
     [Parameter(Mandatory = $True)]
     [string] $logsFolderPath,
-    [string] $testRootFolderPath,
+    [string] $nugetFoldersPath,
     [int] $iterationCount
 )
 
@@ -21,7 +21,7 @@ $sourcePath = $([System.IO.Path]::Combine($sourceRootFolderPath, $repoName))
 $solutionFilePath = SetupGitRepository $repoUrl $commitHash $sourcePath
 # It's fine if this is run from here. It is run again the performance test script, but it'll set it to the same values.
 # Additionally, this will cleanup the extras from the bootstrapping which are already in the local folder, allowing us to get more accurate measurements
-SetupNuGetFolders $nugetClientFilePath
+SetupNuGetFolders $nugetClientFilePath $nugetFoldersPath
 $currentWorkingDirectory = $pwd
 
 Try
@@ -39,5 +39,5 @@ Finally
     -solutionFilePath $solutionFilePath `
     -resultsFilePath $resultsFilePath `
     -logsFolderPath $logsFolderPath `
-    -testRootFolderPath $testRootFolderPath `
+    -nugetFoldersPath $nugetFoldersPath `
     -iterationCount $iterationCount
