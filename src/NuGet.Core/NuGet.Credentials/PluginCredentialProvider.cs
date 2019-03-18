@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -22,6 +23,8 @@ namespace NuGet.Credentials
         private readonly Common.ILogger _logger;
         private readonly string _verbosity;
         private const string NormalVerbosity = "normal";
+        private const string CrossPlatformPluginLink = "https://aka.ms/nuget-cross-platform-authentication-plugin";
+        private int _deprecationMessageWarningLogged; 
 
         /// <summary>
         /// Constructor
@@ -109,8 +112,11 @@ namespace NuGet.Credentials
                     Verbosity = _verbosity
                 };
                 PluginCredentialResponse response;
+                if (Interlocked.CompareExchange(ref _deprecationMessageWarningLogged, 1, 0) == 0)
+                {
+                    _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Resources.PluginWarning_PluginIsBeingDeprecated, Path, CrossPlatformPluginLink));
+                }
 
-                // TODO: Extend the plug protocol to pass in the credential request type.
                 try
                 {
                     response = GetPluginResponse(request, cancellationToken);
