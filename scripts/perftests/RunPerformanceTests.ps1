@@ -6,7 +6,7 @@ Param(
     [Parameter(Mandatory = $True)]
     [string] $resultsFilePath,
     [string] $logsFolderPath,
-    [string] $testRootFolderPath,
+    [string] $nugetFoldersPath,
     [int] $iterationCount = 3,
     [switch] $isPackagesConfig,
     [switch] $skipWarmup,
@@ -107,7 +107,7 @@ Try
     }
 
     # Setup the NuGet folders - This includes global packages folder/http/plugin caches
-    SetupNuGetFolders $nugetClientFilePath $testRootFolderPath
+    SetupNuGetFolders $nugetClientFilePath $nugetFoldersPath
 
     $processorInfo = GetProcessorInfo
 
@@ -182,5 +182,5 @@ Try
 }
 Finally
 {
-    CleanNuGetFolders $nugetClientFilePath $testRootFolderPath
+    CleanNuGetFolders $nugetClientFilePath $nugetFoldersPath
 }

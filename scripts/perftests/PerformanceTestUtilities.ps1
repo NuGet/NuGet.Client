@@ -179,22 +179,22 @@ Function GetClientVersion([string] $nugetClientFilePath)
 # Gets the NuGet folders path where all of the discardable data from the tests will be put.
 Function GetNuGetFoldersPath([string] $testRootFolderPath)
 {
-    If ([string]::IsNullOrEmpty($testRootFolderPath))
+    $nugetFoldersPath = $testRootFolderPath
+
+    If ([string]::IsNullOrEmpty($nugetFoldersPath))
     {
-        $testRootFolderPath = $Env:UserProfile
+        $nugetFoldersPath = $Env:UserProfile
     }
 
-    $nugetFoldersPath = [System.IO.Path]::Combine($testRootFolderPath, "np")
+    $nugetFoldersPath = [System.IO.Path]::Combine($nugetFoldersPath, "np")
 
     Return $nugetFoldersPath
 }
 
 # Sets up the global packages folder, http cache and plugin caches and cleans them before starting.
 # TODO NK - How about temp?
-Function SetupNuGetFolders([string] $nugetClientFilePath, [string] $testRootFolderPath)
+Function SetupNuGetFolders([string] $nugetClientFilePath, [string] $nugetFoldersPath)
 {
-    $nugetFoldersPath = GetNuGetFoldersPath $testRootFolderPath
-
     $Env:NUGET_PACKAGES = [System.IO.Path]::Combine($nugetFoldersPath, "gpf")
     $Env:NUGET_HTTP_CACHE_PATH = [System.IO.Path]::Combine($nugetFoldersPath, "hcp")
     $Env:NUGET_PLUGINS_CACHE_PATH = [System.IO.Path]::Combine($nugetFoldersPath, "pcp")
@@ -207,13 +207,11 @@ Function SetupNuGetFolders([string] $nugetClientFilePath, [string] $testRootFold
 
 # Cleanup the nuget folders and delete the nuget folders path.
 # This should only be invoked by the the performance tests
-Function CleanNuGetFolders([string] $nugetClientFilePath, [string] $testRootFolderPath)
+Function CleanNuGetFolders([string] $nugetClientFilePath, [string] $nugetFoldersPath)
 {
     Log "Cleanup up the NuGet folders - global packages folder, http/plugins caches"
 
     LocalsClearAll $nugetClientFilePath
-
-    $nugetFoldersPath = GetNuGetFoldersPath $testRootFolderPath
 
     Remove-Item $nugetFoldersPath -Recurse -Force -ErrorAction Ignore
 
@@ -221,6 +219,7 @@ Function CleanNuGetFolders([string] $nugetClientFilePath, [string] $testRootFold
     [Environment]::SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", $Null)
     [Environment]::SetEnvironmentVariable("NUGET_PLUGINS_CACHE_PATH", $Null)
     [Environment]::SetEnvironmentVariable("NUGET_SOLUTION_PACKAGES_FOLDER_PATH", $Null)
+    [Environment]::SetEnvironmentVariable("NUGET_FOLDERS_PATH", $Null)
 }
 
 # Given a repository, a client and directories for the results/logs, runs the configured performance tests.
@@ -231,12 +230,19 @@ Function RunPerformanceTestsOnGitRepository(
     [string] $repoUrl,
     [string] $commitHash,
     [string] $resultsFilePath,
+    [string] $nugetFoldersPath,
     [string] $logsFolderPath,
     [int] $iterationCount)
 {
     $solutionFilePath = SetupGitRepository -repository $repoUrl -commitHash $commitHash -sourceFolderPath $([System.IO.Path]::Combine($sourceRootFolderPath, $testCaseName))
-    SetupNuGetFolders $nugetClientFilePath
-    . "$PSScriptRoot\RunPerformanceTests.ps1" $nugetClientFilePath $solutionFilePath $resultsFilePath $logsFolderPath -iterationCount $iterationCount
+    SetupNuGetFolders $nugetClientFilePath $nugetFoldersPath
+    . "$PSScriptRoot\RunPerformanceTests.ps1" `
+        -nugetClientFilePath $nugetClientFilePath `
+        -solutionFilePath $solutionFilePath `
+        -resultsFilePath $resultsFilePath `
+        -logsFolderPath $logsFolderPath `
+        -nugetFoldersPath $nugetFoldersPath `
+        -iterationCount $iterationCount
 }
 
 Function GetProcessorInfo()
