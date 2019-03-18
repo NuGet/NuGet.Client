@@ -23,6 +23,7 @@ namespace NuGet.Credentials
         private readonly Common.ILogger _logger;
         private readonly string _verbosity;
         private const string NormalVerbosity = "normal";
+        private const string CrossPlatformPluginLink = "https://aka.ms/nuget-cross-platform-authentication-plugin";
 
         /// <summary>
         /// Constructor
@@ -111,7 +112,7 @@ namespace NuGet.Credentials
                 };
                 PluginCredentialResponse response;
 
-                _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Resources.PluginWarning_PluginIsBeingDeprecated, Path));
+                _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Resources.PluginWarning_PluginIsBeingDeprecated, Path, CrossPlatformPluginLink));
 
                 try
                 {
