@@ -13561,7 +13561,7 @@ namespace NuGet.CommandLine {
         ///
         ///nuget trusted-signers Add -Repository .\..\MyRepositorySignedPackage.nupkg -Name TrustedRepo
         ///
-        ///nuget-trusted-signers Remove -Name TrustedRepo.
+        ///nuget trusted-signers Remove -Name TrustedRepo.
         /// </summary>
         internal static string TrustedSignersCommandUsageExamples {
             get {

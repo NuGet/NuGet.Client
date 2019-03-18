@@ -5497,7 +5497,7 @@ nuget trusted-signers Add -Name author1 -CertificateFingerprint CE40881FF5F0AD3E
 
 nuget trusted-signers Add -Repository .\..\MyRepositorySignedPackage.nupkg -Name TrustedRepo
 
-nuget-trusted-signers Remove -Name TrustedRepo</value>
+nuget trusted-signers Remove -Name TrustedRepo</value>
   </data>
   <data name="TrustedSignersCommandUsageSummary" xml:space="preserve">
     <value>&lt;List|Add|Remove|Sync&gt; [options]</value>
