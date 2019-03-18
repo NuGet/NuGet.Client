@@ -86,13 +86,13 @@ try {
         exit 1
     }
 
-    $TestExtension = Join-Path $NuGetRoot "artifacts\API.Test\${ToolsetVersion}.0\bin\${Configuration}\net472\API.Test.dll" -Resolve
-    Write-Verbose "Copying test extension from '$TestExtension' to '$WorkingDirectory'"
-    Copy-Item $TestExtension $WorkingDirectory
+    $TestExtensionDirectoryPath = Join-Path $NuGetRoot "artifacts\API.Test\${ToolsetVersion}.0\bin\${Configuration}\net472"
+    Write-Verbose "Copying test extension from '$TestExtensionDirectoryPath' to '$WorkingDirectory'"
+    & robocopy $TestExtensionDirectoryPath $WorkingDirectory API.Test.* $opts
 
     $GeneratePackagesUtil = Join-Path $NuGetRoot "artifacts\GenerateTestPackages\${ToolsetVersion}.0\bin\${Configuration}\net472"
     Write-Verbose "Copying utility binaries from `"$GeneratePackagesUtil`" to `"$WorkingDirectory`""
-    & robocopy $GeneratePackagesUtil $WorkingDirectory *.exe *.dll $opts
+    & robocopy $GeneratePackagesUtil $WorkingDirectory *.exe *.dll *.pdb $opts
 
     $ScriptsDirectory = Join-Path $WorkingDirectory scripts
     New-Item -ItemType Directory -Force -Path $ScriptsDirectory | Out-Null
