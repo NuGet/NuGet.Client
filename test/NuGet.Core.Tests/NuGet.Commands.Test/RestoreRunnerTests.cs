@@ -1640,7 +1640,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreRunner_FrameworkReferenceIsProjectToPackageTransitive() // TODO NK - Test the reading from the project file.
+        public async Task RestoreRunner_FrameworkReferenceIsProjectToPackageTransitive()
         {
             // Arrange
             var project1 = "project1";
@@ -1691,7 +1691,7 @@ namespace NuGet.Commands.Test
                 packageY.Files.Clear();
                 packageY.UseDefaultRuntimeAssemblies = false;
                 packageY.AddFile("lib/netcoreapp3.0/packageY.dll");
-                packageY.FrameworkReferences.Add(NuGetFramework.Parse("netcoreapp3.0"), new string[] { "Microsoft.WindowsDesktop.App|WPF" }); // TODO NK - Check the sorting in the lock file target library.
+                packageY.FrameworkReferences.Add(NuGetFramework.Parse("netcoreapp3.0"), new string[] { "Microsoft.WindowsDesktop.App|WPF" });
 
                 packageX.Dependencies.Add(packageY);
 
