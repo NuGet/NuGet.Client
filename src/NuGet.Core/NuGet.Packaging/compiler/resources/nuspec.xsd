@@ -130,7 +130,7 @@
                           <xs:element name="frameworkReferences" maxOccurs="1" minOccurs="0">
                             <xs:complexType>
                               <xs:sequence>
-                                  <xs:element name="group" type="frameworkReferenceGroup" />
+                                  <xs:element name="group" minOccurs="0" maxOccurs="unbounded" type="frameworkReferenceGroup" />
                               </xs:sequence>
                             </xs:complexType>
                           </xs:element>

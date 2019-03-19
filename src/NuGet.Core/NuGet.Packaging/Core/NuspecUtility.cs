@@ -146,17 +146,18 @@ namespace NuGet.Packaging.Core
             }
             else
             {
-                frameworkReferenceGroups = metadataNode.Elements(XName.Get(Group));
+                frameworkReferenceGroups = metadataNode
+                    .Elements()
+                    .Where(x => x.Name.LocalName == Group);
             }
 
             foreach (var frameworkRefGroup in frameworkReferenceGroups)
             {
                 var groupFramework = GetAttributeValue(frameworkRefGroup, TargetFramework);
 
-                var frameworkReferences = frameworkRefGroup
-                    .Elements(useMetadataNamespace ?
-                        XName.Get(FrameworkReference, ns) :
-                        XName.Get(FrameworkReference));
+                var frameworkReferences = useMetadataNamespace ?
+                    frameworkRefGroup.Elements(XName.Get(FrameworkReference, ns)) :
+                    frameworkRefGroup.Elements().Where(x => x.Name.LocalName == FrameworkReference);
 
                 var framework = NuGetFramework.Parse(groupFramework, frameworkProvider);
                 var frameworkRefs = GetFrameworkReferences(frameworkReferences);
@@ -167,7 +168,7 @@ namespace NuGet.Packaging.Core
 
         private static IEnumerable<string> GetFrameworkReferences(IEnumerable<XElement> nodes)
         {
-            return nodes.Select(e => GetAttributeValue(e, Name));
+            return new HashSet<string>(nodes.Select(e => GetAttributeValue(e, Name)), StringComparer.OrdinalIgnoreCase);
         }
 
         private static string GetAttributeValue(XElement element, string attributeName)
