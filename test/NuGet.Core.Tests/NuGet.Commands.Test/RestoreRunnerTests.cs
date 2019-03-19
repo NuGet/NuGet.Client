@@ -1560,7 +1560,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreRunner_FrameworkReferenceIsWrittenToAssetsFile() // TODO NK - Test the reading from the project file.
+        public async Task RestoreRunner_FrameworkReferenceIsWrittenToAssetsFile()
         {
             // Arrange
             var project1 = "project1";
