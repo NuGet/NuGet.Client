@@ -1558,5 +1558,188 @@ namespace NuGet.Commands.Test
                 }
             }
         }
+
+        [Fact]
+        public async Task RestoreRunner_FrameworkReferenceIsWrittenToAssetsFile() // TODO NK - Test the reading from the project file.
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""net45"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    },
+                    ""frameworkReferences"": [
+                        ""a""
+                    ]
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                // set up project1
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec.RestoreMetadata.Sources = sources;
+                projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec);
+                dgFile.AddRestore(projectSpec.Name);
+                // set up the packages
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageX);
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.True(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(1, lockFile.Libraries.Count); // Only X is written in the libraries section.
+                    Assert.Equal("x", lockFile.Targets.First().Libraries.First().Name);
+                    Assert.Equal(0, lockFile.LogMessages.Count);
+                    Assert.Equal("a", lockFile.PackageSpec.TargetFrameworks.First().FrameworkReferences.Single());
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_FrameworkReferenceIsProjectToPackageTransitive() // TODO NK - Test the reading from the project file.
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""netcoreapp3.0"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                // set up project1
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec.RestoreMetadata.Sources = sources;
+                projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec);
+                dgFile.AddRestore(projectSpec.Name);
+                // set up the packages
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.UseDefaultRuntimeAssemblies = false;
+                packageX.AddFile("lib/netcoreapp3.0/packageX.dll");
+                packageX.FrameworkReferences.Add(NuGetFramework.Parse("netcoreapp3.0"), new string[] { "Microsoft.WindowsDesktop.App|WinForms" });
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY.Files.Clear();
+                packageY.UseDefaultRuntimeAssemblies = false;
+                packageY.AddFile("lib/netcoreapp3.0/packageY.dll");
+                packageY.FrameworkReferences.Add(NuGetFramework.Parse("netcoreapp3.0"), new string[] { "Microsoft.WindowsDesktop.App|WPF" }); // TODO NK - Check the sorting in the lock file target library.
+
+                packageX.Dependencies.Add(packageY);
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageX);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageY);
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.True(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(2, lockFile.Libraries.Count);
+
+                    Assert.Equal(1, lockFile.Targets.Count);
+                    var xTarget = lockFile.Targets.Single().Libraries.First();
+                    var yTarget = lockFile.Targets.Single().Libraries.Last();
+                    Assert.Equal("x", xTarget.Name);
+                    Assert.Equal("y", yTarget.Name);
+                    Assert.Equal("Microsoft.WindowsDesktop.App|WinForms", xTarget.FrameworkReferences.Single());
+                    Assert.Equal("Microsoft.WindowsDesktop.App|WPF", yTarget.FrameworkReferences.Single());
+
+                    Assert.Equal(0, lockFile.LogMessages.Count);
+
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
+                }
+            }
+        }
     }
 }

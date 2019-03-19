@@ -508,7 +508,7 @@ namespace NuGet.ProjectModel
         {
             if (frameworkReferences?.Any() == true)
             {
-                writer.WriteNameArray("frameworkReferences", frameworkReferences);
+                writer.WriteNameArray("frameworkReferences", frameworkReferences.OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
             }
         }
 
