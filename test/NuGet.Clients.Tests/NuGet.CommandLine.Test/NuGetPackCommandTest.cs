@@ -5430,7 +5430,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <frameworkReferences>
         <group targetFramework="".NETCoreApp3.0"">
             <frameworkReference name=""Microsoft.WindowsDesktop.App|WPF""/>
-            <frameworkReference name=""Microsoft.WindowsDesktop.App|WPF""/>
+            <frameworkReference name=""Microsoft.WindowsDesktop.App|wpf""/>
         </group>
     </frameworkReferences>
     <dependencies>

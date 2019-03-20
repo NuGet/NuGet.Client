@@ -349,7 +349,7 @@ namespace NuGet.Build.Tasks.Pack
 
         private void PopulateFrameworkReferences(PackageBuilder builder, IPackTaskRequest<IMSBuildItem> request)
         {
-            var tfmSpecificRefs = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase); // TODO NK: Make sure you test case sensitivity of the Framework References
+            var tfmSpecificRefs = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var tfmRef in request.FrameworkReferences)
             {
