@@ -6795,5 +6795,120 @@ namespace NuGet.CommandLine.Test
                 Assert.False(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_PackageDownload_NoOpAccountsForMissingPackages()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projectFrameworks = "net46";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                            projectName: "a",
+                            solutionRoot: pathContext.SolutionRoot,
+                            frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net45/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                projectA.AddPackageDownloadToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var r = Util.RestoreSolution(pathContext);
+
+                // Preconditions
+                Assert.True(r.Success, r.AllOutput);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
+                var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
+                Assert.Equal(0, lockFile.Libraries.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
+                var packagePath = Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id, packageX.Version);
+                Assert.True(Directory.Exists(packagePath), $"{packageX.ToString()} is not installed");
+
+                Directory.Delete(packagePath, true);
+
+                Assert.False(Directory.Exists(packagePath), $"{packageX.ToString()} should not be installed anymore.");
+
+                // Act
+                r = Util.RestoreSolution(pathContext);
+                Assert.True(r.Success, r.AllOutput);
+
+                Assert.True(Directory.Exists(packagePath), $"{packageX.ToString()} is not installed");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_PackageDownload_DoesNotAFfectNoOp()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projectFrameworks = "net46";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                            projectName: "a",
+                            solutionRoot: pathContext.SolutionRoot,
+                            frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net45/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                projectA.AddPackageDownloadToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var r = Util.RestoreSolution(pathContext);
+
+                // Preconditions
+                Assert.True(r.Success, r.AllOutput);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
+                var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
+                Assert.Equal(0, lockFile.Libraries.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
+                var packagePath = Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id, packageX.Version);
+                Assert.True(Directory.Exists(packagePath), $"{packageX.ToString()} is not installed");
+                Assert.Contains("Writing cache file", r.Item2);
+
+                // Act
+                r = Util.RestoreSolution(pathContext);
+                Assert.True(r.Success, r.AllOutput);
+
+                Assert.True(Directory.Exists(packagePath), $"{packageX.ToString()} is not installed");
+
+                Assert.Equal(0, r.Item1);
+                Assert.DoesNotContain("Writing cache file", r.Item2);
+                Assert.Contains("No further actions are required to complete", r.Item2);
+            }
+        }
     }
 }
