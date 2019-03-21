@@ -262,7 +262,7 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
                 var settings = Settings.LoadDefaultSettings(
-                    root:  Path.Combine(mockBaseDirectory, @"dir1\dir2"),
+                    root: Path.Combine(mockBaseDirectory, @"dir1\dir2"),
                     configFileName: null,
                     machineWideSettings: null);
 
@@ -1065,7 +1065,7 @@ namespace NuGet.Configuration.Test
                 item.Value.Should().Be("value");
             }
         }
-       
+
         [Fact]
         public void AddOrUpdate_WithSpecificConfig_WithEmptySectionName_Throws()
         {
@@ -1364,7 +1364,7 @@ namespace NuGet.Configuration.Test
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config"), config1);
-               
+
                 var m = new Mock<IMachineWideSettings>();
                 m.SetupGet(obj => obj.Settings).Returns(
                     Settings.LoadMachineWideSettings(Path.Combine(mockBaseDirectory, "nuget", "Config")));
@@ -2321,6 +2321,60 @@ namespace NuGet.Configuration.Test
 
             configRoots.Should().NotBeNull();
             configRoots.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(null, null, null)]
+        [InlineData("", "", null)]
+        [InlineData("a", "b", null)]
+        [InlineData(null, null, "")]
+        [InlineData("", "", "")]
+        [InlineData("a", "b", "")]
+        public void ResolvePathFromOrigin_WhenPathIsNullOrEmpty_ReturnsPath(string originDirectoryPath, string originFilePath, string path)
+        {
+            var resolvedPath = Settings.ResolvePathFromOrigin(originDirectoryPath, originFilePath, path);
+
+            Assert.Equal(path, resolvedPath);
+        }
+
+#if IS_DESKTOP
+        // The .NET Core implementation of System.IO.Path.GetPathRoot(...) never throws.
+        [Fact]
+        public void ResolvePathFromOrigin_WhenPathIsInvalidRelativeFileSystemPath_Throws()
+        {
+            string originDirectoryPath = GetOriginDirectoryPath();
+            string originFilePath = Path.Combine(originDirectoryPath, "b.c");
+
+            const string path = "|";
+
+            var exception = Assert.Throws<NuGetConfigurationException>(
+                () => Settings.ResolvePathFromOrigin(originDirectoryPath, originFilePath, path));
+
+            Assert.Equal($"{NuGetLogCode.NU1006}: NuGet.Config has an invalid package source value '{path}'. Reason: Illegal characters in path.", exception.Message);
+        }
+#endif
+
+        [Fact]
+        public void ResolvePathFromOrigin_WhenPathIsValidRelativeFileSystemPath_ReturnsResolvedPath()
+        {
+            string originDirectoryPath = GetOriginDirectoryPath();
+            string originFilePath = Path.Combine(originDirectoryPath, "b.c");
+
+            const string path = "d";
+
+            string resolvedPath = Settings.ResolvePathFromOrigin(originDirectoryPath, originFilePath, path);
+
+            Assert.Equal(Path.Combine(originDirectoryPath, path), resolvedPath);
+        }
+
+        private static string GetOriginDirectoryPath()
+        {
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                return @"C:\a";
+            }
+
+            return "/a";
         }
     }
 }
