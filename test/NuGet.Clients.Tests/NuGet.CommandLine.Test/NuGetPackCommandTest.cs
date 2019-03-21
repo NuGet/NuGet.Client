@@ -4563,7 +4563,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
-                var nuspecPath = Path.Combine(workingDirectory, $"generatedNuspec.nuspec");
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
