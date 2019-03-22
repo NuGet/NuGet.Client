@@ -5373,7 +5373,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             using (var nuspecStream = nupkgReader.GetStream(nuspecName))
             {
                 Assert.NotNull(Packaging.Manifest.ReadFrom(nuspecStream, validateSchema: true));
-
             }
         }
     }
