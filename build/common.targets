@@ -38,7 +38,7 @@
   </PropertyGroup>
 
   <ImportGroup Condition=" '$(PackProject)' == 'true' ">
-      <Import Condition="Exists('$(NuGetBuildTasksPackTargets)')" Project="$(NuGetBuildTasksPackTargets)" />
+      <Import Project="$(NuGetBuildTasksPackTargets)" />
   </ImportGroup>
 
   <!-- Test Projects -->
