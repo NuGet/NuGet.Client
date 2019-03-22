@@ -17,9 +17,11 @@ namespace NuGet.Protocol.Plugins.Tests
             const MessageType type = MessageType.Request;
             const TaskState state = TaskState.Executing;
 
-            var logMessage = new TaskLogMessage(requestId, method, type, state);
+            var now = DateTimeOffset.UtcNow;
 
-            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, "task");
+            var logMessage = new TaskLogMessage(now, requestId, method, type, state);
+
+            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, now, "task");
 
             Assert.Equal(5, message.Count);
 

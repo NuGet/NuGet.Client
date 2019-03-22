@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 
@@ -12,7 +13,8 @@ namespace NuGet.Protocol.Plugins
         private readonly int? _idleTimeout;
         private readonly int? _requestTimeout;
 
-        internal EnvironmentVariablesLogMessage(IEnvironmentVariableReader environmentVariableReader = null)
+        internal EnvironmentVariablesLogMessage(DateTimeOffset now, IEnvironmentVariableReader environmentVariableReader = null)
+            : base(now)
         {
             var reader = environmentVariableReader ?? new EnvironmentVariableWrapper();
 

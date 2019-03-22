@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 
@@ -13,7 +14,8 @@ namespace NuGet.Protocol.Plugins
         private readonly int _minCompletionPortThreads;
         private readonly int _minWorkerThreads;
 
-        internal ThreadPoolLogMessage()
+        internal ThreadPoolLogMessage(DateTimeOffset now)
+            : base(now)
         {
             ThreadPool.GetMinThreads(out _minWorkerThreads, out _minCompletionPortThreads);
             ThreadPool.GetMaxThreads(out _maxWorkerThreads, out _maxCompletionPortThreads);

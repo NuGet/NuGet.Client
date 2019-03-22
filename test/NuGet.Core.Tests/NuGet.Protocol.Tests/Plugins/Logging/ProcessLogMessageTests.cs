@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 using Xunit;
 
@@ -11,9 +12,11 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void ToString_ReturnsJson()
         {
-            var logMessage = new ProcessLogMessage();
+            var now = DateTimeOffset.UtcNow;
 
-            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, "process");
+            var logMessage = new ProcessLogMessage(now);
+
+            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, now, "process");
 
             Assert.Equal(2, message.Count);
 

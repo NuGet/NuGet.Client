@@ -8,6 +8,7 @@ namespace NuGet.Protocol.Plugins
     internal interface IPluginLogger : IDisposable
     {
         bool IsEnabled { get; }
+        DateTimeOffset Now { get; }
 
         void Write(IPluginLogMessage message);
     }

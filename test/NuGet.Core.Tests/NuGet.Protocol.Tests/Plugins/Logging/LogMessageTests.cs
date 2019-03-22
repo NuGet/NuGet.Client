@@ -16,7 +16,7 @@ namespace NuGet.Protocol.Plugins.Tests
             DateParseHandling = DateParseHandling.None
         };
 
-        internal JObject VerifyOuterMessageAndReturnInnerMessage(IPluginLogMessage logMessage, string expectedType)
+        internal JObject VerifyOuterMessageAndReturnInnerMessage(IPluginLogMessage logMessage, DateTimeOffset expectedNow, string expectedType)
         {
             var json = logMessage.ToString();
 
@@ -24,14 +24,31 @@ namespace NuGet.Protocol.Plugins.Tests
 
             Assert.Equal(3, actualResult.Count);
 
-            var actualNow = actualResult.Value<string>("now");
+            VerifyNow(expectedNow, actualResult);
+            VerifyType(expectedType, actualResult);
 
-            Verify(actualNow);
+            return VerifyAndReturnMessage(actualResult);
+        }
 
-            var actualType = actualResult.Value<string>("type");
+        internal JObject VerifyOuterMessageAndReturnInnerMessage(string json, DateTimeOffset expectedNowStart, DateTimeOffset expectedNowEnd, string expectedType)
+        {
+            var actualResult = JsonConvert.DeserializeObject<JObject>(json, _jsonSettings);
 
-            Assert.Equal(expectedType, actualType);
+            Assert.Equal(3, actualResult.Count);
 
+            VerifyNow(expectedNowStart, expectedNowEnd, actualResult);
+            VerifyType(expectedType, actualResult);
+
+            return VerifyAndReturnMessage(actualResult);
+        }
+
+        private static DateTime ParseDateTime(string value)
+        {
+            return DateTime.Parse(value, provider: null, styles: DateTimeStyles.RoundtripKind);
+        }
+
+        private static JObject VerifyAndReturnMessage(JObject actualResult)
+        {
             var message = actualResult.Value<JObject>("message");
 
             Assert.NotNull(message);
@@ -39,13 +56,29 @@ namespace NuGet.Protocol.Plugins.Tests
             return message;
         }
 
-        private void Verify(string actualNowString)
+        private static void VerifyNow(DateTimeOffset expectedNow, JObject actualResult)
         {
-            var actualNow = DateTime.Parse(actualNowString, provider: null, styles: DateTimeStyles.RoundtripKind);
-            var utcNow = DateTime.UtcNow;
+            var value = actualResult.Value<string>("now");
+            var actualNow = ParseDateTime(value);
 
             Assert.Equal(DateTimeKind.Utc, actualNow.Kind);
-            Assert.InRange(actualNow, utcNow.AddMinutes(-1), utcNow);
+            Assert.Equal(expectedNow.Ticks, actualNow.Ticks);
+        }
+
+        private static void VerifyNow(DateTimeOffset expectedNowStart, DateTimeOffset expectedNowEnd, JObject actualResult)
+        {
+            var value = actualResult.Value<string>("now");
+            var actualNow = ParseDateTime(value);
+
+            Assert.Equal(DateTimeKind.Utc, actualNow.Kind);
+            Assert.InRange(actualNow, expectedNowStart, expectedNowEnd);
+        }
+
+        private static void VerifyType(string expectedType, JObject actualResult)
+        {
+            var actualType = actualResult.Value<string>("type");
+
+            Assert.Equal(expectedType, actualType);
         }
     }
 }

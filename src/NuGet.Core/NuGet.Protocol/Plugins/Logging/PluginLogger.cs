@@ -13,11 +13,15 @@ namespace NuGet.Protocol.Plugins
         private bool _isDisposed;
         private readonly Lazy<StreamWriter> _streamWriter;
         private readonly string _logDirectoryPath;
+        private readonly DateTimeOffset _startTime;
+        private readonly Stopwatch _stopwatch;
         private readonly object _streamWriterLock;
 
         internal static PluginLogger DefaultInstance { get; } = new PluginLogger(new EnvironmentVariableWrapper());
 
         public bool IsEnabled { get; }
+
+        public DateTimeOffset Now => _startTime.AddTicks(_stopwatch.ElapsedTicks);
 
         internal PluginLogger(IEnvironmentVariableReader environmentVariableReader)
         {
@@ -40,7 +44,13 @@ namespace NuGet.Protocol.Plugins
                 }
             }
 
-            _streamWriter = new Lazy<StreamWriter>(CreateStreamWriter);
+            _startTime = DateTimeOffset.UtcNow;
+            _stopwatch = Stopwatch.StartNew();
+
+            // Created outside of the lambda below to capture the current time.
+            var message = new StopwatchLogMessage(Now, Stopwatch.Frequency);
+
+            _streamWriter = new Lazy<StreamWriter>(() => CreateStreamWriter(message));
             _streamWriterLock = new object();
         }
 
@@ -81,7 +91,7 @@ namespace NuGet.Protocol.Plugins
             }
         }
 
-        private StreamWriter CreateStreamWriter()
+        private StreamWriter CreateStreamWriter(IPluginLogMessage message)
         {
             if (IsEnabled)
             {
@@ -103,6 +113,8 @@ namespace NuGet.Protocol.Plugins
                     var streamWriter = new StreamWriter(stream);
 
                     streamWriter.AutoFlush = true;
+
+                    streamWriter.WriteLine(message.ToString());
 
                     return streamWriter;
                 }

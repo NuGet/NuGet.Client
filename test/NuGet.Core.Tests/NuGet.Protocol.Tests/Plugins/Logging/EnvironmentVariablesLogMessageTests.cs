@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Moq;
 using NuGet.Common;
 using Xunit;
@@ -9,6 +10,8 @@ namespace NuGet.Protocol.Plugins.Tests
 {
     public class EnvironmentVariablesLogMessageTests : LogMessageTests
     {
+        private readonly DateTimeOffset _now = DateTimeOffset.UtcNow;
+
         [Fact]
         public void ToString_WhenVariablesHaveIllegalValues_ReturnsJson()
         {
@@ -25,9 +28,9 @@ namespace NuGet.Protocol.Plugins.Tests
             reader.Setup(x => x.GetEnvironmentVariable(It.Is<string>(name => name == EnvironmentVariableConstants.RequestTimeout)))
                 .Returns(expectedRequestTimeoutInSeconds);
 
-            var logMessage = new EnvironmentVariablesLogMessage(reader.Object);
+            var logMessage = new EnvironmentVariablesLogMessage(_now, reader.Object);
 
-            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, "environment variables");
+            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, _now, "environment variables");
 
             Assert.Equal(0, message.Count);
 
@@ -46,9 +49,9 @@ namespace NuGet.Protocol.Plugins.Tests
             reader.Setup(x => x.GetEnvironmentVariable(It.Is<string>(name => name == EnvironmentVariableConstants.RequestTimeout)))
                 .Returns((string)null);
 
-            var logMessage = new EnvironmentVariablesLogMessage(reader.Object);
+            var logMessage = new EnvironmentVariablesLogMessage(_now, reader.Object);
 
-            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, "environment variables");
+            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, _now, "environment variables");
 
             Assert.Equal(0, message.Count);
 
@@ -71,9 +74,9 @@ namespace NuGet.Protocol.Plugins.Tests
             reader.Setup(x => x.GetEnvironmentVariable(It.Is<string>(name => name == EnvironmentVariableConstants.RequestTimeout)))
                 .Returns(expectedRequestTimeoutInSeconds.ToString());
 
-            var logMessage = new EnvironmentVariablesLogMessage(reader.Object);
+            var logMessage = new EnvironmentVariablesLogMessage(_now, reader.Object);
 
-            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, "environment variables");
+            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, _now, "environment variables");
 
             Assert.Equal(3, message.Count);
 

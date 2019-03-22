@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
@@ -14,7 +15,8 @@ namespace NuGet.Protocol.Plugins
         private readonly TaskState _state;
         private readonly MessageType _type;
 
-        internal TaskLogMessage(string requestId, MessageMethod method, MessageType type, TaskState state)
+        internal TaskLogMessage(DateTimeOffset now, string requestId, MessageMethod method, MessageType type, TaskState state)
+            : base(now)
         {
             _requestId = requestId;
             _method = method;

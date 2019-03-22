@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Newtonsoft.Json.Linq;
 
 namespace NuGet.Protocol.Plugins
@@ -12,7 +13,8 @@ namespace NuGet.Protocol.Plugins
         private readonly MessageState _state;
         private readonly MessageType _type;
 
-        internal CommunicationsLogMessage(string requestId, MessageMethod method, MessageType type, MessageState state)
+        internal CommunicationsLogMessage(DateTimeOffset now, string requestId, MessageMethod method, MessageType type, MessageState state)
+            : base(now)
         {
             _requestId = requestId;
             _method = method;

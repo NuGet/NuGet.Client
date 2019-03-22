@@ -254,7 +254,7 @@ namespace NuGet.Protocol.Plugins
                 {
                     if (_logger.IsEnabled)
                     {
-                        _logger.Write(new TaskLogMessage(_request.RequestId, _request.Method, MessageType.Cancel, TaskState.Queued));
+                        _logger.Write(new TaskLogMessage(_logger.Now, _request.RequestId, _request.Method, MessageType.Cancel, TaskState.Queued));
                     }
 
                     Task.Run(async () =>
@@ -264,7 +264,7 @@ namespace NuGet.Protocol.Plugins
                         {
                             if (_logger.IsEnabled)
                             {
-                                _logger.Write(new TaskLogMessage(_request.RequestId, _request.Method, MessageType.Cancel, TaskState.Executing));
+                                _logger.Write(new TaskLogMessage(_logger.Now, _request.RequestId, _request.Method, MessageType.Cancel, TaskState.Executing));
                             }
 
                             await _connection.MessageDispatcher.DispatchCancelAsync(_request, CancellationToken.None);
@@ -276,7 +276,7 @@ namespace NuGet.Protocol.Plugins
                         {
                             if (_logger.IsEnabled)
                             {
-                                _logger.Write(new TaskLogMessage(_request.RequestId, _request.Method, MessageType.Cancel, TaskState.Completed));
+                                _logger.Write(new TaskLogMessage(_logger.Now, _request.RequestId, _request.Method, MessageType.Cancel, TaskState.Completed));
                             }
                         }
                     });
