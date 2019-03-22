@@ -485,7 +485,7 @@ namespace NuGet.Protocol.Plugins
                     {
                         if (_logger.IsEnabled)
                         {
-                            _logger.Write(new CommunicationsLogMessage(message.RequestId, message.Method, message.Type, MessageState.Cancelled));
+                            _logger.Write(new CommunicationsLogMessage(_logger.Now, message.RequestId, message.Method, message.Type, MessageState.Cancelled));
                         }
 
                         // Keep the request context around if cancellation was requested.

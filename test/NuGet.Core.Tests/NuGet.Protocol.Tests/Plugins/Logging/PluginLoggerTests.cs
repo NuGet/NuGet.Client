@@ -5,13 +5,14 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using Moq;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
-    public class PluginLoggerTests
+    public class PluginLoggerTests : LogMessageTests
     {
         [Fact]
         public void Constructor_WhenEnvironmentVariableReaderIsNull_Throws()
@@ -95,9 +96,19 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.NotNull(logFile);
                 Assert.True(logFile.Exists);
 
-                var actualContent = File.ReadAllText(logFile.FullName);
+                var actualLines = File.ReadAllLines(logFile.FullName);
 
-                Assert.Equal(logMessage.Message + Environment.NewLine, actualContent);
+                Assert.Collection(actualLines,
+                    actualLine =>
+                    {
+                        var now = DateTimeOffset.UtcNow;
+
+                        var message = VerifyOuterMessageAndReturnInnerMessage(actualLine, now.AddMinutes(-1), now.AddSeconds(1), "stopwatch");
+
+                        Assert.Equal(1, message.Count);
+                        Assert.Equal(Stopwatch.Frequency, message["frequency"].Value<long>());
+                    },
+                    actualLine => Assert.Equal(logMessage.Message, actualLine));
 
                 environmentVariableReader.VerifyAll();
             }

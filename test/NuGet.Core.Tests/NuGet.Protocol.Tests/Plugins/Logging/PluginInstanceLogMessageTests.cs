@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Reflection;
+using System;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
@@ -13,9 +13,11 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             const int expectedProcessId = 7;
 
-            var logMessage = new PluginInstanceLogMessage(expectedProcessId);
+            var now = DateTimeOffset.UtcNow;
 
-            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, "plugin instance");
+            var logMessage = new PluginInstanceLogMessage(now, expectedProcessId);
+
+            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, now, "plugin instance");
 
             Assert.Equal(1, message.Count);
 

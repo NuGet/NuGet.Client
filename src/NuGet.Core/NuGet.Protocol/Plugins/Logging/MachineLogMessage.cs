@@ -10,7 +10,8 @@ namespace NuGet.Protocol.Plugins
     {
         private readonly int _logicalProcessorCount;
 
-        internal MachineLogMessage()
+        internal MachineLogMessage(DateTimeOffset now)
+            : base(now)
         {
             _logicalProcessorCount = Environment.ProcessorCount;
         }

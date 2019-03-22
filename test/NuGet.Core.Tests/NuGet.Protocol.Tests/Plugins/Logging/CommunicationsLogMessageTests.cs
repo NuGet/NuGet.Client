@@ -16,9 +16,11 @@ namespace NuGet.Protocol.Plugins.Tests
             const MessageType type = MessageType.Request;
             const MessageState state = MessageState.Sent;
 
-            var logMessage = new CommunicationsLogMessage(requestId, method, type, state);
+            var now = DateTimeOffset.UtcNow;
 
-            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, "communications");
+            var logMessage = new CommunicationsLogMessage(now, requestId, method, type, state);
+
+            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, now, "communications");
 
             Assert.Equal(4, message.Count);
 

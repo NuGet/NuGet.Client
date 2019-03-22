@@ -145,7 +145,7 @@ namespace NuGet.Protocol.Plugins
 
             if (_logger.IsEnabled)
             {
-                _logger.Write(new TaskLogMessage(response.RequestId, response.Method, response.Type, TaskState.Queued));
+                _logger.Write(new TaskLogMessage(_logger.Now, response.RequestId, response.Method, response.Type, TaskState.Queued));
             }
 
             Task.Run(async () =>
@@ -155,7 +155,7 @@ namespace NuGet.Protocol.Plugins
                     {
                         if (_logger.IsEnabled)
                         {
-                            _logger.Write(new TaskLogMessage(response.RequestId, response.Method, response.Type, TaskState.Executing));
+                            _logger.Write(new TaskLogMessage(_logger.Now, response.RequestId, response.Method, response.Type, TaskState.Executing));
                         }
 
                         await _connection.SendAsync(response, _cancellationToken);
@@ -167,7 +167,7 @@ namespace NuGet.Protocol.Plugins
                     {
                         if (_logger.IsEnabled)
                         {
-                            _logger.Write(new TaskLogMessage(response.RequestId, response.Method, response.Type, TaskState.Completed));
+                            _logger.Write(new TaskLogMessage(_logger.Now, response.RequestId, response.Method, response.Type, TaskState.Completed));
                         }
                     }
                 },
@@ -208,7 +208,7 @@ namespace NuGet.Protocol.Plugins
 
             if (_logger.IsEnabled)
             {
-                _logger.Write(new TaskLogMessage(request.RequestId, request.Method, request.Type, TaskState.Queued));
+                _logger.Write(new TaskLogMessage(_logger.Now, request.RequestId, request.Method, request.Type, TaskState.Queued));
             }
 
             Task.Run(async () =>
@@ -218,7 +218,7 @@ namespace NuGet.Protocol.Plugins
                     {
                         if (_logger.IsEnabled)
                         {
-                            _logger.Write(new TaskLogMessage(request.RequestId, request.Method, request.Type, TaskState.Executing));
+                            _logger.Write(new TaskLogMessage(_logger.Now, request.RequestId, request.Method, request.Type, TaskState.Executing));
                         }
 
                         await requestHandler.HandleResponseAsync(
@@ -241,7 +241,7 @@ namespace NuGet.Protocol.Plugins
                     {
                         if (_logger.IsEnabled)
                         {
-                            _logger.Write(new TaskLogMessage(request.RequestId, request.Method, request.Type, TaskState.Completed));
+                            _logger.Write(new TaskLogMessage(_logger.Now, request.RequestId, request.Method, request.Type, TaskState.Completed));
                         }
                     }
                 },

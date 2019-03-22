@@ -179,7 +179,7 @@ namespace NuGet.Protocol.Plugins
             {
                 WriteCommonLogMessages(_logger);
 
-                _logger.Write(new PluginInstanceLogMessage(process.Id));
+                _logger.Write(new PluginInstanceLogMessage(_logger.Now, process.Id));
             }
 
             var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), _logger);
@@ -375,11 +375,11 @@ namespace NuGet.Protocol.Plugins
 
         private static void WriteCommonLogMessages(IPluginLogger logger)
         {
-            logger.Write(new AssemblyLogMessage());
-            logger.Write(new MachineLogMessage());
-            logger.Write(new EnvironmentVariablesLogMessage());
-            logger.Write(new ProcessLogMessage());
-            logger.Write(new ThreadPoolLogMessage());
+            logger.Write(new AssemblyLogMessage(logger.Now));
+            logger.Write(new MachineLogMessage(logger.Now));
+            logger.Write(new EnvironmentVariablesLogMessage(logger.Now));
+            logger.Write(new ProcessLogMessage(logger.Now));
+            logger.Write(new ThreadPoolLogMessage(logger.Now));
         }
     }
 }

@@ -6,22 +6,22 @@ using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
-    public class MachineLogMessageTests : LogMessageTests
+    public class StopwatchLogMessageTests : LogMessageTests
     {
         [Fact]
         public void ToString_ReturnsJson()
         {
             var now = DateTimeOffset.UtcNow;
+            var frequency = 7;
+            var logMessage = new StopwatchLogMessage(now, frequency);
 
-            var logMessage = new MachineLogMessage(now);
-
-            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, now, "machine");
+            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, now, "stopwatch");
 
             Assert.Equal(1, message.Count);
 
-            var actualLogicalProcessorCount = message.Value<int>("logical processor count");
+            var actualFrequency = message.Value<long>("frequency");
 
-            Assert.Equal(Environment.ProcessorCount, actualLogicalProcessorCount);
+            Assert.Equal(frequency, actualFrequency);
         }
     }
 }

@@ -12,6 +12,13 @@ namespace NuGet.Protocol.Plugins
     {
         private static readonly StringEnumConverter _enumConverter = new StringEnumConverter();
 
+        private readonly DateTime _now;
+
+        protected PluginLogMessage(DateTimeOffset now)
+        {
+            _now = now.UtcDateTime;
+        }
+
         protected string ToString(string type, JObject message)
         {
             if (string.IsNullOrEmpty(type))
@@ -25,7 +32,7 @@ namespace NuGet.Protocol.Plugins
             }
 
             var outerMessage = new JObject(
-                new JProperty("now", DateTime.UtcNow.ToString("O")), // round-trip format
+                new JProperty("now", _now.ToString("O")), // round-trip format
                 new JProperty("type", type),
                 new JProperty("message", message));
 

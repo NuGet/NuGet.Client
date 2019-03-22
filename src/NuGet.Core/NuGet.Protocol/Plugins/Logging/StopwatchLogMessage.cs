@@ -6,21 +6,21 @@ using Newtonsoft.Json.Linq;
 
 namespace NuGet.Protocol.Plugins
 {
-    internal sealed class PluginInstanceLogMessage : PluginLogMessage
+    internal sealed class StopwatchLogMessage : PluginLogMessage
     {
-        private readonly int _processId;
+        private readonly long _frequency;
 
-        internal PluginInstanceLogMessage(DateTimeOffset now, int processId)
+        internal StopwatchLogMessage(DateTimeOffset now, long frequency)
             : base(now)
         {
-            _processId = processId;
+            _frequency = frequency;
         }
 
         public override string ToString()
         {
-            var message = new JObject(new JProperty("process ID", _processId));
+            var message = new JObject(new JProperty("frequency", _frequency));
 
-            return ToString("plugin instance", message);
+            return ToString("stopwatch", message);
         }
     }
 }
