@@ -8,8 +8,8 @@ namespace NuGet.CommandLine.Commands
 {
     [DeprecatedCommand(typeof(SearchCommand))]
     [Command(
-         typeof(NuGetCommand),
-         "list",
+        typeof(NuGetCommand),
+        "list",
         "ListCommandDescription",
         UsageSummaryResourceName = "ListCommandUsageSummary",
         UsageDescriptionResourceName = "ListCommandUsageDescription",
@@ -17,5 +17,10 @@ namespace NuGet.CommandLine.Commands
     [Obsolete(message:"Use SearchCommand class. This class will disappear in upcoming releases", error: false)]
     public class ListCommand : SearchCommand
     {
+        public async override Task ExecuteCommandAsync()
+        {
+            Console.WriteWarning(LocalizedResourceManager.GetString("ListCommandDeprecatedMessage"));
+            await base.ExecuteCommandAsync();
+        }
     }
 }

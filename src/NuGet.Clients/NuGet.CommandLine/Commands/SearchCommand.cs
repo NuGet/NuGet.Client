@@ -12,12 +12,12 @@ using NuGet.Commands;
 namespace NuGet.CommandLine
 {
     [Command(
-         typeof(NuGetCommand),
-         "search",
-         "ListCommandDescription",
-         UsageSummaryResourceName = "ListCommandUsageSummary",
-         UsageDescriptionResourceName = "ListCommandUsageDescription",
-         UsageExampleResourceName = "ListCommandUsageExamples")]
+        typeof(NuGetCommand),
+        "search",
+        "SearchCommandDescription",
+        UsageSummaryResourceName = "SearchCommandUsageSummary",
+        UsageDescriptionResourceName = "SearchCommandUsageDescription",
+        UsageExampleResourceName = "SearchCommandUsageExamples")]
     public class SearchCommand : Command
     {
         private readonly List<string> _sources = new List<string>();

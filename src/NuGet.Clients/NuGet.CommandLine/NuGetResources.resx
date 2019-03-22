@@ -6182,4 +6182,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <comment>Do not localize project.json and `PackageReference` 
 0 - project path (project.json file path)</comment>
   </data>
+  <data name="ListCommandDeprecatedMessage" xml:space="preserve">
+    <value>list command is deprecated. Use search command instead.</value>
+  </data>
 </root>

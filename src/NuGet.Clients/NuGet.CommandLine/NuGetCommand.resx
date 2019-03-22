@@ -223,7 +223,7 @@ nuget install ninject -o c:\foo</value>
     <value>List all versions of a package. By default, only the latest package version is displayed.</value>
   </data>
   <data name="ListCommandDescription" xml:space="preserve">
-    <value>Displays a list of packages from a given source. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used. If NuGet.config specifies no sources, uses the default NuGet feed.</value>
+    <value>(Deprecated) Displays a list of packages from a given source. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used. If NuGet.config specifies no sources, uses the default NuGet feed.</value>
     <comment>Please don't localize "%AppData%\NuGet\NuGet.config", "NuGet.config".</comment>
   </data>
   <data name="ListCommandPrerelease" xml:space="preserve">
@@ -5525,5 +5525,31 @@ nuget-trusted-signers Remove -Name TrustedRepo</value>
   </data>
   <data name="TrustedSignersCommandServiceIndexDescription" xml:space="preserve">
     <value>Service index for a repository to be trusted.</value>
+  </data>
+  <data name="SearchCommandDescription" xml:space="preserve">
+    <value>Search for packages matching search terms from a given source. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used. If NuGet.config specifies no sources, uses the default NuGet feed.</value>
+    <comment>Please, don't localize "%AppData%\NuGet\NuGet.config", "NuGet.config".</comment>
+  </data>
+  <data name="SearchCommandUsagetExamples" xml:space="preserve">
+    <value>nuget search
+
+nuget search -verbose -allversions</value>
+    <comment>Please, don't localize this string</comment>
+  </data>
+  <data name="SearchCommandUsageDescription" xml:space="preserve">
+    <value>Specify optional search terms.</value>
+    <comment>Localize as ListCommandUsageDescription</comment>
+  </data>
+  <data name="SearchCommandUsageExamples" xml:space="preserve">
+    <value>nuget search
+
+nuget search -verbose -allversions
+
+nuget search NuGet.CommandLine</value>
+    <comment>Please, don't localize this string</comment>
+  </data>
+  <data name="SearchCommandUsageSummary" xml:space="preserve">
+    <value>[search terms] [options]</value>
+    <comment>Localize as ListCommandUsageSummary</comment>
   </data>
 </root>
