@@ -5372,7 +5372,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             // Validate the nuspec round trips.
             using (var nuspecStream = nupkgReader.GetStream(nuspecName))
             {
-                Assert.NotNull(Packaging.Manifest.ReadFrom(nuspecStream, true));
+                Assert.NotNull(Packaging.Manifest.ReadFrom(nuspecStream, validateSchema: true));
 
             }
         }
