@@ -14,6 +14,7 @@ namespace NuGet.CommandLine.Commands
         UsageSummaryResourceName = "ListCommandUsageSummary",
         UsageDescriptionResourceName = "ListCommandUsageDescription",
         UsageExampleResourceName = "ListCommandUsageExamples")]
+    [Obsolete(message:"Use SearchCommand class. This class will disappear in upcoming releases", error: false)]
     public class ListCommand : SearchCommand
     {
     }
