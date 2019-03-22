@@ -31,12 +31,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
     `git clone https://github.com/NuGet/NuGet.Client`
 
-2. Start Develooper Command Prompt for VS. Then, start PowerShell and navigate into the cloned repository directory:
-
-    ```shell
-    powershell
-    cd path\to\NuGet.Client
-    ```
+2. Start PowerShell. CD into the cloned repository directory.
 
 3. Run configuration script
 
