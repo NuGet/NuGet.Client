@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Xml.Linq;
 using NuGet.Commands;
@@ -2227,12 +2226,7 @@ public class B
                     Assert.Equal("https://github.com/NuGet/NuGet.Client.git", nuspecReader.GetRepositoryMetadata().Url);
                     Assert.Equal("dev", nuspecReader.GetRepositoryMetadata().Branch);
                     Assert.Equal("e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3", nuspecReader.GetRepositoryMetadata().Commit);
-                    // Validate the nuspec round trips.
-                    using (var nuspecStream = nupkgReader.GetStream($"packageA.nuspec"))
-                    {
-                        var manifest = Packaging.Manifest.ReadFrom(nuspecStream, true);
-
-                    }
+                    VerifyNuspecRoundTrips(nupkgReader, $"packageA.nuspec");
                 }
 
                 // Verify the package directory has the resolved nuspec
@@ -2327,12 +2321,7 @@ public class B
                     Assert.Equal("the description", nuspecReader.GetDescription());
                     Assert.Equal("Copyright (C) Microsoft 2013", nuspecReader.GetCopyright());
                     Assert.Equal("Microsoft,Sample,CustomTag", nuspecReader.GetTags());
-                    // Validate the nuspec round trips.
-                    using (var nuspecStream = nupkgReader.GetStream($"packageA.nuspec"))
-                    {
-                        var manifest = Packaging.Manifest.ReadFrom(nuspecStream, true);
-
-                    }
+                    VerifyNuspecRoundTrips(nupkgReader, $"packageA.nuspec");
                 }
 
                 // Verify the package directory has the resolved nuspec
@@ -4592,12 +4581,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseExpr);
                     Assert.Equal(licenseExpr, licenseMetadata.LicenseExpression.ToString());
-                    // Validate the nuspec round trips.
-                    using (var nuspecStream = nupkgReader.GetStream($"{packageName}.nuspec"))
-                    {
-                        var manifest = Packaging.Manifest.ReadFrom(nuspecStream, true);
-
-                    }
+                    VerifyNuspecRoundTrips(nupkgReader, $"{packageName}.nuspec");
                 }
             }
         }
@@ -4663,12 +4647,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(licenseMetadata.License, licenseExpr);
                     Assert.False(licenseMetadata.LicenseExpression.HasOnlyStandardIdentifiers());
                     Assert.Equal(licenseExpr, licenseMetadata.LicenseExpression.ToString());
-                    // Validate the nuspec round trips.
-                    using (var nuspecStream = nupkgReader.GetStream($"{packageName}.nuspec"))
-                    {
-                        var manifest = Packaging.Manifest.ReadFrom(nuspecStream, true);
-
-                    }
+                    VerifyNuspecRoundTrips(nupkgReader, $"{packageName}.nuspec");
                 }
             }
         }
@@ -4885,12 +4864,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseFileName);
                     Assert.Null(licenseMetadata.LicenseExpression);
-                    // Validate the nuspec round trips.
-                    using (var nuspecStream = nupkgReader.GetStream($"{packageName}.nuspec"))
-                    {
-                        var manifest = Packaging.Manifest.ReadFrom(nuspecStream, true);
-
-                    }
+                    VerifyNuspecRoundTrips(nupkgReader, $"{packageName}.nuspec");
                 }
             }
         }
@@ -5158,12 +5132,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
                     Assert.Null(nuspecReader.GetLicenseMetadata());
                     Assert.NotNull(nuspecReader.GetLicenseUrl());
-                    // Validate the nuspec round trips.
-                    using (var nuspecStream = nupkgReader.GetStream($"{packageName}.nuspec"))
-                    {
-                        var manifest = Packaging.Manifest.ReadFrom(nuspecStream, true);
-
-                    }
+                    VerifyNuspecRoundTrips(nupkgReader, $"{packageName}.nuspec");
                 }
             }
         }
@@ -5242,13 +5211,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                         Assert.Equal(new FileInfo(Path.Combine(workingDirectory, licenseFileName)).Length, licenseFileEntry.Length);
                         Assert.Equal(licenseText, value);
                     }
-
-                    // Validate the nuspec round trips.
-                    using (var nuspecStream = nupkgReader.GetStream($"{packageName}.nuspec"))
-                    {
-                        var manifest = Packaging.Manifest.ReadFrom(nuspecStream, true);
-
-                    }
+                    VerifyNuspecRoundTrips(nupkgReader, $"{packageName}.nuspec");
                 }
             }
         }
@@ -5344,12 +5307,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseFileName);
                     Assert.Null(licenseMetadata.LicenseExpression);
-                    // Validate the nuspec round trips.
-                    using (var nuspecStream = nupkgReader.GetStream($"{packageName}.nuspec"))
-                    {
-                        var manifest = Packaging.Manifest.ReadFrom(nuspecStream, true);
-
-                    }
+                    VerifyNuspecRoundTrips(nupkgReader, $"{packageName}.nuspec");
                 }
 
                 using (var symbolsReader = new PackageArchiveReader(symbolsPath))
@@ -5406,6 +5364,16 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             public int GetHashCode(PackageDependency obj)
             {
                 return obj.GetHashCode();
+            }
+        }
+
+        private static void VerifyNuspecRoundTrips(PackageArchiveReader nupkgReader, string nuspecName)
+        {
+            // Validate the nuspec round trips.
+            using (var nuspecStream = nupkgReader.GetStream(nuspecName))
+            {
+                Assert.NotNull(Packaging.Manifest.ReadFrom(nuspecStream, true));
+
             }
         }
     }
