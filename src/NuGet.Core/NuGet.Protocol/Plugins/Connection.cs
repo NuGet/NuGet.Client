@@ -244,14 +244,14 @@ namespace NuGet.Protocol.Plugins
 
             if (_logger.IsEnabled)
             {
-                _logger.Write(new CommunicationsLogMessage(_logger.Now, message.RequestId, message.Method, message.Type, MessageState.Sending));
+                _logger.Write(new CommunicationLogMessage(_logger.Now, message.RequestId, message.Method, message.Type, MessageState.Sending));
             }
 
             await _sender.SendAsync(message, cancellationToken);
 
             if (_logger.IsEnabled)
             {
-                _logger.Write(new CommunicationsLogMessage(_logger.Now, message.RequestId, message.Method, message.Type, MessageState.Sent));
+                _logger.Write(new CommunicationLogMessage(_logger.Now, message.RequestId, message.Method, message.Type, MessageState.Sent));
             }
         }
 
@@ -296,7 +296,7 @@ namespace NuGet.Protocol.Plugins
         {
             if (_logger.IsEnabled)
             {
-                _logger.Write(new CommunicationsLogMessage(_logger.Now, e.Message.RequestId, e.Message.Method, e.Message.Type, MessageState.Received));
+                _logger.Write(new CommunicationLogMessage(_logger.Now, e.Message.RequestId, e.Message.Method, e.Message.Type, MessageState.Received));
             }
 
             MessageReceived?.Invoke(this, e);

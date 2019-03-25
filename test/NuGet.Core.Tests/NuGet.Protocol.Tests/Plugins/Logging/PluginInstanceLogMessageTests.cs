@@ -8,22 +8,40 @@ namespace NuGet.Protocol.Plugins.Tests
 {
     public class PluginInstanceLogMessageTests : LogMessageTests
     {
-        [Fact]
-        public void ToString_ReturnsJson()
+        [Theory]
+        [InlineData(null)]
+        [InlineData(7)]
+        public void ToString_ReturnsJson(int? expectedProcessId)
         {
-            const int expectedProcessId = 7;
+            const string expectedPluginId = "a";
+            const PluginState expectedState = PluginState.Started;
 
             var now = DateTimeOffset.UtcNow;
 
-            var logMessage = new PluginInstanceLogMessage(now, expectedProcessId);
+            var logMessage = new PluginInstanceLogMessage(now, expectedPluginId, expectedState, expectedProcessId);
 
             var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, now, "plugin instance");
 
-            Assert.Equal(1, message.Count);
+            var expectedCount = 2 + (expectedProcessId.HasValue ? 1 : 0);
 
-            var actualProcessId = message.Value<int>("process ID");
+            Assert.Equal(expectedCount, message.Count);
 
-            Assert.Equal(expectedProcessId, actualProcessId);
+            var actualPluginId = message.Value<string>("plugin ID");
+            var actualState = Enum.Parse(typeof(PluginState), message.Value<string>("state"));
+
+            Assert.Equal(expectedPluginId, actualPluginId);
+            Assert.Equal(expectedState, actualState);
+
+            if (expectedProcessId.HasValue)
+            {
+                var actualProcessId = message.Value<int>("process ID");
+
+                Assert.Equal(expectedProcessId, actualProcessId);
+            }
+            else
+            {
+                Assert.Null(message["process ID"]);
+            }
         }
     }
 }
