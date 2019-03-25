@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -13,7 +12,6 @@ using System.Windows.Forms;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
 using NuGet.Protocol.Core.Types;
@@ -330,6 +328,11 @@ namespace NuGet.Options
 
         private void OnAddButtonClick(object sender, EventArgs e)
         {
+            if (_packageSources == null)
+            {
+                return;
+            }
+
             _packageSources.Add(CreateNewPackageSource());
 
             // auto-select the newly-added item
