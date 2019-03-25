@@ -6,14 +6,14 @@ using Newtonsoft.Json.Linq;
 
 namespace NuGet.Protocol.Plugins
 {
-    internal sealed class CommunicationsLogMessage : PluginLogMessage
+    internal sealed class CommunicationLogMessage : PluginLogMessage
     {
         private readonly MessageMethod _method;
         private readonly string _requestId;
         private readonly MessageState _state;
         private readonly MessageType _type;
 
-        internal CommunicationsLogMessage(DateTimeOffset now, string requestId, MessageMethod method, MessageType type, MessageState state)
+        internal CommunicationLogMessage(DateTimeOffset now, string requestId, MessageMethod method, MessageType type, MessageState state)
             : base(now)
         {
             _requestId = requestId;
@@ -30,7 +30,7 @@ namespace NuGet.Protocol.Plugins
                 new JProperty("type", _type),
                 new JProperty("state", _state));
 
-            return ToString("communications", message);
+            return ToString("communication", message);
         }
     }
 }

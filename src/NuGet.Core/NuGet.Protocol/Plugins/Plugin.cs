@@ -81,6 +81,11 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="idleTimeout" /> is smaller than
         /// <see cref="Timeout.InfiniteTimeSpan" />.</exception>
         public Plugin(string filePath, IConnection connection, IPluginProcess process, bool isOwnProcess, TimeSpan idleTimeout)
+            : this(filePath, connection, process, isOwnProcess, idleTimeout, id: null)
+        {
+        }
+
+        internal Plugin(string filePath, IConnection connection, IPluginProcess process, bool isOwnProcess, TimeSpan idleTimeout, string id)
         {
             if (string.IsNullOrEmpty(filePath))
             {
@@ -107,7 +112,7 @@ namespace NuGet.Protocol.Plugins
 
             Name = Path.GetFileNameWithoutExtension(filePath);
             FilePath = filePath;
-            Id = Guid.NewGuid().ToString("N");
+            Id = id ?? CreateNewId();
             Connection = connection;
             _process = process;
             _isOwnProcess = isOwnProcess;
@@ -179,6 +184,11 @@ namespace NuGet.Protocol.Plugins
 
                 _isClosed = true;
             }
+        }
+
+        internal static string CreateNewId()
+        {
+            return Guid.NewGuid().ToString("N");
         }
 
         private void FireBeforeClose()

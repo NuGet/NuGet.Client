@@ -6,7 +6,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
-    public class CommunicationsLogMessageTests : LogMessageTests
+    public class CommunicationLogMessageTests : LogMessageTests
     {
         [Fact]
         public void ToString_ReturnsJson()
@@ -18,9 +18,9 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var now = DateTimeOffset.UtcNow;
 
-            var logMessage = new CommunicationsLogMessage(now, requestId, method, type, state);
+            var logMessage = new CommunicationLogMessage(now, requestId, method, type, state);
 
-            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, now, "communications");
+            var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, now, "communication");
 
             Assert.Equal(4, message.Count);
 

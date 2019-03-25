@@ -171,27 +171,55 @@ namespace NuGet.Protocol.Plugins
                 StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
             };
 #endif
-            var process = Process.Start(startInfo);
-            var sender = new Sender(process.StandardInput);
-            var receiver = new StandardOutputReceiver(new PluginProcess(process));
+            var process = new Process();
+
+            string pluginId = Plugin.CreateNewId();
+
+            // Process ID is unavailable until we start the process; however, we want to wire up this event before
+            // attempting to start the process in case the process immediately exits.
+            EventHandler onExited = null;
+
+            onExited = (object eventSender, EventArgs e) =>
+            {
+                process.Exited -= onExited;
+
+                int? processId = GetProcessIdOrNull(process);
+
+                OnPluginProcessExited(eventSender, e, pluginId, processId);
+            };
+
+            process.Exited += onExited;
+
+            var pluginProcess = new PluginProcess(process);
+
+            process.StartInfo = startInfo;
+
+            process.Start();
 
             if (_logger.IsEnabled)
             {
                 WriteCommonLogMessages(_logger);
-
-                _logger.Write(new PluginInstanceLogMessage(_logger.Now, process.Id));
             }
 
+            var sender = new Sender(process.StandardInput);
+            var receiver = new StandardOutputReceiver(pluginProcess);
             var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), _logger);
             var connection = new Connection(messageDispatcher, sender, receiver, options, _logger);
-            var pluginProcess = new PluginProcess(process);
 
             var plugin = new Plugin(
                 filePath,
                 connection,
                 pluginProcess,
                 isOwnProcess: false,
-                idleTimeout: _pluginIdleTimeout);
+                idleTimeout: _pluginIdleTimeout,
+                id: pluginId);
+
+            if (_logger.IsEnabled)
+            {
+                int? processId = GetProcessIdOrNull(process);
+
+                _logger.Write(new PluginInstanceLogMessage(_logger.Now, plugin.Id, PluginState.Started, processId));
+            }
 
             try
             {
@@ -295,6 +323,11 @@ namespace NuGet.Protocol.Plugins
 
         private void Dispose(IPlugin plugin)
         {
+            if (_logger.IsEnabled)
+            {
+                _logger.Write(new PluginInstanceLogMessage(_logger.Now, plugin.Id, PluginState.Disposing));
+            }
+
             UnregisterEventHandlers(plugin as Plugin);
 
             Lazy<Task<IPlugin>> lazyTask;
@@ -312,6 +345,11 @@ namespace NuGet.Protocol.Plugins
             else
             {
                 plugin.Dispose();
+            }
+
+            if (_logger.IsEnabled)
+            {
+                _logger.Write(new PluginInstanceLogMessage(_logger.Now, plugin.Id, PluginState.Disposed));
             }
         }
 
@@ -335,7 +373,22 @@ namespace NuGet.Protocol.Plugins
 
         private void OnPluginIdle(object sender, PluginEventArgs e)
         {
+            if (_logger.IsEnabled)
+            {
+                _logger.Write(new PluginInstanceLogMessage(_logger.Now, e.Plugin.Id, PluginState.Idle));
+            }
+
             Dispose(e.Plugin);
+        }
+
+        // This is more reliable than OnPluginExited as this even handler is wired up before the process
+        // has even started, while OnPluginExited is wired up after.
+        private void OnPluginProcessExited(object sender, EventArgs e, string pluginId, int? processId)
+        {
+            if (_logger.IsEnabled)
+            {
+                _logger.Write(new PluginInstanceLogMessage(_logger.Now, pluginId, PluginState.Exited, processId));
+            }
         }
 
         private void SendCloseRequest(IPlugin plugin)
@@ -370,6 +423,18 @@ namespace NuGet.Protocol.Plugins
                 plugin.Exited -= OnPluginExited;
                 plugin.Faulted -= OnPluginFaulted;
                 plugin.Idle -= OnPluginIdle;
+            }
+        }
+
+        private static int? GetProcessIdOrNull(Process process)
+        {
+            try
+            {
+                return process.Id;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
             }
         }
 
