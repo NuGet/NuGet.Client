@@ -4,29 +4,22 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
-using NuGet.Shared;
 using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Operators;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.X509;
 using Org.BouncyCastle.X509.Extension;
 using Xunit;
+using X509Extension = System.Security.Cryptography.X509Certificates.X509Extension;
 
 namespace Test.Utility.Signing
 {
@@ -38,86 +31,82 @@ namespace Test.Utility.Signing
         /// Modification generator that can be passed to TestCertificate.Generate().
         /// The generator will change the certificate EKU to ClientAuth.
         /// </summary>
-        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorForInvalidEkuCert = delegate (X509V3CertificateGenerator gen)
+        public static Action<TestCertificateGenerator> CertificateModificationGeneratorForInvalidEkuCert = delegate (TestCertificateGenerator gen)
         {
             // any EKU besides CodeSigning
-            var usages = new[] { KeyPurposeID.IdKPClientAuth };
+            var usages = new OidCollection { new Oid(TestOids.IdKpClientAuth) };
 
-            gen.AddExtension(
-                X509Extensions.ExtendedKeyUsage.Id,
-                critical: true,
-                extensionValue: new ExtendedKeyUsage(usages));
+            gen.Extensions.Add(
+                 new X509EnhancedKeyUsageExtension(
+                     usages,
+                     critical: true));
         };
 
         /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().
         /// The generator will change the certificate EKU to CodeSigning.
         /// </summary>
-        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorForCodeSigningEkuCert = delegate (X509V3CertificateGenerator gen)
+        public static Action<TestCertificateGenerator> CertificateModificationGeneratorForCodeSigningEkuCert = delegate (TestCertificateGenerator gen)
         {
-            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
+            var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
 
-            gen.AddExtension(
-                X509Extensions.ExtendedKeyUsage.Id,
-                critical: true,
-                extensionValue: new ExtendedKeyUsage(usages));
+            gen.Extensions.Add(
+                  new X509EnhancedKeyUsageExtension(
+                      usages,
+                      critical: true));
         };
 
         /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().
         /// The generator will create an expired certificate.
         /// </summary>
-        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorExpiredCert = delegate (X509V3CertificateGenerator gen)
+        public static Action<TestCertificateGenerator> CertificateModificationGeneratorExpiredCert = delegate (TestCertificateGenerator gen)
         {
-            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
+            var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
 
-            gen.AddExtension(
-                X509Extensions.ExtendedKeyUsage.Id,
-                critical: true,
-                extensionValue: new ExtendedKeyUsage(usages));
+            gen.Extensions.Add(
+                  new X509EnhancedKeyUsageExtension(
+                      usages,
+                      critical: true));
 
-            gen.SetNotBefore(DateTime.UtcNow.AddHours(-1));
-            gen.SetNotAfter(DateTime.UtcNow.AddMinutes(-1));
+            gen.NotBefore = DateTime.UtcNow.AddHours(-1);
+            gen.NotAfter = DateTime.UtcNow.AddMinutes(-1);
         };
 
         /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().
         /// The generator will create a certificate that is not yet valid.
         /// </summary>
-        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorNotYetValidCert = delegate (X509V3CertificateGenerator gen)
+        public static Action<TestCertificateGenerator> CertificateModificationGeneratorNotYetValidCert = delegate (TestCertificateGenerator gen)
         {
-            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
+            var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
 
-            gen.AddExtension(
-                X509Extensions.ExtendedKeyUsage.Id,
-                critical: true,
-                extensionValue: new ExtendedKeyUsage(usages));
+            gen.Extensions.Add(
+             new X509EnhancedKeyUsageExtension(
+                 usages,
+                 critical: true));
 
             var notBefore = DateTime.UtcNow.AddDays(1);
-            var notAfter = notBefore.AddHours(1);
 
-            gen.SetNotBefore(notBefore);
-            gen.SetNotAfter(notAfter);
+            gen.NotBefore = notBefore;
+            gen.NotAfter = notBefore.AddHours(1);
         };
 
         /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().
         /// The generator will create a certificate that is valid but will expire in 10 seconds.
         /// </summary>
-        public static Action<X509V3CertificateGenerator> CertificateModificationGeneratorExpireIn10Seconds = delegate (X509V3CertificateGenerator gen)
+        public static Action<TestCertificateGenerator> CertificateModificationGeneratorExpireIn10Seconds = delegate (TestCertificateGenerator gen)
         {
-            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
+            var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
 
-            gen.AddExtension(
-                X509Extensions.ExtendedKeyUsage.Id,
-                critical: true,
-                extensionValue: new ExtendedKeyUsage(usages));
+            gen.Extensions.Add(
+                new X509EnhancedKeyUsageExtension(
+                    usages,
+                    critical: true));
 
-            var notBefore = DateTime.UtcNow.AddHours(-1);
-            var notAfter = DateTime.UtcNow.AddSeconds(10);
-
-            gen.SetNotBefore(notBefore);
-            gen.SetNotAfter(notAfter);
+            gen.NotBefore = DateTime.UtcNow.AddHours(-1);
+            gen.NotAfter = DateTime.UtcNow.AddSeconds(10);
         };
 
         /// <summary>
@@ -185,91 +174,154 @@ namespace Test.Utility.Signing
             return certChain;
         }
 
+        public static X509CertificateWithKeyInfo GenerateCertificateWithKeyInfo(
+            string subjectName,
+            Action<TestCertificateGenerator> modifyGenerator,
+            NuGet.Common.HashAlgorithmName hashAlgorithm = NuGet.Common.HashAlgorithmName.SHA256,
+            RSASignaturePaddingMode paddingMode = RSASignaturePaddingMode.Pkcs1,
+            int publicKeyLength = 2048,
+            ChainCertificateRequest chainCertificateRequest = null)
+        {
+            var rsa = RSA.Create(publicKeyLength);
+            var cert = GenerateCertificate(subjectName, modifyGenerator, rsa, hashAlgorithm, paddingMode, chainCertificateRequest);
+
+            return new X509CertificateWithKeyInfo(cert, rsa);
+        }
+
         /// <summary>
         /// Create a self signed certificate with bouncy castle.
         /// </summary>
         public static X509Certificate2 GenerateCertificate(
             string subjectName,
-            Action<X509V3CertificateGenerator> modifyGenerator,
-            string signatureAlgorithm = "SHA256WITHRSA",
+            Action<TestCertificateGenerator> modifyGenerator,
+            NuGet.Common.HashAlgorithmName hashAlgorithm = NuGet.Common.HashAlgorithmName.SHA256,
+            RSASignaturePaddingMode paddingMode = RSASignaturePaddingMode.Pkcs1,
             int publicKeyLength = 2048,
             ChainCertificateRequest chainCertificateRequest = null)
+        {
+            using (var rsa = RSA.Create(publicKeyLength))
+            {
+                return GenerateCertificate(subjectName, modifyGenerator, rsa, hashAlgorithm, paddingMode, chainCertificateRequest);
+            }
+        }
+
+        private static X509Certificate2 GenerateCertificate(
+            string subjectName,
+            Action<TestCertificateGenerator> modifyGenerator,
+            RSA rsa,
+            NuGet.Common.HashAlgorithmName hashAlgorithm,
+            RSASignaturePaddingMode paddingMode,
+            ChainCertificateRequest chainCertificateRequest)
         {
             if (string.IsNullOrEmpty(subjectName))
             {
                 subjectName = "NuGetTest";
             }
 
-            var random = new SecureRandom();
-            var keyPair = GenerateKeyPair(publicKeyLength);
-
             // Create cert
             var subjectDN = $"CN={subjectName}";
-            var certGen = new X509V3CertificateGenerator();
-            certGen.SetSubjectDN(new X509Name(subjectDN));
+            var certGen = new TestCertificateGenerator();
 
-            // default to new key pair
-            var issuerPrivateKey = keyPair.Private;
-            var keyUsage = KeyUsage.DigitalSignature;
-            var issuerDN = chainCertificateRequest?.IssuerDN ?? subjectDN;
-            certGen.SetIssuerDN(new X509Name(issuerDN));
-            
-#if IS_DESKTOP
+            var isSelfSigned = true;
+            X509Certificate2 issuer = null;
+            DateTimeOffset? notAfter = null;
+
+            var keyUsage = X509KeyUsageFlags.DigitalSignature;
+
             if (chainCertificateRequest != null)
             {
                 if (chainCertificateRequest.Issuer != null)
                 {
+                    isSelfSigned = false;
                     // for a certificate with an issuer assign Authority Key Identifier
-                    var issuer = chainCertificateRequest?.Issuer;
-                    var bcIssuer = DotNetUtilities.FromX509Certificate(issuer);
-                    var authorityKeyIdentifier = new AuthorityKeyIdentifierStructure(bcIssuer);
-                    issuerPrivateKey = DotNetUtilities.GetKeyPair(issuer.PrivateKey).Private;
-                    certGen.AddExtension(X509Extensions.AuthorityKeyIdentifier.Id, false, authorityKeyIdentifier);
+                    issuer = chainCertificateRequest?.Issuer;
+
+                    notAfter = issuer.NotAfter.Subtract(TimeSpan.FromMinutes(5));
+                    var publicKey = DotNetUtilities.GetRsaPublicKey(issuer.GetRSAPublicKey());
+
+                    certGen.Extensions.Add(
+                        new X509Extension(
+                            Oids.AuthorityKeyIdentifier,
+                            new AuthorityKeyIdentifierStructure(publicKey).GetEncoded(),
+                            critical: false));
                 }
 
                 if (chainCertificateRequest.ConfigureCrl)
                 {
                     // for a certificate in a chain create CRL distribution point extension
+                    var issuerDN = chainCertificateRequest?.Issuer?.Subject ?? subjectDN;
                     var crlServerUri = $"{chainCertificateRequest.CrlServerBaseUri}{issuerDN}.crl";
                     var generalName = new Org.BouncyCastle.Asn1.X509.GeneralName(Org.BouncyCastle.Asn1.X509.GeneralName.UniformResourceIdentifier, new DerIA5String(crlServerUri));
                     var distPointName = new DistributionPointName(new GeneralNames(generalName));
                     var distPoint = new DistributionPoint(distPointName, null, null);
 
-                    certGen.AddExtension(X509Extensions.CrlDistributionPoints, critical: false, extensionValue: new DerSequence(distPoint));
+                    certGen.Extensions.Add(
+                        new X509Extension(
+                            TestOids.CrlDistributionPoints,
+                            new DerSequence(distPoint).GetDerEncoded(),
+                            critical: false));
                 }
 
                 if (chainCertificateRequest.IsCA)
                 {
                     // update key usage with CA cert sign and crl sign attributes
-                    keyUsage |= KeyUsage.CrlSign | KeyUsage.KeyCertSign;
+                    keyUsage |= X509KeyUsageFlags.CrlSign | X509KeyUsageFlags.KeyCertSign;
                 }
             }
-#endif
-            certGen.SetNotAfter(DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
-            certGen.SetNotBefore(DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)));
-            certGen.SetPublicKey(keyPair.Public);
 
-            var serialNumber = BigIntegers.CreateRandomInRange(BigInteger.One, BigInteger.ValueOf(long.MaxValue), random);
+            var padding = paddingMode.ToPadding();
+            var request = new CertificateRequest(subjectDN, rsa, hashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(), padding);
+
+            certGen.NotAfter = notAfter ?? DateTime.UtcNow.Add(TimeSpan.FromMinutes(30));
+            certGen.NotBefore = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(30));
+
+            var random = new Random();
+            var serial = random.Next();
+            var serialNumber = BitConverter.GetBytes(serial);
+            Array.Reverse(serialNumber);
             certGen.SetSerialNumber(serialNumber);
 
-            var subjectKeyIdentifier = new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(keyPair.Public));
-            certGen.AddExtension(X509Extensions.SubjectKeyIdentifier.Id, false, subjectKeyIdentifier);
-
-            certGen.AddExtension(X509Extensions.KeyUsage.Id, false, new KeyUsage(keyUsage));
-            certGen.AddExtension(X509Extensions.BasicConstraints.Id, true, new BasicConstraints(chainCertificateRequest?.IsCA ?? false));
+            certGen.Extensions.Add(
+                new X509SubjectKeyIdentifierExtension(request.PublicKey, critical: false));
+            certGen.Extensions.Add(
+                new X509KeyUsageExtension(keyUsage, critical: false));
+            certGen.Extensions.Add(
+                new X509BasicConstraintsExtension(certificateAuthority: chainCertificateRequest?.IsCA ?? false, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
 
             // Allow changes
             modifyGenerator?.Invoke(certGen);
 
-            var signatureFactory = new Asn1SignatureFactory(signatureAlgorithm, issuerPrivateKey, random);
-            var certificate = certGen.Generate(signatureFactory);
-            var certResult = new X509Certificate2(certificate.GetEncoded());
+            foreach (var extension in certGen.Extensions)
+            {
+                request.CertificateExtensions.Add(extension);
+            }
 
-#if IS_DESKTOP
-            certResult.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
-#endif
+            X509Certificate2 certResult;
 
-            return certResult;
+            if (isSelfSigned)
+            {
+                certResult = request.CreateSelfSigned(certGen.NotBefore, certGen.NotAfter);
+            }
+            else
+            {
+                using (var temp = request.Create(issuer, certGen.NotBefore, certGen.NotAfter, certGen.SerialNumber))
+                {
+                    certResult = temp.CopyWithPrivateKey(rsa);
+                }
+            }
+
+            return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
+        }
+
+        private static RSASignaturePadding ToPadding(this RSASignaturePaddingMode mode)
+        {
+            switch (mode)
+            {
+                case RSASignaturePaddingMode.Pkcs1: return RSASignaturePadding.Pkcs1;
+                case RSASignaturePaddingMode.Pss: return RSASignaturePadding.Pss;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -277,140 +329,104 @@ namespace Test.Utility.Signing
         /// </summary>
         public static X509Certificate2 GenerateCertificate(
             string subjectName,
-            AsymmetricCipherKeyPair keyPair)
+            RSA algorithm)
         {
             if (string.IsNullOrEmpty(subjectName))
             {
                 subjectName = "NuGetTest";
             }
 
-            var certGen = new X509V3CertificateGenerator();
-            certGen.SetSubjectDN(new X509Name($"CN={subjectName}"));
-            certGen.SetIssuerDN(new X509Name($"CN={subjectName}"));
+            var subjectDN = new X500DistinguishedName($"CN={subjectName}");
+            var hashAlgorithm = System.Security.Cryptography.HashAlgorithmName.SHA256;
+            var request = new CertificateRequest(subjectDN, algorithm, hashAlgorithm, RSASignaturePadding.Pkcs1);
 
-            certGen.SetNotAfter(DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
-            certGen.SetNotBefore(DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)));
-            certGen.SetPublicKey(keyPair.Public);
+            request.CertificateExtensions.Add(
+                new X509SubjectKeyIdentifierExtension(request.PublicKey, critical: false));
+            request.CertificateExtensions.Add(
+                new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
+            request.CertificateExtensions.Add(
+                new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign, critical: true));
+            request.CertificateExtensions.Add(
+                new X509EnhancedKeyUsageExtension(new OidCollection { new Oid(Oids.CodeSigningEku) }, critical: true));
 
-            var random = new SecureRandom();
-            var serialNumber = BigIntegers.CreateRandomInRange(BigInteger.One, BigInteger.ValueOf(long.MaxValue), random);
+            var certResult = request.CreateSelfSigned(notBefore: DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), notAfter: DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
 
-            certGen.SetSerialNumber(serialNumber);
-
-            var subjectKeyIdentifier = new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(keyPair.Public));
-            certGen.AddExtension(X509Extensions.SubjectKeyIdentifier.Id, false, subjectKeyIdentifier);
-            certGen.AddExtension(X509Extensions.KeyUsage, true, new KeyUsage(KeyUsage.KeyCertSign));
-            certGen.AddExtension(X509Extensions.BasicConstraints.Id, true, new BasicConstraints(false));
-
-            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
-
-            certGen.AddExtension(
-                X509Extensions.ExtendedKeyUsage.Id,
-                critical: true,
-                extensionValue: new ExtendedKeyUsage(usages));
-
-            var issuerPrivateKey = keyPair.Private;
-            var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", issuerPrivateKey, random);
-            var certificate = certGen.Generate(signatureFactory);
-            var certResult = new X509Certificate2(certificate.GetEncoded());
-
-#if IS_DESKTOP
-            certResult.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
-#endif
-
-            return certResult;
+            return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
         }
 
         public static X509Certificate2 GenerateCertificate(
             string issuerName,
             string subjectName,
-            AsymmetricKeyParameter issuerPrivateKey,
-            AsymmetricCipherKeyPair keyPair)
+            RSA issuerAlgorithm,
+            RSA algorithm)
         {
-            var certGen = new X509V3CertificateGenerator();
-            certGen.SetSubjectDN(new X509Name($"CN={subjectName}"));
-            certGen.SetIssuerDN(new X509Name($"CN={issuerName}"));
+            var subjectDN = $"CN={subjectName}";
+            var issuerDN = new X500DistinguishedName($"CN={issuerName}");
 
-            certGen.SetNotAfter(DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
-            certGen.SetNotBefore(DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)));
-            certGen.SetPublicKey(keyPair.Public);
+            var notAfter = DateTime.UtcNow.Add(TimeSpan.FromHours(1));
+            var notBefore = DateTime.UtcNow.Subtract(TimeSpan.FromHours(1));
 
-            var random = new SecureRandom();
-            var serialNumber = BigIntegers.CreateRandomInRange(BigInteger.One, BigInteger.ValueOf(long.MaxValue), random);
+            var random = new Random();
+            var serial = random.Next();
+            var serialNumber = BitConverter.GetBytes(serial);
+            Array.Reverse(serialNumber);
 
-            certGen.SetSerialNumber(serialNumber);
+            var hashAlgorithm = System.Security.Cryptography.HashAlgorithmName.SHA256;
+            var request = new CertificateRequest(subjectDN, algorithm, hashAlgorithm, RSASignaturePadding.Pkcs1);
 
-            var subjectKeyIdentifier = new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(keyPair.Public));
-            certGen.AddExtension(X509Extensions.SubjectKeyIdentifier.Id, false, subjectKeyIdentifier);
-            certGen.AddExtension(X509Extensions.KeyUsage, true, new KeyUsage(KeyUsage.KeyCertSign));
-            certGen.AddExtension(X509Extensions.BasicConstraints.Id, true, new BasicConstraints(false));
+            request.CertificateExtensions.Add(
+                new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: false, pathLengthConstraint: 0,  critical: true));
+            request.CertificateExtensions.Add(
+                new X509SubjectKeyIdentifierExtension(request.PublicKey, critical: false));
+            request.CertificateExtensions.Add(
+                new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign, critical: true));
+            request.CertificateExtensions.Add(
+                new X509EnhancedKeyUsageExtension(new OidCollection { new Oid(Oids.CodeSigningEku) }, critical: true));
 
-            var usages = new[] { KeyPurposeID.IdKPCodeSigning };
+            var generator = X509SignatureGenerator.CreateForRSA(issuerAlgorithm, RSASignaturePadding.Pkcs1);
 
-            certGen.AddExtension(
-                X509Extensions.ExtendedKeyUsage.Id,
-                critical: true,
-                extensionValue: new ExtendedKeyUsage(usages));
-
-            var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", issuerPrivateKey, random);
-            var certificate = certGen.Generate(signatureFactory);
-            var certResult = new X509Certificate2(certificate.GetEncoded());
-
-#if IS_DESKTOP
-            certResult.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
-#endif
-
-            return certResult;
+            using (var temp = request.Create(issuerDN, generator, notBefore, notAfter, serialNumber))
+            {
+                var certResult = temp.CopyWithPrivateKey(algorithm);
+                return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
+            }
         }
 
         public static X509Certificate2 GenerateSelfIssuedCertificate(bool isCa)
         {
-            var keyPair = GenerateKeyPair(publicKeyLength: 2048);
-            var generator = new X509V3CertificateGenerator();
-            var keyUsages = KeyUsage.DigitalSignature | KeyUsage.KeyCertSign | KeyUsage.CrlSign;
-
-            if (isCa)
+            using (var rsa = RSA.Create(keySizeInBits: 2048))
             {
-                keyUsages |= KeyUsage.KeyCertSign;
+                var subjectName = new X500DistinguishedName($"C=US,S=WA,L=Redmond,O=NuGet,CN=NuGet Test Self-Issued Certificate ({Guid.NewGuid().ToString()})");
+                var hashAlgorithm = System.Security.Cryptography.HashAlgorithmName.SHA256;
+                var request = new CertificateRequest(subjectName, rsa, hashAlgorithm, RSASignaturePadding.Pkcs1);
+
+                var keyUsages = X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign;
+
+                if (isCa)
+                {
+                    keyUsages |= X509KeyUsageFlags.KeyCertSign;
+                }
+
+                request.CertificateExtensions.Add(
+                    new X509SubjectKeyIdentifierExtension(request.PublicKey, critical: false));
+
+                var publicKey = DotNetUtilities.GetRsaPublicKey(rsa);
+
+                request.CertificateExtensions.Add(
+                    new X509Extension(
+                        Oids.AuthorityKeyIdentifier,
+                        new AuthorityKeyIdentifierStructure(publicKey).GetEncoded(),
+                        critical: false));
+                request.CertificateExtensions.Add(
+                    new X509BasicConstraintsExtension(certificateAuthority: isCa, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
+                request.CertificateExtensions.Add(
+                    new X509KeyUsageExtension(keyUsages, critical: true));
+
+                var now = DateTime.UtcNow;
+                var certResult = request.CreateSelfSigned(notBefore: now, notAfter: now.AddHours(1));
+
+                return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
             }
-
-            generator.AddExtension(
-                X509Extensions.SubjectKeyIdentifier,
-                critical: false,
-                extensionValue: new SubjectKeyIdentifierStructure(keyPair.Public));
-            generator.AddExtension(
-                X509Extensions.AuthorityKeyIdentifier,
-                critical: false,
-                extensionValue: new AuthorityKeyIdentifierStructure(keyPair.Public));
-            generator.AddExtension(
-                X509Extensions.BasicConstraints,
-                critical: true,
-                extensionValue: new BasicConstraints(cA: isCa));
-            generator.AddExtension(
-                X509Extensions.KeyUsage,
-                critical: true,
-                extensionValue: new KeyUsage(keyUsages));
-
-            var subjectName = new X509Name($"C=US,ST=WA,L=Redmond,O=NuGet,CN=NuGet Test Self-Issued Certificate ({Guid.NewGuid().ToString()})");
-            var now = DateTime.UtcNow;
-
-            generator.SetSerialNumber(BigInteger.One);
-            generator.SetIssuerDN(subjectName);
-            generator.SetNotBefore(now);
-            generator.SetNotAfter(now.AddHours(1));
-            generator.SetSubjectDN(subjectName);
-            generator.SetPublicKey(keyPair.Public);
-
-            var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", keyPair.Private);
-            var bcCertificate = generator.Generate(signatureFactory);
-
-            var certificate = new X509Certificate2(bcCertificate.GetEncoded());
-
-#if IS_DESKTOP
-            certificate.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
-#endif
-
-            return certificate;
         }
 
         private static X509SubjectKeyIdentifierExtension GetSubjectKeyIdentifier(X509Certificate2 issuer)
@@ -439,7 +455,6 @@ namespace Test.Utility.Signing
             return keyPairGenerator.GenerateKeyPair();
         }
 
-#if IS_DESKTOP
         /// <summary>
         /// Generates a SignedCMS object for some content.
         /// </summary>
@@ -462,7 +477,7 @@ namespace Test.Utility.Signing
 
             return cms;
         }
-
+#if IS_DESKTOP
         /// <summary>
         /// Generates a SignedCMS object for some content.
         /// </summary>
@@ -489,7 +504,6 @@ namespace Test.Utility.Signing
             }
         }
 #endif
-
         /// <summary>
         /// Returns the public cert without the private key.
         /// </summary>
@@ -504,7 +518,7 @@ namespace Test.Utility.Signing
         public static X509Certificate2 GetPublicCertWithPrivateKey(X509Certificate2 cert)
         {
             var password = new Guid().ToString();
-            return new X509Certificate2(cert.Export(X509ContentType.Pfx, password), password, X509KeyStorageFlags.PersistKeySet|X509KeyStorageFlags.Exportable);
+            return new X509Certificate2(cert.Export(X509ContentType.Pfx, password), password, X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificate()
@@ -633,7 +647,11 @@ namespace Test.Utility.Signing
 
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                offlineRevocation = "The revocation function was unable to check revocation because the revocation server was offline.";
+                offlineRevocation = "The revocation function was unable to check revocation because the revocation server was offline";
+            }
+            else if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                offlineRevocation = "An incomplete certificate revocation check occurred.";
             }
             else
             {
@@ -643,7 +661,7 @@ namespace Test.Utility.Signing
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == offlineRevocation);
+                issue.Message.Contains(offlineRevocation));
         }
 
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
@@ -651,7 +669,7 @@ namespace Test.Utility.Signing
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == "The revocation function was unable to check revocation for the certificate.");
+                issue.Message.Contains("The revocation function was unable to check revocation for the certificate"));
         }
 
         public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
@@ -660,17 +678,21 @@ namespace Test.Utility.Signing
 
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
+                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider";
+            }
+            else if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                untrustedRoot = "The trust policy was not trusted.";
             }
             else
             {
-                untrustedRoot = "certificate not trusted";
+                untrustedRoot = "self signed certificate";
             }
 
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message == untrustedRoot);
+                issue.Message.Contains(untrustedRoot));
         }
 
         public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)

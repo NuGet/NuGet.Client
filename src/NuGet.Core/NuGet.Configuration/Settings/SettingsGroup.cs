@@ -33,7 +33,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal override bool IsEmpty() => !Children.Any() || Children.All(c => c.IsEmpty());
+        public override bool IsEmpty() => !Children.Any() || Children.All(c => c.IsEmpty());
 
         internal SettingsGroup(XElement element, SettingsFile origin)
             : base(element, origin)
@@ -55,7 +55,7 @@ namespace NuGet.Configuration
                 return Node;
             }
 
-            var element = new XElement(ElementName, Children.Select(c => c.AsXNode()));
+            var element = new XElement(XmlUtility.GetEncodedXMLName(ElementName), Children.Select(c => c.AsXNode()));
 
             foreach (var attr in Attributes)
             {

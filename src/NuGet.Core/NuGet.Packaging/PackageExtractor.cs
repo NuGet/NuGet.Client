@@ -419,7 +419,7 @@ namespace NuGet.Packaging
                             logger.LogVerbose(
                                 $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
 
-                            logger.LogMinimal(string.Format(
+                            logger.LogInformation(string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.Log_InstallingPackage,
                                 packageIdentity.Id,
@@ -674,7 +674,7 @@ namespace NuGet.Packaging
                             logger.LogVerbose(
                                 $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
 
-                            logger.LogMinimal(string.Format(
+                            logger.LogInformation(string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.Log_InstallingPackage,
                                 packageIdentity.Id,

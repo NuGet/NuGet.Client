@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>net46</TargetFrameworks>
+    <TargetFrameworks>$(NETFXTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' "></TargetFrameworks>
     <TestProject>true</TestProject>
   </PropertyGroup>
@@ -27,13 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj">
+    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.CommandLine\NuGet.CommandLine.csproj">
       <Project>{957c4e99-3644-47dd-8f9a-ae36f41ebe4a}</Project>
       <Name>NuGet.CommandLine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.Credentials\NuGet.Credentials.csproj">
-      <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
-      <Name>NuGet.Credentials</Name>
     </ProjectReference>
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="..\..\TestExtensions\SampleCommandLineExtensions\SampleCommandLineExtensions.csproj" ReferenceOutputAssembly="false" />
@@ -57,9 +53,9 @@
     
   <PropertyGroup>
     <PostBuildEvent>
-      xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\net46\CredentialProvider.Testable.exe $(OutputPath)TestableCredentialProvider\
-      xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\net46\*.dll $(OutputPath)TestableCredentialProvider\
-      xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\$(BuildVariationFolder)\bin\$(Configuration)\net46\SampleCommandLineExtensions.dll $(OutputPath)</PostBuildEvent>
+      xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\CredentialProvider.Testable.exe $(OutputPath)TestableCredentialProvider\
+      xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\*.dll $(OutputPath)TestableCredentialProvider\
+      xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\SampleCommandLineExtensions.dll $(OutputPath)</PostBuildEvent>
   </PropertyGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>

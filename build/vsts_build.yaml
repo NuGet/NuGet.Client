@@ -79,7 +79,7 @@ phases:
   - task: PowerShell@1
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
-      arguments: "-Force -CI"
+      arguments: "-Force"
     displayName: "Run Configure.ps1"
 
   - task: PowerShell@1
@@ -157,7 +157,7 @@ phases:
   - task: PublishBuildArtifacts@1
     displayName: "Publish NuGet.CommandLine.Test as artifact"
     inputs:
-      PathtoPublish: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net46\\win7-x64"
+      PathtoPublish: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472\\win7-x64"
       ArtifactName: "NuGet.CommandLine.Test"
       ArtifactType: "Container"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
@@ -223,6 +223,10 @@ phases:
     displayName: Verify Assembly Signatures and StrongName
     inputs:
       TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
+  
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
@@ -395,7 +399,7 @@ phases:
     displayName: "Run Configure.ps1"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
-      arguments: "-Force -CI"
+      arguments: "-Force -CleanCache"
 
   - task: MSBuild@1
     displayName: "Restore for VS2017"
@@ -442,7 +446,7 @@ phases:
   condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "  	
   queue:
     name: DDNuGet-Linux
-    timeoutInMinutes: 45
+    timeoutInMinutes: 60
     demands: sh
 
   steps:
@@ -493,7 +497,7 @@ phases:
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "  	
   queue:
     name: VSEng-MicroBuildMacSierra
-    timeoutInMinutes: 60
+    timeoutInMinutes: 75
     demands: sh
 
   steps:
@@ -578,7 +582,6 @@ phases:
     displayName: "SetupFunctionalTests.ps1"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
-      arguments: "-VSVersion 15.0"
 
   - task: PowerShell@1
     displayName: "CopyToolsAndSetupMachine.ps1"
@@ -590,7 +593,7 @@ phases:
     displayName: "InstallNuGetVSIX.ps1"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
-      arguments: "-NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
+      arguments: "-NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 16.0"
       failOnStandardError: "false"
 
   - task: PowerShell@1
@@ -608,7 +611,7 @@ phases:
     continueOnError: "true"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\RunFunctionalTests.ps1"
-      arguments: "-PMCCommand $(EndToEndTestCommandToRun) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 15.0"
+      arguments: "-PMCCommand $(EndToEndTestCommandToRun) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber) -VSVersion 16.0"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -693,13 +696,13 @@ phases:
     displayName: "SetupFunctionalTests.ps1"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
-      arguments: "-VSVersion 15.0"
+      arguments: "-VSVersion 16.0"
 
   - task: PowerShell@1
     displayName: "InstallNuGetVSIX.ps1"
     inputs:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
-      arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 15.0"
+      arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 16.0"
       failOnStandardError: "false"
 
   # - task: PowerShell@1

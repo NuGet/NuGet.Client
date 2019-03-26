@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0">
   <!-- Compiler flags -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'net46' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <DefineConstants>$(DefineConstants);IS_DESKTOP</DefineConstants>
     <IsDesktop>true</IsDesktop>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' OR '$(TargetFramework)' == 'netcoreapp1.1' OR'$(TargetFramework)' == 'netstandard1.0' OR '$(TargetFramework)' == 'netstandard1.3' OR '$(TargetFramework)' == 'netstandard1.4' OR '$(TargetFramework)' == 'netstandard1.5' OR '$(TargetFramework)' == 'netstandard1.6' ">
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) OR $(TargetFramework.StartsWith('netstandard')) ">
     <DefineConstants>$(DefineConstants);IS_CORECLR</DefineConstants>
     <IsCore>true</IsCore>
   </PropertyGroup>
@@ -37,6 +37,10 @@
     <DocumentationFile Condition=" '$(DocumentationFile)' == '' AND '$(GenerateDocumentationFile)' == 'true' AND '$(IsNetCoreProject)' != 'true' ">$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
+  <ImportGroup Condition=" '$(PackProject)' == 'true' AND '$(NuGetBuildTasksPackTargets)' != '' ">
+      <Import Project="$(NuGetBuildTasksPackTargets)" />
+  </ImportGroup>
+
   <!-- Test Projects -->
   <ImportGroup Condition=" '$(TestProject)' == 'true' ">
     <Import Project="test.targets" />
@@ -45,7 +49,7 @@
   <!-- Allow WPF projects to run under NETCore SDK -->
   <!-- Errors occur if the output ptah is not set correctly -->
   <PropertyGroup Condition=" '$(NETCoreWPFProject)' == 'true' ">
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <BaseOutputPath>bin\</BaseOutputPath>
     <OutputPath>bin\$(VisualStudioVersion)\$(Configuration)</OutputPath>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -55,13 +59,13 @@
   </PropertyGroup>
 
   <!-- These are needed because currently a VSIX project cannot reference a net core project that multi targets.
-  This is a hack for building VS14 VSIX. It's because all these targets are available in the inner build, while the VSIX project 
+  This is a hack for building VS15 VSIX. It's because all these targets are available in the inner build, while the VSIX project
   is non netcore, and isn't aware of inner/outer builds. -->
-  <Target Name="BuiltProjectOutputGroupDependencies" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0' " />
-  <Target Name="BuiltProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
-  <Target Name="GetCopyToOutputDirectoryItems" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
-  <Target Name="SatelliteDllsProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
-  <Target Name="DebugSymbolsProjectOutputGroup" Condition=" '$(IsNetCoreProject)' == 'true' AND '$(VisualStudioVersion)' == '14.0'" />
+  <Target Name="BuiltProjectOutputGroupDependencies" DependsOnTargets="PrintVSVersionAndNetcore" Condition="false" />
+  <Target Name="BuiltProjectOutputGroup" DependsOnTargets="PrintVSVersionAndNetcore" Condition="false" />
+  <Target Name="GetCopyToOutputDirectoryItems" DependsOnTargets="PrintVSVersionAndNetcore" Condition="false" />
+  <Target Name="SatelliteDllsProjectOutputGroup" DependsOnTargets="PrintVSVersionAndNetcore" Condition="false" />
+  <Target Name="DebugSymbolsProjectOutputGroup" DependsOnTargets="PrintVSVersionAndNetcore" Condition="false" />
 
   <!--
     ============================================================
@@ -90,7 +94,6 @@
       Properties="Configuration=$(Configuration);
                   VisualStudioVersion=$(VisualStudioVersion);
                   PackageOutputPath=$(NupkgOutputDirectory);
-                  NoPackageAnalysis=true;
                   IncludeSymbols=true;
                   NoBuild=true;">
     </MSBuild>
@@ -214,20 +217,20 @@
   <!--Target is invoked by build\build.proj\MoveLocalizedFilesToLocalizedArtifacts to get all the localized files from all projects-->
   <Target Name="GetNetCoreLocalizedFilesInProjectOutputPath" Returns="@(_LocalizedNetCoreDllsWithRelativeTargetPath)" Condition=" '$(PackProject)' == 'true' ">
     <ItemGroup>
-      <_LocalizedDllsNetCoreApp Include="$(OutputPath)netcoreapp1.0\**\$(AssemblyName).resources.dll"/>
-      <_LocalizedDllsNetStandard16 Include="$(OutputPath)netstandard1.6\**\$(AssemblyName).resources.dll"/>
+      <_LocalizedDllsNetCoreApp Include="$(OutputPath)$(NETCoreTargetFramework)\**\$(AssemblyName).resources.dll"/>
+      <_LocalizedDllsNetStandard Include="$(OutputPath)$(NetStandardVersion)\**\$(AssemblyName).resources.dll"/>
       <_LocalizedDllsNetStandard10 Include="$(OutputPath)netstandard1.0\**\$(AssemblyName).resources.dll"/>
 
       <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetCoreApp)" Condition=" '@(_LocalizedDllsNetCoreApp)' != '' ">
-        <RelativeTargetPath>netstandard1.6\%(_LocalizedDllsNetCoreApp.RecursiveDir)%(_LocalizedDllsNetCoreApp.FileName)%(_LocalizedDllsNetCoreApp.Extension)</RelativeTargetPath>
+        <RelativeTargetPath>$(NetStandardVersion)\%(_LocalizedDllsNetCoreApp.RecursiveDir)%(_LocalizedDllsNetCoreApp.FileName)%(_LocalizedDllsNetCoreApp.Extension)</RelativeTargetPath>
       </_LocalizedNetCoreDllsWithRelativeTargetPath>
 
       <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetStandard10)" Condition=" '@(_LocalizedDllsNetStandard10)' != '' ">
-        <RelativeTargetPath>netstandard1.6\%(_LocalizedDllsNetStandard10.RecursiveDir)%(_LocalizedDllsNetStandard10.FileName)%(_LocalizedDllsNetStandard10.Extension)</RelativeTargetPath>
+        <RelativeTargetPath>$(NetStandardVersion)\%(_LocalizedDllsNetStandard10.RecursiveDir)%(_LocalizedDllsNetStandard10.FileName)%(_LocalizedDllsNetStandard10.Extension)</RelativeTargetPath>
       </_LocalizedNetCoreDllsWithRelativeTargetPath>
 
-      <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetStandard16)" Condition=" '@(_LocalizedDllsNetStandard16)' != '' ">
-        <RelativeTargetPath>netstandard1.6\%(_LocalizedDllsNetStandard16.RecursiveDir)%(_LocalizedDllsNetStandard16.FileName)%(_LocalizedDllsNetStandard16.Extension)</RelativeTargetPath>
+      <_LocalizedNetCoreDllsWithRelativeTargetPath Include="@(_LocalizedDllsNetStandard)" Condition=" '@(_LocalizedDllsNetStandard)' != '' ">
+        <RelativeTargetPath>$(NetStandardVersion)\%(_LocalizedDllsNetStandard.RecursiveDir)%(_LocalizedDllsNetStandard.FileName)%(_LocalizedDllsNetStandard.Extension)</RelativeTargetPath>
       </_LocalizedNetCoreDllsWithRelativeTargetPath>
     </ItemGroup>
   </Target>

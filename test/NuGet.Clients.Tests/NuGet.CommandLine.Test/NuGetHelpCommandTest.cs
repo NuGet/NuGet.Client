@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using NuGet.Test.Utility;
 using Xunit;
@@ -54,6 +54,12 @@ namespace NuGet.CommandLine.Test
             // Assert
             Assert.Equal(0, r.Item1);
             Assert.DoesNotContain("-ConfigFile", r.Item2, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void HelpCommand_Failure_InvalidArguments()
+        {
+            Util.TestCommandInvalidArguments("help aCommand otherCommand");
         }
     }
 }

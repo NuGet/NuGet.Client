@@ -6,10 +6,10 @@
     <title>NuGet.Localization</title>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
-    <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</licenseUrl>
-    <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+    <license type="expression">Apache-2.0</license>
+    <projectUrl>https://aka.ms/nugetprj</projectUrl>
     <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
-    <description>NuGet localization package. Microsoft holds the copyright for this NuGet package. .NET Foundation holds the copyright to the source.</description>
+    <description>NuGet localization package.</description>
     <tags>nuget</tags>
   </metadata>
 

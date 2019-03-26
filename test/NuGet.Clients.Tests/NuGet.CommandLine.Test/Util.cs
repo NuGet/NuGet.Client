@@ -806,6 +806,13 @@ EndProject";
             }
         }
 
+        /// <summary>
+        /// Utility for asserting faulty executions of nuget.exe
+        /// 
+        /// Asserts a non-zero status code and a message on stderr.
+        /// </summary>
+        /// <param name="result">An instance of <see cref="CommandRunnerResult"/> with command execution results</param>
+        /// <param name="expectedErrorMessage">A portion of the error message to be sent</param>
         public static void VerifyResultFailure(CommandRunnerResult result,
                                                string expectedErrorMessage)
         {
@@ -1162,6 +1169,39 @@ EndProject");
         {
             // Simply test the extension as that is all we care about
             return string.Equals(Path.GetExtension(configFileName), ".json", StringComparison.OrdinalIgnoreCase);
+        }
+
+
+        /// <summary>
+        /// Verify non-zero status code and proper messages
+        /// </summary>
+        /// <remarks>Checks invalid arguments message in stderr, check help message in stdout</remarks>
+        /// <param name="commandName">The nuget.exe command name to verify, without "nuget.exe" at the beginning</param>
+        public static void TestCommandInvalidArguments(string command)
+        {
+            // Act
+            var result = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                Directory.GetCurrentDirectory(),
+                command,
+                waitForExit: true);
+
+            var commandSplit = command.Split(' ');
+
+            // Break the test if no proper command is found
+            if (commandSplit.Length < 1 || string.IsNullOrEmpty(commandSplit[0]))
+                Assert.True(false, "command not found");
+
+            var mainCommand = commandSplit[0];
+
+            // Assert command
+            Assert.Contains(mainCommand, result.Item3, StringComparison.InvariantCultureIgnoreCase);
+            // Assert invalid argument message
+            var invalidMessage = string.Format(": invalid arguments.", mainCommand);
+            // Verify Exit code
+            VerifyResultFailure(result, invalidMessage);
+            // Verify traits of help message in stdout
+            Assert.Contains("usage:", result.Item2);
         }
     }
 }

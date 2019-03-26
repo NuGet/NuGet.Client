@@ -38,19 +38,19 @@ namespace NuGet.Configuration
         /// <summary>
         /// Specifies if the setting has attributes or values.
         /// </summary>
-        internal abstract bool IsEmpty();
+        public abstract bool IsEmpty();
 
         /// <summary>
         /// Gives the representation of this setting as an XNode object
         /// </summary>
-        internal abstract XNode AsXNode();
+        internal virtual XNode AsXNode() => Node;
 
         /// <summary>
         /// Creates a shallow copy of the setting.
         /// Does not copy any pointer to the original data structure.
         /// Just copies the abstraction.
         /// </summary>
-        internal abstract SettingBase Clone();
+        public abstract SettingBase Clone();
 
         internal void SetNode(XNode node)
         {

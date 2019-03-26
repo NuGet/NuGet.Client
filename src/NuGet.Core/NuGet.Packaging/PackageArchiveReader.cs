@@ -196,7 +196,6 @@ namespace NuGet.Packaging
                     if (copiedFile != null)
                     {
                         entry.UpdateFileTimeFromEntry(copiedFile, logger);
-                        entry.UpdateFilePermissionsFromEntry(copiedFile, logger);
 
                         filesCopied.Add(copiedFile);
                     }
@@ -384,7 +383,11 @@ namespace NuGet.Packaging
 
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
+#if IS_DESKTOP
             return true;
+#else
+            return false;
+#endif
         }
 
         protected void ThrowIfZipReadStreamIsNull()

@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     DataContext = new LicenseFileData
                     {
-                        Header = string.Format(CultureInfo.CurrentCulture, UI.Resources.WindowTitle_LicenseFileWindow, metadata.Id),
+                        LicenseHeader = string.Format(CultureInfo.CurrentCulture, UI.Resources.WindowTitle_LicenseFileWindow, metadata.Id),
                         LicenseText = new FlowDocument(new Paragraph(new Run(UI.Resources.LicenseFile_Loading)))
                     }
                 };

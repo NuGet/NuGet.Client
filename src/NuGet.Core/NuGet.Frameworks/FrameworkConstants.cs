@@ -107,6 +107,7 @@ namespace NuGet.Frameworks
 
             public static readonly NuGetFramework Tizen3 = new NuGetFramework(FrameworkIdentifiers.Tizen, new Version(3, 0, 0, 0));
             public static readonly NuGetFramework Tizen4 = new NuGetFramework(FrameworkIdentifiers.Tizen, new Version(4, 0, 0, 0));
+            public static readonly NuGetFramework Tizen6 = new NuGetFramework(FrameworkIdentifiers.Tizen, new Version(6, 0, 0, 0));
 
             public static readonly NuGetFramework AspNet = new NuGetFramework(FrameworkIdentifiers.AspNet, EmptyVersion);
             public static readonly NuGetFramework AspNetCore = new NuGetFramework(FrameworkIdentifiers.AspNetCore, EmptyVersion);
@@ -157,6 +158,8 @@ namespace NuGet.Frameworks
                 = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 7, 0, 0));
             public static readonly NuGetFramework NetStandard20
                 = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(2, 0, 0, 0));
+            public static readonly NuGetFramework NetStandard21
+                = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(2, 1, 0, 0));
 
             public static readonly NuGetFramework NetStandardApp15
                 = new NuGetFramework(FrameworkIdentifiers.NetStandardApp, new Version(1, 5, 0, 0));
@@ -172,6 +175,10 @@ namespace NuGet.Frameworks
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(2, 0, 0, 0));
             public static readonly NuGetFramework NetCoreApp21
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(2, 1, 0, 0));
+            public static readonly NuGetFramework NetCoreApp22
+                = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(2, 2, 0, 0));
+            public static readonly NuGetFramework NetCoreApp30
+                = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(3, 0, 0, 0));
         }
     }
 }

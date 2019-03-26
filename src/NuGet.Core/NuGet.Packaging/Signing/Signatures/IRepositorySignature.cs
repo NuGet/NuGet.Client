@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace NuGet.Packaging.Signing
 {
-    public interface IRepositorySignature
+    public interface IRepositorySignature : ISignature
     {
 #if IS_DESKTOP
         Uri V3ServiceIndexUrl { get; }

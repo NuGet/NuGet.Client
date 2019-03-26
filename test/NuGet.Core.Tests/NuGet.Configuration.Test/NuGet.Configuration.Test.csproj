@@ -3,8 +3,8 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.0;net46</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">netcoreapp1.0</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework)</TargetFrameworks>
     <TestProject>true</TestProject>
     <UseParallelXunit>true</UseParallelXunit>
   </PropertyGroup>
@@ -13,13 +13,13 @@
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">
-    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.0.0" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.0.0" />
-    <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.0.1" />
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
+    <PackageReference Include="System.Diagnostics.TraceSource" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Threading.Tasks.Parallel" Version="$(SystemPackagesVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
   </ItemGroup>

@@ -12,4 +12,10 @@
 
   <!-- Additional props -->
   <Import Project="common.project.props"/>
+
+  <PropertyGroup>
+    <!-- Some legacy projects reference assemblies in GAC;AssemblyFolders. -->
+    <!-- Reset AssemblySearchPaths to empty to let Microsoft.Common.targets pick the legacy defaults -->
+    <AssemblySearchPaths />
+  </PropertyGroup>
 </Project>

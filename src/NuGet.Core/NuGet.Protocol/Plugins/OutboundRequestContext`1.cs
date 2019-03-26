@@ -21,6 +21,7 @@ namespace NuGet.Protocol.Plugins
         private bool _isClosed;
         private bool _isDisposed;
         private bool _isKeepAlive;
+        private readonly IPluginLogger _logger;
         private readonly Message _request;
         private readonly TaskCompletionSource<TResult> _taskCompletionSource;
         private readonly TimeSpan? _timeout;
@@ -52,6 +53,35 @@ namespace NuGet.Protocol.Plugins
             TimeSpan? timeout,
             bool isKeepAlive,
             CancellationToken cancellationToken)
+            : this(connection, request, timeout, isKeepAlive, cancellationToken, PluginLogger.DefaultInstance)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="OutboundRequestContext{TResult}" /> class.
+        /// </summary>
+        /// <param name="connection">A connection.</param>
+        /// <param name="request">A request.</param>
+        /// <param name="timeout">An optional request timeout.</param>
+        /// <param name="isKeepAlive">A flag indicating whether or not the request supports progress notifications
+        /// to reset the request timeout.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <param name="logger">A plugin logger.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="connection" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="request" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
+        /// is <c>null</c>.</exception>
+        internal OutboundRequestContext(
+            IConnection connection,
+            Message request,
+            TimeSpan? timeout,
+            bool isKeepAlive,
+            CancellationToken cancellationToken,
+            IPluginLogger logger)
         {
             if (connection == null)
             {
@@ -61,6 +91,11 @@ namespace NuGet.Protocol.Plugins
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
             }
 
             _connection = connection;
@@ -80,6 +115,8 @@ namespace NuGet.Protocol.Plugins
             }
 
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+            _logger = logger;
 
             _cancellationTokenSource.Token.Register(TryCancel);
 
@@ -170,7 +207,7 @@ namespace NuGet.Protocol.Plugins
             {
                 Close();
 
-                // Do not dispose of _connection.
+                // Do not dispose of _connection or _logger.  This context does not own them.
             }
 
             _isDisposed = true;
@@ -215,15 +252,32 @@ namespace NuGet.Protocol.Plugins
             {
                 if (Interlocked.CompareExchange(ref _isCancellationRequested, value: 1, comparand: 0) == 0)
                 {
+                    if (_logger.IsEnabled)
+                    {
+                        _logger.Write(new TaskLogMessage(_logger.Now, _request.RequestId, _request.Method, MessageType.Cancel, TaskState.Queued));
+                    }
+
                     Task.Run(async () =>
                     {
                         // Top-level exception handler for a worker pool thread.
                         try
                         {
+                            if (_logger.IsEnabled)
+                            {
+                                _logger.Write(new TaskLogMessage(_logger.Now, _request.RequestId, _request.Method, MessageType.Cancel, TaskState.Executing));
+                            }
+
                             await _connection.MessageDispatcher.DispatchCancelAsync(_request, CancellationToken.None);
                         }
                         catch (Exception)
                         {
+                        }
+                        finally
+                        {
+                            if (_logger.IsEnabled)
+                            {
+                                _logger.Write(new TaskLogMessage(_logger.Now, _request.RequestId, _request.Method, MessageType.Cancel, TaskState.Completed));
+                            }
                         }
                     });
                 }

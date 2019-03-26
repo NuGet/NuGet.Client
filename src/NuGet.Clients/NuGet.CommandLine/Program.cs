@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 extern alias CoreV2;
 
 using System;
@@ -5,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -126,15 +130,51 @@ namespace NuGet.CommandLine
                     // Get the command name and add it to the argument list of the help command
                     var commandName = command.CommandAttribute.CommandName;
 
-                    // Print invalid command then show help
-                    console.WriteLine(LocalizedResourceManager.GetString("InvalidArguments"), commandName);
+                    // Print invalid arguments command error message in stderr
+                    console.WriteError(LocalizedResourceManager.GetString("InvalidArguments"), commandName);
 
+                    // then show help
                     p.HelpCommand.ViewHelpForCommand(commandName);
+
+                    return 1;
                 }
                 else
                 {
                     SetConsoleInteractivity(console, command as Command);
-                    command.Execute();
+
+                    try
+                    {
+                        command.Execute();
+                    }
+                    catch (AggregateException e)
+                    {
+                        var unwrappedEx = ExceptionUtility.Unwrap(e);
+
+                        if (unwrappedEx is CommandLineArgumentCombinationException)
+                        {
+                            var commandName = command.CommandAttribute.CommandName;
+
+                            console.WriteLine($"{string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InvalidArguments"), commandName)} {unwrappedEx.Message}");
+
+                            p.HelpCommand.ViewHelpForCommand(commandName);
+
+                            return 1;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    catch (CommandLineArgumentCombinationException e)
+                    {
+                        var commandName = command.CommandAttribute.CommandName;
+
+                        console.WriteLine($"{string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InvalidArguments"), commandName)} {e.Message}");
+
+                        p.HelpCommand.ViewHelpForCommand(commandName);
+
+                        return 1;
+                    }
                 }
             }
             catch (AggregateException exception)

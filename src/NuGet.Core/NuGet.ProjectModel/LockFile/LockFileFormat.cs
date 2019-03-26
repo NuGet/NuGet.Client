@@ -50,6 +50,7 @@ namespace NuGet.ProjectModel
         private const string PackageFoldersProperty = "packageFolders";
         private const string PackageSpecProperty = "project";
         private const string LogsProperty = "logs";
+        private const string EmbedProperty = "embed";
 
         // Legacy property names
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";
@@ -485,6 +486,7 @@ namespace NuGet.ProjectModel
             library.ContentFiles = JsonUtility.ReadObject(json[ContentFilesProperty] as JObject, ReadContentFile);
             library.RuntimeTargets = JsonUtility.ReadObject(json[RuntimeTargetsProperty] as JObject, ReadRuntimeTarget);
             library.ToolsAssemblies = JsonUtility.ReadObject(json[ToolsProperty] as JObject, ReadFileItem);
+            library.EmbedAssemblies = JsonUtility.ReadObject(json[EmbedProperty] as JObject, ReadFileItem);
 
             return library;
         }
@@ -578,6 +580,13 @@ namespace NuGet.ProjectModel
                 var ordered = library.ToolsAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
                 json[ToolsProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+            }
+
+            if (library.EmbedAssemblies.Count > 0)
+            {
+                var ordered = library.EmbedAssemblies.OrderBy(assemby => assemby.Path, StringComparer.Ordinal);
+
+                json[EmbedProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
             }
 
             return new JProperty(library.Name + "/" + library.Version.ToNormalizedString(), json);

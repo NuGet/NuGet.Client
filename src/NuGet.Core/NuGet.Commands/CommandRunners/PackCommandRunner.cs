@@ -788,8 +788,9 @@ namespace NuGet.Commands
                 var symbolsBuilder = factory.CreateBuilder(_packArgs.BasePath, argsVersion, _packArgs.Suffix, buildIfNeeded: false, builder: mainPackageBuilder);
                 symbolsBuilder.Version = mainPackageBuilder.Version;
                 symbolsBuilder.HasSnapshotVersion = mainPackageBuilder.HasSnapshotVersion;
-                if(_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg)
+                if(_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg) // Snupkgs can only have 1 PackageType. 
                 {
+                    symbolsBuilder.PackageTypes.Clear();
                     symbolsBuilder.PackageTypes.Add(PackageType.SymbolsPackage);
                 }
 
@@ -926,9 +927,9 @@ namespace NuGet.Commands
         private void BuildSymbolsPackage(string path)
         {
             var symbolsBuilder = CreatePackageBuilderFromNuspec(path);
-            if(_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg &&
-                !symbolsBuilder.PackageTypes.Contains(PackageType.SymbolsPackage))
+            if(_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg) // Snupkgs can only have 1 PackageType. 
             {
+                symbolsBuilder.PackageTypes.Clear();
                 symbolsBuilder.PackageTypes.Add(PackageType.SymbolsPackage);
             }
 

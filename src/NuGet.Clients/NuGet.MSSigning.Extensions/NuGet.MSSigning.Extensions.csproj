@@ -4,7 +4,7 @@
   <Import Project="ilmerge.props" />
 
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Shipping>true</Shipping>
     <PackProject>false</PackProject>
     <IncludeInVsix>false</IncludeInVsix>
@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj" />
+    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.CommandLine\NuGet.CommandLine.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,6 +44,8 @@
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
 
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+
   <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
     <ItemGroup>
       <DllsToSign Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.Mssign.exe">
@@ -60,6 +62,5 @@
     </ItemGroup>
   </Target>
   
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

@@ -469,57 +469,76 @@ namespace NuGet.CommandLine
         public static MsBuildToolset GetMsBuildToolset(string userVersion, IConsole console)
         {
             var currentDirectoryCache = Directory.GetCurrentDirectory();
-            var msBuildDirectory = string.Empty;
             var installedToolsets = new List<MsBuildToolset>();
+            MsBuildToolset toolset = null;
 
-            // If Mono, test well known paths and bail if found
-            var toolset = GetMsBuildFromMonoPaths(userVersion);
-            if (toolset != null)
+            try
             {
-                LogToolsetToConsole(console, toolset);
+                // If Mono, test well known paths and bail if found
+                toolset = GetMsBuildFromMonoPaths(userVersion);
+                if (toolset != null)
+                {
+                    return toolset;
+                }
+
+                // If the userVersion is not specified, favor the value in the $Path Env variable
+                if (string.IsNullOrEmpty(userVersion))
+                {
+                    var msbuildExe = GetMSBuild();
+
+                    if (msbuildExe != null)
+                    {
+                        var msBuildDirectory = Path.GetDirectoryName(msbuildExe);
+                        var msbuildVersion = FileVersionInfo.GetVersionInfo(msbuildExe)?.FileVersion;
+                        return toolset = new MsBuildToolset(msbuildVersion, msBuildDirectory);
+                    }
+                }
+
+                using (var projectCollection = LoadProjectCollection())
+                {
+                    var installed = ((dynamic)projectCollection)?.Toolsets;
+                    if (installed != null)
+                    {
+                        foreach (var item in installed)
+                        {
+                            installedToolsets.Add(new MsBuildToolset(version: item.ToolsVersion, path: item.ToolsPath));
+                        }
+
+                        installedToolsets = installedToolsets.ToList();
+                    }
+                }
+
+                // In a non-Mono environment, we have the potential for SxS installs of MSBuild 15.1+. Let's add these here.
+                if (!RuntimeEnvironmentHelper.IsMono)
+                {
+                    var installedSxsToolsets = GetInstalledSxsToolsets();
+                    if (installedToolsets == null)
+                    {
+                        installedToolsets = installedSxsToolsets;
+                    }
+                    else if (installedSxsToolsets != null)
+                    {
+                        installedToolsets.AddRange(installedSxsToolsets);
+                    }
+                }
+
+                if (!installedToolsets.Any())
+                {
+                    throw new CommandLineException(
+                        LocalizedResourceManager.GetString(
+                            nameof(NuGetResources.Error_CannotFindMsbuild)));
+                }
+
+                toolset = GetMsBuildDirectoryInternal(
+                    userVersion, console, installedToolsets.OrderByDescending(t => t), () => GetMsBuildPathInPathVar());
+
+                Directory.SetCurrentDirectory(currentDirectoryCache);
                 return toolset;
             }
-
-            using (var projectCollection = LoadProjectCollection())
+            finally
             {
-                var installed = ((dynamic)projectCollection)?.Toolsets;
-                if (installed != null)
-                {
-                    foreach (var item in installed)
-                    {
-                        installedToolsets.Add(new MsBuildToolset(version: item.ToolsVersion, path: item.ToolsPath));
-                    }
-
-                    installedToolsets = installedToolsets.ToList();
-                }
+                LogToolsetToConsole(console, toolset);
             }
-
-            // In a non-Mono environment, we have the potential for SxS installs of MSBuild 15.1+. Let's add these here.
-            if (!RuntimeEnvironmentHelper.IsMono)
-            {
-                var installedSxsToolsets = GetInstalledSxsToolsets();
-                if (installedToolsets == null)
-                {
-                    installedToolsets = installedSxsToolsets;
-                }
-                else if (installedSxsToolsets != null)
-                {
-                    installedToolsets.AddRange(installedSxsToolsets);
-                }
-            }
-
-            if (!installedToolsets.Any())
-            {
-                throw new CommandLineException(
-                    LocalizedResourceManager.GetString(
-                        nameof(NuGetResources.Error_CannotFindMsbuild)));
-            }
-
-            toolset = GetMsBuildDirectoryInternal(
-                userVersion, console, installedToolsets.OrderByDescending(t => t), () => GetMsBuildPathInPathVar());
-
-            Directory.SetCurrentDirectory(currentDirectoryCache);
-            return toolset;
         }
 
         /// <summary>
@@ -552,12 +571,6 @@ namespace NuGet.CommandLine
                 toolset = GetToolsetFromUserVersion(userVersion, toolsetsContainingMSBuild);
             }
 
-            if (toolset == null)
-            {
-                return null;
-            }
-
-            LogToolsetToConsole(console, toolset);
             return toolset;
         }
 
@@ -757,7 +770,7 @@ namespace NuGet.CommandLine
 
         private static void LogToolsetToConsole(IConsole console, MsBuildToolset toolset)
         {
-            if (console == null)
+            if (console == null || toolset == null)
             {
                 return;
             }
@@ -935,27 +948,19 @@ namespace NuGet.CommandLine
         {
             if (RuntimeEnvironmentHelper.IsMono)
             {
-                // Try to find msbuild or xbuild in $Path.
-                var pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+                var msbuildExe = GetMSBuild();
 
-                if (pathDirs?.Length > 0)
+                if (msbuildExe != null)
                 {
-                    foreach (var exeName in new[] { "msbuild", "xbuild" })
-                    {
-                        var exePath = pathDirs.Select(dir => Path.Combine(dir, exeName)).FirstOrDefault(File.Exists);
-                        if (exePath != null)
-                        {
-                            return exePath;
-                        }
-                    }
+                    return msbuildExe;
                 }
 
                 // Find the first mono path that exists
-                var path = GetMsBuildFromMonoPaths(userVersion: null)?.Path;
+                msbuildExe = GetMsBuildFromMonoPaths(userVersion: null)?.Path;
 
-                if (path != null)
+                if (msbuildExe != null)
                 {
-                    return path;
+                    return msbuildExe;
                 }
                 else
                 {
@@ -966,6 +971,33 @@ namespace NuGet.CommandLine
             {
                 return Path.Combine(msbuildDirectory, "msbuild.exe");
             }
+        }
+
+        private static string GetMSBuild()
+        {
+            var exeNames = new [] { "msbuild.exe" };
+
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                exeNames = new[] { "msbuild", "xbuild" };
+            }
+
+            // Try to find msbuild or xbuild in $Path.
+            var pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (pathDirs?.Length > 0)
+            {
+                foreach (var exeName in exeNames)
+                {
+                    var exePath = pathDirs.Select(dir => Path.Combine(dir, exeName)).FirstOrDefault(File.Exists);
+                    if (exePath != null)
+                    {
+                        return exePath;
+                    }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -986,10 +1018,9 @@ namespace NuGet.CommandLine
                 {
                     throw new ArgumentNullException(nameof(extension));
                 }
-
                 var tempDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp);
 
-                Directory.CreateDirectory(tempDirectory);
+                DirectoryUtility.CreateSharedDirectory(tempDirectory);
 
                 var count = 0;
                 do

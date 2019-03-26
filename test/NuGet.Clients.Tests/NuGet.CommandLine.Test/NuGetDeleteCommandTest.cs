@@ -401,7 +401,7 @@ namespace NuGet.CommandLine.Test
                 // Act
                 string[] args = new string[] {
                     "delete", "testPackage1", "1.1.0",
-					"-Source", server.Uri + "nuget", "-NonInteractive" };
+                    "-Source", server.Uri + "nuget", "-NonInteractive" };
 
                 var r = CommandRunner.Run(
                     nugetexe,
@@ -418,6 +418,14 @@ namespace NuGet.CommandLine.Test
                     }
                 }
             }
+        }
+
+        [Theory]
+        [InlineData("delete Someting")]
+        [InlineData("delete a b c d")]
+        public void DeleteCommand_Failure_InvalidArguments(string args)
+        {
+            Util.TestCommandInvalidArguments(args);
         }
 
         public static IEnumerable<object[]> ServerWarningData

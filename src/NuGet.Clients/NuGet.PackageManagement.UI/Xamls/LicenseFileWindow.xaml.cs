@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,6 +27,13 @@ namespace NuGet.PackageManagement.UI
         public LicenseFileWindow()
         {
             InitializeComponent();
+            Closing += new CancelEventHandler(Window_ClosingAction);
+        }
+
+        // We need to unparent the flow document to allow a follow-up click to view the same license work.
+        private void Window_ClosingAction(object sender, CancelEventArgs e)
+        {
+            DataContext = null;
         }
     }
 }

@@ -526,9 +526,9 @@ namespace NuGet.Packaging
             }
         }
 
-        public static void ValidateLicenseFile(IEnumerable<IPackageFile> files, LicenseMetadata licenseMetadata)
+        private void ValidateLicenseFile(IEnumerable<IPackageFile> files, LicenseMetadata licenseMetadata)
         {
-            if (licenseMetadata?.Type == LicenseType.File)
+            if (!PackageTypes.Contains(PackageType.SymbolsPackage) && licenseMetadata?.Type == LicenseType.File)
             {
                 var ext = Path.GetExtension(licenseMetadata.License);
                 if (!string.IsNullOrEmpty(ext) &&

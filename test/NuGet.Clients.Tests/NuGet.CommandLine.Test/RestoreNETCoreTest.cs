@@ -601,14 +601,13 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var dgSpec = DependencyGraphSpec.Load(dgPath);
-
                 var propsXML = XDocument.Load(projectA.PropsOutput);
                 var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
 
                 // Assert
-                Assert.Equal(ProjectStyle.PackageReference, dgSpec.Projects.Single().RestoreMetadata.ProjectStyle);
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+                Assert.Equal(ProjectStyle.PackageReference, assetsFile.PackageSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
             }
         }
@@ -661,14 +660,13 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var dgSpec = DependencyGraphSpec.Load(dgPath);
-
                 var propsXML = XDocument.Load(projectA.PropsOutput);
                 var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
 
                 // Assert
-                Assert.Equal(ProjectStyle.PackageReference, dgSpec.Projects.Single().RestoreMetadata.ProjectStyle);
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+                Assert.Equal(ProjectStyle.PackageReference, assetsFile.PackageSpec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("PackageReference", styleNode.Value);
             }
         }
@@ -700,6 +698,7 @@ namespace NuGet.CommandLine.Test
                 // Force this project to ProjectJson
                 projectA.Properties.Clear();
                 projectA.Properties.Add("RestoreProjectStyle", "ProjectJson");
+                projectA.Type = ProjectStyle.ProjectJson;
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
@@ -726,12 +725,10 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var dgSpec = DependencyGraphSpec.Load(dgPath);
-
                 // Assert
-                Assert.Equal(ProjectStyle.ProjectJson, dgSpec.Projects.Single().RestoreMetadata.ProjectStyle);
-                Assert.True(File.Exists(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "project.lock.json")));
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+                Assert.Equal(ProjectStyle.ProjectJson, assetsFile.PackageSpec.RestoreMetadata.ProjectStyle);
             }
         }
 
@@ -773,14 +770,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -794,8 +783,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -845,14 +833,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -866,8 +846,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -1920,7 +1899,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(cachePath));
                 // This is expected, because despite the fact that both projects resolve to the same tool, the version range they request is different so they will keep overwriting each other
                 // Basically, it is impossible for both tools to no-op.
-                Assert.Contains($"Writing tool lock file to disk", r2.Item2);
+                Assert.Contains($"Writing tool assets file to disk", r2.Item2);
                 r = Util.RestoreSolution(pathContext);
 
             }
@@ -2002,7 +1981,7 @@ namespace NuGet.CommandLine.Test
 
                 // This is expected, because despite the fact that both projects resolve to the same tool, the version range they request is different so they will keep overwriting each other
                 // Basically, it is impossible for both tools to no-op.
-                Assert.Contains($"Writing tool lock file to disk", r2.Item2);
+                Assert.Contains($"Writing tool assets file to disk", r2.Item2);
             }
         }
 
@@ -3468,14 +3447,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -3488,8 +3459,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3568,14 +3538,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -3588,8 +3550,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3681,14 +3642,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -3701,8 +3654,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3759,14 +3711,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -3779,8 +3723,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3855,14 +3798,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -3875,8 +3810,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3956,14 +3890,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Store the dg file for debugging
-                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-                var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath }
-                };
-
                 var args = new string[] {
                     "restore",
                     projectA.ProjectPath,
@@ -3976,8 +3902,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true,
-                    environmentVariables: envVars);
+                    waitForExit: true);
 
                 // Assert
                 Assert.False(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -6032,7 +5957,7 @@ namespace NuGet.CommandLine.Test
 
                 Assert.Equal(0, r.Item1);
                 Assert.Contains("Writing cache file", r.Item2);
-                Assert.Contains("Writing lock file to disk", r.Item2);
+                Assert.Contains("Writing assets file to disk", r.Item2);
 
                 // Pre-condition, Assert deleting the correct file
                 Assert.True(File.Exists(project.CacheFileOutputPath));
@@ -6042,7 +5967,7 @@ namespace NuGet.CommandLine.Test
 
                 Assert.Equal(0, r.Item1);
                 Assert.Contains("Writing cache file", r.Item2);
-                Assert.DoesNotContain("Writing lock file to disk", r.Item2);
+                Assert.DoesNotContain("Writing assets file to disk", r.Item2);
 
 
             }
@@ -6126,12 +6051,12 @@ namespace NuGet.CommandLine.Test
                 var r1 = Util.Restore(pathContext,project.ProjectPath);
                 Assert.Equal(0, r1.Item1);
                 Assert.Contains("Writing cache file", r1.Item2);
-                Assert.Contains("Writing lock file to disk", r1.Item2);
+                Assert.Contains("Writing assets file to disk", r1.Item2);
 
                 var r2 = Util.Restore(pathContext, secondaryProjectName);
                 Assert.Contains("Writing cache file", r2.Item2);
                 Assert.Equal(0, r2.Item1);
-                Assert.Contains("Writing lock file to disk", r2.Item2);
+                Assert.Contains("Writing assets file to disk", r2.Item2);
 
                 // Act
                 var result = Util.Restore(pathContext, project.ProjectPath);
@@ -6139,7 +6064,366 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
                 Assert.Contains("Writing cache file", result.Item2);
-                Assert.Contains("Writing lock file to disk", result.Item2);
+                Assert.Contains("Writing assets file to disk", result.Item2);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_InteropTypePackage()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net461"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/a.dll");
+                packageX.AddFile("embed/net461/a.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.NotNull(projectA.AssetsFile);
+
+                foreach (var target in projectA.AssetsFile.Targets)
+                {
+                    var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("x"));
+                    Assert.NotNull(library);
+                    Assert.True(library.EmbedAssemblies.Any(embed => embed.Path.Equals("embed/net461/a.dll")));
+                    Assert.True(library.CompileTimeAssemblies.Any(embed => embed.Path.Equals("lib/net461/a.dll")));
+                    Assert.True(library.RuntimeAssemblies.Any(embed => embed.Path.Equals("lib/net461/a.dll")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_MultiTFM_ProjectToProject_PackagesLockFile()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net46"),
+                    NuGetFramework.Parse("net45"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"),
+                    NuGetFramework.Parse("net46"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net45/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                // A -> B
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B
+                projectB.AddPackageToFramework("net45", packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectB.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Second Restore
+                r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_BuildTransitive()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net461"));
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY.Files.Clear();
+                packageY.AddFile("lib/net461/y.dll");
+                packageY.AddFile("build/y.targets");
+                packageY.AddFile("buildCrossTargeting/y.targets");
+                packageY.AddFile("buildTransitive/y.targets");
+                packageY.Exclude = "build;analyzer";
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/x.dll");
+                packageX.Dependencies.Add(packageY);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+
+                foreach (var target in assetsFile.Targets)
+                {
+                    var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("y"));
+                    Assert.NotNull(library);
+                    Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_SkipBuildTransitive()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net461"));
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY.Files.Clear();
+                packageY.AddFile("lib/net461/y.dll");
+                packageY.AddFile("build/y.targets");
+                packageY.AddFile("buildCrossTargeting/y.targets");
+                packageY.AddFile("buildTransitive/y.targets");
+                packageY.Exclude = "buildTransitive";
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/x.dll");
+                packageX.Dependencies.Add(packageY);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+
+                foreach (var target in assetsFile.Targets)
+                {
+                    var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("y"));
+                    Assert.NotNull(library);
+                    Assert.False(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_NoOp_DgSpecJsonIsNotOverridenDuringNoOp()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    $"proj",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Prerequisites
+                var result = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
+                Assert.Equal(0, result.Item1);
+                Assert.Contains("Writing cache file", result.Item2);
+                Assert.Contains("Writing assets file to disk", result.Item2);
+                Assert.Contains("Persisting no-op dg", result.Item2);
+
+                var dgSpecFileName = Path.Combine(Path.GetDirectoryName(project.AssetsFileOutputPath), $"{Path.GetFileName(project.ProjectPath)}.nuget.dgspec.json");
+
+                var fileInfo = new FileInfo(dgSpecFileName);
+                Assert.True(fileInfo.Exists);
+                var lastWriteTime = fileInfo.LastWriteTime;
+
+                // Act
+                result = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.DoesNotContain("Writing cache file", result.Item2);
+                Assert.DoesNotContain("Writing assets file to disk", result.Item2);
+                Assert.DoesNotContain("Persisting no-op dg", result.Item2);
+
+                fileInfo = new FileInfo(dgSpecFileName);
+                Assert.True(fileInfo.Exists);
+                Assert.Equal(lastWriteTime, fileInfo.LastWriteTime);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_NoOp_DgSpecJsonIsWrittenInNoopCaseIfNotExists()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    $"proj",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                project.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Prerequisites
+                var result = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
+                Assert.Equal(0, result.Item1);
+                Assert.Contains("Writing cache file", result.Item2);
+                Assert.Contains("Writing assets file to disk", result.Item2);
+                Assert.Contains("Persisting no-op dg", result.Item2);
+
+                var dgSpecFileName = Path.Combine(Path.GetDirectoryName(project.AssetsFileOutputPath), $"{Path.GetFileName(project.ProjectPath)}.nuget.dgspec.json");
+
+                var fileInfo = new FileInfo(dgSpecFileName);
+                Assert.True(fileInfo.Exists);
+                fileInfo.Delete();
+                fileInfo = new FileInfo(dgSpecFileName);
+                Assert.False(fileInfo.Exists);
+
+
+                // Act
+                result = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.DoesNotContain("Writing cache file", result.Item2);
+                Assert.DoesNotContain("Writing assets file to disk", result.Item2);
+                Assert.Contains("Persisting no-op dg", result.Item2);
+
+                fileInfo = new FileInfo(dgSpecFileName);
+                Assert.True(fileInfo.Exists);
             }
         }
     }

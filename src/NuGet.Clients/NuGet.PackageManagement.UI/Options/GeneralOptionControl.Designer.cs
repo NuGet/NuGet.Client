@@ -154,12 +154,10 @@ namespace NuGet.Options
         private System.Windows.Forms.Label BindingRedirectsHeader;
         private System.Windows.Forms.Button localsCommandButton;
         private System.Windows.Forms.RichTextBox localsCommandStatusText;
-#if !VS14
         private System.Windows.Forms.Label PackageManagementHeader;
         private System.Windows.Forms.Label defaultPackageManagementFormatLabel;
         private System.Windows.Forms.CheckBox showPackageManagementChooser;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.ComboBox defaultPackageManagementFormatItems;
-#endif
     }
 }

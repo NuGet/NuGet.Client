@@ -133,9 +133,6 @@ namespace NuGet.SolutionRestoreManager
                 var projectNames = ProjectNames.FromFullProjectPath(projectUniqueName);
 
                 var dgSpec = ToDependencyGraphSpec(projectNames, projectRestoreInfo);
-#if DEBUG
-                DumpProjectRestoreInfo(projectUniqueName, dgSpec);
-#endif
                 _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec);
 
                 // returned task completes when scheduled restore operation completes.
@@ -157,28 +154,6 @@ namespace NuGet.SolutionRestoreManager
                 throw;
             }
         }
-
-#if DEBUG
-        private void DumpProjectRestoreInfo(string projectUniqueName, DependencyGraphSpec projectRestoreInfo)
-        {
-            try
-            {
-                var packageSpec = projectRestoreInfo.GetProjectSpec(projectUniqueName);
-                var outputPath = packageSpec.RestoreMetadata.OutputPath;
-                if (!Directory.Exists(outputPath))
-                {
-                    Directory.CreateDirectory(outputPath);
-                }
-
-                var dgPath = Path.Combine(outputPath, $"{Guid.NewGuid()}.dg");
-                projectRestoreInfo.Save(dgPath);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-            }
-        }
-#endif
 
         private static DependencyGraphSpec ToDependencyGraphSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo)
         {

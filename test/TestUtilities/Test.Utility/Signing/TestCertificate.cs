@@ -3,7 +3,6 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using Org.BouncyCastle.X509;
 
 namespace Test.Utility.Signing
 {
@@ -56,10 +55,10 @@ namespace Test.Utility.Signing
             return "NuGetTest-" + Guid.NewGuid().ToString();
         }
 
-        public static TestCertificate Generate(Action<X509V3CertificateGenerator> modifyGenerator = null, ChainCertificateRequest chainCertificateRequest = null)
+        public static TestCertificate Generate(Action<TestCertificateGenerator> modifyGenerator = null, ChainCertificateRequest chainCertificateRequest = null)
         {
             var certName = GenerateCertificateName();
-            var cert = SigningTestUtility.GenerateCertificate(certName, modifyGenerator, chainCertificateRequest: chainCertificateRequest);
+            var cert = SigningTestUtility.GenerateCertificateWithKeyInfo(certName, modifyGenerator, chainCertificateRequest: chainCertificateRequest);
             CertificateRevocationList crl = null;
 
             // create a crl only if the certificate is part of a chain and it is a CA
@@ -70,7 +69,7 @@ namespace Test.Utility.Signing
 
             var testCertificate = new TestCertificate
             {
-                Cert = cert,
+                Cert = cert.Certificate,
                 Crl = crl
             };
 

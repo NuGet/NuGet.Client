@@ -255,6 +255,13 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public void ConfigCommand_Failure_InvalidArguments()
+        {
+            var cmd = "config a b c";
+            Util.TestCommandInvalidArguments(cmd);
+        }
+
         private void AssertEqualCollections(IList<Configuration.AddItem> actual, string[] expected)
         {
             Assert.Equal(actual.Count, expected.Length / 2);

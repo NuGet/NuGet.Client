@@ -58,7 +58,7 @@ namespace NuGet.Configuration
         /// Each element defines its own definition of empty.
         /// The default definition of empty is an element without attributes.
         /// </summary>
-        internal override bool IsEmpty() => !Attributes.Any();
+        public override bool IsEmpty() => !Attributes.Any();
 
         /// <summary>
         /// Default constructor

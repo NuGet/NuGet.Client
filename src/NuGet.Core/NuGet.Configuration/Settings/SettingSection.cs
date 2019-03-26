@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
@@ -11,6 +12,21 @@ namespace NuGet.Configuration
 {
     public abstract class SettingSection : SettingsGroup<SettingItem>
     {
+        private string _elementName;
+        public override string ElementName
+        {
+            get => XmlConvert.DecodeName(_elementName);
+            protected set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.PropertyCannotBeNullOrEmpty, nameof(ElementName)));
+                }
+
+                _elementName = XmlUtility.GetEncodedXMLName(value);
+            }
+        }
+
         public IReadOnlyCollection<SettingItem> Items => Children.ToList();
 
         public T GetFirstItemWithAttribute<T>(string attributeName, string expectedAttributeValue) where T : SettingItem
@@ -28,7 +44,7 @@ namespace NuGet.Configuration
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
-            ElementName = XmlConvert.EncodeLocalName(name);
+            ElementName = name;
         }
 
         internal SettingSection(XElement element, SettingsFile origin)

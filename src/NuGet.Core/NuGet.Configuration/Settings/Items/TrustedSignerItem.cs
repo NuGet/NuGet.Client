@@ -15,6 +15,18 @@ namespace NuGet.Configuration
 
         public IList<CertificateItem> Certificates { get; }
 
+        public virtual string Name => Attributes[ConfigurationConstants.NameAttribute];
+
+        protected void SetName(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.PropertyCannotBeNullOrEmpty, nameof(Name)));
+            }
+
+            UpdateAttribute(ConfigurationConstants.NameAttribute, value);
+        }
+
         internal readonly IEnumerable<SettingBase> _parsedDescendants;
 
         protected TrustedSignerItem(string name, IEnumerable<CertificateItem> certificates)

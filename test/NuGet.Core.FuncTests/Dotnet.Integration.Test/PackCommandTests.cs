@@ -74,6 +74,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_IncludeSymbolsWithSnupkg()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -102,6 +103,58 @@ namespace Dotnet.Integration.Test
                     var libSymItems = symbolReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
                     Assert.Equal(1, libSymItems.Count);
+                    Assert.Equal(symbolReader.GetPackageTypes().Count, 1);
+                    Assert.Equal(symbolReader.GetPackageTypes()[0], NuGet.Packaging.Core.PackageType.SymbolsPackage);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.dll" }, libItems[0].Items);
+                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.pdb" }, libSymItems[0].Items);
+                }
+
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackProjectWithPackageType_SnupkgContainsOnlyOnePackageType()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "PackageType", NuGet.Packaging.Core.PackageType.Dependency.Name);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var symbolPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(symbolPath), "The output .snupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                using (var symbolReader = new PackageArchiveReader(symbolPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the assets.
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    var libSymItems = symbolReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(1, libSymItems.Count);
+                    Assert.Equal(nupkgReader.GetPackageTypes().Count, 1);
+                    Assert.Equal(nupkgReader.GetPackageTypes()[0], NuGet.Packaging.Core.PackageType.Dependency);
+                    Assert.Equal(symbolReader.GetPackageTypes().Count, 1);
+                    Assert.Equal(symbolReader.GetPackageTypes()[0], NuGet.Packaging.Core.PackageType.SymbolsPackage);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
                     Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.dll" }, libItems[0].Items);
                     Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.pdb" }, libSymItems[0].Items);
@@ -325,14 +378,14 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData(null, null, null, true, "", "Analyzers,Build")]
         [InlineData(null, "Native", null, true, "", "Analyzers,Build,Native")]
-        [InlineData("Compile", null, null, true, "", "Analyzers,Build,Native,Runtime")]
-        [InlineData("Compile;Runtime", null, null, true, "", "Analyzers,Build,Native")]
+        [InlineData("Compile", null, null, true, "", "Analyzers,Build,BuildTransitive,Native,Runtime")]
+        [InlineData("Compile;Runtime", null, null, true, "", "Analyzers,Build,BuildTransitive,Native")]
         [InlineData("All", null, "None", true, "All", "")]
-        [InlineData("All", null, "Compile", true, "Analyzers,Build,ContentFiles,Native,Runtime", "")]
-        [InlineData("All", null, "Compile;Build", true, "Analyzers,ContentFiles,Native,Runtime", "")]
-        [InlineData("All", "Native", "Compile;Build", true, "Analyzers,ContentFiles,Runtime", "")]
-        [InlineData("All", "Native", "Native;Build", true, "Analyzers,Compile,ContentFiles,Runtime", "")]
-        [InlineData("Compile", "Native", "Native;Build", true, "", "Analyzers,Build,Native,Runtime")]
+        [InlineData("All", null, "Compile", true, "Analyzers,Build,BuildTransitive,ContentFiles,Native,Runtime", "")]
+        [InlineData("All", null, "Compile;Build", true, "Analyzers,BuildTransitive,ContentFiles,Native,Runtime", "")]
+        [InlineData("All", "Native", "Compile;Build", true, "Analyzers,BuildTransitive,ContentFiles,Runtime", "")]
+        [InlineData("All", "Native", "Native;Build", true, "Analyzers,BuildTransitive,Compile,ContentFiles,Runtime", "")]
+        [InlineData("Compile", "Native", "Native;Build", true, "", "Analyzers,Build,BuildTransitive,Native,Runtime")]
         [InlineData("All", "All", null, false, null, null)]
         [InlineData("Compile;Runtime", "All", null, false, null, null)]
         [InlineData(null, null, "All", false, null, null)]
@@ -475,15 +528,12 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1,
                         dependencyGroups.Count);
 
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp21,
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp22,
                         dependencyGroups[0].TargetFramework);
                     var packagesA = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(2,
+                    Assert.Equal(1,
                         packagesA.Count);
-                    Assert.Equal("Microsoft.NETCore.App", packagesA[1].Id);
-                    Assert.Equal(new List<string> {"Analyzers", "Build"}, packagesA[1].Exclude);
-                    Assert.Empty(packagesA[1].Include);
-
+      
                     Assert.Equal("ClassLibrary2", packagesA[0].Id);
                     Assert.Equal(new VersionRange(new NuGetVersion("1.0.0")), packagesA[0].VersionRange);
                     Assert.Equal(new List<string> {"Analyzers", "Build"}, packagesA[0].Exclude);
@@ -492,10 +542,10 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp21, libItems[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp22, libItems[0].TargetFramework);
                     Assert.Equal(
                         new[]
-                        {"lib/netcoreapp2.1/ClassLibrary1.dll", "lib/netcoreapp2.1/ClassLibrary1.runtimeconfig.json"},
+                        {"lib/netcoreapp2.2/ClassLibrary1.dll", "lib/netcoreapp2.2/ClassLibrary1.runtimeconfig.json"},
                         libItems[0].Items);
                 }
             }
@@ -3084,9 +3134,10 @@ namespace ClassLibrary
                     Assert.Equal("ClassLibrary1", nuspecReader.GetId());
                     Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+                    Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, licenseExpr)), new Uri(nuspecReader.GetLicenseUrl()));
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
-                    Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, WebUtility.UrlEncode(licenseExpr))), new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.NotNull(licenseMetadata);
+                    Assert.Equal(licenseMetadata.LicenseUrl.OriginalString, nuspecReader.GetLicenseUrl());
                     Assert.Equal(licenseMetadata.LicenseUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.Equal(licenseMetadata.Type, LicenseType.Expression);
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
@@ -3136,9 +3187,10 @@ namespace ClassLibrary
                     Assert.Equal("ClassLibrary1", nuspecReader.GetId());
                     Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
-                    Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, WebUtility.UrlEncode(licenseExpr))), new Uri(nuspecReader.GetLicenseUrl()));
+                    Assert.Equal(new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, licenseExpr)), new Uri(nuspecReader.GetLicenseUrl()));
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
                     Assert.NotNull(licenseMetadata);
+                    Assert.Equal(licenseMetadata.LicenseUrl.OriginalString, nuspecReader.GetLicenseUrl());
                     Assert.Equal(licenseMetadata.LicenseUrl, new Uri(nuspecReader.GetLicenseUrl()));
                     Assert.Equal(licenseMetadata.Type, LicenseType.Expression);
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
@@ -3479,6 +3531,175 @@ namespace ClassLibrary
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackLicense_IncludeLicenseFileWithSnupkg()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Set up
+                var projectName = "ClassLibrary1";
+                var licenseFileName = "LICENSE.txt";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                var licenseFile = Path.Combine(workingDirectory, licenseFileName);
+                File.WriteAllText(licenseFile, "Random licenseFile");
+                Assert.True(File.Exists(licenseFile));
+
+                // Setup LicenseFile
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "PackageLicenseFile", licenseFileName);
+
+                    var attributes = new Dictionary<string, string>();
+                    attributes["Pack"] = "true";
+                    attributes["PackagePath"] = licenseFileName;
+                    var properties = new Dictionary<string, string>();
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "None",
+                        licenseFileName,
+                        NuGetFramework.AnyFramework,
+                        properties,
+                        attributes);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProject(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}");
+
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                var symbolPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
+
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+                Assert.True(File.Exists(symbolPath), "The output .snupkg is not in the expected place");
+
+                Assert.True(result.Success);
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the output .nuspec.
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetId());
+                    Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+                    Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    var licenseMetadata = nuspecReader.GetLicenseMetadata();
+                    Assert.NotNull(licenseMetadata);
+                    Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, licenseMetadata.LicenseUrl);
+                    Assert.Equal(licenseMetadata.Type, LicenseType.File);
+                    Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
+                    Assert.Equal(licenseMetadata.License, licenseFileName);
+                    Assert.Null(licenseMetadata.LicenseExpression);
+                }
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                using (var symbolReader = new PackageArchiveReader(symbolPath))
+                {   
+                    // Validate the assets.
+                    Assert.False(symbolReader.NuspecReader.GetRequireLicenseAcceptance());
+                    Assert.Null(symbolReader.NuspecReader.GetLicenseMetadata());
+                    Assert.Null(symbolReader.NuspecReader.GetLicenseUrl());
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    var libSymItems = symbolReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(1, libSymItems.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.dll" }, libItems[0].Items);
+                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.pdb" }, libSymItems[0].Items);
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackLicense_IncludeLicenseFileWithSymbolsNupkg()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Set up
+                var projectName = "ClassLibrary1";
+                var licenseFileName = "LICENSE.txt";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                var licenseFile = Path.Combine(workingDirectory, licenseFileName);
+                File.WriteAllText(licenseFile, "Random licenseFile");
+                Assert.True(File.Exists(licenseFile));
+
+                // Setup LicenseFile
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "PackageLicenseFile", licenseFileName);
+
+                    var attributes = new Dictionary<string, string>();
+                    attributes["Pack"] = "true";
+                    attributes["PackagePath"] = licenseFileName;
+                    var properties = new Dictionary<string, string>();
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "None",
+                        licenseFileName,
+                        NuGetFramework.AnyFramework,
+                        properties,
+                        attributes);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProject(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=symbols.nupkg -o {workingDirectory}");
+
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                var symbolPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
+
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+                Assert.True(File.Exists(symbolPath), "The output .snupkg is not in the expected place");
+
+                Assert.True(result.Success);
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the output .nuspec.
+                    Assert.Equal("ClassLibrary1", nuspecReader.GetId());
+                    Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+                    Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, new Uri(nuspecReader.GetLicenseUrl()));
+                    var licenseMetadata = nuspecReader.GetLicenseMetadata();
+                    Assert.NotNull(licenseMetadata);
+                    Assert.Equal(LicenseMetadata.LicenseFileDeprecationUrl, licenseMetadata.LicenseUrl);
+                    Assert.Equal(licenseMetadata.Type, LicenseType.File);
+                    Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
+                    Assert.Equal(licenseMetadata.License, licenseFileName);
+                    Assert.Null(licenseMetadata.LicenseExpression);
+                }
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                using (var symbolReader = new PackageArchiveReader(symbolPath))
+                {
+                    // Validate the assets.
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    var libSymItems = symbolReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(1, libSymItems.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.dll" }, libItems[0].Items);
+                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.dll", "lib/netstandard2.0/ClassLibrary1.pdb" }, libSymItems[0].Items);
+                    Assert.True(symbolReader.GetEntry(symbolReader.NuspecReader.GetLicenseMetadata().License) != null);
+                }
+            }
+        }
         [PlatformTheory(Platform.Windows)]
         [InlineData("PackageLicenseExpression")]
         [InlineData("PackageLicenseFile")]
@@ -3512,6 +3733,45 @@ namespace ClassLibrary
 
                 Assert.False(result.Success);
                 Assert.True(result.AllOutput.Contains("NU5035"));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackEmbedInteropPackage()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                // Setup BuildOutputTargetFolder
+                var buildTargetFolders = "lib;embed";
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "BuildOutputTargetFolder", buildTargetFolders);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // Act
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    // Validate Compile assets 
+                    foreach (var buildTargetFolder in buildTargetFolders.Split(';'))
+                    {
+                        var compileItems = nupkgReader.GetFiles(buildTargetFolder).ToList();
+                        Assert.Equal(1, compileItems.Count);
+                        Assert.Equal(buildTargetFolder + "/netstandard2.0/ClassLibrary1.dll", compileItems[0]);
+                    }
+                }
             }
         }
     }

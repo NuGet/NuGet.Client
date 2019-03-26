@@ -17,10 +17,9 @@ namespace NuGet.CommandLine.Test
             "usage: NuGet locals <all | http-cache | global-packages | temp | plugins-cache> [-clear | -list]";
 
         [Theory]
-        [InlineData("locals")]
         [InlineData("locals -?")]
-        [InlineData("locals all -list extraArg")]
-        public void LocalsCommand_Success_InvalidArguments_HelpMessage(string args)
+        [InlineData("locals")]
+        public void LocalsCommand_Success_HelpMessage(string args)
         {
             // Arrange & Act
             var result = CommandRunner.Run(
@@ -31,6 +30,14 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             Util.VerifyResultSuccess(result, LocalsHelpStringFragment);
+        }
+
+        [Theory]
+        [InlineData("locals all -list extraArg")]
+        [InlineData("locals http-cache temp")]
+        public void LocalsCommand_Failure_InvalidArguments_HelpMessage(string cmd)
+        {
+            Util.TestCommandInvalidArguments(cmd);
         }
 
         [Theory]

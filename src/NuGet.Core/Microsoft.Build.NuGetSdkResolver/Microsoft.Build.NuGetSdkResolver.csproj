@@ -4,8 +4,7 @@
 
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
@@ -16,11 +15,11 @@
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
     <TargetFrameworks />
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Commands\NuGet.Commands.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Commands\NuGet.Commands.csproj" />
     <PackageReference Include="Microsoft.Build.Framework" Version="15.6.85" ExcludeAssets="runtime" />
   </ItemGroup>
 

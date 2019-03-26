@@ -69,7 +69,7 @@ namespace NuGet.Protocol.Plugins.Tests
         public async Task DiscoverAsync_DoesNotThrowIfNoValidFilePathsAndFallbackEmbeddedSignatureVerifier()
         {
             using (var discoverer = new PluginDiscoverer(
-                rawPluginPaths: "",
+                rawPluginPaths: ";",
                 verifier: new FallbackEmbeddedSignatureVerifier()))
             {
                 var pluginFiles = await discoverer.DiscoverAsync(CancellationToken.None);

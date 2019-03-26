@@ -15,6 +15,11 @@ namespace NuGet.Packaging.Signing
     public enum VerificationTarget
     {
         /// <summary>
+        /// Don't target any signatures.
+        /// </summary>
+        None        = 0,
+
+        /// <summary>
         /// Target unknown primary signatures.
         /// </summary>
         Unknown     = 1 << 1,

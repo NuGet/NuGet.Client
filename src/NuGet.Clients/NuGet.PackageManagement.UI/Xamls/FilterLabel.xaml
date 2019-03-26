@@ -55,12 +55,12 @@
           Visibility="Collapsed"
           HorizontalAlignment="Center"
           VerticalAlignment="Center"
-          Background="{DynamicResource {x:Static nuget:Brushes.ContentSelectedBrushKey}}">
+          Background="{DynamicResource {x:Static nuget:Brushes.TabPopupBrushKey}}">
           <TextBlock
             x:Name="_textBlockCount"
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
-            Foreground="{DynamicResource {x:Static nuget:Brushes.ContentSelectedTextBrushKey}}"/>
+            Foreground="{DynamicResource {x:Static nuget:Brushes.TabPopupTextBrushKey}}"/>
         </Border>
       </StackPanel>
     </nuget:TabItemButton>
@@ -72,6 +72,6 @@
       Margin="0"
       Height="3"
       Visibility="{Binding Selected ,Converter={StaticResource BooleanToVisibilityConverter}}"
-      Fill="{DynamicResource {x:Static nuget:Brushes.ContentSelectedBrushKey}}"/>
+      Fill="{DynamicResource {x:Static nuget:Brushes.TabSelectedBrushKey}}"/>
   </Grid>
 </UserControl>

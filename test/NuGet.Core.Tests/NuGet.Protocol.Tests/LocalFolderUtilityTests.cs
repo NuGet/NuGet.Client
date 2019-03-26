@@ -459,6 +459,9 @@ namespace NuGet.Protocol.Tests
             }
         }
 
+#if IS_DESKTOP
+        // TODO: To work on coreclr we need to address https://github.com/NuGet/Home/issues/7588
+
         [Fact]
         public void LocalFolderUtility_GetPackagesV3MaxPathTest()
         {
@@ -587,6 +590,7 @@ namespace NuGet.Protocol.Tests
                 Assert.True(actual is FatalProtocolException);
             }
         }
+#endif
 
         [Fact]
         public async Task LocalFolderUtility_GetPackagesV2ValidPackageAsync()

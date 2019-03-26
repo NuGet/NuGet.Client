@@ -10,6 +10,7 @@ using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Credentials;
 using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.XPlat
@@ -79,6 +80,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.ListPkg_ConfigDescription,
                     CommandOptionType.SingleValue);
 
+                var interactive = listpkg.Option(
+                    "--interactive",
+                    Strings.NuGetXplatCommand_Interactive,
+                    CommandOptionType.NoValue);
+
                 listpkg.OnExecute(async () =>
                 {
                     var logger = getLogger();
@@ -103,6 +109,8 @@ namespace NuGet.CommandLine.XPlat
                         logger,
                         CancellationToken.None);
 
+                    DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
+                    
                     var listPackageCommandRunner = getCommandRunner();
                     await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
                     return 0;

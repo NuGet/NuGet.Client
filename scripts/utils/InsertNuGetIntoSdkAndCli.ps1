@@ -14,7 +14,7 @@ PersonalAccessToken of the NuGetLurker account
 The Repository to insert into (SDK or CLI)
 
 .PARAMETER BranchName
-The repository's branch to insert into
+Semicolon separated list of the repository's branches to insert into
 
 .PARAMETER NuGetTag
 The xml tag in the DependencyVersions.props file that defines the NuGet version
@@ -64,8 +64,6 @@ if($index -ne '-1')
     $ProductVersion = $ProductVersion.Substring(0,$index).Trim()
 }
 
-$CreatedBranchName = "$Release-$AttemptNum"
-
 Function UpdateNuGetVersionInXmlFile {
     param(
         [string]$XmlContents,
@@ -73,7 +71,7 @@ Function UpdateNuGetVersionInXmlFile {
         [string]$NuGetTag
     )
 
-$xmlString = $XmlContents.Split([environment]::NewLine) | where { $_ -cmatch "<$NuGetTag>" }
+$xmlString = $XmlContents.Split([environment]::NewLine) | Where-Object { $_ -cmatch "<$NuGetTag>" }
 Write-Host $xmlString
 $newXmlString = "<$NuGetTag>$NuGetVersion</$NuGetTag>"
 Write-Host $newXmlString
@@ -110,13 +108,14 @@ param
     [Parameter(Mandatory=$True)]
     [System.Collections.IDictionary]$Headers,
     [Parameter(Mandatory=$True)]
-    [string]$BranchName
-
+    [string]$BranchName,
+    [Parameter(Mandatory=$True)]
+    [string]$BranchNameToCreate
 )
 
 $commits = Invoke-RestMethod -Method Get -Uri "https://api.github.com/repos/$repoOwner/$RepositoryName/commits?sha=$BranchName"
 $headSha = $commits[0].sha
-$refName = "refs/heads/$CreatedBranchName"
+$refName = "refs/heads/$BranchNameToCreate"
 
 $Body = @{
 sha = $headSha;
@@ -137,8 +136,9 @@ param
     [Parameter(Mandatory=$True)]
     [string]$FilePath,
     [Parameter(Mandatory=$True)]
-    [string]$FileContent
-
+    [string]$FileContent,
+    [Parameter(Mandatory=$True)]
+    [string]$CreatedBranchName
 )
 $params = "?ref=$CreatedBranchName"
 $httpGetUrl = "https://api.github.com/repos/$repoOwner/$RepositoryName/contents/$FilePath$Params"
@@ -193,13 +193,13 @@ Write-Host $r1.html_url
 return $r1.html_url
 }
 
-Function PrintPullRequestUrlToVsts {
+Function PrintPullRequestsUrlToVsts {
 param
 (
     [Parameter(Mandatory=$True)]
     [string]$RepositoryName,
     [Parameter(Mandatory=$True)]
-    [string]$PullRequestUrl
+    [string]$PullRequestsUrl
 
 )
 
@@ -207,16 +207,24 @@ $mdFolder = Join-Path $env:SYSTEM_DEFAULTWORKINGDIRECTORY (Join-Path 'MicroBuild
 New-Item -ItemType Directory -Force -Path $mdFolder | Out-Null
 $fileExtension = "_Url.md"
 $mdFile = Join-Path $mdFolder "$RepositoryName$fileExtension"
-$PullRequestUrl | Set-Content $mdFile
-Write-Host "##vso[task.addattachment type=Distributedtask.Core.Summary;name=$RepositoryName Pull Request Url;]$mdFile"  
+$PullRequestsUrl | Set-Content $mdFile
+Write-Host "##vso[task.addattachment type=Distributedtask.Core.Summary;name=$RepositoryName Pull Requests Url;]$mdFile"  
 }
 
-$xml = GetDependencyVersionPropsFile -RepositoryName $RepositoryName -BranchName $BranchName -FilePath $FilePath
-Write-Host $xml
+$BranchesToInsert = $BranchName.Split(';')
+$AllPullRequestsUrls = ""
+ForEach ($Branch in $BranchesToInsert) {
+    $xml = GetDependencyVersionPropsFile -RepositoryName $RepositoryName -BranchName $Branch -FilePath $FilePath
+    Write-Host $xml
+    
+    $updatedXml = UpdateNuGetVersionInXmlFile -XmlContents $xml -NuGetVersion $ProductVersion -NuGetTag $NuGetTag
+    
+    $CreatedBranchName = "$Release-$Branch-$AttemptNum"
+    
+    CreateBranchForPullRequest -RepositoryName $RepositoryName -Headers $Headers -BranchName $Branch -BranchNameToCreate $CreatedBranchName
+    UpdateFileContent -RepositoryName $RepositoryName -Headers $Headers -FilePath $FilePath -FileContent $updatedXml -CreatedBranchName $CreatedBranchName
+    $PullRequestUrl = CreatePullRequest -RepositoryName $RepositoryName -Headers $Headers -CreatedBranchName $CreatedBranchName -BaseBranch $Branch
+    $AllPullRequestsUrls = $AllPullRequestsUrls + "$PullRequestUrl`n"
+}
 
-$updatedXml = UpdateNuGetVersionInXmlFile -XmlContents $xml -NuGetVersion $ProductVersion -NuGetTag $NuGetTag
-
-CreateBranchForPullRequest -RepositoryName $RepositoryName -Headers $Headers -BranchName $BranchName
-UpdateFileContent -RepositoryName $RepositoryName -Headers $Headers -FilePath $FilePath -FileContent $updatedXml
-$PullRequestUrl = CreatePullRequest -RepositoryName $RepositoryName -Headers $Headers -CreatedBranchName $CreatedBranchName -BaseBranch $BranchName
-PrintPullRequestUrlToVsts -RepositoryName $RepositoryName -PullRequestUrl $PullRequestUrl
+PrintPullRequestsUrlToVsts -RepositoryName $RepositoryName -PullRequestsUrl $AllPullRequestsUrls

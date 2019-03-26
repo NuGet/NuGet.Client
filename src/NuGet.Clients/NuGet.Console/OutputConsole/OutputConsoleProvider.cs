@@ -8,7 +8,6 @@ using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 
 namespace NuGetConsole
@@ -33,7 +32,7 @@ namespace NuGetConsole
         { }
 
         OutputConsoleProvider(
-            IAsyncServiceProvider asyncServiceProvider,
+            Microsoft.VisualStudio.Shell.IAsyncServiceProvider asyncServiceProvider, // ambigiuous reference
             IEnumerable<Lazy<IHostProvider, IHostMetadata>> hostProviders)
         {
             if (asyncServiceProvider == null)

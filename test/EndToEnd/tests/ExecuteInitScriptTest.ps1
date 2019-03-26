@@ -1,7 +1,6 @@
 Set-Variable DefaultRestoreTimeoutInSeconds 20 -Option Constant
 
 function Test-NetCoreProjectExecuteInitScriptOnInstall {
-    [SkipTestForVS14()]
     param($context)
 
     Remove-Variable PackageInitPS1Var -Scope Global -Force -ErrorAction Ignore
@@ -36,7 +35,6 @@ function Test-NetCoreProjectExecuteInitScriptOnInstall {
 }
 
 function Test-NetCoreProjectExecuteInitScriptOnlyOnce {
-    [SkipTestForVS14()]
     param($context)
 
     Remove-Variable PackageInitPS1Var -Scope Global -Force -ErrorAction Ignore

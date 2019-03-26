@@ -8,13 +8,18 @@
 
   <!-- Common -->
   <PropertyGroup>
+    <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
+    <NETFXTargetFramework>net472</NETFXTargetFramework>
+    <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
+    <NetStandardVersion>netstandard2.0</NetStandardVersion>
+    <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
+    <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
     <SolutionFile>$(RepositoryRootDirectory)$(RepositoryName).sln</SolutionFile>
     <ArtifactsDirectory>$(RepositoryRootDirectory)artifacts\</ArtifactsDirectory>
     <DotnetExePath>$(RepositoryRootDirectory)cli\dotnet.exe</DotnetExePath>
     <DotnetExePath Condition=" '$(IsXPlat)' == 'true' ">$(RepositoryRootDirectory)cli\dotnet</DotnetExePath>
-    <DotnetSharedSDKDirectory>$(RepositoryRootDirectory)cli1.0.4\shared\Microsoft.NETCore.App\1.0.4\</DotnetSharedSDKDirectory>
     <NuGetExePath>$(RepositoryRootDirectory).nuget\nuget.exe</NuGetExePath>
     <SharedDirectory>$(BuildCommonDirectory)Shared</SharedDirectory>
     <NuGetCoreSrcDirectory>$(RepositoryRootDirectory)src\NuGet.Core\</NuGetCoreSrcDirectory>
@@ -23,8 +28,9 @@
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' == 'true' ">$(ArtifactsDirectory)ReleaseNupkgs\</NupkgOutputDirectory>
     <SolutionPackagesFolder>$(RepositoryRootDirectory)packages\</SolutionPackagesFolder>
     <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console.2.3.1\tools\net452\xunit.console.x86.exe</XunitConsoleExePath>
-    <ILMergeExePath>$(SolutionPackagesFolder)ILMerge.2.14.1208\tools\ILMerge.exe</ILMergeExePath>
+    <ILMergeExePath>$(SolutionPackagesFolder)ILMerge.3.0.21\tools\net452\ILMerge.exe</ILMergeExePath>
     <XunitXmlLoggerDirectory>$(SolutionPackagesFolder)XunitXml.TestLogger.2.0.0\build\_common</XunitXmlLoggerDirectory>
+    <NuGetBuildTasksPackTargets Condition="Exists('$(SolutionPackagesFolder)NuGet.Build.Tasks.Pack.4.9.2\build\NuGet.Build.Tasks.Pack.targets')">$(SolutionPackagesFolder)NuGet.Build.Tasks.Pack.4.9.2\build\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>
@@ -36,21 +42,23 @@
     <MicroBuildDirectory>$(SolutionPackagesFolder)MicroBuild.Core.0.2.0\build\</MicroBuildDirectory>
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
     <BlobPublishTargetsPath>$(SolutionPackagesFolder)Microsoft.DotNet.Build.Tasks.Feed.2.1.0-prerelease-02419-02\build\Microsoft.DotNet.Build.Tasks.Feed.targets</BlobPublishTargetsPath>
+    <NoWarn>$(NoWarn);NU5105</NoWarn>
+    <VSServicesVersion>16.144.1-preview</VSServicesVersion>
+    <VSComponentsVersion>16.0.189-g83e7c53a57</VSComponentsVersion>
+    <SystemPackagesVersion>4.3.0</SystemPackagesVersion>
   </PropertyGroup>
 
   <!-- Defaults -->
   <PropertyGroup>
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">true</TreatWarningsAsErrors>
-    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
 
   <!-- Default project configuration -->
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
-    <!-- Always use 15.0 since we cannot build on msbuild 14.0 -->
-    <NuGetTargets>$(MSBuildExtensionsPath)\Microsoft\NuGet\15.0\Microsoft.NuGet.targets</NuGetTargets>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">16.0</VisualStudioVersion>
+    <NuGetTargets>$(MSBuildExtensionsPath)\Microsoft\NuGet\$(VisualStudioVersion)\Microsoft.NuGet.targets</NuGetTargets>
     <ComVisible>false</ComVisible>
   </PropertyGroup>
 
@@ -69,6 +77,8 @@
      from the first build!-->
     <Deterministic>true</Deterministic>
     <Features>strict</Features>
+    <!-- Same as SDK default, but without CandidateAssemblyFiles in front, which would search in Content items -->
+    <AssemblySearchPaths>{HintPathFromItem};{TargetFrameworkDirectory};{RawFileName}</AssemblySearchPaths>
   </PropertyGroup>
 
   <!-- DEBUG specific configuration settings -->
@@ -86,18 +96,10 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
-    <DefineConstants>$(DefineConstants);VS14</DefineConstants>
-    <VSSDKRoot>$(RepositoryRootDirectory)packages\Microsoft.VSSDK.BuildTools.14.3.25420</VSSDKRoot>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
-    <VsixOutputDirName>VS14</VsixOutputDirName>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+  <PropertyGroup>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <DefineConstants>$(DefineConstants);VS15</DefineConstants>
-    <VSSDKRoot>$(RepositoryRootDirectory)packages\Microsoft.VSSDK.BuildTools.15.1.192</VSSDKRoot>
+    <VSSDKRoot>$(RepositoryRootDirectory)packages\Microsoft.VSSDK.BuildTools.15.9.3032</VSSDKRoot>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
     <VsixOutputDirName>VS15</VsixOutputDirName>
     <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.ruleset</CodeAnalysisRuleSet>
@@ -148,8 +150,6 @@
   <!-- Set the output location for all non-test projects -->
   <!-- Test projects currently fail when the output dir is moved -->
   <PropertyGroup Condition=" '$(TestProject)' != 'true' OR '$(Shipping)' == 'true'">
-    <!-- Create different folders for 14.0, 15.0, 15.0-RTM -->
-
     <!-- output paths -->
     <BaseIntermediateOutputPath>$(ArtifactsDirectory)$(MSBuildProjectName)\$(BuildVariationFolder)\obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
@@ -188,7 +188,7 @@
       <_Parameter1>NuGet</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="AssemblyCopyright">
-      <_Parameter1>Microsoft Corporation. All rights reserved.</_Parameter1>
+      <_Parameter1>&#169; Microsoft Corporation. All rights reserved.</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="System.Resources.NeutralResourcesLanguage">
       <_Parameter1>en-US</_Parameter1>
@@ -203,7 +203,7 @@
     <InformationalVersion Condition="'$(BUILD_SOURCEVERSION)' != ''">$(SemanticVersion)$(PreReleaseInformationVersion)+$(BUILD_SOURCEVERSION)</InformationalVersion>
     <Company>Microsoft Corporation</Company>
     <Product>NuGet</Product>
-    <Copyright>Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>&#169; Microsoft Corporation. All rights reserved.</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
 
     <SchemaVersion>2.0</SchemaVersion>
@@ -241,6 +241,7 @@
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\*ProjectManagement*\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\*VisualStudio*\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\*.Utility\*.csproj;
+                                   $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.Credentials.Test\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.Indexing.Test\*.csproj" />
     <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\*\*.csproj" />
   </ItemGroup>

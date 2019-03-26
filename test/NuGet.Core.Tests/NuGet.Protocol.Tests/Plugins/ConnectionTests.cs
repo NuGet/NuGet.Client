@@ -17,33 +17,27 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void Constructor_ThrowsForNullDispatcher()
         {
-            using (var cancellationTokenSource = new CancellationTokenSource())
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => new Connection(
-                        dispatcher: null,
-                        sender: new Sender(TextWriter.Null),
-                        receiver: new StandardInputReceiver(TextReader.Null),
-                        options: ConnectionOptions.CreateDefault()));
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new Connection(
+                    dispatcher: null,
+                    sender: new Sender(TextWriter.Null),
+                    receiver: new StandardInputReceiver(TextReader.Null),
+                    options: ConnectionOptions.CreateDefault()));
 
-                Assert.Equal("dispatcher", exception.ParamName);
-            }
+            Assert.Equal("dispatcher", exception.ParamName);
         }
 
         [Fact]
         public void Constructor_ThrowsForNullSender()
         {
-            using (var cancellationTokenSource = new CancellationTokenSource())
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => new Connection(
-                        new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator()),
-                        sender: null,
-                        receiver: new StandardInputReceiver(TextReader.Null),
-                        options: ConnectionOptions.CreateDefault()));
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new Connection(
+                    new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator()),
+                    sender: null,
+                    receiver: new StandardInputReceiver(TextReader.Null),
+                    options: ConnectionOptions.CreateDefault()));
 
-                Assert.Equal("sender", exception.ParamName);
-            }
+            Assert.Equal("sender", exception.ParamName);
         }
 
         [Fact]
@@ -61,17 +55,28 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void Constructor_ThrowsForNullOptions()
         {
-            using (var cancellationTokenSource = new CancellationTokenSource())
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => new Connection(
-                        new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator()),
-                        new Sender(TextWriter.Null),
-                        new StandardInputReceiver(TextReader.Null),
-                        options: null));
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new Connection(
+                    new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator()),
+                    new Sender(TextWriter.Null),
+                    new StandardInputReceiver(TextReader.Null),
+                    options: null));
 
-                Assert.Equal("options", exception.ParamName);
-            }
+            Assert.Equal("options", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_ThrowsForNullLogger()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new Connection(
+                    new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator()),
+                    new Sender(TextWriter.Null),
+                    new StandardInputReceiver(TextReader.Null),
+                    ConnectionOptions.CreateDefault(),
+                    logger: null));
+
+            Assert.Equal("logger", exception.ParamName);
         }
 
         [Fact]
@@ -571,12 +576,14 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             internal Connection Connection { get; }
             internal Mock<IMessageDispatcher> Dispatcher { get; }
+            internal Mock<IPluginLogger> Logger { get; }
             internal Mock<ISender> Sender { get; }
             internal Mock<IReceiver> Receiver { get; }
 
             internal MockConnectionTest()
             {
                 Dispatcher = new Mock<IMessageDispatcher>(MockBehavior.Strict);
+                Logger = new Mock<IPluginLogger>(MockBehavior.Strict);
                 Sender = new Mock<ISender>(MockBehavior.Strict);
                 Receiver = new Mock<IReceiver>(MockBehavior.Strict);
 
@@ -592,7 +599,8 @@ namespace NuGet.Protocol.Plugins.Tests
                     Dispatcher.Object,
                     Sender.Object,
                     Receiver.Object,
-                    ConnectionOptions.CreateDefault());
+                    ConnectionOptions.CreateDefault(),
+                    Logger.Object);
             }
 
             public void Dispose()
@@ -600,6 +608,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Connection.Dispose();
 
                 Dispatcher.Verify();
+                Logger.Verify(); // The logger should not be disposed.  The lack of a call to Setup(...) verifies this.
                 Sender.Verify();
                 Receiver.Verify();
             }

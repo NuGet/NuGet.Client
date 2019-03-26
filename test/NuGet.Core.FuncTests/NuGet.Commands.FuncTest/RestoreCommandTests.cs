@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands.Test;
 using NuGet.Configuration;
@@ -1850,6 +1851,48 @@ namespace NuGet.Commands.FuncTest
                 // Don't assert the pre-release tag since it may vary
             }
         }
+
+#if IS_DESKTOP
+        // TODO: To work on coreclr we need to address https://github.com/NuGet/Home/issues/7588
+        [Fact]
+        public async Task RestoreCommand_PathTooLongException()
+        {
+            // Arrange
+            var sources = new List<PackageSource>
+            {
+                new PackageSource("https://www.nuget.org/api/v2/")
+            };
+
+            using(var packagesDir = TestDirectory.Create())
+            using(var projectDir = TestDirectory.Create())
+            using(var cacheContext = new SourceCacheContext())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""dependencies"": {
+                        ""Newtonsoft.Json"": ""7.0.1""
+                    },
+                     ""frameworks"": {
+                        ""net45"": { }
+                    }
+                }");
+
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(spec, sources, packagesDir + new string('_', 300), cacheContext, logger)
+                {
+                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
+                };
+
+                var command = new RestoreCommand(request);
+
+                // Act
+                new Func<Task>(async () => await command.ExecuteAsync()).ShouldThrow<PathTooLongException>();
+            }
+        }
+#endif
 
         [Fact]
         public async Task RestoreCommand_RestoreExactVersionWithFailingSourceAsync()

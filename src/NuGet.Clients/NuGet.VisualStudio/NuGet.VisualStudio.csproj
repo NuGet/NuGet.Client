@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <IncludeInVSIX>true</IncludeInVSIX>
@@ -17,10 +17,7 @@
     <Guid>228F7591-2777-47D7-B81D-FEADFC71CEB5</Guid>
     <ComVisible>false</ComVisible>
     <authors>Microsoft</authors>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</PackageLicenseUrl>
-    <PackageProjectUrl	>https://github.com/NuGet/NuGet.Client</PackageProjectUrl	>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EnvDTE80" Version="8.0.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30111" />
     <PackageReference Include="VSSDK.TemplateWizardInterface" Version="12.0.4" />
   </ItemGroup>
 
@@ -40,5 +37,6 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

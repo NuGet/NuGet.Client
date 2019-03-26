@@ -16,7 +16,7 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// Package signature information.
     /// </summary>
-    public abstract class Signature
+    public abstract class Signature : ISignature
     {
 #if IS_DESKTOP
         private readonly Lazy<IReadOnlyList<Timestamp>> _timestamps;

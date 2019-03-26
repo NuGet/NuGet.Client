@@ -92,6 +92,14 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData("verify")]
+        [InlineData("verify a b")]
+        public void VerifyCommand_Failure_InvalidArguments(string cmd)
+        {
+            Util.TestCommandInvalidArguments(cmd);
+        }
+
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(

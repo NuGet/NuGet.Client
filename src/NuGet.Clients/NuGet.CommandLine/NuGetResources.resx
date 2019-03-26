@@ -6173,4 +6173,8 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="SourcesCommandClearingExistingAuthTypes" xml:space="preserve">
     <value>Clearing existing authentication types settings for package source '{0}'.</value>
   </data>
+  <data name="Error_UnknownAction" xml:space="preserve">
+    <value>The action '{0}' is not recognized.</value>
+    <comment>0 - action</comment>
+  </data>
 </root>

@@ -581,6 +581,36 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
+        [Fact]
+        public void PackTaskLogic_EmbedInteropAssembly()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+                tc.Request.BuildOutputFolders = new[]
+                {
+                    "lib",
+                    "embed"
+                };
+
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    // Validate the content items
+                    foreach (var buildTargetFolder in tc.Request.BuildOutputFolders)
+                    {
+                        var compileItems = nupkgReader.GetFiles(buildTargetFolder).ToList();
+                        Assert.Equal(1, compileItems.Count);
+                        Assert.Equal(new[] { buildTargetFolder + "/net45/a.dll" }, compileItems);
+                    }
+                }
+            }
+        }
+
         private class TestContext
         {
             public TestContext(TestDirectory testDir)
@@ -617,7 +647,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                         { "Extension", Path.GetExtension(fullPath) },
                         { "FullPath", fullPath }
                     }),
-                    BuildOutputFolder = "lib",
+                    BuildOutputFolders = new string[] { "lib" },
                     NuspecOutputPath = "obj",
                     IncludeBuildOutput = true,
                     RestoreOutputPath = Path.Combine(testDir, "obj"),

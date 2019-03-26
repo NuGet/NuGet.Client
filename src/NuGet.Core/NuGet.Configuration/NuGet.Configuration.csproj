@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Description>NuGet's client configuration settings implementation.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
@@ -15,21 +15,21 @@
   
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
     <TargetFrameworks />
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Common\NuGet.Common.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Common\NuGet.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.3.0" />
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="$(SystemPackagesVersion)" />
   </ItemGroup>
   
   <ItemGroup>

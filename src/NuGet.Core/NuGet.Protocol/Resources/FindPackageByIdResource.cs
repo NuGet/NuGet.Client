@@ -114,6 +114,31 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken cancellationToken);
 
         /// <summary>
+        /// Asynchronously check if exact package (id/version) exists at this source.
+        /// </summary>
+        /// <param name="id">A package id.</param>
+        /// <param name="version">A package version.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns an
+        /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        public abstract Task<bool> DoesPackageExistAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken);
+
+        /// <summary>
         /// Read dependency info from a nuspec.
         /// </summary>
         /// <remarks>This also verifies minClientVersion.</remarks>

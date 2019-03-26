@@ -1,67 +1,79 @@
 Param(
     [Parameter(Mandatory = $true)]
-    [string]$resultsDirectoryPath,
-    [string[]]$nugetClients,
-    [string]$testDirectoryPath,
-    [string]$logsDirectoryPath,
-    [switch]$SkipCleanup
+    [string] $resultsFolderPath,
+    [string[]] $nugetClientFilePaths,
+    [string] $testRootFolderPath,
+    [string] $logsFolderPath,
+    [int] $iterationCount = 3,
+    [bool] $skipRepoCleanup
 )
 
-    . "$PSScriptRoot\PerformanceTestUtilities.ps1"
+. "$PSScriptRoot\PerformanceTestUtilities.ps1"
 
-    if (![string]::IsNullOrEmpty($testDirectoryPath) -And $(GetAbsolutePath $resultsDirectoryPath).StartsWith($(GetAbsolutePath $testDirectoryPath))) 
-    {
-        Log "$resultsDirectoryPath cannot be a subdirectory of $testDirectoryPath" "red"
-        exit(1)
-    }
-    
-    if ([string]::IsNullOrEmpty($testDirectoryPath)) 
-    {
-        $testDirectoryPath = [System.IO.Path]::Combine($env:TEMP, "np")
-    }
+$resultsFolderPath = GetAbsolutePath $resultsFolderPath
+$testRootFolderPath = GetAbsolutePath $testRootFolderPath
+$nugetFoldersPath = GetNuGetFoldersPath $testRootFolderPath
+$nugetFoldersPath = GetAbsolutePath $nugetFoldersPath
+$sourceRootFolderPath = [System.IO.Path]::Combine($testRootFolderPath, "source")
 
-    Log "Clients: $nugetClients" "green"
+If ([System.IO.Path]::GetDirectoryName($resultsFolderPath).StartsWith($nugetFoldersPath))
+{
+    Log "$resultsFolderPath cannot be a subdirectory of $nugetFoldersPath" "red"
 
-    try 
+    Exit 1
+}
+
+Log "Clients: $nugetClientFilePaths" "green"
+
+Try
+{
+    ForEach ($nugetClientFilePath In $nugetClientFilePaths)
     {
-        foreach($nugetClient in $nugetClients)
+        Try
         {
-            try 
-            {
-                Log "Running tests for $nugetClient" "green"
+            Log "Running tests for $nugetClientFilePath" "green"
 
-                if ([string]::IsNullOrEmpty($nugetClient) -Or !$(Test-Path $nugetClient)) 
+            If ([string]::IsNullOrEmpty($nugetClientFilePath) -Or !$(Test-Path $nugetClientFilePath))
+            {
+                Log "The NuGet client at '$nugetClientFilePath' cannot be resolved." "yellow"
+
+                Exit 1
+            }
+
+            Log "Discovering the test cases."
+            $testFiles = $(Get-ChildItem $PSScriptRoot\testCases "Test-*.ps1" ) | ForEach-Object { $_.FullName }
+            Log "Discovered test cases: $testFiles" "green"
+
+            $testFiles | ForEach-Object {
+                $testCase = $_
+                Try
                 {
-                    Log "The NuGet client at '$nugetClient' cannot be resolved." "yellow"
-                    exit(1)
+                    . $_ `
+                        -nugetClientFilePath $nugetClientFilePath `
+                        -sourceRootFolderPath $sourceRootFolderPath `
+                        -resultsFolderPath $resultsFolderPath `
+                        -logsFolderPath $logsFolderPath `
+                        -nugetFoldersPath $nugetFoldersPath `
+                        -iterationCount $iterationCount
                 }
-
-                $testDirectoryPath = GetAbsolutePath $testDirectoryPath
-                $resultsDirectoryPath = GetAbsolutePath $resultsDirectoryPath
-                Log "Discovering the test cases." 
-                $testFiles = $(Get-ChildItem $PSScriptRoot\testCases "Test-*.ps1" ) | ForEach-Object { $_.FullName }
-                Log "Discovered test cases: $testFiles" "green"
-                $testFiles | ForEach-Object {
-                    $testCase = $_
-                    try 
-                    {
-                    . $_ -nugetClient $nugetClient -sourceRootDirectory $([System.IO.Path]::Combine($testDirectoryPath, "source")) -resultsDirectoryPath $resultsDirectoryPath -logsPath $([System.IO.Path]::Combine($testDirectoryPath, "logs")) 
-                    } 
-                    catch 
-                    {
-                        Log "Problem running the test case $testCase with error $_" "red"
-                    }
+                Catch
+                {
+                    Log "Problem running the test case $testCase with error $_" "red"
                 }
-            } 
-            catch 
-            {
-                Log "Problem running the tests with $nugetClient" "red"
             }
         }
-    }
-    finally 
-    {
-        if (!$SkipCleanup) {
-            Remove-Item -r -force $testDirectoryPath -ErrorAction Ignore > $null
+        Catch
+        {
+            Log "Problem running the tests with $nugetClientFilePath" "red"
         }
     }
+}
+Finally
+{
+    Remove-Item -Recurse -Force $nugetFoldersPath -ErrorAction Ignore > $Null
+
+    If (!$skipRepoCleanup)
+    {
+        Remove-Item -Recurse -Force $sourceRootFolderPath -ErrorAction Ignore > $Null
+    }
+}

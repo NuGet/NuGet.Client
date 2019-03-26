@@ -20,6 +20,7 @@ namespace NuGet.Protocol.Plugins
         private bool _isClosed;
         private bool _isDisposed;
         private readonly ConcurrentDictionary<string, InboundRequestContext> _inboundRequestContexts;
+        private readonly IPluginLogger _logger;
         private readonly ConcurrentDictionary<string, OutboundRequestContext> _outboundRequestContexts;
 
         /// <summary>
@@ -37,6 +38,22 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="idGenerator" />
         /// is <c>null</c>.</exception>
         public MessageDispatcher(IRequestHandlers requestHandlers, IIdGenerator idGenerator)
+            : this(requestHandlers, idGenerator, PluginLogger.DefaultInstance)
+        {
+        }
+
+        /// <summary>
+        /// Instantiates a new <see cref="MessageDispatcher" /> class.
+        /// </summary>
+        /// <param name="requestHandlers">Request handlers.</param>
+        /// <param name="idGenerator">A unique identifier generator.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="requestHandlers" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="idGenerator" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
+        /// is <c>null</c>.</exception>
+        internal MessageDispatcher(IRequestHandlers requestHandlers, IIdGenerator idGenerator, IPluginLogger logger)
         {
             if (requestHandlers == null)
             {
@@ -48,8 +65,14 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(idGenerator));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             RequestHandlers = requestHandlers;
             _idGenerator = idGenerator;
+            _logger = logger;
 
             _inboundRequestContexts = new ConcurrentDictionary<string, InboundRequestContext>();
             _outboundRequestContexts = new ConcurrentDictionary<string, OutboundRequestContext>();
@@ -68,6 +91,8 @@ namespace NuGet.Protocol.Plugins
             Close();
 
             SetConnection(connection: null);
+
+            // Do not dispose of _logger.  This message dispatcher does not own it.
 
             GC.SuppressFinalize(this);
 
@@ -458,6 +483,11 @@ namespace NuGet.Protocol.Plugins
                     }
                     catch (OperationCanceledException) when (requestContext.CancellationToken.IsCancellationRequested)
                     {
+                        if (_logger.IsEnabled)
+                        {
+                            _logger.Write(new CommunicationLogMessage(_logger.Now, message.RequestId, message.Method, message.Type, MessageState.Cancelled));
+                        }
+
                         // Keep the request context around if cancellation was requested.
                         // A race condition exists where after sending a cancellation request,
                         // we could receive a response (which was in flight) or a cancellation
@@ -668,7 +698,8 @@ namespace NuGet.Protocol.Plugins
             return new InboundRequestContext(
                 _connection,
                 message.RequestId,
-                cancellationToken);
+                cancellationToken,
+                _logger);
         }
 
         private OutboundRequestContext<TIncoming> CreateOutboundRequestContext<TIncoming>(
@@ -682,7 +713,8 @@ namespace NuGet.Protocol.Plugins
                 message,
                 timeout,
                 isKeepAlive,
-                cancellationToken);
+                cancellationToken,
+                _logger);
         }
 
         private static bool GetIsKeepAlive(IConnection connection, MessageType type, MessageMethod method)

@@ -48,7 +48,9 @@ namespace NuGet.Protocol
             var packages = await _feedParser.FindPackagesByIdAsync(packageId, includeUnlisted, includePrerelease, sourceCacheContext, log, token);
 
             var metadataCache = new MetadataReferenceCache();
-            return packages.Select(p => new PackageSearchMetadataV2Feed(p, metadataCache)).ToList();
+            var filter = new SearchFilter(includePrerelease);
+            filter.IncludeDelisted = includeUnlisted;
+            return packages.Select(p => V2FeedUtilities.CreatePackageSearchResult(p, metadataCache, filter, _feedParser, log, token)).ToList();
         }
 
         public override async Task<IPackageSearchMetadata> GetMetadataAsync(
@@ -61,7 +63,11 @@ namespace NuGet.Protocol
 
             if (v2Package != null)
             {
-                return new PackageSearchMetadataV2Feed(v2Package);
+                var metadataCache = new MetadataReferenceCache();
+                var filter = new SearchFilter(v2Package.Version.IsPrerelease);
+                filter.IncludeDelisted = !v2Package.IsListed;
+
+                return V2FeedUtilities.CreatePackageSearchResult(v2Package, metadataCache, filter, _feedParser, log, token);
             }
             return null;
         }

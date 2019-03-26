@@ -41,16 +41,11 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-#if VS14
-                // VSProject4 doesn't apply for Dev14 so simply returns null.
-                return false;
-#else
                 return _threadingService.ExecuteSynchronously(async () =>
                 {
                     await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return _vsProjectAdapter.Project.Object is VSLangProj150.VSProject4;
                 });
-#endif
             }
         }
 

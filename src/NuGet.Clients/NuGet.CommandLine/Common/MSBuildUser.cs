@@ -22,7 +22,7 @@ namespace NuGet.Common
 
         protected string _msbuildDirectory;
 
-        // msbuildDirectory is the directory containing the msbuild to be used. E.g. C:\Program Files (x86)\MSBuild\14.0\Bin
+        // msbuildDirectory is the directory containing the msbuild to be used. E.g. C:\Program Files (x86)\MSBuild\15.0\Bin
         public void LoadAssemblies(string msbuildDirectory)
         {
             if (String.IsNullOrEmpty(msbuildDirectory))

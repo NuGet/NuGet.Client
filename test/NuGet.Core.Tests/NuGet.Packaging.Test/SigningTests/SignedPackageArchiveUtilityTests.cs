@@ -4,13 +4,13 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
-using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -18,16 +18,12 @@ namespace NuGet.Packaging.Test
 {
     public class SignedPackageArchiveUtilityTests : IClassFixture<CertificatesFixture>
     {
+        private static readonly byte[] _signatureFileName = Encoding.ASCII.GetBytes(SigningSpecifications.V1.SignaturePath);
         private readonly CertificatesFixture _fixture;
 
         public SignedPackageArchiveUtilityTests(CertificatesFixture fixture)
         {
-            if (fixture == null)
-            {
-                throw new ArgumentNullException(nameof(fixture));
-            }
-
-            _fixture = fixture;
+            _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
         [Fact]
@@ -369,11 +365,7 @@ namespace NuGet.Packaging.Test
                 Assert.True(wasSomethingRemoved);
                 Assert.InRange(newLastWriteTime, originalLastWriteTime, originalLastWriteTime.Add(TimeSpan.FromMinutes(5)));
 
-                ZeroPackageSignatureFileLastModifiedDateTimes(
-                    expectedPackage,
-                    actualPackage,
-                    offsetOfLocalFileHeaderLastModifiedDateTime: 0x1df,
-                    offsetOfCentralDirectoryHeaderLastModifiedDateTime: 0x851);
+                ZeroPackageSignatureFileLastModifiedDateTimes(expectedPackage, actualPackage);
 
                 Assert.Equal(expectedPackage, actualPackage);
             }
@@ -404,33 +396,41 @@ namespace NuGet.Packaging.Test
                 Assert.True(wasSomethingRemoved);
                 Assert.InRange(newLastWriteTime, originalLastWriteTime, originalLastWriteTime.Add(TimeSpan.FromMinutes(5)));
 
-                ZeroPackageSignatureFileLastModifiedDateTimes(
-                    expectedPackage,
-                    actualPackage,
-                    offsetOfLocalFileHeaderLastModifiedDateTime: 0x1df,
-                    offsetOfCentralDirectoryHeaderLastModifiedDateTime: 0xa7a);
+                ZeroPackageSignatureFileLastModifiedDateTimes(expectedPackage, actualPackage);
 
                 Assert.Equal(expectedPackage, actualPackage);
             }
         }
 
-        private static void ZeroPackageSignatureFileLastModifiedDateTimes(
-            byte[] package1,
-            byte[] package2,
-            uint offsetOfLocalFileHeaderLastModifiedDateTime,
-            uint offsetOfCentralDirectoryHeaderLastModifiedDateTime)
+        private static void ZeroPackageSignatureFileLastModifiedDateTimes(byte[] package1, byte[] package2)
         {
             // The two packages should be identical except for last modified datetime values
             // in the package signature file's local file header and central directory header.
             Assert.Equal(package1.Length, package2.Length);
 
+            ZeroPackageSignatureFileLastModifiedDateTime(package1);
+            ZeroPackageSignatureFileLastModifiedDateTime(package2);
+        }
+
+        private static void ZeroPackageSignatureFileLastModifiedDateTime(byte[] package)
+        {
+            GetPackageSignatureFileHeaderOffsets(
+                package,
+                out var centralDirectoryHeaderOffset,
+                out var localFileHeaderOffset);
+
+            var offsetOfCentralDirectoryHeaderLastModifiedDateTime = centralDirectoryHeaderOffset
+                + sizeof(uint)        // Signature field
+                + 4 * sizeof(ushort); // VersionMadeBy, VersionNeededToExtract, GeneralPurposeBitFlag, and CompressionMethod fields
+
+            var offsetOfLocalFileHeaderLastModifiedDateTime = localFileHeaderOffset
+                + sizeof(uint)        // Signature field
+                + 3 * sizeof(ushort); // VersionNeededToExtract, GeneralPurposeBitFlag, and CompressionMethod fields
+
             for (var i = 0; i < 4; ++i)
             {
-                package1.SetValue((byte)0, offsetOfLocalFileHeaderLastModifiedDateTime + i);
-                package1.SetValue((byte)0, offsetOfCentralDirectoryHeaderLastModifiedDateTime + i);
-
-                package2.SetValue((byte)0, offsetOfLocalFileHeaderLastModifiedDateTime + i);
-                package2.SetValue((byte)0, offsetOfCentralDirectoryHeaderLastModifiedDateTime + i);
+                package.SetValue((byte)0, offsetOfLocalFileHeaderLastModifiedDateTime + i);
+                package.SetValue((byte)0, offsetOfCentralDirectoryHeaderLastModifiedDateTime + i);
             }
         }
 #endif
@@ -473,6 +473,45 @@ namespace NuGet.Packaging.Test
                 var packageSignatureFile = zipArchive.GetEntry(SigningSpecifications.V1.SignaturePath);
 
                 return packageSignatureFile.LastWriteTime;
+            }
+        }
+
+        private static void GetPackageSignatureFileHeaderOffsets(
+            byte[] package,
+            out long centralDirectoryHeaderOffset,
+            out long localFileHeaderOffset)
+        {
+            using (var stream = new MemoryStream(package))
+            using (var reader = new BinaryReader(stream))
+            {
+                var endOfCentralDirectoryRecord = Signing.EndOfCentralDirectoryRecord.Read(reader);
+
+                reader.BaseStream.Seek(endOfCentralDirectoryRecord.OffsetOfStartOfCentralDirectory, SeekOrigin.Begin);
+
+                Signing.CentralDirectoryHeader centralDirectoryHeader;
+
+                while (Signing.CentralDirectoryHeader.TryRead(reader, out centralDirectoryHeader))
+                {
+                    if (_signatureFileName.SequenceEqual(centralDirectoryHeader.FileName))
+                    {
+                        centralDirectoryHeaderOffset = centralDirectoryHeader.OffsetFromStart;
+
+                        reader.BaseStream.Seek(centralDirectoryHeader.RelativeOffsetOfLocalHeader, SeekOrigin.Begin);
+
+                        Signing.LocalFileHeader localFileHeader;
+
+                        if (!Signing.LocalFileHeader.TryRead(reader, out localFileHeader))
+                        {
+                            throw new InvalidDataException("Could not find local file header for the package signature file.");
+                        }
+
+                        localFileHeaderOffset = centralDirectoryHeader.RelativeOffsetOfLocalHeader;
+
+                        return;
+                    }
+                }
+
+                throw new InvalidDataException("Could not find central directory header for the package signature file.");
             }
         }
 
