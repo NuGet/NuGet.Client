@@ -1,3 +1,55 @@
+<#
+.SYNOPSIS
+Run a set of performance tests with a given client and a solution.
+
+Both packages.config and PackageReference styles are supported, but mixed projects are not handled very well.
+
+The scenarios are sequential as follows:
+
+1. Clean restore - no http cache & other local caches, no files in the global package folder, absolutely everything gets downloaded and extracted.
+1. Cold restore - There is only an http cache. This tells us more about the installation/extraction time. Potentially we might see some extra http calls depending on the project graph.
+1. Force restore - The http cache & global packages folder are full. This usually means that there are no package downloads or installations happening. Since most tests are running 
+1. NoOp restore
+
+.PARAMETER nugetClientFilePath
+The NuGet Client file path. Supported are dotnet.exe and NuGet.exe
+
+.PARAMETER solutionFilePath
+The solution file path. The entry point on which restore is called. It could be a project file as well.
+
+.PARAMETER resultsFilePath
+The results file path. This is an exact path to a file.
+
+.PARAMETER logsFolderPath
+The logs folder path. The default is a temp directory that gets cleaned up after the script has completed.
+
+.PARAMETER nugetFoldersPath
+The temp folder for all the nuget assets. This includes the location of the global packages folder, http, plugins cache & temp location 
+
+.PARAMETER iterationCount
+How many times to run each test. The default is 3
+
+.PARAMETER isPackagesConfig
+Specifies whether the solution is packages-config.
+
+.PARAMETER skipWarmup
+When running the tests, a warmup run is performed. Use this parameter to skip it.
+
+.PARAMETER skipCleanRestores
+Skips clean restores. 
+
+.PARAMETER skipColdRestores
+Skips cold restores
+
+.PARAMETER skipForceRestores
+Skips force restores
+
+.PARAMETER skipNoOpRestores
+Skips no-op restore.
+
+.EXAMPLE
+.\RunPerformanceTests.ps1 -nugetClientFilePath "C:\Program Files\dotnet\dotnet.exe" -solutionFilePath F:\NuGet.Client\NuGet.sln -resultsFilePath results.csv
+#>
 Param(
     [Parameter(Mandatory = $True)]
     [string] $nugetClientFilePath,
@@ -70,6 +122,7 @@ Try
     $resultsFilePath = GetAbsolutePath $resultsFilePath
     $isClientDotnetExe = IsClientDotnetExe $nugetClientFilePath
 
+    
     If ($isPackagesConfig)
     {
         If ($isClientDotnetExe)
@@ -97,6 +150,11 @@ Try
             Log "$resultsFilePath cannot be under $logsFolderPath" "red"
             Exit 1
         }
+    }
+
+    If ([string]::IsNullOrEmpty($nugetFoldersPath))
+    {
+        $nugetFoldersPath = GetNuGetFoldersPath $Null
     }
 
     LogDotNetSdkInfo

@@ -209,7 +209,7 @@ Function SetupNuGetFolders([string] $nugetClientFilePath, [string] $nugetFolders
 # This should only be invoked by the the performance tests
 Function CleanNuGetFolders([string] $nugetClientFilePath, [string] $nugetFoldersPath)
 {
-    Log "Cleanup up the NuGet folders - global packages folder, http/plugins caches"
+    Log "Cleanup up the NuGet folders - global packages folder, http/plugins caches. Client: $nugetClientFilePath. Folders: $nugetFoldersPath"
 
     LocalsClearAll $nugetClientFilePath
 

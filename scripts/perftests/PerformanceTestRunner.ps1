@@ -1,6 +1,35 @@
+<#
+.SYNOPSIS
+Runs the set of performance tests in the test cases directory. 
+
+.PARAMETER resultsFolderPath
+The results folder path
+
+.PARAMETER nugetClientFilePaths
+An array of NuGet clients to run the tests for. Supported are dotnet.exe and NuGet.exe clients.
+
+.PARAMETER testRootFolderPath
+The test root folder path. All temporary assets will be stored here. That includes the download of repos under a 'source' subfolder and the NuGet folders, under an 'np' subfolder.
+
+.PARAMETER logsFolderPath
+The logs folder path. 
+
+.PARAMETER nugetFoldersPath
+The temp folder for all the nuget assets. This includes the location of the global packages folder, http, plugins cache & temp location 
+
+.PARAMETER iterationCount
+How many times to run each test. The default is 3
+
+.PARAMETER skipRepoCleanup
+Whether to delete the checked out repos from the test cases.
+
+.EXAMPLE
+.\PerformanceTestRunner.ps1 -resultsFolderPath resultsFolder -nugetClientFilePaths F:\NuGetExe\NuGet.exe,"C:\Program Files\dotnet\dotnet.exe" 
+#>
 Param(
     [Parameter(Mandatory = $true)]
     [string] $resultsFolderPath,
+    [Parameter(Mandatory = $true)]
     [string[]] $nugetClientFilePaths,
     [string] $testRootFolderPath,
     [string] $logsFolderPath,
