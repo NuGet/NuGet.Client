@@ -238,7 +238,7 @@ namespace NuGet.Commands
                 return;
             }
 
-            DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(dgPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(dgPath));
             log.LogVerbose($"Persisting no-op dg to {dgPath}");
             spec.Save(dgPath);
         }
