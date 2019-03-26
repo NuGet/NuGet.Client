@@ -1979,6 +1979,27 @@ Description is required.");
         }
 
         [Fact]
+        public void PackageBuilderThrowsWhenLicenseUrlIsWhiteSpace()
+        {
+            // Arrange
+            string spec = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<package>
+  <metadata>
+    <id>Artem.XmlProviders</id>
+    <version>2.5</version>
+    <authors>Velio Ivanov</authors>
+    <description>This is the Description (With, Comma-Separated, Words, in Parentheses).</description>
+    <language>en-US</language>
+    <licenseUrl>    </licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+  </metadata>
+</package>";
+
+            // Act
+            ExceptionAssert.Throws<Exception>(() => new PackageBuilder(spec.AsStream(), null), "LicenseUrl cannot be empty.");
+        }
+
+        [Fact]
         public void PackageBuilderThrowsWhenLicenseUrlIsWhiteSpaceAndLicenseExpressionIsNotNull()
         {
             // Arrange
