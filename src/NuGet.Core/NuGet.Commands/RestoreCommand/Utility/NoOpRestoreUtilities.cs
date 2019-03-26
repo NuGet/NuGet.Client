@@ -239,7 +239,7 @@ namespace NuGet.Commands
         /// <param name="log">logger</param>
         internal static void PersistDGSpecFile(DependencyGraphSpec spec, string dgPath, ILogger log)
         {
-            DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(dgPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(dgPath));
             log.LogVerbose($"Persisting no-op dg to {dgPath}");
             spec.Save(dgPath);
         }
