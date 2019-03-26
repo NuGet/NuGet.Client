@@ -38,7 +38,12 @@ namespace NuGet.ProjectModel
         /// </summary>
         public IList<DownloadDependency> DownloadDependencies { get; } = new List<DownloadDependency>();
 
-        public IList<string> FrameworkReferences { get; } = new List<string>();
+        /// <summary>
+        /// A set of unique FrameworkReferences
+        /// </summary>
+        public ISet<string> FrameworkReferences { get; } = new HashSet<string>(FrameworkReferenceComparer);
+
+        public static StringComparer FrameworkReferenceComparer = StringComparer.OrdinalIgnoreCase;
 
         public override string ToString()
         {

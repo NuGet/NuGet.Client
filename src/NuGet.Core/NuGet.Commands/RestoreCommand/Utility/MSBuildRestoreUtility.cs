@@ -689,7 +689,7 @@ namespace NuGet.Commands
         {
             var frameworkInfo = spec.GetTargetFramework(framework);
 
-            if (!frameworkInfo.FrameworkReferences.Contains(frameworkReference, StringComparer.OrdinalIgnoreCase))
+            if (!frameworkInfo.FrameworkReferences.Contains(frameworkReference))
             {
                 frameworkInfo.FrameworkReferences.Add(frameworkReference);
                 return true;

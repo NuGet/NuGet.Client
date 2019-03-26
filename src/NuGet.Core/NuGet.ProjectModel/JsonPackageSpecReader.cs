@@ -806,7 +806,7 @@ namespace NuGet.ProjectModel
             return true;
         }
 
-        private static void PopulateFrameworkReferences(IList<string> frameworkReferences, JObject properties, string frameworkReferenceName)
+        private static void PopulateFrameworkReferences(ISet<string> frameworkReferences, JObject properties, string frameworkReferenceName)
         {
             var frameworkRefProperty = properties[frameworkReferenceName];
 

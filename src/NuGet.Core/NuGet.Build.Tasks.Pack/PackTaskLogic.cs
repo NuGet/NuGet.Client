@@ -361,7 +361,7 @@ namespace NuGet.Build.Tasks.Pack
                 }
                 else
                 {
-                    tfmSpecificRefs.Add(targetFramework, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { tfmRef.Identity });
+                    tfmSpecificRefs.Add(targetFramework, new HashSet<string>(TargetFrameworkInformation.FrameworkReferenceComparer) { tfmRef.Identity });
                 }
             }
 

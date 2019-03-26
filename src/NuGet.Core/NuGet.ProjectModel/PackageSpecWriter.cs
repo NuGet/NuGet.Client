@@ -504,11 +504,11 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void SetFrameworkReferences(IObjectWriter writer, IList<string> frameworkReferences)
+        private static void SetFrameworkReferences(IObjectWriter writer, ISet<string> frameworkReferences)
         {
             if (frameworkReferences?.Any() == true)
             {
-                writer.WriteNameArray("frameworkReferences", frameworkReferences.OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
+                writer.WriteNameArray("frameworkReferences", frameworkReferences.OrderBy(e => e));
             }
         }
 

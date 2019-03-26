@@ -142,7 +142,7 @@ namespace NuGet.Packaging.Core
                 var frameworkReferencesNode = metadataNode
                     .Elements(XName.Get(FrameworkReferences, ns));
                 frameworkReferenceGroups = frameworkReferencesNode
-                .Elements(XName.Get(Group, ns));
+                    .Elements(XName.Get(Group, ns));
             }
             else
             {

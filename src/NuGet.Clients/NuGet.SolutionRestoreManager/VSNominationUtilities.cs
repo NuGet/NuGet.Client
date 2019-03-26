@@ -127,15 +127,12 @@ namespace NuGet.SolutionRestoreManager
                            .Select(ToPackageDownloadDependency));
                 }
 
-                if(targetFrameworkInfo2.FrameworkReferences != null)
+                if (targetFrameworkInfo2.FrameworkReferences != null)
                 {
-                    var uniqueFrameworkRefs = new HashSet<string>(
+                    tfi.FrameworkReferences.AddRange(
                         targetFrameworkInfo2.FrameworkReferences
                             .Cast<IVsReferenceItem>()
-                            .Select(e => e.Name),
-                        StringComparer.OrdinalIgnoreCase);
-
-                    tfi.FrameworkReferences.AddRange(uniqueFrameworkRefs);
+                            .Select(e => e.Name));
                 }
             }
 
