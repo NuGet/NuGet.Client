@@ -333,7 +333,7 @@ namespace NuGet.Packaging
                 yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl;
             }
 
-            if (LicenseUrl != null && LicenseMetadata != null && !LicenseUrl.Equals(LicenseMetadata.LicenseUrl))
+            if (_licenseUrl != null && LicenseMetadata != null && (string.IsNullOrWhiteSpace(_licenseUrl) || !LicenseUrl.Equals(LicenseMetadata.LicenseUrl)))
             {
                 yield return NuGetResources.Manifest_LicenseUrlCannotBeUsedWithLicenseMetadata;
             }

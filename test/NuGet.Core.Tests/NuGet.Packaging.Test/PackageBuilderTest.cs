@@ -2000,6 +2000,28 @@ Description is required.");
         }
 
         [Fact]
+        public void PackageBuilderThrowsWhenLicenseUrlIsWhiteSpaceAndLicenseExpressionIsNotNull()
+        {
+            // Arrange
+            string spec = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<package>
+  <metadata>
+    <id>Artem.XmlProviders</id>
+    <version>2.5</version>
+    <authors>Velio Ivanov</authors>
+    <description>This is the Description (With, Comma-Separated, Words, in Parentheses).</description>
+    <language>en-US</language>
+    <license type=""expression"">MIT</license>
+    <licenseUrl>    </licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+  </metadata>
+</package>";
+
+            // Act
+            ExceptionAssert.Throws<Exception>(() => new PackageBuilder(spec.AsStream(), null), $"LicenseUrl cannot be empty.{Environment.NewLine}The licenseUrl and license elements cannot be used together.");
+        }
+
+        [Fact]
         public void ValidateReferencesAllowsPartialFileNames()
         {
             // Arrange
