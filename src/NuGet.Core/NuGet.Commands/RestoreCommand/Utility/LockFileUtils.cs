@@ -591,7 +591,7 @@ namespace NuGet.Commands
                 KnownLibraryProperties.FrameworkReferences,
                 out frameworkReferencesObject))
             {
-                projectLib.FrameworkReferences.AddRange((List<string>)frameworkReferencesObject);
+                projectLib.FrameworkReferences.AddRange((IEnumerable<string>)frameworkReferencesObject);
             }
 
             // Exclude items
