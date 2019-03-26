@@ -505,32 +505,7 @@ namespace NuGet.ProjectModel.Test
                             }
                         },
                         ""frameworkReferences"": [
-                            ""Microsoft.WindowsDesktop.App|WPF"",
-                            ""Microsoft.WindowsDesktop.App|WinForms""
-                        ]
-                    }
-                  }
-                }";
-
-            // Act & Assert
-            VerifyJsonPackageSpecRoundTrip(json);
-        }
-
-        [Fact]
-        public void RoundTripFrameworkReferencesDuplicatesAreNotHandled()
-        {
-            // Arrange
-            var json = @"{
-                  ""frameworks"": {
-                    ""net46"": {
-                        ""dependencies"": {
-                            ""a"": {
-                                ""version"": ""[1.0.0, )"",
-                                ""autoReferenced"": true
-                            }
-                        },
-                        ""frameworkReferences"": [
-                            ""Microsoft.WindowsDesktop.App|WPF"",
+                            ""Microsoft.WindowsDesktop.App|WinForms"",
                             ""Microsoft.WindowsDesktop.App|WPF""
                         ]
                     }
