@@ -668,9 +668,9 @@ namespace NuGet.Commands
 
             if (string.IsNullOrEmpty(_packArgs.BasePath))
             {
-                return new PackageBuilder(path, _packArgs.GetPropertyValue, !_packArgs.ExcludeEmptyDirectories);
+                return new PackageBuilder(path, _packArgs.GetPropertyValue, !_packArgs.ExcludeEmptyDirectories, _packArgs.Deterministic);
             }
-            return new PackageBuilder(path, _packArgs.BasePath, _packArgs.GetPropertyValue, !_packArgs.ExcludeEmptyDirectories);
+            return new PackageBuilder(path, _packArgs.BasePath, _packArgs.GetPropertyValue, !_packArgs.ExcludeEmptyDirectories, _packArgs.Deterministic);
         }
 
         private PackageArchiveReader BuildFromProjectFile(string path)

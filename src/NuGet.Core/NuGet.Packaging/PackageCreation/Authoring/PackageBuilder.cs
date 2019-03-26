@@ -25,14 +25,26 @@ namespace NuGet.Packaging
         private static readonly Uri DefaultUri = new Uri("http://defaultcontainer/");
         internal const string ManifestRelationType = "manifest";
         private readonly bool _includeEmptyDirectories;
+        private readonly bool _deterministic;
+        private readonly DateTime _unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories)
-            : this(path, Path.GetDirectoryName(path), propertyProvider, includeEmptyDirectories)
+            : this(path, propertyProvider, includeEmptyDirectories, false)
+        {
+        }
+
+        public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic)
+            : this(path, Path.GetDirectoryName(path), propertyProvider, includeEmptyDirectories, deterministic)
         {
         }
 
         public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories)
-            : this(includeEmptyDirectories)
+            : this(path, basePath, propertyProvider, includeEmptyDirectories, false)
+        {
+        }
+
+        public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic)
+            : this(includeEmptyDirectories, deterministic)
         {
             if (!File.Exists(path))
             {
@@ -59,13 +71,14 @@ namespace NuGet.Packaging
         }
 
         public PackageBuilder()
-            : this(includeEmptyDirectories: false)
+            : this(includeEmptyDirectories: false, deterministic: false)
         {
         }
 
-        private PackageBuilder(bool includeEmptyDirectories)
+        public PackageBuilder(bool includeEmptyDirectories, bool deterministic)
         {
             _includeEmptyDirectories = includeEmptyDirectories;
+            _deterministic = deterministic;
             Files = new Collection<IPackageFile>();
             DependencyGroups = new Collection<PackageDependencyGroup>();
             FrameworkReferences = new Collection<FrameworkAssemblyReference>();
@@ -332,6 +345,40 @@ namespace NuGet.Packaging
             set;
         }
 
+        private static byte[] ReadAllBytes(Stream stream)
+        {
+            using (var ms = new MemoryStream())
+            {
+                ms.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
+        private string CalcPsmdcpName()
+        {
+            if (_deterministic)
+            {
+                using (var hashFunc = new Sha512HashFunction())
+                {
+                    foreach (var file in Files)
+                    {
+                        var data = ReadAllBytes(file.GetStream());
+                        hashFunc.Update(data, 0, data.Length);
+                    }
+                    return ToHexString(hashFunc.GetHashBytes()).Substring(0, 32);
+                }
+            }
+            else
+            {
+                return Guid.NewGuid().ToString("N");
+            }
+        }
+
+        private static string ToHexString(byte[] arr)
+        {
+            return BitConverter.ToString(arr).ToLower().Replace("-", "");
+        }
+
         public void Save(Stream stream)
         {
             // Make sure we're saving a valid package id
@@ -349,7 +396,7 @@ namespace NuGet.Packaging
 
             using (var package = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
-                string psmdcpPath = $"package/services/metadata/core-properties/{Guid.NewGuid().ToString("N")}.psmdcp";
+                string psmdcpPath = $"package/services/metadata/core-properties/{CalcPsmdcpName()}.psmdcp";
 
                 // Validate and write the manifest
                 WriteManifest(package, DetermineMinimumSchemaVersion(Files, DependencyGroups), psmdcpPath);
@@ -581,13 +628,21 @@ namespace NuGet.Packaging
             }
         }
 
+        private ZipArchiveEntry CreateEntry(ZipArchive package, string entryName, CompressionLevel compressionLevel)
+        {
+            var entry = package.CreateEntry(entryName, CompressionLevel.Optimal);
+            if (_deterministic)
+                entry.LastWriteTime = _unixEpoch;
+            return entry;
+        }
+
         private void WriteManifest(ZipArchive package, int minimumManifestVersion, string psmdcpPath)
         {
             var path = Id + PackagingConstants.ManifestExtension;
 
             WriteOpcManifestRelationship(package, path, psmdcpPath);
 
-            var entry = package.CreateEntry(path, CompressionLevel.Optimal);
+            var entry = CreateEntry(package, path, CompressionLevel.Optimal);
 
             using (var stream = entry.Open())
             {
@@ -607,7 +662,8 @@ namespace NuGet.Packaging
                 {
                     try
                     {
-                        CreatePart(package, file.Path, stream, file.LastWriteTime); 
+                        var lastWriteTime = _deterministic ? _unixEpoch : file.LastWriteTime;
+                        CreatePart(package, file.Path, stream, lastWriteTime); 
                         var fileExtension = Path.GetExtension(file.Path);
 
                         // We have files without extension (e.g. the executables for Nix)
@@ -749,7 +805,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private static void CreatePart(ZipArchive package, string path, Stream sourceStream, DateTimeOffset lastWriteTime)
+        private void CreatePart(ZipArchive package, string path, Stream sourceStream, DateTimeOffset lastWriteTime)
         {
             if (PackageHelper.IsNuspec(path))
             {
@@ -757,8 +813,9 @@ namespace NuGet.Packaging
             }
 
             string entryName = CreatePartEntryName(path);
-            var entry = package.CreateEntry(entryName, CompressionLevel.Optimal);
-            entry.LastWriteTime = lastWriteTime;
+            var entry = CreateEntry(package, entryName, CompressionLevel.Optimal);
+            if(!_deterministic)
+                entry.LastWriteTime = lastWriteTime;
             using (var stream = entry.Open())
             {
                 sourceStream.CopyTo(stream);
@@ -800,7 +857,7 @@ namespace NuGet.Packaging
 
         private void WriteOpcManifestRelationship(ZipArchive package, string path, string psmdcpPath)
         {
-            ZipArchiveEntry relsEntry = package.CreateEntry("_rels/.rels", CompressionLevel.Optimal);
+            ZipArchiveEntry relsEntry = CreateEntry(package, "_rels/.rels", CompressionLevel.Optimal);
 
             XNamespace relationships = "http://schemas.openxmlformats.org/package/2006/relationships";
 
@@ -809,11 +866,11 @@ namespace NuGet.Packaging
                     new XElement(relationships + "Relationship",
                         new XAttribute("Type", "http://schemas.microsoft.com/packaging/2010/07/manifest"),
                         new XAttribute("Target", $"/{path}"),
-                        new XAttribute("Id", GenerateRelationshipId())),
+                        new XAttribute("Id", GenerateRelationshipId($"/{path}"))),
                     new XElement(relationships + "Relationship",
                         new XAttribute("Type", "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"),
                         new XAttribute("Target", $"/{psmdcpPath}"),
-                        new XAttribute("Id", GenerateRelationshipId()))
+                        new XAttribute("Id", GenerateRelationshipId($"/{psmdcpPath}")))
                     )
                 );
 
@@ -824,10 +881,10 @@ namespace NuGet.Packaging
             }
         }
 
-        private static void WriteOpcContentTypes(ZipArchive package, HashSet<string> extensions, HashSet<string> filesWithoutExtensions)
+        private void WriteOpcContentTypes(ZipArchive package, HashSet<string> extensions, HashSet<string> filesWithoutExtensions)
         {
             // OPC backwards compatibility
-            ZipArchiveEntry relsEntry = package.CreateEntry("[Content_Types].xml", CompressionLevel.Optimal);
+            ZipArchiveEntry relsEntry = CreateEntry(package, "[Content_Types].xml", CompressionLevel.Optimal);
 
             XNamespace content = "http://schemas.openxmlformats.org/package/2006/content-types";
             XElement element = new XElement(content + "Types",
@@ -869,7 +926,7 @@ namespace NuGet.Packaging
         // OPC backwards compatibility for package properties
         private void WriteOpcPackageProperties(ZipArchive package, string psmdcpPath)
         {
-            ZipArchiveEntry packageEntry = package.CreateEntry(psmdcpPath, CompressionLevel.Optimal);
+            ZipArchiveEntry packageEntry = CreateEntry(package, psmdcpPath, CompressionLevel.Optimal);
 
             var dcText = "http://purl.org/dc/elements/1.1/";
             XNamespace dc = dcText;
@@ -904,9 +961,21 @@ namespace NuGet.Packaging
         }
 
         // Generate a relationship id for compatibility
-        private string GenerateRelationshipId()
+        private string GenerateRelationshipId(string path)
         {
-            return "R" + Guid.NewGuid().ToString("N").Substring(0, 16);
+            if (_deterministic)
+            {
+                using (var hashFunc = new Sha512HashFunction())
+                {
+                    var data = System.Text.Encoding.UTF8.GetBytes(path);
+                    hashFunc.Update(data, 0, data.Length);
+                    return "R" + ToHexString(hashFunc.GetHashBytes()).Substring(0, 16);
+                }
+            }
+            else
+            {
+                return "R" + Guid.NewGuid().ToString("N").Substring(0, 16);
+            }
         }
     }
 }
