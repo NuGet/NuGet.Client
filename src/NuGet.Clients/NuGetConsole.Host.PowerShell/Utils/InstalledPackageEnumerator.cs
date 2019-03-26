@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -229,7 +230,7 @@ namespace NuGetConsole.Host.PowerShell
 
             // Get the path to the Packages folder.
             var packagesFolderPath = packageManager.PackagesFolderSourceRepository.PackageSource.Source;
-            var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+            var packagePathResolver = new PackagePathResolver(Path.GetFullPath(packagesFolderPath));
 
             var packagesToSort = new HashSet<ResolverPackage>();
             var resolvedPackages = new HashSet<PackageIdentity>();

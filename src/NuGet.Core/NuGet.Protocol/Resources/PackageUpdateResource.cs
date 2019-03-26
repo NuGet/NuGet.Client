@@ -540,7 +540,7 @@ namespace NuGet.Protocol.Core.Types
 
             if (IsV2LocalRepository(root))
             {
-                var pathResolver = new PackagePathResolver(root, useSideBySidePaths: true);
+                var pathResolver = new PackagePathResolver(sourceUri.AbsolutePath, useSideBySidePaths: true);
                 var packageFileName = pathResolver.GetPackageFileName(packageIdentity);
 
                 var fullPath = Path.Combine(root, packageFileName);

@@ -17,6 +17,12 @@ namespace NuGet.Packaging
 
         public bool UseSideBySidePaths { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PackagePathResolver"/> class.
+        /// </summary>
+        /// <param name="rootDirectory">The root directory.</param>
+        /// <param name="useSideBySidePaths">A value indicating whether to use side-by-side paths.</param>
+        /// <exception cref="System.ArgumentException">If rootDirectory is null, empty or does not contain an absolute path. </exception>
         public PackagePathResolver(string rootDirectory, bool useSideBySidePaths = true)
         {
             if (string.IsNullOrEmpty(rootDirectory))
@@ -28,7 +34,7 @@ namespace NuGet.Packaging
             if (!Path.IsPathRooted(rootDirectory))
             {
                 throw new ArgumentException(
-                    string.Format(Strings.MustContainAbsolutePath, nameof(rootDirectory), string.Empty),
+                    string.Format(Strings.MustContainAbsolutePath, nameof(rootDirectory), rootDirectory),
                     nameof(rootDirectory));
             }
 
