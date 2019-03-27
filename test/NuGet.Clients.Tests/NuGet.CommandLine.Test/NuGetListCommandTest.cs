@@ -14,8 +14,9 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetListCommandTest
     {
-        [Fact]
-        public void ListCommand_WithNugetShowStack_ShowsStack()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_WithNugetShowStack_ShowsStack(string nugetCommand, bool validateDeprecationMessage)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -24,7 +25,7 @@ namespace NuGet.CommandLine.Test
             var expected = "NuGet.Protocol.Core.Types.FatalProtocolException: Unable to load the service index for source " +
                            $"{fullHostName}";
 
-            var args = new[] { "list", "-Source", fullHostName };
+            var args = new[] { nugetCommand, "-Source", fullHostName };
 
             // Act
             var result = CommandRunner.Run(
@@ -38,12 +39,14 @@ namespace NuGet.CommandLine.Test
                 });
 
             // Assert
+            ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
             Assert.Contains(expected, result.Item2 + " " + result.Item3);
             Assert.NotEqual(0, result.Item1);
         }
 
-        [Fact]
-        public void ListCommand_WithoutNugetShowStack_HidesStack()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_WithoutNugetShowStack_HidesStack(string nugetCommand, bool validateDeprecationMessage)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -54,7 +57,7 @@ namespace NuGet.CommandLine.Test
             {
                 expected = "NameResolutionFailure";
             }
-            var args = new[] { "list", "-Source", "https://" + hostName + "/" };
+            var args = new[] { nugetCommand, "-Source", "https://" + hostName + "/" };
 
             // Act
             var result = CommandRunner.Run(
@@ -68,12 +71,14 @@ namespace NuGet.CommandLine.Test
                 });
 
             // Assert
+            ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
             Assert.Contains(expected, result.Item2 + " " + result.Item3);
             Assert.NotEqual(0, result.Item1);
         }
 
-        [Fact]
-        public void ListCommand_WithUserSpecifiedSource()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_WithUserSpecifiedSource(string nugetCommand, bool validateDeprecationMessage)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -83,7 +88,7 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("testPackage1", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("testPackage2", "2.0.0", repositoryPath);
 
-                string[] args = new string[] { "list", "-Source", repositoryPath };
+                string[] args = new string[] { nugetCommand, "-Source", repositoryPath };
 
                 // Act
                 var result = CommandRunner.Run(
@@ -95,21 +100,23 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
                 var output = result.Item2;
-                Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
+                ConditionalValidateDeprecateWarning(validateDeprecationMessage, output);
+                Assert.EndsWith($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
             }
         }
 
-        [Fact]
-        public void ListCommand_ShowLicenseUrlWithDetailedVerbosity()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_ShowLicenseUrlWithDetailedVerbosity(string nugetCommand, bool validateDeprecationMessage)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
             using (var repositoryPath = TestDirectory.Create())
             {
-                Util.CreateTestPackage("testPackage1", "1.1.0", repositoryPath, new Uri("http://kaka"));
+                Util.CreateTestPackage("testPackage1", "1.1.0", repositoryPath, new Uri("http://aka"));
 
-                string[] args = new string[] { "list", "-Source", repositoryPath, "-verbosity", "detailed" };
+                string[] args = new string[] { nugetCommand, "-Source", repositoryPath, "-verbosity", "detailed" };
 
                 // Act
                 var r = CommandRunner.Run(
@@ -123,16 +130,19 @@ namespace NuGet.CommandLine.Test
                 var output = r.Item2;
                 string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-                Assert.Equal(5, lines.Length);
-                Assert.Equal("testPackage1", lines[1]);
-                Assert.Equal(" 1.1.0", lines[2]);
-                Assert.Equal(" desc of testPackage1 1.1.0", lines[3]);
-                Assert.Equal(" License url: http://kaka", lines[4]);
+                var offset = validateDeprecationMessage ? 1 : 0;
+
+                Assert.Equal(5 + offset, lines.Length);
+                Assert.Equal("testPackage1", lines[1 + offset]);
+                Assert.Equal(" 1.1.0", lines[2 + offset]);
+                Assert.Equal(" desc of testPackage1 1.1.0", lines[3 + offset]);
+                Assert.Equal(" License url: http://aka", lines[4 + offset]);
             }
         }
 
-        [Fact]
-        public void ListCommand_WithUserSpecifiedConfigFile()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_WithUserSpecifiedConfigFile(string nugetCommand, bool validateDeprecationMessage)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -148,20 +158,20 @@ namespace NuGet.CommandLine.Test
                 var configFile = Path.Combine(randomFolder, "nuget.config");
 
                 string[] args = new string[] {
-                "sources",
-                "Add",
-                "-Name",
-                "test_source",
-                "-Source",
-                repositoryPath,
-                "-ConfigFile",
-                Path.Combine(randomFolder, "nuget.config")
-            };
+                    "sources",
+                    "Add",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    repositoryPath,
+                    "-ConfigFile",
+                    Path.Combine(randomFolder, "nuget.config")
+                };
                 int r = Program.Main(args);
                 Assert.Equal(0, r);
 
                 // Act: execute the list command
-                args = new string[] { "list", "-Source", "test_source", "-ConfigFile", configFile };
+                args = new string[] { nugetCommand, "-Source", "test_source", "-ConfigFile", configFile };
 
                 var result = CommandRunner.Run(
                     nugetexe,
@@ -172,13 +182,15 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
                 var output = result.Item2;
-                Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
+                ConditionalValidateDeprecateWarning(validateDeprecationMessage, output);
+                Assert.EndsWith($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
             }
         }
 
         // Tests list command, with no other switches
-        [Fact]
-        public void ListCommand_Simple()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_Simple(string nugetCommand, bool validateDeprecationMessage)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -210,7 +222,7 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    var args = "list test -Source " + server.Uri + "nuget";
+                    var args = nugetCommand + " test -Source " + server.Uri + "nuget";
                     var result = CommandRunner.Run(
                         nugetexe,
                         randomTestFolder,
@@ -224,7 +236,9 @@ namespace NuGet.CommandLine.Test
                     // verify that only package id & version is displayed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, result.Item2);
+
+                    ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
+                    Assert.EndsWith(expectedOutput, result.Item2);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -234,8 +248,9 @@ namespace NuGet.CommandLine.Test
         }
 
         // Tests that list command only show listed packages
-        [Fact]
-        public void ListCommand_OnlyShowListed()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_OnlyShowListed(string nugetCommand, bool validateDeprecationMessage)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -269,7 +284,7 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    var args = "list test -Source " + server.Uri + "nuget";
+                    var args = nugetCommand + " test -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         randomTestFolder,
@@ -283,7 +298,9 @@ namespace NuGet.CommandLine.Test
                     // verify that only testPackage2 is listed since the package testPackage1
                     // is not listed.
                     var expectedOutput = "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+
+                    ConditionalValidateDeprecateWarning(validateDeprecationMessage, r1.Item2);
+                    Assert.EndsWith(expectedOutput, r1.Item2);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -297,8 +314,9 @@ namespace NuGet.CommandLine.Test
 
         // Tests that list command show delisted packages
         // when IncludeDelisted is specified.
-        [Fact]
-        public void ListCommand_IncludeDelisted()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_IncludeDelisted(string nugetCommand, bool validateDeprecationMessage)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -331,7 +349,7 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    var args = "list test -IncludeDelisted -Source " + server.Uri + "nuget";
+                    var args = nugetCommand + " test -IncludeDelisted -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         randomTestFolder,
@@ -346,7 +364,8 @@ namespace NuGet.CommandLine.Test
                     var expectedOutput =
                         "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    ConditionalValidateDeprecateWarning(validateDeprecationMessage, r1.Item2);
+                    Assert.EndsWith(expectedOutput, r1.Item2);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -356,8 +375,9 @@ namespace NuGet.CommandLine.Test
         }
 
         // Tests that list command displays detailed package info when -Verbosity is detailed.
-        [Fact]
-        public void ListCommand_VerboseOutput()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_VerboseOutput(string nugetCommand, bool validateDeprecationMessage)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -389,7 +409,7 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    var args = "list test -Verbosity detailed -Source " + server.Uri + "nuget";
+                    var args = nugetCommand + " test -Verbosity detailed -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         randomTestFolder,
@@ -401,6 +421,7 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(0, r1.Item1);
 
                     // verify that the output is detailed
+                    ConditionalValidateDeprecateWarning(validateDeprecationMessage, r1.Item2);
                     Assert.Contains(package1.Description, r1.Item2);
                     Assert.Contains(package2.Description, r1.Item2);
 
@@ -413,8 +434,9 @@ namespace NuGet.CommandLine.Test
 
         // Tests that when -AllVersions is specified, list command sends request
         // without $filter
-        [Fact]
-        public void ListCommand_AllVersions()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_AllVersions(string nugetCommand, bool validateDeprecationMessage)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -446,7 +468,7 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    var args = "list test -AllVersions -Source " + server.Uri + "nuget";
+                    var args = nugetCommand + " test -AllVersions -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         randomTestFolder,
@@ -460,7 +482,8 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    ConditionalValidateDeprecateWarning(validateDeprecationMessage, r1.Item2);
+                    Assert.EndsWith(expectedOutput, r1.Item2);
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -470,8 +493,9 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test case when switch -Prerelease is specified
-        [Fact]
-        public void ListCommand_Prerelease()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_Prerelease(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
@@ -504,7 +528,7 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    var args = "list test -Prerelease -Source " + server.Uri + "nuget";
+                    var args = nugetCommand + " test -Prerelease -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         randomTestFolder,
@@ -518,7 +542,8 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    ConditionalValidateDeprecateWarning(validateDeprecationMessage, r1.Item2);
+                    Assert.EndsWith(expectedOutput, r1.Item2);
 
                     Assert.Contains("$filter=IsAbsoluteLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -528,8 +553,9 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test case when both switches -Prerelease and -AllVersions are specified
-        [Fact]
-        public void ListCommand_AllVersionsPrerelease()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_AllVersionsPrerelease(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
@@ -562,7 +588,7 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    var args = "list test -AllVersions -Prerelease -Source " + server.Uri + "nuget";
+                    var args = nugetCommand + " test -AllVersions -Prerelease -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         randomTestFolder,
@@ -576,7 +602,8 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    ConditionalValidateDeprecateWarning(validateDeprecationMessage, r1.Item2);
+                    Assert.EndsWith(expectedOutput, r1.Item2);
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -585,8 +612,9 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        public void ListCommand_SimpleV3()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_SimpleV3(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
 
@@ -659,7 +687,7 @@ namespace NuGet.CommandLine.Test
                         serverV2.Start();
 
                         // Act
-                        var args = "list test -Source " + serverV3.Uri + "index.json";
+                        var args = nugetCommand + " test -Source " + serverV3.Uri + "index.json";
                         var result = CommandRunner.Run(
                             nugetexe,
                             Directory.GetCurrentDirectory(),
@@ -675,7 +703,8 @@ namespace NuGet.CommandLine.Test
                         // verify that only package id & version is displayed
                         var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                             "testPackage2 2.1.0" + Environment.NewLine;
-                        Assert.Equal(expectedOutput, result.Item2);
+                        ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
+                        Assert.EndsWith(expectedOutput, result.Item2);
 
                         Assert.Contains("$filter=IsLatestVersion", searchRequest);
                         Assert.Contains("searchTerm='test", searchRequest);
@@ -685,8 +714,9 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        public void ListCommand_SimpleV3_NoListEndpoint()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_SimpleV3_NoListEndpoint(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
@@ -717,7 +747,7 @@ namespace NuGet.CommandLine.Test
                     serverV3.Start();
 
                     // Act
-                    var args = "list test -Source " + serverV3.Uri + "index.json";
+                    var args = nugetCommand + " test -Source " + serverV3.Uri + "index.json";
                     var result = CommandRunner.Run(
                         nugetexe,
                         Directory.GetCurrentDirectory(),
@@ -736,14 +766,16 @@ namespace NuGet.CommandLine.Test
                       " from package source '{0}'.",
                       serverV3.Uri + "index.json");
 
+                    ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
                     // Verify that the output contains the expected output
                     Assert.True(result.Item2.Contains(expectedOutput));
                 }
             }
         }
 
-        [Fact]
-        public void ListCommand_UnavailableV3()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_UnavailableV3(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
 
@@ -775,7 +807,7 @@ namespace NuGet.CommandLine.Test
                     serverV3.Start();
 
                     // Act
-                    var args = "list test -Source " + serverV3.Uri + "index.json";
+                    var args = nugetCommand + " test -Source " + serverV3.Uri + "index.json";
                     var result = CommandRunner.Run(
                         nugetexe,
                         Directory.GetCurrentDirectory(),
@@ -786,7 +818,7 @@ namespace NuGet.CommandLine.Test
 
                     // Assert
                     Assert.True(result.Item1 != 0, result.Item2 + " " + result.Item3);
-
+                    ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
                     Assert.True(
                         result.Item3.Contains("404 (Not Found)"),
                         "Expected error message not found in " + result.Item3
@@ -947,8 +979,9 @@ namespace NuGet.CommandLine.Test
                 );
         }
 
-        [Fact]
-        public void ListCommand_WithAuthenticatedSource_AppliesCredentialsFromSettings()
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_WithAuthenticatedSource_AppliesCredentialsFromSettings(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
             var expectedAuthHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:password"));
@@ -1036,12 +1069,13 @@ namespace NuGet.CommandLine.Test
                     var result = CommandRunner.Run(
                         Util.GetNuGetExePath(),
                         Directory.GetCurrentDirectory(),
-                        $"list test -source {serverV3.Uri}index.json -configfile {configFileName} -verbosity detailed -noninteractive",
+                        $"{nugetCommand} test -source {serverV3.Uri}index.json -configfile {configFileName} -verbosity detailed -noninteractive",
                         waitForExit: true);
 
                     serverV3.Stop();
                     // Assert
                     Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
                     Assert.Contains("Using credentials from config. UserName: user", result.Item2);
                     Assert.Contains($"GET {serverV3.Uri}{listEndpoint}/Search()", result.Item2);
                     // verify that only package id & version is displayed
@@ -1050,8 +1084,10 @@ namespace NuGet.CommandLine.Test
                 }
             }
         }
-        [Fact]
-        public void ListCommand_WithAuthenticatedSourceV2_AppliesCredentialsFromSettings()
+
+        [Theory]
+        [MemberData(nameof(GetCommands))]
+        public void ListCommand_WithAuthenticatedSourceV2_AppliesCredentialsFromSettings(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
             var expectedAuthHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:password"));
@@ -1139,13 +1175,14 @@ namespace NuGet.CommandLine.Test
                     var result = CommandRunner.Run(
                         Util.GetNuGetExePath(),
                         Directory.GetCurrentDirectory(),
-                        $"list test -source {serverV3.Uri}api/v2 -configfile {configFileName} -verbosity detailed -noninteractive",
+                        $"{nugetCommand} test -source {serverV3.Uri}api/v2 -configfile {configFileName} -verbosity detailed -noninteractive",
                         waitForExit: true);
 
                     serverV3.Stop();
 
                     // Assert
                     Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
                     Assert.Contains("Using credentials from config. UserName: user", result.Item2);
                     Assert.Contains($"GET {serverV3.Uri}{listEndpoint}/Search()", result.Item2);
                     // verify that only package id & version is displayed
@@ -1154,5 +1191,32 @@ namespace NuGet.CommandLine.Test
                 }
             }
         }
+
+        /// <summary>
+        /// Generates parameters for running the command with "list" and "search" verbs
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<object[]> GetCommands()
+        {
+            yield return new object[] { "list", true };
+            yield return new object[] { "search", false };
+        }
+
+        /// <summary>
+        /// Validates nuget.exe list deprecation output
+        /// </summary>
+        /// <param name="validateWarning">Whether or not do the validation</param>
+        /// <param name="message"></param>
+        public static void ConditionalValidateDeprecateWarning(bool validateWarning, string output)
+        {
+            if (validateWarning)
+            {
+                Assert.Contains(
+                    string.Format("WARNING: {0}", NuGetResources.ListCommandDeprecatedMessage),
+                    output,
+                    StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
     }
 }
