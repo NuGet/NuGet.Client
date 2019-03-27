@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
 
-namespace NuGet.CommandLine
+namespace NuGet.CommandLine.Commands
 {
     [Command(
         typeof(NuGetCommand),
