@@ -828,8 +828,9 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("invalid")]
-        public void ListCommand_InvalidInput_NonSource(string invalidInput)
+        [InlineData("list", true, "invalid")]
+        [InlineData("search", false, "invalid")]
+        public void ListCommand_InvalidInput_NonSource(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
         {
             Util.ClearWebCache();
 
@@ -837,7 +838,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var args = "list test -Source " + invalidInput;
+            var args = nugetCommand + " test -Source " + invalidInput;
             var result = CommandRunner.Run(
                 nugetexe,
                 Directory.GetCurrentDirectory(),
@@ -849,6 +850,7 @@ namespace NuGet.CommandLine.Test
                 result.Item1 != 0,
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
+            ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
             Assert.True(
                 result.Item3.Contains(
                     string.Format(
@@ -859,16 +861,18 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org")]
-        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/api/v2")]
-        public void ListCommand_InvalidInput_V2_NonExistent(string invalidInput)
+        [InlineData("list", true, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org")]
+        [InlineData("search", false, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org")]
+        [InlineData("list", true, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/api/v2")]
+        [InlineData("search", false, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/api/v2")]
+        public void ListCommand_InvalidInput_V2_NonExistent(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
         {
             // Arrange
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var args = "list test -Source " + invalidInput;
+            var args = nugetCommand + " test -Source " + invalidInput;
             var result = CommandRunner.Run(
                 nugetexe,
                 Directory.GetCurrentDirectory(),
@@ -880,6 +884,7 @@ namespace NuGet.CommandLine.Test
                 result.Item1 != 0,
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
+            ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
             if (RuntimeEnvironmentHelper.IsMono)
             {
                 Assert.True(
@@ -899,8 +904,9 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("https://nuget.org/api/blah")]
-        public void ListCommand_InvalidInput_V2_NotFound(string invalidInput)
+        [InlineData("list", true, "https://nuget.org/api/blah")]
+        [InlineData("search", false, "https://nuget.org/api/blah")]
+        public void ListCommand_InvalidInput_V2_NotFound(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -918,6 +924,7 @@ namespace NuGet.CommandLine.Test
                 result.Item1 != 0,
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
+            ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
             Assert.True(
                 result.Item3.Contains(
                     "returned an unexpected status code '404 Not Found'."),
@@ -926,8 +933,9 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json")]
-        public void ListCommand_InvalidInput_V3_NonExistent(string invalidInput)
+        [InlineData("list", true, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json")]
+        [InlineData("search", false, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json")]
+        public void ListCommand_InvalidInput_V3_NonExistent(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
         {
             // Arrange
             Util.ClearWebCache();
@@ -946,6 +954,7 @@ namespace NuGet.CommandLine.Test
                 result.Item1 != 0,
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
+            ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
             Assert.True(
                 result.Item3.Contains($"Unable to load the service index for source {invalidInput}."),
                 "Expected error message not found in " + result.Item3
@@ -953,8 +962,9 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("https://api.nuget.org/v4/index.json")]
-        public void ListCommand_InvalidInput_V3_NotFound(string invalidInput)
+        [InlineData("list", true, "https://api.nuget.org/v4/index.json")]
+        [InlineData("search", false, "https://api.nuget.org/v4/index.json")]
+        public void ListCommand_InvalidInput_V3_NotFound(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
         {
             // Arrange
             Util.ClearWebCache();
@@ -973,6 +983,7 @@ namespace NuGet.CommandLine.Test
                 result.Item1 != 0,
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
+            ConditionalValidateDeprecateWarning(validateDeprecationMessage, result.Item2);
             Assert.True(
                 result.Item3.Contains("400 (Bad Request)"),
                 "Expected error message not found in " + result.Item3
