@@ -6956,7 +6956,11 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
                 Assert.Equal(1, lockFile.Targets.First().Libraries.Count);
                 Assert.Equal(1, lockFile.Targets.First().Libraries.Single().FrameworkReferences.Count);
+<<<<<<< HEAD
                 Assert.Equal("FrameworkRef", lockFile.Targets.First().Libraries.Single().FrameworkReferences.Single());
+=======
+                Assert.Equal("FrameworkRef", lockFile.Targets.Single().Libraries.Single().FrameworkReferences.Single());
+>>>>>>> Update RestoreNETCoreTest.cs
                 Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id, packageX.Version)), $"{packageX.ToString()} is not installed");
             }
         }
