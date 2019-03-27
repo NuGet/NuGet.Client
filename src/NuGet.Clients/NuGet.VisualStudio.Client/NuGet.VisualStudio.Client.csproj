@@ -290,6 +290,7 @@
   <ItemGroup>
     <PackageReference Include="Lucene.Net">
       <Version>3.0.3</Version>
+      <ExcludeAssets>all</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
   <Target Name="AfterBuild" DependsOnTargets="PublishVS15" />
