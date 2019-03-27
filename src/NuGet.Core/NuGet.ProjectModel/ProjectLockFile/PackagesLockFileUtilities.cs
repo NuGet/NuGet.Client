@@ -100,7 +100,7 @@ namespace NuGet.ProjectModel
 
                             var projectDependency = target.Dependencies.FirstOrDefault(
                                 dep => dep.Type == PackageDependencyType.Project &&
-                                PathUtility.GetStringComparerBasedOnOS().Equals(dep.Id, p2pProjectName));
+                                StringComparer.OrdinalIgnoreCase.Equals(dep.Id, p2pProjectName));
 
                             if (projectDependency == null)
                             {
