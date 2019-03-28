@@ -235,11 +235,11 @@ phases:
     displayName: Verify Assembly Signatures and StrongName for the VSIX
     inputs:
       TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)\\*.vsix'
-    condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
   
   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
-    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
   - task: CopyFiles@2
     displayName: "Copy Nupkgs"
