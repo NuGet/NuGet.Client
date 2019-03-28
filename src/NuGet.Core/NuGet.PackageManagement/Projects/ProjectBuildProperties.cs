@@ -9,27 +9,28 @@ namespace NuGet.ProjectManagement
     /// </summary>
     public static class ProjectBuildProperties
     {
-        public const string MSBuildProjectExtensionsPath = "MSBuildProjectExtensionsPath";
-        public const string PackageTargetFallback = "PackageTargetFallback";
-        public const string AssetTargetFallback = "AssetTargetFallback";
-        public const string PackageVersion = "PackageVersion";
-        public const string RestoreProjectStyle = "RestoreProjectStyle";
-        public const string RuntimeIdentifier = "RuntimeIdentifier";
-        public const string RuntimeIdentifiers = "RuntimeIdentifiers";
-        public const string RuntimeSupports = "RuntimeSupports";
-        public const string TargetFramework = "TargetFramework";
-        public const string TargetFrameworkMoniker = "TargetFrameworkMoniker";
-        public const string TargetFrameworks = "TargetFrameworks";
-        public const string TargetPlatformIdentifier = "TargetPlatformIdentifier";
-        public const string TargetPlatformMinVersion = "TargetPlatformMinVersion";
-        public const string TargetPlatformVersion = "TargetPlatformVersion";
-        public const string Version = "Version";
-        public const string RestorePackagesPath = "RestorePackagesPath";
-        public const string RestoreSources = "RestoreSources";
-        public const string RestoreFallbackFolders = "RestoreFallbackFolders";
-        public const string ProjectTypeGuids = "ProjectTypeGuids";
+        public const string MSBuildProjectExtensionsPath = nameof(MSBuildProjectExtensionsPath);
+        public const string PackageTargetFallback = nameof(PackageTargetFallback);
+        public const string AssetTargetFallback = nameof(AssetTargetFallback);
+        public const string PackageVersion = nameof(PackageVersion);
+        public const string RestoreProjectStyle = nameof(RestoreProjectStyle);
+        public const string RuntimeIdentifier = nameof(RuntimeIdentifier);
+        public const string RuntimeIdentifiers = nameof(RuntimeIdentifiers);
+        public const string RuntimeSupports = nameof(RuntimeSupports);
+        public const string TargetFramework = nameof(TargetFramework);
+        public const string TargetFrameworkMoniker = nameof(TargetFrameworkMoniker);
+        public const string TargetFrameworks = nameof(TargetFrameworks);
+        public const string TargetPlatformIdentifier = nameof(TargetPlatformIdentifier);
+        public const string TargetPlatformMinVersion = nameof(TargetPlatformMinVersion);
+        public const string TargetPlatformVersion = nameof(TargetPlatformVersion);
+        public const string Version = nameof(Version);
+        public const string RestorePackagesPath = nameof(RestorePackagesPath);
+        public const string RestoreSources = nameof(RestoreSources);
+        public const string RestoreFallbackFolders = nameof(RestoreFallbackFolders);
+        public const string ProjectTypeGuids = nameof(ProjectTypeGuids);
         public const string RestoreAdditionalProjectSources = nameof(RestoreAdditionalProjectSources);
         public const string RestoreAdditionalProjectFallbackFolders = nameof(RestoreAdditionalProjectFallbackFolders);
+        public const string RestoreAdditionalProjectFallbackFoldersExcludes = nameof(RestoreAdditionalProjectFallbackFoldersExcludes);
         public const string NoWarn = nameof(NoWarn);
         public const string WarningsAsErrors = nameof(WarningsAsErrors);
         public const string TreatWarningsAsErrors = nameof(TreatWarningsAsErrors);
@@ -37,5 +38,11 @@ namespace NuGet.ProjectManagement
         public const string RestorePackagesWithLockFile = nameof(RestorePackagesWithLockFile);
         public const string NuGetLockFilePath = nameof(NuGetLockFilePath);
         public const string RestoreLockedMode = nameof(RestoreLockedMode);
+        public const string PackageId = nameof(PackageId);
+        public const string IncludeAssets = nameof(IncludeAssets);
+        public const string ExcludeAssets = nameof(ExcludeAssets);
+        public const string PrivateAssets = nameof(PrivateAssets);
+        public const string ReferenceOutputAssembly = nameof(ReferenceOutputAssembly);
+        public const string Clear = nameof(Clear);
     }
 }

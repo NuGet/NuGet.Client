@@ -12,8 +12,8 @@ namespace NuGet.SolutionRestoreManager
     /// Represents a package restore service API for integration with a project system.
     /// </summary>
     [ComImport]
-    [Guid("2b046428-ca39-40bb-8b4b-7dd1d96118cb")]
-    public interface IVsSolutionRestoreService
+    [Guid("3C2A20BC-6305-4E76-A83E-B59C95F01661")]
+    public interface IVsSolutionRestoreService3
     {
         /// <summary>
         /// A task providing last/current restore operation status.
@@ -30,11 +30,12 @@ namespace NuGet.SolutionRestoreManager
 
         /// <summary>
         /// An entry point used by CPS to indicate given project needs to be restored.
+        /// This entry point also handles PackageDownload items
         /// </summary>
         /// <param name="projectUniqueName">
         /// Unique identifier of the project. Should be a full path to project file.
         /// </param>
-        /// <param name="projectRestoreInfo">Metadata <see cref="IVsProjectRestoreInfo"/> needed for restoring the project.</param>
+        /// <param name="projectRestoreInfo">Metadata <see cref="IVsProjectRestoreInfo2"/> needed for restoring the project.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>
         /// Returns a restore task corresponding to the nominated project request.
@@ -44,6 +45,6 @@ namespace NuGet.SolutionRestoreManager
         /// <exception cref="ArgumentException">Thrown if <paramref name="projectUniqueName" /> is not the path of a project file.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="projectRestoreInfo" /> is <c>null</c>.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="token" /> is cancelled.</exception>
-        Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token);
+        Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo2 projectRestoreInfo, CancellationToken token);
     }
 }

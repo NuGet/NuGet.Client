@@ -354,7 +354,7 @@ namespace NuGet.ProjectModel
             }
 
             writer.WriteObjectEnd();
-        }
+        } 
 
         private static void SetDependencies(IObjectWriter writer, IList<LibraryDependency> libraryDependencies)
         {
@@ -459,6 +459,26 @@ namespace NuGet.ProjectModel
             }
         }
 
+        private static void SetDownloadDependencies(IObjectWriter writer, IList<DownloadDependency> downloadDependencies)
+        {
+            if (!downloadDependencies.Any())
+            {
+                return;
+            }
+
+            writer.WriteArrayStart("downloadDependencies");
+
+            foreach (var dependency in downloadDependencies.OrderBy(dep => dep))
+            {
+                writer.WriteObjectInArrayStart();
+                SetValue(writer, "name", dependency.Name);
+                SetValue(writer, "version", dependency.VersionRange.ToNormalizedString());
+                writer.WriteObjectEnd();
+
+            }
+            writer.WriteArrayEnd();
+        }
+
         private static void SetFrameworks(IObjectWriter writer, IList<TargetFrameworkInformation> frameworks)
         {
             if (frameworks.Any())
@@ -474,11 +494,21 @@ namespace NuGet.ProjectModel
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfTrue(writer, "warn", framework.Warn);
+                    SetDownloadDependencies(writer, framework.DownloadDependencies);
+                    SetFrameworkReferences(writer, framework.FrameworkReferences);
 
                     writer.WriteObjectEnd();
                 }
 
                 writer.WriteObjectEnd();
+            }
+        }
+
+        private static void SetFrameworkReferences(IObjectWriter writer, ISet<string> frameworkReferences)
+        {
+            if (frameworkReferences?.Any() == true)
+            {
+                writer.WriteNameArray("frameworkReferences", frameworkReferences.OrderBy(e => e));
             }
         }
 

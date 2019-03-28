@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -157,6 +157,32 @@ namespace NuGet.RuntimeModel.Test
         }
 
         [Fact]
+        public void WriteArrayStart_ThrowsIfReadOnly()
+        {
+            MakeReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteArrayStart("a"));
+        }
+
+        [Fact]
+        public void WriteArrayEnd_ThrowsIfReadOnly()
+        {
+            _writer.WriteArrayStart("a");
+
+            MakeReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteArrayEnd());
+        }
+
+        [Fact]
+        public void WriteObjectStartParameterless_ThrowsIfReadOnly()
+        {
+            MakeReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteObjectInArrayStart());
+        }
+
+        [Fact]
         public void WriteNameValue_WithIntValue_SupportsEmptyName()
         {
             _writer.WriteNameValue(name: "", value: 3);
@@ -222,6 +248,51 @@ namespace NuGet.RuntimeModel.Test
 
             Assert.Equal(expectedJson, actualJson);
         }
+
+        [Fact]
+        public void WriteNewArray_SupportsEmptyNameAndEmptyValues()
+        {
+            _writer.WriteArrayStart("");
+            _writer.WriteArrayEnd();
+
+            const string expectedJson = @"{
+  """": []
+}";
+            var actualJson = _writer.GetJson();
+
+            Assert.Equal(expectedJson, actualJson);
+        }
+
+        [Fact]
+        public void WriteNewArray_CanWriteSimpleObjects()
+        {
+            _writer.WriteArrayStart("a");
+
+            _writer.WriteObjectInArrayStart();
+            _writer.WriteNameValue("b", "");
+            _writer.WriteObjectEnd();
+
+            _writer.WriteObjectInArrayStart();
+            _writer.WriteNameValue("c", "");
+            _writer.WriteObjectEnd();
+
+            _writer.WriteArrayEnd();
+
+            const string expectedJson = @"{
+  ""a"": [
+    {
+      ""b"": """"
+    },
+    {
+      ""c"": """"
+    }
+  ]
+}";
+            var actualJson = _writer.GetJson();
+
+            Assert.Equal(expectedJson, actualJson);
+        }
+
 
         private void MakeReadOnly()
         {

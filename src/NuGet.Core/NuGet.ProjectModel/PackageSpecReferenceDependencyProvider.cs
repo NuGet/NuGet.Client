@@ -194,14 +194,17 @@ namespace NuGet.ProjectModel
 
                 library[KnownLibraryProperties.TargetFrameworkInformation] = targetFrameworkInfo;
 
-                // Add framework references
-                var frameworkReferences = targetFrameworkInfo.Dependencies
+                // Add framework assemblies
+                var frameworkAssemblies = targetFrameworkInfo.Dependencies
                     .Where(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
                     .Select(d => d.Name)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
-                library[KnownLibraryProperties.FrameworkAssemblies] = frameworkReferences;
+                library[KnownLibraryProperties.FrameworkAssemblies] = frameworkAssemblies;
+
+                // Add framework references
+                library[KnownLibraryProperties.FrameworkReferences] = targetFrameworkInfo.FrameworkReferences;
             }
         }
 

@@ -24,6 +24,8 @@ namespace NuGet.ProjectModel
 
         public IList<string> FrameworkAssemblies { get; set; } = new List<string>();
 
+        public IList<string> FrameworkReferences { get; set; } = new List<string>();
+
         public IList<LockFileItem> RuntimeAssemblies { get; set; } = new List<LockFileItem>();
 
         public IList<LockFileItem> ResourceAssemblies { get; set; } = new List<LockFileItem>();

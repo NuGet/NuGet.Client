@@ -282,6 +282,22 @@ namespace NuGet.Test.Utility
             framework.PackageReferences.AddRange(packages);
         }
 
+        public void AddPackageDownloadToAllFrameworks(params SimpleTestPackageContext[] packages)
+        {
+            foreach (var framework in Frameworks)
+            {
+                framework.PackageDownloads.AddRange(packages);
+            }
+        }
+
+        public void AddPackageDownloadToFramework(string packageFramework, params SimpleTestPackageContext[] packages)
+        {
+            var framework = Frameworks
+                .Where(f => f.Framework == NuGetFramework.Parse(packageFramework))
+                .First();
+            framework.PackageDownloads.AddRange(packages);
+        }
+
         public void AddProjectToAllFrameworks(params SimpleTestProjectContext[] projects)
         {
             foreach (var framework in Frameworks)
@@ -364,19 +380,20 @@ namespace NuGet.Test.Utility
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
             context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
             context.ToolingVersion15 = isToolingVersion15;
+            context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
         }
 
         public static SimpleTestProjectContext CreateNETCoreWithSDK(
             string projectName,
             string solutionRoot,
-            bool isToolingVersion15,
             params string[] frameworks)
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
             context.OriginalFrameworkStrings.AddRange(frameworks);
             context.Frameworks.AddRange(frameworks.Select(f => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(f))));
-            context.ToolingVersion15 = isToolingVersion15;
+            context.ToolingVersion15 = true;
+            context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
         }
 
@@ -455,6 +472,7 @@ namespace NuGet.Test.Utility
 
                 var addedToAllProjectReferences = new HashSet<SimpleTestProjectContext>();
                 var addedToAllPackageReferences = new HashSet<SimpleTestPackageContext>();
+                var addedToAllPackageDownloads = new HashSet<SimpleTestPackageContext>();
 
                 foreach (var frameworkInfo in Frameworks)
                 {
@@ -517,6 +535,37 @@ namespace NuGet.Test.Utility
                             props,
                             attributes);
                     }
+
+                    foreach (var package in frameworkInfo.PackageDownloads)
+                    {
+                        var referenceFramework = frameworkInfo.Framework;
+
+                        // Drop the conditional if it is not needed
+                        if (Frameworks.All(f => f.PackageDownloads.Contains(package)))
+                        {
+                            referenceFramework = NuGetFramework.AnyFramework;
+
+                            if (!addedToAllPackageDownloads.Add(package))
+                            {
+                                // Skip since this was already added
+                                continue;
+                            }
+                        }
+
+                        var props = new Dictionary<string, string>();
+                        var attributes = new Dictionary<string, string>();
+
+                        props.Add("Version", $"[{package.Version.ToString()}]");
+
+                        ProjectFileUtils.AddItem(
+                            xml,
+                            "PackageDownload",
+                            package.Id,
+                            referenceFramework,
+                            props,
+                            attributes);
+                    }
+
 
                     foreach (var project in frameworkInfo.ProjectReferences)
                     {

@@ -24,6 +24,12 @@ namespace NuGet.Test.Utility
         public List<SimpleTestPackageContext> PackageReferences { get; set; } = new List<SimpleTestPackageContext>();
 
         /// <summary>
+        /// Package downloads. All the packages are added as exact versions.
+        /// </summary>
+        public List<SimpleTestPackageContext> PackageDownloads { get; set; } = new List<SimpleTestPackageContext>();
+
+
+        /// <summary>
         /// Project dependencies.
         /// </summary>
         public List<SimpleTestProjectContext> ProjectReferences { get; set; } = new List<SimpleTestProjectContext>();

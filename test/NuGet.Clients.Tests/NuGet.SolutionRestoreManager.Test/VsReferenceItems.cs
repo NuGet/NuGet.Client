@@ -3,15 +3,37 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
-    internal class VsReferenceItems : VsItemList<IVsReferenceItem>, IVsReferenceItems
+    internal class VsReferenceItems : Collection<IVsReferenceItem>, IVsReferenceItems
     {
         public VsReferenceItems() : base() { }
 
-        public VsReferenceItems(IEnumerable<IVsReferenceItem> collection) : base(collection) { }
+        public VsReferenceItems(IEnumerable<IVsReferenceItem> collection)
+        {
+            if (collection == null)
+            {
+                throw new ArgumentNullException(nameof(collection));
+            }
 
-        protected override String GetKeyForItem(IVsReferenceItem value) => value.Name;
+            foreach (var item in collection)
+            {
+                Add(item);
+            }
+        }
+
+        public IVsReferenceItem Item(Object index)
+        {
+            if (index is int)
+            {
+                return this[(int)index];
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }
