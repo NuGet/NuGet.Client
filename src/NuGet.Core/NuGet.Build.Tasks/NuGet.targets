@@ -93,6 +93,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreProjectReferencesTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestorePackageReferencesTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestorePackageDownloadsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetProjectTargetFrameworksTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreSolutionProjectsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
@@ -173,6 +174,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="CollectPackageDownloads" Returns="@(PackageDownload)" />
+
+   <!--
+    ============================================================
+    _CollectFrameworkReferences
+    ============================================================
+  -->
+  <Target Name="_CollectFrameworkReferences" Returns="@(FrameworkReference)" />
 
   <!--
     ============================================================
@@ -783,7 +791,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateProjectRestoreGraphPerFramework"
-    DependsOnTargets="_GetRestoreProjectStyle;CollectPackageReferences;CollectPackageDownloads"
+    DependsOnTargets="_GetRestoreProjectStyle;CollectPackageReferences;CollectPackageDownloads;_CollectFrameworkReferences"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Write out project references -->
@@ -823,6 +831,19 @@ Copyright (c) .NET Foundation. All rights reserved.
         TaskParameter="RestoreGraphItems"
         ItemName="_RestoreGraphEntry" />
     </GetRestorePackageDownloadsTask>
+
+    <!-- Write out Framework References-->
+    <GetRestoreFrameworkReferencesTask
+      Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' "
+      ProjectUniqueName="$(MSBuildProjectFullPath)"
+      FrameworkReferences="@(FrameworkReference)"
+      TargetFrameworks="$(TargetFramework)"
+      >
+
+      <Output
+        TaskParameter="RestoreGraphItems"
+        ItemName="_RestoreGraphEntry" />
+    </GetRestoreFrameworkReferencesTask>
 
     <PropertyGroup>
       <_CombinedFallbacks>$(PackageTargetFallback);$(AssetTargetFallback)</_CombinedFallbacks>

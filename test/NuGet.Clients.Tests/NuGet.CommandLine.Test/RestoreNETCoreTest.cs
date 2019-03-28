@@ -6910,5 +6910,202 @@ namespace NuGet.CommandLine.Test
                 Assert.Contains("No further actions are required to complete", r.Item2);
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_SingleTFM_FrameworkReferenceFromPackage()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projectFrameworks = "net46";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                            projectName: "a",
+                            solutionRoot: pathContext.SolutionRoot,
+                            frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.FrameworkReferences.Add(NuGetFramework.Parse("net45"), new string[] { "FrameworkRef" });
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net45/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(r.Success, r.AllOutput);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
+
+                var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
+                Assert.Equal(1, lockFile.Libraries.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(1, lockFile.Targets.First().Libraries.Count);
+                Assert.Equal(1, lockFile.Targets.First().Libraries.Single().FrameworkReferences.Count);
+                Assert.Equal("FrameworkRef", lockFile.Targets.First().Libraries.Single().FrameworkReferences.Single());
+                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id, packageX.Version)), $"{packageX.ToString()} is not installed");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_SingleTFM_FrameworkReference_TransitivePackageToPackage()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projectFrameworks = "net46";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                            projectName: "a",
+                            solutionRoot: pathContext.SolutionRoot,
+                            frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.FrameworkReferences.Add(NuGetFramework.Parse("net45"), new string[] { "FrameworkRef" });
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net45/x.dll");
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY.Files.Clear();
+                packageY.UseDefaultRuntimeAssemblies = false;
+                packageY.AddFile("lib/net45/y.dll");
+                packageY.FrameworkReferences.Add(NuGetFramework.Parse("net45"), new string[] { "FrameworkRefY" });
+
+                packageX.Dependencies.Add(packageY);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX,
+                    packageY);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(r.Success, r.AllOutput);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
+
+                var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
+                Assert.Equal(2, lockFile.Libraries.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(2, lockFile.Targets.First().Libraries.Count);
+                Assert.Equal("FrameworkRef", lockFile.Targets.First().Libraries.First().FrameworkReferences.Single());
+                Assert.Equal("FrameworkRefY", lockFile.Targets.First().Libraries.Last().FrameworkReferences.Single());
+                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id, packageX.Version)), $"{packageX.ToString()} is not installed");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_SingleTFM_FrameworkReference_TransitiveProjectToProject()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projectFrameworks = "net46";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                            projectName: "a",
+                            solutionRoot: pathContext.SolutionRoot,
+                            frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.FrameworkReferences.Add(NuGetFramework.Parse("net45"), new string[] { "FrameworkRef" });
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net45/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+
+                var projectB = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    projectName: "b",
+                    solutionRoot: pathContext.SolutionRoot,
+                    frameworks: MSBuildStringUtility.Split(projectFrameworks));
+
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+
+                solution.Create(pathContext.SolutionRoot);
+
+                var xml = projectB.GetXML();
+
+                var props = new Dictionary<string, string>();
+                var attributes = new Dictionary<string, string>();
+                ProjectFileUtils.AddItem(
+                                    xml,
+                                    "FrameworkReference",
+                                    "FrameworkRefY",
+                                    NuGetFramework.AnyFramework,
+                                    props,
+                                    attributes);
+
+                xml.Save(projectB.ProjectPath);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(r.Success, r.AllOutput);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
+
+                var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
+                Assert.Equal(2, lockFile.Libraries.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(2, lockFile.Targets.First().Libraries.Count);
+                Assert.Equal("FrameworkRef", lockFile.Targets.First().Libraries.First().FrameworkReferences.Single());
+                Assert.Equal("FrameworkRefY", lockFile.Targets.First().Libraries.Last().FrameworkReferences.Single());
+                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id, packageX.Version)), $"{packageX.ToString()} is not installed");
+
+                // Assert 2
+                Assert.True(File.Exists(projectB.AssetsFileOutputPath), r.AllOutput);
+
+                lockFile = LockFileUtilities.GetLockFile(projectB.AssetsFileOutputPath, Common.NullLogger.Instance);
+                Assert.Equal(0, lockFile.Libraries.Count);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(0, lockFile.Targets.First().Libraries.Count);
+                Assert.Equal("FrameworkRefY", lockFile.PackageSpec.TargetFrameworks.Single().FrameworkReferences.Single());
+            }
+        }
     }
 }

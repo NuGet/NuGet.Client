@@ -354,7 +354,7 @@ namespace NuGet.ProjectModel
             }
 
             writer.WriteObjectEnd();
-        }
+        } 
 
         private static void SetDependencies(IObjectWriter writer, IList<LibraryDependency> libraryDependencies)
         {
@@ -495,11 +495,20 @@ namespace NuGet.ProjectModel
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfTrue(writer, "warn", framework.Warn);
                     SetDownloadDependencies(writer, framework.DownloadDependencies);
+                    SetFrameworkReferences(writer, framework.FrameworkReferences);
 
                     writer.WriteObjectEnd();
                 }
 
                 writer.WriteObjectEnd();
+            }
+        }
+
+        private static void SetFrameworkReferences(IObjectWriter writer, ISet<string> frameworkReferences)
+        {
+            if (frameworkReferences?.Any() == true)
+            {
+                writer.WriteNameArray("frameworkReferences", frameworkReferences.OrderBy(e => e));
             }
         }
 

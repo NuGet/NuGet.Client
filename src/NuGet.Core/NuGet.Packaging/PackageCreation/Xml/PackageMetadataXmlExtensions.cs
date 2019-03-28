@@ -79,7 +79,7 @@ namespace NuGet.Packaging.Xml
 
             if (metadata.Repository != null)
             {
-                XElement repoElement = GetXElementFromManifestRepository(ns, metadata.Repository);
+                var repoElement = GetXElementFromManifestRepository(ns, metadata.Repository);
                 if (repoElement != null)
                 {
                     elem.Add(repoElement);
@@ -107,6 +107,16 @@ namespace NuGet.Packaging.Xml
                 References,
                 TargetFramework));
 
+            elem.Add(GetXElementFromGroupableItemSets(
+                ns: ns,
+                objectSets: metadata.FrameworkReferenceGroups,
+                isGroupable: set => true, // the TFM is required for framework references
+                getGroupIdentifer: set => set.TargetFramework.GetFrameworkString(),
+                getItems: set => set.Items,
+                getXElementFromItem : GetXElementFromFrameworkReference,
+                parentName: NuspecUtility.FrameworkReferences,
+                identifierAttributeName : TargetFramework));
+
             elem.Add(GetXElementFromFrameworkAssemblies(ns, metadata.FrameworkReferences));
             elem.Add(GetXElementFromManifestContentFiles(ns, metadata.ContentFiles));
 
@@ -121,7 +131,7 @@ namespace NuGet.Packaging.Xml
             Func<TSet, IEnumerable<TItem>> getItems,
             Func<XNamespace, TItem, XElement> getXElementFromItem,
             string parentName,
-            string identiferAttributeName)
+            string identifierAttributeName)
         {
             if (objectSets == null || !objectSets.Any())
             {
@@ -163,7 +173,7 @@ namespace NuGet.Packaging.Xml
                         var groupIdentifier = getGroupIdentifer(set);
                         if (groupIdentifier != null)
                         {
-                            groupElem.SetAttributeValue(identiferAttributeName, groupIdentifier);
+                            groupElem.SetAttributeValue(identifierAttributeName, groupIdentifier);
                         }
                     }
 
@@ -172,6 +182,11 @@ namespace NuGet.Packaging.Xml
             }
 
             return new XElement(ns + parentName, childElements.ToArray());
+        }
+
+        private static XElement GetXElementFromFrameworkReference(XNamespace ns, string frameworkReference)
+        {
+            return new XElement(ns + NuspecUtility.FrameworkReference, new XAttribute(NuspecUtility.Name, frameworkReference));
         }
 
         private static XElement GetXElementFromPackageReference(XNamespace ns, string reference)
@@ -307,7 +322,7 @@ namespace NuGet.Packaging.Xml
         {
             var attributes = new List<XAttribute>();
 
-            attributes.Add(GetXAttributeFromNameAndValue(NuspecUtility.PackageTypeName, packageType.Name));
+            attributes.Add(GetXAttributeFromNameAndValue(NuspecUtility.Name, packageType.Name));
             if (packageType.Version != PackageType.EmptyVersion)
             {
                 attributes.Add(GetXAttributeFromNameAndValue(NuspecUtility.Version, packageType.Version));

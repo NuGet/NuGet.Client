@@ -126,6 +126,14 @@ namespace NuGet.SolutionRestoreManager
                            .Cast<IVsReferenceItem>()
                            .Select(ToPackageDownloadDependency));
                 }
+
+                if (targetFrameworkInfo2.FrameworkReferences != null)
+                {
+                    tfi.FrameworkReferences.AddRange(
+                        targetFrameworkInfo2.FrameworkReferences
+                            .Cast<IVsReferenceItem>()
+                            .Select(e => e.Name));
+                }
             }
 
             return tfi;

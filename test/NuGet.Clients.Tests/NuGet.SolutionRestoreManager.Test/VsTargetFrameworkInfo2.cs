@@ -18,11 +18,14 @@ namespace NuGet.SolutionRestoreManager.Test
 
         public string TargetFrameworkMoniker { get; }
 
+        public IVsReferenceItems FrameworkReferences { get; }
+
         public VsTargetFrameworkInfo2(
             string targetFrameworkMoniker,
             IEnumerable<IVsReferenceItem> packageReferences,
             IEnumerable<IVsReferenceItem> projectReferences,
             IEnumerable<IVsReferenceItem> packageDownloads,
+            IEnumerable<IVsReferenceItem> frameworkReferences,
             IEnumerable<IVsProjectProperty> projectProperties)
         {
             if (string.IsNullOrEmpty(targetFrameworkMoniker))
@@ -45,6 +48,11 @@ namespace NuGet.SolutionRestoreManager.Test
                 throw new ArgumentNullException(nameof(packageDownloads));
             }
 
+            if (frameworkReferences == null)
+            {
+                throw new ArgumentNullException(nameof(frameworkReferences));
+            }
+
             if (projectProperties == null)
             {
                 throw new ArgumentNullException(nameof(projectProperties));
@@ -54,7 +62,9 @@ namespace NuGet.SolutionRestoreManager.Test
             PackageReferences = new VsReferenceItems(packageReferences);
             ProjectReferences = new VsReferenceItems(projectReferences);
             PackageDownloads = new VsReferenceItems(packageDownloads);
+            FrameworkReferences = new VsReferenceItems(frameworkReferences);
             Properties = new VsProjectProperties(projectProperties);
         }
+
     }
 }

@@ -56,5 +56,7 @@ namespace NuGet.Packaging
         RepositoryMetadata Repository { get; }
 
         LicenseMetadata LicenseMetadata { get; }
+
+        IEnumerable<FrameworkSpecificGroup> FrameworkReferenceGroups { get; }
     }
 }

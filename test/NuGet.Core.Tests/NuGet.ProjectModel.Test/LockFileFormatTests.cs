@@ -3,16 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
-using Test.Utility;
 using Xunit;
 using static NuGet.Test.Utility.TestPackagesCore;
 
@@ -1805,5 +1802,85 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("lib/netstandard2.0/packageA.interop.dll", targetLibrary.RuntimeAssemblies.Single().Path);
             Assert.Equal("embed/netstandard2.0/packageA.interop.dll", targetLibrary.EmbedAssemblies.Single().Path);
         }
+
+        [Fact]
+        public void LockFileFormat_WritesFrameworkReference()
+        {
+
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+                "".NETCoreApp,Version=v3.0"": {
+                    ""My.Nice.Package.With.WPF.Reference/2.0.0"": {
+                        ""type"": ""package"",
+        ""compile"": {
+                            ""lib/netcoreapp3.0/a.dll"": { }
+                        },
+        ""frameworkReferences"": [
+          ""Microsoft.Windows.Desktop|WPF"",
+          ""Microsoft.Windows.Desktop|WindowsForms""
+        ]
+    }
+}
+  },
+  ""libraries"": {
+    ""My.Nice.Package.With.WPF.Reference/2.0.0"": {
+      ""sha512"": ""sup3rs3cur3"",
+      ""type"": ""package"",
+      ""files"": [
+        ""My.Nice.Package.With.WPF.Reference.nuspec"",
+        ""lib/netcoreapp3.0/a.dll""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": { }
+}";
+            var lockFile = new LockFile()
+            {
+                Version = 3
+            };
+
+            var target = new LockFileTarget()
+            {
+                TargetFramework = FrameworkConstants.CommonFrameworks.NetCoreApp30
+            };
+
+            var targetLib = new LockFileTargetLibrary()
+            {
+                Name = "My.Nice.Package.With.WPF.Reference",
+                Version = NuGetVersion.Parse("2.0.0"),
+                Type = LibraryType.Package
+            };
+
+            targetLib.CompileTimeAssemblies.Add(new LockFileItem("lib/netcoreapp3.0/a.dll"));
+            // the order is important, the test assures that they are sorted.
+            targetLib.FrameworkReferences.Add("Microsoft.Windows.Desktop|WindowsForms");
+            targetLib.FrameworkReferences.Add("Microsoft.Windows.Desktop|WPF");
+
+            target.Libraries.Add(targetLib);
+            lockFile.Targets.Add(target);
+
+            var lib = new LockFileLibrary()
+            {
+                Name = "My.Nice.Package.With.WPF.Reference",
+                Version = NuGetVersion.Parse("2.0.0"),
+                Type = LibraryType.Package,
+                Sha512 = "sup3rs3cur3"
+            };
+            // the order is important, the test assures that they are sorted.
+            lib.Files.Add("lib/netcoreapp3.0/a.dll");
+            lib.Files.Add("My.Nice.Package.With.WPF.Reference.nuspec");
+            lockFile.Libraries.Add(lib);
+
+            // Act
+            var lockFileFormat = new LockFileFormat();
+            var output = JObject.Parse(lockFileFormat.Render(lockFile)).ToString();
+            var expected = JObject.Parse(lockFileContent).ToString();
+
+            // Assert
+            Assert.Equal(expected, output);
+        }
+
     }
 }

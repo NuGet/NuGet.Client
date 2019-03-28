@@ -69,6 +69,7 @@ namespace NuGet.Packaging
             Files = new Collection<IPackageFile>();
             DependencyGroups = new Collection<PackageDependencyGroup>();
             FrameworkReferences = new Collection<FrameworkAssemblyReference>();
+            FrameworkReferenceGroups = new Collection<FrameworkSpecificGroup>();
             ContentFiles = new Collection<ManifestContentFiles>();
             PackageAssemblyReferences = new Collection<PackageReferenceSet>();
             PackageTypes = new Collection<PackageType>();
@@ -226,6 +227,12 @@ namespace NuGet.Packaging
             private set;
         }
 
+        public Collection<FrameworkSpecificGroup> FrameworkReferenceGroups
+        {
+            get;
+            private set;
+        }
+
         public IList<NuGetFramework> TargetFrameworks
         {
             get;
@@ -317,6 +324,8 @@ namespace NuGet.Packaging
             }
         }
 
+        IEnumerable<FrameworkSpecificGroup> IPackageMetadata.FrameworkReferenceGroups => FrameworkReferenceGroups;
+
         public Version MinClientVersion
         {
             get;
@@ -329,7 +338,7 @@ namespace NuGet.Packaging
             PackageIdValidator.ValidatePackageId(Id);
 
             // Throw if the package doesn't contain any dependencies nor content
-            if (!Files.Any() && !DependencyGroups.SelectMany(d => d.Packages).Any() && !FrameworkReferences.Any())
+            if (!Files.Any() && !DependencyGroups.SelectMany(d => d.Packages).Any() && !FrameworkReferences.Any() && !FrameworkReferenceGroups.Any())
             {
                 throw new PackagingException(NuGetLogCode.NU5017, NuGetResources.CannotCreateEmptyPackage);
             }
@@ -551,6 +560,7 @@ namespace NuGet.Packaging
 
             DependencyGroups.AddRange(metadata.DependencyGroups);
             FrameworkReferences.AddRange(metadata.FrameworkReferences);
+            FrameworkReferenceGroups.AddRange(metadata.FrameworkReferenceGroups);
 
             if (manifestMetadata.PackageAssemblyReferences != null)
             {

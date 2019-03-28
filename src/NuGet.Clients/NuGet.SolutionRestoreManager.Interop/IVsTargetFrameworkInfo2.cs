@@ -17,5 +17,10 @@ namespace NuGet.SolutionRestoreManager
         /// Collection of package downloads.
         /// </summary>
         IVsReferenceItems PackageDownloads { get; }
+
+        /// <summary>
+        /// Collection of FrameworkReferences
+        /// </summary>
+        IVsReferenceItems FrameworkReferences { get; }
     }
 }

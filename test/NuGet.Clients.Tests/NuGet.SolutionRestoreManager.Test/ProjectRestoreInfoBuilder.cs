@@ -170,6 +170,8 @@ namespace NuGet.SolutionRestoreManager.Test
                 .DownloadDependencies
                 .Select(ToPackageDownload);
 
+            var frameworkReferences = tfm.FrameworkReferences.Select(e => new VsReferenceItem(e, new VsReferenceProperties()));
+
             var projectProperties = new VsProjectProperties
             {
                 {
@@ -183,6 +185,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 packageReferences,
                 projectReferences,
                 packageDownloads,
+                frameworkReferences,
                 projectProperties.Concat(globalProperties));
         }
 

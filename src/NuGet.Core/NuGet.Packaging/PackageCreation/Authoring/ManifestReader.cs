@@ -139,6 +139,9 @@ namespace NuGet.Packaging
                     case "frameworkAssemblies":
                         manifestMetadata.FrameworkReferences = ReadFrameworkAssemblies(element);
                         break;
+                    case "frameworkReferences":
+                        manifestMetadata.FrameworkReferenceGroups = ReadFrameworkReferenceGroups(element);
+                        break;
                     case "references":
                         manifestMetadata.PackageAssemblyReferences = ReadReferenceSets(element);
                         break;
@@ -166,6 +169,11 @@ namespace NuGet.Packaging
                     throw new InvalidDataException(string.Format(NuGetResources.Manifest_PropertyValueReadFailure, value, element.Name.LocalName), ex);
                 }
             }
+        }
+
+        private static IEnumerable<FrameworkSpecificGroup> ReadFrameworkReferenceGroups(XElement frameworkReferenceGroupsElement)
+        {
+            return NuspecUtility.GetFrameworkReferenceGroups(frameworkReferenceGroupsElement, DefaultFrameworkNameProvider.Instance, useMetadataNamespace: false);
         }
 
         private static LicenseMetadata ReadLicenseMetadata(XElement licenseNode)

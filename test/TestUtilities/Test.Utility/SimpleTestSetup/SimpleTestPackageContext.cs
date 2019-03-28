@@ -9,6 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.Versioning;
@@ -42,6 +43,7 @@ namespace NuGet.Test.Utility
         public string Version { get; set; } = "1.0.0";
         public string MinClientVersion { get; set; }
         public List<SimpleTestPackageContext> Dependencies { get; set; } = new List<SimpleTestPackageContext>();
+        public Dictionary<NuGetFramework, string[]> FrameworkReferences { get; set; } = new Dictionary<NuGetFramework, string[]>();
         public string Include { get; set; } = string.Empty;
         public string Exclude { get; set; } = string.Empty;
         // Used by the parent project

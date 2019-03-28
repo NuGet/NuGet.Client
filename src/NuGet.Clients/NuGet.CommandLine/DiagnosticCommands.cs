@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,6 +18,7 @@ namespace NuGet.CommandLine
         private const string Runtime = "\x1b[35mruntime\x1b[39m";
         private const string Compile = "\x1b[32mcompile\x1b[39m";
         private const string Framework = "\x1b[34mframework\x1b[39m";
+        private const string FrameworkReference = "\x1b[34mframeworkref\x1b[39m";
         private const string Nothing = "\x1b[33mnothing\x1b[39m";
 
         public DiagnosticCommands(Common.ILogger log)
@@ -93,6 +94,7 @@ namespace NuGet.CommandLine
                     WriteList(Runtime, libraryTarget.Library.RuntimeAssemblies.Select(f => f.Path));
                     WriteList(Native, libraryTarget.Library.NativeLibraries.Select(f => f.Path));
                     WriteList(Framework, libraryTarget.Library.FrameworkAssemblies);
+                    WriteList(FrameworkReference, libraryTarget.Library.FrameworkReferences);
                 }
             }
 

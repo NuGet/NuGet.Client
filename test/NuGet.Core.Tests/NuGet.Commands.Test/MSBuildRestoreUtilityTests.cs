@@ -139,19 +139,6 @@ namespace NuGet.Commands.Test
                 itemsWithSameCasings.Add(packageZReference);
                 itemsWithDifferentCasings.Add(WithUniqueName(packageZReference, project1UniqueNameCasings[3]));
 
-                // Framework assembly
-                var frameworkAssembly = new Dictionary<string, string>()
-                {
-                    { "Type", "FrameworkAssembly" },
-                    { "ProjectUniqueName", project1UniqueName },
-                    { "Id", "System.IO" },
-                    { "TargetFrameworks", "net46" },
-                    { "CrossTargeting", "true" },
-                };
-
-                itemsWithSameCasings.Add(frameworkAssembly);
-                itemsWithDifferentCasings.Add(WithUniqueName(frameworkAssembly, project1UniqueNameCasings[4]));
-
                 // B ALL -> Y
                 var packageYReference = new Dictionary<string, string>()
                 {
@@ -1395,16 +1382,6 @@ namespace NuGet.Commands.Test
                     { "CrossTargeting", "true" },
                 });
 
-                // Framework assembly
-                items.Add(new Dictionary<string, string>()
-                {
-                    { "Type", "FrameworkAssembly" },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
-                    { "Id", "System.IO" },
-                    { "TargetFrameworks", "net46" },
-                    { "CrossTargeting", "true" },
-                });
-
                 var wrappedItems = items.Select(CreateItems).ToList();
 
                 // Act
@@ -1433,7 +1410,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, project1Spec.Dependencies.Count);
                 Assert.Equal(0, project2Spec.Dependencies.Count);
 
-                Assert.Equal(2, project1Spec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.Count);
+                Assert.Equal(1, project1Spec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.Count);
                 Assert.Equal(1, project1Spec.GetTargetFramework(NuGetFramework.Parse("netstandard1.6")).Dependencies.Count);
 
                 Assert.Equal(1, project2Spec.GetTargetFramework(NuGetFramework.Parse("net45")).Dependencies.Count);
@@ -1445,8 +1422,6 @@ namespace NuGet.Commands.Test
 
                 var yDep1 = project2Spec.GetTargetFramework(NuGetFramework.Parse("netstandard1.0")).Dependencies.Single();
                 var yDep2 = project2Spec.GetTargetFramework(NuGetFramework.Parse("net45")).Dependencies.Single();
-
-                var systemIO = project1Spec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.Single(e => e.Name == "System.IO");
 
                 Assert.Equal("x", xDep.Name);
                 Assert.Equal(VersionRange.Parse("1.0.0-beta.*"), xDep.LibraryRange.VersionRange);
@@ -1467,12 +1442,6 @@ namespace NuGet.Commands.Test
                 Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, yDep1.SuppressParent);
 
                 Assert.Equal(yDep1, yDep2);
-
-                Assert.Equal("System.IO", systemIO.Name);
-                Assert.Equal(VersionRange.All, systemIO.LibraryRange.VersionRange);
-                Assert.Equal(LibraryDependencyTarget.Reference, systemIO.LibraryRange.TypeConstraint);
-                Assert.Equal(LibraryIncludeFlags.All, systemIO.IncludeType);
-                Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, systemIO.SuppressParent);
             }
         }
 
@@ -1547,19 +1516,6 @@ namespace NuGet.Commands.Test
                 items.Add(packageRef2);
                 items.Add(packageRef2);
 
-                // Framework assembly
-                var frameworkAssembly = new Dictionary<string, string>()
-                {
-                    { "Type", "FrameworkAssembly" },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
-                    { "Id", "System.IO" },
-                    { "TargetFrameworks", "net46" },
-                    { "CrossTargeting", "true" },
-                };
-
-                items.Add(frameworkAssembly);
-                items.Add(frameworkAssembly);
-
                 // TFM info
                 var tfmInfo = new Dictionary<string, string>()
                 {
@@ -1581,7 +1537,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(0, projectSpec.Dependencies.Count);
                 Assert.Equal(1, dgSpec.Projects.Count);
-                Assert.Equal("System.IO|y", string.Join("|", projectSpec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.Select(e => e.Name)));
+                Assert.Equal("y", string.Join("|", projectSpec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.Select(e => e.Name)));
                 Assert.Equal("z|y", string.Join("|", projectSpec.GetTargetFramework(NuGetFramework.Parse("netstandard1.6")).Dependencies.Select(e => e.Name)));
                 Assert.Equal(2, projectSpec.RestoreMetadata.TargetFrameworks.Count);
             }

@@ -413,6 +413,10 @@ namespace NuGet.ProjectModel.Test
                         ""downloadDependencies"": [
                             {""name"" : ""c"", ""version"" : ""[2.0.0]""},
                             {""name"" : ""d"", ""version"" : ""[2.0.0]""},
+                       ],
+                       ""frameworkReferences"" : [
+                            ""b"",
+                            ""a""
                        ]
                     }
                   }
@@ -432,7 +436,11 @@ namespace NuGet.ProjectModel.Test
                       ""downloadDependencies"": [
                             {""name"" : ""c"", ""version"" : ""[2.0.0, 2.0.0]""},
                             {""name"" : ""d"", ""version"" : ""[2.0.0, 2.0.0]""},
-                       ]
+                       ],
+                      ""frameworkReferences"" : [
+                          ""a"",
+                          ""b""
+                      ]
                     }
                   }
                 }";
@@ -481,6 +489,31 @@ namespace NuGet.ProjectModel.Test
                 }";
             // Act & Assert
             VerifyPackageSpecWrite(json, expectedJson);
+        }
+
+        [Fact]
+        public void RoundTripFrameworkReferences()
+        {
+            // Arrange
+            var json = @"{
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                                ""autoReferenced"": true
+                            }
+                        },
+                        ""frameworkReferences"": [
+                            ""Microsoft.WindowsDesktop.App|WinForms"",
+                            ""Microsoft.WindowsDesktop.App|WPF""
+                        ]
+                    }
+                  }
+                }";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
         }
 
         private static string GetJsonString(PackageSpec packageSpec)
