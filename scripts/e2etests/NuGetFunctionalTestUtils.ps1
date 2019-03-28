@@ -1,64 +1,54 @@
-﻿. "$PSScriptRoot\Utils.ps1"
+. "$PSScriptRoot\Utils.ps1"
 . "$PSScriptRoot\VSUtils.ps1"
 
-function EscapeContentForTeamCity
-{
-    param (
-    [Parameter(Mandatory=$true)]
-    [string]$content)
+Add-Type -AssemblyName System.Web.Extensions
 
-    if (!$content) {
-        return $content;
+$javaScriptSerializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+$javaScriptSerializer.MaxJsonLength = [System.Int32]::MaxValue
+
+Function Convert-FromJsonToDictionary([string] $json)
+{
+    If ([string]::IsNullOrWhiteSpace($json))
+    {
+        Return $Null
     }
 
-    return $content.Replace("|", "||").Replace("'", "|'").Replace("`n", "|r|n").Replace("`r", "|r").Replace("]", "|]");
+    Try
+    {
+        Return $javaScriptSerializer.DeserializeObject($json)
+    }
+    Catch [System.ArgumentException]
+    {
+        # Most likely a partial line was read.
+        Return $Null
+    }
 }
 
 function WriteToCI
 {
     param (
     [Parameter(Mandatory=$true)]
-    [string]$singleResult)
+    [System.Collections.Generic.Dictionary`2[System.String,System.Object]] $singleResult)
 
-    if (!$singleResult)
+    $status = $singleResult.Status
+    $testName = $singleResult.TestName
+
+    $guid = [System.Guid]::NewGuid().ToString("d")
+    # The below Write-Host commands are no-oping right now in the release environment.
+    Write-Host "##vso[task.logdetail id=$guid;name=$testName;type=build;order=1]Test $testName started"
+
+    if ($status -eq 'Failed')
     {
-        # If singleResult is null or empty, simply return $false
-        return $false
+        Write-Host "##vso[task.logdetail id=$guid;progress=100;state=Failed]Test $testName failed"
     }
-
-    $parsedResult = Get-ResultFromResultRow $singleResult
-    if(-not $parsedResult)
+    ElseIf ($status -eq 'Skipped')
     {
-        return $false
+        Write-Host "##vso[task.logdetail id=$guid;progress=100;state=Skipped]Test $testName skipped"
     }
-    else
+    Else
     {
-        $status = $parsedResult.Status
-        $testName = $parsedResult.Name
-
-        $guid = [System.Guid]::NewGuid().ToString("d")
-        # The below Write-Host commands are no-oping right now in the release environment.
-        Write-Host "##vso[task.logdetail id=$guid;name='$testName';type=build;order=1]Test $testName started"
-
-        if (($status -eq "Failed") -or ($status -eq "Skipped"))
-        {
-            if ($parts.Length -eq 4)
-            {
-                if ($status -eq "Failed")
-                {
-                    Write-Host "##vso[task.logdetail id=$guid;progress=100;state=Failed]Test $testName failed"
-                }
-                else
-                {
-                    Write-Host "##vso[task.logdetail id=$guid;progress=100;state=Skipped]Test $testName skipped"
-                }
-            }
-        }
-
         Write-Host "##vso[task.logdetail id=$guid;progress=100;state=Succeeded]Test $testName passed"
     }
-    
-    return $true
 }
 
 function New-Guid {
@@ -72,7 +62,7 @@ function RealTimeLogResults
     [Parameter(Mandatory=$true)]
     [string]$NuGetTestPath,
     [Parameter(Mandatory=$true)]
-    $EachTestTimoutInSecs)
+    [int] $EachTestTimeoutInSecs)
 
     $currentTestTime = 0
     $currentTestId = 0
@@ -80,7 +70,7 @@ function RealTimeLogResults
     $currentBinFolder = [string]$null
 
     # Get the current bin folder
-    while(!$currentBinFolder -and ($currentTestTime -le $EachTestTimoutInSecs))
+    while(!$currentBinFolder -and ($currentTestTime -le $EachTestTimeoutInSecs))
     {
         start-sleep 1
         $currentTestTime++
@@ -97,8 +87,10 @@ function RealTimeLogResults
 
     $log = Join-Path $currentBinFolder.FullName "log.txt"
     $testResults = Join-Path $currentBinFolder.FullName "Realtimeresults.txt"
+
     $lastLogLine = ""
-    While ($currentTestTime -le $EachTestTimoutInSecs)
+
+    While ($currentTestTime -le $EachTestTimeoutInSecs)
     {
         Start-Sleep 1
         $currentTestTime++
@@ -108,34 +100,31 @@ function RealTimeLogResults
             if (($content.Count -gt 0) -and ($content.Count -gt $currentTestId))
             {
                 $content[($currentTestId)..($content.Count - 1)] | % {
-                    $result = $false
-                    $contentLine = $_
-                    if($content.Count -eq 1)
-                    {
-                        $result = WriteToCI $content
-                        $contentLine = $content
-                    }
-                    else
-                    {
-                        $result = WriteToCI $_
-                    }
-                    
-                    if ($result -eq $false)
+                    $testResult = Convert-FromJsonToDictionary($_)
+
+                    If (!$testResult -Or $testResult.Count -eq 0)
                     {
                         # continues the while loop so that it can be tried again
                         continue
                     }
-                    Write-Host $contentLine
+
+                    WriteToCI $testResult
+
+                    $status = $testResult.Status
+                    $testName = $testResult.TestName
+                    $timeInMilliseconds = $testResult.TimeInMilliseconds
+
+                    Write-Host "$status $testName $timeInMilliseconds"
                 }
 
                 $currentTestTime = 0
                 $currentTestId = $content.Count
             }
             else
-            {                               
+            {
                 $logContent = Get-Content $log
                 $lastLogLine = $logContent[$currentTestId]
-                Write-Host $lastLogLine " and current test time is ${currentTestTime}" 
+                Write-Host $lastLogLine " and current test time is ${currentTestTime}"
             }
 
             $logContent = Get-Content $log
@@ -158,33 +147,37 @@ function RealTimeLogResults
 
                 $resultsFile = Join-Path $currentBinFolder.FullName results.html
                 if (Test-Path $resultsFile)
-                {                    
+                {
                     CopyResultsToCI $NuGetDropPath $RunCounter $resultsFile
                 }
                 else
                 {
                     CopyResultsToCI $NuGetDropPath $RunCounter $testResults
                 }
-                if($isError -eq $true)
-                {
-                    #CopyActivityLogToCI
-                }
                 break
             }
         }
     }
 
-    if ($currentTestTime -gt $EachTestTimoutInSecs)
+    if ($currentTestTime -gt $EachTestTimeoutInSecs)
     {
         $logLineEntries = $lastLogLine -split " "
-        $currentTestName = $logLineEntries[2].Replace("...", "") 
-        $resultRow = "Failed $currentTestName 600000 Test timed out"
-        $resultRow >> $testResults
+        $currentTestName = $logLineEntries[2].Replace("...", "")
+
+        $result = @{
+            TestName = $currentTestName
+            Status = 'Failed'
+            Message = "Test timed out after $EachTestTimeoutInSecs seconds"
+            TimeInMilliseconds = $EachTestTimeoutInSecs * 1000
+        }
+
+        $json = $javaScriptSerializer.Serialize($result)
+        $json >> $testResults
+
         $errorMessage = 'Run Failed - Results.html did not get created. ' `
         + 'This indicates that the tests did not finish running. It could be that the VS crashed or a test timed out. Please investigate.'
         CopyResultsToCI $NuGetDropPath $RunCounter $testResults
-        #CopyActivityLogToCI
-        
+
         Write-Error $errorMessage
         return $null
     }
@@ -226,15 +219,6 @@ function CopyResultsToCI
     OutputResultsForCI -NuGetDropPath $NuGetDropPath -RunCounter $RunCounter -RealTimeResultsFilePath $RealTimeResultsFilePath
 }
 
-# function CopyActivityLogToCI
-# {    
-#     if($env:ActivityLogFullPath) 
-#     {
-#         Write-Host "Copying activity log file from $env:ActivityLogFullPath to $env:EndToEndResultsDropPath"
-#         Copy-Item $env:ActivityLogFullPath -Destination $env:EndToEndResultsDropPath -Force  -ErrorAction SilentlyContinue
-#     }
-# }
-
 function OutputResultsForCI
 {
     param (
@@ -265,7 +249,7 @@ Function Write-JunitXml
 $template = @'
 <testsuite name="" file="">
 <testcase classname="" name="" time="">
-    <failure type="failure"></failure>
+    <failure type="failure" message=""></failure>
 </testcase>
 </testsuite>
 '@
@@ -278,29 +262,31 @@ $template = @'
     $xml = New-Object xml
     $xml.Load($templatePath)
     # grab template user
-    $newTestCaseTemplate = (@($xml.testsuite.testcase)[0]).Clone()  
+    $newTestCaseTemplate = (@($xml.testsuite.testcase)[0]).Clone()
 
     $className = "NuGet.Client.EndToEndTests"
     $xml.testsuite.name = $className
     $xml.testsuite.file = $className
     $Results = Get-Content $RealTimeResultsFile
-    foreach($result in $Results) 
-    {   
-        $parsedResult = Get-ResultFromResultRow -SingleResult $result
+    foreach ($result in $Results)
+    {
+        $parsedResult = Convert-FromJsonToDictionary($result)
         $newTestCase = $newTestCaseTemplate.clone()
         $newTestCase.classname = $className
-        $newTestCase.name = $parsedResult.Name
-        $newTestCase.time = $parsedResult.Time
-        if($parsedResult.Status -eq "Passed")
+        $newTestCase.name = $parsedResult.TestName
+        $Duration = [System.TimeSpan]::FromMilliseconds($parsedResult.TimeInMilliseconds)
+        $newTestCase.time = $Duration.TotalSeconds.ToString()
+        if($parsedResult.Status -eq 'Passed')
         {   #Remove the failure node
             $newTestCase.RemoveChild($newTestCase.ChildNodes[0]) | Out-Null
         }
         else
         {
-            $newTestCase.failure.InnerText = $parsedResult.Failure
+            $newTestCase.failure.message = $parsedResult.Message
+            $newTestCase.failure.InnerText = $parsedResult.Callstack
         }
         $xml.testsuite.AppendChild($newTestCase) > $null
-    }   
+    }
 
     # remove users with undefined name (remove template)
     $xml.testsuite.testcase | Where-Object { $_.Name -eq "" } | ForEach-Object  { [void]$xml.testsuite.RemoveChild($_) }
@@ -309,49 +295,4 @@ $template = @'
 
     $xml.Save($XmlResultsFilePath)
     Remove-Item $templatePath #clean up
-}
-
-function Get-ResultFromResultRow
-{
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$SingleResult        
-    )
-
-    $parts = $SingleResult -split " "
-
-    if ($parts.Length -lt 3)
-    {
-        Write-Host -ForegroundColor Red "WARNING: PARSING ISSUES. CANNOT PARSE TEST RESULT: $singleResult"
-        return $null
-    }
-    else
-    {
-        $status = $parts[0];
-        $testName = $parts[1];
-        $duration = $parts[2];
-        $failureMessage = $null
-
-        if (($status -eq "Failed") -or ($status -eq "Skipped"))
-        {
-            if ($parts.Length -lt 4)
-            {
-               Write-Host -ForegroundColor Red "WARNING: PARSING ISSUES. CANNOT WRITE TEST FAILURE:  $singleResult"
-            }
-            else
-            {
-                $endIndex = $parts.Length - 1
-                $failureMessage = $parts[3..$endIndex]
-            }
-        }
-        $DurationInSeconds = New-TimeSpan -Seconds ($duration/1000.0)
-        $result = @{
-            Status = $status
-            Name = $testName
-            Time = $DurationInSeconds.Seconds.ToString()
-            Failure = $failureMessage
-        }
-
-        return $result
-    }
 }
