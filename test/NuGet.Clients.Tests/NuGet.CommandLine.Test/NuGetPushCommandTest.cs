@@ -2051,6 +2051,15 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData("push")]
+        [InlineData("push a b c")]
+        [InlineData("push a b c -Timeout 2")]
+        public void PushCommand_Failure_InvalidArguments(string cmd)
+        {
+            Util.TestCommandInvalidArguments(cmd);
+        }
+
         // Asserts that the contents of two files are equal.
         void AssertFileEqual(string fileName1, string fileName2)
         {

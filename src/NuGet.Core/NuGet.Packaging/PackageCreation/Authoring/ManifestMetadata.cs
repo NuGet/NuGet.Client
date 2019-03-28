@@ -50,6 +50,7 @@ namespace NuGet.Packaging
             Language = copy.Language?.Trim();
             DependencyGroups = copy.DependencyGroups;
             FrameworkReferences = copy.FrameworkReferences;
+            FrameworkReferenceGroups = copy.FrameworkReferenceGroups;
             PackageAssemblyReferences = copy.PackageAssemblyReferences;
             PackageTypes = copy.PackageTypes;
             MinClientVersionString = copy.MinClientVersion?.ToString();
@@ -186,6 +187,8 @@ namespace NuGet.Packaging
                 _dependencyGroups = MergeDependencyGroups(value);
             }
         }
+
+        public IEnumerable<FrameworkSpecificGroup> FrameworkReferenceGroups { get; set; } = new List<FrameworkSpecificGroup>();
 
         public IEnumerable<FrameworkAssemblyReference> FrameworkReferences { get; set; } = new List<FrameworkAssemblyReference>();
 
@@ -333,7 +336,7 @@ namespace NuGet.Packaging
                 yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl;
             }
 
-            if(_licenseUrl != null && LicenseMetadata != null && !_licenseUrl.Equals(LicenseMetadata.LicenseUrl))
+            if (_licenseUrl != null && LicenseMetadata != null && (string.IsNullOrWhiteSpace(_licenseUrl) || !LicenseUrl.Equals(LicenseMetadata.LicenseUrl)))
             {
                 yield return NuGetResources.Manifest_LicenseUrlCannotBeUsedWithLicenseMetadata;
             }

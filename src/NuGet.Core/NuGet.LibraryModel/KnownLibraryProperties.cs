@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.LibraryModel
@@ -15,5 +15,6 @@ namespace NuGet.LibraryModel
         public static readonly string FrameworkAssemblies = "NuGet.ProjectModel.FrameworkAssemblies";
         public static readonly string ProjectFrameworks = "NuGet.ProjectModel.ProjectFrameworks";
         public static readonly string ProjectStyle = "NuGet.ProjectModel.RestoreMetadata.ProjectStyle";
+        public static readonly string FrameworkReferences = "NuGet.ProjectModel.FrameworkReferences";
     }
 }

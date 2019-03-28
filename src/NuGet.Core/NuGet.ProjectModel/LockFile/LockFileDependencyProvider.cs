@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -46,13 +46,12 @@ namespace NuGet.ProjectModel
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
         {
             var key = Tuple.Create(targetFramework, libraryRange.Name);
-            LockFileTargetLibrary library = null;
 
             // Determine if we have a library for this target
-            if (_targetLibraries.TryGetValue(key, out library) &&
+            if (_targetLibraries.TryGetValue(key, out LockFileTargetLibrary library) &&
                 libraryRange.VersionRange.IsBetter(current: null, considering: library.Version))
             {
-                var dependencies = GetDependencies(library, targetFramework);
+                var dependencies = GetDependencies(library);
 
                 var description = new Library
                 {
@@ -76,7 +75,7 @@ namespace NuGet.ProjectModel
             return null;
         }
 
-        private IList<LibraryDependency> GetDependencies(LockFileTargetLibrary library, NuGetFramework targetFramework)
+        private IList<LibraryDependency> GetDependencies(LockFileTargetLibrary library)
         {
             var libraryDependencies = new List<LibraryDependency>();
 

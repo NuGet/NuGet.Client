@@ -49,6 +49,8 @@ namespace NuGet.Protocol
         // There is no report abuse url for local packages.
         public Uri ReportAbuseUrl => null;
 
+        public Uri PackageDetailsUrl => null;
+
         public bool RequireLicenseAcceptance => _nuspec.GetRequireLicenseAcceptance();
 
         public string Summary => !string.IsNullOrEmpty(_nuspec.GetSummary()) ? _nuspec.GetSummary() : Description;

@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Xml.Linq;
 using NuGet.Commands;
@@ -2227,6 +2226,7 @@ public class B
                     Assert.Equal("https://github.com/NuGet/NuGet.Client.git", nuspecReader.GetRepositoryMetadata().Url);
                     Assert.Equal("dev", nuspecReader.GetRepositoryMetadata().Branch);
                     Assert.Equal("e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3", nuspecReader.GetRepositoryMetadata().Commit);
+                    VerifyNuspecRoundTrips(nupkgReader, $"packageA.nuspec");
                 }
 
                 // Verify the package directory has the resolved nuspec
@@ -2321,6 +2321,7 @@ public class B
                     Assert.Equal("the description", nuspecReader.GetDescription());
                     Assert.Equal("Copyright (C) Microsoft 2013", nuspecReader.GetCopyright());
                     Assert.Equal("Microsoft,Sample,CustomTag", nuspecReader.GetTags());
+                    VerifyNuspecRoundTrips(nupkgReader, $"packageA.nuspec");
                 }
 
                 // Verify the package directory has the resolved nuspec
@@ -4580,6 +4581,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseExpr);
                     Assert.Equal(licenseExpr, licenseMetadata.LicenseExpression.ToString());
+                    VerifyNuspecRoundTrips(nupkgReader, $"{packageName}.nuspec");
                 }
             }
         }
@@ -4645,6 +4647,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(licenseMetadata.License, licenseExpr);
                     Assert.False(licenseMetadata.LicenseExpression.HasOnlyStandardIdentifiers());
                     Assert.Equal(licenseExpr, licenseMetadata.LicenseExpression.ToString());
+                    VerifyNuspecRoundTrips(nupkgReader, $"{packageName}.nuspec");
                 }
             }
         }
@@ -4861,6 +4864,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseFileName);
                     Assert.Null(licenseMetadata.LicenseExpression);
+                    VerifyNuspecRoundTrips(nupkgReader, $"{packageName}.nuspec");
                 }
             }
         }
@@ -5128,6 +5132,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     var licenseMetadata = nuspecReader.GetLicenseMetadata();
                     Assert.Null(nuspecReader.GetLicenseMetadata());
                     Assert.NotNull(nuspecReader.GetLicenseUrl());
+                    VerifyNuspecRoundTrips(nupkgReader, $"{packageName}.nuspec");
                 }
             }
         }
@@ -5206,6 +5211,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                         Assert.Equal(new FileInfo(Path.Combine(workingDirectory, licenseFileName)).Length, licenseFileEntry.Length);
                         Assert.Equal(licenseText, value);
                     }
+                    VerifyNuspecRoundTrips(nupkgReader, $"{packageName}.nuspec");
                 }
             }
         }
@@ -5301,6 +5307,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     Assert.Equal(licenseMetadata.Version, LicenseMetadata.EmptyVersion);
                     Assert.Equal(licenseMetadata.License, licenseFileName);
                     Assert.Null(licenseMetadata.LicenseExpression);
+                    VerifyNuspecRoundTrips(nupkgReader, $"{packageName}.nuspec");
                 }
 
                 using (var symbolsReader = new PackageArchiveReader(symbolsPath))
@@ -5336,6 +5343,155 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             }
         }
 
+        [Fact]
+        public void PackCommand_Failure_InvalidArguments()
+        {
+            Util.TestCommandInvalidArguments("pack a.nuspec b.nuspec");
+        }
+
+        public void PackCommand_PackageFromNuspecWithFrameworkReferences_MultiTargeting()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0.2</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <frameworkReferences>
+        <group targetFramework="".NETCoreApp3.0"">
+            <frameworkReference name=""Microsoft.WindowsDesktop.App|WPF""/>
+        </group>
+        <group targetFramework="".NETCoreApp3.1"">
+            <frameworkReference name=""Microsoft.WindowsDesktop.App|WinForms""/>
+        </group>
+    </frameworkReferences>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "frameworkReferences");
+                    var actual = node.ToString().Replace("\r\n", "\n");
+
+                    Assert.Equal(
+                        @"<frameworkReferences xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">
+  <group targetFramework="".NETCoreApp3.0"">
+    <frameworkReference name=""Microsoft.WindowsDesktop.App|WPF"" />
+  </group>
+  <group targetFramework="".NETCoreApp3.1"">
+    <frameworkReference name=""Microsoft.WindowsDesktop.App|WinForms"" />
+  </group>
+</frameworkReferences>".Replace("\r\n", "\n"), actual);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackageFromNuspecWithFrameworkReferences_WithDuplicateEntries()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0.2</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <frameworkReferences>
+        <group targetFramework="".NETCoreApp3.0"">
+            <frameworkReference name=""Microsoft.WindowsDesktop.App|WPF""/>
+            <frameworkReference name=""Microsoft.WindowsDesktop.App|wpf""/>
+        </group>
+    </frameworkReferences>
+    <dependencies>
+        <group targetFramework="".NETCoreApp3.0"">
+            <dependency id=""packageA"" version=""1.0.0"" />
+            <dependency id=""packageB"" version=""1.0.0"" />
+            <dependency id=""packageb"" version=""1.0.0"" />
+        </group>
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "frameworkReferences");
+                    var actual = node.ToString().Replace("\r\n", "\n");
+
+                    Assert.Equal(
+                        @"<frameworkReferences xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <group targetFramework="".NETCoreApp3.0"">
+    <frameworkReference name=""Microsoft.WindowsDesktop.App|WPF"" />
+  </group>
+</frameworkReferences>".Replace("\r\n", "\n"), actual);
+
+                    node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "dependencies");
+
+                    actual = node.ToString().Replace("\r\n", "\n");
+
+                    Assert.Equal(
+                        @"<dependencies xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <group targetFramework="".NETCoreApp3.0"">
+    <dependency id=""packageA"" version=""1.0.0"" />
+    <dependency id=""packageB"" version=""1.0.0"" />
+  </group>
+</dependencies>".Replace("\r\n", "\n"), actual);
+                }
+            }
+        }
+
         private class PackageDepencyComparer : IEqualityComparer<PackageDependency>
         {
             public bool Equals(PackageDependency x, PackageDependency y)
@@ -5350,6 +5506,15 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             public int GetHashCode(PackageDependency obj)
             {
                 return obj.GetHashCode();
+            }
+        }
+
+        private static void VerifyNuspecRoundTrips(PackageArchiveReader nupkgReader, string nuspecName)
+        {
+            // Validate the nuspec round trips.
+            using (var nuspecStream = nupkgReader.GetStream(nuspecName))
+            {
+                Assert.NotNull(Packaging.Manifest.ReadFrom(nuspecStream, validateSchema: true));
             }
         }
     }

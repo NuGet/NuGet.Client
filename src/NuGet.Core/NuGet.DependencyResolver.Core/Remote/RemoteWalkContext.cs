@@ -17,18 +17,8 @@ namespace NuGet.DependencyResolver
     {
         public RemoteWalkContext(SourceCacheContext cacheContext, ILogger logger)
         {
-            if (cacheContext == null)
-            {
-                throw new ArgumentNullException(nameof(cacheContext));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            CacheContext = cacheContext;
-            Logger = logger;
+            CacheContext = cacheContext ?? throw new ArgumentNullException(nameof(cacheContext));
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             ProjectLibraryProviders = new List<IDependencyProvider>();
             LocalLibraryProviders = new List<IRemoteDependencyProvider>();

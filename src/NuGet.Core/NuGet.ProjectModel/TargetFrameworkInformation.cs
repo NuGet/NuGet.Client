@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Shared;
 
 namespace NuGet.ProjectModel
@@ -32,6 +33,18 @@ namespace NuGet.ProjectModel
         /// </summary>
         public bool Warn { get; set; }
 
+        /// <summary>
+        /// List of dependencies that are not part of the graph resolution.
+        /// </summary>
+        public IList<DownloadDependency> DownloadDependencies { get; } = new List<DownloadDependency>();
+
+        /// <summary>
+        /// A set of unique FrameworkReferences
+        /// </summary>
+        public ISet<string> FrameworkReferences { get; } = new HashSet<string>(FrameworkReferenceComparer);
+
+        public static StringComparer FrameworkReferenceComparer = StringComparer.OrdinalIgnoreCase;
+
         public override string ToString()
         {
             return FrameworkName.GetShortFolderName();
@@ -45,6 +58,8 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(AssetTargetFallback);
             hashCode.AddSequence(Dependencies);
             hashCode.AddSequence(Imports);
+            hashCode.AddSequence(DownloadDependencies);
+            hashCode.AddSequence(FrameworkReferences);
 
             return hashCode.CombinedHash;
         }
@@ -69,17 +84,21 @@ namespace NuGet.ProjectModel
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
                    Dependencies.OrderedEquals(other.Dependencies, dependency => dependency.Name, StringComparer.OrdinalIgnoreCase) &&
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
-                   AssetTargetFallback == other.AssetTargetFallback;
+                   AssetTargetFallback == other.AssetTargetFallback &&
+                   DownloadDependencies.OrderedEquals(other.DownloadDependencies, dep => dep) &&
+                   FrameworkReferences.OrderedEquals(other.FrameworkReferences,  e => e, StringComparer.OrdinalIgnoreCase);
         }
 
         public TargetFrameworkInformation Clone()
         {
             var clonedObject = new TargetFrameworkInformation();
             clonedObject.FrameworkName = FrameworkName;
-            clonedObject.Dependencies = Dependencies.Select(item => (LibraryDependency)item.Clone()).ToList();
+            clonedObject.Dependencies = Dependencies.Select(item => item.Clone()).ToList();
             clonedObject.Imports = new List<NuGetFramework>(Imports);
             clonedObject.AssetTargetFallback = AssetTargetFallback;
             clonedObject.Warn = Warn;
+            clonedObject.DownloadDependencies.AddRange(DownloadDependencies.Select(item => item.Clone()));
+            clonedObject.FrameworkReferences.AddRange(FrameworkReferences);
             return clonedObject;
         }
     }

@@ -70,6 +70,11 @@ namespace NuGet.Common
         NU1005 = 1005,
 
         /// <summary>
+        /// NuGet configuration file has an invalid package source value.
+        /// </summary>
+        NU1006 = 1006,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,

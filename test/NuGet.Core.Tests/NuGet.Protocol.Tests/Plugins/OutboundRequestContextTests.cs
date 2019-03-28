@@ -44,6 +44,25 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public void Constructor_ThrowsForNullLogger()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new OutboundRequestContext<HandshakeResponse>(
+                    Mock.Of<IConnection>(),
+                    new Message(
+                        requestId: "a",
+                        type: MessageType.Request,
+                        method: MessageMethod.Handshake,
+                        payload: null),
+                    TimeSpan.FromMinutes(1),
+                    isKeepAlive: true,
+                    cancellationToken: CancellationToken.None,
+                    logger: null));
+
+            Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
         public void Constructor_InitializesProperties()
         {
             using (var test = new OutboundRequestContextTest())
@@ -121,6 +140,16 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 test.Context.Dispose();
                 test.Connection.Verify();
+            }
+        }
+
+        [Fact]
+        public void Dispose_DoesNotDisposeLogger()
+        {
+            using (var test = new OutboundRequestContextTest())
+            {
+                test.Context.Dispose();
+                test.Logger.Verify();
             }
         }
 
@@ -252,12 +281,14 @@ namespace NuGet.Protocol.Plugins.Tests
             internal CancellationTokenSource CancellationTokenSource { get; }
             internal Mock<IConnection> Connection { get; }
             internal OutboundRequestContext<HandshakeResponse> Context { get; }
+            internal Mock<IPluginLogger> Logger { get; }
             internal Message Request { get; }
 
             internal OutboundRequestContextTest(TimeSpan? timeout = null)
             {
                 CancellationTokenSource = new CancellationTokenSource();
                 Connection = new Mock<IConnection>(MockBehavior.Strict);
+                Logger = new Mock<IPluginLogger>(MockBehavior.Strict);
                 Request = new Message(
                     requestId: "a",
                     type: MessageType.Request,
@@ -289,6 +320,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 GC.SuppressFinalize(this);
 
                 Connection.Verify();
+                Logger.Verify();
             }
         }
     }

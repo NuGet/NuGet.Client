@@ -386,7 +386,7 @@ namespace NuGetVSExtension
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var vsProject = VsHierarchyUtility.ToVsHierarchy(project);
-            var documentName = project.UniqueName;
+            var documentName = project.FullName;
 
             // Find existing hierarchy and item id of the document window if it's
             // already registered.

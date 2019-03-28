@@ -28,6 +28,7 @@ namespace NuGet.Protocol
             LastEdited = package.LastEdited;
             Published = package.Published;
             ReportAbuseUrl = GetUriSafe(package.ReportAbuseUrl);
+            PackageDetailsUrl = GetUriSafe(package.GalleryDetailsUrl);
             RequireLicenseAcceptance = package.RequireLicenseAcceptance;
             Summary = package.Summary;
             Tags = package.Tags;
@@ -55,6 +56,7 @@ namespace NuGet.Protocol
             LastEdited = package.LastEdited;
             Published = package.Published;
             ReportAbuseUrl = GetUriSafe(package.ReportAbuseUrl);
+            PackageDetailsUrl = GetUriSafe(package.GalleryDetailsUrl);
             RequireLicenseAcceptance = package.RequireLicenseAcceptance;
             Summary = package.Summary;
             Tags = package.Tags;
@@ -99,6 +101,8 @@ namespace NuGet.Protocol
         public DateTimeOffset? Published { get; private set; }
 
         public Uri ReportAbuseUrl { get; private set; }
+
+        public Uri PackageDetailsUrl { get; private set; }
 
         public bool RequireLicenseAcceptance { get; private set; }
 

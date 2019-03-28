@@ -656,7 +656,7 @@ namespace NuGet.Commands.Test
                 {
                     GeneratePathProperty = true,
                     IncludeType = LibraryIncludeFlags.All,
-                    LibraryRange = new LibraryRange(identity.Id, new VersionRange(identity.Version), LibraryDependencyTarget.Package)
+                    LibraryRange = new LibraryRange(identity.Id.ToUpperInvariant(), new VersionRange(identity.Version), LibraryDependencyTarget.Package)
                 });
 
                 var targetGraphs = new List<RestoreTargetGraph>

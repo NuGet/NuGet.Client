@@ -10,8 +10,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
@@ -46,15 +44,11 @@ namespace NuGet.ProjectModel
         private const string MSBuildProjectProperty = "msbuildProject";
         private const string FrameworkProperty = "framework";
         private const string ToolsProperty = "tools";
-        private const string ProjectFileToolGroupsProperty = "projectFileToolGroups";
         private const string PackageFoldersProperty = "packageFolders";
         private const string PackageSpecProperty = "project";
         private const string LogsProperty = "logs";
         private const string EmbedProperty = "embed";
-
-        // Legacy property names
-        private const string RuntimeAssembliesProperty = "runtimeAssemblies";
-        private const string CompileAssembliesProperty = "compileAssemblies";
+        private const string FrameworkReferencesProperty = "frameworkReferences";
 
         public LockFile Parse(string lockFileContent, string path)
         {
@@ -487,6 +481,7 @@ namespace NuGet.ProjectModel
             library.RuntimeTargets = JsonUtility.ReadObject(json[RuntimeTargetsProperty] as JObject, ReadRuntimeTarget);
             library.ToolsAssemblies = JsonUtility.ReadObject(json[ToolsProperty] as JObject, ReadFileItem);
             library.EmbedAssemblies = JsonUtility.ReadObject(json[EmbedProperty] as JObject, ReadFileItem);
+            library.FrameworkReferences = ReadArray(json[FrameworkReferencesProperty] as JArray, ReadString);
 
             return library;
         }
@@ -531,6 +526,13 @@ namespace NuGet.ProjectModel
                 var ordered = library.RuntimeAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
                 json[RuntimeProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+            }
+
+            if(library.FrameworkReferences.Count > 0)
+            {
+                var ordered = library.FrameworkReferences.OrderBy(reference => reference, StringComparer.Ordinal);
+
+                json[FrameworkReferencesProperty] = WriteArray(ordered, JsonUtility.WriteString);
             }
 
             if (library.ResourceAssemblies.Count > 0)
@@ -628,21 +630,6 @@ namespace NuGet.ProjectModel
             return new JProperty(
                 frameworkInfo.FrameworkName,
                 WriteArray(frameworkInfo.Dependencies, JsonUtility.WriteString));
-        }
-
-        private static PackageDependencyGroup ReadPackageDependencyGroup(string property, JToken json)
-        {
-            var targetFramework = string.Equals(property, "*") ? null : new NuGetFramework(property);
-            return new PackageDependencyGroup(
-                targetFramework,
-                JsonUtility.ReadObject(json as JObject, JsonUtility.ReadPackageDependency));
-        }
-
-        private static JProperty WritePackageDependencyGroup(PackageDependencyGroup item)
-        {
-            return new JProperty(
-                item.TargetFramework?.ToString() ?? "*",
-                JsonUtility.WriteObject(item.Packages, JsonUtility.WritePackageDependency));
         }
 
         private static LockFileItem ReadFileItem(string property, JToken json)
@@ -792,16 +779,6 @@ namespace NuGet.ProjectModel
         private static void WriteBool(JToken token, string property, bool value)
         {
             token[property] = new JValue(value);
-        }
-
-        private static NuGetFramework ReadFrameworkName(JToken json)
-        {
-            return json == null ? null : new NuGetFramework(json.Value<string>());
-        }
-
-        private static JToken WriteFrameworkName(NuGetFramework item)
-        {
-            return item != null ? new JValue(item.ToString()) : JValue.CreateNull();
         }
 
         private static string GetPathWithForwardSlashes(string path)

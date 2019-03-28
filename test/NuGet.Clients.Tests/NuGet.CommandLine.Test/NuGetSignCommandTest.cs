@@ -449,5 +449,15 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(timestamper, signArgs.Timestamper, StringComparer.Ordinal);
             Assert.Equal(outputDir, signArgs.OutputDirectory, StringComparer.Ordinal);
         }
+
+        [Theory]
+        [InlineData("sign")]
+        [InlineData("siGn a b")]
+        [InlineData("sign a -ConfigFile b x")]
+        [InlineData("sign a -Timestamper b x")]
+        public void SignCommand_Failure_InvalidArguments(string cmd)
+        {
+            Util.TestCommandInvalidArguments(cmd);
+        }
     }
 }

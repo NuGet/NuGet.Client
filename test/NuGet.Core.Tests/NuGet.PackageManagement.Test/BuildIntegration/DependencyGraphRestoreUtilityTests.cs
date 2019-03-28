@@ -31,7 +31,6 @@ namespace NuGet.PackageManagement.Test
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
                 var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
 
                 var sources = new[] {

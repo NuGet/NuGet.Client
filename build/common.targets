@@ -37,7 +37,7 @@
     <DocumentationFile Condition=" '$(DocumentationFile)' == '' AND '$(GenerateDocumentationFile)' == 'true' AND '$(IsNetCoreProject)' != 'true' ">$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
-  <ImportGroup Condition=" '$(PackProject)' == 'true' ">
+  <ImportGroup Condition=" '$(PackProject)' == 'true' AND '$(NuGetBuildTasksPackTargets)' != '' ">
       <Import Project="$(NuGetBuildTasksPackTargets)" />
   </ImportGroup>
 

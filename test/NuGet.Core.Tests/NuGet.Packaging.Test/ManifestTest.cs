@@ -1008,7 +1008,7 @@ namespace NuGet.Packaging.Test
                 foreach (var packageType in packageTypes)
                 {
                     var packageTypeNode = new XElement(NuspecUtility.PackageType);
-                    packageTypeNode.SetAttributeValue(NuspecUtility.PackageTypeName, packageType.Name);
+                    packageTypeNode.SetAttributeValue(NuspecUtility.Name, packageType.Name);
                     if (packageType.Version != PackageType.EmptyVersion)
                     {
                         packageTypeNode.SetAttributeValue(NuspecUtility.Version, packageType.Version);

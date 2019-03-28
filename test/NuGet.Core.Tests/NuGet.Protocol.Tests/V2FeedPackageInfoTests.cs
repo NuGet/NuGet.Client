@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -143,7 +143,7 @@ namespace NuGet.Protocol.Tests
         {
             return new V2FeedPackageInfo(new PackageIdentity("test", NuGetVersion.Parse("1.0.0")),
                                          "title", "summary", "description", Enumerable.Empty<string>(), Enumerable.Empty<string>(),
-                                         "iconUrl", "licenseUrl", "projectUrl", "reportAbuseUrl", "tags", null, null, null, dependencies,
+                                         "iconUrl", "licenseUrl", "projectUrl", "reportAbuseUrl", "galleryDetailsUrl", "tags", null, null, null, dependencies,
                                          false, "downloadUrl", "0", "packageHash", "packageHashAlgorithm", new NuGetVersion("3.0"));
         }
     }

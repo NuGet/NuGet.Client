@@ -13,7 +13,13 @@ function Test-PackageManagerServicesAreAvailableThroughMEF {
     Assert-NotNull $installerEvents
 }
 
-function Test-MigrateVanilaUwpProjectJsonToPackageReference {
+# If this test fails with the cryptic error:
+#
+#    Exception calling "NewProject" with "5" argument(s): "The method or operation is not implemented." 
+#
+# ...it is because the specific Windows 10 SDK build indicated by the <TargetPlatformVersion /> element in the test's
+# project file (test\EndToEnd\ProjectTemplates\UwpClassLibraryProjectJson.zip\ClassLibrary6.csproj) is not installed.
+function Test-MigrateVanillaUwpProjectJsonToPackageReference {
     param(
         $context
     )

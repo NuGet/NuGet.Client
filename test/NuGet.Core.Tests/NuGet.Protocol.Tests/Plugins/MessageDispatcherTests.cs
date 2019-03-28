@@ -38,6 +38,15 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public void Constructor_ThrowsForNullLogger()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new MessageDispatcher(new RequestHandlers(), new ConstantIdGenerator(), logger: null));
+
+            Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
         public void Constructor_InitializesProperties()
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
@@ -179,6 +188,19 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(MessageMethod.Handshake, message.Method);
                 Assert.Equal("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\"1.0.0\"}",
                     message.Payload.ToString(Formatting.None));
+            }
+        }
+
+        [Fact]
+        public void Dispose_DoesNotDisposeLogger()
+        {
+            var logger = new Mock<IPluginLogger>(MockBehavior.Strict);
+
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, logger.Object))
+            {
+                dispatcher.Dispose();
+
+                logger.Verify();
             }
         }
 
