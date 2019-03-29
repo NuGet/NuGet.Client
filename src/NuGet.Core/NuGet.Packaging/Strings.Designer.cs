@@ -1564,11 +1564,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp response has an unsupported digest algorithm ({0}). The following algorithms are supported: {1}..
+        ///   Looks up a localized string similar to The timestamp signature has an unsupported digest algorithm ({0}). The following algorithms are supported: {1}..
         /// </summary>
-        internal static string TimestampResponseUnsupportedDigestAlgorithm {
+        internal static string TimestampSignatureUnsupportedDigestAlgorithm {
             get {
-                return ResourceManager.GetString("TimestampResponseUnsupportedDigestAlgorithm", resourceCulture);
+                return ResourceManager.GetString("TimestampSignatureUnsupportedDigestAlgorithm", resourceCulture);
             }
         }
         
@@ -1841,16 +1841,17 @@ namespace NuGet.Packaging {
                 return ResourceManager.GetString("VerifyError_TimestampSignatureValidationFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp signature has an unsupported digest algorithm..
+        ///   Looks up a localized string similar to The {0}&apos;s timestamp signature has an unsupported digest algorithm..
         /// </summary>
-        internal static string VerifyError_TimestampUnsupportedDigestAlgorithm {
+        internal static string VerifyError_TimestampSignatureUnsupportedDigestAlgorithm
+        {
             get {
-                return ResourceManager.GetString("VerifyError_TimestampUnsupportedDigestAlgorithm", resourceCulture);
+                return ResourceManager.GetString("VerifyError_TimestampSignatureUnsupportedDigestAlgorithm", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The {0}&apos;s timestamp certificate has an unsupported signature algorithm..
         /// </summary>
