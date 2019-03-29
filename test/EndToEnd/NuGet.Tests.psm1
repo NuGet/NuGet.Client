@@ -28,6 +28,10 @@ if ((Test-Path $nugetExePath) -eq $False)
 # Enable NuGet Test Mode
 $env:NuGetTestModeEnabled = "True"
 
+Add-Type -AssemblyName System.Web.Extensions
+
+$javaScriptSerializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+$javaScriptSerializer.MaxJsonLength = [System.Int32]::MaxValue
 
 $msbuildPath = Join-Path $env:windir Microsoft.NET\Framework\v4.0.30319\msbuild
 $testExtensionNames = ( "GenerateTestPackages.exe", "API.Test.dll" )
@@ -111,7 +115,7 @@ function Run-Test {
         [string]$RunId="",
         [parameter(ParameterSetName="File", Mandatory=$true, Position=2)]
         [string]$File,
-		[parameter(ParameterSetName="Exclude", Mandatory=$true, Position=2)]
+        [parameter(ParameterSetName="Exclude", Mandatory=$true, Position=2)]
         [string]$Exclude,
         [parameter(Position=3)]
         [bool]$LaunchResultsOnFailure=$false
@@ -161,16 +165,16 @@ function Run-Test {
     }
 
     # Load all of the test scripts
-	if (!$Exclude) {
+    if (!$Exclude) {
         Get-ChildItem $testPath -Filter $File | %{
         . $_.FullName
-		}
-	}
-	else {
-	    Get-ChildItem $testPath -Exclude $Exclude | %{
+        }
+    }
+    else {
+        Get-ChildItem $testPath -Exclude $Exclude | %{
         . $_.FullName
-		}
-	}
+        }
+    }
 
     # If no tests were specified just run all
     if(!$test) {
@@ -201,7 +205,6 @@ function Run-Test {
     {
     }
 
-    
     $numberOfTests = 0
     $tests | %{
         $numberOfTests++
@@ -218,14 +221,14 @@ function Run-Test {
                 {
                     $numberOfTests = $numberOfTests + $testCases.Count -1
                 }
-            }        
+            }
         }
         catch {
-            
+
         }
     }
-    
-	$startTime = Get-Date
+
+    $startTime = Get-Date
     try {
         # Run all tests
         $testIndex = 0
@@ -239,7 +242,7 @@ function Run-Test {
             $testName = $testObject.Name.Substring(5)
 
             $testCases = @( $null )
-            $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"        
+            $testCasesInfoString = ".`tThere are not multiple test cases. Just the 1 test"
 
             try {
                 Write-Host 'Getting the test cases factory for ' $testName
@@ -290,7 +293,7 @@ function Run-Test {
                 else
                 {
                     # Write to log file as we run tests
-                    "Running Test $testName... ($testIndex / $numberOfTests)" >> $testLogFile            
+                    "Running Test $testName... ($testIndex / $numberOfTests)" >> $testLogFile
                 }
 
                 $repositoryPath = Join-Path $testRepositoryPath $name
@@ -327,9 +330,11 @@ function Run-Test {
                 # Some tests are flaky. We give failed tests another chance to succeed.
                 for ($counter = 0; $counter -le 1; $counter++)
                 {
+                    $elapsed = [TimeSpan]::Zero
+
                     if ($counter -eq 1)
                     {
-                        Write-Host -ForegroundColor Blue "Reruning failed test one more time...."
+                        Write-Host -ForegroundColor Blue "Rerunning failed test one more time...."
                     }
 
                     try {
@@ -337,13 +342,14 @@ function Run-Test {
                         {
                             throw 'GenerateTestPackages.exe failed. Exit code is ' + $generatePackagesExitCode
                         }
+
                         $executionTime = measure-command { & $testObject $context $testCaseObject }
 
                         Write-Host -ForegroundColor DarkGreen "Test $name Passed"
 
-                        $results[$name] = New-Object PSObject -Property @{
-                            Test = $name
-                            Error = $null
+                        $results[$name] = @{
+                            TestName = $name
+                            Status = 'Passed'
                         }
 
                         $testSucceeded = $true
@@ -351,19 +357,21 @@ function Run-Test {
                     catch {
                         if($_.Exception.Message.StartsWith("SKIP")) {
                             $message = $_.Exception.Message.Substring(5).Trim()
-                            $results[$name] = New-Object PSObject -Property @{
-                                Test = $name
-                                Error = $message
-                                Skipped = $true
+                            $results[$name] = @{
+                                TestName = $name
+                                Status = 'Skipped'
+                                Message = $message
                             }
 
                             Write-Warning "$name was Skipped: $message"
                             $testSucceeded = $true
                         }
                         else {
-                            $results[$name] = New-Object PSObject -Property @{
-                                Test = $name
-                                Error = $_
+                            $results[$name] = @{
+                                TestName = $name
+                                Status = 'Failed'
+                                Message = $_.Exception.Message
+                                Callstack = $_.Exception.ToString()
                             }
                             Write-Host -ForegroundColor Red "$($testObject.InvocationInfo.InvocationName) Failed: $testObject. Exception message: $_"
                             $testSucceeded = $false
@@ -391,22 +399,24 @@ function Run-Test {
                         }
                     }
 
-                    $results[$name] | Add-Member NoteProperty -Name Time -Value $executionTime
-                    $results[$name] | Add-Member NoteProperty -Name Retried -Value ($counter -eq 1)
+                    [int] $timeInMilliseconds = [System.Math]::Round($executionTime.TotalMilliseconds)
+
+                    $results[$name]["TimeInMilliseconds"] = $timeInMilliseconds
+                    $results[$name]["Retried"] = $counter -gt 0
 
                     if ($testSucceeded) {
                         break;
                     }
                 }
 
-                Append-TextResult $results[$name] $testRealTimeResultsFile
+                Append-JsonResult $results[$name] $testRealTimeResultsFile
             }
         }
     }
     finally {
-		$endTime = Get-Date
-		$totalTimeUsed = ($endTime - $startTime).TotalSeconds
-		"Total time used $totalTimeUsed seconds" >> $testLogFile
+        $endTime = Get-Date
+        $totalTimeUsed = ($endTime - $startTime).TotalSeconds
+        "Total time used $totalTimeUsed seconds" >> $testLogFile
 
         # Deleting tests
         rm function:\Test*
@@ -435,31 +445,31 @@ function Write-TestResults {
     )
 
     # Show failed tests first
-    $Results = $Results | Sort-Object -Property Error -Descending
+    $Results = $Results.GetEnumerator() | Sort-Object -Property Message -Descending
 
     $HtmlResultPath = Join-Path $ResultsDirectory "Results.html"
     Write-HtmlResults $TestRunId $Results $HtmlResultPath
 
     $TextResultPath = Join-Path $ResultsDirectory "TestResults.txt"
-    Write-TextResults $TestRunId $Results $TextResultPath
+    Write-JsonResults $TestRunId $Results $TextResultPath
 
-    $pass = 0
-    $fail = 0
+    $passed = 0
+    $failed = 0
     $skipped = 0
 
     $rows = $Results | % {
-        if($_.Skipped) {
+        if ($_.Status -eq 'Skipped') {
             $skipped++
         }
-        elseif($_.Error) {
-            $fail++
+        elseif ($_.Status -eq 'Failed') {
+            $failed++
         }
         else {
-            $pass++
+            $passed++
         }
     }
 
-    $resultMessage = "Ran $($Results.Count) Tests and/or Test cases, $pass Passed, $fail Failed, $skipped Skipped. See '$HtmlResultPath' or '$TextResultPath' for more details."
+    $resultMessage = "Ran $($Results.Count) Tests and/or Test cases, $passed Passed, $failed Failed, $skipped Skipped. See '$HtmlResultPath' or '$TextResultPath' for more details."
     Write-Host $resultMessage
     "$(Get-Date -format o) $resultMessage" >> $testLogFile
 
@@ -469,44 +479,18 @@ function Write-TestResults {
     }
 }
 
-function Get-TextResultRow
-{
-    param(
-        $Result
-    )
-
-    $status = 'Passed'
-
-    if($Result.Skipped) {
-        $status = 'Skipped'
-    }
-    elseif($Result.Error) {
-        $status = 'Failed'
-    }
-
-    $row = "$status $($Result.Test) $([math]::Round($Result.Time.TotalMilliseconds)) $($Result.Error) "
-
-    return $row
-}
-
-function Append-TextResult
+function Append-JsonResult
 {
     param(
         $Result,
         $Path
     )
 
-    $row = Get-TextResultRow $Result
-    $numLines = $row | Measure-Object -Line
-    if($numLines.Lines -gt 1)
-    {
-        $rowArray = $row.Split([environment]::NewLine)
-        $row = [string]::Join(" ", $rowArray)
-    }
-    $row >> $Path
+    $line = $javaScriptSerializer.Serialize($Result)
+    $line >> $Path
 }
 
-function Write-TextResults
+function Write-JsonResults
 {
     param(
         $TestRunId,
@@ -515,7 +499,7 @@ function Write-TextResults
     )
 
     $rows = $Results | % {
-        Get-TextResultRow $_
+       $javaScriptSerializer.Serialize($_)
     }
 
     $rows | Out-File $Path | Out-Null
@@ -637,33 +621,32 @@ function Write-HtmlResults
     <td class=`"{0}`">{4}</td>
     </tr>"
 
-    $pass = 0
-    $fail = 0
+    $passed = 0
+    $failed = 0
     $skipped = 0
 
     $rows = $Results | % {
-        $status = 'Passed'
-        if($_.Skipped) {
-            $status = 'Skipped'
+        if ($_.Status -eq 'Skipped') {
             $skipped++
         }
-        elseif($_.Error) {
-            $status = 'Failed'
-            $fail++
+        elseif ($_.Status -eq 'Failed') {
+            $failed++
         }
         else {
-            $pass++
+            $passed++
         }
 
+        $timeInSeconds = $_.TimeInMilliseconds / 1000.0
+
         [String]::Format($testTemplate,
-                         $status,
-                         [System.Net.WebUtility]::HtmlEncode($_.Test),
-                         [System.Net.WebUtility]::HtmlEncode($_.Error),
-                         $_.Time.TotalSeconds,
+                         $_.Status,
+                         [System.Net.WebUtility]::HtmlEncode($_.TestName),
+                         [System.Net.WebUtility]::HtmlEncode($_.Message),
+                         $timeInSeconds,
                          $_.Retried)
     }
 
-    [String]::Format($resultsTemplate, $TestRunId, (Split-Path $Path), $Results.Count, $pass, $fail, $skipped, [String]::Join("", $rows)) | Out-File $Path | Out-Null
+    [String]::Format($resultsTemplate, $TestRunId, (Split-Path $Path), $Results.Count, $passed, $failed, $skipped, [String]::Join("", $rows)) | Out-File $Path | Out-Null
 }
 
 function Get-PackageRepository
@@ -675,7 +658,7 @@ function Get-PackageRepository
 
     $componentModel = Get-VSComponentModel
     $repositoryProvider = $componentModel.GetService([NuGet.Protocol.Core.Types.ISourceRepositoryProvider])
-	$packageSource = New-Object -TypeName NuGet.Configuration.PackageSource -ArgumentList @([System.String]::$source)
+    $packageSource = New-Object -TypeName NuGet.Configuration.PackageSource -ArgumentList @([System.String]::$source)
     $repositoryProvider.CreateRepository($packageSource)
 }
 
