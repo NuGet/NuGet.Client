@@ -29,7 +29,7 @@ namespace NuGet.Packaging
         private readonly DateTime _unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories)
-            : this(path, propertyProvider, includeEmptyDirectories, false)
+            : this(path, propertyProvider, includeEmptyDirectories, deterministic: false)
         {
         }
 
@@ -39,7 +39,7 @@ namespace NuGet.Packaging
         }
 
         public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories)
-            : this(path, basePath, propertyProvider, includeEmptyDirectories, false)
+            : this(path, basePath, propertyProvider, includeEmptyDirectories, deterministic: false)
         {
         }
 
@@ -963,18 +963,11 @@ namespace NuGet.Packaging
         // Generate a relationship id for compatibility
         private string GenerateRelationshipId(string path)
         {
-            if (_deterministic)
+            using (var hashFunc = new Sha512HashFunction())
             {
-                using (var hashFunc = new Sha512HashFunction())
-                {
-                    var data = System.Text.Encoding.UTF8.GetBytes(path);
-                    hashFunc.Update(data, 0, data.Length);
-                    return "R" + ToHexString(hashFunc.GetHashBytes()).Substring(0, 16);
-                }
-            }
-            else
-            {
-                return "R" + Guid.NewGuid().ToString("N").Substring(0, 16);
+                var data = System.Text.Encoding.UTF8.GetBytes(path);
+                hashFunc.Update(data, 0, data.Length);
+                return "R" + ToHexString(hashFunc.GetHashBytes()).Substring(0, 16);
             }
         }
     }
