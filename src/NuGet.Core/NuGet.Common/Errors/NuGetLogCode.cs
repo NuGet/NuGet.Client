@@ -750,6 +750,11 @@ namespace NuGet.Common
         /// </summary>
         NU5125 = 5125,
 
+        ///<summary>
+        /// ProjectJsonPack_Deprecated
+        /// </summary>
+        NU5126 = 5126,
+
         /// <summary>
         /// Undefined package warning
         /// </summary>

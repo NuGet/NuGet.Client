@@ -843,6 +843,8 @@ namespace Proj1
                         Path.Combine("lib", "netstandard1.3", "proj1.dll")
                     },
                     files);
+
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj1"), r.Item2);
             }
         }
 
@@ -1440,6 +1442,9 @@ public class B
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Item2);
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
+
                 // Assert
                 var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
@@ -1779,6 +1784,9 @@ public class B
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Item2);
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
+
                 var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
@@ -1888,6 +1896,9 @@ public class B
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Item2);
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
+
                 var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);

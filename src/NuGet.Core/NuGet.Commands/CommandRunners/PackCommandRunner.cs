@@ -309,32 +309,6 @@ namespace NuGet.Commands
                 .Where(filePath => fileNames.Contains(Path.GetFileName(filePath)));
         }
 
-        private PackageBuilder CreatePackageBuilderFromProjectJson(string path, Func<string, string> propertyProvider)
-        {
-            // Set the version property if the flag is set
-            if (!String.IsNullOrEmpty(_packArgs.Version))
-            {
-                _packArgs.Properties["version"] = _packArgs.Version;
-            }
-
-            PackageBuilder builder = new PackageBuilder();
-
-            NuGetVersion version = null;
-            if (_packArgs.Version != null)
-            {
-                version = new NuGetVersion(_packArgs.Version);
-            }
-
-            var basePath = string.IsNullOrEmpty(_packArgs.BasePath) ? _packArgs.CurrentDirectory : _packArgs.BasePath;
-
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
-            {
-                LoadProjectJsonFile(builder, path, basePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, version, _packArgs.Suffix, propertyProvider);
-            }
-
-            return builder;
-        }
-
         public static bool ProcessProjectJsonFile(PackageBuilder builder, string basePath, string id, NuGetVersion version, string suffix, Func<string, string> propertyProvider)
         {
             if (basePath == null)
