@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -757,6 +756,1132 @@ namespace NuGet.Commands.Test
                     // Assert
                     Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
                     Assert.True(lockFile.Targets.Any(graph => graph.RuntimeIdentifier == "linux-x86"));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_BasicPackageDownloadRestoreAsync()
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""net45"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    },
+                    ""downloadDependencies"": [
+                       {""name"" : ""y"", ""version"" : ""[1.0.0, )""}
+                    ]
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                // set up project1
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec.RestoreMetadata.Sources = sources;
+                projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec);
+                dgFile.AddRestore(projectSpec.Name);
+                // set up the packages
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageX);
+
+                // set up package download
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageY);
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.True(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(1, lockFile.Libraries.Count); // Only X is written in the libraries section.
+                    Assert.Equal("x", lockFile.Targets.First().Libraries.First().Name);
+                    Assert.Equal(0, lockFile.LogMessages.Count);
+                    Assert.Equal("y", lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.First().Name);
+                    Assert.True(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "y", "1.0.0"))); // Y is installed
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_MultiplePackageDownloadRestoreAsync()
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""net45"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    },
+                    ""downloadDependencies"": [
+                       {""name"" : ""y"", ""version"" : ""[1.0.0]""},
+                       {""name"" : ""y"", ""version"" : ""[2.0.0]""}
+                    ]
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                // set up project1
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec.RestoreMetadata.Sources = sources;
+                projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec);
+                dgFile.AddRestore(projectSpec.Name);
+                // set up the packages
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                });
+
+                // set up package download
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                });
+
+                var packageY =
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "2.0.0"
+                });
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.True(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(1, lockFile.Libraries.Count); // Only X is written in the libraries section.
+                    Assert.Equal("x", lockFile.Targets.First().Libraries.First().Name);
+                    Assert.Equal(0, lockFile.LogMessages.Count);
+                    Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
+                    Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
+                    Assert.Equal("y", lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.First().Name);
+                    Assert.Equal("y", lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Last().Name);
+                    Assert.True(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "y", "1.0.0"))); // Y 1.0.0 is installed
+                    Assert.True(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "y", "2.0.0"))); // Y 2.0.0 is installed
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_PackageDownloadUnresolvedAsync()
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""net45"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    },
+                    ""downloadDependencies"": [
+                     { ""name"": ""y"", ""version"": ""[2.0.0]"" }
+                    ]
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                // set up project1
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec.RestoreMetadata.Sources = sources;
+                projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec);
+                dgFile.AddRestore(projectSpec.Name);
+                // set up the packages
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageX);
+
+                // set up package download
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageY);
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.False(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(1, lockFile.Libraries.Count); // Only X is written in the libraries section.
+                    Assert.Equal("x", lockFile.Targets.First().Libraries.First().Name);
+
+                    Assert.Equal(1, lockFile.LogMessages.Count);
+                    var logMessage = lockFile.LogMessages.First();
+                    Assert.Equal(LogLevel.Error, logMessage.Level);
+                    Assert.Equal(NuGetLogCode.NU1102, logMessage.Code);
+                    Assert.Equal("y", lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.First().Name);
+                    Assert.False(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "y", "1.0.0"))); // Y is not installed
+                }
+            }
+        }
+             [Fact]
+        public async Task RestoreRunner_PackageReferenceAndPackageDownloadBothLogErrors()
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""net45"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    },
+                    ""downloadDependencies"": [
+                     { ""name"": ""y"", ""version"": ""[2.0.0]"" }
+                    ]
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                // set up project1
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec.RestoreMetadata.Sources = sources;
+                projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec);
+                dgFile.AddRestore(projectSpec.Name);
+                // set up the packages
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.5.0"
+                };
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageX);
+
+                // set up package download
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageY);
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.False(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(1, lockFile.Libraries.Count); // Only X is written in the libraries section.
+                    Assert.Equal("x", lockFile.Targets.First().Libraries.First().Name);
+
+                    Assert.Equal(2, lockFile.LogMessages.Count);
+
+                    var logMessage = lockFile.LogMessages.First();
+                    Assert.Equal(LogLevel.Warning, logMessage.Level);
+                    Assert.Equal(NuGetLogCode.NU1603, logMessage.Code);
+                    Assert.Equal(1, logMessage.TargetGraphs.Count);
+
+                    var logMessageDD = lockFile.LogMessages.Last();
+                    Assert.Equal(LogLevel.Error, logMessageDD.Level);
+                    Assert.Equal(NuGetLogCode.NU1102, logMessageDD.Code);
+                    Assert.Equal(1, logMessageDD.TargetGraphs.Count);
+
+                    Assert.Equal("y", lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.First().Name);
+                    Assert.False(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "y", "1.0.0"))); // Y is not installed
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_MultiTfmPackageDownloadRestoreAsync()
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""net45"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    },
+                    ""downloadDependencies"": [
+                       {""name"" : ""y"", ""version"" : ""[1.0.0]""},
+                    ]
+                },
+                ""net46"": {
+                    ""downloadDependencies"": [
+                       {""name"" : ""z"", ""version"" : ""[1.0.0]""},
+                    ]
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                // set up project1
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec.RestoreMetadata.Sources = sources;
+                projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec);
+                dgFile.AddRestore(projectSpec.Name);
+                // set up the packages
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                });
+
+                // set up package download
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                });
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                });
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.True(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(1, lockFile.Libraries.Count); // Only X is written in the libraries section.
+                    Assert.Equal("x", lockFile.Targets.First().Libraries.First().Name);
+                    Assert.Equal(0, lockFile.LogMessages.Count);
+                    Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.Count);
+                    Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
+                    Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Count);
+
+                    Assert.Equal("y", lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.First().Name);
+                    Assert.Equal("z", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
+                    Assert.True(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "y", "1.0.0"))); // Y 1.0.0 is installed
+                    Assert.True(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "z", "1.0.0"))); // Z 1.0.0 is installed
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_MultiTfmPackageDownloadUnresolved_BothTfmsLogErrorsAsync()
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""net45"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    },
+                    ""downloadDependencies"": [
+                       {""name"" : ""y"", ""version"" : ""[1.0.0]""},
+                    ]
+                },
+                ""net46"": {
+                    ""downloadDependencies"": [
+                       {""name"" : ""y"", ""version"" : ""[1.0.0]""},
+                    ]
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                // set up project1
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec.RestoreMetadata.Sources = sources;
+                projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec);
+                dgFile.AddRestore(projectSpec.Name);
+                // set up the packages
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                });
+
+                // set up package download
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.5.0"
+                });
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.False(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(1, lockFile.Libraries.Count); // Only X is written in the libraries section.
+                    Assert.Equal("x", lockFile.Targets.First().Libraries.First().Name);
+
+
+                    Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.Count);
+                    Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
+                    Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Count);
+                    Assert.Equal("y", lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.First().Name);
+                    Assert.Equal("y", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
+
+                    Assert.Equal(1, lockFile.LogMessages.Count);
+
+                    var logMessage = lockFile.LogMessages.First();
+                    Assert.Equal(LogLevel.Error, logMessage.Level);
+                    Assert.Equal(NuGetLogCode.NU1102, logMessage.Code);
+                    Assert.Equal(2, logMessage.TargetGraphs.Count);
+
+                    Assert.Equal("y", lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.First().Name);
+                    Assert.False(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "y", "1.0.0"))); // Y is not installed
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_MultiTfmPackageDownloadRestore_OnlyMatchingPackagesDownloadedAsync()
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""net45"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    },
+                    ""downloadDependencies"": [
+                       {""name"" : ""y"", ""version"" : ""[1.0.0]""},
+                    ]
+                },
+                ""net46"": {
+                    ""downloadDependencies"": [
+                       {""name"" : ""z"", ""version"" : ""[1.0.0]""},
+                       {""name"" : ""f"", ""version"" : ""[2.0.0]""},
+                    ]
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                // set up project1
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec.RestoreMetadata.Sources = sources;
+                projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec);
+                dgFile.AddRestore(projectSpec.Name);
+                // set up the packages
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                });
+
+                // set up package download
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                });
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                });
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.False(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(1, lockFile.Libraries.Count); // Only X is written in the libraries section.
+                    Assert.Equal("x", lockFile.Targets.First().Libraries.First().Name);
+                    Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.Count);
+                    Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
+                    Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Count);
+                    Assert.Equal(1, lockFile.LogMessages.Count);
+
+                    var logMessage = lockFile.LogMessages.First();
+                    Assert.Equal(LogLevel.Error, logMessage.Level);
+                    Assert.Equal(NuGetLogCode.NU1101, logMessage.Code);
+                    Assert.Equal(1, logMessage.TargetGraphs.Count);
+
+                    Assert.Equal("y", lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.First().Name);
+                    Assert.Equal("f", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
+                    Assert.Equal("z", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Last().Name);
+                    Assert.True(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "y", "1.0.0"))); // Y 1.0.0 is installed
+                    Assert.True(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "z", "1.0.0"))); // Z 1.0.0 is installed
+                    Assert.False(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "f", "1.0.0"))); // F 1.0.0 is not installed
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_MultiTfmPDandPR_LogsWarningsAsync()
+        {
+            // The scenario here is having the same package be resolved for PD and PR download. If warnings are needed, they are raised for both PD and PR.
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""net45"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    },
+                },
+                ""net46"": {
+                    ""downloadDependencies"": [
+                       {""name"" : ""x"", ""version"" : ""[1.5.0]""},
+                    ]
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                // set up project1
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec.RestoreMetadata.Sources = sources;
+                projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec);
+                dgFile.AddRestore(projectSpec.Name);
+                // set up the packages
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.5.0"
+                });
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.True(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
+
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(1, lockFile.Libraries.Count);
+                    Assert.Equal("x", lockFile.Targets.First().Libraries.First().Name);
+                    Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.Count);
+                    Assert.Equal(0, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
+                    Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Count);
+                    Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
+
+                    Assert.Equal(1, lockFile.LogMessages.Count);
+                    var logMessage = lockFile.LogMessages.First();
+                    Assert.Equal(LogLevel.Warning, logMessage.Level);
+                    Assert.Equal(NuGetLogCode.NU1603, logMessage.Code); // bumped up version.
+                    Assert.Equal(1, logMessage.TargetGraphs.Count);
+                    Assert.True(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "x", "1.5.0"))); // x is installed
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_FrameworkReferenceIsWrittenToAssetsFile()
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""net45"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    },
+                    ""frameworkReferences"": [
+                        ""a""
+                    ]
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                // set up project1
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec.RestoreMetadata.Sources = sources;
+                projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec);
+                dgFile.AddRestore(projectSpec.Name);
+                // set up the packages
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageX);
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.True(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(1, lockFile.Libraries.Count); // Only X is written in the libraries section.
+                    Assert.Equal("x", lockFile.Targets.First().Libraries.First().Name);
+                    Assert.Equal(0, lockFile.LogMessages.Count);
+                    Assert.Equal("a", lockFile.PackageSpec.TargetFrameworks.First().FrameworkReferences.Single());
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_FrameworkReferenceIsProjectToPackageTransitive()
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""netcoreapp3.0"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                // set up project1
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec.RestoreMetadata.Sources = sources;
+                projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec);
+                dgFile.AddRestore(projectSpec.Name);
+                // set up the packages
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.UseDefaultRuntimeAssemblies = false;
+                packageX.AddFile("lib/netcoreapp3.0/packageX.dll");
+                packageX.FrameworkReferences.Add(NuGetFramework.Parse("netcoreapp3.0"), new string[] { "Microsoft.WindowsDesktop.App|WinForms" });
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY.Files.Clear();
+                packageY.UseDefaultRuntimeAssemblies = false;
+                packageY.AddFile("lib/netcoreapp3.0/packageY.dll");
+                packageY.FrameworkReferences.Add(NuGetFramework.Parse("netcoreapp3.0"), new string[] { "Microsoft.WindowsDesktop.App|WPF" });
+
+                packageX.Dependencies.Add(packageY);
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageX);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageY);
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    // Assert
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.True(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(2, lockFile.Libraries.Count);
+
+                    Assert.Equal(1, lockFile.Targets.Count);
+                    var xTarget = lockFile.Targets.Single().Libraries.First();
+                    var yTarget = lockFile.Targets.Single().Libraries.Last();
+                    Assert.Equal("x", xTarget.Name);
+                    Assert.Equal("y", yTarget.Name);
+                    Assert.Equal("Microsoft.WindowsDesktop.App|WinForms", xTarget.FrameworkReferences.Single());
+                    Assert.Equal("Microsoft.WindowsDesktop.App|WPF", yTarget.FrameworkReferences.Single());
+
+                    Assert.Equal(0, lockFile.LogMessages.Count);
+
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_FrameworkReferenceIsProjectToProjectTransitive()
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""netcoreapp3.0"": {
+                    
+                }
+              }
+            }";
+
+            var project2 = "project2";
+            var packageSpec2 = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""netcoreapp3.0"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    },
+                    ""frameworkReferences"": [
+                        ""Microsoft.WindowsDesktop.App|WPF""
+                    ]
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                var project2Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project2)); project2Folder.Create();
+
+                // set up project1
+                var projectSpec1 = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec1 = projectSpec1.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec1.RestoreMetadata.Sources = sources;
+                projectSpec1.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+
+                // set up project2
+                var projectSpec2 = JsonPackageSpecReader.GetPackageSpec(packageSpec2, project2, Path.Combine(project2Folder.FullName, "packageSpec.json"));
+                projectSpec2 = projectSpec2.EnsureRestoreMetadata();
+                projectSpec2.RestoreMetadata.Sources = sources;
+                projectSpec2.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+
+                // link the projects
+                projectSpec1
+                    .RestoreMetadata
+                    .TargetFrameworks.Single()
+                    .ProjectReferences
+                    .Add(new ProjectRestoreReference()
+                    {
+                        ProjectPath = projectSpec2.FilePath,
+                        ProjectUniqueName = projectSpec2.Name
+                    }
+                    );
+
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec1);
+                dgFile.AddProject(projectSpec2);
+                dgFile.AddRestore(projectSpec1.Name);
+                dgFile.AddRestore(projectSpec2.Name);
+
+                // set up the packages
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.UseDefaultRuntimeAssemblies = false;
+                packageX.AddFile("lib/netcoreapp3.0/packageX.dll");
+                packageX.FrameworkReferences.Add(NuGetFramework.Parse("netcoreapp3.0"), new string[] { "Microsoft.WindowsDesktop.App|WinForms" });
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageX);
+                var logger = new TestLogger();
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = logger,
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    Assert.True(summaries.All(e => e.Success), string.Join(Environment.NewLine, logger.Messages));
+
+                    // Assert project 2
+                    var assetsFilePath2 = Path.Combine(project2Folder.FullName, "project.assets.json");
+                    var targetsPath2 = Path.Combine(project2Folder.FullName, $"{project2}.csproj.nuget.g.targets");
+                    var propsPath2 = Path.Combine(project2Folder.FullName, $"{project2}.csproj.nuget.g.targets");
+
+                    Assert.True(File.Exists(assetsFilePath2), assetsFilePath2);
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath2, NullLogger.Instance);
+                    Assert.Equal(1, lockFile.Libraries.Count);
+
+                    Assert.Equal(1, lockFile.Targets.Count);
+                    var xTarget2 = lockFile.Targets.Single().Libraries.Single();
+                    Assert.Equal("x", xTarget2.Name);
+                    Assert.Equal("Microsoft.WindowsDesktop.App|WinForms", xTarget2.FrameworkReferences.Single());
+                    Assert.Equal(0, lockFile.LogMessages.Count);
+                    Assert.Equal("Microsoft.WindowsDesktop.App|WPF", lockFile.PackageSpec.TargetFrameworks.Single().FrameworkReferences.Single());
+                    Assert.True(File.Exists(targetsPath2));
+                    Assert.True(File.Exists(propsPath2));
+
+
+                    // Assert project 1
+                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
+                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                    Assert.Equal(2, lockFile.Libraries.Count);
+
+                    Assert.Equal(1, lockFile.Targets.Count);
+                    var xTarget = lockFile.Targets.Single().Libraries.First();
+                    var project2Target = lockFile.Targets.Single().Libraries.Last();
+                    Assert.Equal("x", xTarget.Name);
+                    Assert.Equal(project2, project2Target.Name);
+                    Assert.Equal("Microsoft.WindowsDesktop.App|WinForms", xTarget.FrameworkReferences.Single());
+                    Assert.Equal("Microsoft.WindowsDesktop.App|WPF", project2Target.FrameworkReferences.Single());
+                    Assert.Equal(0, lockFile.LogMessages.Count);
+                    Assert.True(File.Exists(targetsPath));
+                    Assert.True(File.Exists(propsPath));
                 }
             }
         }

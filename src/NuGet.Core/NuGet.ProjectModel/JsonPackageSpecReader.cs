@@ -13,6 +13,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
@@ -93,8 +94,6 @@ namespace NuGet.ProjectModel
                 }
                 catch (Exception ex)
                 {
-                    var lineInfo = (IJsonLineInfo)version;
-
                     throw FileFormatException.Create(ex, version, packageSpec.FilePath);
                 }
             }
@@ -772,7 +771,7 @@ namespace NuGet.ProjectModel
                 Dependencies = new List<LibraryDependency>(),
                 Imports = importFrameworks,
                 Warn = GetWarnSetting(properties),
-                AssetTargetFallback = assetTargetFallback
+                AssetTargetFallback = assetTargetFallback,
             };
 
             PopulateDependencies(
@@ -782,6 +781,11 @@ namespace NuGet.ProjectModel
                 "dependencies",
                 isGacOrFrameworkReference: false);
 
+            PopulateDownloadDependencies(
+                targetFrameworkInformation.DownloadDependencies,
+                properties,
+                packageSpec.FilePath);
+
             var frameworkAssemblies = new List<LibraryDependency>();
             PopulateDependencies(
                 packageSpec.FilePath,
@@ -790,11 +794,84 @@ namespace NuGet.ProjectModel
                 "frameworkAssemblies",
                 isGacOrFrameworkReference: true);
 
+            PopulateFrameworkReferences(
+                targetFrameworkInformation.FrameworkReferences,
+                properties,
+                "frameworkReferences"
+                );
             frameworkAssemblies.ForEach(d => targetFrameworkInformation.Dependencies.Add(d));
 
             packageSpec.TargetFrameworks.Add(targetFrameworkInformation);
 
             return true;
+        }
+
+        private static void PopulateFrameworkReferences(ISet<string> frameworkReferences, JObject properties, string frameworkReferenceName)
+        {
+            var frameworkRefProperty = properties[frameworkReferenceName];
+
+            if (frameworkRefProperty != null)
+            {
+                IEnumerable<string> frameworkRefArray;
+                if (TryGetStringEnumerableFromJArray(frameworkRefProperty, out frameworkRefArray))
+                {
+                    frameworkReferences.AddRange(frameworkRefArray);
+                }
+            }
+        }
+
+        private static void PopulateDownloadDependencies(IList<DownloadDependency> downloadDependencies, JObject properties, string packageSpecPath)
+        {
+            var downloadDependenciesProperty = properties["downloadDependencies"] as JArray;
+            if (downloadDependenciesProperty != null)
+            {
+                foreach (var dependency in downloadDependenciesProperty.Values<JToken>())
+                {
+                    if (dependency["name"] == null)
+                    {
+                        throw FileFormatException.Create(
+                            "Unable to resolve downloadDependency ''.",
+                            dependency,
+                            packageSpecPath);
+                    }
+                    var name = dependency["name"].Value<string>();
+
+                    string versionValue = null;
+
+                    var dependencyVersionToken = dependency["version"];
+                    if (dependencyVersionToken != null
+                        && dependencyVersionToken.Type == JTokenType.String)
+                    {
+                        versionValue = dependencyVersionToken.Value<string>();
+                    }
+
+                    VersionRange version = null;
+
+                    if (!string.IsNullOrEmpty(versionValue))
+                    {
+                        try
+                        {
+                            version = VersionRange.Parse(versionValue);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw FileFormatException.Create(
+                                ex,
+                                dependencyVersionToken,
+                                packageSpecPath);
+                        }
+                    }
+                    else
+                    {
+                        throw FileFormatException.Create(
+                                $"The version cannot be null or empty",
+                                dependencyVersionToken,
+                                packageSpecPath);
+                    }
+
+                    downloadDependencies.Add(new DownloadDependency(name, version));
+                }
+            }
         }
 
         private static List<NuGetFramework> GetImports(JObject properties, PackageSpec packageSpec)

@@ -211,6 +211,27 @@ namespace NuGet.Test.Utility
                     }
                 }
 
+                if (packageContext.FrameworkReferences.Any())
+                {
+                    var metadata = xml.Element(XName.Get("package")).Element(XName.Get("metadata"));
+                    var frameworkReferencesNode = new XElement(XName.Get("frameworkReferences"));
+
+                    foreach(var kvp in packageContext.FrameworkReferences)
+                    {
+                        var groupNode = new XElement(XName.Get("group"));
+                        groupNode.SetAttributeValue("targetFramework", kvp.Key.GetFrameworkString());
+                        frameworkReferencesNode.Add(groupNode);
+                        metadata.Add(frameworkReferencesNode);
+
+                        foreach (var frameworkReference in kvp.Value)
+                        {
+                            var node = new XElement(XName.Get("frameworkReference"));
+                            groupNode.Add(node);
+                            node.Add(new XAttribute(XName.Get("name"), frameworkReference));
+                        }
+                    }
+                }
+
                 if (packageContext.PackageTypes.Count > 0)
                 {
                     var metadata = xml.Element("package").Element("metadata");

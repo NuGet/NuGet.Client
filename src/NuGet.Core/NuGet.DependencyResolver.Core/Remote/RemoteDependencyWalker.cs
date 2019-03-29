@@ -91,7 +91,6 @@ namespace NuGet.DependencyResolver
                     libraryRange,
                     framework,
                     runtimeName,
-                    outerEdge,
                     _context,
                     CancellationToken.None)
             };

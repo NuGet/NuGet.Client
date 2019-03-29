@@ -25,7 +25,7 @@ namespace NuGet.Commands
     {
         // Clear keyword for properties.
         public static readonly string Clear = nameof(Clear);
-        private static readonly string[] _httpPrefixes = new string[] { "http:", "https:" };
+        private static readonly string[] HttpPrefixes = new string[] { "http:", "https:" };
         private const string DoubleSlash = "//";
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace NuGet.Commands
                 // Get base spec
                 if (restoreType == ProjectStyle.ProjectJson)
                 {
-                    result = GetUAPSpec(specItem);
+                    result = GetProjectJsonSpec(specItem);
                 }
                 else
                 {
@@ -227,8 +227,9 @@ namespace NuGet.Commands
                     || restoreType == ProjectStyle.DotnetCliTool
                     || restoreType == ProjectStyle.DotnetToolReference)
                 {
-                    AddFrameworkAssemblies(result, items);
                     AddPackageReferences(result, items);
+                    AddPackageDownloads(result, items);
+                    AddFrameworkReferences(result, items);
 
                     // Store the original framework strings for msbuild conditionals
                     foreach (var originalFramework in GetFrameworksStrings(specItem))
@@ -546,6 +547,20 @@ namespace NuGet.Commands
             return new Tuple<List<NuGetFramework>, ProjectRestoreReference>(frameworks, reference);
         }
 
+        private static bool AddDownloadDependencyIfNotExist(PackageSpec spec, NuGetFramework framework, DownloadDependency dependency)
+        {
+            var frameworkInfo = spec.GetTargetFramework(framework);
+
+            if (!frameworkInfo.DownloadDependencies.Contains(dependency))
+            {
+                frameworkInfo.DownloadDependencies.Add(dependency);
+
+                return true;
+            }
+            return false;
+        }
+
+
         private static bool AddDependencyIfNotExist(PackageSpec spec, LibraryDependency dependency)
         {
 
@@ -614,6 +629,29 @@ namespace NuGet.Commands
             }
         }
 
+        private static void AddPackageDownloads(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        {
+            foreach (var item in GetItemByType(items, "DownloadDependency"))
+            {
+
+                var id = item.GetProperty("Id");
+                var versionRange = GetVersionRange(item);
+                if(!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
+                }
+
+                var downloadDependency = new DownloadDependency(id, versionRange);
+                
+                var frameworks = GetFrameworks(item);
+
+                foreach (var framework in frameworks)
+                {
+                    AddDownloadDependencyIfNotExist(spec, framework, downloadDependency);
+                }
+            }
+        }
+
         private static void ApplyIncludeFlags(LibraryDependency dependency, IMSBuildItem item)
         {
             ApplyIncludeFlags(dependency, item.GetProperty("IncludeAssets"), item.GetProperty("ExcludeAssets"), item.GetProperty("PrivateAssets"));
@@ -633,33 +671,30 @@ namespace NuGet.Commands
             }
         }
 
-        private static void AddFrameworkAssemblies(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        private static void AddFrameworkReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)
         {
-            foreach (var item in GetItemByType(items, "FrameworkAssembly"))
+            foreach (var item in GetItemByType(items, "FrameworkReference"))
             {
-                var dependency = new LibraryDependency();
-
-                dependency.LibraryRange = new LibraryRange(
-                    name: item.GetProperty("Id"),
-                    versionRange: GetVersionRange(item),
-                    typeConstraint: LibraryDependencyTarget.Reference);
-
-                ApplyIncludeFlags(dependency, item);
-
+                var frameworkReference = item.GetProperty("Id");
                 var frameworks = GetFrameworks(item);
 
-                if (frameworks.Count == 0)
+                foreach (var framework in frameworks)
                 {
-                    AddDependencyIfNotExist(spec, dependency);
-                }
-                else
-                {
-                    foreach (var framework in frameworks)
-                    {
-                        AddDependencyIfNotExist(spec, framework, dependency);
-                    }
+                    AddDependencyIfNotExist(spec, framework, frameworkReference);
                 }
             }
+        }
+
+        private static bool AddDependencyIfNotExist(PackageSpec spec, NuGetFramework framework, string frameworkReference)
+        {
+            var frameworkInfo = spec.GetTargetFramework(framework);
+
+            if (!frameworkInfo.FrameworkReferences.Contains(frameworkReference))
+            {
+                frameworkInfo.FrameworkReferences.Add(frameworkReference);
+                return true;
+            }
+            return false;
         }
 
         private static VersionRange GetVersionRange(IMSBuildItem item)
@@ -674,7 +709,7 @@ namespace NuGet.Commands
             return VersionRange.All;
         }
 
-        private static PackageSpec GetUAPSpec(IMSBuildItem specItem)
+        private static PackageSpec GetProjectJsonSpec(IMSBuildItem specItem)
         {
             PackageSpec result;
             var projectPath = specItem.GetProperty("ProjectPath");
@@ -815,9 +850,9 @@ namespace NuGet.Commands
 
             if (result.IndexOf('/') >= -1 && result.IndexOf(DoubleSlash) == -1)
             {
-                for (var i = 0; i < _httpPrefixes.Length; i++)
+                for (var i = 0; i < HttpPrefixes.Length; i++)
                 {
-                    result = FixSourcePath(result, _httpPrefixes[i], DoubleSlash);
+                    result = FixSourcePath(result, HttpPrefixes[i], DoubleSlash);
                 }
 
                 // For non-windows machines use file:///

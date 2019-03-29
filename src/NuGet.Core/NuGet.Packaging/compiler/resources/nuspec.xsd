@@ -40,7 +40,18 @@
         </xs:sequence>
         <xs:attribute name="targetFramework" type="xs:string" use="optional" />
     </xs:complexType>
-    
+
+    <xs:complexType name="frameworkReference">
+      <xs:attribute name="name" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="frameworkReferenceGroup">
+      <xs:sequence>
+        <xs:element name="frameworkReference" minOccurs="0" maxOccurs="unbounded" type="frameworkReference" />
+      </xs:sequence>
+      <xs:attribute name="targetFramework" type="xs:string" use="required" />
+    </xs:complexType>
+  
     <xs:element name="package">
         <xs:complexType>
             <xs:sequence>
@@ -116,6 +127,13 @@
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
+                          <xs:element name="frameworkReferences" maxOccurs="1" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                  <xs:element name="group" minOccurs="0" maxOccurs="unbounded" type="frameworkReferenceGroup" />
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
                             <xs:element name="references" maxOccurs="1" minOccurs="0">
                                 <xs:complexType>
                                     <xs:sequence>

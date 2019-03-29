@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -12,7 +11,6 @@ using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
@@ -40,6 +38,32 @@ namespace NuGet.ProjectModel.Test
                                 ""autoReferenced"": true
                             }
                         }
+                    }
+                  }
+                }";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        [Fact]
+        public void RoundTripDownloadDependencies()
+        {
+            // Arrange
+            var json = @"{
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                                ""autoReferenced"": true
+                            }
+                        },
+                        ""downloadDependencies"": [
+                            {""name"" : ""a"", ""version"" : ""[1.0.0, )""},
+                            {""name"" : ""b"", ""version"" : ""[2.0.0, )""},
+                            {""name"" : ""b"", ""version"" : ""[2.0.0, )""}
+                        ]
                     }
                   }
                 }";
@@ -385,7 +409,15 @@ namespace NuGet.ProjectModel.Test
                             ""a"": {
                                 ""version"": ""[1.0.0, )"",
                             }
-                        }
+                        },
+                        ""downloadDependencies"": [
+                            {""name"" : ""c"", ""version"" : ""[2.0.0]""},
+                            {""name"" : ""d"", ""version"" : ""[2.0.0]""},
+                       ],
+                       ""frameworkReferences"" : [
+                            ""b"",
+                            ""a""
+                       ]
                     }
                   }
                 }";
@@ -400,7 +432,15 @@ namespace NuGet.ProjectModel.Test
                       ""dependencies"": {
                         ""a"": ""[1.0.0, )"",
                         ""b"": ""[1.0.0, )""
-                      }
+                      },
+                      ""downloadDependencies"": [
+                            {""name"" : ""c"", ""version"" : ""[2.0.0, 2.0.0]""},
+                            {""name"" : ""d"", ""version"" : ""[2.0.0, 2.0.0]""},
+                       ],
+                      ""frameworkReferences"" : [
+                          ""a"",
+                          ""b""
+                      ]
                     }
                   }
                 }";
@@ -424,7 +464,10 @@ namespace NuGet.ProjectModel.Test
                             ""a"": {
                                 ""version"": ""1.0.0"",
                             },
-                        }
+                        },
+                        ""downloadDependencies"":  [
+                            {""name"" : ""b"", ""version"" : ""[2.0.0]""},
+                       ]
                     }
                   }
                 }";
@@ -437,12 +480,40 @@ namespace NuGet.ProjectModel.Test
                     ""net46"": {
                       ""dependencies"": {
                         ""a"": ""[1.0.0, )""
-                      }
+                      },
+                      ""downloadDependencies"": [
+                            {""name"" : ""b"", ""version"" : ""[2.0.0, 2.0.0]""},
+                       ]
                     }
                   }
                 }";
             // Act & Assert
             VerifyPackageSpecWrite(json, expectedJson);
+        }
+
+        [Fact]
+        public void RoundTripFrameworkReferences()
+        {
+            // Arrange
+            var json = @"{
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                                ""autoReferenced"": true
+                            }
+                        },
+                        ""frameworkReferences"": [
+                            ""Microsoft.WindowsDesktop.App|WinForms"",
+                            ""Microsoft.WindowsDesktop.App|WPF""
+                        ]
+                    }
+                  }
+                }";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
         }
 
         private static string GetJsonString(PackageSpec packageSpec)

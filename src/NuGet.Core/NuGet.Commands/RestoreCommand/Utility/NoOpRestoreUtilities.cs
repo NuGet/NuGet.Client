@@ -10,6 +10,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 
 namespace NuGet.Commands
 {
@@ -140,8 +141,10 @@ namespace NuGet.Commands
                 request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingPackagesOnDisk, request.Project.Name));
                 return false;
             }
+
             return true;
         }
+
         /// <summary>
         /// Read out all the packages specified in the existing lock file and verify that they are in the cache
         /// </summary>
@@ -160,34 +163,45 @@ namespace NuGet.Commands
             {
                 var identity = new PackageIdentity(library.Name, library.Version);
 
-                // Each id/version only needs to be checked once
-                if (packagesChecked.Add(identity))
+                if(!IsPackageOnDisk(packagesChecked, pathResolvers, request.DependencyProviders.PackageFileCache, identity))
                 {
-                    var found = false;
+                    return false;
+                }
+            }
 
-                    //  Check each package folder. These need to match the order used for restore.
-                    foreach (var resolver in pathResolvers)
+            foreach (var downloadDependency in request.Project.TargetFrameworks.SelectMany(e => e.DownloadDependencies))
+            {
+                //TODO: https://github.com/NuGet/Home/issues/7709 - only exact versions are currently supported. The check needs to be updated when version ranges are implemented. 
+                var identity = new PackageIdentity(downloadDependency.Name, downloadDependency.VersionRange.MinVersion);
+
+                if (!IsPackageOnDisk(packagesChecked, pathResolvers, request.DependencyProviders.PackageFileCache, identity))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsPackageOnDisk(ISet<PackageIdentity> packagesChecked, IEnumerable<VersionFolderPathResolver> pathResolvers, LocalPackageFileCache packageFileCache, PackageIdentity identity)
+        {
+            // Each id/version only needs to be checked once
+            if (packagesChecked.Add(identity))
+            {
+                //  Check each package folder. These need to match the order used for restore.
+                foreach (var resolver in pathResolvers)
+                {
+                    // Verify the SHA for each package
+                    var hashPath = resolver.GetHashPath(identity.Id, identity.Version);
+                    var nupkgMetadataPath = resolver.GetNupkgMetadataPath(identity.Id, identity.Version);
+
+                    if (packageFileCache.Sha512Exists(hashPath) ||
+                        packageFileCache.Sha512Exists(nupkgMetadataPath))
                     {
-                        // Verify the SHA for each package
-                        var hashPath = resolver.GetHashPath(library.Name, library.Version);
-                        var nupkgMetadataPath = resolver.GetNupkgMetadataPath(library.Name, library.Version);
-
-                        if (request.DependencyProviders.PackageFileCache.Sha512Exists(hashPath) ||
-                            request.DependencyProviders.PackageFileCache.Sha512Exists(nupkgMetadataPath))
-                        {
-                            found = true;
-
-                            // Skip checking the rest of the package folders
-                            break;
-                        }
-                    }
-
-                    if (!found)
-                    {
-                        // A package is missing
-                        return false;
+                        return true;
                     }
                 }
+                return false;
             }
             return true;
         }
@@ -239,7 +253,7 @@ namespace NuGet.Commands
         /// <param name="log">logger</param>
         internal static void PersistDGSpecFile(DependencyGraphSpec spec, string dgPath, ILogger log)
         {
-            DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(dgPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(dgPath));
             log.LogVerbose($"Persisting no-op dg to {dgPath}");
             spec.Save(dgPath);
         }

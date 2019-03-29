@@ -842,6 +842,8 @@ namespace Proj1
                         Path.Combine("lib", "netstandard1.3", "proj1.dll")
                     },
                     files);
+
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj1"), r.Item2);
             }
         }
 
@@ -1439,6 +1441,9 @@ public class B
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Item2);
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
+
                 // Assert
                 var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
@@ -1778,6 +1783,9 @@ public class B
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Item2);
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
+
                 var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
@@ -1887,6 +1895,9 @@ public class B
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Item2);
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
+
                 var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
@@ -5349,6 +5360,148 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             Util.TestCommandInvalidArguments("pack a.nuspec b.nuspec");
         }
 
+        public void PackCommand_PackageFromNuspecWithFrameworkReferences_MultiTargeting()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0.2</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <frameworkReferences>
+        <group targetFramework="".NETCoreApp3.0"">
+            <frameworkReference name=""Microsoft.WindowsDesktop.App|WPF""/>
+        </group>
+        <group targetFramework="".NETCoreApp3.1"">
+            <frameworkReference name=""Microsoft.WindowsDesktop.App|WinForms""/>
+        </group>
+    </frameworkReferences>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "frameworkReferences");
+                    var actual = node.ToString().Replace("\r\n", "\n");
+
+                    Assert.Equal(
+                        @"<frameworkReferences xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">
+  <group targetFramework="".NETCoreApp3.0"">
+    <frameworkReference name=""Microsoft.WindowsDesktop.App|WPF"" />
+  </group>
+  <group targetFramework="".NETCoreApp3.1"">
+    <frameworkReference name=""Microsoft.WindowsDesktop.App|WinForms"" />
+  </group>
+</frameworkReferences>".Replace("\r\n", "\n"), actual);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackageFromNuspecWithFrameworkReferences_WithDuplicateEntries()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0.2</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <frameworkReferences>
+        <group targetFramework="".NETCoreApp3.0"">
+            <frameworkReference name=""Microsoft.WindowsDesktop.App|WPF""/>
+            <frameworkReference name=""Microsoft.WindowsDesktop.App|wpf""/>
+        </group>
+    </frameworkReferences>
+    <dependencies>
+        <group targetFramework="".NETCoreApp3.0"">
+            <dependency id=""packageA"" version=""1.0.0"" />
+            <dependency id=""packageB"" version=""1.0.0"" />
+            <dependency id=""packageb"" version=""1.0.0"" />
+        </group>
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "frameworkReferences");
+                    var actual = node.ToString().Replace("\r\n", "\n");
+
+                    Assert.Equal(
+                        @"<frameworkReferences xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <group targetFramework="".NETCoreApp3.0"">
+    <frameworkReference name=""Microsoft.WindowsDesktop.App|WPF"" />
+  </group>
+</frameworkReferences>".Replace("\r\n", "\n"), actual);
+
+                    node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "dependencies");
+
+                    actual = node.ToString().Replace("\r\n", "\n");
+
+                    Assert.Equal(
+                        @"<dependencies xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <group targetFramework="".NETCoreApp3.0"">
+    <dependency id=""packageA"" version=""1.0.0"" />
+    <dependency id=""packageB"" version=""1.0.0"" />
+  </group>
+</dependencies>".Replace("\r\n", "\n"), actual);
+                }
+            }
+        }
 
         private class PackageDepencyComparer : IEqualityComparer<PackageDependency>
         {

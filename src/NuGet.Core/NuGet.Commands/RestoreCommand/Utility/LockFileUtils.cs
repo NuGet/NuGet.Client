@@ -362,6 +362,14 @@ namespace NuGet.Commands
                     }
                 }
             }
+
+            // Related to: FrameworkReference item, added first in .NET Core 3.0
+            var frameworkRef = nuspec.GetFrameworkRefGroups().GetNearest(framework);
+
+            if (frameworkRef != null)
+            {
+                lockFileLib.FrameworkReferences.AddRange(frameworkRef.Items);
+            }
         }
 
         /// <summary>
@@ -575,6 +583,15 @@ namespace NuGet.Commands
                 out frameworkAssembliesObject))
             {
                 projectLib.FrameworkAssemblies.AddRange((List<string>)frameworkAssembliesObject);
+            }
+
+            // Add frameworkReferences for projects
+            object frameworkReferencesObject;
+            if (localMatch.LocalLibrary.Items.TryGetValue(
+                KnownLibraryProperties.FrameworkReferences,
+                out frameworkReferencesObject))
+            {
+                projectLib.FrameworkReferences.AddRange((IEnumerable<string>)frameworkReferencesObject);
             }
 
             // Exclude items

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,6 +27,7 @@ namespace NuGet.Protocol
         private readonly string _licenseUrl;
         private readonly string _projectUrl;
         private readonly string _reportAbuseUrl;
+        private readonly string _galleryDetailsUrl;
         private readonly string _tags;
         private readonly string _downloadCount;
         private readonly bool _requireLicenseAcceptance;
@@ -41,7 +42,7 @@ namespace NuGet.Protocol
         private const string NullString = "null";
 
         public V2FeedPackageInfo(PackageIdentity identity, string title, string summary, string description, IEnumerable<string> authors, IEnumerable<string> owners,
-            string iconUrl, string licenseUrl, string projectUrl, string reportAbuseUrl,
+            string iconUrl, string licenseUrl, string projectUrl, string reportAbuseUrl, string galleryDetailsUrl,
             string tags, DateTimeOffset? created, DateTimeOffset? lastEdited, DateTimeOffset? published, string dependencies, bool requireLicenseAccept, string downloadUrl, string downloadCount,
             string packageHash, string packageHashAlgorithm, NuGetVersion minClientVersion)
             : base(identity.Id, identity.Version)
@@ -54,6 +55,7 @@ namespace NuGet.Protocol
             _licenseUrl = licenseUrl;
             _projectUrl = projectUrl;
             _reportAbuseUrl = reportAbuseUrl;
+            _galleryDetailsUrl = galleryDetailsUrl;
             _description = description;
             _summary = summary;
             _tags = tags;
@@ -147,6 +149,14 @@ namespace NuGet.Protocol
             get
             {
                 return _reportAbuseUrl;
+            }
+        }
+
+        public string GalleryDetailsUrl
+        {
+            get
+            {
+                return _galleryDetailsUrl;
             }
         }
 
