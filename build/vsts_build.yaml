@@ -955,3 +955,20 @@ phases:
         . $(Build.Repository.LocalPath)\\scripts\\e2etests\\VSUtils.ps1
         KillRunningInstancesOfVS
     condition: "always()"
+<<<<<<< HEAD
+=======
+
+- phase: Automatic_Reviews
+  queue:
+    name: VSEng-MicroBuildVS2017
+    timeoutInMinutes: 60
+
+  steps:
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+    displayName: 'Wording Automatic Review'
+    inputs:
+      targetType: F
+      SOMEnabled: true
+      uploadToSOM: true
+      workspaceId: 'ce576670-f1b4-4c3d-b150-4bbfa665e203'
+>>>>>>> Wording review from CI
