@@ -560,7 +560,6 @@ namespace NuGet.CommandLine
                 string fullPath = item.GetMetadataValue("FullPath");
                 if (!string.IsNullOrEmpty(fullPath) &&
                     !NuspecFileExists(fullPath) &&
-                    !File.Exists(ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(fullPath), Path.GetFileName(fullPath))) &&
                     alreadyAppliedProjects.GetLoadedProjects(fullPath).Count == 0)
                 {
                     dynamic project = Activator.CreateInstance(
@@ -664,7 +663,7 @@ namespace NuGet.CommandLine
                                 null,
                                 projectCollection);
 
-                        if (NuspecFileExists(fullPath) || File.Exists(ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(fullPath), Path.GetFileName(fullPath))))
+                        if (NuspecFileExists(fullPath))
                         {
                             var dependency = CreateDependencyFromProject(referencedProject, dependencies);
                             dependencies[dependency.Id] = dependency;
@@ -676,11 +675,6 @@ namespace NuGet.CommandLine
                     }
                 }
             }
-        }
-
-        private bool ProcessJsonFile(PackageBuilder builder, string basePath, string id)
-        {
-            return ProcessProjectJsonFile(builder, basePath, id, null, null, GetPropertyValue);
         }
 
         // Creates a package dependency from the given project, which has a corresponding
@@ -701,10 +695,7 @@ namespace NuGet.CommandLine
 
                 projectFactory.InitializeProperties(builder);
 
-                if (!projectFactory.ProcessJsonFile(builder, project.DirectoryPath, null))
-                {
-                    projectFactory.ProcessNuspec(builder, null);
-                }
+                projectFactory.ProcessNuspec(builder, null);
 
                 VersionRange versionRange = null;
                 if (dependencies.ContainsKey(builder.Id))
@@ -740,7 +731,7 @@ namespace NuGet.CommandLine
         {
             // If building an xproj, then TargetPath points to the folder where the framework folders will be
             // instead of to a single dll. Skip trying to ExtractMetadata from the dll and instead
-            // use only metadata from the project and json file.
+            // use only metadata from the project file.
             if (!Directory.Exists(TargetPath))
             {
                 // If building a project targeting netstandard, asssembly metadata extraction fails
@@ -895,10 +886,10 @@ namespace NuGet.CommandLine
             builder.DependencyGroups.Clear();
 
             // REVIEW: IS NuGetFramework.AnyFramework correct?
-            builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, new HashSet<Packaging.Core.PackageDependency>(dependencies.Values)));
+            builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, new HashSet<PackageDependency>(dependencies.Values)));
         }
 
-        private bool FindDependency(PackageIdentity projectPackage, IEnumerable<Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
+        private bool FindDependency(PackageIdentity projectPackage, IEnumerable<Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
         {
             // returns true if the dependency should be added to the package
             // This happens if the dependency is not a dependency of a dependecy
@@ -1336,78 +1327,6 @@ namespace NuGet.CommandLine
 
             // Otherwise the file is probably a shortcut so just take the file name
             return Path.GetFileName(fullPath);
-        }
-
-        // Copied from PackCommandRunner
-        public static bool ProcessProjectJsonFile(PackageBuilder builder, string basePath, string id, NuGetVersion version, string suffix, Func<string, string> propertyProvider)
-        {
-            if (basePath == null)
-            {
-                return false;
-            }
-
-            string path = ProjectJsonPathUtilities.GetProjectConfigPath(basePath, Path.GetFileName(basePath));
-            if (File.Exists(path))
-            {
-                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
-                {
-                    LoadProjectJsonFile(builder, path, basePath, id, stream, version, suffix, propertyProvider);
-                }
-                return true;
-            }
-
-            return false;
-        }
-
-        private static void LoadProjectJsonFile(PackageBuilder builder, string path, string basePath, string id, Stream stream, NuGetVersion version, string suffix, Func<string, string> propertyProvider)
-        {
-            var spec = JsonPackageSpecReader.GetPackageSpec(stream, id, path, suffix);
-
-            if (id == null)
-            {
-                builder.Id = Path.GetFileName(basePath);
-            }
-            else
-            {
-                builder.Id = id;
-            }
-            if (version != null)
-            {
-                builder.Version = version;
-                builder.HasSnapshotVersion = false;
-            }
-            else if (!spec.IsDefaultVersion)
-            {
-                builder.Version = spec.Version;
-
-                if (suffix != null)
-                {
-                    builder.Version = new NuGetVersion(builder.Version.Major, builder.Version.Minor, builder.Version.Patch, builder.Version.Revision, suffix, null);
-                }
-            }
-
-            if (spec.TargetFrameworks.Any())
-            {
-                foreach (var framework in spec.TargetFrameworks)
-                {
-                    if (framework.FrameworkName.IsUnsupported)
-                    {
-                        throw new PackagingException(NuGetLogCode.NU5003, String.Format(CultureInfo.CurrentCulture, "TODO NK Fix me - Invalid target framework", framework.FrameworkName));
-                    }
-
-                    builder.TargetFrameworks.Add(framework.FrameworkName);
-                    PackCommandRunner.AddDependencyGroups(framework.Dependencies.Concat(spec.Dependencies), framework.FrameworkName, builder);
-                }
-            }
-            else
-            {
-                if (spec.Dependencies.Any())
-                {
-                    PackCommandRunner.AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder);
-                }
-            }
-
-            builder.PackageTypes = new List<PackageType>();
         }
 
         private class ReverseTransformFormFile : Packaging.IPackageFile

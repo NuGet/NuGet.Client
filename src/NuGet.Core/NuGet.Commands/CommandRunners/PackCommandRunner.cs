@@ -36,7 +36,6 @@ namespace NuGet.Commands
             ".nproj",
             ".btproj",
             ".dxjsproj",
-            ".json"
         };
 
         private static readonly string[] _defaultExcludes = new[] {
@@ -837,26 +836,16 @@ namespace NuGet.Commands
 
         public static string GetInputFile(PackArgs packArgs)
         {
-            IEnumerable<string> files = packArgs.Arguments != null && packArgs.Arguments.Any() ? packArgs.Arguments : Directory.GetFiles(packArgs.CurrentDirectory);
+            var files = packArgs.Arguments != null && packArgs.Arguments.Any() ? packArgs.Arguments : Directory.GetFiles(packArgs.CurrentDirectory);
 
-            return GetInputFile(packArgs, files);
-        }
-
-        internal static string GetInputFile(PackArgs packArgs, IEnumerable<string> files)
-        {
             if (files.Count() == 1 && Directory.Exists(files.First()))
             {
-                string first = files.First();
+                var first = files.First();
                 files = Directory.GetFiles(first);
             }
 
             var candidates = files.Where(file => _allowedExtensions.Contains(Path.GetExtension(file))).ToList();
             string result;
-
-            candidates.RemoveAll(ext => ext.EndsWith(".lock.json", StringComparison.OrdinalIgnoreCase) ||
-                                    (ext.EndsWith(".json", StringComparison.OrdinalIgnoreCase) && 
-                                    !Path.GetFileName(ext).Equals(ProjectJsonPathUtilities.ProjectConfigFileName, StringComparison.OrdinalIgnoreCase) &&
-                                    !ext.EndsWith(ProjectJsonPathUtilities.ProjectConfigFileEnding, StringComparison.OrdinalIgnoreCase)));
 
             if (!candidates.Any())
             {
