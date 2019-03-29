@@ -9007,7 +9007,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project.json pack is deprecated. Please consider migrating &apos;{0}&apos; to PackageReference and using the pack targets..
+        ///   Looks up a localized string similar to `project.json` pack is deprecated. Please consider migrating &apos;{0}&apos; to `PackageReference` and using the pack targets..
         /// </summary>
         public static string ProjectJsonPack_Deprecated {
             get {
