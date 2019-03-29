@@ -317,7 +317,7 @@ namespace NuGet.Commands
                 _packArgs.Properties["version"] = _packArgs.Version;
             }
 
-            PackageBuilder builder = new PackageBuilder(false, _packArgs.Deterministic);
+            PackageBuilder builder = new PackageBuilder(includeEmptyDirectories: false, _packArgs.Deterministic);
 
             NuGetVersion version = null;
             if (_packArgs.Version != null)
