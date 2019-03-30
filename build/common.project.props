@@ -43,6 +43,7 @@
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
     <BlobPublishTargetsPath>$(SolutionPackagesFolder)Microsoft.DotNet.Build.Tasks.Feed.2.1.0-prerelease-02419-02\build\Microsoft.DotNet.Build.Tasks.Feed.targets</BlobPublishTargetsPath>
     <NoWarn>$(NoWarn);NU5105</NoWarn>
+    <!-- These cause a NU5104 warning. When upgrading to a stable version of this package, remove the above warnings from the respective projects -->
     <VSServicesVersion>16.144.1-preview</VSServicesVersion>
     <VSComponentsVersion>16.0.189-g83e7c53a57</VSComponentsVersion>
     <SystemPackagesVersion>4.3.0</SystemPackagesVersion>
