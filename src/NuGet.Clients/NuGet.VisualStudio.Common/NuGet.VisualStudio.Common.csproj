@@ -8,10 +8,8 @@
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <RootNamespace>NuGet.VisualStudio</RootNamespace>
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
