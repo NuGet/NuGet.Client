@@ -707,7 +707,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                     Assert.False(result.Success);
                     Assert.Contains(_timestampUnsupportedHashAlgorithmCode, result.AllOutput);
-                    Assert.Contains("The timestamp response has an unsupported digest algorithm (SHA1). The following algorithms are supported: SHA256, SHA384, SHA512.", result.AllOutput);
+                    Assert.Contains("The timestamp signature has an unsupported digest algorithm (SHA1). The following algorithms are supported: SHA256, SHA384, SHA512.", result.AllOutput);
 
                     var resultingFile = File.ReadAllBytes(packageFile.FullName);
                     Assert.Equal(resultingFile, originalFile);
