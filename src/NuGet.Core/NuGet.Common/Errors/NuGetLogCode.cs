@@ -366,7 +366,7 @@ namespace NuGet.Common
         NU3023 = 3023,
 
         /// <summary>
-        /// The timestamp signature has an unsupported signature algorithm.
+        /// The timestamp signature has an unsupported digest algorithm.
         /// </summary>
         NU3024 = 3024,
 
