@@ -64,7 +64,7 @@ namespace NuGet.ProjectModel
                 }
 
                 var directDependencies = target.Dependencies.Where(dep => dep.Type == PackageDependencyType.Direct);
-
+                // This does not account for the exact count. It makes sure every dependencies element exists in the lock file element. 
                 if (HasProjectDependencyChanged(framework.Dependencies, directDependencies))
                 {
                     // lock file is out of sync
@@ -150,7 +150,12 @@ namespace NuGet.ProjectModel
 
         private static bool HasProjectDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<LockFileDependency> lockFileDependencies)
         {
-            foreach (var dependency in newDependencies.Where(dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package))
+            // ordered equals check
+            var newPackageDependencies = newDependencies.Where(dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package);
+
+            // TODO NK: Write an ordered equals, that accounts for null maybe?
+
+            foreach (var dependency in newPackageDependencies)
             {
                 var lockFileDependency = lockFileDependencies.FirstOrDefault(d => StringComparer.OrdinalIgnoreCase.Equals(d.Id, dependency.Name));
 
