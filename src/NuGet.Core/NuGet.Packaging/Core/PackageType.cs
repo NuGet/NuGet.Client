@@ -19,6 +19,8 @@ namespace NuGet.Packaging.Core
         public static readonly PackageType SymbolsPackage = new PackageType("SymbolsPackage", version: EmptyVersion);
         public static readonly PackageType DotnetPlatform = new PackageType("DotnetPlatform", version: EmptyVersion);
 
+        public static StringComparer PackageTypeNameComparer = StringComparer.OrdinalIgnoreCase;
+
         public PackageType(string name, Version version)
         {
             if (string.IsNullOrEmpty(name))
@@ -100,7 +102,7 @@ namespace NuGet.Packaging.Core
                 return 0;
             }
 
-            var res = StringComparer.OrdinalIgnoreCase.Compare(Name, other.Name);
+            var res = PackageTypeNameComparer.Compare(Name, other.Name);
 
             if (res != 0)
             {
