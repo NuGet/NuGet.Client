@@ -150,6 +150,17 @@ namespace NuGet.Commands
                     await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1202, issue, graph));
                 }
 
+                if (!IsPackageTypeCompatible(compatibilityData))
+                {
+                    var issue = CompatibilityIssue.IncompatiblePackageType(
+                        new PackageIdentity(node.Key.Name, node.Key.Version),
+                        graph.Framework,
+                        graph.RuntimeIdentifier);
+
+                    issues.Add(issue);
+                    await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1213, issue, graph));
+                }
+
                 await VerifyDotnetToolCompatibilityChecks(compatibilityData, node, graph, issues);
 
                 // Check for matching ref/libs if we're checking a runtime-specific graph
@@ -326,6 +337,16 @@ namespace NuGet.Commands
                 !compatibilityData.Files.Any(p =>
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
                     || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase));                       // No assemblies at all (for any TxM)
+        }
+
+        /// <summary>
+        /// Whether a package has an incompatible package type. Currently, only 1 package type is incompatible in every project graph and that's DotnetPlatform.
+        /// </summary>
+        /// <param name="compatibilityData"></param>
+        private bool IsPackageTypeCompatible(CompatibilityData compatibilityData)
+        {
+            // A package is compatible if it is not DotnetPlatform package type
+            return !compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetPlatform);
         }
 
         private static HashSet<FrameworkRuntimePair> GetAvailableFrameworkRuntimePairs(CompatibilityData compatibilityData, RestoreTargetGraph graph)

@@ -17,6 +17,7 @@ namespace NuGet.Packaging.Core
         public static readonly PackageType Dependency = new PackageType("Dependency", version: EmptyVersion);
         public static readonly PackageType DotnetTool = new PackageType("DotnetTool", version: EmptyVersion);
         public static readonly PackageType SymbolsPackage = new PackageType("SymbolsPackage", version: EmptyVersion);
+        public static readonly PackageType DotnetPlatform = new PackageType("DotnetPlatform", version: EmptyVersion);
 
         public PackageType(string name, Version version)
         {
@@ -25,13 +26,8 @@ namespace NuGet.Packaging.Core
                 throw new ArgumentException(Strings.StringCannotBeNullOrEmpty, nameof(name));
             }
 
-            if (version == null)
-            {
-                throw new ArgumentNullException(nameof(version));
-            }
-
             Name = name;
-            Version = version;
+            Version = version ?? throw new ArgumentNullException(nameof(version));
         }
 
 
@@ -112,6 +108,11 @@ namespace NuGet.Packaging.Core
             }
 
             return Version.CompareTo(other.Version);
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} {Version}";
         }
     }
 }
