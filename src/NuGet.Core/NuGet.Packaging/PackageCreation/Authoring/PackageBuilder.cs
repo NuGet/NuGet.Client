@@ -26,7 +26,7 @@ namespace NuGet.Packaging
         internal const string ManifestRelationType = "manifest";
         private readonly bool _includeEmptyDirectories;
         private readonly bool _deterministic;
-        private readonly DateTime _unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime _unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(path, propertyProvider, includeEmptyDirectories, deterministic: false)
@@ -967,7 +967,9 @@ namespace NuGet.Packaging
             {
                 var data = System.Text.Encoding.UTF8.GetBytes(path);
                 hashFunc.Update(data, 0, data.Length);
-                return "R" + ToHexString(hashFunc.GetHashBytes()).Substring(0, 16);
+                var hash = hashFunc.GetHashBytes();
+                var hex = ToHexString(hash);
+                return "R" + hex.Substring(0, 16);
             }
         }
     }
