@@ -133,7 +133,7 @@ namespace NuGet.Packaging.Core
         /// for comparison. If true is specified, the fremeworkreference nodes must have the same
         /// namespace as the metadata node.</param>
         /// <returns></returns>
-        internal static IEnumerable<FrameworkSpecificGroup> GetFrameworkReferenceGroups(XElement metadataNode, IFrameworkNameProvider frameworkProvider, bool useMetadataNamespace)
+        internal static IEnumerable<FrameworkReferenceGroup> GetFrameworkReferenceGroups(XElement metadataNode, IFrameworkNameProvider frameworkProvider, bool useMetadataNamespace)
         {
             var ns = useMetadataNamespace ? metadataNode.GetDefaultNamespace().NamespaceName : null;
             IEnumerable<XElement> frameworkReferenceGroups;
@@ -162,7 +162,7 @@ namespace NuGet.Packaging.Core
                 var framework = NuGetFramework.Parse(groupFramework, frameworkProvider);
                 var frameworkRefs = GetFrameworkReferences(frameworkReferences);
 
-                yield return new FrameworkSpecificGroup(framework, frameworkRefs);
+                yield return new FrameworkReferenceGroup(framework, frameworkRefs.Select(e => new FrameworkReference(e)));
             }
         }
 

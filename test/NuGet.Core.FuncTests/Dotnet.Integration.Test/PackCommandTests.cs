@@ -3859,12 +3859,12 @@ namespace ClassLibrary
                         {
                             if (frameworkRef.Value)
                             {
-                                Assert.True(frameworkSpecificGroup?.Items.Contains(frameworkRef.Key));
+                                Assert.True(frameworkSpecificGroup?.FrameworkReferences.Select(e => e.Name).Contains(frameworkRef.Key));
                             }
                             else
                             {
 
-                                Assert.False(frameworkSpecificGroup == null ? false : frameworkSpecificGroup.Items.Contains(frameworkRef.Key));
+                                Assert.False(frameworkSpecificGroup == null ? false : frameworkSpecificGroup.FrameworkReferences.Select(e => e.Name).Contains(frameworkRef.Key));
                             }
                         }
                     }

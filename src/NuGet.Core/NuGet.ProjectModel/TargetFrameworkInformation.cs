@@ -41,9 +41,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// A set of unique FrameworkReferences
         /// </summary>
-        public ISet<string> FrameworkReferences { get; } = new HashSet<string>(FrameworkReferenceComparer);
-
-        public static StringComparer FrameworkReferenceComparer = StringComparer.OrdinalIgnoreCase;
+        public ISet<string> FrameworkReferences { get; } = new HashSet<string>(FrameworkReference.FrameworkReferenceNameComparer);
 
         public override string ToString()
         {

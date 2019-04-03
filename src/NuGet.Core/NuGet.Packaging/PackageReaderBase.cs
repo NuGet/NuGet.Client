@@ -195,7 +195,7 @@ namespace NuGet.Packaging
 
         public virtual IEnumerable<FrameworkSpecificGroup> GetFrameworkItems()
         {
-            return NuspecReader.GetFrameworkReferenceGroups();
+            return NuspecReader.GetFrameworkAssemblyGroups();
         }
 
         public virtual IEnumerable<FrameworkSpecificGroup> GetBuildItems()

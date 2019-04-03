@@ -196,9 +196,18 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Framework reference groups
+        /// Framework assembly groups
         /// </summary>
+        [Obsolete("GetFrameworkReferenceGroups() is deprecated. Please use GetFrameworkAssemblyGroups() instead.")]
         public IEnumerable<FrameworkSpecificGroup> GetFrameworkReferenceGroups()
+        {
+            return GetFrameworkAssemblyGroups();
+        }
+
+        /// <summary>
+        /// Framework assembly groups
+        /// </summary>
+        public IEnumerable<FrameworkSpecificGroup> GetFrameworkAssemblyGroups()
         {
             var results = new List<FrameworkSpecificGroup>();
 
@@ -557,7 +566,7 @@ namespace NuGet.Packaging
         /// <summary>
         /// Read package dependencies for all frameworks
         /// </summary>
-        public IEnumerable<FrameworkSpecificGroup> GetFrameworkRefGroups()
+        public IEnumerable<FrameworkReferenceGroup> GetFrameworkRefGroups()
         {
             return NuspecUtility.GetFrameworkReferenceGroups(MetadataNode, _frameworkProvider, useMetadataNamespace : true);
         }
