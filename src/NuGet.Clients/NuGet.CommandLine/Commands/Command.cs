@@ -151,7 +151,7 @@ namespace NuGet.CommandLine
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder(CommandLineConstants.UserAgent));
 
                 OutputNuGetVersion();
-                ExecuteCommandAsync().Wait();
+                ExecuteCommandAsync().GetAwaiter().GetResult();
             }
         }
 

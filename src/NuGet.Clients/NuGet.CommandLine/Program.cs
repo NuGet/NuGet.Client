@@ -101,7 +101,6 @@ namespace NuGet.CommandLine
 
             var console = new Console();
             var fileSystem = new CoreV2.NuGet.PhysicalFileSystem(workingDirectory);
-            var logStackAsError = console.Verbosity == Verbosity.Detailed;
 
             try
             {
@@ -123,7 +122,12 @@ namespace NuGet.CommandLine
                 // Parse the command
                 var command = parser.ParseCommandLine(args) ?? p.HelpCommand;
                 command.CurrentDirectory = workingDirectory;
-                
+
+                if (command is Command commandImpl)
+                {
+                    console.Verbosity = commandImpl.Verbosity;
+                }
+
                 // Fallback on the help command if we failed to parse a valid command
                 if (!ArgumentCountValid(command))
                 {
@@ -146,25 +150,6 @@ namespace NuGet.CommandLine
                     {
                         command.Execute();
                     }
-                    catch (AggregateException e)
-                    {
-                        var unwrappedEx = ExceptionUtility.Unwrap(e);
-
-                        if (unwrappedEx is CommandLineArgumentCombinationException)
-                        {
-                            var commandName = command.CommandAttribute.CommandName;
-
-                            console.WriteLine($"{string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InvalidArguments"), commandName)} {unwrappedEx.Message}");
-
-                            p.HelpCommand.ViewHelpForCommand(commandName);
-
-                            return 1;
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
                     catch (CommandLineArgumentCombinationException e)
                     {
                         var commandName = command.CommandAttribute.CommandName;
@@ -180,21 +165,8 @@ namespace NuGet.CommandLine
             catch (AggregateException exception)
             {
                 var unwrappedEx = ExceptionUtility.Unwrap(exception);
-                var rootException = ExceptionUtility.GetRootException(exception);
 
-                if (unwrappedEx is ExitCodeException)
-                {
-                    // Return the exit code without writing out the exception type
-                    var exitCodeEx = unwrappedEx as ExitCodeException;
-                    return exitCodeEx.ExitCode;
-                }
-                if (rootException is PathTooLongException)
-                {
-                    LogHelperMessageForPathTooLongException(console);
-                }
-
-                // Log the exception and stack trace.
-                ExceptionUtilities.LogException(unwrappedEx, console, logStackAsError);
+                LogException(unwrappedEx, console);
                 return 1;
             }
             catch (ExitCodeException e)
@@ -203,14 +175,13 @@ namespace NuGet.CommandLine
             }
             catch (PathTooLongException e)
             {
-                // Log the exception and stack trace.
-                ExceptionUtilities.LogException(e, console, logStackAsError);
+                LogException(e, console);
                 LogHelperMessageForPathTooLongException(console);
                 return 1;
             }
             catch (Exception exception)
             {
-                ExceptionUtilities.LogException(exception, console, logStackAsError);
+                LogException(exception, console);
                 return 1;
             }
             finally
@@ -387,11 +358,6 @@ namespace NuGet.CommandLine
             {
                 console.IsNonInteractive = false;
             }
-
-            if (command != null)
-            {
-                console.Verbosity = command.Verbosity;
-            }
         }
 
         private static void SetConsoleOutputEncoding(System.Text.Encoding encoding)
@@ -403,6 +369,13 @@ namespace NuGet.CommandLine
             catch (IOException)
             {
             }
+        }
+
+        private static void LogException(Exception exception, IConsole console)
+        {
+            var logStackAsError = console.Verbosity == Verbosity.Detailed;
+
+            ExceptionUtilities.LogException(exception, console, logStackAsError);
         }
 
         private static void LogHelperMessageForPathTooLongException(Console logger)
