@@ -19,7 +19,7 @@ namespace NuGet.Packaging.Core
         public static readonly PackageType SymbolsPackage = new PackageType("SymbolsPackage", version: EmptyVersion);
         public static readonly PackageType DotnetPlatform = new PackageType("DotnetPlatform", version: EmptyVersion);
 
-        public static StringComparer PackageTypeNameComparer = StringComparer.OrdinalIgnoreCase;
+        public static readonly StringComparer PackageTypeNameComparer = StringComparer.OrdinalIgnoreCase;
 
         public PackageType(string name, Version version)
         {
@@ -110,11 +110,6 @@ namespace NuGet.Packaging.Core
             }
 
             return Version.CompareTo(other.Version);
-        }
-
-        public override string ToString()
-        {
-            return $"{Name} {Version}";
         }
     }
 }
