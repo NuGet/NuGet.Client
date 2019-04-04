@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -12,6 +13,9 @@ namespace NuGet.Common
     /// </summary>
     public static class DirectoryUtility
     {
+        // Dictionary of locks for the move operation.
+        private static ConcurrentDictionary<string, object> Locks = new ConcurrentDictionary<string, object>();
+
         /// <summary>
         /// Creates all directories and subdirectories in the specified path unless they already exist.
         /// New directories can be read and written by all users.
@@ -55,13 +59,16 @@ namespace NuGet.Common
             if (chmod(tempDir, UGO_RWX) == -1)
             {
                 // it's very unlikely we can't set the permissions of a directory we just created
+                var errno = Marshal.GetLastWin32Error(); // fetch the errno before running any other operation
                 TryDeleteDirectory(tempDir);
-                var errno = Marshal.GetLastWin32Error();
                 throw new InvalidOperationException($"Unable to set permission while creating {path}, errno={errno}.");
             }
             try
             {
-                Directory.Move(tempDir, path);
+                lock (Locks.GetOrAdd(path, lockObject => new object()))
+                {
+                    Directory.Move(tempDir, path);
+                }
             }
             catch
             {
