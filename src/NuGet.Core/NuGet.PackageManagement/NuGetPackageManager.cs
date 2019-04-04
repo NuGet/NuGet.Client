@@ -14,6 +14,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.PackageManagement.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -2336,6 +2337,10 @@ namespace NuGet.PackageManagement
                             await msbuildProject.ProjectSystem.EndProcessingAsync();
                         }
                     }
+
+                    PackagesConfigLockFileUtility.UpdateLockFile(msbuildProject,
+                        actionsList,
+                        token);
 
                     // Post process
                     await nuGetProject.PostProcessAsync(nuGetProjectContext, token);
