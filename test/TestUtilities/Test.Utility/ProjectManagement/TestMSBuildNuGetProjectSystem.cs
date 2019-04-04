@@ -28,6 +28,7 @@ namespace Test.Utility
         public int BatchCount { get; private set; }
         public Action<string> AddReferenceAction { get; set; }
         public Action<string> RemoveReferenceAction { get; set; }
+        private Dictionary<string, dynamic> KnownProperties { get; }
 
         public TestMSBuildNuGetProjectSystem(
             NuGetFramework targetFramework,
@@ -48,6 +49,11 @@ namespace Test.Utility
             ProjectFileFullPath = projectFileFullPath ?? Path.Combine(ProjectFullPath, ProjectName);
             AddReferenceAction = AddReferenceImplementation;
             RemoveReferenceAction = RemoveReferenceImplementation;
+            KnownProperties = new Dictionary<string, dynamic>()
+            {
+                { "NuGetLockFilePath", null },
+                { "RestorePackagesWithLockFile", "false" }
+            };
         }
 
         public void AddFile(string path, Stream stream)
@@ -132,8 +138,21 @@ namespace Test.Utility
             return Files.Where(c => path.Equals(c, StringComparison.OrdinalIgnoreCase)).Any();
         }
 
+        public void SetPropertyValue(string propertyName, dynamic value)
+        {
+            KnownProperties[propertyName] = value;
+        }
+
         public dynamic GetPropertyValue(string propertyName)
         {
+            if (KnownProperties.TryGetValue(propertyName, out var value))
+            {
+                return value;
+            }
+
+            // Real builds have lots of properties added by the project file and maybe the build system. Returning null here to
+            // signal an undefined property might not match real-world results of this method, so throw an exception so tests
+            // can't accidently rely on test-only behaviour.
             throw new NotImplementedException();
         }
 

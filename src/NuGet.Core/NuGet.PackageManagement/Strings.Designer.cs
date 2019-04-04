@@ -367,6 +367,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid restore input where RestorePackagesWithLockFile property is set to false but a packages lock file exists at {0}..
+        /// </summary>
+        internal static string Error_InvalidLockFileInput {
+            get {
+                return ResourceManager.GetString("Error_InvalidLockFileInput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred while reading file &apos;{0}&apos;: {1}.
         /// </summary>
         internal static string ErrorLoadingPackagesConfig {

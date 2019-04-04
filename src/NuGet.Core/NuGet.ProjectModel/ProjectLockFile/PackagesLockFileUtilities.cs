@@ -36,14 +36,22 @@ namespace NuGet.ProjectModel
             }
 
             var projectName = Path.GetFileNameWithoutExtension(project.RestoreMetadata.ProjectPath);
-            path = Path.Combine(project.BaseDirectory, "packages." + projectName.Replace(' ', '_') + ".lock.json");
+            return GetNuGetLockFilePath(project.BaseDirectory, projectName);
+        }
 
-            if (!File.Exists(path))
+        public static string GetNuGetLockFilePath(string baseDirectory, string projectName)
+        {
+            if (!string.IsNullOrEmpty(projectName))
             {
-                path = Path.Combine(project.BaseDirectory, PackagesLockFileFormat.LockFileName);
+                var path = Path.Combine(baseDirectory, "packages." + projectName.Replace(' ', '_') + ".lock.json");
+
+                if (File.Exists(path))
+                {
+                    return path;
+                }
             }
 
-            return path;
+            return Path.Combine(baseDirectory, PackagesLockFileFormat.LockFileName);
         }
 
         public static bool IsLockFileStillValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
