@@ -1,46 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
 
   <!--
-    ============================================================
-    This is for orchestrated build scenarios. The NuGet.Client-Orchestrated build definition builds this file directly.
-    ============================================================
+    =================================================================
+    Publish NuGet builds to the .NET Core build asset registry (BAR).
+    =================================================================
   -->
 
-  <Import Project="$(BlobPublishTargetsPath)" />
   <Import Project="$(BuildCommonDirectory)common.targets" />
 
-  <ItemGroup>
-    <ItemsToPush Include="$(NUGET_CLIENT_NUPKGDIRECTORY)*.nupkg" />
-  </ItemGroup>
-  
-  <PropertyGroup>
-    <PublishOverwrite Condition="'$(PublishOverwrite)' == ''">false</PublishOverwrite>
-  </PropertyGroup>
+  <UsingTask TaskName="Microsoft.DotNet.Build.Tasks.Feed.PushToBlobFeed" AssemblyFile="$(MicrosoftDotNetBuildTasksFeedFilePath)" />
+  <UsingTask TaskName="Microsoft.DotNet.Maestro.Tasks.PushMetadataToBuildAssetRegistry" AssemblyFile="$(MicrosoftDotNetMaestroTasksFilePath)" />
 
-  <Target Name="Build">
-    <Error Text="Package output directory '$(NUGET_CLIENT_NUPKGDIRECTORY)' does not exist."
-          Condition="!Exists($(NUGET_CLIENT_NUPKGDIRECTORY))" />
 
-    <Error Text="The FeedUrl property must be passed."
-          Condition="'$(FeedUrl)' == ''" />
+  <Target Name="PublishPackagesToBuildAssetRegistry">
+    <Error Condition="!Exists($(NuGetClientNupkgsDirectoryPath))" Text="The package directory path '$(NuGetClientNupkgsDirectoryPath)' does not exist." />
+    <Error Condition="Exists($(ManifestFilePath))" Text="The manifest file '$(ManifestFilePath)' already exists." />
+    <Error Condition="'$(FeedUrl)' == ''" Text="The FeedUrl property is required." />
 
-    <Error Text="The FeedApiKey property must be passed."
-          Condition="'$(FeedApiKey)' == ''" />
+    <CreateItem Include="$([System.IO.Path]::Combine($(NuGetClientNupkgsDirectoryPath), '*.nupkg'))">
+      <Output TaskParameter="Include" ItemName="ItemsToPush" />
+    </CreateItem>
 
-    <Error Text="No packages to push."
-          Condition="'@(ItemsToPush)' == ''" />
+    <Error Condition="'@(ItemsToPush)' == ''" Text="No packages to push." />
 
-    <PushToBlobFeed ExpectedFeedUrl="$(FeedUrl)"
-                    AccountKey="$(FeedApiKey)"
-                    ItemsToPush="@(ItemsToPush)"
-                    Overwrite="$(PublishOverwrite)"
-                    ManifestBranch="$(ManifestBranch)"
-                    ManifestBuildId="$(ManifestBuildId)"
-                    ManifestCommit="$(ManifestCommit)"
-                    ManifestName="nuget.client"
-                    SkipCreateManifest="false" />
+    <ItemGroup>
+      <BuildData Include="Location=$(FeedUrl)" />
+    </ItemGroup>
+
+    <Error Condition="'$(AccountKey)' == ''" Text="The AccountKey property is required." />
+    <Error Condition="'$(BuildId)' == ''" Text="The BuildId property is required." />
+    <Error Condition="'$(ManifestFilePath)' == ''" Text="The ManifestFilePath property is required." />
+    <Error Condition="'$(RepoBranch)' == ''" Text="The RepoBranch property is required." />
+    <Error Condition="'$(RepoCommit)' == ''" Text="The RepoCommit property is required." />
+    <Error Condition="'$(RepoUri)' == ''" Text="The RepoUri property is required." />
+
+    <Message Text="Publishing %(ItemsToPush.Identity)" Importance="normal" />
+
+    <PushToBlobFeed
+      AccountKey="$(AccountKey)"
+      AssetManifestPath="$(ManifestFilePath)"
+      ExpectedFeedUrl="$(FeedUrl)"
+      ItemsToPush="@(ItemsToPush)"
+      ManifestBranch="$(RepoBranch)"
+      ManifestBuildId="$(BuildId)"
+      ManifestBuildData="$(BuildData)"
+      ManifestCommit="$(RepoCommit)"
+      ManifestRepoUri="$(RepoUri)"
+      MaxClients="8"
+      Overwrite="false"
+      PassIfExistingItemIdentical="true" />
   </Target>
 
+
+  <Target Name="PublishManifestToBuildAssetRegistry">
+    <Error Condition="'$(MaestroAccessToken)' == ''" Text="The MaestroAccessToken property is required." />
+    <Error Condition="'$(MaestroApiEndpoint)' == ''" Text="The MaestroApiEndpoint property is required." />
+    <Error Condition="!Exists($(ManifestsDirectoryPath))" Text="The manifests directory path '$(ManifestsDirectoryPath)' does not exist." />
+
+    <PushMetadataToBuildAssetRegistry
+      BuildAssetRegistryToken="$(MaestroAccessToken)"
+      MaestroApiEndpoint="$(MaestroApiEndpoint)"
+      ManifestsPath="$(ManifestsDirectoryPath)" />
+  </Target>
 </Project>
