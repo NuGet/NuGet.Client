@@ -366,7 +366,7 @@ namespace NuGet.Common
         NU3023 = 3023,
 
         /// <summary>
-        /// The timestamp signing certificate has an unsupported signature algorithm.
+        /// The timestamp signature has an unsupported digest algorithm.
         /// </summary>
         NU3024 = 3024,
 
@@ -754,6 +754,11 @@ namespace NuGet.Common
         /// LicenseUrlDeprecated
         /// </summary>
         NU5125 = 5125,
+
+        ///<summary>
+        /// ProjectJsonPack_Deprecated
+        /// </summary>
+        NU5126 = 5126,
 
         /// <summary>
         /// Undefined package warning

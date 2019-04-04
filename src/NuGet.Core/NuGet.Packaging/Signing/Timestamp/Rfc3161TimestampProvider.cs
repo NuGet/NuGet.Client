@@ -185,7 +185,7 @@ namespace NuGet.Packaging.Signing
                 var supportedSignatureAlgorithms = string.Join(", ", spec.AllowedHashAlgorithms);
 
                 var errorMessage = string.Format(CultureInfo.CurrentCulture,
-                    Strings.TimestampResponseUnsupportedDigestAlgorithm,
+                    Strings.TimestampSignatureUnsupportedDigestAlgorithm,
                     digestAlgorithm,
                     supportedSignatureAlgorithms);
 

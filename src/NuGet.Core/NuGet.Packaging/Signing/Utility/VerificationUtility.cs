@@ -144,7 +144,7 @@ namespace NuGet.Packaging.Signing
 
                 if (!spec.AllowedHashAlgorithmOids.Contains(signerInfo.DigestAlgorithm.Value))
                 {
-                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3024, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampUnsupportedSignatureAlgorithm, signature.FriendlyName)));
+                    issues.Add(SignatureLog.Issue(treatIssuesAsErrors, NuGetLogCode.NU3024, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampSignatureUnsupportedDigestAlgorithm, signature.FriendlyName)));
                     validationFlags |= SignatureVerificationStatusFlags.HashAlgorithmUnsupported;
                 }
 

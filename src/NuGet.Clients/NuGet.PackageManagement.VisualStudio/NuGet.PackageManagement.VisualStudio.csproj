@@ -18,6 +18,7 @@
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
   </PropertyGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '16.0'">
     <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -286,8 +287,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <!-- This causes a NU5104 warning. When upgrading to a stable version of this package, remove the above no warn. -->
     <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="15.0.198-pre" />
-    <!-- can this be removed?, upgraded version-->
     <PackageReference Include="VSLangProj110" Version="11.0.61030" />
     <PackageReference Include="VSLangProj2" Version="7.0.5000" />
     <PackageReference Include="VSLangProj157" Version="15.7.0" />

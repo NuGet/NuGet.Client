@@ -101,6 +101,10 @@ namespace NuGet.Packaging
                     // Unfortunately typing "umask" in a shell doesn't run a program, instead "umask" is a built-in
                     // function in the shell. The shell named "sh" is almost always available, since many scripts
                     // expect it to be there, so it's a fairly safe assumption.
+                    // We're intentionally not using the full path to "sh" because the POSIX spec says this:
+                    // http://pubs.opengroup.org/onlinepubs/9699919799/utilities/sh.html#tag_20_117_16
+                    // Applications should note that the standard PATH to the shell cannot be assumed to be either
+                    // /bin/sh or /usr/bin/sh, and should be determined by interrogation of the PATH
                     process.StartInfo.FileName = "sh";
                     process.StartInfo.Arguments = "-c umask";
                     process.StartInfo.UseShellExecute = false;

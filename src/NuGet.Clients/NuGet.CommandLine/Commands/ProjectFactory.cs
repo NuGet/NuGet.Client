@@ -280,6 +280,10 @@ namespace NuGet.CommandLine
             }
             else
             {
+                Logger.Log(
+                    PackagingLogMessage.CreateWarning(
+                        string.Format(NuGetResources.ProjectJsonPack_Deprecated, builder.Id),
+                        NuGetLogCode.NU5126));
                 _usingJsonFile = true;
             }
 
@@ -687,7 +691,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private bool ProcessJsonFile(Packaging.PackageBuilder builder, string basePath, string id)
+        private bool ProcessJsonFile(PackageBuilder builder, string basePath, string id)
         {
             return PackCommandRunner.ProcessProjectJsonFile(builder, basePath, id, null, null, GetPropertyValue);
         }
@@ -695,7 +699,7 @@ namespace NuGet.CommandLine
         // Creates a package dependency from the given project, which has a corresponding
         // nuspec file.
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
-        private Packaging.Core.PackageDependency CreateDependencyFromProject(dynamic project, Dictionary<string, Packaging.Core.PackageDependency> dependencies)
+        private PackageDependency CreateDependencyFromProject(dynamic project, Dictionary<string, Packaging.Core.PackageDependency> dependencies)
         {
             try
             {
@@ -713,6 +717,12 @@ namespace NuGet.CommandLine
                 if (!projectFactory.ProcessJsonFile(builder, project.DirectoryPath, null))
                 {
                     projectFactory.ProcessNuspec(builder, null);
+                } else
+                {
+                    Logger.Log(
+                    PackagingLogMessage.CreateWarning(
+                        string.Format(NuGetResources.ProjectJsonPack_Deprecated, builder.Id),
+                        NuGetLogCode.NU5126));
                 }
 
                 VersionRange versionRange = null;
