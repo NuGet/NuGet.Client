@@ -37,7 +37,6 @@
     <PropertyGroup>
       <TestProjectPaths>@(CoreFuncTestProjects)</TestProjectPaths>
       <TestResultsFileName>CoreFuncTests</TestResultsFileName>
-      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
     </PropertyGroup>
 
     <!-- Run tests as a batch -->
@@ -45,7 +44,6 @@
         Projects="$(MSBuildThisFileFullPath)"
         Targets="RunTestsOnProjects"
         Properties="$(CommonMSBuildProperties);
-                    VisualStudioVersion=$(TestVisualStudioVersion);
                     TestResultsFileName=$(TestResultsFileName);
                     TestProjectPaths=$(TestProjectPaths)">
       <Output TaskParameter="TargetOutputs"
@@ -63,7 +61,6 @@
     <PropertyGroup>
       <TestProjectPaths>@(CoreUnitTestProjects)</TestProjectPaths>
       <TestResultsFileName>CoreUnitTests</TestResultsFileName>
-      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
     </PropertyGroup>
 
     <!-- Run tests as a batch -->
@@ -71,7 +68,6 @@
         Projects="$(MSBuildThisFileFullPath)"
         Targets="RunTestsOnProjects"
         Properties="$(CommonMSBuildProperties);
-                    VisualStudioVersion=$(TestVisualStudioVersion);
                     TestResultsFileName=$(TestResultsFileName);
                     TestProjectPaths=$(TestProjectPaths)">
       <Output TaskParameter="TargetOutputs"
@@ -89,7 +85,6 @@
     <PropertyGroup>
       <TestProjectPaths>@(VSUnitTestProjects)</TestProjectPaths>
       <TestResultsFileName>UnitTestsVS15</TestResultsFileName>
-      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
     </PropertyGroup>
 
     <!-- Run tests as a batch -->
@@ -97,7 +92,6 @@
         Projects="$(MSBuildThisFileFullPath)"
         Targets="RunTestsOnProjects"
         Properties="$(CommonMSBuildProperties);
-                    VisualStudioVersion=$(TestVisualStudioVersion);
                     TestResultsFileName=$(TestResultsFileName);
                     TestProjectPaths=$(TestProjectPaths)">
       <Output TaskParameter="TargetOutputs"
@@ -116,7 +110,6 @@
     <PropertyGroup>
       <TestProjectPaths>$(RepositoryRootDirectory)test\NuGet.Tests.Apex\NuGet.Tests.Apex\NuGet.Tests.Apex.csproj</TestProjectPaths>
       <TestResultsFileName>ApexTestsVS15</TestResultsFileName>
-      <TestVisualStudioVersion>15.0</TestVisualStudioVersion>
     </PropertyGroup>
 
     <!-- Run tests as a batch -->
@@ -124,7 +117,6 @@
         Projects="$(MSBuildThisFileFullPath)"
         Targets="RunTestsOnProjects"
         Properties="$(CommonMSBuildProperties);
-                    VisualStudioVersion=$(TestVisualStudioVersion);
                     TestResultsFileName=$(TestResultsFileName);
                     TestProjectPaths=$(TestProjectPaths);
                     Verbosity=-verbose">
