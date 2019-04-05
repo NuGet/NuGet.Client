@@ -284,7 +284,7 @@ namespace NuGet.Configuration
         /// <param name="configFileName">The user specified configuration file.</param>
         /// <param name="machineWideSettings">
         /// The machine wide settings. If it's not null, the
-        /// settings files in the machine wide settings are added after the user sepcific
+        /// settings files in the machine wide settings are added after the user specific
         /// config file.
         /// </param>
         /// <returns>The settings object loaded.</returns>
