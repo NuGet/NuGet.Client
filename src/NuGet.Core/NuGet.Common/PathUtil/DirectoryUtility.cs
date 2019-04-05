@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -13,8 +12,8 @@ namespace NuGet.Common
     /// </summary>
     public static class DirectoryUtility
     {
-        // Dictionary of locks for the move operation.
-        private static ConcurrentDictionary<string, object> Locks = new ConcurrentDictionary<string, object>();
+        // The lock object
+        private static object LockObject = new object();
 
         /// <summary>
         /// Creates all directories and subdirectories in the specified path unless they already exist.
@@ -42,7 +41,15 @@ namespace NuGet.Common
                     var currentPath = sepPos == -1 ? path : path.Substring(0, sepPos);
                     if (!Directory.Exists(currentPath))
                     {
-                        CreateSingleSharedDirectory(currentPath);
+                        // There are potential race conditions when multiple threads are trying to create the same shared path.
+                        // This simple lock ensures that we are consistent.
+                        lock (LockObject)
+                        {
+                            if (!Directory.Exists(currentPath))
+                            {
+                                CreateSingleSharedDirectory(currentPath);
+                            }
+                        }
                     }
                 } while (sepPos != -1);
             }
@@ -65,10 +72,7 @@ namespace NuGet.Common
             }
             try
             {
-                lock (Locks.GetOrAdd(path, lockObject => new object()))
-                {
-                    Directory.Move(tempDir, path);
-                }
+                Directory.Move(tempDir, path);
             }
             catch
             {
@@ -91,7 +95,7 @@ namespace NuGet.Common
                 Directory.Delete(path);
             }
             catch
-            {}
+            { }
         }
 
         private const int UGO_RWX = 0x1ff; // 0777
