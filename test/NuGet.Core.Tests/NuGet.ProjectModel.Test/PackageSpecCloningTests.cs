@@ -3,14 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using FluentAssertions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
+using NuGet.Versioning;
 using Xunit;
 namespace NuGet.ProjectModel.Test
 {
@@ -610,6 +609,10 @@ namespace NuGet.ProjectModel.Test
             originalTargetFrameworkInformation.Dependencies = new List<LibraryDependency>() { dependency };
             originalTargetFrameworkInformation.AssetTargetFallback = false;
             originalTargetFrameworkInformation.Imports = new List<NuGetFramework>() { imports };
+            originalTargetFrameworkInformation.DownloadDependencies.Add(new DownloadDependency("X", VersionRange.Parse("1.0.0")));
+            originalTargetFrameworkInformation.FrameworkReferences.Add("frameworkRef");
+            originalTargetFrameworkInformation.FrameworkReferences.Add("FrameworkReference");
+
             return originalTargetFrameworkInformation;
         }
 
@@ -624,7 +627,7 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.Equal(originalTargetFrameworkInformation, clone);
-            Assert.False(object.ReferenceEquals(originalTargetFrameworkInformation, clone));
+            Assert.False(ReferenceEquals(originalTargetFrameworkInformation, clone));
 
             // Act
             originalTargetFrameworkInformation.Imports.Clear();
@@ -638,7 +641,7 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.Equal(originalTargetFrameworkInformation, cloneToTestDependencies);
-            Assert.False(object.ReferenceEquals(originalTargetFrameworkInformation, cloneToTestDependencies));
+            Assert.False(ReferenceEquals(originalTargetFrameworkInformation, cloneToTestDependencies));
 
             // Act
             originalTargetFrameworkInformation.Dependencies.Clear();
@@ -646,6 +649,45 @@ namespace NuGet.ProjectModel.Test
             // Assert
             Assert.NotEqual(originalTargetFrameworkInformation, cloneToTestDependencies);
             Assert.Equal(1, cloneToTestDependencies.Dependencies.Count);
+
+            //Act
+            var cloneToTestDownloadDependencies = originalTargetFrameworkInformation.Clone();
+
+            // Assert
+            Assert.Equal(originalTargetFrameworkInformation, cloneToTestDownloadDependencies);
+            Assert.False(ReferenceEquals(originalTargetFrameworkInformation, cloneToTestDownloadDependencies));
+
+            // Act
+            originalTargetFrameworkInformation.DownloadDependencies.Clear();
+
+            //Assert
+            Assert.NotEqual(originalTargetFrameworkInformation, cloneToTestDownloadDependencies);
+            Assert.Equal(1, cloneToTestDownloadDependencies.DownloadDependencies.Count);
+
+            //Setup
+            var cloneToTestFrameworkReferenceEquality = originalTargetFrameworkInformation.Clone();
+            cloneToTestFrameworkReferenceEquality.FrameworkReferences.Clear();
+            cloneToTestFrameworkReferenceEquality.FrameworkReferences.Add("frameworkRef");
+            cloneToTestFrameworkReferenceEquality.FrameworkReferences.Add("frameworkReference");
+
+            // Assert
+            Assert.Equal(originalTargetFrameworkInformation, cloneToTestFrameworkReferenceEquality);
+            Assert.False(ReferenceEquals(originalTargetFrameworkInformation, cloneToTestFrameworkReferenceEquality));
+
+
+            //Act
+            var cloneToTestFrameworkReferences = originalTargetFrameworkInformation.Clone();
+
+            // Assert
+            Assert.Equal(originalTargetFrameworkInformation, cloneToTestFrameworkReferences);
+            Assert.False(ReferenceEquals(originalTargetFrameworkInformation, cloneToTestFrameworkReferences));
+
+            // Act
+            originalTargetFrameworkInformation.FrameworkReferences.Clear();
+
+            //Assert
+            Assert.NotEqual(originalTargetFrameworkInformation, cloneToTestFrameworkReferences);
+            Assert.Equal(2, cloneToTestFrameworkReferences.FrameworkReferences.Count);
         }
 
         [Fact]
