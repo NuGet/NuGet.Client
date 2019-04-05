@@ -132,6 +132,22 @@ namespace NuGet.Commands
                 availableFrameworkRuntimePairs: Enumerable.Empty<FrameworkRuntimePair>());
         }
 
+
+        internal static CompatibilityIssue IncompatiblePackageType(
+            PackageIdentity packageIdentity,
+            NuGetFramework framework,
+            string runtimeIdentifier)
+        {
+            return new CompatibilityIssue(
+                CompatibilityIssueType.PackageTypeIncompatible,
+                packageIdentity,
+                string.Empty,
+                framework,
+                runtimeIdentifier,
+                Enumerable.Empty<NuGetFramework>(),
+                Enumerable.Empty<FrameworkRuntimePair>());
+        }
+
         public override string ToString()
         {
             // NOTE(anurse): Why not just use Format's implementation as ToString? I feel like ToString should be
@@ -234,6 +250,17 @@ namespace NuGet.Commands
                                Strings.Error_ToolsPackageWithExtraPackageTypes,
                                Package.Id,
                                Package.Version.ToNormalizedString());
+                        return FormatMessage(message, string.Empty, string.Empty);
+                    }
+                case CompatibilityIssueType.PackageTypeIncompatible:
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture,
+                        Strings.Error_IncompatiblePackageType,
+                        Package.Id,
+                        Package.Version.ToNormalizedString(),
+                        PackageType.DotnetPlatform.Name,
+                        FormatFramework(Framework, RuntimeIdentifier));
+
                         return FormatMessage(message, string.Empty, string.Empty);
                     }
                 default:
@@ -344,6 +371,7 @@ namespace NuGet.Commands
         PackageToolsAssetsIncompatible,
         ProjectWithIncorrectDependencyCount,
         IncompatiblePackageWithDotnetTool,
-        ToolsPackageWithExtraPackageTypes
+        ToolsPackageWithExtraPackageTypes,
+        PackageTypeIncompatible
     }
 }

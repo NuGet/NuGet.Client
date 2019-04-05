@@ -5949,6 +5949,7 @@ namespace NuGet.CommandLine.Test
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
+                project.AddPackageToAllFrameworks(packageX);
 
                 solution.Projects.Add(project);
                 solution.Create(pathContext.SolutionRoot);
@@ -7105,6 +7106,43 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
                 Assert.Equal(0, lockFile.Targets.First().Libraries.Count);
                 Assert.Equal("FrameworkRefY", lockFile.PackageSpec.TargetFrameworks.Single().FrameworkReferences.Single());
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_IncompatiblePackageTypesFailRestore()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    "project",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net46"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.PackageTypes.Add(PackageType.DotnetPlatform);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                project.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act & Assert
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                Assert.Contains(NuGetLogCode.NU1213.GetName(), r.AllOutput);
             }
         }
     }

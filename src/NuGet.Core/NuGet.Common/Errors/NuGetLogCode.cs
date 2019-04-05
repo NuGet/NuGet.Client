@@ -151,6 +151,11 @@ namespace NuGet.Common
         NU1212 = 1212,
 
         /// <summary>
+        /// Incompatible package type
+        /// </summary>
+        NU1213 = 1213,
+
+        /// <summary>
         /// Package MinClientVersion did not match.
         /// </summary>
         NU1401 = 1401,

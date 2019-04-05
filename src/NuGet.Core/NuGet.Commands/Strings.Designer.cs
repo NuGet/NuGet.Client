@@ -196,6 +196,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package {0} {1} has a package type {2} that is incompatible with this project..
+        /// </summary>
+        internal static string Error_IncompatiblePackageType {
+            get {
+                return ResourceManager.GetString("Error_IncompatiblePackageType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please specify a nuspec, project.json, or project file to use.
         /// </summary>
         internal static string Error_InputFileNotSpecified {
