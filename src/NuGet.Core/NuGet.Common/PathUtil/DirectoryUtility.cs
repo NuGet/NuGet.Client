@@ -45,10 +45,7 @@ namespace NuGet.Common
                         // This simple lock ensures that we are consistent.
                         lock (LockObject)
                         {
-                            if (!Directory.Exists(currentPath))
-                            {
-                                CreateSingleSharedDirectory(currentPath);
-                            }
+                            CreateSingleSharedDirectory(currentPath);
                         }
                     }
                 } while (sepPos != -1);
@@ -62,12 +59,15 @@ namespace NuGet.Common
         /// <param name="path"></param>
         private static void CreateSingleSharedDirectory(string path)
         {
-            Directory.CreateDirectory(path);
-            if (chmod(path, UGO_RWX) == -1)
+            if (!Directory.Exists(path))
             {
-                // it's very unlikely we can't set the permissions of a directory we just created
-                var errno = Marshal.GetLastWin32Error(); // fetch the errno before running any other operation
-                throw new InvalidOperationException($"Unable to set permission while creating {path}, errno={errno}.");
+                Directory.CreateDirectory(path);
+                if (chmod(path, UGO_RWX) == -1)
+                {
+                    // it's very unlikely we can't set the permissions of a directory we just created
+                    var errno = Marshal.GetLastWin32Error(); // fetch the errno before running any other operation
+                    throw new InvalidOperationException($"Unable to set permission while creating {path}, errno={errno}.");
+                }
             }
         }
 
