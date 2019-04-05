@@ -55,47 +55,20 @@ namespace NuGet.Common
             }
         }
 
+        /// <summary>
+        /// Creating a directory and setting the permissions are two operations. To avoid race
+        /// conditions, we create a different directory, this call should be called in a thread safe manner.
+        /// </summary>
+        /// <param name="path"></param>
         private static void CreateSingleSharedDirectory(string path)
         {
-            // Creating a directory and setting the permissions are two operations. To avoid race
-            // conditions, we create a different directory, set the permissions and rename it. We
-            // create it under the parent directory to make sure it is on the same volume.
-            var parentDir = Path.GetDirectoryName(path);
-            var tempDir = Path.Combine(parentDir, Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempDir);
-            if (chmod(tempDir, UGO_RWX) == -1)
+            Directory.CreateDirectory(path);
+            if (chmod(path, UGO_RWX) == -1)
             {
                 // it's very unlikely we can't set the permissions of a directory we just created
                 var errno = Marshal.GetLastWin32Error(); // fetch the errno before running any other operation
-                TryDeleteDirectory(tempDir);
                 throw new InvalidOperationException($"Unable to set permission while creating {path}, errno={errno}.");
             }
-            try
-            {
-                Directory.Move(tempDir, path);
-            }
-            catch
-            {
-                TryDeleteDirectory(tempDir);
-                if (Directory.Exists(path))
-                {
-                    return;
-                }
-                else
-                {
-                    throw;
-                }
-            }
-        }
-
-        private static void TryDeleteDirectory(string path)
-        {
-            try
-            {
-                Directory.Delete(path);
-            }
-            catch
-            { }
         }
 
         private const int UGO_RWX = 0x1ff; // 0777
