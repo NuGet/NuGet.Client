@@ -56,7 +56,7 @@ namespace NuGet.Common
         /// Creating a directory and setting the permissions are two operations. To avoid race
         /// conditions, we create a different directory, this call should be called in a thread safe manner.
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">the path to be created with the <see cref="UGO_RWX"/> permissions set</param>
         private static void CreateSingleSharedDirectory(string path)
         {
             if (!Directory.Exists(path))
