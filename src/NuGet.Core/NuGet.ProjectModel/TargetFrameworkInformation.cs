@@ -86,7 +86,7 @@ namespace NuGet.ProjectModel
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
                    AssetTargetFallback == other.AssetTargetFallback &&
                    DownloadDependencies.OrderedEquals(other.DownloadDependencies, dep => dep) &&
-                   FrameworkReferences.OrderedEquals(other.FrameworkReferences,  e => e, StringComparer.OrdinalIgnoreCase);
+                   FrameworkReferences.OrderedEquals(other.FrameworkReferences, keySelector: e => e, orderComparer: StringComparer.OrdinalIgnoreCase, sequenceComparer: StringComparer.OrdinalIgnoreCase);
         }
 
         public TargetFrameworkInformation Clone()
