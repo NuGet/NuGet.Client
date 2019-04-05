@@ -8,7 +8,7 @@ phases:
     demands: 
       - DotNetFramework
       - msbuild
-  
+
   steps:
   - task: PowerShell@1
     displayName: "Initialize Git Commit Status on GitHub"
@@ -17,7 +17,7 @@ phases:
       inlineScript: |
         . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
         InitializeAllTestsToPending -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion)
-  
+
   - task: PowerShell@1
     displayName: "Update Build Number"
     name: "updatebuildnumber"
@@ -42,7 +42,7 @@ phases:
       scriptType: "inlineScript"
       inlineScript: |
         Write-Host "##vso[build.addbuildtag]$env:BUILD_SOURCEVERSIONAUTHOR"
-        Write-Host "##vso[build.addbuildtag]$env:BUILD_SOURCEBRANCHNAME" 
+        Write-Host "##vso[build.addbuildtag]$env:BUILD_SOURCEBRANCHNAME"
 
 - phase: Build_and_UnitTest
   dependsOn: Initialize_Build
@@ -62,7 +62,7 @@ phases:
       - DotNetFramework
       - msbuild
 
-  steps:  
+  steps:
   - task: PowerShell@1
     displayName: "Update Build Number"
     inputs:
@@ -70,6 +70,13 @@ phases:
       inlineScript: |
         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
         gci env:* | sort-object name
+
+  - task: PowerShell@1
+    displayName: "Define variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[task.setvariable variable=ManifestFilePath]$(Build.Repository.LocalPath)\artifacts\manifests\nuget.client.xml"
 
   - task: NuGetToolInstaller@0
     displayName: "Use NuGet 4.6.2"
@@ -268,11 +275,11 @@ phases:
         $(VsixPublishDir)\\NuGet.pdb
         $(VsixPublishDir)\\NuGet.Mssign.exe
         $(VsixPublishDir)\\NuGet.Mssign.pdb
-        $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.Core.json 
+        $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.Core.json
         $(VsixPublishDir)\\NuGet.Tools.vsix
         $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.BuildTools.vsix
         $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.BuildTools.json
-        $(VsixPublishDir)\\EndToEnd.zip 
+        $(VsixPublishDir)\\EndToEnd.zip
       TargetFolder: "$(BuildOutputTargetPath)\\artifacts"
 
   - task: PublishBuildArtifacts@1
@@ -308,14 +315,14 @@ phases:
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/p:IsSymbolBuild=true"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
-    
+
   - task: CopyFiles@2
     displayName: "Copy Symbols"
     inputs:
       SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
       Contents: "**\\*"
       TargetFolder: "$(BuildOutputTargetPath)\\symbols"
-    condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "      
+    condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
 
   - task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
     displayName: "Publish Symbols on Symweb"
@@ -326,7 +333,7 @@ phases:
       detailedLog: "true"
       expirationInDays: "45"
       usePat: "false"
-    condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "  	
+    condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
 
   - task: MicroBuildUploadVstsDropFolder@1
     displayName: "Upload VSTS Drop"
@@ -340,13 +347,45 @@ phases:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
       arguments: "-BuildRTM $(BuildRTM) -BuildOutputTargetPath $(BuildOutputTargetPath) -ValidateVsix"
     condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
-  
+
   - task: PowerShell@1
     displayName: "Validate Repository Artifacts Localization"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
       arguments: "-BuildRTM $(BuildRTM) -BuildOutputTargetPath $(BuildOutputTargetPath)"
     condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
+
+    # Use dotnet msbuild instead of MSBuild CLI.
+    # Using MSBuild CLI results in an assembly binding failure for NuGet.Common.dll 4.4.0.3 because Microsoft.DotNet.Build.Tasks.Feed.dll references SleetLib.dll which references NuGet.Common 4.4.0.3.
+    # The Microsoft.DotNet.Build.Tasks.Feed package includes NuGet.Common 4.9.0.6 and a binding redirection in Microsoft.DotNet.Build.Tasks.Feed.dll.config but the binding redirection is not processed.
+    # This would probably solve it:  https://github.com/Microsoft/msbuild/issues/1309
+  - task: CmdLine@2
+    displayName: "Publish the packages to the .NET Core build asset registry (BAR)"
+    inputs:
+      script: dotnet msbuild ..\build\publish.proj /t:PublishPackagesToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:FeedUrl=$(DotNetFeedUrl) /p:BuildId=$(Build.BuildNumber) /p:RepoBranch=$(Build.SourceBranchName) /p:RepoCommit=$(Build.SourceVersion) /p:RepoUri=$(Build.Repository.Uri) /p:ManifestFilePath=$(ManifestFilePath) /p:AccountKey=$(dotnetfeed-storage-access-key-1)
+      workingDirectory: cli
+      failOnStderr: true
+    env:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_MULTILEVEL_LOOKUP: true
+    condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
+
+  - task: PowerShell@1
+    displayName: "Upload the build manifest file as a build artifact"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[task.uploadfile]$(ManifestFilePath)"
+    condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
+
+  - task: MSBuild@1
+    displayName: "Publish the build manifest file to the .NET Core build asset registry (BAR)"
+    inputs:
+      solution: 'build\\publish.proj'
+      msbuildVersion: 15.0
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '/t:PublishManifestToBuildAssetRegistry /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:ManifestsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\manifests /p:MaestroAccessToken=$(MaestroAccessToken)'
+    condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
 
   - task: MicroBuildCleanup@1
     displayName: "Perform Cleanup Tasks"
@@ -367,7 +406,7 @@ phases:
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-  condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "  	
+  condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   queue:
     name: VSEng-MicroBuildSxS
     timeoutInMinutes: 120
@@ -443,7 +482,7 @@ phases:
   dependsOn: Initialize_Build
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-  condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "  	
+  condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
   queue:
     name: DDNuGet-Linux
     timeoutInMinutes: 60
@@ -484,7 +523,7 @@ phases:
       arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
       script: |
         . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
-        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Linux"        
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Linux"
       failOnStderr: "true"
     condition: "always()"
 
@@ -494,7 +533,7 @@ phases:
   - Initialize_Build
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-  condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "  	
+  condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
   queue:
     name: VSEng-MicroBuildMacSierra
     timeoutInMinutes: 75
@@ -541,7 +580,7 @@ phases:
       arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
       script: |
         . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
-        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Mac"        
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Mac"
       failOnStderr: "true"
     condition: "always()"
 
@@ -551,7 +590,7 @@ phases:
   - Initialize_Build
   variables:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-  condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "  	
+  condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
   queue:
     timeoutInMinutes: 90
     name: DDNuGet-Windows
@@ -649,7 +688,7 @@ phases:
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-  condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "  	
+  condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
   queue:
     name: DDNuGet-Windows
     demands: DotNetFramework
@@ -725,7 +764,7 @@ phases:
       msbuildVersion: "15.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(BuildNumber)"
-      
+
   - task: NuGetCommand@2
     displayName: "Add Apex Feed Source"
     inputs:
@@ -778,5 +817,3 @@ phases:
         . $(Build.Repository.LocalPath)\\scripts\\e2etests\\VSUtils.ps1
         KillRunningInstancesOfVS
     condition: "always()"
-    
-    
