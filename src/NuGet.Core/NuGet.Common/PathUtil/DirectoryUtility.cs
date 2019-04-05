@@ -13,7 +13,7 @@ namespace NuGet.Common
     public static class DirectoryUtility
     {
         // The lock object
-        private static object LockObject = new object();
+        private static readonly object LockObject = new object();
 
         /// <summary>
         /// Creates all directories and subdirectories in the specified path unless they already exist.
