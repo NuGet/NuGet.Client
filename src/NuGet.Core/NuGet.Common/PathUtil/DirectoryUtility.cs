@@ -12,6 +12,9 @@ namespace NuGet.Common
     /// </summary>
     public static class DirectoryUtility
     {
+        // The lock object
+        private static readonly object LockObject = new object();
+
         /// <summary>
         /// Creates all directories and subdirectories in the specified path unless they already exist.
         /// New directories can be read and written by all users.
@@ -38,53 +41,34 @@ namespace NuGet.Common
                     var currentPath = sepPos == -1 ? path : path.Substring(0, sepPos);
                     if (!Directory.Exists(currentPath))
                     {
-                        CreateSingleSharedDirectory(currentPath);
+                        // There are potential race conditions when multiple threads are trying to create the same shared path.
+                        // This simple lock ensures that we are consistent.
+                        lock (LockObject)
+                        {
+                            CreateSingleSharedDirectory(currentPath);
+                        }
                     }
                 } while (sepPos != -1);
             }
         }
 
+        /// <summary>
+        /// Creating a directory and setting the permissions are two operations. To avoid race
+        /// conditions, we create a different directory, this call should be called in a thread safe manner.
+        /// </summary>
+        /// <param name="path">the path to be created with the <see cref="UGO_RWX"/> permissions set</param>
         private static void CreateSingleSharedDirectory(string path)
         {
-            // Creating a directory and setting the permissions are two operations. To avoid race
-            // conditions, we create a different directory, set the permissions and rename it. We
-            // create it under the parent directory to make sure it is on the same volume.
-            var parentDir = Path.GetDirectoryName(path);
-            var tempDir = Path.Combine(parentDir, Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempDir);
-            if (chmod(tempDir, UGO_RWX) == -1)
+            if (!Directory.Exists(path))
             {
-                // it's very unlikely we can't set the permissions of a directory we just created
-                TryDeleteDirectory(tempDir);
-                var errno = Marshal.GetLastWin32Error();
-                throw new InvalidOperationException($"Unable to set permission while creating {path}, errno={errno}.");
-            }
-            try
-            {
-                Directory.Move(tempDir, path);
-            }
-            catch
-            {
-                TryDeleteDirectory(tempDir);
-                if (Directory.Exists(path))
+                Directory.CreateDirectory(path);
+                if (chmod(path, UGO_RWX) == -1)
                 {
-                    return;
-                }
-                else
-                {
-                    throw;
+                    // it's very unlikely we can't set the permissions of a directory we just created
+                    var errno = Marshal.GetLastWin32Error(); // fetch the errno before running any other operation
+                    throw new InvalidOperationException($"Unable to set permission while creating {path}, errno={errno}.");
                 }
             }
-        }
-
-        private static void TryDeleteDirectory(string path)
-        {
-            try
-            {
-                Directory.Delete(path);
-            }
-            catch
-            {}
         }
 
         private const int UGO_RWX = 0x1ff; // 0777
