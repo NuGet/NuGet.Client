@@ -188,7 +188,7 @@ namespace NuGet.Packaging
             }
         }
 
-        public IEnumerable<FrameworkSpecificGroup> FrameworkReferenceGroups { get; set; } = new List<FrameworkSpecificGroup>();
+        public IEnumerable<FrameworkReferenceGroup> FrameworkReferenceGroups { get; set; } = new List<FrameworkReferenceGroup>();
 
         public IEnumerable<FrameworkAssemblyReference> FrameworkReferences { get; set; } = new List<FrameworkAssemblyReference>();
 

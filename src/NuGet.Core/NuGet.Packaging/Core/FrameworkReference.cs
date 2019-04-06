@@ -7,7 +7,7 @@ using NuGet.Shared;
 
 namespace NuGet.Packaging
 {
-    public class FrameworkReference : IEquatable<FrameworkReference>, IComparer<FrameworkReference>
+    public class FrameworkReference : IEquatable<FrameworkReference>, IComparer<FrameworkReference>, IComparable<FrameworkReference>
     {
         public static StringComparer FrameworkReferenceNameComparer = StringComparer.OrdinalIgnoreCase;
 
@@ -20,7 +20,7 @@ namespace NuGet.Packaging
 
         public int Compare(FrameworkReference x, FrameworkReference y)
         {
-            return FrameworkReferenceNameComparer.Compare(x, y);
+            return FrameworkReferenceNameComparer.Compare(x.Name, y.Name);
         }
 
         public bool Equals(FrameworkReference other)
@@ -38,24 +38,21 @@ namespace NuGet.Packaging
             return FrameworkReferenceNameComparer.Equals(Name, other.Name);
         }
 
-        public override string ToString()
-        {
-            return base.ToString();
-        }
-
         public override bool Equals(object obj)
         {
             return Equals(obj as FrameworkReference);
-
         }
 
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();
-
-            combiner.AddObject(Name);
-
+            combiner.AddObject(Name, FrameworkReferenceNameComparer);
             return combiner.CombinedHash;
+        }
+
+        public int CompareTo(FrameworkReference other)
+        {
+            return Compare(this, other);
         }
     }
 }

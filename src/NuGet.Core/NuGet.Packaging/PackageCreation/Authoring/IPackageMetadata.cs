@@ -57,6 +57,6 @@ namespace NuGet.Packaging
 
         LicenseMetadata LicenseMetadata { get; }
 
-        IEnumerable<FrameworkSpecificGroup> FrameworkReferenceGroups { get; }
+        IEnumerable<FrameworkReferenceGroup> FrameworkReferenceGroups { get; }
     }
 }

@@ -368,7 +368,7 @@ namespace NuGet.Commands
 
             if (frameworkRef != null)
             {
-                lockFileLib.FrameworkReferences.AddRange(frameworkRef.FrameworkReferences.Select(e => e.Name)); // TODO NK - Add the full thing or no? 
+                lockFileLib.FrameworkReferences.AddRange(frameworkRef.FrameworkReferences.Select(e => e.Name));
             }
         }
 

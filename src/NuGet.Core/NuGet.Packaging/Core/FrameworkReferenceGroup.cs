@@ -64,9 +64,9 @@ namespace NuGet.Packaging
 
             if (FrameworkReferences != null)
             {
-                foreach (var hash in FrameworkReferences.Select(e => e.GetHashCode()).OrderBy(e => e))
+                foreach (var frameworkReference in FrameworkReferences.OrderBy(e => e))
                 {
-                    combiner.AddObject(hash);
+                    combiner.AddObject(frameworkReference);
                 }
             }
 
