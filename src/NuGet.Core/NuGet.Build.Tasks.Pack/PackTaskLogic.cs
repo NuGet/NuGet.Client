@@ -349,7 +349,7 @@ namespace NuGet.Build.Tasks.Pack
 
         private void PopulateFrameworkReferences(PackageBuilder builder, IPackTaskRequest<IMSBuildItem> request)
         {
-            var tfmSpecificRefs = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase);
+            var tfmSpecificRefs = new Dictionary<string, ISet<string>>();
 
             foreach (var tfmRef in request.FrameworkReferences)
             {
@@ -361,11 +361,15 @@ namespace NuGet.Build.Tasks.Pack
                 }
                 else
                 {
-                    tfmSpecificRefs.Add(targetFramework, new HashSet<string>(TargetFrameworkInformation.FrameworkReferenceComparer) { tfmRef.Identity });
+                    tfmSpecificRefs.Add(targetFramework, new HashSet<string>(FrameworkReference.FrameworkReferenceNameComparer) { tfmRef.Identity });
                 }
             }
 
-            builder.FrameworkReferenceGroups.AddRange(tfmSpecificRefs.Select(e => new FrameworkSpecificGroup(NuGetFramework.Parse(e.Key), e.Value)));
+            builder.FrameworkReferenceGroups.AddRange( // TODO NK - Check the writing.
+                tfmSpecificRefs.Select(e =>
+                    new FrameworkReferenceGroup(
+                        NuGetFramework.Parse(e.Key),
+                        e.Value.Select(fr => new FrameworkReference(fr)))));
         }
 
         public PackCommandRunner GetPackCommandRunner(
@@ -662,7 +666,7 @@ namespace NuGet.Build.Tasks.Pack
             {
                 var currentPath = targetPath;
                 var fileName = Path.GetFileName(sourcePath);
-                if (String.IsNullOrEmpty(Path.GetExtension(fileName)) ||
+                if (string.IsNullOrEmpty(Path.GetExtension(fileName)) ||
                     !Path.GetExtension(fileName)
                     .Equals(Path.GetExtension(targetPath), StringComparison.OrdinalIgnoreCase))
                 {
@@ -683,11 +687,11 @@ namespace NuGet.Build.Tasks.Pack
 
         private string GetSourcePath(IMSBuildItem packageFile)
         {
-            string sourcePath = packageFile.GetProperty("FullPath");
+            var sourcePath = packageFile.GetProperty("FullPath");
             if (packageFile.Properties.Contains("MSBuildSourceProjectFile"))
             {
-                string sourceProjectFile = packageFile.GetProperty("MSBuildSourceProjectFile");
-                string identity = packageFile.GetProperty(IdentityProperty);
+                var sourceProjectFile = packageFile.GetProperty("MSBuildSourceProjectFile");
+                var identity = packageFile.GetProperty(IdentityProperty);
                 sourcePath = Path.Combine(sourceProjectFile.Replace(Path.GetFileName(sourceProjectFile), string.Empty), identity);
             }
             return Path.GetFullPath(sourcePath);
@@ -700,7 +704,7 @@ namespace NuGet.Build.Tasks.Pack
             {
                 foreach (var file in request.PackageFilesToExclude)
                 {
-                    string sourcePath = GetSourcePath(file);
+                    var sourcePath = GetSourcePath(file);
                     excludeFiles.Add(sourcePath);
                 }
             }
@@ -715,7 +719,7 @@ namespace NuGet.Build.Tasks.Pack
                 foreach (var src in request.SourceFiles)
                 {
                     var sourcePath = GetSourcePath(src);
-                    string sourceProjectFile = currentProjectDirectory;
+                    var sourceProjectFile = currentProjectDirectory;
                     if (src.Properties.Contains("MSBuildSourceProjectFile"))
                     {
                         sourceProjectFile = src.GetProperty("MSBuildSourceProjectFile");

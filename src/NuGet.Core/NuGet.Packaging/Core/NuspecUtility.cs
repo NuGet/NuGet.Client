@@ -168,7 +168,7 @@ namespace NuGet.Packaging.Core
 
         private static IEnumerable<string> GetFrameworkReferences(IEnumerable<XElement> nodes)
         {
-            return new HashSet<string>(nodes.Select(e => GetAttributeValue(e, Name)), StringComparer.OrdinalIgnoreCase);
+            return new HashSet<string>(nodes.Select(e => GetAttributeValue(e, Name)), Packaging.FrameworkReference.FrameworkReferenceNameComparer);
         }
 
         private static string GetAttributeValue(XElement element, string attributeName)
