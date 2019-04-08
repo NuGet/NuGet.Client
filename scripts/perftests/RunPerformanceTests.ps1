@@ -154,7 +154,8 @@ Try
 
     If ([string]::IsNullOrEmpty($nugetFoldersPath))
     {
-        $nugetFoldersPath = GetNuGetFoldersPath $Null
+        $default = GetDefaultNuGetTestFolder
+        $nugetFoldersPath = GetNuGetFoldersPath $default
     }
 
     LogDotNetSdkInfo

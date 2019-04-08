@@ -34,16 +34,36 @@ Param(
     [string] $testRootFolderPath,
     [string] $logsFolderPath,
     [int] $iterationCount = 3,
-    [bool] $skipRepoCleanup
+    [switch] $skipRepoCleanup
 )
 
 . "$PSScriptRoot\PerformanceTestUtilities.ps1"
 
-$resultsFolderPath = GetAbsolutePath $resultsFolderPath
-$testRootFolderPath = GetAbsolutePath $testRootFolderPath
+if([string]::IsNullOrEmpty($testRootFolderPath))
+{
+    $testRootFolderPath = GetDefaultNuGetTestFolder
+} 
+else 
+{
+    $testRootFolderPath = GetAbsolutePath $testRootFolderPath
+}
+
+
 $nugetFoldersPath = GetNuGetFoldersPath $testRootFolderPath
-$nugetFoldersPath = GetAbsolutePath $nugetFoldersPath
+$resultsFolderPath = GetAbsolutePath $resultsFolderPath
+
 $sourceRootFolderPath = [System.IO.Path]::Combine($testRootFolderPath, "source")
+
+if([string]::IsNullOrEmpty($logsFolderPath))
+{
+    $deleteLogs = $True
+    $logsFolderPath = [System.IO.Path]::Combine($testRootFolderPath, "logs")
+} 
+else 
+{
+    $deleteLogs = $False
+    $logsFolderPath = GetAbsolutePath $logsFolderPath
+}
 
 If ([System.IO.Path]::GetDirectoryName($resultsFolderPath).StartsWith($nugetFoldersPath))
 {
@@ -100,6 +120,10 @@ Try
 Finally
 {
     Remove-Item -Recurse -Force $nugetFoldersPath -ErrorAction Ignore > $Null
+    if($deleteLogs)
+    {
+        Remove-Item -Recurse -Force $logsFolderPath -ErrorAction Ignore > $Null
+    }
 
     If (!$skipRepoCleanup)
     {
