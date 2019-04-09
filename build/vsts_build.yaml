@@ -229,8 +229,9 @@ phases:
   - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
     displayName: Verify Assembly Signatures and StrongName for the nupkgs, exes and VSIX
     inputs:
-      TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
-                     '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
+      TargetFolders: |
+        '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
+        '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
       WhiteListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
       WhiteListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
   
