@@ -22,6 +22,7 @@ namespace NuGet.CommandLine
     {
         private const string CommandSuffix = "Command";
         private CommandAttribute _commandAttribute;
+        private DeprecatedCommandAttribute _deprecatedCommandAttribute;
         private string _currentDirectory;
 
         protected Command()
@@ -104,6 +105,19 @@ namespace NuGet.CommandLine
             }
         }
 
+        public DeprecatedCommandAttribute DeprecatedCommandAttribute
+        {
+            get
+            {
+                if (_deprecatedCommandAttribute == null)
+                {
+                    _deprecatedCommandAttribute = GetDeprecatedCommandAttribute();
+                }
+                return _deprecatedCommandAttribute;
+            }
+        }
+
+
         public virtual bool IncludedInHelp(string optionName)
         {
             return true;
@@ -111,6 +125,14 @@ namespace NuGet.CommandLine
 
         public void Execute()
         {
+            if(DeprecatedCommandAttribute != null)
+            {
+                var binaryName = Assembly.GetExecutingAssembly().GetName().Name;
+                var currentCommand = CommandAttribute.CommandName;
+                var deprecationMessage = DeprecatedCommandAttribute.GetDeprecationMessage(binaryName, currentCommand);
+                Console.WriteWarning(deprecationMessage);
+            }
+
             if (Help)
             {
                 HelpCommand.ViewHelpForCommand(CommandAttribute.CommandName);
@@ -259,6 +281,18 @@ namespace NuGet.CommandLine
             {
                 return new CommandAttribute(name, LocalizedResourceManager.GetString("DefaultCommandDescription"));
             }
+            return null;
+        }
+
+        public DeprecatedCommandAttribute GetDeprecatedCommandAttribute()
+        {
+            var deprecatedAttrs = GetType().GetCustomAttributes(typeof(DeprecatedCommandAttribute), false);
+
+            if (deprecatedAttrs.Any())
+            {
+                return (DeprecatedCommandAttribute)deprecatedAttrs.FirstOrDefault();
+            }
+
             return null;
         }
     }

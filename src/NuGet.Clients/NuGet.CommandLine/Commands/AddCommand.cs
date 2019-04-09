@@ -13,6 +13,7 @@ namespace NuGet.CommandLine
     [Command(typeof(NuGetCommand), "add", "AddCommandDescription",
         MinArgs = 1, MaxArgs = 1, UsageDescriptionResourceName = "AddCommandUsageDescription",
         UsageSummaryResourceName = "AddCommandUsageSummary", UsageExampleResourceName = "AddCommandUsageExamples")]
+    [DeprecatedCommand(typeof(PushCommand))]
     public class AddCommand : Command
     {
         [Option(typeof(NuGetCommand), "AddCommandSourceDescription", AltName = "src")]

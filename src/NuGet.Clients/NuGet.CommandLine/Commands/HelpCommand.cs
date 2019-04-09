@@ -72,14 +72,14 @@ namespace NuGet.CommandLine
 
             var commands = from c in _commandManager.GetCommands()
                            orderby c.CommandAttribute.CommandName
-                           select c.CommandAttribute;
+                           select new { c.CommandAttribute, c.DeprecatedCommandAttribute};
 
             // Padding for printing
-            int maxWidth = commands.Max(c => c.CommandName.Length + GetAltText(c.AltName).Length);
+            var maxWidth = commands.Max(c => c.CommandAttribute.CommandName.Length + GetAltText(c.CommandAttribute.AltName).Length);
 
             foreach (var command in commands)
             {
-                PrintCommand(maxWidth, command);
+                PrintCommand(maxWidth, command.CommandAttribute, command.DeprecatedCommandAttribute);
                 Console.WriteLine();
             }
 
@@ -91,13 +91,16 @@ namespace NuGet.CommandLine
         // Help command always outputs NuGet version
         protected override bool ShouldOutputNuGetVersion { get { return true; } }
 
-        private void PrintCommand(int maxWidth, CommandAttribute commandAttribute)
+        private void PrintCommand(int maxWidth, CommandAttribute commandAttribute, DeprecatedCommandAttribute deprecatedCommandAttribute = null)
         {
             // Write out the command name left justified with the max command's width's padding
             Console.Write(" {0, -" + maxWidth + "}   ", GetCommandText(commandAttribute));
             // Starting index of the description
             int descriptionPadding = maxWidth + 4;
-            Console.PrintJustified(descriptionPadding, commandAttribute.Description);
+
+            var deprecatedWord = deprecatedCommandAttribute != null ? $"({deprecatedCommandAttribute.GetDeprepateWord()}) " : string.Empty;
+
+            Console.PrintJustified(descriptionPadding, deprecatedWord + commandAttribute.Description);
         }
 
         private static string GetCommandText(CommandAttribute commandAttribute)
@@ -109,6 +112,12 @@ namespace NuGet.CommandLine
         {
             ICommand command = _commandManager.GetCommand(commandName);
             CommandAttribute attribute = command.CommandAttribute;
+
+            if (command.DeprecatedCommandAttribute != null)
+            {
+                var message = command.DeprecatedCommandAttribute.GetDeprecationMessage(_commandExe, attribute.CommandName);
+                Console.WriteWarning(message);
+            }
 
             Console.WriteLine("usage: {0} {1} {2}", _commandExe, attribute.CommandName, attribute.UsageSummary);
             Console.WriteLine();
