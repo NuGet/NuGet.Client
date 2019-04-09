@@ -1015,6 +1015,24 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specify option -SkipDuplicate to automatically skip..
+        /// </summary>
+        internal static string PushCommandSkipDuplicateAdvertise {
+            get {
+                return ResourceManager.GetString("PushCommandSkipDuplicateAdvertise", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The option -SkipDuplicate is not currently supported for this type of push..
+        /// </summary>
+        internal static string PushCommandSkipDuplicateNotImplemented {
+            get {
+                return ResourceManager.GetString("PushCommandSkipDuplicateNotImplemented", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Repository content URL for repository signatures must be HTTPS..
         /// </summary>
         internal static string RepositoryContentUrlMustBeHttps {

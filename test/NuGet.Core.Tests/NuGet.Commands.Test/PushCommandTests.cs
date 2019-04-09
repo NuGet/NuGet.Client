@@ -46,6 +46,8 @@ namespace NuGet.Commands.Test
                     0, // timeout
                     false, // disable buffering
                     false, // no symbols,
+                    false, // no continue on duplicate
+                    false, // no continue on invalid
                     false, // enable server endpoint
                     new TestLogger());
 

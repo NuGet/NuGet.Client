@@ -116,6 +116,8 @@ namespace NuGet.CommandLine.XPlat
                             disableBufferingValue,
                             noSymbolsValue,
                             noServiceEndpoint,
+                            continueOnDuplicate: false,
+                            continueOnInvalid: false,
                             getLogger());
                     }
                     catch (TaskCanceledException ex)
