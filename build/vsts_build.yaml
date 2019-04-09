@@ -227,14 +227,17 @@ phases:
       arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
 
   - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
-    displayName: Verify Assembly Signatures and StrongName for the nupkgs, exes and VSIX
+    displayName: Verify Assembly Signatures and StrongName for the nupkgs
     inputs:
-      TargetFolders: |
-        '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
-        '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
+      TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
+
+  - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
+    displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
+    inputs:
+      TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
       WhiteListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
       WhiteListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
-  
+
   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
