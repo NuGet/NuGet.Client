@@ -405,9 +405,6 @@ namespace NuGet.Protocol.Core.Types
                  AdvertiseAvailableOptionToIgnore(response.StatusCode, logger);
 #endif
             }
-
-            //No exception to the rule specified.
-            response.EnsureSuccessStatusCode();
             return null;
         }
 
@@ -460,7 +457,6 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="logger"></param>
         private static void AdvertiseAvailableOptionToIgnore(HttpStatusCode errorCodeThatOccurred, ILogger logger)
         {
-            
             string advertiseDescription = null;
 
             switch (errorCodeThatOccurred)

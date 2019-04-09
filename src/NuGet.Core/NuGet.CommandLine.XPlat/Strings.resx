@@ -591,4 +591,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="ListPkg_DeprecationReasons" xml:space="preserve">
     <value>Reason(s)</value>
   </data>
+  <data name="PushCommandSkipDuplicateDescription" xml:space="preserve">
+    <value>If a package and version already exists, skip it and continue with the next package in the push, if any.</value>
+  </data>
 </root>
