@@ -125,14 +125,6 @@ namespace NuGet.CommandLine
 
         public void Execute()
         {
-            if(DeprecatedCommandAttribute != null)
-            {
-                var binaryName = Assembly.GetExecutingAssembly().GetName().Name;
-                var currentCommand = CommandAttribute.CommandName;
-                var deprecationMessage = DeprecatedCommandAttribute.GetDeprecationMessage(binaryName, currentCommand);
-                Console.WriteWarning(deprecationMessage);
-            }
-
             if (Help)
             {
                 HelpCommand.ViewHelpForCommand(CommandAttribute.CommandName);
@@ -171,6 +163,13 @@ namespace NuGet.CommandLine
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
 
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder(CommandLineConstants.UserAgent));
+
+                if (DeprecatedCommandAttribute != null)
+                {
+                    var binaryName = Assembly.GetExecutingAssembly().GetName().Name;
+                    var deprecationMessage = DeprecatedCommandAttribute.GetDeprecationMessage(binaryName, CommandAttribute.CommandName);
+                    Console.WriteWarning(deprecationMessage);
+                }
 
                 OutputNuGetVersion();
                 ExecuteCommandAsync().GetAwaiter().GetResult();

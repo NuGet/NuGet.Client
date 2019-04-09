@@ -21,12 +21,14 @@ namespace NuGet.CommandLine
             var cmdAttrs = AlternativeCommand.GetCustomAttributes(typeof(CommandAttribute), false);
             var cmdAttr = cmdAttrs.FirstOrDefault() as CommandAttribute;
 
-            return string.Format("'{0} {1}' is deprecated. Use '{0} {2}' instead", binaryName, currentCommand, cmdAttr);
+            // TODO: Use string resource
+            return string.Format("'{0} {1}' is deprecated. Use '{0} {2}' instead", binaryName, currentCommand, cmdAttr.CommandName);
         }
 
 
         public string GetDeprepateWord()
         {
+            // TODO: Use string resource
             return "DEPRECATED";
         }
     }
