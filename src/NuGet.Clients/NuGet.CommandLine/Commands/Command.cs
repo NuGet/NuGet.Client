@@ -166,8 +166,7 @@ namespace NuGet.CommandLine
 
                 if (DeprecatedCommandAttribute != null)
                 {
-                    var binaryName = Assembly.GetExecutingAssembly().GetName().Name;
-                    var deprecationMessage = DeprecatedCommandAttribute.GetDeprecationMessage(binaryName, CommandAttribute.CommandName);
+                    var deprecationMessage = DeprecatedCommandAttribute.GetDeprecationMessage(CommandAttribute.CommandName);
                     Console.WriteWarning(deprecationMessage);
                 }
 

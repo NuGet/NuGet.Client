@@ -98,7 +98,7 @@ namespace NuGet.CommandLine
             // Starting index of the description
             int descriptionPadding = maxWidth + 4;
 
-            var deprecatedWord = deprecatedCommandAttribute != null ? $"({deprecatedCommandAttribute.GetDeprepateWord()}) " : string.Empty;
+            var deprecatedWord = deprecatedCommandAttribute != null ? $"({deprecatedCommandAttribute.DeprecatedWord()}) " : string.Empty;
 
             Console.PrintJustified(descriptionPadding, deprecatedWord + commandAttribute.Description);
         }
@@ -115,7 +115,7 @@ namespace NuGet.CommandLine
 
             if (command.DeprecatedCommandAttribute != null)
             {
-                var message = command.DeprecatedCommandAttribute.GetDeprecationMessage(_commandExe, attribute.CommandName);
+                var message = command.DeprecatedCommandAttribute.GetDeprecationMessage(attribute.CommandName);
                 Console.WriteWarning(message);
             }
 
@@ -205,7 +205,8 @@ namespace NuGet.CommandLine
                 {
                     CommandAttribute = command.CommandAttribute,
                     Options = from item in _commandManager.GetCommandOptions(command)
-                              select new { Name = item.Value.Name, Description = item.Key.Description }
+                              select new { Name = item.Value.Name, Description = item.Key.Description },
+                    DeprecatedCommandAttribute = command.DeprecatedCommandAttribute
                 };
                 Console.WriteLine(template.TransformText());
             }
