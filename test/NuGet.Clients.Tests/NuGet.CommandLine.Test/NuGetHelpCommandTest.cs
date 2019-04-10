@@ -15,6 +15,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("pack")]
         [InlineData("push")]
         [InlineData("restore")]
+        [InlineData("search")]
         [InlineData("setApiKey")]
         [InlineData("sources")]
         [InlineData("spec")]

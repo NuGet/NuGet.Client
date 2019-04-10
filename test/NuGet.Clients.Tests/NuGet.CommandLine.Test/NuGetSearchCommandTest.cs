@@ -912,7 +912,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var args = "list test -Source " + invalidInput;
+            var args = $"{nugetCommand} test -Source {invalidInput}";
             var result = CommandRunner.Run(
                 nugetexe,
                 Directory.GetCurrentDirectory(),
@@ -942,7 +942,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var args = "list test -Source " + invalidInput;
+            var args = $"{nugetCommand} test -Source {invalidInput}";
             var result = CommandRunner.Run(
                 nugetexe,
                 Directory.GetCurrentDirectory(),
@@ -971,7 +971,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var args = "list test -Source " + invalidInput;
+            var args = $"{nugetCommand} test -Source {invalidInput}";
             var result = CommandRunner.Run(
                 nugetexe,
                 Directory.GetCurrentDirectory(),
@@ -1206,7 +1206,9 @@ namespace NuGet.CommandLine.Test
         /// <summary>
         /// Generates parameters for running the command with "list" and "search" verbs
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// An array of paired objects, each with the command
+        /// and the flag for checking the warning deprecation message</returns>
         public static IEnumerable<object[]> GetCommands()
         {
             yield return new object[] { "list", true };
@@ -1217,13 +1219,13 @@ namespace NuGet.CommandLine.Test
         /// Validates nuget.exe list deprecation output
         /// </summary>
         /// <param name="validateWarning">Whether or not do the validation</param>
-        /// <param name="message"></param>
+        /// <param name="message">The output message to test</param>
         public static void ConditionalValidateDeprecateWarning(bool validateWarning, string output)
         {
             if (validateWarning)
             {
                 Assert.Contains(
-                    string.Format("WARNING: {0}", NuGetResources.ListCommandDeprecatedMessage),
+                    "WARNING: 'NuGet list' is deprecated. Use 'NuGet Search' instead",
                     output,
                     StringComparison.OrdinalIgnoreCase);
             }

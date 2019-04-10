@@ -592,6 +592,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0} {1}&apos; is deprecated. Use &apos;{0} {2}&apos; instead.
+        /// </summary>
+        public static string CommandDeprecationWarning {
+            get {
+                return ResourceManager.GetString("CommandDeprecationWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to WARNING: {0}.
         /// </summary>
         public static string CommandLine_Warning {
@@ -2343,6 +2352,15 @@ namespace NuGet.CommandLine {
         public static string DeleteCommandDeletingPackage_trk {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DEPRECATED.
+        /// </summary>
+        public static string DeprecatedWord {
+            get {
+                return ResourceManager.GetString("DeprecatedWord", resourceCulture);
             }
         }
         

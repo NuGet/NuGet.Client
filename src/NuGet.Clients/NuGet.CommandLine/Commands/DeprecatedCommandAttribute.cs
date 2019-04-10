@@ -7,6 +7,17 @@ using System.Reflection;
 
 namespace NuGet.CommandLine
 {
+    /// <summary>
+    /// Attribute for marking nuget.exe commands as deprecated.
+    ///
+    /// Using this attribute will in ICommand--based classes, it will show a warning message each
+    /// command invocation and in each help command invocation.
+    ///
+    /// You need to provide an alternative command to use this attribute
+    ///
+    /// <see cref="ICommand"/>
+    /// <see cref="Command"/>
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public sealed class DeprecatedCommandAttribute : Attribute
     {
@@ -14,6 +25,10 @@ namespace NuGet.CommandLine
 
         public DeprecatedCommandAttribute(Type alternativeCommand)
         {
+            if (alternativeCommand == null || !(alternativeCommand is ICommand))
+            {
+                throw new ArgumentException("alternativeCommand must be a Type that implements ICommand interface");
+            }
             AlternativeCommand = alternativeCommand;
         }
 
@@ -25,16 +40,15 @@ namespace NuGet.CommandLine
 
             var binaryName = Assembly.GetExecutingAssembly().GetName().Name;
 
-            // TODO: Use string resource
-            return string.Format("'{0} {1}' is deprecated. Use '{0} {2}' instead", binaryName, currentCommand, cmdAttr.CommandName);
-        }
+            var warningResource = LocalizedResourceManager.GetString("CommandDeprecationWarning");
 
+            return string.Format(warningResource, binaryName, currentCommand, cmdAttr.CommandName);
+        }
 
 
         public string DeprecatedWord()
         {
-            // TODO: Use string resource
-            return "DEPRECATED";
+            return LocalizedResourceManager.GetString("DeprecatedWord");
         }
     }
 }
