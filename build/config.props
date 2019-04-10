@@ -19,8 +19,8 @@
     <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">release/2.2.3xx;release/2.1.7xx</SdkTargetBranches>
     <!-- We need to update this netcoreassembly build number with every milestone to workaround any breaking api
     changes we might have made-->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">0</NetCoreAssemblyBuildNumber>
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">rtm</ReleaseLabel>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">2</NetCoreAssemblyBuildNumber>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview$(NetCoreAssemblyBuildNumber)</ReleaseLabel>
   </PropertyGroup>
 
   <!-- Dependency versions -->
