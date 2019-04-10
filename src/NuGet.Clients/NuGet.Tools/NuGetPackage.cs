@@ -570,6 +570,8 @@ namespace NuGetVSExtension
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
+                // event here?
+                // This is already on the UI thread I think. I can add the UI event and test timings in general.
                 if (ShouldMEFBeInitialized())
                 {
                     await InitializeMEFAsync();
@@ -597,6 +599,7 @@ namespace NuGetVSExtension
                     var windowFrame = FindExistingWindowFrame(project);
                     if (windowFrame == null)
                     {
+                        // This creates the new window, all on the UI thread. 
                         windowFrame = await CreateNewWindowFrameAsync(project);
                     }
 
