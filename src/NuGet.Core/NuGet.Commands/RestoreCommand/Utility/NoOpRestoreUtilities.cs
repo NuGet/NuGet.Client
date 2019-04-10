@@ -111,7 +111,7 @@ namespace NuGet.Commands
         /// This method verifies that the props/targets files and all the packages written out in the lock file are present on disk
         /// This does not account if the files were manually modified since the last restore
         /// </summary>
-        internal static bool VerifyAssetsAndMSBuildFilesAndPackagesArePresent(RestoreRequest request)
+        internal static bool VerifyAssetsAndMSBuildFilesAndLockFilesAndPackagesArePresent(RestoreRequest request)
         {
 
             if (!File.Exists(request.ExistingLockFile?.Path))
@@ -132,6 +132,12 @@ namespace NuGet.Commands
                 if (!File.Exists(propsFilePath))
                 {
                     request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PropsFileNotOnDisk, request.Project.Name, propsFilePath));
+                    return false;
+                }
+                var packageLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(request.Project);
+                if (!File.Exists(packageLockFilePath))
+                {
+                    request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_LockFileNotOnDisk, request.Project.Name, packageLockFilePath));
                     return false;
                 }
             }

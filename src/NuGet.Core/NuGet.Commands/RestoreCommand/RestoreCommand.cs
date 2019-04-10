@@ -130,7 +130,7 @@ namespace NuGet.Commands
                         {
                             noOpTelemetry.StartIntervalMeasure();
 
-                            var noOpSuccess = NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request);
+                            var noOpSuccess = NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndLockFilesAndPackagesArePresent(_request);
 
                             noOpTelemetry.EndIntervalMeasure(MsbuildAssetsVerificationDuration);
                             noOpTelemetry.TelemetryEvent[MsbuildAssetsVerificationResult] = noOpSuccess;
