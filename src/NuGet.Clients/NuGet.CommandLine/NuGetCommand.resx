@@ -223,7 +223,7 @@ nuget install ninject -o c:\foo</value>
     <value>List all versions of a package. By default, only the latest package version is displayed.</value>
   </data>
   <data name="ListCommandDescription" xml:space="preserve">
-    <value>(Deprecated) Displays a list of packages from a given source. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used. If NuGet.config specifies no sources, uses the default NuGet feed.</value>
+    <value>Displays a list of packages from a given source. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used. If NuGet.config specifies no sources, uses the default NuGet feed.</value>
     <comment>Please don't localize "%AppData%\NuGet\NuGet.config", "NuGet.config".</comment>
   </data>
   <data name="ListCommandPrerelease" xml:space="preserve">

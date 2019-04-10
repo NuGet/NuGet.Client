@@ -15,6 +15,7 @@ namespace NuGet.CommandLine
     ///
     /// You need to provide an alternative command to use this attribute
     ///
+    /// 
     /// <see cref="ICommand"/>
     /// <see cref="Command"/>
     /// </summary>
@@ -25,7 +26,7 @@ namespace NuGet.CommandLine
 
         public DeprecatedCommandAttribute(Type alternativeCommand)
         {
-            if (alternativeCommand == null || !(alternativeCommand is ICommand))
+            if (alternativeCommand == null || !typeof(ICommand).IsAssignableFrom(alternativeCommand))
             {
                 throw new ArgumentException("alternativeCommand must be a Type that implements ICommand interface");
             }
