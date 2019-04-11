@@ -176,23 +176,20 @@ Function GetClientVersion([string] $nugetClientFilePath)
     Return $version
 }
 
-# Gets the NuGet folders path where all of the discardable data from the tests will be put.
-Function GetNuGetFoldersPath([string] $testRootFolderPath)
+# Gets the default test folder
+Function GetDefaultNuGetTestFolder()
 {
-    $nugetFoldersPath = $testRootFolderPath
+    Return $Env:UserProfile
+}
 
-    If ([string]::IsNullOrEmpty($nugetFoldersPath))
-    {
-        $nugetFoldersPath = $Env:UserProfile
-    }
-
-    $nugetFoldersPath = [System.IO.Path]::Combine($nugetFoldersPath, "np")
-
-    Return $nugetFoldersPath
+# Gets the NuGet folders path where all of the discardable data from the tests will be put.
+Function GetNuGetFoldersPath([string] $testFoldersPath)
+{
+    $nugetFoldersPath = [System.IO.Path]::Combine($testFoldersPath, "np")
+    return GetAbsolutePath $nugetFoldersPath
 }
 
 # Sets up the global packages folder, http cache and plugin caches and cleans them before starting.
-# TODO NK - How about temp?
 Function SetupNuGetFolders([string] $nugetClientFilePath, [string] $nugetFoldersPath)
 {
     $Env:NUGET_PACKAGES = [System.IO.Path]::Combine($nugetFoldersPath, "gpf")
@@ -209,7 +206,7 @@ Function SetupNuGetFolders([string] $nugetClientFilePath, [string] $nugetFolders
 # This should only be invoked by the the performance tests
 Function CleanNuGetFolders([string] $nugetClientFilePath, [string] $nugetFoldersPath)
 {
-    Log "Cleanup up the NuGet folders - global packages folder, http/plugins caches"
+    Log "Cleanup up the NuGet folders - global packages folder, http/plugins caches. Client: $nugetClientFilePath. Folders: $nugetFoldersPath"
 
     LocalsClearAll $nugetClientFilePath
 
