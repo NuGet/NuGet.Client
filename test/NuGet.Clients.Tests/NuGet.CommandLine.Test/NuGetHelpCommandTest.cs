@@ -11,6 +11,7 @@ namespace NuGet.CommandLine.Test
         [Theory]
         [InlineData("config")]
         [InlineData("delete")]
+        [InlineData("help")]
         [InlineData("install")]
         [InlineData("list")]
         [InlineData("pack")]
@@ -83,6 +84,23 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void HelpCommand_All()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                "help -all",
+                waitForExit: true);
+
+            // Assert
+            Assert.True(r.Item1 == 0, r.AllOutput);
+        }
+
+        [Fact]
         public void HelpCommand_All_Markdown()
         {
             // Arrange
@@ -100,7 +118,7 @@ namespace NuGet.CommandLine.Test
                 });
 
             // Assert
-            Assert.Equal(0, r.Item1);
+            Assert.True(r.Item1 == 0, r.AllOutput);
         }
     }
 }

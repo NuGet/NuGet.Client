@@ -9,6 +9,9 @@ namespace NuGet.CommandLine
     /// Base class for used in the auto-generated Markdown template renderers
     /// <see cref="HelpCommandMarkdownTemplate"/>
     /// </summary>
+    /// <remarks>
+    /// Inspired from https://github.com/RazorGenerator/RazorGenerator/blob/master/RazorGenerator.Templating/RazorTemplateBase.cs
+    /// </remarks>
     public class HelpCommandMarkdownTemplateBase
     {
         private System.Text.StringBuilder _generatingEnvironment = new System.Text.StringBuilder();
