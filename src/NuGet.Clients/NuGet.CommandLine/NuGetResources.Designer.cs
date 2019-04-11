@@ -5560,15 +5560,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to list command is deprecated. Use search command instead..
-        /// </summary>
-        public static string ListCommandDeprecatedMessage {
-            get {
-                return ResourceManager.GetString("ListCommandDeprecatedMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to No packages found..
         /// </summary>
         public static string ListCommandNoPackages {
