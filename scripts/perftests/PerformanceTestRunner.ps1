@@ -14,9 +14,6 @@ The test root folder path. All temporary assets will be stored here. That includ
 .PARAMETER logsFolderPath
 The logs folder path. 
 
-.PARAMETER nugetFoldersPath
-The temp folder for all the nuget assets. This includes the location of the global packages folder, http, plugins cache & temp location 
-
 .PARAMETER iterationCount
 How many times to run each test. The default is 3
 
