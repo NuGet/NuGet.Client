@@ -515,4 +515,8 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   <data name="Plugin_DownloadNotSupportedSinceUnsignedNotAllowed" xml:space="preserve">
     <value>Downloading a package from a plugin is not supported since unsigned packages are not allowed and package download plugins do not support signed package verification.</value>
   </data>
+  <data name="Plugin_ProblemStartingPlugin" xml:space="preserve">
+    <value>Problem starting the plugin  '{0}'. {1}</value>
+    <comment>0 - plugin path, 1 - error message </comment>
+  </data>
 </root>
