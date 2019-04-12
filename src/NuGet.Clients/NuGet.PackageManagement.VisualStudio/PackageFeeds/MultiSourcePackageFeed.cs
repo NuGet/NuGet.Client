@@ -251,6 +251,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (loadingStatus != LoadingStatus.Loading
                     && telemetryState.ShouldEmit)
                 {
+                    // Is this Joel's event?
                     telemetryState.Duration.Stop();
                     _telemetryService.EmitTelemetryEvent(new SearchPageTelemetryEvent(
                         telemetryState.OperationId,

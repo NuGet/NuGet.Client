@@ -821,7 +821,7 @@ namespace NuGet.PackageManagement.UI
             CancellationToken token)
         {
             var exceptionList = new List<InvalidOperationException>();
-
+            
             foreach (var source in sources)
             {
                 var metadataResource = source.GetResource<PackageMetadataResource>();

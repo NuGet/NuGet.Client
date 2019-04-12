@@ -174,7 +174,7 @@ namespace NuGet.PackageManagement.UI
         public async Task UpdateStateAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
+            // Is this on the UI thread
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
 
             progress?.Report(_state);
