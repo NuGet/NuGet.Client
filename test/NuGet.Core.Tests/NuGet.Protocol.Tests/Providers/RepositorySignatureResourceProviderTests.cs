@@ -14,7 +14,7 @@ using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
-namespace NuGet.Protocol.Tests.Providers
+namespace NuGet.Protocol.Providers.Tests
 {
     public class RepositorySignatureResourceProviderTests
     {
@@ -136,6 +136,39 @@ namespace NuGet.Protocol.Tests.Providers
             Assert.Equal(_packageSource.Source, resource.Source);
             Assert.Single(resource.RepositoryCertificateInfos);
             Assert.StartsWith(serviceEntry500.Uri.AbsoluteUri, resource.RepositoryCertificateInfos.Single().ContentUrl);
+        }
+
+        [Theory]
+        [InlineData(_resourceUri500, _resourceType500, "repository_signatures_5.0.0")]
+        [InlineData(_resourceUri490, _resourceType490, "repository_signatures_4.9.0")]
+        [InlineData(_resourceUri470, _resourceType470, "repository_signatures_4.7.0")]
+        public async Task TryCreate_WhenResourceIsPresent_CreatesVersionedHttpCacheEntry(string resourceUrl, string resourceType, string expectedCacheKey)
+        {
+            var serviceEntry = new ServiceIndexEntry(new Uri(resourceUrl), resourceType, _defaultVersion);
+            var responses = new Dictionary<string, string>()
+            {
+                { serviceEntry.Uri.AbsoluteUri, GetRepositorySignaturesResourceJson(resourceUrl) }
+            };
+
+            var httpSource = new TestHttpSource(_packageSource, responses);
+            var resourceProviders = new ResourceProvider[]
+            {
+                CreateServiceIndexResourceV3Provider(serviceEntry),
+                StaticHttpSource.CreateHttpSource(responses, httpSource: httpSource),
+                _repositorySignatureResourceProvider
+            };
+            var sourceRepository = new SourceRepository(_packageSource, resourceProviders);
+            string actualCacheKey = null;
+
+            httpSource.HttpSourceCachedRequestInspector = request =>
+            {
+                actualCacheKey = request.CacheKey;
+            };
+
+            var result = await _repositorySignatureResourceProvider.TryCreate(sourceRepository, CancellationToken.None);
+
+            Assert.True(result.Item1);
+            Assert.Equal(expectedCacheKey, actualCacheKey);
         }
 
         private static ServiceIndexResourceV3Provider CreateServiceIndexResourceV3Provider(params ServiceIndexEntry[] entries)
