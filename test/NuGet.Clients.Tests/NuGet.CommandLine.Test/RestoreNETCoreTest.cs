@@ -6430,11 +6430,12 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_NoOp_PackageLockFileMissingWillFailNoOpAndGenerateNewLockFile()
+        public async Task RestoreNetCore_NoOp_EnableRestorePackagesWithLockFile_BySetProperty_ThenDeletePackageLockFile()
         {
             // Related issue: https://github.com/NuGet/Home/issues/7807
-            // First restore should generate the package lock file. After deleting the package lock file, run the second restore.
-            // The second restore should fail the No-op, and generate the package lock file.
+            // First senario : Enable RestorePackagesWithLockFile by only setting property.
+            //     First restore should fail the No-op, generate the package lock file. After deleting the package lock file, run the second restore.
+            //     The second restore should fail the No-op, and generate the package lock file. 
 
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -6468,27 +6469,223 @@ namespace NuGet.CommandLine.Test
                    packageX);
 
 
-                // Prerequisites  
+                var packageLockFileName = project.NuGetLockFileOutputPath;
+                var noOpFailedMsg = "The Lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
+
+                // Act  
                 var result1 = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
 
+                // Assert
                 Assert.Equal(0, result1.Item1);
                 Assert.Contains("Writing packages lock file at disk.", result1.Item2);
-
-                var packageLockFileName = Path.Combine(Path.GetDirectoryName(project.ProjectPath), "packages.lock.json");
                 Assert.True(File.Exists(packageLockFileName));
 
+                // Act
                 File.Delete(packageLockFileName);
                 Assert.False(File.Exists(packageLockFileName));
+
+                var result2 = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
+
+                //Assert
+                Assert.Equal(0, result2.Item1);
+                Assert.Contains(noOpFailedMsg, result2.Item2);
+                Assert.Contains("Writing packages lock file at disk.", result2.Item2);
+                Assert.True(File.Exists(packageLockFileName));
+            }
+        }
+
+
+        [Fact]
+        public async Task RestoreNetCore_NoOp_EnableRestorePackagesWithLockFile_BySetProperty_ThenNotDeletePackageLockFile()
+        {
+            // Related issue: https://github.com/NuGet/Home/issues/7807
+            // Contrast test to the first senario : do not delete package lock file at the end of the first restore.
+            //     First restore should fail the No-op, generate the package lock file. DO NOT delete the package lock file, run the second restore.
+            //     The second restore should No-op, and won't generate the package lock file.
+
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                   $"proj",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net45"));
+
+                project.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                project.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   PackageSaveMode.Defaultv3,
+                   packageX);
+
+
+                var packageLockFileName = project.NuGetLockFileOutputPath;
+                var noOpFailedMsg = "The Lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
+                var noOpSucceedMsg = "No-Op restore. The cache will not be updated.";
+
+                // Act  
+                var result1 = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
+
+                // Assert
+                Assert.Equal(0, result1.Item1);
+                Assert.Contains("Writing packages lock file at disk.", result1.Item2);
+                Assert.True(File.Exists(packageLockFileName));
 
                 // Act
                 var result2 = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
 
                 //Assert
                 Assert.Equal(0, result2.Item1);
-                var noopFailedMsg = "The Lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
-                Assert.Contains(noopFailedMsg, result2.Item2);
-                Assert.Contains("Writing packages lock file at disk.", result2.Item2);
+                Assert.Contains(noOpSucceedMsg, result2.Item2);
+                Assert.DoesNotContain("Writing packages lock file at disk.", result2.Item2);
                 Assert.True(File.Exists(packageLockFileName));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_NoOp_EnableRestorePackagesWithLockFile_ByAddLockFile_ThenDeletePackageLockFile()
+        {
+            // Related issue: https://github.com/NuGet/Home/issues/7807
+            // Second senario : Enable RestorePackagesWithLockFile by only adding a lock file.
+            //      First restore should fail the No-op, regenerate the package lock file. After deleting the package lock file, run the second restore.
+            //      The second restore: since there is no property set and no lock file exists, no lockfile will be generated. And no-op succeed. 
+
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                   $"proj",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net45"));
+
+                project.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   PackageSaveMode.Defaultv3,
+                   packageX);
+
+                var packageLockFileName = project.NuGetLockFileOutputPath;
+                Assert.False(File.Exists(packageLockFileName));
+                File.Create(packageLockFileName).Close(); 
+                Assert.True(File.Exists(packageLockFileName));
+
+
+                var noOpFailedMsg = "The Lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
+                var noOpSucceedMsg = "No-Op restore. The cache will not be updated.";
+
+                // Act
+                var result1 = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
+
+                // Assert
+                Assert.Equal(0, result1.Item1);
+                Assert.Contains("Writing packages lock file at disk.", result1.Item2);
+                Assert.True(File.Exists(packageLockFileName));
+
+                // Act
+                File.Delete(packageLockFileName);
+                Assert.False(File.Exists(packageLockFileName));
+
+                var result2 = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
+
+                //Assert
+                Assert.Equal(0, result2.Item1);
+                Assert.Contains(noOpSucceedMsg, result2.Item2);
+                Assert.DoesNotContain("Writing packages lock file at disk.", result2.Item2);
+                Assert.False(File.Exists(packageLockFileName));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_NoOp_EnableRestorePackagesWithLockFile_ByAddLockFile_ThenNotDeletePackageLockFile()
+        {
+            // Related issue: https://github.com/NuGet/Home/issues/7807
+            // Contrast test to the second senario : do not delete package lock file at the end of the first restore.
+            //      First restore should fail the No-op, regenerate the package lock file. DO NOT delete the package lock file, run the second restore.
+            //      The second restore: No lockfile will be generated. And no-op succeed. 
+
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                   $"proj",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net45"));
+
+                project.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   PackageSaveMode.Defaultv3,
+                   packageX);
+
+                var packageLockFileName = project.NuGetLockFileOutputPath;
+                Assert.False(File.Exists(packageLockFileName));
+                File.Create(packageLockFileName).Close();
+                Assert.True(File.Exists(packageLockFileName));
+
+
+                var noOpFailedMsg = "The Lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
+                var noOpSucceedMsg = "No-Op restore. The cache will not be updated.";
+
+                // Act
+                var result1 = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
+
+                // Assert
+                Assert.Equal(0, result1.Item1);
+                Assert.Contains("Writing packages lock file at disk.", result1.Item2);
+                Assert.True(File.Exists(packageLockFileName));
+
+                // Act
+                var result2 = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
+
+                //Assert
+                Assert.Equal(0, result2.Item1);
+                Assert.Contains(noOpSucceedMsg, result2.Item2);
+                Assert.DoesNotContain("Writing packages lock file at disk.", result2.Item2);
+                Assert.False(File.Exists(packageLockFileName));
             }
         }
 

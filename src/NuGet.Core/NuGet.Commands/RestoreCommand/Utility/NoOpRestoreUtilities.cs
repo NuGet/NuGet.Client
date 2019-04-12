@@ -134,12 +134,16 @@ namespace NuGet.Commands
                     request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PropsFileNotOnDisk, request.Project.Name, propsFilePath));
                     return false;
                 }
-                var packageLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(request.Project);
-                if (!File.Exists(packageLockFilePath))
+                if (PackagesLockFileUtilities.IsNuGetLockFileSupported(request.Project))
                 {
-                    request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_LockFileNotOnDisk, request.Project.Name, packageLockFilePath));
-                    return false;
+                    var packageLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(request.Project);
+                    if (!File.Exists(packageLockFilePath))
+                    {
+                        request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_LockFileNotOnDisk, request.Project.Name, packageLockFilePath));
+                        return false;
+                    }
                 }
+                
             }
 
             if (!VerifyPackagesOnDisk(request))
