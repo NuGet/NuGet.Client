@@ -365,7 +365,7 @@ namespace NuGet.Build.Tasks.Pack
                 }
             }
 
-            builder.FrameworkReferenceGroups.AddRange( // TODO NK - Check the writing.
+            builder.FrameworkReferenceGroups.AddRange(
                 tfmSpecificRefs.Select(e =>
                     new FrameworkReferenceGroup(
                         NuGetFramework.Parse(e.Key),
