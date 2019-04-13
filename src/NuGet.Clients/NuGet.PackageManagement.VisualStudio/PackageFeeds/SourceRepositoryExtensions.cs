@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +33,9 @@ namespace NuGet.PackageManagement.VisualStudio
         public static async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(
             this SourceRepository sourceRepository, ContinuationToken continuationToken, int pageSize, CancellationToken cancellationToken)
         {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+
             var searchToken = continuationToken as FeedSearchContinuationToken;
             if (searchToken == null)
             {
@@ -77,6 +81,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     StartIndex = searchToken.StartIndex + items.Length
                 };
             }
+            stopWatch.Stop();
+            result.Duration = stopWatch.Elapsed;
 
             return result;
         }

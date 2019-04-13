@@ -178,6 +178,8 @@ namespace NuGet.PackageManagement.VisualStudio
             TelemetryState telemetryState,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (searchTasks.Count == 0)
             {
                 return SearchResult.Empty<IPackageSearchMetadata>();
@@ -196,23 +198,29 @@ namespace NuGet.PackageManagement.VisualStudio
                     RetryAfter = DefaultTimeout
                 };
             }
-
+            
             var partitionedTasks = searchTasks
                 .ToLookup(t => t.Value.Status == TaskStatus.RanToCompletion);
-
+            
             var completedOnly = partitionedTasks[true];
 
             SearchResult<IPackageSearchMetadata> aggregated;
-
+            IEnumerable<TimeSpan> timings = null;
+            Stopwatch timeAggregation = null;
             if (completedOnly.Any())
             {
                 var results = await Task.WhenAll(completedOnly.Select(kv => kv.Value));
+                timings = results.Select(e => e.Duration);
+                timeAggregation = new Stopwatch();
+                timeAggregation.Start();
                 aggregated = await AggregateSearchResultsAsync(searchText, results, telemetryState);
+                timeAggregation.Stop();
             }
             else
             {
                 aggregated = SearchResult.Empty<IPackageSearchMetadata>();
             }
+
 
             aggregated.OperationId = telemetryState?.OperationId;
             aggregated.RefreshToken = refreshToken;
@@ -251,13 +259,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (loadingStatus != LoadingStatus.Loading
                     && telemetryState.ShouldEmit)
                 {
-                    // Is this Joel's event?
                     telemetryState.Duration.Stop();
                     _telemetryService.EmitTelemetryEvent(new SearchPageTelemetryEvent(
                         telemetryState.OperationId,
                         telemetryState.PageIndex,
                         aggregated.Items?.Count ?? 0,
                         telemetryState.Duration.Elapsed,
+                        timings,
+                        timeAggregation.Elapsed,
                         loadingStatus));
                 }
             }

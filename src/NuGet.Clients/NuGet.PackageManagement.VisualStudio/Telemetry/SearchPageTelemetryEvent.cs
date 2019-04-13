@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 
@@ -18,12 +20,16 @@ namespace NuGet.PackageManagement.Telemetry
             int pageIndex,
             int resultCount,
             TimeSpan duration,
+            IEnumerable<TimeSpan> sourceTimings,
+            TimeSpan aggregationTime,
             LoadingStatus loadingStatus) : base("SearchPage")
         {
             base["ParentId"] = parentId.ToString();
             base["PageIndex"] = pageIndex;
             base["ResultCount"] = resultCount;
             base["Duration"] = duration.TotalSeconds;
+            base["SourceTimingDuration"] = string.Join(",", sourceTimings?.Select(e => e.TotalMilliseconds);
+            base["AggregationDuration"] = aggregationTime.TotalMilliseconds;
             base["LoadingStatus"] = loadingStatus.ToString();
         }
     }
