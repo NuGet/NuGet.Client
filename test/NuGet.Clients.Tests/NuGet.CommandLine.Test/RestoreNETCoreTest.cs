@@ -6631,7 +6631,7 @@ namespace NuGet.CommandLine.Test
             // Related issue: https://github.com/NuGet/Home/issues/7807
             // Contrast test to the second senario : do not delete package lock file at the end of the first restore.
             //      First restore should fail the No-op, regenerate the package lock file. DO NOT delete the package lock file, run the second restore.
-            //      The second restore: No lockfile will be generated. And no-op succeed. 
+            //      The second restore: No-op should succeed, lock file will not be regenerated.
 
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -6685,7 +6685,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, result2.Item1);
                 Assert.Contains(noOpSucceedMsg, result2.Item2);
                 Assert.DoesNotContain("Writing packages lock file at disk.", result2.Item2);
-                Assert.False(File.Exists(packageLockFileName));
+                Assert.True(File.Exists(packageLockFileName));
             }
         }
 
