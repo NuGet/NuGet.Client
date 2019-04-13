@@ -28,8 +28,8 @@ namespace NuGet.PackageManagement.Telemetry
             base["PageIndex"] = pageIndex;
             base["ResultCount"] = resultCount;
             base["Duration"] = duration.TotalSeconds;
-            base["SourceTimingDuration"] = string.Join(",", sourceTimings?.Select(e => e.TotalMilliseconds);
-            base["AggregationDuration"] = aggregationTime.TotalMilliseconds;
+            base["SourceTimingDuration"] = string.Join(",", sourceTimings?.Select(e => e.TotalSeconds));
+            base["AggregationDuration"] = aggregationTime.TotalSeconds;
             base["LoadingStatus"] = loadingStatus.ToString();
         }
     }

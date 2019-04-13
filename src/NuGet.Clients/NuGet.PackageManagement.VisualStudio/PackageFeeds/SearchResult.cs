@@ -33,6 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
         // total number of unmerged items found
         public int RawItemsCount { get; set; }
 
+        // TODO NK: The status could be combined in a dictionary
         public TimeSpan Duration { get; set; }
     }
 
