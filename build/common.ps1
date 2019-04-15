@@ -243,6 +243,17 @@ Function Get-LatestVisualStudioRoot {
     Error-Log "Could not find a compatible Visual Studio Version because $BuiltInVsWhereExe does not exist" -Fatal
 }
 
+<#
+.SYNOPSIS
+Finds a suitable VSVersion based on the environment configuration
+
+.DESCRIPTION
+Finds a suitable VSVersion based on the environment configuration,
+if $VSVersion is set, that means we're running in a developer command prompt so we prefer that.
+otherwise we pick the latest Visual Studio version available on the machine.
+
+#>
+
 Function Get-VSVersion() {
     if (-not $VSVersion) {
         if(-not $script:FallbackVSVersion){
@@ -285,9 +296,10 @@ Function Get-MSBuildExe {
     param(
         [int]$MSBuildVersion
     )
+
     # Get the highest msbuild version if version was not specified
     if (-not $MSBuildVersion) {
-        return Get-MSBuildExe $DefaultMSBuildVersion
+        return Get-MSBuildExe
     }
 
     $MSBuildRoot = Get-MSBuildRoot

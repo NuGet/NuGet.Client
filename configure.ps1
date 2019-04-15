@@ -129,21 +129,6 @@ Invoke-BuildStep $validateToolsetMessage {
     if ($vstoolset) {
         $ConfigureObject.Toolsets.Add('vstoolset', $vstoolset)
         $script:MSBuildExe = Get-MSBuildExe $vsMajorVersion
-        $vsVersion = Get-VSVersion
-
-        # Hack VSSDK path
-        $MSBuildDefaultRoot = Get-MSBuildRoot
-        Write-Host "The MSBuildDefaultRoot is $MSBuildDefaultRoot"
-
-        $VSToolsPath = Join-Path $MSBuildDefaultRoot "Microsoft\VisualStudio\v${vsVersion}"
-        $Targets = Join-Path $VSToolsPath 'VSSDK\Microsoft.VsSDK.targets'
-        if (-not (Test-Path $Targets)) {
-            Warning-Log "VSSDK is not found at default location '$VSToolsPath'. Attempting to override."
-            # Attempting to fix VS SDK path for VS willow install builds
-            # as MSBUILD failes to resolve it correctly
-            $VSToolsPath = Join-Path $vstoolset.VisualStudioInstallDir "..\..\MSBuild\Microsoft\VisualStudio\v${vsVersion}" -Resolve
-            $ConfigureObject.Add('EnvVars', @{ VSToolsPath = $VSToolsPath })
-        }
     }
 } -ev +BuildErrors
 
