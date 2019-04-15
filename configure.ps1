@@ -120,9 +120,6 @@ if (-not $ProgramFiles -or -not (Test-Path $ProgramFiles)) {
     $ProgramFiles = $env:ProgramFiles
 }
 
-$MSBuildDefaultRoot = Get-MSBuildRoot
-Write-Host "The MSBuildDefaultRoot is $MSBuildDefaultRoot"
-
 $vsMajorVersion = Get-VSMajorVersion
 $validateToolsetMessage = "Validating VS $vsMajorVersion toolset installation" 
 
@@ -135,6 +132,9 @@ Invoke-BuildStep $validateToolsetMessage {
         $vsVersion = Get-VSVersion
 
         # Hack VSSDK path
+        $MSBuildDefaultRoot = Get-MSBuildRoot
+        Write-Host "The MSBuildDefaultRoot is $MSBuildDefaultRoot"
+
         $VSToolsPath = Join-Path $MSBuildDefaultRoot "Microsoft\VisualStudio\v${vsVersion}"
         $Targets = Join-Path $VSToolsPath 'VSSDK\Microsoft.VsSDK.targets'
         if (-not (Test-Path $Targets)) {
