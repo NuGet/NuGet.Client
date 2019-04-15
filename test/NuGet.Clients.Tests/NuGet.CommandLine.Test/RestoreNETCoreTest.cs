@@ -6182,6 +6182,47 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void RestoreNetCore_PackagesLockFile_LowercaseProjectNameSolutionRestore()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "ProjectA",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net46"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "ProjectB",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                // A -> B
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+                lockFile.Targets.Should().HaveCount(1);
+                var projectReference = lockFile.Targets[0].Dependencies.SingleOrDefault(d => d.Type == PackageDependencyType.Project);
+                StringComparer.Ordinal.Equals(projectReference.Id, projectB.ProjectName.ToLowerInvariant()).Should().BeTrue();
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_BuildTransitive()
         {
             // Arrange
