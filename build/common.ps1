@@ -1,8 +1,4 @@
 ### Constants ###
-$DefaultConfiguration = 'debug' # remove these 2 maybe?
-$DefaultReleaseLabel = 'zlocal'
-$DefaultMSBuildVersion = 15
-
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $CLIRoot = Join-Path $NuGetClientRoot cli
 $Artifacts = Join-Path $NuGetClientRoot artifacts
@@ -297,9 +293,8 @@ Function Get-MSBuildExe {
         [int]$MSBuildVersion
     )
 
-    # Get the highest msbuild version if version was not specified
     if (-not $MSBuildVersion) {
-        return Get-MSBuildExe
+        return Get-MSBuildExe 15
     }
 
     $MSBuildRoot = Get-MSBuildRoot
@@ -315,17 +310,6 @@ Function Get-MSBuildExe {
     } else {
         Error-Log 'Could not find MSBuild.exe' -Fatal
     }
-}
-
-Function Test-MSBuildVersionPresent {
-    [CmdletBinding()]
-    param(
-        [int]$MSBuildVersion = $DefaultMSBuildVersion
-    )
-
-    $MSBuildExe = Get-MSBuildExe $MSBuildVersion
-
-    Test-Path $MSBuildExe
 }
 
 Function Test-BuildEnvironment {
