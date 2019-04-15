@@ -63,6 +63,7 @@ $ConfigureObject = @{
 
 Function New-BuildToolset {
     param(
+        [ValidateSet(15, 16)]
         [int]$ToolsetVersion
     )
     $CommonToolsVar = "Env:VS${ToolsetVersion}0COMNTOOLS"
@@ -84,7 +85,7 @@ Function New-BuildToolset {
         }
     }
 
-    if (-not $ToolsetObject -and $ToolsetVersion -gt 14) {
+    if (-not $ToolsetObject) {
         $VisualStudioInstallRootDir = Get-LatestVisualStudioRoot
 
         if ($VisualStudioInstallRootDir) {
@@ -120,7 +121,7 @@ if (-not $ProgramFiles -or -not (Test-Path $ProgramFiles)) {
 }
 
 $MSBuildDefaultRoot = Get-MSBuildRoot
-$MSBuildRelativePath = 'bin\msbuild.exe'
+Write-Host "The MSBuildDefaultRoot is $MSBuildDefaultRoot"
 
 $vsMajorVersion = Get-VSMajorVersion
 $validateToolsetMessage = "Validating VS $vsMajorVersion toolset installation" 
