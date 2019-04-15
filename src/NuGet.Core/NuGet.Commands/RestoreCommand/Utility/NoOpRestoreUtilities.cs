@@ -108,10 +108,11 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// This method verifies that the props/targets files and all the packages written out in the lock file are present on disk
+        /// This method verifies that the assets files, props/targets files and all the packages written out in the lock file are present on disk
+        /// When package lock file is supported, this method also verifies if the package lock file is present on disk 
         /// This does not account if the files were manually modified since the last restore
         /// </summary>
-        internal static bool VerifyAssetsAndMSBuildFilesAndLockFilesAndPackagesArePresent(RestoreRequest request)
+        internal static bool VerifyRestoreOutput(RestoreRequest request)
         {
 
             if (!File.Exists(request.ExistingLockFile?.Path))
