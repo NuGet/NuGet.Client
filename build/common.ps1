@@ -183,7 +183,8 @@ Function Install-DotnetCLI {
     param(
         [switch]$Force
     )
-    $MSBuildExe = Get-MSBuildExe
+    $vsMajorVersion = Get-VSMajorVersion
+    $MSBuildExe = Get-MSBuildExe $vsMajorVersion
     $CliBranchForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
 
     $cli = @{
@@ -268,14 +269,14 @@ Function Get-VSMajorVersion() {
     return $vsMajorVersion
 }
 
-Function Get-MSBuildRoot() {
+Function Get-MSBuildExe {
+    param(
+        [ValidateSet("15", "16")]
+        [string]$MSBuildVersion = "16"
+    )
 
-    $vsMajorVersion = Get-VSMajorVersion
-
-    # Find version 15.0 or newer
-    $CommonToolsVar = "Env:VS${vsMajorVersion}0COMNTOOLS"
+    $CommonToolsVar = "Env:VS${MSBuildVersion}0COMNTOOLS"
     if (Test-Path $CommonToolsVar) {
-        # If VS "15" is installed get msbuild from VS install path
         $CommonToolsValue = gci $CommonToolsVar | select -expand value -ea Ignore
         $MSBuildRoot = Join-Path $CommonToolsValue '..\..\MSBuild' -Resolve
     } else {
@@ -285,19 +286,6 @@ Function Get-MSBuildRoot() {
         }
     }
 
-    $MSBuildRoot
-}
-
-Function Get-MSBuildExe {
-    param(
-        [int]$MSBuildVersion
-    )
-
-    if (-not $MSBuildVersion) {
-        return Get-MSBuildExe 15
-    }
-
-    $MSBuildRoot = Get-MSBuildRoot
     $MSBuildExe = Join-Path $MSBuildRoot 'Current\bin\msbuild.exe'
 
     if (-not (Test-Path $MSBuildExe)) {
