@@ -1,20 +1,10 @@
 ### Constants ###
-$DefaultConfiguration = 'debug'
-$DefaultReleaseLabel = 'zlocal'
-$DefaultMSBuildVersion = 15
-$DefaultVSVersion = "15.0"
-
-# The pack version can be inferred from the .nuspec files on disk. This is only necessary as long
-# as the following issue is open: https://github.com/NuGet/Home/issues/3530
-$PackageReleaseVersion = "4.6.0"
-
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $CLIRoot = Join-Path $NuGetClientRoot cli
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $Nupkgs = Join-Path $Artifacts nupkgs
-$ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
 $ConfigureJson = Join-Path $Artifacts configure.json
-$VsWhereExe = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+$BuiltInVsWhereExe = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $VSVersion = $env:VisualStudioVersion
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
@@ -193,7 +183,9 @@ Function Install-DotnetCLI {
     param(
         [switch]$Force
     )
-    $MSBuildExe = Get-MSBuildExe
+    $vsMajorVersion = Get-VSMajorVersion
+    Write-Host "vsmajor version is $vsMajorVersion"
+    $MSBuildExe = Get-MSBuildExe $vsMajorVersion
     $CliBranchForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
 
     $cli = @{
@@ -234,54 +226,35 @@ Function Install-DotnetCLI {
 }
 
 Function Get-LatestVisualStudioRoot {
-    # First try to use vswhere to find the latest version of Visual Studio.
-    if (Test-Path $VsWhereExe) {
-        $installationPath = & $VsWhereExe -latest -prerelease -property installationPath
-        Verbose-Log "Found Visual Studio at '$installationPath' using vswhere"
+
+    if (Test-Path $BuiltInVsWhereExe) {
+        $installationPath = & $BuiltInVsWhereExe -latest -prerelease -property installationPath
+        $installationVersion = & $BuiltInVsWhereExe -latest -prerelease -property installationVersion
+        Verbose-Log "Found Visual Studio at '$installationPath' version '$installationVersion' with '$BuiltInVsWhereExe'"
+        # Set the fallback version
+        $majorVersion = "$installationVersion".Split('.')[0]
+        $script:FallbackVSVersion = "$majorVersion.0"
 
         return $installationPath
-    }
+    } 
 
-    $cachePath = "${Env:ProgramData}\Microsoft\VisualStudio\Packages"
-
-    # Fall back to reading JSON directly (not recommended).
-    'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\VisualStudio\Setup',
-    'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\Setup',
-    'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\Setup' | ForEach-Object {
-        if (Test-Path $_) {
-            $key = Get-ItemProperty $_
-
-            if ($key.CachePath) {
-                $cachePath = $key.CachePath
-                return
-            }
-        }
-    }
-
-    $instances = Get-ChildItem "$cachePath\_Instances" -Filter state.json -Recurse | Get-Content | ConvertFrom-Json
-    foreach ($instance in $instances) {
-        if (-not $maxInstance) {
-            $maxInstance = $instance
-        } elseif ([Version]$instance.installationVersion -gt [Version]$maxInstance.installationVersion) {
-            $maxInstance = $instance
-        } elseif (([Version]$instance.installationVersion -eq [Version]$maxInstance.installationVersion) -and ([DateTime]$instance.installDate -gt [DateTime]$maxInstance.installDate)) {
-            $maxInstance = $instance
-        }
-    }
-
-    if ($maxInstance) {
-        $installationPath = $maxInstance.installationPath
-        Verbose-Log "Found Visual Studio at '$installationPath' using machine configuration"
-
-        return $installationPath
-    }
-
-    Error-Log 'Cannot find an instance of Visual Studio 2017 or newer' -Fatal
+    Error-Log "Could not find a compatible Visual Studio Version because $BuiltInVsWhereExe does not exist" -Fatal
 }
 
+<#
+.DESCRIPTION
+Finds a suitable VSVersion based on the environment configuration,
+if $VSVersion is set, that means we're running in a developer command prompt so we prefer that.
+otherwise we pick the latest Visual Studio version available on the machine.
+#>
 Function Get-VSVersion() {
     if (-not $VSVersion) {
-        $VSVersion = $DefaultVSVersion
+        if(-not $script:FallbackVSVersion){
+            Verbose-Log "No fallback VS Version set yet. This means that we are running outside of a developer command prompt scope."
+            $_ = Get-LatestVisualStudioRoot
+        }
+        Verbose-Log "Using the fallback VS version '$script:FallbackVSVersion'"
+        $VSVersion = $script:FallbackVSVersion
     }
     return $VSVersion
 }
@@ -292,49 +265,27 @@ Function Get-VSMajorVersion() {
     return $vsMajorVersion
 }
 
-Function Get-MSBuildRoot {
+Function Get-MSBuildExe {
     param(
-        [switch]$Default
+        [ValidateSet("15", "16", $null)]
+        [string]$MSBuildVersion
     )
 
-    $vsMajorVersion = Get-VSMajorVersion
+    if(-not $MSBuildVersion){
+        $MSBuildVersion = Get-VSMajorVersion
+    }
 
-    # Willow install workaround
-    if (-not $Default) {
-
-        # Find version 15.0 or newer
-        $CommonToolsVar = "Env:VS${vsMajorVersion}0COMNTOOLS"
-        if (Test-Path $CommonToolsVar) {
-            # If VS "15" is installed get msbuild from VS install path
-            $CommonToolsValue = gci $CommonToolsVar | select -expand value -ea Ignore
-            $MSBuildRoot = Join-Path $CommonToolsValue '..\..\MSBuild' -Resolve
-        } else {
-            $VisualStudioRoot = Get-LatestVisualStudioRoot
-            if ($VisualStudioRoot -and (Test-Path $VisualStudioRoot)) {
-                $MSBuildRoot = Join-Path $VisualStudioRoot 'MSBuild'
-            }
+    $CommonToolsVar = "Env:VS${MSBuildVersion}0COMNTOOLS"
+    if (Test-Path $CommonToolsVar) {
+        $CommonToolsValue = gci $CommonToolsVar | select -expand value -ea Ignore
+        $MSBuildRoot = Join-Path $CommonToolsValue '..\..\MSBuild' -Resolve
+    } else {
+        $VisualStudioRoot = Get-LatestVisualStudioRoot
+        if ($VisualStudioRoot -and (Test-Path $VisualStudioRoot)) {
+            $MSBuildRoot = Join-Path $VisualStudioRoot 'MSBuild'
         }
     }
 
-    # If not found before
-    if (-not $MSBuildRoot -or -not (Test-Path $MSBuildRoot)) {
-        # Assume msbuild is installed at default location
-        $MSBuildRoot = Join-Path ${env:ProgramFiles(x86)} 'MSBuild'
-    }
-
-    $MSBuildRoot
-}
-
-Function Get-MSBuildExe {
-    param(
-        [int]$MSBuildVersion
-    )
-    # Get the highest msbuild version if version was not specified
-    if (-not $MSBuildVersion) {
-        return Get-MSBuildExe $DefaultMSBuildVersion
-    }
-
-    $MSBuildRoot = Get-MSBuildRoot
     $MSBuildExe = Join-Path $MSBuildRoot 'Current\bin\msbuild.exe'
 
     if (-not (Test-Path $MSBuildExe)) {
@@ -347,17 +298,6 @@ Function Get-MSBuildExe {
     } else {
         Error-Log 'Could not find MSBuild.exe' -Fatal
     }
-}
-
-Function Test-MSBuildVersionPresent {
-    [CmdletBinding()]
-    param(
-        [int]$MSBuildVersion = $DefaultMSBuildVersion
-    )
-
-    $MSBuildExe = Get-MSBuildExe $MSBuildVersion
-
-    Test-Path $MSBuildExe
 }
 
 Function Test-BuildEnvironment {
