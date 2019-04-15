@@ -67,10 +67,7 @@ Function Create-TestPackages()
     $generateTestPackagesFile = Get-GenerateTestPackagesFile
     $testPackagesDirectory = Get-Directory($repositoryRootDirectoryPath, 'test', 'EndToEnd', 'Packages')
 
-    Set-Location -Path $testPackagesDirectory.FullName
-
-    $rootDirectoryPath = Get-Location
-    $testDirectoryPaths = [System.IO.Directory]::GetDirectories($rootDirectoryPath)
+    $testDirectoryPaths = [System.IO.Directory]::GetDirectories($testPackagesDirectory.FullName)
 
     $testDirectoryPaths | %{
         $testDirectoryPath = $_
@@ -141,14 +138,5 @@ Function Create-TestDataPackage()
     }
 }
 
-$originalDirectoryPath = Get-Location
-
-Try
-{
-    Create-TestPackages
-    Create-TestDataPackage
-}
-Finally
-{
-    Set-Location $originalDirectoryPath
-}
+Create-TestPackages
+Create-TestDataPackage
