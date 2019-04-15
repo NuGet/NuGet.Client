@@ -152,7 +152,7 @@ namespace NuGet.Protocol.Core.Types
             return new FindPackageByIdDependencyInfo(
                 reader.GetIdentity(),
                 reader.GetDependencyGroups(),
-                reader.GetFrameworkReferenceGroups());
+                reader.GetFrameworkAssemblyGroups());
         }
     }
 }

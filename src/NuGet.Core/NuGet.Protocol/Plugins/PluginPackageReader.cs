@@ -562,7 +562,7 @@ namespace NuGet.Protocol.Plugins
 
             var nuspecReader = await GetNuspecReaderAsync(cancellationToken);
 
-            return nuspecReader.GetFrameworkReferenceGroups();
+            return nuspecReader.GetFrameworkAssemblyGroups();
         }
 
         /// <summary>

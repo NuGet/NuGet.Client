@@ -112,7 +112,7 @@ namespace NuGet.Packaging.Xml
                 objectSets: metadata.FrameworkReferenceGroups,
                 isGroupable: set => true, // the TFM is required for framework references
                 getGroupIdentifer: set => set.TargetFramework.GetFrameworkString(),
-                getItems: set => set.Items,
+                getItems: set => set.FrameworkReferences,
                 getXElementFromItem : GetXElementFromFrameworkReference,
                 parentName: NuspecUtility.FrameworkReferences,
                 identifierAttributeName : TargetFramework));
@@ -184,9 +184,9 @@ namespace NuGet.Packaging.Xml
             return new XElement(ns + parentName, childElements.ToArray());
         }
 
-        private static XElement GetXElementFromFrameworkReference(XNamespace ns, string frameworkReference)
+        private static XElement GetXElementFromFrameworkReference(XNamespace ns, FrameworkReference frameworkReference)
         {
-            return new XElement(ns + NuspecUtility.FrameworkReference, new XAttribute(NuspecUtility.Name, frameworkReference));
+            return new XElement(ns + NuspecUtility.FrameworkReference, new XAttribute(NuspecUtility.Name, frameworkReference.Name));
         }
 
         private static XElement GetXElementFromPackageReference(XNamespace ns, string reference)

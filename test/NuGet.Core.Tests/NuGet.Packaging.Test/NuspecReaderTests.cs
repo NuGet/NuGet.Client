@@ -644,7 +644,7 @@ namespace NuGet.Packaging.Test
         {
             var reader = GetReader(CommaDelimitedFrameworksNuspec);
 
-            var dependencies = reader.GetFrameworkReferenceGroups().ToList();
+            var dependencies = reader.GetFrameworkAssemblyGroups().ToList();
 
             Assert.Equal(5, dependencies.Count);
         }
@@ -654,7 +654,7 @@ namespace NuGet.Packaging.Test
         {
             var reader = GetReader(CommaDelimitedFrameworksNuspec);
 
-            var groups = reader.GetFrameworkReferenceGroups();
+            var groups = reader.GetFrameworkAssemblyGroups();
 
             var group = groups.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net40")));
 

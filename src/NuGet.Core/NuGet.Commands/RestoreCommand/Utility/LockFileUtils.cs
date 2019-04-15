@@ -353,7 +353,7 @@ namespace NuGet.Commands
             // Exclude framework references for package based frameworks.
             if (!framework.IsPackageBased)
             {
-                var frameworkAssemblies = nuspec.GetFrameworkReferenceGroups().GetNearest(framework);
+                var frameworkAssemblies = nuspec.GetFrameworkAssemblyGroups().GetNearest(framework);
                 if (frameworkAssemblies != null)
                 {
                     foreach (var assemblyReference in frameworkAssemblies.Items)
@@ -368,7 +368,7 @@ namespace NuGet.Commands
 
             if (frameworkRef != null)
             {
-                lockFileLib.FrameworkReferences.AddRange(frameworkRef.Items);
+                lockFileLib.FrameworkReferences.AddRange(frameworkRef.FrameworkReferences.Select(e => e.Name));
             }
         }
 

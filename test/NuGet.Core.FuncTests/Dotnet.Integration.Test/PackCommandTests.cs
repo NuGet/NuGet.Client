@@ -3859,12 +3859,11 @@ namespace ClassLibrary
                         {
                             if (frameworkRef.Value)
                             {
-                                Assert.True(frameworkSpecificGroup?.Items.Contains(frameworkRef.Key));
+                                Assert.True(frameworkSpecificGroup?.FrameworkReferences.Contains(new FrameworkReference(frameworkRef.Key)));
                             }
                             else
                             {
-
-                                Assert.False(frameworkSpecificGroup == null ? false : frameworkSpecificGroup.Items.Contains(frameworkRef.Key));
+                                Assert.False(frameworkSpecificGroup == null ? false : frameworkSpecificGroup.FrameworkReferences.Select(e => e.Name).Contains(frameworkRef.Key));
                             }
                         }
                     }
@@ -3937,8 +3936,8 @@ namespace ClassLibrary
                     var frameworkSpecificGroup = frameworkItems.Where(t => t.TargetFramework.GetShortFolderName().Equals(targetFramework)).FirstOrDefault();
                     var frameworkRef = frameworkReftoPack.First();
 
-                    Assert.True(frameworkSpecificGroup.Items.Contains(frameworkRef.Key));
-                    Assert.Equal(1, frameworkSpecificGroup.Items.Count()); // The framework refs are case insensitive
+                    Assert.True(frameworkSpecificGroup.FrameworkReferences.Contains(new FrameworkReference(frameworkRef.Key)));
+                    Assert.Equal(1, frameworkSpecificGroup.FrameworkReferences.Count()); // The framework refs are case insensitive
                 }
             }
         }
