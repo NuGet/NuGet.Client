@@ -184,6 +184,7 @@ Function Install-DotnetCLI {
         [switch]$Force
     )
     $vsMajorVersion = Get-VSMajorVersion
+    Write-Host "vsmajor version is $vsMajorVersion"
     $MSBuildExe = Get-MSBuildExe $vsMajorVersion
     $CliBranchForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
 
@@ -241,21 +242,16 @@ Function Get-LatestVisualStudioRoot {
 }
 
 <#
-.SYNOPSIS
-Finds a suitable VSVersion based on the environment configuration
-
 .DESCRIPTION
 Finds a suitable VSVersion based on the environment configuration,
 if $VSVersion is set, that means we're running in a developer command prompt so we prefer that.
 otherwise we pick the latest Visual Studio version available on the machine.
-
 #>
-
 Function Get-VSVersion() {
     if (-not $VSVersion) {
         if(-not $script:FallbackVSVersion){
             Verbose-Log "No fallback VS Version set yet. This means that we are running outside of a developer command prompt scope."
-            Get-LatestVisualStudioRoot
+            $_ = Get-LatestVisualStudioRoot
         }
         Verbose-Log "Using the fallback VS version '$script:FallbackVSVersion'"
         $VSVersion = $script:FallbackVSVersion
@@ -271,9 +267,13 @@ Function Get-VSMajorVersion() {
 
 Function Get-MSBuildExe {
     param(
-        [ValidateSet("15", "16")]
-        [string]$MSBuildVersion = "16"
+        [ValidateSet("15", "16", $null)]
+        [string]$MSBuildVersion
     )
+
+    if(-not $MSBuildVersion){
+        $MSBuildVersion = Get-VSMajorVersion
+    }
 
     $CommonToolsVar = "Env:VS${MSBuildVersion}0COMNTOOLS"
     if (Test-Path $CommonToolsVar) {
