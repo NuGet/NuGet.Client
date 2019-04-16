@@ -1,0 +1,61 @@
+@*
+    Generator : Template
+    TypeVisibility : Internal
+    GeneratePrettyNames : true
+    Namespace: NuGet.CommandLine
+    DisableLinePragmas: false
+    GenerateAbsolutePathLinePragmas: false
+    BaseType: HelpCommandMarkdownTemplateBase
+*@
+@using System.Globalization
+@using System.Reflection
+@using NuGet
+@using NuGet.CommandLine
+@functions {
+    public CommandAttribute CommandAttribute { get; set; }
+
+    public IEnumerable<dynamic> Options { get; set; } 
+
+    public DeprecatedCommandAttribute DeprecatedCommandAttribute { get; set; }
+    
+    private TextInfo TextInfo {
+        get { return CultureInfo.CurrentCulture.TextInfo; }
+    }
+}
+
+##  @TextInfo.ToTitleCase(CommandAttribute.CommandName) Command
+
+@if (DeprecatedCommandAttribute != null) {
+@:
+<strong>@String.Format(
+    CultureInfo.CurrentCulture,
+    LocalizedResourceManager.GetString("CommandLine_Warning"),
+    DeprecatedCommandAttribute.GetDeprecationMessage(CommandAttribute.CommandName))
+</strong>
+}
+
+@CommandAttribute.Description
+
+### Usage
+    nuget @TextInfo.ToLower(CommandAttribute.CommandName) @CommandAttribute.UsageSummary
+@if(!String.IsNullOrEmpty(CommandAttribute.UsageDescription)) {
+@:
+    @(CommandAttribute.UsageDescription ?? "")      
+}
+
+### Options
+<table>
+@foreach (var option in Options) {
+    <tr>
+        <td>@option.Name</td>
+        <td>@option.Description</td>
+    </tr>
+}
+</table>
+@if (!String.IsNullOrEmpty(CommandAttribute.UsageExample)) {
+<text>
+### Examples
+
+    @CommandAttribute.UsageExample.Replace(Environment.NewLine, Environment.NewLine + "    ")
+</text>
+}
