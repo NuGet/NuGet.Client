@@ -108,8 +108,8 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// This method verifies that the assets files, props/targets files and all the packages written out in the lock file are present on disk
-        /// When package lock file is supported, this method also verifies if the package lock file is present on disk 
+        /// This method verifies that the assets files, props/targets files and all the packages written out in the assets file are present on disk
+        /// When the project has opted into packages lock file, it also verified that the lock file is present on disk.
         /// This does not account if the files were manually modified since the last restore
         /// </summary>
         internal static bool VerifyRestoreOutput(RestoreRequest request)
@@ -135,7 +135,7 @@ namespace NuGet.Commands
                     request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PropsFileNotOnDisk, request.Project.Name, propsFilePath));
                     return false;
                 }
-                if (PackagesLockFileUtilities.IsNuGetLockFileSupported(request.Project))
+                if (PackagesLockFileUtilities.IsNuGetLockFileEnabled(request.Project))
                 {
                     var packageLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(request.Project);
                     if (!File.Exists(packageLockFilePath))

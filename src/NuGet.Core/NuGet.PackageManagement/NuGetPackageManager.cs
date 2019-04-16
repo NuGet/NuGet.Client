@@ -2829,7 +2829,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // add packages lock file into project
-                if (PackagesLockFileUtilities.IsNuGetLockFileSupported(projectAction.RestoreResult.LockFile.PackageSpec))
+                if (PackagesLockFileUtilities.IsNuGetLockFileEnabled(projectAction.RestoreResult.LockFile.PackageSpec))
                 {
                     var lockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(projectAction.RestoreResult.LockFile.PackageSpec);
 
