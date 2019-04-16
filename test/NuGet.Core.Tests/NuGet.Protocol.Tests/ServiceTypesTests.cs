@@ -11,6 +11,8 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public void RepositorySignatures_AllResourcesAreVersioned()
         {
+            // Currently RepositorySignatures resources are explicitly versioned ahead of time.
+            // If a RepositorySignatures/Versioned resource is ever added the resource caching strategy will need to be revisited.
             var pattern = new Regex(@"^RepositorySignatures/[4-9]\.\d\.\d$");
 
             foreach (var repositorySignaturesResource in ServiceTypes.RepositorySignatures)
