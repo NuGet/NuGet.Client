@@ -866,10 +866,11 @@ namespace NuGet.Commands.Test
                 var props = TargetsUtility.GetMSBuildProperties(doc);
 
                 // Assert
-                Assert.Equal("project.assets.json", props["ProjectAssetsFile"]);
+                Assert.Equal("$(MSBuildThisFileDirectory)project.assets.json", props["ProjectAssetsFile"]);
             }
         }
-
+        // TODO NK - Add better tests, can the assets file and the props file ever be different?
+        // Would this work for project.json?
         [Fact]
         public void BuildAssetsUtils_GenerateProjectRelativeAssetsFilePathInOtherDir()
         {
@@ -894,7 +895,7 @@ namespace NuGet.Commands.Test
                 var props = TargetsUtility.GetMSBuildProperties(doc);
 
                 // Assert
-                Assert.Equal("../nuget/project.assets.json".Replace('/', Path.DirectorySeparatorChar), props["ProjectAssetsFile"]);
+                Assert.Equal("$(MSBuildThisFileDirectory)project.assets.json".Replace('/', Path.DirectorySeparatorChar), props["ProjectAssetsFile"]);
             }
         }
     }
