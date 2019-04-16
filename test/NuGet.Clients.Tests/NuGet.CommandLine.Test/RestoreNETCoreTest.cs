@@ -6187,7 +6187,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-                // Set up solution, project, and packages
+                // Set up solution and projects
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
                 var projectA = SimpleTestProjectContext.CreateNETCore(
@@ -6218,6 +6218,48 @@ namespace NuGet.CommandLine.Test
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
                 lockFile.Targets.Should().HaveCount(1);
                 var projectReference = lockFile.Targets[0].Dependencies.SingleOrDefault(d => d.Type == PackageDependencyType.Project);
+                StringComparer.Ordinal.Equals(projectReference.Id, projectB.ProjectName.ToLowerInvariant()).Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public void RestoreNetCore_PackagesLockFile_LowercaseProjectNameProjectRestore()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution abd projects
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "ProjectA",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net46"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "ProjectB",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                // A -> B
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.Restore(pathContext, projectA.ProjectPath);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+                var net46 = NuGetFramework.Parse("net46");
+                var target = lockFile.Targets.First(t => t.TargetFramework == net46);
+                var projectReference = target.Dependencies.SingleOrDefault(d => d.Type == PackageDependencyType.Project);
                 StringComparer.Ordinal.Equals(projectReference.Id, projectB.ProjectName.ToLowerInvariant()).Should().BeTrue();
             }
         }
