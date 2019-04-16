@@ -6470,7 +6470,7 @@ namespace NuGet.CommandLine.Test
 
 
                 var packageLockFileName = project.NuGetLockFileOutputPath;
-                var noOpFailedMsg = "The Lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
+                var noOpFailedMsg = "The lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
 
                 // Act  
                 var result1 = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
@@ -6536,7 +6536,7 @@ namespace NuGet.CommandLine.Test
 
 
                 var packageLockFileName = project.NuGetLockFileOutputPath;
-                var noOpFailedMsg = "The Lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
+                var noOpFailedMsg = "The lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
                 var noOpSucceedMsg = "No-Op restore. The cache will not be updated.";
 
                 // Act  
@@ -6600,7 +6600,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(packageLockFileName));
 
 
-                var noOpFailedMsg = "The Lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
+                var noOpFailedMsg = "The lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
                 var noOpSucceedMsg = "No-Op restore. The cache will not be updated.";
 
                 // Act
@@ -6667,7 +6667,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(packageLockFileName));
 
 
-                var noOpFailedMsg = "The Lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
+                var noOpFailedMsg = "The lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
                 var noOpSucceedMsg = "No-Op restore. The cache will not be updated.";
 
                 // Act
