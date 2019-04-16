@@ -895,6 +895,7 @@ namespace NuGet.Commands.Test
                 var props = TargetsUtility.GetMSBuildProperties(doc);
 
                 // Assert
+                // TODO NK - This is wrong
                 Assert.Equal("$(MSBuildThisFileDirectory)project.assets.json".Replace('/', Path.DirectorySeparatorChar), props["ProjectAssetsFile"]);
             }
         }
