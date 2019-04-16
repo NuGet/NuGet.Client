@@ -212,6 +212,14 @@ phases:
       msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
     condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
+  - task: PowerShell@1
+    displayName: "Create EndToEnd Test Data Package"
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\e2etests\\CreateTestDataPackage.ps1"
+      arguments: "-configuration $(BuildConfiguration) -toolsetVersion 15 -outputDirectoryPath $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
+      failOnStandardError: "true"
+    condition: " and(succeeded(), eq(variables['PublishTestDataPackage'], 'true'), eq(variables['BuildRTM'], 'false')) "
+
   - task: MSBuild@1
     displayName: "Sign Nupkgs and VSIX"
     inputs:
