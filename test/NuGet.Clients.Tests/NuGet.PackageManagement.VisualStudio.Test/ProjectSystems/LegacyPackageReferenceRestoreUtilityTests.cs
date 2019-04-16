@@ -1799,7 +1799,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     {
                         var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("packageB"));
                         Assert.NotNull(library);
-                        Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/packageB.targets")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}" + Environment.NewLine + string.Join(Environment.NewLine, testLogger.Messages));
+                        Assert.False(library.Build.Any(build => build.Path.Equals("buildTransitive/packageB.targets")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}" + Environment.NewLine + string.Join(Environment.NewLine, testLogger.Messages));
                         Assert.False(library.Build.Any(build => build.Path.Equals("build/packageB.props")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}" + Environment.NewLine + string.Join(Environment.NewLine, testLogger.Messages));
                     }
                 }

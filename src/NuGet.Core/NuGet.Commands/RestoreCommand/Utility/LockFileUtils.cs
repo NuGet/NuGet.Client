@@ -225,6 +225,8 @@ namespace NuGet.Commands
             IReadOnlyList<SelectionCriteria> orderedCriteria,
             ContentItemCollection contentItems)
         {
+            Logger?.LogInformation(library.Name + "All the files in the package: " + string.Join(Environment.NewLine, library.Files));
+            Logger?.LogInformation("TargetGraphName: " + targetGraph.Name);
             Logger?.LogInformation(library.Name + " adding build items!");
             // Build Transitive
             var btGroup = GetLockFileItems(
