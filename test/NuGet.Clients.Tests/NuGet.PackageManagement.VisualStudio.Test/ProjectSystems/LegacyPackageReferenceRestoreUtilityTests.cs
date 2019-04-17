@@ -1762,8 +1762,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageContextB.AddFile("buildCrossTargeting/packageB.targets");
                     packageContextB.AddFile("buildCrossTargeting/packageB.props");
                     packageContextB.AddFile("buildTransitive/packageB.targets");
-                    var packages = new List<SimpleTestPackageContext>() { packageContextB };
-                    SimpleTestPackageUtility.CreateOPCPackages(packages, packageSource);
+                    await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource, packageContextB);
 
                     var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
 
