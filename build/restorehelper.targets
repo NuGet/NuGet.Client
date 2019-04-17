@@ -1,7 +1,6 @@
 <Project ToolsVersion="15.0" DefaultTargets="Restore">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'common.props'))\common.props" />
   
-  <Target Name="_SplitProjectReferencesByFileExistence">
-  	<!-- Noop -->
-  </Target>
+  <!-- <Target Name="_SplitProjectReferencesByFileExistence">
+  </Target> -->
 </Project>
