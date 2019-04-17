@@ -39,7 +39,7 @@ namespace NuGet.Commands
 
             // Ignore generating NU1603/NU1602 across entire graph if lock file is enabled. Because
             // lock file enforce a fixed resolved version for all the different requests for the same package ID.
-            if (!PackagesLockFileUtilities.IsNuGetLockFileSupported(project))
+            if (!PackagesLockFileUtilities.IsNuGetLockFileEnabled(project))
             {
                 // 2. Detect dependency and source issues across the entire graph 
                 //    where the minimum version was not matched exactly.

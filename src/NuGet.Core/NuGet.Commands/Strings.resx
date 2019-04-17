@@ -539,6 +539,9 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Log_TargetsFileNotOnDisk" xml:space="preserve">
     <value>The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
   </data>
+  <data name="Log_LockFileNotOnDisk" xml:space="preserve">
+    <value>The lock file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</value>
+  </data>
   <data name="Warning_MinVersionDoesNotExist" xml:space="preserve">
     <value>{0} depends on {1} but {2} was not found. An approximate best match of {3} was resolved.</value>
   </data>

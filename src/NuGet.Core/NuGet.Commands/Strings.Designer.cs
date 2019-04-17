@@ -998,6 +998,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The lock file for {0} at location {1} does not exist, no-op is not possible. Continuing restore..
+        /// </summary>
+        internal static string Log_LockFileNotOnDisk {
+            get {
+                return ResourceManager.GetString("Log_LockFileNotOnDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The lock file is out-of-date relative to the project file. Regenerating the lock file and re-locking..
         /// </summary>
         internal static string Log_LockFileOutOfDate {

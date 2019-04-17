@@ -14,7 +14,7 @@ namespace NuGet.ProjectModel
 {
     public static class PackagesLockFileUtilities
     {
-        public static bool IsNuGetLockFileSupported(PackageSpec project)
+        public static bool IsNuGetLockFileEnabled(PackageSpec project)
         {
             var restorePackagesWithLockFile = project.RestoreMetadata?.RestoreLockProperties.RestorePackagesWithLockFile;
             return MSBuildStringUtility.IsTrue(restorePackagesWithLockFile) || File.Exists(GetNuGetLockFilePath(project));

@@ -130,7 +130,7 @@ namespace NuGet.Commands
                         {
                             noOpTelemetry.StartIntervalMeasure();
 
-                            var noOpSuccess = NoOpRestoreUtilities.VerifyAssetsAndMSBuildFilesAndPackagesArePresent(_request);
+                            var noOpSuccess = NoOpRestoreUtilities.VerifyRestoreOutput(_request);
 
                             noOpTelemetry.EndIntervalMeasure(MsbuildAssetsVerificationDuration);
                             noOpTelemetry.TelemetryEvent[MsbuildAssetsVerificationResult] = noOpSuccess;
@@ -167,7 +167,7 @@ namespace NuGet.Commands
 
                 using (var lockFileTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: RestoreLockFileInformation))
                 {
-                    lockFileTelemetry.TelemetryEvent[IsLockFileEnabled] = PackagesLockFileUtilities.IsNuGetLockFileSupported(_request.Project);
+                    lockFileTelemetry.TelemetryEvent[IsLockFileEnabled] = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
 
                     var packagesLockFileResult = await EvaluatePackagesLockFileAsync(packagesLockFilePath, contextForProject, lockFileTelemetry);
 
@@ -309,7 +309,7 @@ namespace NuGet.Commands
                         // clear out the existing lock file so that we don't over-write the same file
                         packagesLockFile = null;
                     }
-                    else if (PackagesLockFileUtilities.IsNuGetLockFileSupported(_request.Project))
+                    else if (PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project))
                     {
                         // generate packages.lock.json file if enabled
                         packagesLockFile = new PackagesLockFileBuilder()
