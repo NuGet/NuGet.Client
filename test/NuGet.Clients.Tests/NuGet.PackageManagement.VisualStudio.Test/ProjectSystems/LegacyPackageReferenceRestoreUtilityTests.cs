@@ -1755,6 +1755,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     var providersCache = new RestoreCommandProvidersCache();
 
                     var packageContextB = new SimpleTestPackageContext("packageB", "1.0.0");
+                    packageContextB.Files.Clear();
                     packageContextB.AddFile("lib/net45/b.dll");
                     packageContextB.AddFile("build/packageB.targets");
                     packageContextB.AddFile("build/packageB.props");
@@ -1827,18 +1828,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             settings.SaveToDisk();
 
             return settings;
-        }
-
-        private SourceRepositoryProvider CreateSource(List<SourcePackageDependencyInfo> packages)
-        {
-            var resourceProviders = new List<Lazy<INuGetResourceProvider>>();
-            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages)));
-            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestMetadataProvider(packages)));
-
-            var packageSource = new Configuration.PackageSource("http://temp");
-            var packageSourceProvider = new TestPackageSourceProvider(new[] { packageSource });
-
-            return new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
         }
     }
 }
