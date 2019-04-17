@@ -1855,7 +1855,7 @@ namespace NuGet.Commands.FuncTest
 #if IS_DESKTOP
         // TODO: To work on coreclr we need to address https://github.com/NuGet/Home/issues/7588
         [Fact]
-        public async Task RestoreCommand_PathTooLongException()
+        public void RestoreCommand_PathTooLongException()
         {
             // Arrange
             var sources = new List<PackageSource>
