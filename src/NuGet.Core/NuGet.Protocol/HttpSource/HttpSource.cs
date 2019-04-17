@@ -63,7 +63,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Caching Get request.
         /// </summary>
-        public async Task<T> GetAsync<T>(
+        public virtual async Task<T> GetAsync<T>(
             HttpSourceCachedRequest request,
             Func<HttpSourceResult, Task<T>> processAsync,
             ILogger log,

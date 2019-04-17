@@ -11,7 +11,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Xunit;
 
-namespace NuGet.Protocol.Tests.Providers
+namespace NuGet.Protocol.Providers.Tests
 {
     public class PackageDetailsUriResourceV3ProviderTests
     {
