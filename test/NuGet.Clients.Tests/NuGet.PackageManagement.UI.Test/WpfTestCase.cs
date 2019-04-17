@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                         // Arrange to pump messages to execute any async work associated with the test.
                         var frame = new DispatcherFrame();
-                        Task.Run(async delegate
+                        _ = Task.Run(async delegate
                         {
                             try
                             {
