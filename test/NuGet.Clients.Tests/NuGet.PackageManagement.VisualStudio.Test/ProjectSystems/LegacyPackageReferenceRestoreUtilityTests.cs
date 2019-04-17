@@ -1672,6 +1672,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (var packageSource = TestDirectory.Create())
             {
                 // Arrange
+                var testLogger = new TestLogger();
+                LockFileUtils.Logger = testLogger;
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
                     new List<PackageSource>()
                     {
@@ -1748,21 +1750,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     testSolutionManager.NuGetProjects.Add(legacyPRProject1);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject2);
 
-                    var testLogger = new TestLogger();
-                    LockFileUtils.Logger = testLogger;
-
-                    var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
-                    var providersCache = new RestoreCommandProvidersCache();
-
                     var packageContextB = new SimpleTestPackageContext("packageB", "1.0.0");
                     packageContextB.Files.Clear();
-                    packageContextB.AddFile("lib/net45/b.dll");
                     packageContextB.AddFile("build/packageB.targets");
                     packageContextB.AddFile("build/packageB.props");
                     packageContextB.AddFile("buildCrossTargeting/packageB.targets");
                     packageContextB.AddFile("buildCrossTargeting/packageB.props");
                     packageContextB.AddFile("buildTransitive/packageB.targets");
+                    packageContextB.AddFile("lib/net45/b.dll");
                     await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource, packageContextB);
+
+                    var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+                    var providersCache = new RestoreCommandProvidersCache();
 
                     var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
 
