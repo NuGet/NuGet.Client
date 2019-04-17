@@ -41,6 +41,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.8.132" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="15.8.132" />
     <PackageReference Include="VSLangProj" Version="7.0.3300" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
