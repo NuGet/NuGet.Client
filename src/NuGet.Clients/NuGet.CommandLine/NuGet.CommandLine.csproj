@@ -63,16 +63,13 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="Microsoft.VisualStudio.Setup.Configuration.Interop">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Setup.Configuration.Interop.1.1.142-preview4-29265\lib\net35\Microsoft.VisualStudio.Setup.Configuration.Interop.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
     <Reference Include="NuGet.Core">
       <HintPath>$(SolutionPackagesFolder)NuGet.Core.2.14.0-rtm-832\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Aliases>CoreV2</Aliases>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.Build.Tasks.csproj" />
   </ItemGroup>
@@ -122,6 +119,7 @@
   </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
+  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
 
   <!-- Do nothing. This basically strips away the framework assemblies from the resulting nuspec.-->
   <Target Name ="_GetFrameworkAssemblyReferences" DependsOnTargets="ResolveReferences"/>

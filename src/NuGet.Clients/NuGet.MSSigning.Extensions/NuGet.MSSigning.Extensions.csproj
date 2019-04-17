@@ -45,6 +45,7 @@
   </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
 
   <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
     <ItemGroup>
