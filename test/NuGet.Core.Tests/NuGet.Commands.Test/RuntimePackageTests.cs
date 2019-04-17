@@ -116,7 +116,7 @@ namespace NuGet.Commands.Test
                 packages.Add(packageX1Runtime);
                 packages.Add(packageX2Runtime);
 
-                SimpleTestPackageUtility.CreatePackagesAsync(packages, repository);
+                await SimpleTestPackageUtility.CreatePackagesAsync(packages, repository);
 
                 var sources = new List<PackageSource>();
                 sources.Add(new PackageSource(repository));
