@@ -86,17 +86,17 @@ namespace NuGet.ProjectModel
 
                 var queue = new Queue<string>();
                 var visitedP2PReference = new HashSet<string>();
-                
+
                 foreach (var projectReference in framework.ProjectReferences)
                 {
                     if (visitedP2PReference.Add(projectReference.ProjectUniqueName))
                     {
-                        queue.Enqueue(projectReference.ProjectUniqueName); // Important thing to consider that the project unique is more than just the file name.
+                        queue.Enqueue(projectReference.ProjectUniqueName);
 
                         while (queue.Count > 0)
                         {
                             var p2pUniqueName = queue.Dequeue();
-                            var p2pProjectName = Path.GetFileNameWithoutExtension(p2pUniqueName);  // TODO NK - What happens if the ID has changed? Is that the unique name
+                            var p2pProjectName = Path.GetFileNameWithoutExtension(p2pUniqueName);
 
                             var projectDependency = target.Dependencies.FirstOrDefault(
                                 dep => dep.Type == PackageDependencyType.Project &&
