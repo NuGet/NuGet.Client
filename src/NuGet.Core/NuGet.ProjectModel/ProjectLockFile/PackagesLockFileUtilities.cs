@@ -112,18 +112,14 @@ namespace NuGet.ProjectModel
 
                             var p2pSpec = dgSpec.GetProjectSpec(p2pUniqueName);
 
-                            // ignore if this p2p packageSpec not found in DGSpec, it'll fail restore with a different error at later stage
-                            // TODO NK: Why? Why not just say "return false;"
+                            // The package spec not found in the dg spec. This could mean that the project does not exist anymore.
                             if (p2pSpec != null)
                             {
                                 var p2pSpecTarget = NuGetFrameworkUtility.GetNearest(p2pSpec.TargetFrameworks, framework.FrameworkName, e => e.FrameworkName);
 
-                                // ignore if compatible framework are not found for p2p reference
-                                // It'll fail restore with different error at later stage
-                                // TODO NK: Why? Why not just say "return false;"
+                                // No compatible framework found
                                 if (p2pSpecTarget != null)
                                 {
-                                    // TODO NK What happens if a P2P project dependency is gone?, This only checks packages
                                     if (HasP2PDependencyChanged(p2pSpecTarget.Dependencies, projectDependency))
                                     {
                                         // P2P transitive package dependencies have changed
@@ -131,7 +127,7 @@ namespace NuGet.ProjectModel
                                     }
 
                                     var p2pSpecProjectRefTarget = p2pSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(
-                                        t => Equals(p2pSpecTarget.FrameworkName, t.FrameworkName));
+                                        t => EqualityUtility.EqualsWithNullCheck(p2pSpecTarget.FrameworkName, t.FrameworkName));
 
                                     if (p2pSpecProjectRefTarget != null)
                                     {
@@ -145,6 +141,14 @@ namespace NuGet.ProjectModel
                                         }
                                     }
                                 }
+                                else
+                                {
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                return false;
                             }
                         }
                     }
