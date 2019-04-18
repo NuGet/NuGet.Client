@@ -7370,6 +7370,63 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_MovedProject_DoesNotOverwriteMSBuildPropsTargets()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                var project = SimpleTestProjectContext.CreateNETCore(
+                   $"proj",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net45"));
+
+                project.SetMSBuildProjectExtensionsPath = false;
+                project.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   PackageSaveMode.Defaultv3,
+                   packageX);
+
+                // Prerequisites
+                var result = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
+                Assert.True(result.Success);
+                Assert.Contains("Writing cache file", result.AllOutput);
+                Assert.Contains("Writing assets file to disk", result.AllOutput);
+
+                // Move the project
+                var movedProjectFolder = Path.Combine(pathContext.SolutionRoot, "newProjectDir");
+                Directory.Move(Path.GetDirectoryName(project.ProjectPath), movedProjectFolder);
+                var movedProjectPath = Path.Combine(movedProjectFolder, Path.GetFileName(project.ProjectPath));
+
+                // Act
+                result = Util.Restore(pathContext, movedProjectPath, additionalArgs: "-verbosity Detailed");
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Contains("Writing cache file", result.AllOutput);
+                Assert.Contains("Writing assets file to disk", result.AllOutput);
+                Assert.DoesNotContain("Generating MSBuild file", result.AllOutput);
+
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_IncompatiblePackageTypesFailRestore()
         {
             // Arrange

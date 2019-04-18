@@ -124,6 +124,8 @@ namespace NuGet.Test.Utility
         /// </summary>
         public bool SingleTargetFramework { get; set; }
 
+        public bool SetMSBuildProjectExtensionsPath { get; set; } = true;
+
         /// <summary>
         /// project.lock.json or project.assets.json
         /// </summary>
@@ -431,9 +433,12 @@ namespace NuGet.Test.Utility
             //  MSBuildProjectExtensionsPath needs to be set before Microsoft.Common.props is imported, so add a new
             //  PropertyGroup as the first element under the Project
             var ns = xml.Root.GetDefaultNamespace();
-            var propertyGroup = new XElement(ns + "PropertyGroup");
-            propertyGroup.Add(new XElement(ns + "MSBuildProjectExtensionsPath", OutputPath));
-            xml.Root.AddFirst(propertyGroup);
+            if (SetMSBuildProjectExtensionsPath)
+            {
+                var propertyGroup = new XElement(ns + "PropertyGroup");
+                propertyGroup.Add(new XElement(ns + "MSBuildProjectExtensionsPath", OutputPath));
+                xml.Root.AddFirst(propertyGroup);
+            }
 
             ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
             {

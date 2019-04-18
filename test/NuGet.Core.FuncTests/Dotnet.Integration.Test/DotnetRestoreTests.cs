@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -185,15 +186,73 @@ EndGlobal";
                 var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"restore proj.sln {$"--source \"{pathContext.PackageSource}\""}", ignoreExitCode: true);
 
                 // Assert
-                Assert.True(result.Item1 == 0);
+                Assert.True(result.ExitCode == 0);
                 Assert.True(1 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
 
                 // Act - make sure no-op does the same thing.
                 result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"restore proj.sln {$"--source \"{pathContext.PackageSource}\""}", ignoreExitCode: true);
 
                 // Assert
-                Assert.True(result.Item1 == 0);
+                Assert.True(result.ExitCode == 0);
                 Assert.True(1 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
+
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetRestore_ProjectMovedDoesNotRunRestore()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var testDirectory = pathContext.SolutionRoot;
+                var pkgX = new SimpleTestPackageContext("x", "1.0.0");
+                pkgX.Files.Clear();
+                pkgX.AddFile($"lib/netstandard2.0/x.dll", "netstandard2.0");
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, pkgX);
+
+                var projectName = "ClassLibrary1";
+                var projectDirectory = Path.Combine(testDirectory, projectName);
+                var movedDirectory = Path.Combine(testDirectory, projectName + "-new");
+
+                var projectFile1 = Path.Combine(projectDirectory, $"{projectName}.csproj");
+                var movedProjectFile = Path.Combine(movedDirectory, $"{projectName}.csproj");
+
+                _msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, "classlib");
+
+                using (var stream = File.Open(projectFile1, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
+
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "x",
+                        (NuGetFramework)null,
+                        new Dictionary<string, string>(),
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+
+                // Act
+                var result = _msbuildFixture.RunDotnet(projectDirectory, $"build {projectFile1} {$"--source \"{pathContext.PackageSource}\""}", ignoreExitCode: true);
+
+
+                // Assert
+                Assert.True(result.ExitCode == 0, result.AllOutput);
+                Assert.Contains("Restore completed", result.AllOutput);
+
+                Directory.Move(projectDirectory, movedDirectory);
+
+                result = _msbuildFixture.RunDotnet(movedDirectory, $"build {movedProjectFile} --no-restore", ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.ExitCode == 0, result.AllOutput);
+                Assert.DoesNotContain("Restore completed", result.AllOutput);
 
             }
         }

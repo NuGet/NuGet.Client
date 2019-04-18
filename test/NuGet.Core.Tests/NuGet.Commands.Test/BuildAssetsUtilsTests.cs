@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
-using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -841,6 +839,61 @@ namespace NuGet.Commands.Test
                 {
                     Assert.Null(actualPropertyElement);
                 }
+            }
+        }
+
+        [Fact]
+        public void BuildAssetsUtils_GenerateProjectRelativeAssetsFilePath()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var filePath = Path.Combine(workingDir, "obj", "test.props");
+                var assetsPath = Path.Combine(workingDir, "obj", "project.assets.json");
+
+                var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
+                var file = new MSBuildOutputFile(filePath, doc);
+
+                // Act
+                BuildAssetsUtils.AddNuGetPropertiesToFirstImport(
+                    new[] { file },
+                    Enumerable.Empty<string>(),
+                    string.Empty,
+                    ProjectStyle.PackageReference,
+                    assetsPath,
+                    success: true);
+
+                var props = TargetsUtility.GetMSBuildProperties(doc);
+
+                // Assert
+                Assert.Equal("$(MSBuildThisFileDirectory)project.assets.json", props["ProjectAssetsFile"]);
+            }
+        }
+
+        [Fact]
+        public void BuildAssetsUtils_GenerateProjectRelativeAssetsFilePathInOtherDir()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var filePath = Path.Combine(workingDir, "obj", "test.props");
+                var assetsPath = Path.Combine(workingDir, "nuget", "project.assets.json");
+
+                var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
+                var file = new MSBuildOutputFile(filePath, doc);
+
+                // Act
+                BuildAssetsUtils.AddNuGetPropertiesToFirstImport(
+                    new[] { file },
+                    Enumerable.Empty<string>(),
+                    string.Empty,
+                    ProjectStyle.PackageReference,
+                    assetsPath,
+                    success: true);
+
+                var props = TargetsUtility.GetMSBuildProperties(doc);
+
+                Assert.Equal("$(MSBuildThisFileDirectory)project.assets.json".Replace('/', Path.DirectorySeparatorChar), props["ProjectAssetsFile"]);
             }
         }
     }

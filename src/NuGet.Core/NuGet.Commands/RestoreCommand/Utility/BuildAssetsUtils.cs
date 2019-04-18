@@ -142,7 +142,12 @@ namespace NuGet.Commands
 
             if (firstImport != null)
             {
-                AddNuGetProperties(firstImport.Content, packageFolders, repositoryRoot, projectStyle, assetsFilePath, success);
+                // Write the assets file path to the props file in an MSBuild resolvable manner.
+                // This allows the project to be moved and avoid a large number of project errors
+                // until restore can run again.
+                var resolvableAssetsFilePath = @"$(MSBuildThisFileDirectory)" + Path.GetFileName(assetsFilePath);
+
+                AddNuGetProperties(firstImport.Content, packageFolders, repositoryRoot, projectStyle, resolvableAssetsFilePath, success);
             }
         }
 
@@ -391,7 +396,7 @@ namespace NuGet.Commands
             ILogger log)
         {
             // Generate file names
-            var targetsPath = GetMSBuildFilePath(project,request,"targets");
+            var targetsPath = GetMSBuildFilePath(project, request, "targets");
             var propsPath = GetMSBuildFilePath(project, request, "props");
 
             // Targets files contain a macro for the repository root. If only the user package folder was used
