@@ -269,7 +269,7 @@ phases:
     displayName: "Create EndToEnd Test Package"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
-      arguments: "-c $(BuildConfiguration) -tv 15 -out $(Build.Repository.LocalPath)\\artifacts\\VS15 -NuGetToolsPath $(NuGetCIToolsFolder)"
+      arguments: "-c $(BuildConfiguration) -tv 15 -out $(Build.Repository.LocalPath)\\artifacts\\VS15"
       failOnStandardError: "false"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
@@ -610,7 +610,7 @@ phases:
       scriptType: "inlineScript"
       inlineScript: |
         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
-        gci env:* | sort-object name      
+        gci env:* | sort-object name
 
   - task: DownloadBuildArtifacts@0
     displayName: "Download Build artifacts"
@@ -630,10 +630,9 @@ phases:
       scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
 
   - task: PowerShell@1
-    displayName: "CopyToolsAndSetupMachine.ps1"
+    displayName: "SetupMachine.ps1"
     inputs:
-      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\CopyToolsAndSetupMachine.ps1"
-      arguments: " -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts"
+      scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupMachine.ps1"
 
   - task: PowerShell@1
     displayName: "InstallNuGetVSIX.ps1"
