@@ -15,6 +15,6 @@
     <tags>nuget endtoend testdata</tags>
   </metadata>
   <files>
-    <file src="Packages\**\*.nupkg" target="content\Packages" />
+    <file src="Packages\**\*.*" target="content\Packages" />
   </files>
 </package>

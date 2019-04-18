@@ -24,6 +24,8 @@ param (
     [string] $outputDirectoryPath = $PWD
 )
 
+. "$PSScriptRoot\..\common.ps1"
+
 Function Get-DirectoryPath([string[]] $pathParts)
 {
     Return [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($pathParts))
@@ -157,10 +159,32 @@ Function Create-TestDataPackage()
     }
 }
 
-$testPackagesDirectory = Get-Directory($repositoryRootDirectoryPath, 'test', 'EndToEnd', 'Packages')
-Create-TestPackages -sourceDirectory $testPackagesDirectory
+$workingDirectoryPath = New-TempDir
+$workingDirectory = [System.IO.DirectoryInfo]::new($workingDirectoryPath)
 
-$sharedDirectory = Get-Directory($repositoryRootDirectoryPath, 'test', 'EndToEnd', 'Packages', '_Shared')
-Create-TestPackages -sourceDirectory $sharedDirectory -destinationDirectory $testPackagesDirectory
+Try
+{
+    $sourceDirectory = Get-Directory($repositoryRootDirectoryPath, 'test', 'EndToEnd', 'Packages')
 
-Create-TestDataPackage
+    $packagesDirectory = Join-Path $WorkingDirectory 'Packages'
+    Write-Verbose "Copying all test data from '$TestSource' to '$packagesDirectory'"
+    & robocopy $sourceDirectory.FullName $workingDirectory.FullName /MIR
+
+    # RoboCopy returns a variety of error codes.  This is the only one we care about and it means "copy completed successfully";
+    # however, to PowerShell a non-zero exit code is a failure.
+    If ($LASTEXITCODE -eq 1)
+    {
+        $LASTEXITCODE = 0
+    }
+
+    Create-TestPackages -sourceDirectory $workingDirectory
+
+    $sharedDirectory = Get-Directory($workingDirectory, '_Shared')
+    Create-TestPackages -sourceDirectory $sharedDirectory -destinationDirectory $workingDirectory
+
+    Create-TestDataPackage
+}
+Finally
+{
+    Remove-Item -Path $workingDirectory.FullName -Recurse -Force -ErrorAction Ignore
+}
