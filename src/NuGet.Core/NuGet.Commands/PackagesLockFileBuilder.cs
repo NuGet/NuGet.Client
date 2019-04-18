@@ -18,11 +18,13 @@ namespace NuGet.Commands
         {
             var lockFile = new PackagesLockFile();
 
-            var libraryLookup = assetsFile.Libraries.Where(e => e.Type == LibraryType.Package)
+            var libraryLookup = assetsFile.Libraries
+                .Where(e => e.Type == LibraryType.Package)
                 .ToDictionary(e => new PackageIdentity(e.Name, e.Version));
 
-            var projectLookup = assetsFile.Libraries.Where(e => e.Type == LibraryType.Project || e.Type == LibraryType.ExternalProject)
-    .           ToDictionary(e => e.Name, e => Path.GetFileNameWithoutExtension(e.MSBuildProject), StringComparer.OrdinalIgnoreCase);
+            var projectLookup = assetsFile.Libraries
+                .Where(e => e.Type == LibraryType.Project || e.Type == LibraryType.ExternalProject)
+                .ToDictionary(e => e.Name, e => Path.GetFileNameWithoutExtension(e.Path), PathUtility.GetStringComparerBasedOnOS());
 
             foreach (var target in assetsFile.Targets)
             {
@@ -75,20 +77,18 @@ namespace NuGet.Commands
 
                 foreach (var projectReference in libraries.Where(e => e.Type == LibraryType.Project || e.Type == LibraryType.ExternalProject))
                 {
-                    if (!projectLookup.TryGetValue(projectReference.Name, out var projectFileName))
+                    if (projectLookup.TryGetValue(projectReference.Name, out var projectFileName))
                     {
-                        continue;
+                        var dependency = new LockFileDependency()
+                        {
+                            // When reading the lock file, the name of the project file is used rather than the friendly name retrieved from the project
+                            Id = projectFileName,
+                            Dependencies = projectReference.Dependencies,
+                            Type = PackageDependencyType.Project
+                        };
+
+                        nuGettarget.Dependencies.Add(dependency);
                     }
-
-                    var dependency = new LockFileDependency()
-                    {
-                        // When reading the lock file, the name of the project file is used rather than the friendly name retrieved from the project
-                        Id = projectFileName,
-                        Dependencies = projectReference.Dependencies,
-                        Type = PackageDependencyType.Project
-                    };
-
-                    nuGettarget.Dependencies.Add(dependency);
                 }
 
                 nuGettarget.Dependencies = nuGettarget.Dependencies.OrderBy(d => d.Type).ToList();

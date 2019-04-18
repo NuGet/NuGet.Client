@@ -96,7 +96,7 @@ namespace NuGet.ProjectModel
                         while (queue.Count > 0)
                         {
                             var p2pUniqueName = queue.Dequeue();
-                            var p2pProjectName = Path.GetFileNameWithoutExtension(p2pUniqueName); // These really need to be unique, shared methods and all. 
+                            var p2pProjectName = Path.GetFileNameWithoutExtension(p2pUniqueName);  // TODO NK - What happens if the ID has changed? Is that the unique name
 
                             var projectDependency = target.Dependencies.FirstOrDefault(
                                 dep => dep.Type == PackageDependencyType.Project &&

@@ -168,6 +168,7 @@ namespace NuGet.Commands
             }
 
             // Ignore casing on windows and mac
+            // change here
             var comparer = (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX) ?
                 StringComparer.OrdinalIgnoreCase
                 : StringComparer.Ordinal;
