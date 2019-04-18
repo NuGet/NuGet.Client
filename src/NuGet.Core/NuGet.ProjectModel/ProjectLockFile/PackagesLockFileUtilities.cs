@@ -84,19 +84,21 @@ namespace NuGet.ProjectModel
                     return false;
                 }
 
-                var queue = new Queue<string>();
+                var queue = new Queue<Tuple<string, string>>();
                 var visitedP2PReference = new HashSet<string>();
 
                 foreach (var projectReference in framework.ProjectReferences)
                 {
                     if (visitedP2PReference.Add(projectReference.ProjectUniqueName))
                     {
-                        queue.Enqueue(projectReference.ProjectUniqueName);
+                        var spec = dgSpec.GetProjectSpec(projectReference.ProjectUniqueName);
+                        queue.Enqueue(new Tuple<string, string>(spec.Name, projectReference.ProjectUniqueName));
 
                         while (queue.Count > 0)
                         {
-                            var p2pUniqueName = queue.Dequeue();
-                            var p2pProjectName = Path.GetFileNameWithoutExtension(p2pUniqueName);
+                            var projectNames = queue.Dequeue();
+                            var p2pUniqueName = projectNames.Item2;
+                            var p2pProjectName = projectNames.Item1;
 
                             var projectDependency = target.Dependencies.FirstOrDefault(
                                 dep => dep.Type == PackageDependencyType.Project &&
@@ -110,23 +112,26 @@ namespace NuGet.ProjectModel
 
                             var p2pSpec = dgSpec.GetProjectSpec(p2pUniqueName);
 
-                            // ignore if this p2p packageSpec not found in DGSpec, It'll fail restore with different error at later stage
+                            // ignore if this p2p packageSpec not found in DGSpec, it'll fail restore with a different error at later stage
+                            // TODO NK: Why? Why not just say "return false;"
                             if (p2pSpec != null)
                             {
                                 var p2pSpecTarget = NuGetFrameworkUtility.GetNearest(p2pSpec.TargetFrameworks, framework.FrameworkName, e => e.FrameworkName);
 
-                                // ignore if compatible framework not found for p2p reference which means current project didn't
-                                // get anything transitively from this p2p
+                                // ignore if compatible framework are not found for p2p reference
+                                // It'll fail restore with different error at later stage
+                                // TODO NK: Why? Why not just say "return false;"
                                 if (p2pSpecTarget != null)
                                 {
+                                    // TODO NK What happens if a P2P project dependency is gone?, This only checks packages
                                     if (HasP2PDependencyChanged(p2pSpecTarget.Dependencies, projectDependency))
                                     {
-                                        // P2P transitive package dependencies has changed
+                                        // P2P transitive package dependencies have changed
                                         return false;
                                     }
 
                                     var p2pSpecProjectRefTarget = p2pSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(
-                                        t => PathUtility.GetStringComparerBasedOnOS().Equals(p2pSpecTarget.FrameworkName.GetShortFolderName(), t.FrameworkName.GetShortFolderName()));
+                                        t => Equals(p2pSpecTarget.FrameworkName, t.FrameworkName));
 
                                     if (p2pSpecProjectRefTarget != null)
                                     {
@@ -134,7 +139,8 @@ namespace NuGet.ProjectModel
                                         {
                                             if (visitedP2PReference.Add(reference.ProjectUniqueName))
                                             {
-                                                queue.Enqueue(reference.ProjectUniqueName);
+                                                var referenceSpec = dgSpec.GetProjectSpec(reference.ProjectUniqueName);
+                                                queue.Enqueue(new Tuple<string, string>(referenceSpec.Name, reference.ProjectUniqueName));
                                             }
                                         }
                                     }
