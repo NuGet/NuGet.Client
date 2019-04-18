@@ -91,12 +91,12 @@ namespace NuGet.ProjectModel
                 {
                     if (visitedP2PReference.Add(projectReference.ProjectUniqueName))
                     {
-                        queue.Enqueue(projectReference.ProjectUniqueName);
+                        queue.Enqueue(projectReference.ProjectUniqueName); // Important thing to consider that the project unique is more than just the file name.
 
                         while (queue.Count > 0)
                         {
                             var p2pUniqueName = queue.Dequeue();
-                            var p2pProjectName = Path.GetFileNameWithoutExtension(p2pUniqueName);
+                            var p2pProjectName = Path.GetFileNameWithoutExtension(p2pUniqueName); // These really need to be unique, shared methods and all. 
 
                             var projectDependency = target.Dependencies.FirstOrDefault(
                                 dep => dep.Type == PackageDependencyType.Project &&
