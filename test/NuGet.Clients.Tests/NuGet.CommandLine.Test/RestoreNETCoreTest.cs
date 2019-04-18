@@ -7588,7 +7588,11 @@ namespace NuGet.CommandLine.Test
                 Assert.False(File.Exists(projectB.NuGetLockFileOutputPath));
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
 
+<<<<<<< HEAD
                  // Assert that the project name is the project File name.
+=======
+                // Assert that the project name is the project File name.
+>>>>>>> fix tests
                 Assert.Equal(lockFile.Targets.First().Dependencies.Count, 2);
                 Assert.Equal(lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id, "CustomName");
 
@@ -7661,7 +7665,7 @@ namespace NuGet.CommandLine.Test
                 Assert.False(File.Exists(projectB.NuGetLockFileOutputPath));
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
 
-                 // Assert that the project name is the project File name.
+                 // Assert that the project name is the custom name.
                 Assert.Equal(lockFile.Targets.First().Dependencies.Count, 2);
                 Assert.Equal(lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id, "CustomName");
 
