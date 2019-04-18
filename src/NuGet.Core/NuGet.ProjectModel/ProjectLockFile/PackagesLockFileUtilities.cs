@@ -86,7 +86,7 @@ namespace NuGet.ProjectModel
 
                 var queue = new Queue<string>();
                 var visitedP2PReference = new HashSet<string>();
-
+                
                 foreach (var projectReference in framework.ProjectReferences)
                 {
                     if (visitedP2PReference.Add(projectReference.ProjectUniqueName))
