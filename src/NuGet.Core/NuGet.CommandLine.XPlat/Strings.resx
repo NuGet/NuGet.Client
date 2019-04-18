@@ -240,7 +240,7 @@
     <value>Specify if the command should not run package analysis after building the package.</value>
   </data>
   <data name="NuGetDocs" xml:space="preserve">
-    <value>http://docs.nuget.org/</value>
+    <value>https://docs.nuget.org/</value>
   </data>
   <data name="OutputDirectory_Description" xml:space="preserve">
     <value>Specifies the directory for the created NuGet package file. If not specified, uses the current directory</value>
@@ -322,22 +322,22 @@
   </data>
   <data name="LocalsCommand_Help" xml:space="preserve">
     <value>usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="LocalsCommand_MultipleOperations" xml:space="preserve">
     <value>Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.
 usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="LocalsCommand_NoArguments" xml:space="preserve">
     <value>No Cache Type was specified.
 usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="LocalsCommand_NoOperation" xml:space="preserve">
     <value>Please specify an operation i.e. --list or --clear.
 usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="Error_MsBuildUnableToOpenProject" xml:space="preserve">
     <value>MsBuild was unable to open Project '{0}'.</value>

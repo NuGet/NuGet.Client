@@ -21,7 +21,7 @@ function Test-ProjectRetargeting-ShowErrorUponRetargeting {
 
     $error = $errorlist[$errorlist.Count-1]
 
-    Assert-AreEqual 'Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: PackageTargetingNet40AndNet40Client' $error
+    Assert-AreEqual 'Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit https://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: PackageTargetingNet40AndNet40Client' $error
 }
 
 function Test-ProjectRetargeting-ClearErrorUponCleanProject {
@@ -154,7 +154,7 @@ function Test-ProjectRetargeting-ConvertBuildErrorToBuildWarningUponBuild {
 
     $warning = $warnings[$warnings.Count - 1]
 
-    Assert-AreEqual 'Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: PackageTargetingNet40AndNet40Client' $warning
+    Assert-AreEqual 'Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit https://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: PackageTargetingNet40AndNet40Client' $warning
 }
 
 function Test-ProjectRetargeting-ShowWarningOnCleanBuild
@@ -188,7 +188,7 @@ function Test-ProjectRetargeting-ShowWarningOnCleanBuild
 
     $warning = $warnings[$warnings.Count - 1]
 
-    Assert-AreEqual 'Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: PackageTargetingNet40AndNet40Client' $warning
+    Assert-AreEqual 'Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit https://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: PackageTargetingNet40AndNet40Client' $warning
 }
 
 function Test-ProjectRetargeting-ClearWarningUponCleanProject

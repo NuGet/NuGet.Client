@@ -19,7 +19,7 @@ namespace NuGet.CommandLine.XPlat {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -783,7 +783,7 @@ namespace NuGet.CommandLine.XPlat {
         
         /// <summary>
         ///   Looks up a localized string similar to usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        ///For more information, visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string LocalsCommand_Help {
             get {
@@ -803,7 +803,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///   Looks up a localized string similar to Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.
         ///usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        ///For more information, visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string LocalsCommand_MultipleOperations {
             get {
@@ -814,7 +814,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///   Looks up a localized string similar to No Cache Type was specified.
         ///usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        ///For more information, visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string LocalsCommand_NoArguments {
             get {
@@ -825,7 +825,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///   Looks up a localized string similar to Please specify an operation i.e. --list or --clear.
         ///usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        ///For more information, visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string LocalsCommand_NoOperation {
             get {
@@ -960,7 +960,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to http://docs.nuget.org/.
+        ///   Looks up a localized string similar to https://docs.nuget.org/.
         /// </summary>
         internal static string NuGetDocs {
             get {

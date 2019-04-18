@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 
 <helpItems schema="maml">
 
@@ -209,7 +209,7 @@
     <maml:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online version:</maml:linkText>
-        <maml:uri>http://docs.nuget.org/</maml:uri>
+        <maml:uri>https://docs.nuget.org/</maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>Install-Package</maml:linkText>
@@ -381,7 +381,7 @@
     <maml:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online version:</maml:linkText>
-        <maml:uri>http://docs.nuget.org/</maml:uri>
+        <maml:uri>https://docs.nuget.org/</maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>Find-Package</maml:linkText>
@@ -593,7 +593,7 @@
     <maml:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online version:</maml:linkText>
-        <maml:uri>http://docs.nuget.org/</maml:uri>
+        <maml:uri>https://docs.nuget.org/</maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>Get-Package</maml:linkText>
@@ -749,7 +749,7 @@
     <maml:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online version:</maml:linkText>
-        <maml:uri>http://docs.nuget.org/</maml:uri>
+        <maml:uri>https://docs.nuget.org/</maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>Uninstall-Package</maml:linkText>
@@ -1001,7 +1001,7 @@
     <maml:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online version:</maml:linkText>
-        <maml:uri>http://docs.nuget.org/</maml:uri>
+        <maml:uri>https://docs.nuget.org/</maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>Update-Package</maml:linkText>
@@ -1174,7 +1174,7 @@
     <maml:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online version:</maml:linkText>
-        <maml:uri>http://docs.nuget.org/</maml:uri>
+        <maml:uri>https://docs.nuget.org/</maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>Uninstall-Package</maml:linkText>
@@ -1253,7 +1253,7 @@
     <maml:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online version:</maml:linkText>
-        <maml:uri>http://docs.nuget.org/</maml:uri>
+        <maml:uri>https://docs.nuget.org/</maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>Add-BindingRedirect</maml:linkText>
@@ -1363,7 +1363,7 @@
     <maml:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online version:</maml:linkText>
-        <maml:uri>http://docs.nuget.org/</maml:uri>
+        <maml:uri>https://docs.nuget.org/</maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>Get-Project</maml:linkText>
