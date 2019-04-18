@@ -427,7 +427,7 @@ function Write-TestResults {
     $failed = 0
     $skipped = 0
 
-    $rows = $sortedResults | % {
+    $rows = $arrayList | % {
         if ($_.Status -eq $skippedStatus) {
             $skipped++
         }
