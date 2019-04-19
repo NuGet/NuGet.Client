@@ -7630,11 +7630,7 @@ namespace NuGet.CommandLine.Test
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
                 projectB.Properties.Add("AssemblyName", "CustomName");
 
-<<<<<<< HEAD
-                 projectA.AddProjectToAllFrameworks(projectB);
-=======
                 projectA.AddProjectToAllFrameworks(projectB);
->>>>>>> address feedback
 
                  // B
                 projectB.AddPackageToFramework(tfm, packageX);
