@@ -7630,7 +7630,11 @@ namespace NuGet.CommandLine.Test
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
                 projectB.Properties.Add("AssemblyName", "CustomName");
 
+<<<<<<< HEAD
                  projectA.AddProjectToAllFrameworks(projectB);
+=======
+                projectA.AddProjectToAllFrameworks(projectB);
+>>>>>>> address feedback
 
                  // B
                 projectB.AddPackageToFramework(tfm, packageX);
@@ -7650,11 +7654,7 @@ namespace NuGet.CommandLine.Test
                 Assert.False(File.Exists(projectB.NuGetLockFileOutputPath));
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
 
-<<<<<<< HEAD
-                 // Assert that the project name is the project File name.
-=======
-                // Assert that the project name is the project File name.
->>>>>>> fix tests
+                // Assert that the project name is the project custom name.
                 Assert.Equal(lockFile.Targets.First().Dependencies.Count, 2);
                 Assert.Equal(lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id, "CustomName");
 
@@ -7707,7 +7707,7 @@ namespace NuGet.CommandLine.Test
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
                 projectB.Properties.Add("PackageId", "CustomName");
 
-                 projectA.AddProjectToAllFrameworks(projectB);
+                projectA.AddProjectToAllFrameworks(projectB);
 
                  // B
                 projectB.AddPackageToFramework(tfm, packageX);
