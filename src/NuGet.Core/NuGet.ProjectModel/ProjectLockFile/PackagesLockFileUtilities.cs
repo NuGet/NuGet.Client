@@ -64,7 +64,7 @@ namespace NuGet.ProjectModel
                 }
 
                 var directDependencies = target.Dependencies.Where(dep => dep.Type == PackageDependencyType.Direct);
-                // This does not account for the exact count. It makes sure every dependencies element exists in the lock file element. 
+
                 if (HasProjectDependencyChanged(framework.Dependencies, directDependencies))
                 {
                     // lock file is out of sync
