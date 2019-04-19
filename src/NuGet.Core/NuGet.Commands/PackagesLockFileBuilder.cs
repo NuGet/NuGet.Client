@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq;
-using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;

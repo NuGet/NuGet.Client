@@ -167,12 +167,7 @@ namespace NuGet.Commands
                 inputs.Add(Path.GetFullPath("."));
             }
 
-            // Ignore casing on windows and mac
-            var comparer = (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX) ?
-                StringComparer.OrdinalIgnoreCase
-                : StringComparer.Ordinal;
-
-            var uniqueRequest = new HashSet<string>(comparer);
+            var uniqueRequest = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
 
             // Create requests
             // Pre-loaded requests
