@@ -150,7 +150,15 @@ namespace NuGet.ProjectModel
 
         private static bool HasProjectDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<LockFileDependency> lockFileDependencies)
         {
-            foreach (var dependency in newDependencies.Where(dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package))
+            // If the count is not the same, something has changed.
+            // Otherwise we N^2 walk below determines whether anything has changed.
+            var newPackageDependencies = newDependencies.Where(dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package);
+            if(newPackageDependencies.Count() != lockFileDependencies.Count())
+            {
+                return true;
+            }
+
+            foreach (var dependency in newPackageDependencies)
             {
                 var lockFileDependency = lockFileDependencies.FirstOrDefault(d => StringComparer.OrdinalIgnoreCase.Equals(d.Id, dependency.Name));
 
@@ -173,8 +181,17 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            foreach (var dependency in newDependencies.Where(
-                dep => (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package && dep.SuppressParent != LibraryIncludeFlags.All)))
+            // If the count is not the same, something has changed.
+            // Otherwise we N^2 walk below determines whether anything has changed.
+            var transitivelyFlowingDependencies = newDependencies.Where(
+                dep => (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package && dep.SuppressParent != LibraryIncludeFlags.All));
+            
+            if (transitivelyFlowingDependencies.Count() != projectDependency.Dependencies.Count)
+            {
+                return true;
+            }
+
+            foreach (var dependency in transitivelyFlowingDependencies)
             {
                 var matchedP2PLibrary = projectDependency.Dependencies.FirstOrDefault(dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Id, dependency.Name));
 
