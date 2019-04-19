@@ -3,7 +3,7 @@
 
 Add-Type -AssemblyName System.Web.Extensions
 
-$javaScriptSerializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+$javaScriptSerializer = [System.Web.Script.Serialization.JavaScriptSerializer]::new()
 $javaScriptSerializer.MaxJsonLength = [System.Int32]::MaxValue
 
 Function Convert-FromJsonToDictionary([string] $json)
@@ -79,7 +79,7 @@ function RealTimeLogResults
 
     if (!$currentBinFolder)
     {
-        Write-Error "Looks like no tests were run. There is no folder under $NuGetTestPath\\bin. Please investigate!"
+        Write-Error "Looks like no tests were run. There is no folder under $NuGetTestPath\bin. Please investigate!"
         return $null
     }
 
@@ -90,96 +90,120 @@ function RealTimeLogResults
 
     $lastLogLine = ""
 
-    While ($currentTestTime -le $EachTestTimeoutInSecs)
+    Try
     {
-        Start-Sleep 1
-        $currentTestTime++
-        if ((Test-Path $log) -and (Test-Path $testResults))
+        While ($currentTestTime -le $EachTestTimeoutInSecs)
         {
-            $content = Get-Content $testResults
-            if (($content.Count -gt 0) -and ($content.Count -gt $currentTestId))
+            Start-Sleep 1
+            $currentTestTime++
+            if ((Test-Path $log) -and (Test-Path $testResults))
             {
-                $content[($currentTestId)..($content.Count - 1)] | % {
-                    $testResult = Convert-FromJsonToDictionary($_)
+                $content = Get-Content $testResults
+                if (($content.Count -gt 0) -and ($content.Count -gt $currentTestId))
+                {
+                    $content[($currentTestId)..($content.Count - 1)] | % {
+                        $testResult = Convert-FromJsonToDictionary($_)
 
-                    If (!$testResult -Or $testResult.Count -eq 0)
-                    {
-                        # continues the while loop so that it can be tried again
-                        continue
+                        If (!$testResult)
+                        {
+                            # continues the while loop so that it can be tried again
+                            continue
+                        }
+
+                        If ($testResult['Type'] -eq 'test result')
+                        {
+                            WriteToCI $testResult
+
+                            $status = $testResult.Status
+                            $testName = $testResult.TestName
+                            $timeInMilliseconds = $testResult.TimeInMilliseconds
+
+                            Write-Host "$status $testName $($timeInMilliseconds)ms"
+                        }
                     }
 
-                    WriteToCI $testResult
-
-                    $status = $testResult.Status
-                    $testName = $testResult.TestName
-                    $timeInMilliseconds = $testResult.TimeInMilliseconds
-
-                    Write-Host "$status $testName $timeInMilliseconds"
+                    $currentTestTime = 0
+                    $currentTestId = $content.Count
+                }
+                else
+                {
+                    $logContent = Get-Content $log
+                    $lastLogLine = $logContent[$currentTestId]
+                    Write-Host $lastLogLine " and current test time is ${currentTestTime}"
                 }
 
-                $currentTestTime = 0
-                $currentTestId = $content.Count
-            }
-            else
-            {
                 $logContent = Get-Content $log
-                $lastLogLine = $logContent[$currentTestId]
-                Write-Host $lastLogLine " and current test time is ${currentTestTime}"
+                $logContentLastLine = $logContent[$logContent.Count - 1]
+                $isError = $false
+
+                $possibleSummary = Convert-FromJsonToDictionary($logContentLastLine)
+
+                if ($possibleSummary -And $possibleSummary['Type'] -eq 'test run summary')
+                {
+                    # RUN HAS COMPLETED
+                    Write-Host 'Run has completed. Copying the results file to CI'
+
+                    $isError = ($possibleSummary['FailedCount'] -ne 0) -And ($possibleSummary['ActualTotalCount'] -eq $possibleSummary['ExpectedTotalCount'])
+                    $message = "Ran $($possibleSummary['ActualTotalCount']) Tests and/or Test cases, $($possibleSummary['PassedCount']) Passed, $($possibleSummary['FailedCount']) Failed, $($possibleSummary['SkippedCount']) Skipped, $($possibleSummary['ExpectedTotalCount']) expected total. See `'$($possibleSummary['HtmlResultsFilePath'])`' or `'$($possibleSummary['TextResultsFilePath'])`' for more details."
+
+                    if ($isError)
+                    {
+                        Write-Error $message
+                    }
+                    else
+                    {
+                        Write-Host -ForegroundColor Green $message
+                    }
+
+                    $resultsFile = Join-Path $currentBinFolder.FullName results.html
+                    if (Test-Path $resultsFile)
+                    {
+                        CopyResultsToCI $NuGetDropPath $RunCounter $resultsFile
+                    }
+                    else
+                    {
+                        CopyResultsToCI $NuGetDropPath $RunCounter $testResults
+                    }
+                    break
+                }
+            }
+        }
+
+        if ($currentTestTime -gt $EachTestTimeoutInSecs)
+        {
+            $logLineEntries = $lastLogLine -split " "
+            $currentTestName = $logLineEntries[2].Replace("...", "")
+
+            $result = @{
+                Type = 'test result'
+                TestName = $currentTestName
+                Status = 'Failed'
+                Message = "Test timed out after $EachTestTimeoutInSecs seconds"
+                TimeInMilliseconds = $EachTestTimeoutInSecs * 1000
             }
 
-            $logContent = Get-Content $log
-            $logContentLastLine = $logContent[-1]
-            $isError = $false
-            if (($logContentLastLine -is [string]) -and $logContentLastLine.Contains("Tests and/or Test cases, ")`
-                    -and $content.Count -eq $currentTestId)
-            {
-                # RUN HAS COMPLETED
-                Write-Host 'Run has completed. Copying the results file to CI'
-                if ($logContentLastLine.Contains(", 0 Failed"))
-                {
-                    Write-Host -ForegroundColor Green $logContentLastLine
-                }
-                else
-                {
-                    Write-Error $logContentLastLine
-                    $isError = $true
-                }
+            $json = ConvertTo-Json $result -Compress
+            $json >> $testResults
 
-                $resultsFile = Join-Path $currentBinFolder.FullName results.html
-                if (Test-Path $resultsFile)
-                {
-                    CopyResultsToCI $NuGetDropPath $RunCounter $resultsFile
-                }
-                else
-                {
-                    CopyResultsToCI $NuGetDropPath $RunCounter $testResults
-                }
-                break
-            }
+            $errorMessage = 'Run Failed - Results.html did not get created. ' `
+            + 'This indicates that the tests did not finish running. It could be that the VS crashed or a test timed out. Please investigate.'
+            CopyResultsToCI $NuGetDropPath $RunCounter $testResults
+
+            Write-Error $errorMessage
+            return $null
         }
     }
-
-    if ($currentTestTime -gt $EachTestTimeoutInSecs)
+    Finally
     {
-        $logLineEntries = $lastLogLine -split " "
-        $currentTestName = $logLineEntries[2].Replace("...", "")
-
-        $result = @{
-            TestName = $currentTestName
-            Status = 'Failed'
-            Message = "Test timed out after $EachTestTimeoutInSecs seconds"
-            TimeInMilliseconds = $EachTestTimeoutInSecs * 1000
+        If (Test-Path $log)
+        {
+            Write-Host "##vso[task.uploadfile]$log"
         }
 
-        $json = $javaScriptSerializer.Serialize($result)
-        $json >> $testResults
-
-        $errorMessage = 'Run Failed - Results.html did not get created. ' `
-        + 'This indicates that the tests did not finish running. It could be that the VS crashed or a test timed out. Please investigate.'
-        CopyResultsToCI $NuGetDropPath $RunCounter $testResults
-
-        Write-Error $errorMessage
-        return $null
+        If (Test-Path $testResults)
+        {
+            Write-Host "##vso[task.uploadfile]$testResults"
+        }
     }
 }
 
@@ -210,10 +234,13 @@ function CopyResultsToCI
     $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
     Write-Host "Copying html results file from $resultsFile to $DestinationPath"
     Copy-Item $resultsFile $DestinationPath
+    Write-Host "##vso[task.uploadfile]$DestinationPath"
+
     if($env:CI)
     {
         Write-Host "Copying full log file from $FullLogFilePath to $FullLogFileDestinationPath"
         Copy-Item $FullLogFilePath -Destination $FullLogFileDestinationPath -Force  -ErrorAction SilentlyContinue
+        Write-Host "##vso[task.uploadfile]$FullLogFileDestinationPath"
     }
 
     OutputResultsForCI -NuGetDropPath $NuGetDropPath -RunCounter $RunCounter -RealTimeResultsFilePath $RealTimeResultsFilePath

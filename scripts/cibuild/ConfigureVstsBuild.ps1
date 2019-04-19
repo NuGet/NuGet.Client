@@ -78,17 +78,34 @@ Function Update-VsixVersion {
     Write-Host "Updated the VSIX version [$oldVersion] => [$($root.Metadata.Identity.Version)]"
 }
 
+Function DisableStrongNameVerification(
+    [Parameter(Mandatory = $False)] [string] $assemblyName = '*',
+    [Parameter(Mandatory = $True)]  [string] $publicKeyToken)
+{
+    $regKey = "HKLM:SOFTWARE\Microsoft\StrongName\Verification\$assemblyName,$publicKeyToken"
+    $regKey32 = "HKLM:SOFTWARE\Wow6432Node\Microsoft\StrongName\Verification\$assemblyName,$publicKeyToken"
+    $has32BitNode = Test-Path "HKLM:SOFTWARE\Wow6432Node"
+
+    If (-Not (Test-Path $regKey) -Or ($has32BitNode -And -Not (Test-Path $regKey32)))
+    {
+        Write-Host "Disabling .NET strong name verification for public key token $publicKeyToken so that test-signed binaries can be used on the build machine."
+
+        New-Item -Path (Split-Path $regKey) -Name (Split-Path -Leaf $regKey) -Force | Out-Null
+
+        If ($has32BitNode)
+        {
+            New-Item -Path (Split-Path $regKey32) -Name (Split-Path -Leaf $regKey32) -Force | Out-Null
+        }
+    }
+}
+
 $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
 
 # Turn off strong name verification for common DevDiv public keys so that people can execute things against
 # test-signed assemblies. One example would be running unit tests on a test-signed assembly during the build.
-$regKey = "HKLM:SOFTWARE\Microsoft\StrongName\Verification\*,b03f5f7f11d50a3a"
-$regKey32 = "HKLM:SOFTWARE\Wow6432Node\Microsoft\StrongName\Verification\*,b03f5f7f11d50a3a"
+DisableStrongNameVerification -publicKeyToken 'b03f5f7f11d50a3a' # Microsoft
+DisableStrongNameVerification -publicKeyToken '31bf3856ad364e35' # NuGet
 
-$regKeyNuGet = "HKLM:SOFTWARE\Microsoft\StrongName\Verification\*,31bf3856ad364e35"
-$regKeyNuGet32 = "HKLM:SOFTWARE\Wow6432Node\Microsoft\StrongName\Verification\*,31bf3856ad364e35"
-
-$has32bitNode = Test-Path "HKLM:SOFTWARE\Wow6432Node"
 $regKeyFileSystem = "HKLM:SYSTEM\CurrentControlSet\Control\FileSystem"
 $enableLongPathSupport = "LongPathsEnabled"
 
@@ -105,32 +122,10 @@ Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
 # Get the commit of the localization repository that will be used for this build.
 $LocalizationRepoCommitHash = & git -C $NuGetLocalization log --pretty=format:'%H' -n 1
 
-if (-not (Test-Path $regKey) -or ($has32bitNode -and -not (Test-Path $regKey32)))
-{
-    Write-Host "Disabling StrongName Verification so that test-signed binaries can be used on the build machine"
-    New-Item -Path (Split-Path $regKey) -Name (Split-Path -Leaf $regKey) -Force | Out-Null
-
-    if ($has32bitNode)
-    {
-        New-Item -Path (Split-Path $regKey32) -Name (Split-Path -Leaf $regKey32) -Force | Out-Null
-    }
-}
-
-if (-not (Test-Path $regKeyNuGet) -or ($has32bitNode -and -not (Test-Path $regKeyNuGet32)))
-{
-    Write-Host "Disabling StrongName Verification for NuGet public key so that test-signed binaries can be used on the build machine"
-    New-Item -Path (Split-Path $regKeyNuGet) -Name (Split-Path -Leaf $regKeyNuGet) -Force | Out-Null
-
-    if ($has32bitNode)
-    {
-        New-Item -Path (Split-Path $regKeyNuGet32) -Name (Split-Path -Leaf $regKeyNuGet32) -Force | Out-Null
-    }
-}
-
 if (-not (Test-Path $regKeyFileSystem)) 
 {
-	Write-Host "Enabling long path support on the build machine"
-	Set-ItemProperty -Path $regKeyFileSystem -Name $enableLongPathSupport -Value 1
+    Write-Host "Enabling long path support on the build machine"
+    Set-ItemProperty -Path $regKeyFileSystem -Name $enableLongPathSupport -Value 1
 }
 
 
@@ -165,8 +160,8 @@ if ($BuildRTM -eq 'true')
         else
         {
             Rename-Item $oldBuildOutputDirectory $currentBuild
-        }   
-    }    
+        }
+    }
 }
 else
 {
@@ -184,7 +179,7 @@ else
     }
     else
     {
-        $newBuildCounter = $env:BUILD_BUILDNUMBER        
+        $newBuildCounter = $env:BUILD_BUILDNUMBER
     }
 
     $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
@@ -200,7 +195,7 @@ else
         VsTargetBranch = $VsTargetBranch.Trim()
         CliTargetBranches = $CliTargetBranches.Trim()
         SdkTargetBranches = $SdkTargetBranches.Trim()
-    }   
+    }
 
     New-Item $BuildInfoJsonFile -Force
     $jsonRepresentation | ConvertTo-Json | Set-Content $BuildInfoJsonFile

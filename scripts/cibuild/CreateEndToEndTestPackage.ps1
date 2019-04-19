@@ -21,16 +21,14 @@ param(
     [Alias('c')]
     [string]$Configuration = 'Debug',
     [Parameter(Mandatory=$False)]
-    [ValidateSet(14,15)]
+    [ValidateSet(15,16)]
     [Alias('tv')]
-    [int]$ToolsetVersion = 14,
+    [int]$ToolsetVersion = 15,
     [Parameter(Mandatory=$False)]
     [Alias('out')]
     [string]$OutputDirectory = $PWD,
     [Parameter(Mandatory=$False)]
-    [string]$NuGetRoot,
-    [Parameter(Mandatory=$False)]
-    [string]$NuGetToolsPath
+    [string]$NuGetRoot
 )
 
 . "$PSScriptRoot\..\common.ps1"
@@ -45,30 +43,6 @@ if (-not $NuGetRoot) {
 
 $WorkingDirectory = New-TempDir
 
-Function New-TestPackage {
-    param(
-        [Parameter(Mandatory=$True, ValueFromPipeline=$True, Position=0)]
-        [System.IO.FileInfo[]]$Nuspecs
-    )
-    end {
-        $GenerateTestPackages = Join-Path $WorkingDirectory GenerateTestPackages.exe -Resolve
-        $PwdBefore = $PWD
-
-        Set-Location $WorkingDirectory
-
-        try {
-            $Input | ForEach-Object {
-                & $GenerateTestPackages $_.FullName
-            }
-        }
-        finally {
-            if ($PWD -ne $PwdBefore) {
-                Set-Location $PwdBefore
-            }
-        }
-    }
-}
-
 $opts = '/s', '/z', '/r:3', '/w:30', '/np', '/nfl'
 
 if ($VerbosePreference) {
@@ -81,10 +55,19 @@ else {
 try {
     $TestSource = Join-Path $NuGetRoot test\EndToEnd -Resolve
     Write-Verbose "Copying all test files from '$TestSource' to '$WorkingDirectory'"
-    & robocopy $TestSource $WorkingDirectory $opts
+
+    # Copy everything except the /Packages directory.
+    # Instead, the /Packages directory will be copied from the NuGet.Client.EndToEnd.TestData package.
+    $e2eOpts = $opts + @('/XD', 'Packages')
+    & robocopy $TestSource $WorkingDirectory $e2eOpts
     if ($lastexitcode -gt 1) {
         exit 1
     }
+
+    $TestSource = Join-Path $NuGetRoot packages\NuGet.Client.EndToEnd.TestData.1.0.0\content\Packages -Resolve
+    $packagesDirectory = Join-Path $WorkingDirectory 'Packages'
+    Write-Verbose "Copying all test data from '$TestSource' to '$packagesDirectory'"
+    & robocopy $TestSource $packagesDirectory $opts
 
     $TestExtensionDirectoryPath = Join-Path $NuGetRoot "artifacts\API.Test\${ToolsetVersion}.0\bin\${Configuration}\net472"
     Write-Verbose "Copying test extension from '$TestExtensionDirectoryPath' to '$WorkingDirectory'"
@@ -101,22 +84,9 @@ try {
     Write-Verbose "Copying test scripts from '$ScriptsSource' to '$ScriptsDirectory'"
     & robocopy $ScriptsSource $ScriptsDirectory '*.ps1' $opts
 
-    if($NuGetToolsPath)
-    {
-        $ToolsSource = $NuGetToolsPath
-        $ToolsDirectory = Join-Path $WorkingDirectory tools
-        New-Item -ItemType Directory -Force -Path $ToolsDirectory | Out-Null
-        Write-Verbose "Copying tools from '$ToolsSource' to '$ToolsDirectory'"
-        & robocopy $ToolsSource $ToolsDirectory '*.*' $opts
-    }
-    
     if ($lastexitcode -gt 1) {
         exit 1
     }
-
-    Write-Verbose "Generating shared test packages"
-    Get-ChildItem $WorkingDirectory\Packages\_Shared\ -Filter *.nuspec -Recurse | New-TestPackage
-    Remove-Item $WorkingDirectory\Packages\_Shared\ -r -Force
 
     if (-not (Test-Path $OutputDirectory)) {
         mkdir $OutputDirectory | Out-Null
