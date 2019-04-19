@@ -26,6 +26,8 @@ param (
 
 . "$PSScriptRoot\..\common.ps1"
 
+$packageId = 'NuGet.Client.EndToEnd.TestData'
+
 Function Get-DirectoryPath([string[]] $pathParts)
 {
     Return [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($pathParts))
@@ -65,9 +67,8 @@ Function Get-NuGetFile()
 }
 
 Function Create-TestPackages(
-    [Parameter(Mandatory = $True)]
-    [System.IO.DirectoryInfo] $sourceDirectory,
-    [System.IO.DirectoryInfo] $destinationDirectory)
+    [Parameter(Mandatory = $True)]  [System.IO.DirectoryInfo] $sourceDirectory,
+    [Parameter(Mandatory = $False)] [System.IO.DirectoryInfo] $destinationDirectory)
 {
     $generateTestPackagesFile = Get-GenerateTestPackagesFile
     $testDirectories = $sourceDirectory.GetDirectories()
@@ -128,10 +129,8 @@ Function Create-TestPackages(
     }
 }
 
-Function Create-TestDataPackage()
+Function Create-TestDataPackage([Parameter(Mandatory = $True)] [System.IO.FileInfo] $nuspecFile)
 {
-    $packageId = 'NuGet.Client.EndToEnd.TestData'
-    $nuspecFile = Get-File($repositoryRootDirectoryPath, 'test', 'EndToEnd', "$packageId.nuspec")
     $nugetFile = Get-NuGetFile
 
     $outputDirectory = [System.IO.DirectoryInfo]::new([System.IO.Path]::GetFullPath($outputDirectoryPath))
@@ -165,10 +164,10 @@ $workingDirectory = [System.IO.DirectoryInfo]::new($workingDirectoryPath)
 Try
 {
     $sourceDirectory = Get-Directory($repositoryRootDirectoryPath, 'test', 'EndToEnd', 'Packages')
+    $packagesDirectory = Get-Directory($WorkingDirectory.FullName, 'Packages')
 
-    $packagesDirectory = Join-Path $WorkingDirectory 'Packages'
-    Write-Verbose "Copying all test data from '$TestSource' to '$packagesDirectory'"
-    & robocopy $sourceDirectory.FullName $workingDirectory.FullName /MIR
+    Write-Verbose "Copying all test data from '$TestSource' to '$($packagesDirectory.FullName)'"
+    & robocopy $sourceDirectory.FullName $packagesDirectory.FullName /MIR
 
     # RoboCopy returns a variety of error codes.  This is the only one we care about and it means "copy completed successfully";
     # however, to PowerShell a non-zero exit code is a failure.
@@ -177,12 +176,16 @@ Try
         $LASTEXITCODE = 0
     }
 
-    Create-TestPackages -sourceDirectory $workingDirectory
+    $nuspecFile = Get-File($repositoryRootDirectoryPath, 'test', 'EndToEnd', "$packageId.nuspec")
 
-    $sharedDirectory = Get-Directory($workingDirectory, '_Shared')
+    $nuspecFile = Copy-Item -Path $nuspecFile.FullName -Destination $workingDirectory.FullName -Force -PassThru
+    Write-Host $nuspecFile.FullName
+    Create-TestPackages -sourceDirectory $packagesDirectory
+
+    $sharedDirectory = Get-Directory($packagesDirectory.FullName, '_Shared')
     Create-TestPackages -sourceDirectory $sharedDirectory -destinationDirectory $workingDirectory
 
-    Create-TestDataPackage
+    Create-TestDataPackage $nuspecFile
 }
 Finally
 {
