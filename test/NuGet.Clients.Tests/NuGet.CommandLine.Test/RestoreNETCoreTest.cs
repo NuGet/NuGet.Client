@@ -6124,10 +6124,10 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task RestoreNetCore_MultiTFM_ProjectToProject_PackagesLockFile()
         {
-            // Arrange	
+            // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-                // Set up solution, project, and packages	
+                // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
                 var projectA = SimpleTestProjectContext.CreateNETCore(
@@ -6154,31 +6154,31 @@ namespace NuGet.CommandLine.Test
                    pathContext.PackageSource,
                    packageX);
 
-                // A -> B	
+                // A -> B
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.AddProjectToAllFrameworks(projectB);
 
-                // B	
+                // B
                 projectB.AddPackageToFramework("net45", packageX);
 
                 solution.Projects.Add(projectA);
                 solution.Projects.Add(projectB);
                 solution.Create(pathContext.SolutionRoot);
 
-                // Act	
+                // Act
                 var r = Util.RestoreSolution(pathContext);
 
-                // Assert	
+                // Assert
                 r.Success.Should().BeTrue();
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
                 Assert.True(File.Exists(projectB.AssetsFileOutputPath));
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
-                // Second Restore	
+                // Second Restore
                 r = Util.RestoreSolution(pathContext);
 
-                // Assert	
+                // Assert
                 r.Success.Should().BeTrue();
             }
         }
