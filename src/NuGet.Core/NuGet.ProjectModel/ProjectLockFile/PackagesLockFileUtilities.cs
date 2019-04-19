@@ -150,10 +150,13 @@ namespace NuGet.ProjectModel
 
         private static bool HasProjectDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<LockFileDependency> lockFileDependencies)
         {
-            // ordered equals check
+            // If the count is not the same, something has changed.
+            // Otherwise we N^2 walk below determines whether anything has changed.
             var newPackageDependencies = newDependencies.Where(dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package);
-
-            // TODO NK: Write an ordered equals, that accounts for null maybe?
+            if(newPackageDependencies.Count() != lockFileDependencies.Count())
+            {
+                return true;
+            }
 
             foreach (var dependency in newPackageDependencies)
             {
@@ -178,8 +181,17 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            foreach (var dependency in newDependencies.Where(
-                dep => (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package && dep.SuppressParent != LibraryIncludeFlags.All)))
+            // If the count is not the same, something has changed.
+            // Otherwise we N^2 walk below determines whether anything has changed.
+            var transitivelyFlowingDependencies = newDependencies.Where(
+                dep => (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package && dep.SuppressParent != LibraryIncludeFlags.All));
+            
+            if (transitivelyFlowingDependencies.Count() != projectDependency.Dependencies.Count)
+            {
+                return true;
+            }
+
+            foreach (var dependency in transitivelyFlowingDependencies)
             {
                 var matchedP2PLibrary = projectDependency.Dependencies.FirstOrDefault(dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Id, dependency.Name));
 
