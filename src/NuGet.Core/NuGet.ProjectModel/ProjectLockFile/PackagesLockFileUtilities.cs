@@ -131,6 +131,12 @@ namespace NuGet.ProjectModel
 
                                     if (p2pSpecProjectRefTarget != null)
                                     {
+                                        if (HasP2PProjectDependencyChanged(p2pSpecProjectRefTarget.ProjectReferences, projectDependency))
+                                        {
+                                            // P2P transitive package dependencies have changed
+                                            return false;
+                                        }
+
                                         foreach (var reference in p2pSpecProjectRefTarget.ProjectReferences)
                                         {
                                             if (visitedP2PReference.Add(reference.ProjectUniqueName))
@@ -202,6 +208,41 @@ namespace NuGet.ProjectModel
             }
 
             foreach (var dependency in transitivelyFlowingDependencies)
+            {
+                var matchedP2PLibrary = projectDependency.Dependencies.FirstOrDefault(dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Id, dependency.Name));
+
+                if (matchedP2PLibrary == null || !EqualityUtility.EqualsWithNullCheck(matchedP2PLibrary.VersionRange, dependency.LibraryRange.VersionRange))
+                {
+                    // P2P dependency has changed and lock file is out of sync.
+                    return true;
+                }
+            }
+
+            // no dependency changed. Lock file is still valid.
+            return false;
+        }
+
+        private static bool HasP2PProjectDependencyChanged(IEnumerable<LibraryDependency> projectRestoreReferences, LockFileDependency projectDependency)
+        {
+            if (projectDependency == null)
+            {
+                // project dependency doesn't exists in lock file so it's out of sync.
+                return true;
+            }
+
+            // If the count is not the same, something has changed.
+            // Otherwise we N^2 walk below determines whether anything has changed.
+            var transitivelyFlowingProjects = newDependencies.Where(
+                dep => (
+                    (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Project || dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Project)
+                    && dep.SuppressParent != LibraryIncludeFlags.All));
+
+            if (transitivelyFlowingProjects.Count() != projectDependency.Dependencies.Count)
+            {
+                return true;
+            }
+
+            foreach (var dependency in transitivelyFlowingProjects)
             {
                 var matchedP2PLibrary = projectDependency.Dependencies.FirstOrDefault(dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Id, dependency.Name));
 
