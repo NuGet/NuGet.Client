@@ -52,6 +52,19 @@ else {
     $opts += '/ndl', '/njs'
 }
 
+Function Get-TestDataPackageDirectory()
+{
+    $packagesConfigFilePath = [System.IO.Path]::Combine($NuGetRoot, '.nuget', 'packages.config')
+
+    [System.Xml.XmlDocument] $xml = Get-Content $packagesConfigFilePath
+
+    $package = $xml.SelectSingleNode('//packages/package[@id="NuGet.Client.EndToEnd.TestData"]')
+
+    $path = [System.IO.Path]::Combine($NuGetRoot, 'packages', "$($package.id).$($package.version)")
+
+    Return [System.IO.DirectoryInfo]::new($path)
+}
+
 Function Run-RoboCopy(
     [Parameter(Mandatory = $True)]  [string] $sourceDirectoryPath,
     [Parameter(Mandatory = $True)]  [string] $destinationDirectoryPath,
@@ -80,7 +93,9 @@ try {
     # Instead, the /Packages directory will be copied from the NuGet.Client.EndToEnd.TestData package.
     Run-RoboCopy $TestSource $WorkingDirectory $($opts + '/XD' + 'Packages')
 
-    $TestSource = Join-Path $NuGetRoot packages\NuGet.Client.EndToEnd.TestData.1.0.0\content\Packages -Resolve
+    $testDataPackageDirectory = Get-TestDataPackageDirectory
+
+    $TestSource = [System.IO.Path]::Combine($testDataPackageDirectory.FullName, 'content', 'Packages')
     $packagesDirectory = Join-Path $WorkingDirectory 'Packages'
     Write-Verbose "Copying all test data from '$TestSource' to '$packagesDirectory'"
     Run-RoboCopy $TestSource $packagesDirectory $opts
