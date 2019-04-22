@@ -321,12 +321,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(118, result.GetAllInstalled().Count);
-
-                // TODO: skipping comparing assets file since NuGet.org is doing repo sign for all the existing
-                // packages which is changing the sha512 in the assets file which fails the comparison.
-                // We should enable it once all the packages are repo signed.
-                // tracking issue# https://github.com/NuGet/Home/issues/7361
-                //Assert.Equal(expectedJson.ToString(), lockFileJson.ToString());
+                Assert.Equal(expectedJson.ToString(), lockFileJson.ToString());
             }
         }
 
@@ -393,12 +388,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(118, result.GetAllInstalled().Count);
-
-                // TODO: skipping comparing assets file since NuGet.org is doing repo sign for all the existing
-                // packages which is changing the sha512 in the assets file which fails the comparison.
-                // We should enable it once all the packages are repo signed.
-                // tracking issue# https://github.com/NuGet/Home/issues/7361
-                //Assert.Equal(expectedJson.ToString(), lockFileJson.ToString());
+                Assert.Equal(expectedJson.ToString(), lockFileJson.ToString());
             }
         }
 
