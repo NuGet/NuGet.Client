@@ -170,7 +170,7 @@ namespace NuGet.Build.Tasks.Pack {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot generate a package from a project which has IsPackable property set to false..
+        ///   Looks up a localized string similar to This project cannot be packaged because packaging has been disabled. Add &lt;IsPackable&gt;true&lt;/IsPackable&gt; to the project file to enable producing a package from this project..
         /// </summary>
         internal static string IsPackableFalseError {
             get {
