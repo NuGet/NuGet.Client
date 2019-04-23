@@ -34,7 +34,9 @@ param
     [Parameter(Mandatory=$True)]
     [string]$BranchName,
     [Parameter(Mandatory=$True)]
-    [string]$FilePath,
+    [string]$FilePath2,
+    [Parameter(Mandatory=$True)]
+    [string]$FilePath3,
     [Parameter(Mandatory=$True)]
     [string]$NuGetTag,
     [Parameter(Mandatory=$True)]
@@ -214,6 +216,10 @@ Write-Host "##vso[task.addattachment type=Distributedtask.Core.Summary;name=$Rep
 $BranchesToInsert = $BranchName.Split(';')
 $AllPullRequestsUrls = ""
 ForEach ($Branch in $BranchesToInsert) {
+    if ($Branch -like "release/2*")
+        {$FilePath = $FilePath2}
+    else
+        {$FilePath = $FilePath3}
     $xml = GetDependencyVersionPropsFile -RepositoryName $RepositoryName -BranchName $Branch -FilePath $FilePath
     Write-Host $xml
     
