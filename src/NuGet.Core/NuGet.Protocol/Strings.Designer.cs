@@ -1015,7 +1015,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specify option -SkipDuplicate to automatically skip..
+        ///   Looks up a localized string similar to See help for push option to automatically skip duplicates..
         /// </summary>
         internal static string PushCommandSkipDuplicateAdvertise {
             get {
@@ -1024,7 +1024,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The option -SkipDuplicate is not currently supported for this type of push..
+        ///   Looks up a localized string similar to The option to skip duplicates is not currently supported for this type of push..
         /// </summary>
         internal static string PushCommandSkipDuplicateNotImplemented {
             get {

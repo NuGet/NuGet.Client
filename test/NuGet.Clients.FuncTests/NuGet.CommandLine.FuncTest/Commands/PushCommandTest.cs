@@ -18,7 +18,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private const string MESSAGE_PACKAGE_PUSHED = "Your package was pushed.";
         private const string TEST_PACKAGE_SHOULD_NOT_PUSH = "The package should not have been pushed";
         private const string TEST_PACKAGE_SHOULD_PUSH = "The package should have been pushed";
-        private const string ADVERTISE_CONTINUE_OPTION = "Specify option -SkipDuplicate to automatically skip.";
+        private const string ADVERTISE_CONTINUE_OPTION = "See help for push option to automatically skip duplicates.";
 
         /// <summary>
         /// 100 seconds is significant because that is the default timeout on <see cref="HttpClient"/>.

@@ -26,8 +26,7 @@ namespace NuGet.Commands
             bool disableBuffering,
             bool noSymbols,
             bool noServiceEndpoint,
-            bool continueOnDuplicate,
-            bool continueOnInvalid,
+            bool skipDuplicate,
             ILogger logger)
         {
             source = CommandRunnerUtility.ResolveSource(sourceProvider, source);
@@ -65,8 +64,7 @@ namespace NuGet.Commands
                 endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source, defaultApiKey: null, isSymbolApiKey: false),
                 symbolsEndpoint => symbolApiKey ?? CommandRunnerUtility.GetApiKey(settings, symbolsEndpoint, symbolSource, apiKey, isSymbolApiKey: true),
                 noServiceEndpoint,
-                continueOnDuplicate,
-                continueOnInvalid,
+                skipDuplicate,
                 symbolPackageUpdateResource,
                 logger);
         }

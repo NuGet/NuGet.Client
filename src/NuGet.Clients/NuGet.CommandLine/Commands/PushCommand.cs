@@ -72,7 +72,6 @@ namespace NuGet.CommandLine
                     NoSymbols,
                     NoServiceEndpoint,
                     SkipDuplicate,
-                    continueOnInvalid: false,
                     Console);
             }
             catch (TaskCanceledException ex)
