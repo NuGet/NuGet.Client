@@ -177,10 +177,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
    <!--
     ============================================================
-    _CollectFrameworkReferences
+    CollectFrameworkReferences
     ============================================================
   -->
-  <Target Name="_CollectFrameworkReferences" Returns="@(FrameworkReference)" />
+  <Target Name="CollectFrameworkReferences" Returns="@(FrameworkReference)" />
 
   <!--
     ============================================================
@@ -791,7 +791,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateProjectRestoreGraphPerFramework"
-    DependsOnTargets="_GetRestoreProjectStyle;CollectPackageReferences;CollectPackageDownloads;_CollectFrameworkReferences"
+    DependsOnTargets="_GetRestoreProjectStyle;CollectPackageReferences;CollectPackageDownloads;CollectFrameworkReferences"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Write out project references -->
