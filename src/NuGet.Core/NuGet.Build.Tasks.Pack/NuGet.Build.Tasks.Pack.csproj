@@ -9,7 +9,6 @@
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
-    <NoBuild>true</NoBuild>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <PreserveCompilationContext>true</PreserveCompilationContext>
@@ -20,6 +19,7 @@
     <DevelopmentDependency>true</DevelopmentDependency>
     <PackageDescription>NuGet pack for dotnet CLI.</PackageDescription>
     <NoWarn>$(NoWarn);NU5100</NoWarn>
+    <DepsFileGenerationMode>old</DepsFileGenerationMode>
   </PropertyGroup>
 
   <ItemGroup>
