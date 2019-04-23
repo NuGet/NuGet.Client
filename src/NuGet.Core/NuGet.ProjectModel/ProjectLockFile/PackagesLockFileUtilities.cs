@@ -120,18 +120,12 @@ namespace NuGet.ProjectModel
                                 // No compatible framework found
                                 if (p2pSpecTarget != null)
                                 {
-                                    if (HasP2PDependencyChanged(p2pSpecTarget.Dependencies, projectDependency))
-                                    {
-                                        // P2P transitive package dependencies have changed
-                                        return false;
-                                    }
-
                                     var p2pSpecProjectRefTarget = p2pSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(
                                         t => EqualityUtility.EqualsWithNullCheck(p2pSpecTarget.FrameworkName, t.FrameworkName));
 
-                                    if (p2pSpecProjectRefTarget != null)
+                                    if (p2pSpecProjectRefTarget != null) // This should never happen.
                                     {
-                                        if (HasP2PProjectDependencyChanged(p2pSpecProjectRefTarget.ProjectReferences, projectDependency))
+                                        if (HasP2PDependencyChanged(p2pSpecTarget.Dependencies, p2pSpecProjectRefTarget.ProjectReferences, projectDependency))
                                         {
                                             // P2P transitive package dependencies have changed
                                             return false;
@@ -145,6 +139,10 @@ namespace NuGet.ProjectModel
                                                 queue.Enqueue(new Tuple<string, string>(referenceSpec.Name, reference.ProjectUniqueName));
                                             }
                                         }
+                                    }
+                                    else
+                                    {
+                                        return false;
                                     }
                                 }
                                 else
@@ -189,7 +187,7 @@ namespace NuGet.ProjectModel
             return false;
         }
 
-        private static bool HasP2PDependencyChanged(IEnumerable<LibraryDependency> newDependencies, LockFileDependency projectDependency)
+        private static bool HasP2PDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<ProjectRestoreReference> projectRestoreReferences, LockFileDependency projectDependency)
         {
             if (projectDependency == null)
             {
@@ -202,7 +200,7 @@ namespace NuGet.ProjectModel
             var transitivelyFlowingDependencies = newDependencies.Where(
                 dep => (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package && dep.SuppressParent != LibraryIncludeFlags.All));
 
-            if (transitivelyFlowingDependencies.Count() != projectDependency.Dependencies.Count)
+            if (transitivelyFlowingDependencies.Count() + projectRestoreReferences.Count() != projectDependency.Dependencies.Count)
             {
                 return true;
             }
@@ -218,28 +216,11 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            // no dependency changed. Lock file is still valid.
-            return false;
-        }
-
-        private static bool HasP2PProjectDependencyChanged(IEnumerable<ProjectRestoreReference> projectRestoreReferences, LockFileDependency projectDependency)
-        {
-            if (projectDependency == null)
-            {
-                // project dependency doesn't exists in lock file so it's out of sync.
-                return true;
-            }
-
-            if (projectRestoreReferences.Count() != projectDependency.Dependencies.Count)
-            {
-                return true;
-            }
-
             foreach (var dependency in projectRestoreReferences)
             {
                 var matchedP2PLibrary = projectDependency.Dependencies.FirstOrDefault(dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Id, dependency.ProjectUniqueName));
 
-                if (matchedP2PLibrary == null) // Do not check the version for the projects
+                if (matchedP2PLibrary == null) // Do not check the version for the projects, or else https://github.com/nuget/home/issues/7935
                 {
                     // P2P dependency has changed and lock file is out of sync.
                     return true;
@@ -249,5 +230,6 @@ namespace NuGet.ProjectModel
             // no dependency changed. Lock file is still valid.
             return false;
         }
+
     }
 }
