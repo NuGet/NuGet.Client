@@ -7820,6 +7820,8 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task RestoreNetCore_PackagesLockFile_WithProjectAndPackageReference_DoesNotBreakLockedMode()
         {
+            // A -> B -> C
+            //        -> X
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Set up solution, project, and packages
@@ -7836,6 +7838,11 @@ namespace NuGet.CommandLine.Test
                   pathContext.SolutionRoot,
                   NuGetFramework.Parse(tfm));
 
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                  "c",
+                  pathContext.SolutionRoot,
+                  NuGetFramework.Parse(tfm));
+
                 var packageX = new SimpleTestPackageContext()
                 {
                     Id = "x",
@@ -7849,11 +7856,13 @@ namespace NuGet.CommandLine.Test
                    packageX);
 
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
-                projectA.AddPackageToAllFrameworks(packageX);
                 projectA.AddProjectToAllFrameworks(projectB);
+                projectB.AddPackageToAllFrameworks(packageX);
+                projectB.AddProjectToAllFrameworks(projectC);
 
                 solution.Projects.Add(projectA);
                 solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
 
                 solution.Create(pathContext.SolutionRoot);
 
@@ -7866,12 +7875,15 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
                 Assert.True(File.Exists(projectB.AssetsFileOutputPath));
                 Assert.False(File.Exists(projectB.NuGetLockFileOutputPath));
+                Assert.True(File.Exists(projectC.AssetsFileOutputPath));
+                Assert.False(File.Exists(projectC.NuGetLockFileOutputPath));
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
 
                 // Assert that the project name is the project File name.
-                Assert.Equal(lockFile.Targets.First().Dependencies.Count, 2);
-                Assert.Equal(lockFile.Targets.First().Dependencies.FirstOrDefault(e => e.Type == PackageDependencyType.Direct).Id, "x");
+                Assert.Equal(lockFile.Targets.First().Dependencies.Count, 3);
+                Assert.Equal(lockFile.Targets.First().Dependencies.FirstOrDefault(e => e.Type == PackageDependencyType.Transitive).Id, "x");
                 Assert.Equal(lockFile.Targets.First().Dependencies.FirstOrDefault(e => e.Type == PackageDependencyType.Project).Id, "b");
+                Assert.Equal(lockFile.Targets.First().Dependencies.LastOrDefault(e => e.Type == PackageDependencyType.Project).Id, "c");
 
                 // Setup - remove package
                 projectA.Properties.Add("RestoreLockedMode", "true");

@@ -125,7 +125,7 @@ namespace NuGet.ProjectModel
 
                                     if (p2pSpecProjectRefTarget != null) // This should never happen.
                                     {
-                                        if (HasP2PDependencyChanged(p2pSpecTarget.Dependencies, p2pSpecProjectRefTarget.ProjectReferences, projectDependency))
+                                        if (HasP2PDependencyChanged(p2pSpecTarget.Dependencies, p2pSpecProjectRefTarget.ProjectReferences, projectDependency, dgSpec))
                                         {
                                             // P2P transitive package dependencies have changed
                                             return false;
@@ -187,7 +187,7 @@ namespace NuGet.ProjectModel
             return false;
         }
 
-        private static bool HasP2PDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<ProjectRestoreReference> projectRestoreReferences, LockFileDependency projectDependency)
+        private static bool HasP2PDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<ProjectRestoreReference> projectRestoreReferences, LockFileDependency projectDependency, DependencyGraphSpec dgSpec)
         {
             if (projectDependency == null)
             {
@@ -218,7 +218,8 @@ namespace NuGet.ProjectModel
 
             foreach (var dependency in projectRestoreReferences)
             {
-                var matchedP2PLibrary = projectDependency.Dependencies.FirstOrDefault(dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Id, dependency.ProjectUniqueName));
+                var referenceSpec = dgSpec.GetProjectSpec(dependency.ProjectUniqueName);
+                var matchedP2PLibrary = projectDependency.Dependencies.FirstOrDefault(dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Id, referenceSpec.Name));
 
                 if (matchedP2PLibrary == null) // Do not check the version for the projects, or else https://github.com/nuget/home/issues/7935
                 {
