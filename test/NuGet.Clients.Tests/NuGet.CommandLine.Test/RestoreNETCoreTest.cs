@@ -7896,5 +7896,82 @@ namespace NuGet.CommandLine.Test
                 r.Success.Should().BeTrue();
             }
         }
+
+        [Fact] // TODO NK -
+        public void RestoreNetCore_PackagesLockFile_ProjectReferenceChangeWithPackage_UpdatesLockFile()
+        {
+            // Arrange
+            // A -> B -> C and 
+            // A -> B, A -> C
+            // should have different lock files
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var tfm = "net45";
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(tfm));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                  "b",
+                  pathContext.SolutionRoot,
+                  NuGetFramework.Parse(tfm));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                  "c",
+                  pathContext.SolutionRoot,
+                  NuGetFramework.Parse(tfm));
+
+
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectB.AddProjectToAllFrameworks(projectC);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+                Assert.True(File.Exists(projectB.AssetsFileOutputPath));
+                Assert.False(File.Exists(projectB.NuGetLockFileOutputPath));
+                Assert.True(File.Exists(projectC.AssetsFileOutputPath));
+                Assert.False(File.Exists(projectC.NuGetLockFileOutputPath));
+                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+
+                // Assert that the project name is the project File name.
+                Assert.Equal(lockFile.Targets.First().Dependencies.Count, 2);
+                Assert.Equal(lockFile.Targets.First().Dependencies.First().Id, "b");
+                Assert.Equal(lockFile.Targets.First().Dependencies.First().Dependencies.Count, 1);
+                Assert.Equal(lockFile.Targets.First().Dependencies.Last().Id, "c");
+
+                // Setup - remove package
+                projectB.Frameworks.First().ProjectReferences.Clear();
+                projectB.Save();
+                projectA.Frameworks.First().ProjectReferences.Add(projectC);
+                projectA.Save();
+
+                // Act
+                r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+                Assert.Equal(lockFile.Targets.First().Dependencies.Count, 2);
+                Assert.Equal(lockFile.Targets.First().Dependencies.First().Id, "b");
+                Assert.Equal(lockFile.Targets.First().Dependencies.First().Dependencies.Count, 0);
+                Assert.Equal(lockFile.Targets.First().Dependencies.Last().Id, "c");
+            }
+        }
     }
 }
