@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -256,7 +256,7 @@
     <value>Successfully uninstalled '{0}' from {1}</value>
   </data>
   <data name="UnsupportedPackageFeature" xml:space="preserve">
-    <value>Package '{0}' uses features that are not supported by the current version of NuGet. To upgrade NuGet, see http://docs.nuget.org/consume/installing-nuget.</value>
+    <value>Package '{0}' uses features that are not supported by the current version of NuGet. To upgrade NuGet, see https://docs.nuget.org/consume/installing-nuget</value>
   </data>
   <data name="ResolutionSuccessfulNoAction" xml:space="preserve">
     <value>Resolution was successful but resulted in no action</value>

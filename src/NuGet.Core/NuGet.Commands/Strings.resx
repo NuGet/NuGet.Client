@@ -303,7 +303,7 @@
     <value>Cannot find version of msbuild.</value>
   </data>
   <data name="NuGetDocs" xml:space="preserve">
-    <value>http://docs.nuget.org/</value>
+    <value>https://docs.nuget.org/</value>
   </data>
   <data name="Log_PackageCommandAttemptingToBuildSymbolsPackage" xml:space="preserve">
     <value>Attempting to build symbols package for '{0}'.</value>
@@ -445,7 +445,7 @@
   </data>
   <data name="LocalsCommand_Help" xml:space="preserve">
     <value>usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="InvalidRestoreInput" xml:space="preserve">
     <value>Invalid restore input. {0}</value>

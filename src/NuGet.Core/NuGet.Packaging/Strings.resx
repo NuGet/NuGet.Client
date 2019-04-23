@@ -189,7 +189,7 @@
     <value>Unsupported targetFramework value '{0}'.</value>
   </data>
   <data name="PackageMinVersionNotSatisfied" xml:space="preserve">
-    <value>The '{0}' package requires NuGet client version '{1}' or above, but the current NuGet version is '{2}'. To upgrade NuGet, please go to http://docs.nuget.org/consume/installing-nuget</value>
+    <value>The '{0}' package requires NuGet client version '{1}' or above, but the current NuGet version is '{2}'. To upgrade NuGet, please go to https://docs.nuget.org/consume/installing-nuget</value>
   </data>
   <data name="UnableToParseClientVersion" xml:space="preserve">
     <value>Unable to parse the current NuGet client version.</value>

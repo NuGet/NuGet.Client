@@ -1,4 +1,4 @@
-﻿<feed xml:base="https://www.nuget.org/api/v2" xmlns="http://www.w3.org/2005/Atom" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:georss="http://www.georss.org/georss" xmlns:gml="http://www.opengis.net/gml">
+<feed xml:base="https://www.nuget.org/api/v2" xmlns="http://www.w3.org/2005/Atom" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:georss="http://www.georss.org/georss" xmlns:gml="http://www.opengis.net/gml">
   <m:count>9</m:count>
   <id>http://schemas.datacontract.org/2004/07/</id>
   <title/>
@@ -71,7 +71,7 @@
       <d:Copyright>© Microsoft Corporation. All rights reserved.</d:Copyright>
       <d:Created m:type="Edm.DateTime">2016-11-10T18:23:33.15Z</d:Created>
       <d:Dependencies/>
-      <d:Description>The NuGet Credential Provider enables NuGet.exe 3.3+ to connect to Visual Studio Team Services Package Management NuGet feeds. See the NuGet docs for more info: http://docs.nuget.org/Consume/Credential-Providers</d:Description>
+      <d:Description>The NuGet Credential Provider enables NuGet.exe 3.3+ to connect to Visual Studio Team Services Package Management NuGet feeds. See the NuGet docs for more info: https://docs.nuget.org/Consume/Credential-Providers</d:Description>
       <d:DownloadCount m:type="Edm.Int32">33994</d:DownloadCount>
       <d:GalleryDetailsUrl>https://www.nuget.org/packages/Microsoft.VisualStudio.Services.NuGet.CredentialProvider/0.23.0</d:GalleryDetailsUrl>
       <d:IconUrl>http://go.microsoft.com/fwlink/?LinkId=615568</d:IconUrl>

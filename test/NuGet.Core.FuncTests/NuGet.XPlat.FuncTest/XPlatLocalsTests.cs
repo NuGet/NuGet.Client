@@ -217,7 +217,7 @@ namespace NuGet.XPlat.FuncTest
                                                Environment.NewLine,
                                                "error: usage: NuGet locals <all | http-cache | global-packages | temp | plugins-cache> [--clear | -c | --list | -l]",
                                                Environment.NewLine,
-                                               "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
+                                               "error: For more information, visit https://docs.nuget.org/docs/reference/command-line-reference");
 
             // Act
             var result = CommandRunner.Run(
@@ -296,7 +296,7 @@ namespace NuGet.XPlat.FuncTest
                                                Environment.NewLine,
                                                "error: usage: NuGet locals <all | http-cache | global-packages | temp | plugins-cache> [--clear | -c | --list | -l]",
                                                Environment.NewLine,
-                                               "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
+                                               "error: For more information, visit https://docs.nuget.org/docs/reference/command-line-reference");
 
             // Act
             var result = CommandRunner.Run(
@@ -331,7 +331,7 @@ namespace NuGet.XPlat.FuncTest
                                                Environment.NewLine,
                                                "error: usage: NuGet locals <all | http-cache | global-packages | temp | plugins-cache> [--clear | -c | --list | -l]",
                                                Environment.NewLine,
-                                               "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
+                                               "error: For more information, visit https://docs.nuget.org/docs/reference/command-line-reference");
 
             // Act
             var result = CommandRunner.Run(
