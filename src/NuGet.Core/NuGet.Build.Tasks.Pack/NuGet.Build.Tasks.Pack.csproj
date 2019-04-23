@@ -19,7 +19,7 @@
     <DevelopmentDependency>true</DevelopmentDependency>
     <PackageDescription>NuGet pack for dotnet CLI.</PackageDescription>
     <NoWarn>$(NoWarn);NU5100</NoWarn>
-    <DepsFileGenerationMode>old</DepsFileGenerationMode>
+    <!-- <DepsFileGenerationMode>old</DepsFileGenerationMode> -->
   </PropertyGroup>
 
   <ItemGroup>
