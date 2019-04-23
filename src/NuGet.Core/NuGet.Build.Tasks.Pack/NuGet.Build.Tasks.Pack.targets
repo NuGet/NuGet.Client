@@ -53,7 +53,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' != 'true' and '$(GeneratePackageOnBuild)' != 'true'">
     <GenerateNuspecDependsOn>Build;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
-</PropertyGroup>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectCapability Include="Pack"/>
   </ItemGroup>
