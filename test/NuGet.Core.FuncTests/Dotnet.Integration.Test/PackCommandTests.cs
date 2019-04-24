@@ -3952,21 +3952,15 @@ namespace ClassLibrary
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " console");
 
-                var projectFile = Path.Combine(testDirectory.Path, $"{projectName}.csproj");
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
                     ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
-
-                msbuildFixture.RunDotnet(workingDirectory, $"publish {projectName}");
-
-                // Assert
-                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
-                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
-                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
-                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+                // Run and assert.
+                msbuildFixture.RunDotnet(workingDirectory, $"publish {projectFile}");
             }
         }
     }
