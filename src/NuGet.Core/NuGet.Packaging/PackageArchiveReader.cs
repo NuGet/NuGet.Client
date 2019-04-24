@@ -383,9 +383,8 @@ namespace NuGet.Packaging
 
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
-            bool value = false;
+            var value = false;
 #if IS_DESKTOP
-            Console.WriteLine("I think I Am DESKTOP");
             if (RuntimeEnvironmentHelper.IsMono) {
                 if (RuntimeEnvironmentHelper.IsWindows) {
                     value = true;
@@ -395,13 +394,9 @@ namespace NuGet.Packaging
                 }
             }
             else {
-                value =  true;
+                value = true;
             }
-#else
-            Console. WriteLine("Not DESKTOP!");
-            value = false;
 #endif
-            Console.WriteLine($"IsMono: ${RuntimeEnvironmentHelper.IsMono}, Win: ${RuntimeEnvironmentHelper.IsWindows}, Mac: ${RuntimeEnvironmentHelper.IsMacOSX}, Linux: ${RuntimeEnvironmentHelper.IsLinux}");
             return value;
         }
 
