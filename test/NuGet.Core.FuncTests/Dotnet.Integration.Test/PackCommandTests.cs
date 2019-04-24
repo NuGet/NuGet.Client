@@ -3941,5 +3941,30 @@ namespace ClassLibrary
                 }
             }
         }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_WithGeneratePackageOnBuildSet_CanPublish()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " console");
+
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+                // Act
+                var result = msbuildFixture.RunDotnet(workingDirectory, $"publish {projectFile}");
+
+                // Assert
+                Assert.True(result.Success);
+            }
+        }
     }
 }
