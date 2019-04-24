@@ -118,17 +118,16 @@ $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
 # Check if there is a localization branch associated with this branch repo 
 $currentNuGetBranch = $env:BUILD_SOURCEBRANCHNAME
 $lsRemoteOpts = 'ls-remote', 'origin', $currentNuGetBranch
-Write-Host "Looking for branch '$currentNuGetBranch' in NuGet.Build.Localization..."
+Write-Host "Looking for branch '$currentNuGetBranch' in NuGet.Build.Localization"
 $lsResult = & git -C $NuGetLocalization $lsRemoteOpts
 
 if ($lsResult) {
-    Write-Host "Found branch '$currentNuGetBranch' in NuGet.Build.Localization"
     $NuGetLocalizationRepoBranch = $currentNuGetBranch
 }
 else {
-    Write-Host "Branch '$currentNuGetBranch' not found in NuGet.Build.Localization. Defaulting to dev"
     $NuGetLocalizationRepoBranch = 'dev'
 }
+Write-Host "NuGet.Build.Localization Branch: $NuGetLocalizationRepoBranch"
 
 # update submodule NuGet.Build.Localization
 $updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
