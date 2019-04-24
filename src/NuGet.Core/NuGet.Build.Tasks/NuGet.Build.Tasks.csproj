@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary);netstandard2.1</TargetFrameworks>
     <TargetFramework/>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>

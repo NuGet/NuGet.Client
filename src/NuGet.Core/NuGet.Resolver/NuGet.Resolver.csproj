@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>NuGet's dependency resolver within the NuGet.Packaging package.</Description>
-    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary);netstandard2.1</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
     <PackProject>true</PackProject>
