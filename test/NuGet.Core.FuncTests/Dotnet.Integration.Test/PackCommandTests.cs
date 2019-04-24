@@ -3959,8 +3959,11 @@ namespace ClassLibrary
                     ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
-                // Run and assert.
-                msbuildFixture.RunDotnet(workingDirectory, $"publish {projectFile}");
+                // Act
+                var result = msbuildFixture.RunDotnet(workingDirectory, $"publish {projectFile}");
+
+                // Assert
+                Assert.True(result.Success);
             }
         }
     }
