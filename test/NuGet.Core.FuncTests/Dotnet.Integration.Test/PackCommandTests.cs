@@ -3951,8 +3951,15 @@ namespace ClassLibrary
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " console");
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var projectFile = Path.Combine(testDirectory.Path, $"{projectName}.csproj");
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
                 msbuildFixture.RunDotnet(workingDirectory, $"publish {projectName}");
 
                 // Assert
