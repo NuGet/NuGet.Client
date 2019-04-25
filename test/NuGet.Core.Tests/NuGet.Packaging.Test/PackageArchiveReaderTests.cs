@@ -1868,14 +1868,13 @@ namespace NuGet.Packaging.Test
         }
 #endif
 
-
         [Fact]
         public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework()
         {
             // Arrange
             using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            using (var packageArchiveReader = new PackageArchiveReader(test))
             {
-                var packageArchiveReader = new PackageArchiveReader(test);
                 // Act
                 var result = packageArchiveReader.CanVerifySignedPackages(null);
                 // Assert
@@ -1895,7 +1894,6 @@ namespace NuGet.Packaging.Test
 #endif
             }
         }
-
 
         private static string ExtractFile(string sourcePath, string targetPath, Stream sourceStream)
         {
