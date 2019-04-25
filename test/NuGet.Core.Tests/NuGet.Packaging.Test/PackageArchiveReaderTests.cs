@@ -1869,7 +1869,6 @@ namespace NuGet.Packaging.Test
 #endif
 
 
-
         [Fact]
         public void CanVerifySignedPackages_Platform()
         {
@@ -1882,7 +1881,10 @@ namespace NuGet.Packaging.Test
                 // Assert
 #if IS_DESKTOP
                 // Verify package signature when running in full frameworks
-                Assert.True(result);
+                if (RuntimeEnvironmentHelper.IsWindows || !RuntimeEnvironmentHelper.IsMono)
+                    Assert.True(result);
+                else
+                    Assert.False(result);
 #else
                 // Cannot verify package signature in not-full frameworks
                 Assert.False(result);
