@@ -384,7 +384,7 @@ namespace NuGet.Packaging
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
 #if IS_DESKTOP
-            return true;
+            return RuntimeEnvironmentHelper.IsWindows && !RuntimeEnvironmentHelper.IsMono;
 #else
             return false;
 #endif
