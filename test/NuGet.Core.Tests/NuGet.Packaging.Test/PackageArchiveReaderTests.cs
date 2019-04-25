@@ -1868,7 +1868,30 @@ namespace NuGet.Packaging.Test
         }
 #endif
 
-        private static string ExtractFile(string sourcePath, string targetPath, Stream sourceStream)
+
+
+        [Fact]
+        public void CanVerifySignedPackages_Platform()
+        {
+            // Arrange
+            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            {
+                var packageArchiveReader = new PackageArchiveReader(test);
+                // Act
+                var result = packageArchiveReader.CanVerifySignedPackages(null);
+                // Assert
+#if IS_DESKTOP
+                // Verify package signature when running in full frameworks
+                Assert.True(result);
+#else
+                // Cannot verify package signature in not-full frameworks
+                Assert.False(result);
+#endif
+            }
+        }
+
+
+                private static string ExtractFile(string sourcePath, string targetPath, Stream sourceStream)
         {
             using (var targetStream = File.OpenWrite(targetPath))
             {
