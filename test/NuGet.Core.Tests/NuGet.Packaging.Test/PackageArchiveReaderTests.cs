@@ -1868,6 +1868,33 @@ namespace NuGet.Packaging.Test
         }
 #endif
 
+        [Fact]
+        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework()
+        {
+            // Arrange
+            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            using (var packageArchiveReader = new PackageArchiveReader(test))
+            {
+                // Act
+                var result = packageArchiveReader.CanVerifySignedPackages(null);
+                // Assert
+#if IS_DESKTOP
+                // Verify package signature when running in full frameworks
+                if (RuntimeEnvironmentHelper.IsWindows && !RuntimeEnvironmentHelper.IsMono)
+                {
+                    Assert.True(result);
+                }
+                else
+                {
+                    Assert.False(result);
+                }
+#else
+                // Cannot verify package signature in not-full frameworks
+                Assert.False(result);
+#endif
+            }
+        }
+
         private static string ExtractFile(string sourcePath, string targetPath, Stream sourceStream)
         {
             using (var targetStream = File.OpenWrite(targetPath))
