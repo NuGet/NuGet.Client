@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -25,11 +26,11 @@ namespace NuGet.Protocol
             var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(token);
             if (serviceIndex != null)
             {
-                var repoSignUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.RepositorySignatures);
+                var serviceEntry = serviceIndex.GetServiceEntries(ServiceTypes.RepositorySignatures).FirstOrDefault();
 
-                if (repoSignUrl != null)
+                if (serviceEntry != null)
                 {
-                    resource = await GetRepositorySignatureResourceAsync(source, repoSignUrl.AbsoluteUri, NullLogger.Instance, token);
+                    resource = await GetRepositorySignatureResourceAsync(source, serviceEntry, NullLogger.Instance, token);
                 }
             }
 
@@ -38,34 +39,36 @@ namespace NuGet.Protocol
 
         private async Task<RepositorySignatureResource> GetRepositorySignatureResourceAsync(
             SourceRepository source,
-            string repoSignUrl,
+            ServiceIndexEntry serviceEntry,
             ILogger log,
             CancellationToken token)
         {
-            var validUri = Uri.TryCreate(repoSignUrl, UriKind.Absolute, out var repoSignValidUri);
-            if (!validUri || !string.Equals(repoSignValidUri.Scheme, "https", StringComparison.OrdinalIgnoreCase))
+            var repositorySignaturesResourceUri = serviceEntry.Uri;
+
+            if (repositorySignaturesResourceUri == null || !string.Equals(repositorySignaturesResourceUri.Scheme, "https", StringComparison.OrdinalIgnoreCase))
             {
                 throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.RepositorySignaturesResourceMustBeHttps, source.PackageSource.Source));
             }
 
             var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
             var client = httpSourceResource.HttpSource;
+            var cacheKey = GenerateCacheKey(serviceEntry);
 
             for (var retry = 0; retry < 3; retry++)
             {
-                using (var sourecCacheContext = new SourceCacheContext())
+                using (var sourceCacheContext = new SourceCacheContext())
                 {
-                    var cacheContext = HttpSourceCacheContext.Create(sourecCacheContext, retry);
+                    var cacheContext = HttpSourceCacheContext.Create(sourceCacheContext, retry);
 
                     try
                     {
                         return await client.GetAsync(
                             new HttpSourceCachedRequest(
-                                repoSignUrl,
-                                "repository_signature",
+                                serviceEntry.Uri.AbsoluteUri,
+                                cacheKey,
                                 cacheContext)
                             {
-                                EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(repoSignUrl, stream),
+                                EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(repositorySignaturesResourceUri.AbsoluteUri, stream),
                                 MaxTries = 1
                             },
                             async httpSourceResult =>
@@ -79,14 +82,14 @@ namespace NuGet.Protocol
                     }
                     catch (Exception ex) when (retry < 2)
                     {
-                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingRepositorySignature, repoSignUrl)
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingRepositorySignature, repositorySignaturesResourceUri.AbsoluteUri)
                             + Environment.NewLine
                             + ExceptionUtilities.DisplayMessage(ex);
                         log.LogMinimal(message);
                     }
                     catch (Exception ex) when (retry == 2)
                     {
-                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadRepositorySignature, repoSignUrl);
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadRepositorySignature, repositorySignaturesResourceUri.AbsoluteUri);
 
                         throw new FatalProtocolException(message, ex);
                     }
@@ -94,6 +97,14 @@ namespace NuGet.Protocol
             }
 
             return null;
+        }
+
+        private static string GenerateCacheKey(ServiceIndexEntry serviceEntry)
+        {
+            var index = serviceEntry.Type.IndexOf('/');
+            var version = serviceEntry.Type.Substring(index + 1).Trim();
+
+            return $"repository_signatures_{version}";
         }
     }
 }
