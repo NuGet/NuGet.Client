@@ -1881,7 +1881,7 @@ namespace NuGet.Packaging.Test
                 // Assert
 #if IS_DESKTOP
                 // Verify package signature when running in full frameworks
-                if (RuntimeEnvironmentHelper.IsWindows || !RuntimeEnvironmentHelper.IsMono)
+                if (RuntimeEnvironmentHelper.IsWindows && !RuntimeEnvironmentHelper.IsMono)
                 {
                     Assert.True(result);
                 }
