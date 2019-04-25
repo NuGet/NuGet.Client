@@ -1870,7 +1870,7 @@ namespace NuGet.Packaging.Test
 
 
         [Fact]
-        public void CanVerifySignedPackages_Platform()
+        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework()
         {
             // Arrange
             using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
@@ -1882,9 +1882,13 @@ namespace NuGet.Packaging.Test
 #if IS_DESKTOP
                 // Verify package signature when running in full frameworks
                 if (RuntimeEnvironmentHelper.IsWindows || !RuntimeEnvironmentHelper.IsMono)
+                {
                     Assert.True(result);
+                }
                 else
+                {
                     Assert.False(result);
+                }
 #else
                 // Cannot verify package signature in not-full frameworks
                 Assert.False(result);
@@ -1893,7 +1897,7 @@ namespace NuGet.Packaging.Test
         }
 
 
-                private static string ExtractFile(string sourcePath, string targetPath, Stream sourceStream)
+        private static string ExtractFile(string sourcePath, string targetPath, Stream sourceStream)
         {
             using (var targetStream = File.OpenWrite(targetPath))
             {

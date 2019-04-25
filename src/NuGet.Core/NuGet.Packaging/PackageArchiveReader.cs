@@ -383,21 +383,11 @@ namespace NuGet.Packaging
 
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
-            var value = false;
 #if IS_DESKTOP
-            if (RuntimeEnvironmentHelper.IsMono) {
-                if (RuntimeEnvironmentHelper.IsWindows) {
-                    value = true;
-                }
-                else {
-                    value = false;
-                }
-            }
-            else {
-                value = true;
-            }
+            return RuntimeEnvironmentHelper.IsWindows && !RuntimeEnvironmentHelper.IsMono;
+#else
+            return false;
 #endif
-            return value;
         }
 
         protected void ThrowIfZipReadStreamIsNull()

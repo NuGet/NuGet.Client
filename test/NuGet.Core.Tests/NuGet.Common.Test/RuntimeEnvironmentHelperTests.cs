@@ -13,10 +13,11 @@ namespace NuGet.Common.Test
     public class RuntimeEnvironmentHelperTests
     {
         [Fact]
-        public void RuntimeEnvironmentHelper_MutuallyExclusiveRuntimes()
+        public void RuntimeEnvironmentHelper_OperatingSystemChecks_OnlyOneReturnsTrue()
         {
-            // It only should return true in either Windows or MacOS/Linux
-            Assert.True(RuntimeEnvironmentHelper.IsWindows ^ (RuntimeEnvironmentHelper.IsMacOSX | RuntimeEnvironmentHelper.IsLinux));
+            var results = new[] { RuntimeEnvironmentHelper.IsWindows, RuntimeEnvironmentHelper.IsMacOSX, RuntimeEnvironmentHelper.IsLinux };
+
+            Assert.Equal(1, results.Count(result => result));
         }
     }
 }
