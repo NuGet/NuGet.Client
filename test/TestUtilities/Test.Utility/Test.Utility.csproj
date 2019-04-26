@@ -3,9 +3,9 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksExe);netcoreapp3.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <NoWarn Condition="'$(TargetFramework)' == '$(NETCoreTargetFramework)'">$(NoWarn);CS1998</NoWarn>
+    <NoWarn Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">$(NoWarn);CS1998</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IsPackable>true</IsPackable>
@@ -66,14 +66,14 @@
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
     <PackageReference Include="System.Diagnostics.Process" Version="$(SystemPackagesVersion)" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="$(SystemPackagesVersion)" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.5.2" />
   </ItemGroup>
 
   <!-- Remove files that do not support netcore -->
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
     <Compile Remove="PackageManagement\*.cs" />
     <Compile Remove="ProjectManagement\*.cs" />
     <Compile Remove="Threading\*.cs" />
