@@ -181,7 +181,7 @@ namespace NuGet.Protocol.Core.Types
                         Strings.DefaultSymbolServer));
                 }
 
-                await PushPackage(symbolPackagePath, source, apiKey, noServiceEndpoint, skipDuplicate: false, requestTimeout, log, token, isSnupkgPush: isSymbolEndpointSnupkgCapable);
+                await PushPackage(symbolPackagePath, source, apiKey, noServiceEndpoint, false, requestTimeout, log, token, isSnupkgPush: isSymbolEndpointSnupkgCapable);
             }
         }
 
