@@ -205,5 +205,5 @@ else
         Write-Error "Failed to get product version."
         exit 1
     }
-    Update-VsixVersion -manifestName source.extension.vs15.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $env:BUILDNUMBER
+    Update-VsixVersion -manifestName source.extension.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $env:BUILDNUMBER
 }
