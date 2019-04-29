@@ -47,7 +47,7 @@
       <Link>NuGet.targets</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="source.extension.vs15.vsixmanifest" />
+    <Content Include="source.extension.vsixmanifest" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt">
@@ -275,15 +275,15 @@
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.targets" Condition="'$(IsXplat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' " />
   <Target Name="FindSourceVsixManifest">
     <ItemGroup>
-      <SourceVsixManifest Include="source.extension.vs15.vsixmanifest" />
+      <SourceVsixManifest Include="source.extension.vsixmanifest" />
     </ItemGroup>
   </Target>
   <ItemGroup>
     <VsixIncludeFile Include=".vsixinclude" />
   </ItemGroup>
   <ItemGroup>
-    <VsixIgnoreFile Include=".vsixignore.vs15" />
-    <None Include="source.extension.vs15.vsixmanifest">
+    <VsixIgnoreFile Include=".vsixignore" />
+    <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
@@ -294,12 +294,12 @@
       <ExcludeAssets>all</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
-  <Target Name="AfterBuild" DependsOnTargets="PublishVS15" />
-  <Target Name="PublishVS15">
+  <Target Name="AfterBuild" DependsOnTargets="PublishVS" />
+  <Target Name="PublishVS">
     <ItemGroup>
       <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />
     </ItemGroup>
-    <Message Text="Publishing VS15 VSIX package files..." Importance="high" />
+    <Message Text="Publishing VS VSIX package files..." Importance="high" />
     <Message Text="$(TargetVsixContainer) -&gt; $(VsixPublishDestination)\NuGet.Tools.vsix" Importance="high" />
     <Copy SourceFiles="$(TargetVsixContainer)" DestinationFiles="$(VsixPublishDestination)NuGet.Tools.vsix" OverwriteReadOnlyFiles="true" />
     <Message Text="@(PackageManifest) -&gt; $(VsixPublishDestination)" Importance="high" />

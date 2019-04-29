@@ -137,7 +137,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS15 /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
+      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
   - task: PublishTestResults@2
@@ -269,7 +269,7 @@ phases:
     displayName: "Create EndToEnd Test Package"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
-      arguments: "-c $(BuildConfiguration) -tv 15 -out $(Build.Repository.LocalPath)\\artifacts\\VS15"
+      arguments: "-c $(BuildConfiguration) -tv 16 -out $(Build.Repository.LocalPath)\\artifacts\\VS15"
       failOnStandardError: "true"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 

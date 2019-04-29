@@ -80,11 +80,11 @@
     Run unit tests
     ============================================================
   -->
-  <Target Name="UnitTestsVS15">
+  <Target Name="UnitTestsVS">
     <!-- Test inputs -->
     <PropertyGroup>
       <TestProjectPaths>@(VSUnitTestProjects)</TestProjectPaths>
-      <TestResultsFileName>UnitTestsVS15</TestResultsFileName>
+      <TestResultsFileName>UnitTestsVS</TestResultsFileName>
     </PropertyGroup>
 
     <!-- Run tests as a batch -->
@@ -130,7 +130,7 @@
     Build, Pack, Core Tests, Unit tests for VS
     ============================================================
   -->
-  <Target Name="RunVS15"  DependsOnTargets="BuildVS;Pack;CoreUnitTests;UnitTestsVS15">
+  <Target Name="RunVS"  DependsOnTargets="BuildVS;Pack;CoreUnitTests;UnitTestsVS">
     <Message Text="Running NuGet Build for VS $(VisualStudioVersion)" Importance="high" />
   </Target>
 

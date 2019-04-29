@@ -59,7 +59,7 @@
   </PropertyGroup>
 
   <!-- These are needed because currently a VSIX project cannot reference a net core project that multi targets.
-  This is a hack for building VS15 VSIX. It's because all these targets are available in the inner build, while the VSIX project
+  This is a hack for building the VSIX. It's because all these targets are available in the inner build, while the VSIX project
   is non netcore, and isn't aware of inner/outer builds. -->
   <Target Name="BuiltProjectOutputGroupDependencies" DependsOnTargets="PrintVSVersionAndNetcore" Condition="false" />
   <Target Name="BuiltProjectOutputGroup" DependsOnTargets="PrintVSVersionAndNetcore" Condition="false" />
