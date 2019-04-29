@@ -1512,9 +1512,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     });
 
                 using (var testSolutionManager = new TestSolutionManager(true))
-                using (var randomProjectFolderPath = TestDirectory.Create())
                 {
-                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
@@ -1525,7 +1524,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // set up projects
                     var projectTargetFrameworkStr = "net46";
-                    var fullProjectPathB = Path.Combine(randomProjectFolderPath, "ProjectB", "project2.csproj");
+                    var fullProjectPathB = Path.Combine(testSolutionManager.TestDirectory, "ProjectB", "project2.csproj");
                     var projectNamesB = new ProjectNames(
                         fullName: fullProjectPathB,
                         uniqueName: Path.GetFileName(fullProjectPathB),
@@ -1555,7 +1554,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         _threadingService);
 
                     projectTargetFrameworkStr = "net461";
-                    var projectPathA = Path.Combine(randomProjectFolderPath, "ProjectA");
+                    var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
                     var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
                     var projectNamesA = new ProjectNames(
                         fullName: fullProjectPathA,
@@ -1681,9 +1680,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     });
 
                 using (var testSolutionManager = new TestSolutionManager(true))
-                using (var randomProjectFolderPath = TestDirectory.Create())
                 {
-                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
                     var nuGetPackageManager = new NuGetPackageManager(
@@ -1694,7 +1692,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // set up projects
                     var projectTargetFrameworkStr = "net45";
-                    var fullProjectPath2 = Path.Combine(randomProjectFolderPath, "Project2", "project2.csproj");
+                    var fullProjectPath2 = Path.Combine(testSolutionManager.TestDirectory, "Project2", "project2.csproj");
                     var projectNames2 = new ProjectNames(
                         fullName: fullProjectPath2,
                         uniqueName: Path.GetFileName(fullProjectPath2),
@@ -1722,7 +1720,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectServicesB,
                         _threadingService);
 
-                    var projectPath1 = Path.Combine(randomProjectFolderPath, "Project1");
+                    var projectPath1 = Path.Combine(testSolutionManager.TestDirectory, "Project1");
                     var fullProjectPath1 = Path.Combine(projectPath1, "project1.csproj");
                     var projectNames1 = new ProjectNames(
                         fullName: fullProjectPath1,
@@ -1797,7 +1795,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     var globalPackagesFolderPath = Path.Combine(assetsFile.PackageFolders.First().Path, "packageB");
 
                     var enumeratePaths = Directory.EnumerateFiles(globalPackagesFolderPath, "*", searchOption: SearchOption.AllDirectories);
-
                     foreach (var target in assetsFile.Targets)
                     {
                         var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("packageB"));
