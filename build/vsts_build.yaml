@@ -79,9 +79,9 @@ phases:
         Write-Host "##vso[task.setvariable variable=ManifestFilePath]$(Build.Repository.LocalPath)\artifacts\manifests\nuget.client.xml"
 
   - task: NuGetToolInstaller@0
-    displayName: "Use NuGet 4.6.2"
+    displayName: "Use NuGet 5.0.0"
     inputs:
-      versionSpec: "4.6.2"
+      versionSpec: "5.0.0"
 
   - task: PowerShell@1
     inputs:

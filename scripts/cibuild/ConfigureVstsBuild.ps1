@@ -99,7 +99,7 @@ Function DisableStrongNameVerification(
     }
 }
 
-$msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
+$msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
 
 # Turn off strong name verification for common DevDiv public keys so that people can execute things against
 # test-signed assemblies. One example would be running unit tests on a test-signed assembly during the build.
