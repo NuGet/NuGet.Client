@@ -3,7 +3,7 @@ phases:
 
 - phase: Initialize_Build
   queue:
-    name: VSEng-MicroBuildVS2017
+    name: VSEng-MicroBuildVS2019
     timeoutInMinutes: 60
     demands: 
       - DotNetFramework
@@ -50,7 +50,7 @@ phases:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   queue:
-    name: VSEng-MicroBuildVS2017
+    name: VSEng-MicroBuildVS2019
     timeoutInMinutes: 90
     parallel: 2
     matrix:
