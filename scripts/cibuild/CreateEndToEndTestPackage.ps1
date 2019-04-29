@@ -20,10 +20,10 @@ param(
     [Parameter(Mandatory=$False)]
     [Alias('c')]
     [string]$Configuration = 'Debug',
-    [Parameter(Mandatory=$False)]
+    [Parameter(Mandatory=$True)]
     [ValidateSet(15,16)]
     [Alias('tv')]
-    [int]$ToolsetVersion = 15,
+    [int]$ToolsetVersion,
     [Parameter(Mandatory=$False)]
     [Alias('out')]
     [string]$OutputDirectory = $PWD,

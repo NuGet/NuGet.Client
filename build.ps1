@@ -85,44 +85,44 @@ Invoke-BuildStep 'Cleaning artifacts' {
 -ev +BuildErrors
 
 if($SkipUnitTest){
-    $VS15Target = "BuildVS15;Pack";
-    $VS15Message = "Running Build for VS 15.0"
+    $VSTarget = "BuildVS;Pack";
+    $VSMessage = "Running Build"
 }
 else {
-    $VS15Target = "RunVS15";
-    $VS15Message = "Running Build, Pack, Core unit tests, and Unit tests for VS 15.0";
+    $VSTarget = "RunVS";
+    $VSMessage = "Running Build, Pack, Core unit tests, and Unit tests";
 }
 
-Invoke-BuildStep 'Running Restore for VS 15.0' {
+Invoke-BuildStep 'Running Restore' {
 
-    # Restore for VS 15.0
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
+    # Restore
+    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
+    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
 
     if (-not $?)
     {
-        Write-Error "Failed - Running Restore for VS 15.0"
+        Write-Error "Failed - Running Restore"
         exit 1
     }
 } `
 -ev +BuildErrors
 
 
-Invoke-BuildStep $VS15Message {
+Invoke-BuildStep $VSMessage {
 
-    # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS 15.0
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:$VS15Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:$VS15Target /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
+    # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
+    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:$VSTarget /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
+    & $MSBuildExe build\build.proj /t:$VSTarget /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
 
     if (-not $?)
     {
-        Write-Error "Failed - $VS15Message"
+        Write-Error "Failed - $VSMessage"
         exit 1
     }
 } `
 -ev +BuildErrors
 
-Invoke-BuildStep 'Publishing the VS15 EndToEnd test package' {
+Invoke-BuildStep 'Publishing the EndToEnd test package' {
         param($Configuration)
         $EndToEndScript = Join-Path $PSScriptRoot scripts\cibuild\CreateEndToEndTestPackage.ps1 -Resolve
         $OutDir = Join-Path $Artifacts VS15
@@ -133,11 +133,11 @@ Invoke-BuildStep 'Publishing the VS15 EndToEnd test package' {
     -ev +BuildErrors
 
 
-Invoke-BuildStep 'Running Restore for VS 15.0 RTM' {
+Invoke-BuildStep 'Running Restore RTM' {
 
-    # Restore for VS 15.0
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1 "
-    & $MSBuildExe build\build.proj /t:RestoreVS15 /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1
+    # Restore for VS
+    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1 "
+    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1
 
     if (-not $?)
     {
@@ -149,15 +149,15 @@ Invoke-BuildStep 'Running Restore for VS 15.0 RTM' {
 -ev +BuildErrors
 
 
-Invoke-BuildStep 'Packing VS15 RTM' {
+Invoke-BuildStep 'Packing RTM' {
 
-    # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS 15.0
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:BuildVS15`;Pack /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:BuildVS15`;Pack /p:Configuration=$Configuration /p:BuildRTM=true  /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1
+    # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
+    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:BuildVS`;Pack /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1"
+    & $MSBuildExe build\build.proj /t:BuildVS`;Pack /p:Configuration=$Configuration /p:BuildRTM=true  /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1
 
     if (-not $?)
     {
-        Write-Error "Packing VS15 RTM build failed!"
+        Write-Error "Packing RTM build failed!"
         exit 1
     }
 } `

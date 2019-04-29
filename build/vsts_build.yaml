@@ -3,7 +3,7 @@ phases:
 
 - phase: Initialize_Build
   queue:
-    name: VSEng-MicroBuildVS2017
+    name: VSEng-MicroBuildVS2019
     timeoutInMinutes: 60
     demands: 
       - DotNetFramework
@@ -28,7 +28,7 @@ phases:
         $newBuildCounter = [System.Decimal]::Parse($revision)
         $newBuildCounter++
         Set-Content $env:BUILDCOUNTERFILE $newBuildCounter
-        $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
+        $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
         $productVersion = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
         $productVersion = $productVersion.Trim()
         $FullBuildNumber = "$productVersion.$newBuildCounter"
@@ -50,7 +50,7 @@ phases:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   queue:
-    name: VSEng-MicroBuildVS2017
+    name: VSEng-MicroBuildVS2019
     timeoutInMinutes: 90
     parallel: 2
     matrix:
@@ -79,9 +79,9 @@ phases:
         Write-Host "##vso[task.setvariable variable=ManifestFilePath]$(Build.Repository.LocalPath)\artifacts\manifests\nuget.client.xml"
 
   - task: NuGetToolInstaller@0
-    displayName: "Use NuGet 4.6.2"
+    displayName: "Use NuGet 5.0.0"
     inputs:
-      versionSpec: "4.6.2"
+      versionSpec: "5.0.0"
 
   - task: PowerShell@1
     inputs:
@@ -115,29 +115,29 @@ phases:
     displayName: "Install Swix Plugin"
 
   - task: MSBuild@1
-    displayName: "Restore for VS2017"
+    displayName: "Restore for VS2019"
     inputs:
       solution: "build\\build.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m"
+      msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m"
 
   - task: MSBuild@1
-    displayName: "Build for VS2017"
+    displayName: "Build for VS2019"
     inputs:
       solution: "build\\build.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
+      msbuildArguments: "/t:BuildNoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
 
   - task: MSBuild@1
     displayName: "Run unit tests"
     continueOnError: "true"
     inputs:
       solution: "build\\build.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS15 /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
+      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
   - task: PublishTestResults@2
@@ -173,7 +173,7 @@ phases:
     displayName: "Localize Assemblies"
     inputs:
       solution: "build\\loc.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:AfterBuild"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
@@ -182,7 +182,7 @@ phases:
     displayName: "Sign Assemblies"
     inputs:
       solution: "build\\sign.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:AfterBuild"
 
@@ -190,7 +190,7 @@ phases:
     displayName: "Pack Nupkgs"
     inputs:
       solution: "build\\build.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
 
@@ -198,16 +198,16 @@ phases:
     displayName: "Pack VSIX"
     inputs:
       solution: "build\\build.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:BuildVS15VSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true"
+      msbuildArguments: "/t:BuildVSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
   - task: MSBuild@1
     displayName: "Generate Build Tools package"
     inputs:
       solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
     condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
@@ -216,7 +216,7 @@ phases:
     displayName: "Sign Nupkgs and VSIX"
     inputs:
       solution: "build\\sign.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:AfterBuild /p:SignPackages=true"
 
@@ -253,7 +253,7 @@ phases:
     displayName: "Generate VSMAN file for NuGet Core VSIX"
     inputs:
       solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
@@ -261,7 +261,7 @@ phases:
     displayName: "Generate VSMAN file for Build Tools VSIX"
     inputs:
       solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
@@ -269,7 +269,7 @@ phases:
     displayName: "Create EndToEnd Test Package"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
-      arguments: "-c $(BuildConfiguration) -tv 15 -out $(Build.Repository.LocalPath)\\artifacts\\VS15"
+      arguments: "-c $(BuildConfiguration) -tv 16 -out $(Build.Repository.LocalPath)\\artifacts\\VS15"
       failOnStandardError: "true"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
@@ -318,7 +318,7 @@ phases:
     displayName: "Collect Build Symbols"
     inputs:
       solution: "build\\symbols.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/p:IsSymbolBuild=true"
     condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
@@ -389,7 +389,7 @@ phases:
     displayName: "Publish the build manifest file to the .NET Core build asset registry (BAR)"
     inputs:
       solution: 'build\\publish.proj'
-      msbuildVersion: 15.0
+      msbuildVersion: 16.0
       configuration: '$(BuildConfiguration)'
       msbuildArguments: '/t:PublishManifestToBuildAssetRegistry /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:ManifestsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\manifests /p:MaestroAccessToken=$(MaestroAccessToken)'
     condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
@@ -448,19 +448,19 @@ phases:
       arguments: "-Force -CleanCache"
 
   - task: MSBuild@1
-    displayName: "Restore for VS2017"
+    displayName: "Restore for VS2019"
     inputs:
       solution: "build\\build.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
+      msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
 
   - task: MSBuild@1
     displayName: "Run Functional Tests"
     continueOnError: "true"
     inputs:
       solution: "build\\build.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CoreFuncTests  /p:BuildRTM=false  /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk"
 
@@ -764,12 +764,12 @@ phases:
   #   condition: "failed()"
 
   - task: MSBuild@1
-    displayName: "Restore for VS2017"
+    displayName: "Restore for VS2019"
     inputs:
       solution: "build\\build.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(BuildNumber)"
+      msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber)"
 
   - task: NuGetCommand@2
     displayName: "Add Apex Feed Source"
@@ -781,7 +781,7 @@ phases:
     displayName: "Restore Apex Tests"
     inputs:
       solution: "build\\build.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(BuildNumber)"
 
@@ -791,7 +791,7 @@ phases:
     continueOnError: "true"
     inputs:
       solution: "build\\build.proj"
-      msbuildVersion: "15.0"
+      msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml  /p:NUGET_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(System.DefaultWorkingDirectory)\\keys\\35MSSharedLib1024.snk /p:BuildNumber=$(BuildNumber)"
 

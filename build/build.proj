@@ -32,7 +32,7 @@
     Run core functional tests (non-VS specific)
     ============================================================
   -->
-  <Target Name="CoreFuncTests" DependsOnTargets="BuildVS15;Pack">
+  <Target Name="CoreFuncTests" DependsOnTargets="BuildVS;Pack">
     <!-- Test inputs -->
     <PropertyGroup>
       <TestProjectPaths>@(CoreFuncTestProjects)</TestProjectPaths>
@@ -77,14 +77,14 @@
 
   <!--
     ============================================================
-    Run VS15 unit tests
+    Run unit tests
     ============================================================
   -->
-  <Target Name="UnitTestsVS15">
+  <Target Name="UnitTestsVS">
     <!-- Test inputs -->
     <PropertyGroup>
       <TestProjectPaths>@(VSUnitTestProjects)</TestProjectPaths>
-      <TestResultsFileName>UnitTestsVS15</TestResultsFileName>
+      <TestResultsFileName>UnitTestsVS</TestResultsFileName>
     </PropertyGroup>
 
     <!-- Run tests as a batch -->
@@ -101,7 +101,7 @@
 
   <!--
     ============================================================
-    Run VS15 apex tests
+    Run apex tests
     ============================================================
   -->
   <Target Name="ApexTestsStandalone">
@@ -127,20 +127,20 @@
 
   <!--
     ============================================================
-    Build, Pack, Core Tests, Unit tests for VS 15
+    Build, Pack, Core Tests, Unit tests for VS
     ============================================================
   -->
-  <Target Name="RunVS15"  DependsOnTargets="BuildVS15;Pack;CoreUnitTests;UnitTestsVS15">
+  <Target Name="RunVS"  DependsOnTargets="BuildVS;Pack;CoreUnitTests;UnitTestsVS">
     <Message Text="Running NuGet Build for VS $(VisualStudioVersion)" Importance="high" />
   </Target>
 
   <!--
     ============================================================
-    Build for VS15 
+    Build 
     ============================================================
   -->
-  <Target Name="BuildVS15"  Condition=" '$(IsXPlat)' != 'true' " >
-    <Message Text="Building for VS15" Importance="high" />
+  <Target Name="BuildVS"  Condition=" '$(IsXPlat)' != 'true' " >
+    <Message Text="Building for VS $(VisualStudioVersion)" Importance="high" />
   </Target>
 
     <!--
@@ -154,11 +154,11 @@
 
   <!--
     ============================================================
-    Build for VS15
+    Build no VSIX
     ============================================================
   -->
-  <Target Name="BuildVS15NoVSIX" AfterTargets="BuildVS15" Condition=" '$(IsXPlat)' != 'true' ">
-    <Message Text="Building for VS15" Importance="high" />
+  <Target Name="BuildNoVSIX" AfterTargets="BuildVS" Condition=" '$(IsXPlat)' != 'true' ">
+    <Message Text="Building for VS $(VisualStudioVersion)" Importance="high" />
 
     <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
              Targets="Build"
@@ -182,13 +182,13 @@
 
   <!--
     ============================================================
-    Build the VS15 VSIX
-    This target always needs to be below BuildVS15NoVSIX so that
-    BuildVS15 runs the NoVSIX targets before this one.
+    Build the VSIX
+    This target always needs to be below BuildNoVSIX so that
+    BuildVS runs the NoVSIX targets before this one.
     ============================================================
   -->
-  <Target Name="BuildVS15VSIX" AfterTargets= "BuildVS15" Condition=" '$(IsXPlat)' != 'true' AND '$(BuildRTM)' != 'true'">
-    <Message Text="Building the VSIX for VS15" Importance="high" />
+  <Target Name="BuildVSIX" AfterTargets= "BuildVS" Condition=" '$(IsXPlat)' != 'true' AND '$(BuildRTM)' != 'true'">
+    <Message Text="Building the VSIX for VS $(VisualStudioVersion)" Importance="high" />
 
     <MSBuild Projects="$(VSIXProject)"
              Targets="Build"
@@ -206,7 +206,7 @@
   <Target Name="Clean">
     <Message Text="Cleaning" Importance="high" />
 
-    <!-- Clean 15 -->
+    <!-- Clean -->
     <MSBuild BuildInParallel="true"
              Projects="@(SolutionProjects)"
              Targets="Clean"
@@ -216,7 +216,7 @@
 
   <!--
     ============================================================
-    Pack for VS15
+    Pack
     ============================================================
   -->
   <Target Name="Pack">
@@ -268,12 +268,10 @@
 
   <!--
     ============================================================
-    Restore for VS15
+    Restore for VS
     ============================================================
   -->
-  <Target Name="RestoreVS15">
-    <Message Text="Restoring for Visual Studio $(VisualStudioVersion)" Importance="high" />
-
+  <Target Name="RestoreVS">
     <MSBuild
       Projects="$(MSBuildThisFileFullPath)"
       Targets="Restore"
