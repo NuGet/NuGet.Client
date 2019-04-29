@@ -28,7 +28,7 @@ phases:
         $newBuildCounter = [System.Decimal]::Parse($revision)
         $newBuildCounter++
         Set-Content $env:BUILDCOUNTERFILE $newBuildCounter
-        $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\Current\Enterprise\MSBuild\16.0\bin\msbuild.exe'  
+        $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe'  
         $productVersion = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
         $productVersion = $productVersion.Trim()
         $FullBuildNumber = "$productVersion.$newBuildCounter"
