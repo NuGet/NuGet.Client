@@ -198,10 +198,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     RetryAfter = DefaultTimeout
                 };
             }
-            
+
             var partitionedTasks = searchTasks
                 .ToLookup(t => t.Value.Status == TaskStatus.RanToCompletion);
-            
+
             var completedOnly = partitionedTasks[true];
 
             SearchResult<IPackageSearchMetadata> aggregated;
@@ -220,7 +220,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 aggregated = SearchResult.Empty<IPackageSearchMetadata>();
             }
-
 
             aggregated.OperationId = telemetryState?.OperationId;
             aggregated.RefreshToken = refreshToken;
