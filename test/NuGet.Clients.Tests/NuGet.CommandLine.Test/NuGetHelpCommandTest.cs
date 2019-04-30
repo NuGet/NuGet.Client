@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Test.Utility;
@@ -20,7 +20,6 @@ namespace NuGet.CommandLine.Test
         [InlineData("pack")]
         [InlineData("push")]
         [InlineData("restore")]
-        [InlineData("search")]
         [InlineData("setApiKey")]
         [InlineData("sign")]
         [InlineData("sources")]

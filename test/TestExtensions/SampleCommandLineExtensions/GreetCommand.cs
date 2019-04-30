@@ -12,7 +12,7 @@ namespace SampleCommandLineExtensions
         UsageExample = "nuget greet",
         UsageSummary = "This command prints Greetings")]
     [DeprecatedCommand(typeof(HelloCommand))]
-    public class GreetingCommand : Command
+    public class GreetCommand : Command
     {
         public override void ExecuteCommand()
         {
