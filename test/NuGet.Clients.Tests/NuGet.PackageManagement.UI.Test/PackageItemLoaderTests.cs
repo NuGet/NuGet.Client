@@ -122,6 +122,9 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(operationId, page0["ParentId"]);
             Assert.IsType<int>(page0["ResultCount"]);
             Assert.IsType<double>(page0["Duration"]);
+            Assert.IsType<double>(page0["AggregationDuration"]);
+            Assert.IsType<string>(page0["SourceTimingDuration"]);
+            Assert.Equal(1, ((string)page0["SourceTimingDuration"]).Split(',').Select(e => double.Parse(e)).Count());
 
             var page1 = events[3];
             Assert.Equal("SearchPage", page1.Name);
@@ -130,6 +133,9 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(operationId, page1["ParentId"]);
             Assert.IsType<int>(page1["ResultCount"]);
             Assert.IsType<double>(page1["Duration"]);
+            Assert.IsType<double>(page1["AggregationDuration"]);
+            Assert.IsType<string>(page1["SourceTimingDuration"]);
+            Assert.Equal(1, ((string)page1["SourceTimingDuration"]).Split(',').Select(e => double.Parse(e)).Count());
 
             Assert.Equal(parsedOperationId, loader.State.OperationId);
         }
