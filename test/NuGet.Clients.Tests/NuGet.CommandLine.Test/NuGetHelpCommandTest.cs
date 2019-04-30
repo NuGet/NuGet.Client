@@ -70,24 +70,6 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void HelpCommand_List_WarningMessage()
-        {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            // Act
-            var r = CommandRunner.Run(
-                nugetexe,
-                Directory.GetCurrentDirectory(),
-                "help list",
-                waitForExit: true);
-
-            // Assert
-            Assert.Equal(0, r.Item1);
-            Assert.Contains("WARNING: 'NuGet list' is deprecated. Use 'NuGet search' instead", r.Item2, StringComparison.OrdinalIgnoreCase);
-        }
-
-        [Fact]
         public void HelpCommand_All()
         {
             // Arrange
