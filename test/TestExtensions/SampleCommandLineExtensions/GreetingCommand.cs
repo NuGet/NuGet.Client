@@ -8,7 +8,7 @@ using NuGet.CommandLine;
 namespace SampleCommandLineExtensions
 {
     [Export]
-    [Command("greet", "Prints greeetings",
+    [Command("greet", "Prints greetings",
         UsageExample = "nuget greet",
         UsageSummary = "This command prints Greetings")]
     [DeprecatedCommand(typeof(HelloCommand))]
