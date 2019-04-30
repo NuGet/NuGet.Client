@@ -652,7 +652,7 @@ namespace NuGet.PackageManagement.UI
             // start SearchAsync task for initial loading of packages
             var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
             // this will wait for searchResultTask to complete instead of creating a new task
-            // maybe this async event needs telemetry, where is this running?
+            // Does the overall thing need telemetry? This is on the UI thread.
             await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
 
             if (pSearchCallback != null && searchTask != null)

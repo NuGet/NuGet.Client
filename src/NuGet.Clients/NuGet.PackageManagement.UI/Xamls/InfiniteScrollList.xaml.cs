@@ -120,7 +120,6 @@ namespace NuGet.PackageManagement.UI
             Task<SearchResult<IPackageSearchMetadata>> searchResultTask,
             CancellationToken token)
         {
-            // UI Thread
             if (loader == null)
             {
                 throw new ArgumentNullException(nameof(loader));
@@ -146,7 +145,7 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusBar.Reset(loadingMessage, loader.IsMultiSource);
 
             var selectedPackageItem = SelectedPackageItem;
-            // UI Thread
+
             await _list.ItemsLock.ExecuteAsync(() =>
             {
                 ClearPackageList();
