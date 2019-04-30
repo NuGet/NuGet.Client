@@ -1672,7 +1672,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Arrange
                 var testLogger = new TestLogger();
-                LockFileUtils.Logger = testLogger;
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
                     new List<PackageSource>()
                     {
@@ -1792,14 +1791,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     var assetsFile = new LockFileFormat().Read(assetsFilePath);
                     Assert.NotNull(assetsFile);
 
-                    var globalPackagesFolderPath = Path.Combine(assetsFile.PackageFolders.First().Path, "packageB");
-
-                    var enumeratePaths = Directory.EnumerateFiles(globalPackagesFolderPath, "*", searchOption: SearchOption.AllDirectories);
                     foreach (var target in assetsFile.Targets)
                     {
                         var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("packageB"));
                         Assert.NotNull(library);
-                        Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/packageB.targets")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}" + Environment.NewLine + string.Join(Environment.NewLine, testLogger.Messages) + "The enumerated folder" + Environment.NewLine + string.Join(Environment.NewLine, enumeratePaths));
+                        Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/packageB.targets")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}" + Environment.NewLine + string.Join(Environment.NewLine, testLogger.Messages));
                         Assert.False(library.Build.Any(build => build.Path.Equals("build/packageB.props")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}" + Environment.NewLine + string.Join(Environment.NewLine, testLogger.Messages));
                     }
                 }
