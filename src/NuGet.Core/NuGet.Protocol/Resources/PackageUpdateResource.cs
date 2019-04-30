@@ -181,7 +181,7 @@ namespace NuGet.Protocol.Core.Types
                         Strings.DefaultSymbolServer));
                 }
 
-                await PushPackage(symbolPackagePath, source, apiKey, noServiceEndpoint, false, requestTimeout, log, token, isSnupkgPush: isSymbolEndpointSnupkgCapable);
+                await PushPackage(symbolPackagePath, source, apiKey, noServiceEndpoint, skipDuplicate: false, requestTimeout, log, token, isSnupkgPush: isSymbolEndpointSnupkgCapable);
             }
         }
 
@@ -400,7 +400,9 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                AdvertiseAvailableOptionToIgnore(response.StatusCode, logger);
+#if IS_DESKTOP
+                 AdvertiseAvailableOptionToIgnore(response.StatusCode, logger);
+#endif
             }
 
             //No exception to the rule specified.
@@ -457,6 +459,7 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="logger"></param>
         private static void AdvertiseAvailableOptionToIgnore(HttpStatusCode errorCodeThatOccurred, ILogger logger)
         {
+            
             string advertiseDescription = null;
 
             switch (errorCodeThatOccurred)

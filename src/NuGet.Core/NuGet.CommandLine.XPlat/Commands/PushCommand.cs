@@ -76,11 +76,6 @@ namespace NuGet.CommandLine.XPlat
                     Strings.NuGetXplatCommand_Interactive,
                     CommandOptionType.NoValue);
 
-                var skipDuplicate = push.Option(
-                    "--skip-duplicate",
-                    Strings.PushCommandSkipDuplicateDescription,
-                    CommandOptionType.NoValue);
-
                 push.OnExecute(async () =>
                 {
                     if (arguments.Values.Count < 1)
@@ -96,7 +91,6 @@ namespace NuGet.CommandLine.XPlat
                     bool disableBufferingValue = disableBuffering.HasValue();
                     bool noSymbolsValue = noSymbols.HasValue();
                     bool noServiceEndpoint = noServiceEndpointDescription.HasValue();
-                    bool skipDuplicateValue = skipDuplicate.HasValue();
                     int timeoutSeconds = 0;
 
                     if (timeout.HasValue() && !int.TryParse(timeout.Value(), out timeoutSeconds))
@@ -122,7 +116,7 @@ namespace NuGet.CommandLine.XPlat
                             disableBufferingValue,
                             noSymbolsValue,
                             noServiceEndpoint,
-                            skipDuplicateValue,
+                            skipDuplicate: false,
                             getLogger());
                     }
                     catch (TaskCanceledException ex)
