@@ -594,9 +594,18 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0} {1}&apos; is deprecated. Use &apos;{0} {2}&apos; instead.
         /// </summary>
-        public static string CommandDeprecationWarning {
+        public static string CommandDeprecationWarningAlternative {
             get {
-                return ResourceManager.GetString("CommandDeprecationWarning", resourceCulture);
+                return ResourceManager.GetString("CommandDeprecationWarningAlternative", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0} {1}&apos; is deprecated.
+        /// </summary>
+        public static string CommandDeprecationWarningSimple {
+            get {
+                return ResourceManager.GetString("CommandDeprecationWarningSimple", resourceCulture);
             }
         }
         

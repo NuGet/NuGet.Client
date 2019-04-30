@@ -6182,11 +6182,16 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <comment>Do not localize project.json and `PackageReference` 
 0 - project path (project.json file path)</comment>
   </data>
-  <data name="CommandDeprecationWarning" xml:space="preserve">
+  <data name="CommandDeprecationWarningAlternative" xml:space="preserve">
     <value>'{0} {1}' is deprecated. Use '{0} {2}' instead</value>
     <comment>{0} - name of the assembly running the command, e.g., NuGet
 {1} - current command marked as deprecated, e.g., list
 {2} - replacement command. For example, search</comment>
+  </data>
+  <data name="CommandDeprecationWarningSimple" xml:space="preserve">
+    <value>'{0} {1}' is deprecated</value>
+    <comment>{0} - name of the assembly running the command, e.g., NuGet
+{1} - current command marked as deprecated, e.g., list</comment>
   </data>
   <data name="DeprecatedWord" xml:space="preserve">
     <value>DEPRECATED</value>
