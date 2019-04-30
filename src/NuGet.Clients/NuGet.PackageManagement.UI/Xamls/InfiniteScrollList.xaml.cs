@@ -185,7 +185,6 @@ namespace NuGet.PackageManagement.UI
 
                 try
                 {
-                    // Load packages here? Background thread
                     await LoadItemsCoreAsync(currentLoader, loadCts.Token);
 
                     await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
@@ -242,8 +241,7 @@ namespace NuGet.PackageManagement.UI
         private async Task LoadItemsCoreAsync(IPackageItemLoader currentLoader, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            // Get the operation ID - use the same operation ID, the inifite scroll list.
-           
+
             var loadedItems = await LoadNextPageAsync(currentLoader, token);
             token.ThrowIfCancellationRequested();
 
