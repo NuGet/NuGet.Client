@@ -19,7 +19,7 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="includeUnOfficial">Unofficial sources will be included in the results</param>
         /// <param name="includeDisabled">Disabled sources will be included in the results</param>
-        /// <remarks>Does not require a UI thread ID.</remarks>
+        /// <remarks>Does not require the UI thread.</remarks>
         /// <returns>Key: source name Value: source URI</returns>
         IEnumerable<KeyValuePair<string, string>> GetSources(bool includeUnOfficial, bool includeDisabled);
 
