@@ -5053,7 +5053,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to (Deprecated) Displays a list of packages from a given source. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used. If NuGet.config specifies no sources, uses the default NuGet feed..
+        ///   Looks up a localized string similar to Displays a list of packages from a given source. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used. If NuGet.config specifies no sources, uses the default NuGet feed..
         /// </summary>
         internal static string ListCommandDescription {
             get {
@@ -10860,57 +10860,6 @@ namespace NuGet.CommandLine {
         internal static string RestoreCommandUsageSummary_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandUsageSummary_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search for packages matching search terms from a given source. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used. If NuGet.config specifies no sources, uses the default NuGet feed..
-        /// </summary>
-        internal static string SearchCommandDescription {
-            get {
-                return ResourceManager.GetString("SearchCommandDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Specify optional search terms..
-        /// </summary>
-        internal static string SearchCommandUsageDescription {
-            get {
-                return ResourceManager.GetString("SearchCommandUsageDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to nuget search
-        ///
-        ///nuget search -verbose -allversions
-        ///
-        ///nuget search NuGet.CommandLine.
-        /// </summary>
-        internal static string SearchCommandUsageExamples {
-            get {
-                return ResourceManager.GetString("SearchCommandUsageExamples", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [search terms] [options].
-        /// </summary>
-        internal static string SearchCommandUsageSummary {
-            get {
-                return ResourceManager.GetString("SearchCommandUsageSummary", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to nuget search
-        ///
-        ///nuget search -verbose -allversions.
-        /// </summary>
-        internal static string SearchCommandUsagetExamples {
-            get {
-                return ResourceManager.GetString("SearchCommandUsagetExamples", resourceCulture);
             }
         }
         
