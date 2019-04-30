@@ -12,11 +12,11 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
-    public class NuGetSearchCommandTest
+    public class NuGetListCommandTest
     {
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_WithNugetShowStack_ShowsStack(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_WithNugetShowStack_ShowsStack(string nugetCommand, bool validateDeprecationMessage)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -46,7 +46,7 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_WithoutNugetShowStack_HidesStack(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_WithoutNugetShowStack_HidesStack(string nugetCommand, bool validateDeprecationMessage)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -78,7 +78,7 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_WithUserSpecifiedSource(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_WithUserSpecifiedSource(string nugetCommand, bool validateDeprecationMessage)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -107,7 +107,7 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_ShowLicenseUrlWithDetailedVerbosity(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_ShowLicenseUrlWithDetailedVerbosity(string nugetCommand, bool validateDeprecationMessage)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -142,7 +142,7 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_WithUserSpecifiedConfigFile(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_WithUserSpecifiedConfigFile(string nugetCommand, bool validateDeprecationMessage)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -190,7 +190,7 @@ namespace NuGet.CommandLine.Test
         // Tests list command, with no other switches
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_Simple(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_Simple(string nugetCommand, bool validateDeprecationMessage)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -250,7 +250,7 @@ namespace NuGet.CommandLine.Test
         // Tests that list command only show listed packages
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_OnlyShowListed(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_OnlyShowListed(string nugetCommand, bool validateDeprecationMessage)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -316,7 +316,7 @@ namespace NuGet.CommandLine.Test
         // when IncludeDelisted is specified.
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_IncludeDelisted(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_IncludeDelisted(string nugetCommand, bool validateDeprecationMessage)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -377,7 +377,7 @@ namespace NuGet.CommandLine.Test
         // Tests that list command displays detailed package info when -Verbosity is detailed.
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_VerboseOutput(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_VerboseOutput(string nugetCommand, bool validateDeprecationMessage)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -436,7 +436,7 @@ namespace NuGet.CommandLine.Test
         // without $filter
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_AllVersions(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_AllVersions(string nugetCommand, bool validateDeprecationMessage)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -495,7 +495,7 @@ namespace NuGet.CommandLine.Test
         // Test case when switch -Prerelease is specified
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_Prerelease(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_Prerelease(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
@@ -555,7 +555,7 @@ namespace NuGet.CommandLine.Test
         // Test case when both switches -Prerelease and -AllVersions are specified
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_AllVersionsPrerelease(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_AllVersionsPrerelease(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
@@ -614,7 +614,7 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_SimpleV3(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_SimpleV3(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
 
@@ -716,7 +716,7 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_SimpleV3_NoListEndpoint(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_SimpleV3_NoListEndpoint(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
@@ -775,7 +775,7 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_UnavailableV3(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_UnavailableV3(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
 
@@ -828,9 +828,8 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("list", true, "invalid")]
-        [InlineData("search", false, "invalid")]
-        public void SearchCommand_InvalidInput_NonSource(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
+        [InlineData("list", false, "invalid")]
+        public void ListCommand_InvalidInput_NonSource(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
         {
             Util.ClearWebCache();
 
@@ -861,11 +860,9 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("list", true, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org")]
-        [InlineData("search", false, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org")]
-        [InlineData("list", true, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/api/v2")]
-        [InlineData("search", false, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/api/v2")]
-        public void SearchCommand_InvalidInput_V2_NonExistent(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
+        [InlineData("list", false, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org")]
+        [InlineData("list", false, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/api/v2")]
+        public void ListCommand_InvalidInput_V2_NonExistent(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
         {
             // Arrange
             Util.ClearWebCache();
@@ -904,9 +901,8 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("list", true, "https://nuget.org/api/blah")]
-        [InlineData("search", false, "https://nuget.org/api/blah")]
-        public void SearchCommand_InvalidInput_V2_NotFound(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
+        [InlineData("list", false, "https://nuget.org/api/blah")]
+        public void ListCommand_InvalidInput_V2_NotFound(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -933,9 +929,8 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("list", true, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json")]
-        [InlineData("search", false, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json")]
-        public void SearchCommand_InvalidInput_V3_NonExistent(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
+        [InlineData("list", false, "https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json")]
+        public void ListCommand_InvalidInput_V3_NonExistent(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
         {
             // Arrange
             Util.ClearWebCache();
@@ -962,9 +957,8 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("list", true, "https://api.nuget.org/v4/index.json")]
-        [InlineData("search", false, "https://api.nuget.org/v4/index.json")]
-        public void SearchCommand_InvalidInput_V3_NotFound(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
+        [InlineData("list", false, "https://api.nuget.org/v4/index.json")]
+        public void ListCommand_InvalidInput_V3_NotFound(string nugetCommand, bool validateDeprecationMessage, string invalidInput)
         {
             // Arrange
             Util.ClearWebCache();
@@ -992,7 +986,7 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_WithAuthenticatedSource_AppliesCredentialsFromSettings(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_WithAuthenticatedSource_AppliesCredentialsFromSettings(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
             var expectedAuthHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:password"));
@@ -1098,7 +1092,7 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [MemberData(nameof(GetCommands))]
-        public void SearchCommand_WithAuthenticatedSourceV2_AppliesCredentialsFromSettings(string nugetCommand, bool validateDeprecationMessage)
+        public void ListCommand_WithAuthenticatedSourceV2_AppliesCredentialsFromSettings(string nugetCommand, bool validateDeprecationMessage)
         {
             Util.ClearWebCache();
             var expectedAuthHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:password"));
@@ -1211,8 +1205,7 @@ namespace NuGet.CommandLine.Test
         /// and the flag for checking the warning deprecation message</returns>
         public static IEnumerable<object[]> GetCommands()
         {
-            yield return new object[] { "list", true };
-            yield return new object[] { "search", false };
+            yield return new object[] { "list", false };
         }
 
         /// <summary>
