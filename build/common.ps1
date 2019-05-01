@@ -188,43 +188,47 @@ Function Install-DotnetCLI {
     $vsMajorVersion = Get-VSMajorVersion
     Write-Host "vsmajor version is $vsMajorVersion"
     $MSBuildExe = Get-MSBuildExe $vsMajorVersion
-    $CliBranchForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
-
-    $cli = @{
-        Root = $CLIRoot
-        Version = 'latest'
-        Channel = $CliBranchForTesting.Trim()
-    }
+    $CliBranchListForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
+    $CliBranchesForTesting = $CliBranchListForTesting.Split(';');
+    ForEach ($CliBranchForTesting in $CliBranchesForTesting){
+        $cli = @{
+            Root = $CLIRoot
+            Version = 'latest'
+            Channel = $CliBranchForTesting.Trim()
+        }
     
-    $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
+        $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
 
-    if ([Environment]::Is64BitOperatingSystem) {
-        $arch = "x64";
+        if ([Environment]::Is64BitOperatingSystem) {
+            $arch = "x64";
+        }
+        else {
+            $arch = "x86";
+        }
+
+        $env:DOTNET_HOME=$cli.Root
+        $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
+
+        if ($Force -or -not (Test-Path $DotNetExe)) {
+            Trace-Log "Downloading .NET CLI $CliBranchForTesting"
+
+            New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
+
+            $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
+
+            Invoke-WebRequest 'https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1' -OutFile $DotNetInstall
+            & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch
+        }
+
+        if (-not (Test-Path $DotNetExe)) {
+            Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
+        }
+
+        # Display build info
+        & $DotNetExe --info
     }
-    else {
-        $arch = "x86";
-    }
 
-    $env:DOTNET_HOME=$cli.Root
-    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
-
-    if ($Force -or -not (Test-Path $DotNetExe)) {
-        Trace-Log 'Downloading .NET CLI'
-
-        New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
-
-        $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
-
-        Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile $DotNetInstall
-        & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch
-    }
-
-    if (-not (Test-Path $DotNetExe)) {
-        Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
-    }
-
-    # Display build info
-    & $DotNetExe --info
+    
 }
 
 Function Get-LatestVisualStudioRoot {
