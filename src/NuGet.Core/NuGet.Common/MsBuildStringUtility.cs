@@ -100,6 +100,27 @@ namespace NuGet.Common
             }
         }
 
+        public static bool? GetBoolean(string value)
+        {
+            var trimmed = TrimAndGetNullForEmpty(value);
+            if (trimmed == null)
+            {
+                return null;
+            }
+
+            if (bool.TrueString.Equals(trimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (bool.FalseString.Equals(trimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Convert the provided string to MSBuild style.
         /// </summary>

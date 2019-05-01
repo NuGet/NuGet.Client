@@ -26,6 +26,7 @@ namespace NuGet.PackageManagement
             if (!result.Found)
             {
                 var contentHash = GetContentHashFromNupkg(nupkgPath, token);
+                result = new Result(true, contentHash);
 
                 WriteNupkgMetadata(nupkgPath, result.ContentHash);
             }

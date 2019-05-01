@@ -8,6 +8,7 @@ using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.ProjectModel.ProjectLockFile;
 using NuGet.Shared;
 
 namespace NuGet.ProjectModel
@@ -170,6 +171,99 @@ namespace NuGet.ProjectModel
             }
 
             return true;
+        }
+
+        /// <summary>Compares two lock files to check if the structure is the same (all values are the same, other
+        /// than SHA hash), and matches dependencies so the caller can easily compare SHA hashes.</summary>
+        /// <param name="expected">The expected lock file structure. Usuaully generated from the project.</param>
+        /// <param name="actual">The lock file that was loaded from the file on disk.</param>
+        /// <returns>A ValueTuple containing two fields. First, a boolean to represent whether the lock file is still
+        /// valid (structure of the two lock files are the same). Second, a list of matched dependencies if the lock
+        /// file is still valid, otherwise null.</returns>
+        public static (bool lockFileStillValid, List<KeyValuePair<LockFileDependency, LockFileDependency>> matchedDependencies)
+            IsLockFileStillValid(PackagesLockFile expected, PackagesLockFile actual)
+        {
+            // do quick checks for obvious structure differences
+            if (expected.Version != actual.Version)
+            {
+                return (false, null);
+            }
+
+            if (expected.Targets.Count != actual.Targets.Count)
+            {
+                return (false, null);
+            }
+
+            foreach (var expectedTarget in expected.Targets)
+            {
+                PackagesLockFileTarget actualTarget = null;
+
+                for (var i = 0; i < actual.Targets.Count; i++)
+                {
+                    if (actual.Targets[i].TargetFramework == expectedTarget.TargetFramework)
+                    {
+                        if (actualTarget == null)
+                        {
+                            actualTarget = actual.Targets[i];
+                        }
+                        else
+                        {
+                            // more than 1? possible bug or bad hand edited lock file.
+                            return (false, null);
+                        }
+                    }
+
+                    if (actualTarget == null)
+                    {
+                        return (false, null);
+                    }
+
+                    if (actualTarget.Dependencies.Count != expectedTarget.Dependencies.Count)
+                    {
+                        return (false, null);
+                    }
+                }
+            }
+
+            // no obvious structure difference, so start trying to match individual dependencies
+            var matchedDependencies = new List<KeyValuePair<LockFileDependency, LockFileDependency>>();
+            var lockFileStillValid = true;
+            var dependencyComparer = LockFileDependencyComparerWithoutContentHash.Default;
+
+            foreach (var expectedTarget in expected.Targets)
+            {
+                var actualTarget = actual.Targets.Single(t => t.TargetFramework == expectedTarget.TargetFramework);
+
+                // Duplicate dependencies list so we can remove matches to validate that all dependencies were matched
+                var actualDependencies = new Dictionary<LockFileDependency, LockFileDependency>(
+                    actualTarget.Dependencies.Count, 
+                    dependencyComparer
+                    );
+                foreach (var actualDependency in actualTarget.Dependencies)
+                {
+                    actualDependencies.Add(actualDependency, actualDependency);
+                }
+
+                foreach (var expectedDependency in expectedTarget.Dependencies)
+                {
+                    if (actualDependencies.TryGetValue(expectedDependency, out var actualDependency))
+                    {
+                        matchedDependencies.Add(new KeyValuePair<LockFileDependency, LockFileDependency>(expectedDependency, actualDependency));
+                        actualDependencies.Remove(actualDependency);
+                    }
+                    else
+                    {
+                        return (false, null);
+                    }
+                }
+
+                if (actualDependencies.Count != 0)
+                {
+                    return (false, null);
+                }
+            }
+
+            return (lockFileStillValid, matchedDependencies);
         }
 
         private static bool HasProjectDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<LockFileDependency> lockFileDependencies)

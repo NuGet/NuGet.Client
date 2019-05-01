@@ -9,6 +9,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -187,6 +189,46 @@ namespace NuGet.PackageManagement.Utility
 
                 lockFile.Targets[0].Dependencies.Add(newDependency);
             }
+        }
+
+        public static PackagesLockFile FromPackagesConfigFile(
+            string pcFile,
+            NuGetFramework projectTfm,
+            string packagesFolderPath,
+            CancellationToken token)
+        {
+            if (pcFile == null) throw new ArgumentNullException(nameof(pcFile));
+            if (!File.Exists(pcFile)) throw new ArgumentException("packages.config file does not exist");
+            if (projectTfm == null) throw new ArgumentNullException(nameof(projectTfm));
+            if (packagesFolderPath == null) throw new ArgumentNullException(nameof(packagesFolderPath));
+            if (!Directory.Exists(packagesFolderPath)) throw new ArgumentException("Packages directory does not exist");
+
+            var lockFile = new PackagesLockFile();
+            var target = new PackagesLockFileTarget();
+            lockFile.Targets.Add(target);
+            target.TargetFramework = projectTfm;
+
+            using (var stream = File.OpenRead(pcFile))
+            {
+                var contentHashUtil = new PackagesConfigContentHashProvider(new FolderNuGetProject(packagesFolderPath));
+
+                var reader = new PackagesConfigReader(stream);
+                foreach (var package in reader.GetPackages(true))
+                {
+                    var dependency = new LockFileDependency
+                    {
+                        Id = package.PackageIdentity.Id,
+                        ContentHash = contentHashUtil.GetContentHash(package.PackageIdentity, token),
+                        RequestedVersion = new VersionRange(package.PackageIdentity.Version, true, package.PackageIdentity.Version, true),
+                        ResolvedVersion = package.PackageIdentity.Version,
+                        Type = PackageDependencyType.Direct
+                    };
+
+                    target.Dependencies.Add(dependency);
+                }
+            }
+
+            return lockFile;
         }
 
         private class DependencyComparer : IComparer<LockFileDependency>, IComparer
