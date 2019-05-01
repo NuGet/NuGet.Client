@@ -19,7 +19,7 @@ namespace NuGet.CommandLine {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class NuGetCommand {
@@ -10860,6 +10860,42 @@ namespace NuGet.CommandLine {
         internal static string RestoreCommandUsageSummary_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandUsageSummary_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search for packages matching search terms from a given source. If no sources are specified, the sources defined in the configurations loaded from the working directory will be used. If NuGet.config specifies no sources, uses the default NuGet feed..
+        /// </summary>
+        internal static string SearchCommandDescription {
+            get {
+                return ResourceManager.GetString("SearchCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specify optional search terms..
+        /// </summary>
+        internal static string SearchCommandUsageDescription {
+            get {
+                return ResourceManager.GetString("SearchCommandUsageDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget search.
+        /// </summary>
+        internal static string SearchCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("SearchCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [search terms] [options].
+        /// </summary>
+        internal static string SearchCommandUsageSummary {
+            get {
+                return ResourceManager.GetString("SearchCommandUsageSummary", resourceCulture);
             }
         }
         
