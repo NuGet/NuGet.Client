@@ -19,7 +19,7 @@ namespace NuGet.CommandLine {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class NuGetCommand {
@@ -8975,6 +8975,15 @@ namespace NuGet.CommandLine {
         internal static string PushCommandNoSymbolsDescription {
             get {
                 return ResourceManager.GetString("PushCommandNoSymbolsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If a package and version already exists, skip it and continue with the next package in the push, if any..
+        /// </summary>
+        internal static string PushCommandSkipDuplicateDescription {
+            get {
+                return ResourceManager.GetString("PushCommandSkipDuplicateDescription", resourceCulture);
             }
         }
         

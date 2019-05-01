@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -38,6 +40,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandNoServiceEndpointDescription")]
         public bool NoServiceEndpoint { get; set; }
 
+        [Option(typeof(NuGetCommand), "PushCommandSkipDuplicateDescription")]
+        public bool SkipDuplicate { get; set; }
+
         public override async Task ExecuteCommandAsync()
         {
             string packagePath = Arguments[0];
@@ -66,6 +71,7 @@ namespace NuGet.CommandLine
                     DisableBuffering,
                     NoSymbols,
                     NoServiceEndpoint,
+                    SkipDuplicate,
                     Console);
             }
             catch (TaskCanceledException ex)
