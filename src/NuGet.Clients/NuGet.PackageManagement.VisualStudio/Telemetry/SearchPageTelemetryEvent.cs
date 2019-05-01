@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 
@@ -28,7 +29,7 @@ namespace NuGet.PackageManagement.Telemetry
             base["PageIndex"] = pageIndex;
             base["ResultCount"] = resultCount;
             base["Duration"] = duration.TotalSeconds;
-            base["SourceTimingDuration"] = string.Join(",", sourceTimings?.Select(e => e.TotalSeconds));
+            base["SourceTimingDuration"] = new JArray(sourceTimings.Select(e => e.TotalSeconds));
             base["AggregationDuration"] = aggregationTime.TotalSeconds;
             base["LoadingStatus"] = loadingStatus.ToString();
         }

@@ -33,8 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(
             this SourceRepository sourceRepository, ContinuationToken continuationToken, int pageSize, CancellationToken cancellationToken)
         {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
+            var stopWatch = Stopwatch.StartNew();
 
             var searchToken = continuationToken as FeedSearchContinuationToken;
             if (searchToken == null)

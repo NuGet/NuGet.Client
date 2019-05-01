@@ -211,8 +211,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var results = await Task.WhenAll(completedOnly.Select(kv => kv.Value));
                 timings = results.Select(e => e.Duration);
-                timeAggregation = new Stopwatch();
-                timeAggregation.Start();
+                timeAggregation = Stopwatch.StartNew();
                 aggregated = await AggregateSearchResultsAsync(searchText, results, telemetryState);
                 timeAggregation.Stop();
             }
@@ -264,7 +263,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         telemetryState.PageIndex,
                         aggregated.Items?.Count ?? 0,
                         telemetryState.Duration.Elapsed,
-                        timings,
+                        timings, // make sure this is not null.
                         timeAggregation.Elapsed,
                         loadingStatus));
                 }
