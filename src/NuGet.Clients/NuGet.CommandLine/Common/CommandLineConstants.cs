@@ -9,6 +9,5 @@ namespace NuGet.CommandLine
         internal static string NuGetDocsCommandLineReference = "https://docs.nuget.org/docs/reference/command-line-reference";
 
         internal static string PackagesDirectoryName = "packages";
-    
     }
 }

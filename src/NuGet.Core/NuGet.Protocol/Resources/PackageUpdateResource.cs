@@ -18,6 +18,7 @@ using NuGet.Versioning;
 using Newtonsoft.Json;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
+using System.Net;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -60,6 +61,7 @@ namespace NuGet.Protocol.Core.Types
             Func<string, string> getApiKey,
             Func<string, string> getSymbolApiKey,
             bool noServiceEndpoint,
+            bool skipDuplicate,
             SymbolPackageUpdateResourceV3 symbolPackageUpdateResource,
             ILogger log)
         {
@@ -75,7 +77,8 @@ namespace NuGet.Protocol.Core.Types
                 // if only a snupkg is being pushed, then don't try looking for nupkgs.
                 if(!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, requestTimeout, log, tokenSource.Token, isSnupkgPush: false);
+                    await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, skipDuplicate
+                                      , requestTimeout, log, tokenSource.Token, isSnupkgPush: false);
                 }
 
                 // symbolSource is only set when:
@@ -110,6 +113,7 @@ namespace NuGet.Protocol.Core.Types
                 getApiKey,
                 getSymbolApiKey,
                 noServiceEndpoint,
+                skipDuplicate: false,
                 symbolPackageUpdateResource: null,
                 log: log);
         }
@@ -177,7 +181,8 @@ namespace NuGet.Protocol.Core.Types
                         Strings.DefaultSymbolServer));
                 }
 
-                await PushPackage(symbolPackagePath, source, apiKey, noServiceEndpoint, requestTimeout, log, token, isSnupkgPush: isSymbolEndpointSnupkgCapable);
+                var skipDuplicate = false;
+                await PushPackage(symbolPackagePath, source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, token, isSnupkgPush: isSymbolEndpointSnupkgCapable);
             }
         }
 
@@ -195,6 +200,7 @@ namespace NuGet.Protocol.Core.Types
             string source,
             string apiKey,
             bool noServiceEndpoint,
+            bool skipDuplicate,
             TimeSpan requestTimeout,
             ILogger log,
             CancellationToken token,
@@ -215,7 +221,7 @@ namespace NuGet.Protocol.Core.Types
 
             foreach (var packageToPush in packagesToPush)
             {
-                await PushPackageCore(source, apiKey, packageToPush, noServiceEndpoint, requestTimeout, log, token);
+                await PushPackageCore(source, apiKey, packageToPush, noServiceEndpoint, skipDuplicate, requestTimeout, log, token);
             }
         }
 
@@ -223,6 +229,7 @@ namespace NuGet.Protocol.Core.Types
             string apiKey,
             string packageToPush,
             bool noServiceEndpoint,
+            bool skipDuplicate,
             TimeSpan requestTimeout,
             ILogger log,
             CancellationToken token)
@@ -235,17 +242,24 @@ namespace NuGet.Protocol.Core.Types
                 Path.GetFileName(packageToPush),
                 sourceName));
 
+            bool showPushCommandPackagePushed = true;
+
             if (sourceUri.IsFile)
             {
-                await PushPackageToFileSystem(sourceUri, packageToPush, log, token);
+                await PushPackageToFileSystem(sourceUri, packageToPush, skipDuplicate, log, token);
             }
             else
             {
                 var length = new FileInfo(packageToPush).Length;
-                await PushPackageToServer(source, apiKey, packageToPush, length, noServiceEndpoint, requestTimeout, log, token);
+                showPushCommandPackagePushed = await PushPackageToServer(source, apiKey, packageToPush, length, noServiceEndpoint, skipDuplicate
+                                                    , requestTimeout, log, token);
+
             }
 
-            log.LogInformation(Strings.PushCommandPackagePushed);
+            if (showPushCommandPackagePushed)
+            {
+                log.LogInformation(Strings.PushCommandPackagePushed);
+            }
         }
 
         private static string GetSourceDisplayName(string source)
@@ -268,19 +282,25 @@ namespace NuGet.Protocol.Core.Types
             //that for file system, the "httpSource" is null.
             return _httpSource == null;
         }
-
-        // Pushes a package to the Http server.
-        private async Task PushPackageToServer(string source,
+ 
+        /// <summary>
+        /// Pushes a package to the Http server.
+        /// </summary>
+        /// <returns>Indicator of whether to show PushCommandPackagePushed message.</returns>
+        private async Task<bool> PushPackageToServer(string source,
             string apiKey,
             string pathToPackage,
             long packageSize,
             bool noServiceEndpoint,
+            bool skipDuplicate,
             TimeSpan requestTimeout,
             ILogger logger,
             CancellationToken token)
         {
             var serviceEndpointUrl = GetServiceEndpointUrl(source, string.Empty, noServiceEndpoint);
             var useTempApiKey = IsSourceNuGetSymbolServer(source);
+            var codeNotToThrow = ConvertSkipDuplicateParamToHttpStatusCode(skipDuplicate);
+            var showPushCommandPackagePushed = true;
 
             if (useTempApiKey)
             {
@@ -309,7 +329,9 @@ namespace NuGet.Protocol.Core.Types
                                 },
                                 response =>
                                 {
-                                    response.EnsureSuccessStatusCode();
+                                    var responseStatusCode = EnsureSuccessStatusCode(response, codeNotToThrow, logger);
+                                    var logOccurred = DetectAndLogSkippedErrorOccurrence(responseStatusCode, source, pathToPackage, logger);
+                                    showPushCommandPackagePushed = !logOccurred;
 
                                     return Task.FromResult(0);
                                 },
@@ -349,14 +371,123 @@ namespace NuGet.Protocol.Core.Types
                     },
                     response =>
                     {
-                        response.EnsureSuccessStatusCode();
+                        var responseStatusCode = EnsureSuccessStatusCode(response, codeNotToThrow, logger);
+                        var logOccurred = DetectAndLogSkippedErrorOccurrence(responseStatusCode, source, pathToPackage, logger);
+                        showPushCommandPackagePushed = !logOccurred;
 
                         return Task.FromResult(0);
                     },
                     logger,
                     token);
             }
+
+            return showPushCommandPackagePushed;
         }
+
+        /// <summary>
+        /// Ensures a Success HTTP Status Code is returned unless a specified exclusion occurred. If CodeNotToThrow is provided and the response contains
+        /// this code, do not EnsureSuccess and instead return the exception code gracefully.
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="codeNotToThrow"></param>
+        /// <param name="logger"></param>
+        /// <returns>Response StatusCode</returns>
+        private static HttpStatusCode? EnsureSuccessStatusCode(HttpResponseMessage response, HttpStatusCode? codeNotToThrow, ILogger logger)
+        {
+            //If this status code is to be excluded.
+            if (codeNotToThrow != null && codeNotToThrow == response.StatusCode)
+            {
+                return response.StatusCode;
+            }
+            else
+            {
+#if IS_DESKTOP
+                 AdvertiseAvailableOptionToIgnore(response.StatusCode, logger);
+#endif
+            }
+
+            //No exception to the rule specified.
+            response.EnsureSuccessStatusCode();
+            return null;
+        }
+
+
+        /// <summary>
+        /// Gently log any specified Skipped status code without throwing.
+        /// </summary>
+        /// <param name="skippedErrorStatusCode">If provided, it indicates that this StatusCode occurred but was flagged as to be Skipped.</param>
+        /// <param name="logger"></param>
+        /// <returns>Indication of whether the log occurred.</returns>
+        private static bool DetectAndLogSkippedErrorOccurrence(HttpStatusCode? skippedErrorStatusCode, string source, string packageIdentity, ILogger logger)
+        {
+            bool skippedErrorOccurred = false;
+
+            if (skippedErrorStatusCode != null)
+            {
+                string messageToLog = null;
+                var conflictMessage = string.Format(
+                                   CultureInfo.CurrentCulture,
+                                   Strings.AddPackage_PackageAlreadyExists,
+                                   packageIdentity,
+                                   source);
+
+                switch (skippedErrorStatusCode.Value)
+                {
+                    case HttpStatusCode.Conflict:
+                        messageToLog = conflictMessage;
+                        skippedErrorOccurred = true;
+                        break;
+                    case HttpStatusCode.BadRequest:
+                        messageToLog = Strings.NupkgPath_Invalid;
+                        skippedErrorOccurred = true;
+                        break;
+                    default: break; //Not a supported response code.
+                }
+                if (messageToLog != null)
+                {
+                    logger?.LogMinimal(messageToLog);
+                }
+            }
+
+            return skippedErrorOccurred;
+        }
+
+       
+        /// <summary>
+        /// If we provide such option, output a help message that explains that the error that occurred can be ignored by using it.
+        /// </summary>
+        /// <param name="errorCodeThatOccurred">Error to check for a relevant option to advertise to the user. </param>
+        /// <param name="logger"></param>
+        private static void AdvertiseAvailableOptionToIgnore(HttpStatusCode errorCodeThatOccurred, ILogger logger)
+        {
+            
+            string advertiseDescription = null;
+
+            switch (errorCodeThatOccurred)
+            {
+                case HttpStatusCode.Conflict:
+                    advertiseDescription = Strings.PushCommandSkipDuplicateAdvertise;
+                    break;
+
+                default: break; //Not a supported response code.
+            }
+
+            if (advertiseDescription != null)
+            {
+                logger?.LogInformation(advertiseDescription);
+            }
+        }
+
+        private HttpStatusCode? ConvertSkipDuplicateParamToHttpStatusCode(bool skipDuplicate)
+        {
+            if (skipDuplicate)
+            {
+                return HttpStatusCode.Conflict;
+            }
+
+            return null;
+        }
+
 
         private HttpRequestMessage CreateRequest(
             Uri serviceEndpointUrl,
@@ -396,6 +527,7 @@ namespace NuGet.Protocol.Core.Types
 
         private async Task PushPackageToFileSystem(Uri sourceUri,
             string pathToPackage,
+            bool skipDuplicate,
             ILogger log,
             CancellationToken token)
         {
@@ -413,6 +545,12 @@ namespace NuGet.Protocol.Core.Types
 
                 var fullPath = Path.Combine(root, packageFileName);
                 File.Copy(pathToPackage, fullPath, overwrite: true);
+
+                //Indicate that SkipDuplicate is currently not supported in this scenario.
+                if (skipDuplicate)
+                {
+                    log?.LogWarning(Strings.PushCommandSkipDuplicateNotImplemented);
+                }
             }
             else
             {
@@ -426,8 +564,8 @@ namespace NuGet.Protocol.Core.Types
                     root,
                     log,
                     throwIfSourcePackageIsInvalid: true,
-                    throwIfPackageExistsAndInvalid: false,
-                    throwIfPackageExists: false,
+                    throwIfPackageExistsAndInvalid: !skipDuplicate,
+                    throwIfPackageExists: !skipDuplicate,
                     extractionContext: packageExtractionContext);
                 
                 await OfflineFeedUtility.AddPackageToSource(context, token);

@@ -5526,4 +5526,7 @@ nuget-trusted-signers Remove -Name TrustedRepo</value>
   <data name="TrustedSignersCommandServiceIndexDescription" xml:space="preserve">
     <value>Service index for a repository to be trusted.</value>
   </data>
+  <data name="PushCommandSkipDuplicateDescription" xml:space="preserve">
+    <value>If a package and version already exists, skip it and continue with the next package in the push, if any.</value>
+  </data>
 </root>

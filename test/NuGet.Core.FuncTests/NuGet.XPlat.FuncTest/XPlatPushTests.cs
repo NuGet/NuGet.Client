@@ -54,6 +54,56 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [PackageSourceTheory]
+        [PackageSourceData(TestSources.MyGet)]
+        [PackageSourceData(TestSources.ProGet)]
+        [PackageSourceData(TestSources.Klondike, Skip = "500 Internal Server Error pushing")]
+        [PackageSourceData(TestSources.NuGetServer, Skip = "500 - missing manifest?")]
+        public async Task PushToServerSkipDuplicateSucceeds(PackageSource packageSource)
+        {
+            // Arrange
+            using (var packageDir = TestDirectory.Create())
+            using (TestFileSystemUtility.SetCurrentDirectory(packageDir))
+            {
+                var packageId = "XPlatPushTests.PushToServerSucceeds";
+                var packageVersion = "1.0.0";
+                var packageFile = await TestPackagesCore.GetRuntimePackageAsync(packageDir, packageId, packageVersion);
+                var configFile = XPlatTestUtils.CopyFuncTestConfig(packageDir);
+                var log = new TestCommandOutputLogger();
+
+                var apiKey = XPlatTestUtils.ReadApiKey(packageSource.Name);
+                Assert.False(string.IsNullOrEmpty(apiKey));
+
+                var pushArgs = new List<string>
+                {
+                    "push",
+                    packageFile.FullName,
+                    "--source",
+                    packageSource.Source,
+                    "--api-key",
+                    apiKey,
+                    "--skip-duplicate"
+                };
+
+                // Act
+                var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), log);
+
+                // Assert
+                var outputMessages = log.ShowMessages();
+
+                Assert.Equal(string.Empty, log.ShowErrors());
+                Assert.Equal(0, exitCode);
+                Assert.Contains($"PUT {packageSource.Source}", outputMessages);
+                
+
+                //info: PUT http://localhost:5000/api/v2/package/
+                //info: Conflict http://localhost:5000/api/v2/package/ 127ms
+                 Assert.Contains("already exists at feed", outputMessages);
+                Assert.Contains("Your package was pushed.", outputMessages);
+
+            }
+        }
+
+        [PackageSourceTheory]
         [PackageSourceData(TestSources.Nexus)]
         public async Task PushToServerSucceeds_DeleteFirst(PackageSource packageSource)
         {
