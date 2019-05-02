@@ -8,6 +8,11 @@
     <TestProject>true</TestProject>
     <TestProjectType>functional</TestProjectType>
   </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
+    <DefineConstants>$(DefineConstants);IS_NETCORE30</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Build.Tasks" Version="3.0.0-dev-61717-03" />
