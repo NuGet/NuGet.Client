@@ -7896,5 +7896,124 @@ namespace NuGet.CommandLine.Test
                 r.Success.Should().BeTrue();
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_ExclusiveLowerBound_RestoreSucceeds()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var tfm = "net45";
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(tfm));
+
+                var packageX100 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+
+                var packageX110 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.1.0"
+                };
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX100,
+                   packageX110);
+
+                solution.Projects.Add(projectA);
+
+                solution.Create(pathContext.SolutionRoot);
+
+                // Inject dependency with exclusive lower bound
+                var doc = XDocument.Load(projectA.ProjectPath);
+                var ns = doc.Root.GetDefaultNamespace().NamespaceName;
+                doc.Root.AddFirst(
+                        new XElement(XName.Get("ItemGroup", ns),
+                            new XElement(XName.Get("PackageReference", ns),
+                                new XAttribute(XName.Get("Include"), "x"),
+                                new XAttribute(XName.Get("Version"), "(1.0.0, )"))));
+
+                doc.Save(projectA.ProjectPath);
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_PackageDependencyWithExclusiveLowerBound_RestoreSucceeds()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var tfm = "net45";
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(tfm));
+
+                var packageY = new SimpleTestPackageContext("y", "1.0.0")
+                {
+                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>y</id>
+                            <version>1.0.0</version>
+                            <title />
+                            <dependencies>
+                                <group targetFramework=""net45"">
+                                    <dependency id=""x"" version=""(1.0.0, )"" />
+                                </group>
+                            </dependencies>
+                        </metadata>
+                        </package>")
+                };
+
+                var packageX100 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageX110 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.1.0"
+                };
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX100,
+                   packageX110,
+                   packageY);
+
+                projectA.AddPackageToAllFrameworks(packageY);
+
+                solution.Projects.Add(projectA);
+
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+            }
+        }
     }
 }
