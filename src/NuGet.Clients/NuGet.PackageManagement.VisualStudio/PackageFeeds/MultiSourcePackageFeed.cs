@@ -206,17 +206,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
             SearchResult<IPackageSearchMetadata> aggregated;
             IEnumerable<TimeSpan> timings = null;
-            Stopwatch timeAggregation = null;
+            var timeAggregation = new Stopwatch();
             if (completedOnly.Any())
             {
                 var results = await Task.WhenAll(completedOnly.Select(kv => kv.Value));
                 timings = results.Select(e => e.Duration);
-                timeAggregation = Stopwatch.StartNew();
+                timeAggregation.Start();
                 aggregated = await AggregateSearchResultsAsync(searchText, results, telemetryState);
                 timeAggregation.Stop();
             }
             else
             {
+                timings = Enumerable.Empty<TimeSpan>();
                 aggregated = SearchResult.Empty<IPackageSearchMetadata>();
             }
 
@@ -263,7 +264,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         telemetryState.PageIndex,
                         aggregated.Items?.Count ?? 0,
                         telemetryState.Duration.Elapsed,
-                        timings, // make sure this is not null.
+                        timings,
                         timeAggregation.Elapsed,
                         loadingStatus));
                 }
