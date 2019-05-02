@@ -208,7 +208,7 @@ namespace NuGet.Commands
             {
                 await EnsureResource();
 
-                if (libraryRange.VersionRange?.MinVersion != null && libraryRange.VersionRange?.IsFloating != true)
+                if (libraryRange.VersionRange?.MinVersion != null && libraryRange.VersionRange.IsMinInclusive && !libraryRange.VersionRange.IsFloating)
                 {
                     // first check if the exact min version exist then simply return that
                     if (await _findPackagesByIdResource.DoesPackageExistAsync(
