@@ -138,7 +138,11 @@ namespace NuGet.Core.FuncTest
 
             if (RuntimeEnvironmentHelper.IsMacOSX)
             {
+#if IS_NETCORE30
+                Assert.Equal("nodename nor servname provided, or not known", exception.InnerException.Message);
+#else
                 Assert.Equal("Device not configured", exception.InnerException.Message);
+#endif
             }
             else if (!RuntimeEnvironmentHelper.IsWindows)
             {
