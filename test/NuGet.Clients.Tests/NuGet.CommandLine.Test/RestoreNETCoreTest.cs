@@ -7949,6 +7949,10 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeTrue();
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.Equal(1, projectA.AssetsFile.Libraries.Count);
+                var packageX = projectA.AssetsFile.Libraries.First();
+                Assert.NotNull(packageX);
+                Assert.Equal("1.1.0", packageX.Version.ToString());
             }
         }
 
@@ -8013,6 +8017,10 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeTrue();
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.Equal(2, projectA.AssetsFile.Libraries.Count);
+                var packageX = projectA.AssetsFile.Libraries.FirstOrDefault(e => e.Name.Equals("x"));
+                Assert.NotNull(packageX);
+                Assert.Equal("1.1.0", packageX.Version.ToString());
             }
         }
     }
