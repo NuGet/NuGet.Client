@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
 using NuGet.Credentials;
 using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Plugins;
 using NuGet.VisualStudio;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -57,6 +57,26 @@ namespace NuGet.Protocol.Plugins.Tests
             Assert.Equal("message", exception.ParamName);
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Constructor_Message_Exception_ThrowsForNullOrEmptyMessage(string message)
+        {
+            var exception = Assert.Throws<ArgumentException>(
+                () => new PluginCreationResult(message, exception: new Exception()));
+
+            Assert.Equal("message", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_Message_Exception_ThrowsForNullException()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new PluginCreationResult("a", exception: null));
+
+            Assert.Equal("exception", exception.ParamName);
+        }
+
         [Fact]
         public void Constructor_PluginClaims_InitializesProperties()
         {
@@ -81,6 +101,20 @@ namespace NuGet.Protocol.Plugins.Tests
             Assert.Null(result.PluginMulticlientUtilities);
             Assert.Null(result.Claims);
             Assert.Equal("a", result.Message);
+            Assert.Null(result.Exception);
+        }
+
+        [Fact]
+        public void Constructor_Message_Exception_InitializesProperties()
+        {
+            var exception = new Exception();
+            var result = new PluginCreationResult(message: "a", exception: exception);
+
+            Assert.Null(result.Plugin);
+            Assert.Null(result.PluginMulticlientUtilities);
+            Assert.Null(result.Claims);
+            Assert.Equal("a", result.Message);
+            Assert.Same(exception, result.Exception);
         }
     }
 }

@@ -391,7 +391,7 @@ namespace NuGet.Protocol.Plugins
             }
         }
 
-        private void SendCloseRequest(IPlugin plugin)
+        private static void SendCloseRequest(IPlugin plugin)
         {
             var message = plugin.Connection.MessageDispatcher.CreateMessage(
                 MessageType.Request,
