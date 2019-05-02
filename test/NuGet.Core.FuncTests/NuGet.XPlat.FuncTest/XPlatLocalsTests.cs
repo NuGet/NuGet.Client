@@ -20,9 +20,9 @@ namespace NuGet.XPlat.FuncTest
             // Assert
 #if IS_CORECLR
 #if IS_NETCORE30
-            Assert.Contains(XplatDll,"netcoreapp3.0")
+            Assert.Contains(XplatDll,"netcoreapp3.0");
 #else
-            Assert.Contains(XplatDll, "netcoreapp2.1")
+            Assert.Contains(XplatDll, "netcoreapp2.1");
 #endif
 #endif
         }
