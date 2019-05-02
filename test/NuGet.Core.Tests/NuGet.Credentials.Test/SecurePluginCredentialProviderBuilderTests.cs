@@ -30,7 +30,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public void CredentialProviderBuilder_ThrowsExceptionForNullLogger()
+        public void Constructor_WhenLoggerIsNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SecurePluginCredentialProviderBuilder(CreateDefaultPluginManager(), canShowDialog: true, logger: null));
@@ -38,7 +38,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public void CredentialProviderBuilder_ThrowsExceptionForNullPluginManager()
+        public void Constructor_WhenPluginManagerIsNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SecurePluginCredentialProviderBuilder(pluginManager: null, canShowDialog: true, NullLogger.Instance));

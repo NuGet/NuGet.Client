@@ -331,7 +331,7 @@ namespace NuGet.Credentials.Test
         public async Task GetAsync_WhenPluginManagerReturnsException_ExceptionIsPropagated()
         {
             var expectedMessage = "a";
-            var expectedException = new Exception("b");
+            var expectedException = CreateExceptionWithCallstack("b");
             var pluginCreationResult = new PluginCreationResult(expectedMessage, expectedException);
             var result = new Tuple<bool, PluginCreationResult>(true, pluginCreationResult);
             var pluginManager = new Mock<IPluginManager>(MockBehavior.Strict);
@@ -367,10 +367,24 @@ namespace NuGet.Credentials.Test
         private PluginManager CreateDefaultPluginManager()
         {
             return new PluginManager(
-                reader: Mock.Of<IEnvironmentVariableReader>(),
-                pluginDiscoverer: new Lazy<IPluginDiscoverer>(),
-                pluginFactoryCreator: (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>(),
-                pluginsCacheDirectoryPath: new Lazy<string>(() => _testDirectory.Path));
+                Mock.Of<IEnvironmentVariableReader>(),
+                new Lazy<IPluginDiscoverer>(),
+                (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>(),
+                new Lazy<string>(() => _testDirectory.Path));
+        }
+
+        private static Exception CreateExceptionWithCallstack(string message)
+        {
+            try
+            {
+                throw new Exception(message);
+            }
+            catch (Exception ex)
+            {
+                return ex;
+            }
+
+            throw new InvalidOperationException("This should never be hit.");
         }
     }
 }
