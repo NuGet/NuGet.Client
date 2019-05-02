@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,6 +19,7 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="includeUnOfficial">Unofficial sources will be included in the results</param>
         /// <param name="includeDisabled">Disabled sources will be included in the results</param>
+        /// <remarks>Does not require the UI thread.</remarks>
         /// <returns>Key: source name Value: source URI</returns>
         IEnumerable<KeyValuePair<string, string>> GetSources(bool includeUnOfficial, bool includeDisabled);
 
