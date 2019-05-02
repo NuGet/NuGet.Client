@@ -32,6 +32,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         // total number of unmerged items found
         public int RawItemsCount { get; set; }
+
+        public TimeSpan Duration { get; set; }
     }
 
     /// <summary>

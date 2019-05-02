@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -122,6 +124,9 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(operationId, page0["ParentId"]);
             Assert.IsType<int>(page0["ResultCount"]);
             Assert.IsType<double>(page0["Duration"]);
+            Assert.IsType<double>(page0["ResultsAggregationDuration"]);
+            Assert.IsType<string>(page0["IndividualSourceDurations"]);
+            Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page0["IndividualSourceDurations"])).Values<double>().Count());
 
             var page1 = events[3];
             Assert.Equal("SearchPage", page1.Name);
@@ -130,6 +135,9 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(operationId, page1["ParentId"]);
             Assert.IsType<int>(page1["ResultCount"]);
             Assert.IsType<double>(page1["Duration"]);
+            Assert.IsType<double>(page1["ResultsAggregationDuration"]);
+            Assert.IsType<string>(page1["IndividualSourceDurations"]);
+            Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page1["IndividualSourceDurations"])).Values<double>().Count());
 
             Assert.Equal(parsedOperationId, loader.State.OperationId);
         }
