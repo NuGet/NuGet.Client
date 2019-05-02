@@ -29,8 +29,8 @@ namespace NuGet.PackageManagement.Telemetry
             base["PageIndex"] = pageIndex;
             base["ResultCount"] = resultCount;
             base["Duration"] = duration.TotalSeconds;
-            base["SourceTimingDuration"] = JsonConvert.SerializeObject(sourceTimings.Select(e => e.TotalSeconds));
-            base["AggregationDuration"] = aggregationTime.TotalSeconds;
+            base["IndividualSourceDurations"] = JsonConvert.SerializeObject(sourceTimings.Select(e => e.TotalSeconds));
+            base["ResultsAggregationDuration"] = aggregationTime.TotalSeconds;
             base["LoadingStatus"] = loadingStatus.ToString();
         }
     }
