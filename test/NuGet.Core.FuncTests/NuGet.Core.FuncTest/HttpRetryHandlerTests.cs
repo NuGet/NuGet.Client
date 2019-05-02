@@ -142,7 +142,11 @@ namespace NuGet.Core.FuncTest
             }
             else if (!RuntimeEnvironmentHelper.IsWindows)
             {
+#if IS_NETCORE30
+                Assert.Equal("Name or service not known", exception.InnerException.Message);
+#else
                 Assert.Equal("No such device or address", exception.InnerException.Message);
+#endif
             }
             else
             {
