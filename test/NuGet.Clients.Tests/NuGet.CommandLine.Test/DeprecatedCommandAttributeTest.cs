@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using NuGet.Test.Utility;
 using Xunit;
+using NuGet.CommandLine;
 
 namespace NuGet.CommandLine.Test
 {
@@ -13,6 +14,18 @@ namespace NuGet.CommandLine.Test
     /// </summary>
     public class DeprecatedCommandAttributeTest
     {
+        private readonly string _warning_greet_aternative = string.Format(
+                LocalizedResourceManager.GetString("CommandLine_Warning"),
+                string.Format(
+                    LocalizedResourceManager.GetString("CommandDeprecationWarningAlternative"),
+                    "NuGet", "greet", "hello"));
+
+        private readonly string _warning_beep_simple = string.Format(
+                LocalizedResourceManager.GetString("CommandLine_Warning"),
+                string.Format(
+                    LocalizedResourceManager.GetString("CommandDeprecationWarningSimple"),
+                    "NuGet", "beep"));
+
         [Fact]
         public void DeprecatedCommandAttribute_GrettingCommand_AlternativeCommand_WarningMessage()
         {
@@ -23,8 +36,8 @@ namespace NuGet.CommandLine.Test
                         waitForExit: true);
 
             // Deprecation warning message in stdout
-            var output = string.Format("WARNING: 'NuGet greet' is deprecated. Use 'NuGet hello' instead{0}Greetings{0}", Environment.NewLine);
-            Util.VerifyResultSuccess(result, output);
+            Util.VerifyResultSuccess(result, _warning_greet_aternative);
+            Util.VerifyResultSuccess(result, "Greetings");
         }
 
         [Fact]
@@ -36,11 +49,8 @@ namespace NuGet.CommandLine.Test
                         "greet -h",
                         waitForExit: true);
 
-            var warningMessage = "WARNING: 'NuGet greet' is deprecated. Use 'NuGet hello' instead";
-            Util.VerifyResultSuccess(result, warningMessage);
-
-            var helpMessage = "help";
-            Util.VerifyResultSuccess(result, helpMessage);
+            Util.VerifyResultSuccess(result, _warning_greet_aternative);
+            Util.VerifyResultSuccess(result, "help");
         }
 
         [Fact]
@@ -52,11 +62,8 @@ namespace NuGet.CommandLine.Test
                         "help greet",
                         waitForExit: true);
 
-            var helpMessage = "help";
-            Util.VerifyResultSuccess(result, helpMessage);
-
-            var warningMessage = "WARNING: 'NuGet greet' is deprecated. Use 'NuGet hello' instead";
-            Util.VerifyResultSuccess(result, warningMessage);
+            Util.VerifyResultSuccess(result, "help");
+            Util.VerifyResultSuccess(result, _warning_greet_aternative);
         }
 
         [Fact]
@@ -69,8 +76,7 @@ namespace NuGet.CommandLine.Test
                         waitForExit: true);
 
             // Deprecation warning message in stdout
-            var output = string.Format("WARNING: 'NuGet beep' is deprecated{0}Beep{0}", Environment.NewLine);
-            Util.VerifyResultSuccess(result, output);
+            Util.VerifyResultSuccess(result, _warning_beep_simple);
         }
 
         [Fact]
@@ -83,11 +89,8 @@ namespace NuGet.CommandLine.Test
                         waitForExit: true);
 
             // Deprecation warning message in stdout
-            var beepWarningMessage = "WARNING: 'NuGet beep' is deprecated";
-            Util.VerifyResultSuccess(result, beepWarningMessage);
-
-            var helpMessage = "help";
-            Util.VerifyResultSuccess(result, helpMessage);
+            Util.VerifyResultSuccess(result, _warning_beep_simple);
+            Util.VerifyResultSuccess(result, "help");
         }
 
         [Fact]
@@ -99,12 +102,8 @@ namespace NuGet.CommandLine.Test
                         "help beep",
                         waitForExit: true);
 
-            // Deprecation warning message in stdout
-            var beepWarningMessage = "WARNING: 'NuGet beep' is deprecated";
-            Util.VerifyResultSuccess(result, beepWarningMessage);
-
-            var helpMessage = "help";
-            Util.VerifyResultSuccess(result, helpMessage);
+            Util.VerifyResultSuccess(result, _warning_beep_simple);
+            Util.VerifyResultSuccess(result, "help");
         }
 
         [Fact]
@@ -116,14 +115,9 @@ namespace NuGet.CommandLine.Test
                         "help -all",
                         waitForExit: true);
 
-            var helpMessage = "help";
-            Util.VerifyResultSuccess(result, helpMessage);
-
-            var warningMessage = "WARNING: 'NuGet greet' is deprecated. Use 'NuGet hello' instead";
-            Util.VerifyResultSuccess(result, warningMessage);
-
-            var beepWarningMessage = "WARNING: 'NuGet beep' is deprecated";
-            Util.VerifyResultSuccess(result, beepWarningMessage);
+            Util.VerifyResultSuccess(result, "help");
+            Util.VerifyResultSuccess(result, _warning_greet_aternative);
+            Util.VerifyResultSuccess(result, _warning_beep_simple);
         }
 
         [Fact]
@@ -135,14 +129,9 @@ namespace NuGet.CommandLine.Test
                         "help -all -markdown",
                         waitForExit: true);
 
-            var helpMessage = "help";
-            Util.VerifyResultSuccess(result, helpMessage);
-
-            var greetWarningMessage = "WARNING: 'NuGet greet' is deprecated. Use 'NuGet hello' instead";
-            Util.VerifyResultSuccess(result, greetWarningMessage);
-
-            var beepWarningMessage = "WARNING: 'NuGet beep' is deprecated";
-            Util.VerifyResultSuccess(result, beepWarningMessage);
+            Util.VerifyResultSuccess(result, "help");
+            Util.VerifyResultSuccess(result, _warning_greet_aternative);
+            Util.VerifyResultSuccess(result, _warning_beep_simple);
         }
 
         [Fact]
@@ -154,8 +143,9 @@ namespace NuGet.CommandLine.Test
                                     "help",
                                     waitForExit: true);
 
-            Util.VerifyResultSuccess(result, "(DEPRECATED) Prints greetings");
-            Util.VerifyResultSuccess(result, "(DEPRECATED) Prints beep");
+            var deprecatedWord = LocalizedResourceManager.GetString("DeprecatedWord");
+            Util.VerifyResultSuccess(result, $"{deprecatedWord} Prints greetings");
+            Util.VerifyResultSuccess(result, $"{deprecatedWord} Prints beep");
         }
     }
 }

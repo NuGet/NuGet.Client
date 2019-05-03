@@ -99,7 +99,7 @@ namespace NuGet.CommandLine
             int descriptionPadding = maxWidth + 4;
 
             var description = deprecatedCommandAttribute != null
-                    ? $"({deprecatedCommandAttribute.DeprecatedWord()}) {commandAttribute.Description}"
+                    ? $"{deprecatedCommandAttribute.DeprecatedWord()} {commandAttribute.Description}"
                     : commandAttribute.Description;
 
             Console.PrintJustified(descriptionPadding, description);

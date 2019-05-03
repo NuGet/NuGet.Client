@@ -6194,7 +6194,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
 {1} - current command marked as deprecated, e.g., list</comment>
   </data>
   <data name="DeprecatedWord" xml:space="preserve">
-    <value>DEPRECATED</value>
-    <comment>Used for marking a command's help description as deprecated/obsolete</comment>
+    <value>(DEPRECATED)</value>
+    <comment>Used for marking a command's help description as deprecated/obsolete. Keep the parenthesis</comment>
   </data>
 </root>
