@@ -41,7 +41,7 @@ namespace NuGet.Credentials.Test
         public void Constructor_WhenPluginManagerIsNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SecurePluginCredentialProviderBuilder(pluginManager: null, canShowDialog: true, NullLogger.Instance));
+                () => new SecurePluginCredentialProviderBuilder(pluginManager: null, canShowDialog: true, logger: NullLogger.Instance));
             Assert.Equal("pluginManager", exception.ParamName);
         }
 
