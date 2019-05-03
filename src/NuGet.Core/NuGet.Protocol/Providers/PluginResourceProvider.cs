@@ -2,18 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using NuGet.Common;
-using NuGet.Packaging;
 using NuGet.Protocol.Plugins;
-using NuGet.Shared;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -23,7 +15,6 @@ namespace NuGet.Protocol.Core.Types
     /// <remarks>This is unsealed only to facilitate testing.</remarks>
     public class PluginResourceProvider : ResourceProvider
     {
-
         private readonly IPluginManager _pluginManager;
 
         public PluginResourceProvider() : this(PluginManager.Instance)

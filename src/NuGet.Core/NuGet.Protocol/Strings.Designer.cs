@@ -781,7 +781,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Problem starting the plugin  &apos;{0}&apos;. {1}.
+        ///   Looks up a localized string similar to Problem starting the plugin &apos;{0}&apos;. {1}.
         /// </summary>
         internal static string Plugin_ProblemStartingPlugin {
             get {

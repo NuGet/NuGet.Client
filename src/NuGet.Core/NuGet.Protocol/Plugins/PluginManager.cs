@@ -13,10 +13,10 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
-using NuGet.Protocol.Plugins;
+using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
 
-namespace NuGet.Protocol.Core.Types
+namespace NuGet.Protocol.Plugins
 {
     /// <summary>
     /// A plugin manager. This manages all the live plugins and their operation claims.
@@ -24,8 +24,8 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public sealed class PluginManager : IPluginManager, IDisposable
     {
-        private static readonly Lazy<IPluginManager> Lazy = new Lazy<IPluginManager>(() => new PluginManager());
-        public static IPluginManager Instance => Lazy.Value;
+        private static readonly Lazy<IPluginManager> _lazy = new Lazy<IPluginManager>(() => new PluginManager());
+        public static IPluginManager Instance => _lazy.Value;
 
         private ConnectionOptions _connectionOptions;
         private Lazy<IPluginDiscoverer> _discoverer;
@@ -36,7 +36,7 @@ namespace NuGet.Protocol.Core.Types
         private string _rawPluginPaths;
 
         private static Lazy<int> _currentProcessId = new Lazy<int>(GetCurrentProcessId);
-        private Lazy<string> _pluginsCacheDirectory = new Lazy<string>(() => SettingsUtility.GetPluginsCacheFolder());
+        private Lazy<string> _pluginsCacheDirectoryPath;
 
         /// <summary>
         /// Gets an environment variable reader.
@@ -49,29 +49,21 @@ namespace NuGet.Protocol.Core.Types
             Initialize(
                 new EnvironmentVariableWrapper(),
                 new Lazy<IPluginDiscoverer>(InitializeDiscoverer),
-                (TimeSpan idleTimeout) => new PluginFactory(idleTimeout));
+                (TimeSpan idleTimeout) => new PluginFactory(idleTimeout),
+                new Lazy<string>(() => SettingsUtility.GetPluginsCacheFolder()));
         }
 
-        /// <summary>
-        /// Creates a new plugin manager
-        /// </summary>
-        /// <remarks>This is public to facilitate unit testing. This should not be called from product code</remarks>
-        /// <param name="reader">An environment variable reader.</param>
-        /// <param name="pluginDiscoverer">A lazy plugin discoverer.</param>
-        /// <param name="pluginFactoryCreator">A plugin factory creator.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader" /> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="pluginDiscoverer" />
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="pluginFactoryCreator" />
-        /// is <c>null</c>.</exception>
-        public PluginManager(IEnvironmentVariableReader reader,
+        internal PluginManager(
+            IEnvironmentVariableReader reader,
             Lazy<IPluginDiscoverer> pluginDiscoverer,
-            Func<TimeSpan, IPluginFactory> pluginFactoryCreator)
+            Func<TimeSpan, IPluginFactory> pluginFactoryCreator,
+            Lazy<string> pluginsCacheDirectoryPath)
         {
             Initialize(
                 reader,
                 pluginDiscoverer,
-                pluginFactoryCreator);
+                pluginFactoryCreator,
+                pluginsCacheDirectoryPath);
         }
 
         /// <summary>
@@ -202,7 +194,7 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken cancellationToken)
         {
             PluginCreationResult pluginCreationResult = null;
-            var cacheEntry = new PluginCacheEntry(_pluginsCacheDirectory.Value, result.PluginFile.Path, requestKey.PackageSourceRepository);
+            var cacheEntry = new PluginCacheEntry(_pluginsCacheDirectoryPath.Value, result.PluginFile.Path, requestKey.PackageSourceRepository);
 
             return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
                 cacheEntry.CacheFileName,
@@ -225,13 +217,13 @@ namespace NuGet.Protocol.Core.Types
 
                                 // We still make the GetOperationClaims call even if we have the operation claims cached. This is a way to self-update the cache.
                                 var operationClaims = await _pluginOperationClaims.GetOrAdd(
-                                       requestKey,
-                                       key => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() =>
-                                       GetPluginOperationClaimsAsync(
-                                           plugin,
-                                           packageSourceRepository,
-                                           serviceIndex,
-                                           cancellationToken))).Value;
+                                    requestKey,
+                                    key => new Lazy<Task<IReadOnlyList<OperationClaim>>>(() =>
+                                    GetPluginOperationClaimsAsync(
+                                        plugin,
+                                        packageSourceRepository,
+                                        serviceIndex,
+                                        cancellationToken))).Value;
 
                                 if (!EqualityUtility.SequenceEqualWithNullCheck(operationClaims, cacheEntry.OperationClaims))
                                 {
@@ -251,12 +243,12 @@ namespace NuGet.Protocol.Core.Types
                         }
                         catch (Exception e)
                         {
-                            // Have a clear error message when the plugin creation fails.
                             pluginCreationResult = new PluginCreationResult(
                                 string.Format(CultureInfo.CurrentCulture,
-                                Strings.Plugin_ProblemStartingPlugin,
-                                result.PluginFile.Path,
-                                e.Message));
+                                    Strings.Plugin_ProblemStartingPlugin,
+                                    result.PluginFile.Path,
+                                    e.Message),
+                                e);
                         }
                     }
                     return new Tuple<bool, PluginCreationResult>(pluginCreationResult != null, pluginCreationResult);
@@ -268,9 +260,9 @@ namespace NuGet.Protocol.Core.Types
         private async Task<Lazy<IPluginMulticlientUtilities>> PerformOneTimePluginInitializationAsync(IPlugin plugin, CancellationToken cancellationToken)
         {
             var utilities = _pluginUtilities.GetOrAdd(
-                                plugin.Id,
-                                path => new Lazy<IPluginMulticlientUtilities>(
-                                    () => new PluginMulticlientUtilities()));
+                plugin.Id,
+                path => new Lazy<IPluginMulticlientUtilities>(
+                    () => new PluginMulticlientUtilities()));
 
             await utilities.Value.DoOncePerPluginLifetimeAsync(
                 MessageMethod.MonitorNuGetProcessExit.ToString(),
@@ -284,15 +276,18 @@ namespace NuGet.Protocol.Core.Types
                 MessageMethod.Initialize.ToString(),
                 () => InitializePluginAsync(plugin, _connectionOptions.RequestTimeout, cancellationToken),
                 cancellationToken);
+
             return utilities;
         }
 
         private void Initialize(IEnvironmentVariableReader reader,
             Lazy<IPluginDiscoverer> pluginDiscoverer,
-            Func<TimeSpan, IPluginFactory> pluginFactoryCreator)
+            Func<TimeSpan, IPluginFactory> pluginFactoryCreator,
+            Lazy<string> pluginsCacheDirectoryPath)
         {
             EnvironmentVariableReader = reader ?? throw new ArgumentNullException(nameof(reader));
             _discoverer = pluginDiscoverer ?? throw new ArgumentNullException(nameof(pluginDiscoverer));
+            _pluginsCacheDirectoryPath = pluginsCacheDirectoryPath ?? throw new ArgumentNullException(nameof(pluginsCacheDirectoryPath));
 
             if (pluginFactoryCreator == null)
             {
