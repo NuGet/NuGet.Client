@@ -60,8 +60,8 @@
     <Compile Include="NuGetPackageSigningTests\RepositorySignedPackageTestCase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Test.Apex-d15rel">
-      <Version>15.0.27006.00</Version>
+    <PackageReference Include="Microsoft.Test.Apex-d16.0stg">
+      <Version>16.0.28417.3003</Version>
     </PackageReference>
     <PackageReference Include="Xunit.StaFact" Version="0.2.9" />
   </ItemGroup>
