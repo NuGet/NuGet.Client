@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Text;
 
 namespace NuGet.CommandLine
 {
@@ -10,61 +10,50 @@ namespace NuGet.CommandLine
     /// <see cref="HelpCommandMarkdownTemplate"/>
     /// </summary>
     /// <remarks>
-    /// Inspired from https://github.com/RazorGenerator/RazorGenerator/blob/master/RazorGenerator.Templating/RazorTemplateBase.cs
+    /// Inspired from https://github.com/RazorGenerator/RazorGenerator/blob/937972e94d83e71a5a1d372e81c2de98723c1165/RazorGenerator.Templating/RazorTemplateBase.cs
     /// </remarks>
-    public class HelpCommandMarkdownTemplateBase
+    public abstract class HelpCommandMarkdownTemplateBase
     {
-        private System.Text.StringBuilder _generatingEnvironment = new System.Text.StringBuilder();
-        protected System.Text.StringBuilder GenerationEnvironment
-        {
-            get
-            {
-                return this._generatingEnvironment;
-            }
-            set
-            {
-                this._generatingEnvironment = value;
-            }
-        }
-        public virtual void Execute()
-        {
-        }
+        protected StringBuilder GenerationEnvironment { get; set; } = new StringBuilder();
+
+        /// <summary>
+        /// Autognerated code for the template implement this method
+        /// </summary>
+        public abstract void Execute();
+
         public void WriteLiteral(string textToAppend)
         {
-
-            if (String.IsNullOrEmpty(textToAppend))
+            if (string.IsNullOrEmpty(textToAppend))
             {
                 return;
             }
-            this.GenerationEnvironment.Append(textToAppend);
+            GenerationEnvironment.Append(textToAppend);
         }
+
         public void Write(object value)
         {
-
             string stringValue;
-            if ((value == null))
+            if (value == null)
             {
-                throw new global::System.ArgumentNullException("value");
+                throw new System.ArgumentNullException("value");
             }
-            System.Type t = value.GetType();
-            System.Reflection.MethodInfo method = t.GetMethod("ToString", new System.Type[] {
-                            typeof(System.IFormatProvider)});
-            if ((method == null))
+            var t = value.GetType();
+            var method = t.GetMethod("ToString", new System.Type[] { typeof(System.IFormatProvider) });
+            if (method == null)
             {
                 stringValue = value.ToString();
             }
             else
             {
-                stringValue = ((string)(method.Invoke(value, new object[] { System.Globalization.CultureInfo.InvariantCulture })));
+                stringValue = (string)method.Invoke(value, new object[] { System.Globalization.CultureInfo.InvariantCulture });
             }
             WriteLiteral(stringValue);
-
         }
 
         public string TransformText()
         {
-            this.Execute();
-            return this.GenerationEnvironment.ToString();
+            Execute();
+            return GenerationEnvironment.ToString();
         }
     }
 }

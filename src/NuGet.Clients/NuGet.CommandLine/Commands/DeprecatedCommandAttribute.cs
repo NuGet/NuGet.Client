@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Reflection;
 
 namespace NuGet.CommandLine
@@ -19,27 +18,44 @@ namespace NuGet.CommandLine
     public sealed class DeprecatedCommandAttribute : Attribute
     {
         /// <summary>
-        /// The concrete type that is an alternative to the command that has this DeprecatedCommand attribute.
+        /// Placeholder for AlternativeCommand property
+        /// </summary>
+        /// <see cref="AlternativeCommand"/>
+        private Type _alternativeCommand;
+
+        /// <summary>
+        /// The concrete Type that is an alternative to the command that has this DeprecatedCommand attribute.
+        ///
+        /// The Type must fully implement the ICommand interface
+        /// 
         /// If no alternative is provided in the attribute, this property will be null
         /// </summary>
-        public Type AlternativeCommand { get; set; }
+        /// <see cref="ICommand">
+        public Type AlternativeCommand
+        {
+            get => _alternativeCommand;
+            private set
+            {
+                if (!typeof(ICommand).IsAssignableFrom(value))
+                {
+                    var msg = string.Format("{0} must be a {1} that implements {2} interface",
+                        nameof(AlternativeCommand),
+                        nameof(Type),
+                        typeof(ICommand).FullName);
+                    throw new ArgumentException(msg);
+                }
+                _alternativeCommand = value;
+            }
+        }
 
         public DeprecatedCommandAttribute()
         {
-            AlternativeCommand = null;
+            _alternativeCommand = null;
         }
 
-        public DeprecatedCommandAttribute(Type alternativeCommand)
+        public DeprecatedCommandAttribute(Type AlternativeCommand)
         {
-            if (!typeof(ICommand).IsAssignableFrom(alternativeCommand))
-            {
-                var msg = string.Format("{0} must be a {1} that implements {2} interface",
-                    nameof(alternativeCommand),
-                    nameof(Type),
-                    typeof(ICommand).FullName);
-                throw new ArgumentException(msg);
-            }
-            AlternativeCommand = alternativeCommand;
+            this.AlternativeCommand = AlternativeCommand;
         }
 
         /// <summary>
@@ -66,7 +82,7 @@ namespace NuGet.CommandLine
 
             if (cmdAttrAlternative.Length == 1)
             {
-                var cmdAlternative = cmdAttrAlternative.FirstOrDefault() as CommandAttribute;
+                var cmdAlternative = cmdAttrAlternative[0] as CommandAttribute;
 
                 var warningResourceAlternative = LocalizedResourceManager.GetString("CommandDeprecationWarningAlternative");
 
@@ -76,7 +92,10 @@ namespace NuGet.CommandLine
             throw new ArgumentException("No CommandAttribute attribute found");
         }
 
-
+        /// <summary>
+        /// Obtains the string resource appending Deprecated word in help description
+        /// </summary>
+        /// <returns>A string with the deprecated word</returns>
         public string DeprecatedWord()
         {
             return LocalizedResourceManager.GetString("DeprecatedWord");

@@ -282,13 +282,13 @@ namespace NuGet.CommandLine
             return null;
         }
 
-        public DeprecatedCommandAttribute GetDeprecatedCommandAttribute()
+        private DeprecatedCommandAttribute GetDeprecatedCommandAttribute()
         {
             var deprecatedAttrs = GetType().GetCustomAttributes(typeof(DeprecatedCommandAttribute), false);
 
-            if (deprecatedAttrs.Any())
+            if (deprecatedAttrs.Length > 0)
             {
-                return (DeprecatedCommandAttribute)deprecatedAttrs.FirstOrDefault();
+                return deprecatedAttrs[0] as DeprecatedCommandAttribute;
             }
 
             return null;

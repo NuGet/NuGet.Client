@@ -72,7 +72,7 @@ namespace NuGet.CommandLine
 
             var commands = from c in _commandManager.GetCommands()
                            orderby c.CommandAttribute.CommandName
-                           select new { c.CommandAttribute, c.DeprecatedCommandAttribute};
+                           select new { c.CommandAttribute, c.DeprecatedCommandAttribute };
 
             // Padding for printing
             var maxWidth = commands.Max(c => c.CommandAttribute.CommandName.Length + GetAltText(c.CommandAttribute.AltName).Length);
@@ -91,16 +91,18 @@ namespace NuGet.CommandLine
         // Help command always outputs NuGet version
         protected override bool ShouldOutputNuGetVersion { get { return true; } }
 
-        private void PrintCommand(int maxWidth, CommandAttribute commandAttribute, DeprecatedCommandAttribute deprecatedCommandAttribute = null)
+        private void PrintCommand(int maxWidth, CommandAttribute commandAttribute, DeprecatedCommandAttribute deprecatedCommandAttribute)
         {
             // Write out the command name left justified with the max command's width's padding
             Console.Write(" {0, -" + maxWidth + "}   ", GetCommandText(commandAttribute));
             // Starting index of the description
             int descriptionPadding = maxWidth + 4;
 
-            var deprecatedWord = deprecatedCommandAttribute != null ? $"({deprecatedCommandAttribute.DeprecatedWord()}) " : string.Empty;
+            var description = deprecatedCommandAttribute != null
+                    ? $"({deprecatedCommandAttribute.DeprecatedWord()}) {commandAttribute.Description}"
+                    : commandAttribute.Description;
 
-            Console.PrintJustified(descriptionPadding, deprecatedWord + commandAttribute.Description);
+            Console.PrintJustified(descriptionPadding, description);
         }
 
         private static string GetCommandText(CommandAttribute commandAttribute)
