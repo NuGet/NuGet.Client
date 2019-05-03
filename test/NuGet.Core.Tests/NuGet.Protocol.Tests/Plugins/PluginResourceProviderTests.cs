@@ -231,6 +231,7 @@ namespace NuGet.Protocol.Plugins.Tests
             private readonly Mock<IPluginDiscoverer> _pluginDiscoverer;
             private readonly PluginManager _pluginManager;
             private readonly Mock<IEnvironmentVariableReader> _environmentVariableReader;
+            private readonly TestDirectory _testDirectory;
 
             internal PluginResourceProvider Provider { get; }
             internal SourceRepository SourceRepository { get; }
@@ -263,17 +264,20 @@ namespace NuGet.Protocol.Plugins.Tests
                 _pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
                     .ReturnsAsync(pluginDiscoveryResults);
 
+                _testDirectory = TestDirectory.Create();
+
                 _pluginManager = new PluginManager(
                     _environmentVariableReader.Object,
                     new Lazy<IPluginDiscoverer>(() => _pluginDiscoverer.Object),
                     (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>(),
-                    new Lazy<string>(() => "a"));
+                    new Lazy<string>(() => _testDirectory.Path));
                 Provider = new PluginResourceProvider(_pluginManager);
             }
 
             public void Dispose()
             {
                 _pluginManager.Dispose();
+                _testDirectory.Dispose();
 
                 _environmentVariableReader.Verify();
                 _pluginDiscoverer.Verify();
@@ -308,6 +312,7 @@ namespace NuGet.Protocol.Plugins.Tests
             private readonly Mock<IPluginDiscoverer> _pluginDiscoverer;
             private readonly Mock<IEnvironmentVariableReader> _reader;
             private readonly string _pluginFilePath;
+            private readonly TestDirectory _testDirectory;
 
             internal PluginResourceProvider Provider { get; }
             internal PluginManager PluginManager { get; }
@@ -403,11 +408,13 @@ namespace NuGet.Protocol.Plugins.Tests
                         It.IsAny<CancellationToken>()))
                     .ReturnsAsync(_plugin.Object);
 
+                _testDirectory = TestDirectory.Create();
+
                 PluginManager = new PluginManager(
                     _reader.Object,
                     new Lazy<IPluginDiscoverer>(() => _pluginDiscoverer.Object),
                     (TimeSpan idleTimeout) => _factory.Object,
-                    new Lazy<string>(() => "a"));
+                    new Lazy<string>(() => _testDirectory.Path));
                 Provider = new PluginResourceProvider(PluginManager);
             }
 
@@ -419,6 +426,7 @@ namespace NuGet.Protocol.Plugins.Tests
                         CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash(_pluginFilePath))),
                     new List<string>());
                 PluginManager.Dispose();
+                _testDirectory.Dispose();
 
                 _reader.Verify();
                 _pluginDiscoverer.Verify();
