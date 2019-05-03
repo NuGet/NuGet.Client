@@ -9,61 +9,78 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
-using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Plugins;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Credentials.Test
 {
     public class SecurePluginCredentialProviderBuilderTests
     {
+        private readonly TestDirectory _testDirectory;
+
+        public SecurePluginCredentialProviderBuilderTests()
+        {
+            _testDirectory = TestDirectory.Create();
+        }
+
+        public void Dispose()
+        {
+            _testDirectory.Dispose();
+        }
+
         [Fact]
-        public void CredentialProviderBuilder_ThrowsExceptionForNullLogger()
+        public void Constructor_WhenLoggerIsNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SecurePluginCredentialProviderBuilder(CreateDefaultPluginManager(), true, null));
+                () => new SecurePluginCredentialProviderBuilder(CreateDefaultPluginManager(), canShowDialog: true, logger: null));
             Assert.Equal("logger", exception.ParamName);
         }
 
         [Fact]
-        public void CredentialProviderBuilder_ThrowsExceptionForNullPluginManager()
+        public void Constructor_WhenPluginManagerIsNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SecurePluginCredentialProviderBuilder(null, true, NullLogger.Instance));
+                () => new SecurePluginCredentialProviderBuilder(pluginManager: null, canShowDialog: true, logger: NullLogger.Instance));
             Assert.Equal("pluginManager", exception.ParamName);
         }
 
         [Fact]
-        public async Task BuildAll_BuildsZero()
+        public async Task BuildAllAsync_BuildsZero()
         {
             var plugins = new List<KeyValuePair<string, PluginFileState>>();
-            var pluginManager = new PluginManagerBuilderMock(plugins);
-            var builder = new SecurePluginCredentialProviderBuilder(pluginManager.PluginManager, true, NullLogger.Instance);
 
-            var credentialProviders = await builder.BuildAllAsync();
-            Assert.Equal(0, credentialProviders.Count());
+            using (var pluginManagerBuilder = new PluginManagerBuilderMock(plugins))
+            {
+                var providerBuilder = new SecurePluginCredentialProviderBuilder(pluginManagerBuilder.PluginManager, canShowDialog: true, logger: NullLogger.Instance);
+
+                var credentialProviders = await providerBuilder.BuildAllAsync();
+                Assert.Equal(0, credentialProviders.Count());
+            }
         }
 
         [Fact]
-        public async Task BuildAll_BuildsPluginsInCorrectOrder()
+        public async Task BuildAllAsync_BuildsPluginsInCorrectOrder()
         {
             var plugins = new List<KeyValuePair<string, PluginFileState>>();
             plugins.Add(new KeyValuePair<string, PluginFileState>("a", PluginFileState.Valid));
             plugins.Add(new KeyValuePair<string, PluginFileState>("b", PluginFileState.Valid));
             plugins.Add(new KeyValuePair<string, PluginFileState>("c", PluginFileState.Valid));
 
-            var pluginManager = new PluginManagerBuilderMock(plugins);
-            var builder = new SecurePluginCredentialProviderBuilder(pluginManager.PluginManager, true, NullLogger.Instance);
+            using (var pluginManagerBuilder = new PluginManagerBuilderMock(plugins))
+            {
+                var providerBuilder = new SecurePluginCredentialProviderBuilder(pluginManagerBuilder.PluginManager, canShowDialog: true, logger: NullLogger.Instance);
 
-            var credentialProviders = (await builder.BuildAllAsync()).ToArray();
-            Assert.Equal(3, credentialProviders.Count());
-            Assert.StartsWith(nameof(SecurePluginCredentialProvider) + "_a", credentialProviders[0].Id);
-            Assert.StartsWith(nameof(SecurePluginCredentialProvider) + "_b", credentialProviders[1].Id);
-            Assert.StartsWith(nameof(SecurePluginCredentialProvider) + "_c", credentialProviders[2].Id);
+                var credentialProviders = (await providerBuilder.BuildAllAsync()).ToArray();
+                Assert.Equal(3, credentialProviders.Count());
+                Assert.StartsWith(nameof(SecurePluginCredentialProvider) + "_a", credentialProviders[0].Id);
+                Assert.StartsWith(nameof(SecurePluginCredentialProvider) + "_b", credentialProviders[1].Id);
+                Assert.StartsWith(nameof(SecurePluginCredentialProvider) + "_c", credentialProviders[2].Id);
+            }
         }
 
         [Fact]
-        public async Task BuildAll_BuildsAllPlugins()
+        public async Task BuildAllAsync_BuildsAllPlugins()
         {
             var plugins = new List<KeyValuePair<string, PluginFileState>>();
             plugins.Add(new KeyValuePair<string, PluginFileState>("a", PluginFileState.Valid));
@@ -71,36 +88,44 @@ namespace NuGet.Credentials.Test
             plugins.Add(new KeyValuePair<string, PluginFileState>("c", PluginFileState.InvalidFilePath));
             plugins.Add(new KeyValuePair<string, PluginFileState>("d", PluginFileState.NotFound));
 
+            using (var pluginManagerBuilder = new PluginManagerBuilderMock(plugins))
+            {
+                var providerBuilder = new SecurePluginCredentialProviderBuilder(pluginManagerBuilder.PluginManager, canShowDialog: true, logger: NullLogger.Instance);
 
-            var pluginManager = new PluginManagerBuilderMock(plugins);
-            var builder = new SecurePluginCredentialProviderBuilder(pluginManager.PluginManager, true, NullLogger.Instance);
-
-            var credentialProviders = (await builder.BuildAllAsync()).ToArray();
-            Assert.Equal(4, credentialProviders.Count());
+                var credentialProviders = (await providerBuilder.BuildAllAsync()).ToArray();
+                Assert.Equal(4, credentialProviders.Count());
+            }
         }
 
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task BuildAll_PassesCorrectCanShowDialogValue(bool canShowDialog)
+        public async Task BuildAllAsync_PassesCorrectCanShowDialogValue(bool canShowDialog)
         {
             var plugins = new List<KeyValuePair<string, PluginFileState>>();
             plugins.Add(new KeyValuePair<string, PluginFileState>("a", PluginFileState.Valid));
 
-            var pluginManager = new PluginManagerBuilderMock(plugins);
-            var builder = new SecurePluginCredentialProviderBuilder(pluginManager.PluginManager, canShowDialog, NullLogger.Instance);
+            using (var pluginManagerBuilder = new PluginManagerBuilderMock(plugins))
+            {
+                var providerBuilder = new SecurePluginCredentialProviderBuilder(pluginManagerBuilder.PluginManager, canShowDialog, logger: NullLogger.Instance);
 
-            var credentialProviders = (await builder.BuildAllAsync()).ToArray();
-            Assert.Equal(1, credentialProviders.Count());
-            var bla = typeof(SecurePluginCredentialProvider).GetTypeInfo().GetField("_canShowDialog", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance);
-            Assert.Equal(canShowDialog, bla.GetValue(credentialProviders.Single()));
+                var credentialProviders = (await providerBuilder.BuildAllAsync()).ToArray();
+                Assert.Equal(1, credentialProviders.Count());
+                var bla = typeof(SecurePluginCredentialProvider).GetTypeInfo().GetField("_canShowDialog", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance);
+                Assert.Equal(canShowDialog, bla.GetValue(credentialProviders.Single()));
+            }
         }
 
-        private sealed class PluginManagerBuilderMock
+        private sealed class PluginManagerBuilderMock : IDisposable
         {
+            private readonly TestDirectory _testDirectory;
+
             internal PluginManager PluginManager { get; }
+
             internal PluginManagerBuilderMock(List<KeyValuePair<string, PluginFileState>> plugins)
             {
+                _testDirectory = TestDirectory.Create();
+
                 var reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
 
                 reader.Setup(x => x.GetEnvironmentVariable(
@@ -126,7 +151,13 @@ namespace NuGet.Credentials.Test
                 PluginManager = new PluginManager(
                     reader.Object,
                     new Lazy<IPluginDiscoverer>(() => pluginDiscoverer.Object),
-                    (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>());
+                    (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>(),
+                    new Lazy<string>(() => _testDirectory.Path));
+            }
+
+            public void Dispose()
+            {
+                _testDirectory.Dispose();
             }
 
             private static IEnumerable<PluginDiscoveryResult> GetPluginDiscoveryResults(List<KeyValuePair<string, PluginFileState>> plugins)
@@ -142,12 +173,13 @@ namespace NuGet.Credentials.Test
             }
         }
 
-        private static PluginManager CreateDefaultPluginManager()
+        private PluginManager CreateDefaultPluginManager()
         {
             return new PluginManager(
-                reader: Mock.Of<IEnvironmentVariableReader>(),
-                pluginDiscoverer: new Lazy<IPluginDiscoverer>(),
-                pluginFactoryCreator: (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>());
+                Mock.Of<IEnvironmentVariableReader>(),
+                new Lazy<IPluginDiscoverer>(),
+                (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>(),
+                new Lazy<string>(() => _testDirectory.Path));
         }
     }
 }

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -40,7 +39,6 @@ namespace NuGet.Credentials
 
         // We use this to avoid needlessly instantiating plugins if they don't support authentication.
         private bool _isAnAuthenticationPlugin = true;
-
 
         /// <summary>
         /// Create a credential provider based on provided plugin
@@ -89,34 +87,42 @@ namespace NuGet.Credentials
                 return taskResponse;
             }
 
-            var creationResult = await _pluginManager.TryGetSourceAgnosticPluginAsync(_discoveredPlugin, OperationClaim.Authentication, cancellationToken);
+            Tuple<bool, PluginCreationResult> result = await _pluginManager.TryGetSourceAgnosticPluginAsync(_discoveredPlugin, OperationClaim.Authentication, cancellationToken);
 
-            if (creationResult.Item1) // status of the source creation
+            bool wasSomethingCreated = result.Item1;
+
+            if (wasSomethingCreated)
             {
-                var plugin = creationResult.Item2; // plugin creation result
-                if (!string.IsNullOrEmpty(plugin.Message))
+                PluginCreationResult creationResult = result.Item2;
+
+                if (!string.IsNullOrEmpty(creationResult.Message))
                 {
                     // There is a potential here for double logging as the CredentialService itself catches the exceptions and tries to log it.
-                    // In reality the logger in the Credential Service will be null because the first request always comes from a resource provider (ServiceIndex provider) 
-                    _logger.LogError(plugin.Message);
+                    // In reality the logger in the Credential Service will be null because the first request always comes from a resource provider (ServiceIndex provider).
+                    _logger.LogError(creationResult.Message);
+
+                    if (creationResult.Exception != null)
+                    {
+                        _logger.LogDebug(creationResult.Exception.ToString());
+                    }
                     _isAnAuthenticationPlugin = false;
-                    throw new PluginException(plugin.Message); // Throwing here will block authentication and ensure that the complete operation fails 
+                    throw new PluginException(creationResult.Message, creationResult.Exception); // Throwing here will block authentication and ensure that the complete operation fails.
                 }
 
-                _isAnAuthenticationPlugin = plugin.Claims.Contains(OperationClaim.Authentication);
+                _isAnAuthenticationPlugin = creationResult.Claims.Contains(OperationClaim.Authentication);
 
                 if (_isAnAuthenticationPlugin)
                 {
-                    AddOrUpdateLogger(plugin.Plugin);
-                    await SetPluginLogLevelAsync(plugin, _logger, cancellationToken);
+                    AddOrUpdateLogger(creationResult.Plugin);
+                    await SetPluginLogLevelAsync(creationResult, _logger, cancellationToken);
 
                     if (proxy != null)
                     {
-                        await SetProxyCredentialsToPlugin(uri, proxy, plugin, cancellationToken);
+                        await SetProxyCredentialsToPlugin(uri, proxy, creationResult, cancellationToken);
                     }
 
                     var request = new GetAuthenticationCredentialsRequest(uri, isRetry, nonInteractive, _canShowDialog);
-                    var credentialResponse = await plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
+                    var credentialResponse = await creationResult.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetAuthenticationCredentialsRequest, GetAuthenticationCredentialsResponse>(
                         MessageMethod.GetAuthenticationCredentials,
                         request,
                         cancellationToken);
@@ -124,13 +130,11 @@ namespace NuGet.Credentials
                     {
                         _logger.LogWarning(
                             string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Resources.SecurePluginWarning_UseInteractiveOption)
-                                    );
+                                CultureInfo.CurrentCulture,
+                                Resources.SecurePluginWarning_UseInteractiveOption));
                     }
 
                     taskResponse = GetAuthenticationCredentialsResponseToCredentialResponse(credentialResponse);
-
                 }
             }
             else
