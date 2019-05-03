@@ -52,7 +52,7 @@ namespace NuGet.Credentials.Test
 
             using (var pluginManagerBuilder = new PluginManagerBuilderMock(plugins))
             {
-                var providerBuilder = new SecurePluginCredentialProviderBuilder(pluginManagerBuilder.PluginManager, canShowDialog: true, NullLogger.Instance);
+                var providerBuilder = new SecurePluginCredentialProviderBuilder(pluginManagerBuilder.PluginManager, canShowDialog: true, logger: NullLogger.Instance);
 
                 var credentialProviders = await providerBuilder.BuildAllAsync();
                 Assert.Equal(0, credentialProviders.Count());
@@ -69,7 +69,7 @@ namespace NuGet.Credentials.Test
 
             using (var pluginManagerBuilder = new PluginManagerBuilderMock(plugins))
             {
-                var providerBuilder = new SecurePluginCredentialProviderBuilder(pluginManagerBuilder.PluginManager, canShowDialog: true, NullLogger.Instance);
+                var providerBuilder = new SecurePluginCredentialProviderBuilder(pluginManagerBuilder.PluginManager, canShowDialog: true, logger: NullLogger.Instance);
 
                 var credentialProviders = (await providerBuilder.BuildAllAsync()).ToArray();
                 Assert.Equal(3, credentialProviders.Count());
@@ -90,7 +90,7 @@ namespace NuGet.Credentials.Test
 
             using (var pluginManagerBuilder = new PluginManagerBuilderMock(plugins))
             {
-                var providerBuilder = new SecurePluginCredentialProviderBuilder(pluginManagerBuilder.PluginManager, canShowDialog: true, NullLogger.Instance);
+                var providerBuilder = new SecurePluginCredentialProviderBuilder(pluginManagerBuilder.PluginManager, canShowDialog: true, logger: NullLogger.Instance);
 
                 var credentialProviders = (await providerBuilder.BuildAllAsync()).ToArray();
                 Assert.Equal(4, credentialProviders.Count());
@@ -107,7 +107,7 @@ namespace NuGet.Credentials.Test
 
             using (var pluginManagerBuilder = new PluginManagerBuilderMock(plugins))
             {
-                var providerBuilder = new SecurePluginCredentialProviderBuilder(pluginManagerBuilder.PluginManager, canShowDialog, NullLogger.Instance);
+                var providerBuilder = new SecurePluginCredentialProviderBuilder(pluginManagerBuilder.PluginManager, canShowDialog, logger: NullLogger.Instance);
 
                 var credentialProviders = (await providerBuilder.BuildAllAsync()).ToArray();
                 Assert.Equal(1, credentialProviders.Count());

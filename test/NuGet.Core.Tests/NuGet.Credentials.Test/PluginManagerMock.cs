@@ -137,7 +137,7 @@ namespace NuGet.Credentials.Test
                         It.Is<MessageMethod>(m => m == MessageMethod.GetAuthenticationCredentials),
                         It.Is<GetAuthenticationCredentialsRequest>(e => e.Uri.Equals(expectations.Uri) && e.CanShowDialog.Equals(expectations.CanShowDialog)),
                         It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new GetAuthenticationCredentialsResponse(expectations.AuthenticationUsername, expectations.AuthenticationPassword, message: null, authenticationTypes: null, MessageResponseCode.Success));
+                    .ReturnsAsync(new GetAuthenticationCredentialsResponse(expectations.AuthenticationUsername, expectations.AuthenticationPassword, message: null, authenticationTypes: null, responseCode: MessageResponseCode.Success));
             }
 
             PluginManager = new PluginManager(
