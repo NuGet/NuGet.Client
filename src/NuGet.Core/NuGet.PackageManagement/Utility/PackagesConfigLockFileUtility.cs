@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -17,9 +18,9 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.Utility
 {
-    public class PackagesConfigLockFileUtility
+    public static class PackagesConfigLockFileUtility
     {
-        private static readonly IComparer _dependencyComparer = new DependencyComparer();
+        private static readonly IComparer Comparer = new DependencyComparer();
 
         internal static void UpdateLockFile(
             MSBuildNuGetProject msbuildProject,
@@ -81,6 +82,85 @@ namespace NuGet.PackageManagement.Utility
 
             return PackagesLockFileUtilities.GetNuGetLockFilePath(projectPath, projectName);
         }
+
+        public static List<IRestoreLogMessage> ValidatePackagesConfigLockFiles(string projectFile, string packagesConfigFile, string projectName, string nuGetLockFilePath, string restorePackagesWithLockFile, NuGetFramework projectTfm, string packagesFolderPath, bool lockedMode)
+        {
+            var lockFilePath = GetPackagesLockFilePath(Path.GetDirectoryName(packagesConfigFile), nuGetLockFilePath, projectName);
+            var lockFileExists = File.Exists(lockFilePath);
+            var lockFileOptIn = MSBuildStringUtility.GetBoolean(restorePackagesWithLockFile);
+            var useLockFile = lockFileOptIn == true || lockFileExists;
+
+            if (lockFileOptIn == false && lockFileExists)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidLockFileInput, lockFilePath);
+                var errors = new List<IRestoreLogMessage>();
+                var log = RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message, packagesConfigFile);
+                log.ProjectPath = projectFile ?? packagesConfigFile;
+                errors.Add(log);
+                return errors;
+            }
+
+            if (useLockFile)
+            {
+                var projectLockFileEquivilent = PackagesConfigLockFileUtility.FromPackagesConfigFile(packagesConfigFile,
+                    projectTfm,
+                    packagesFolderPath,
+                    CancellationToken.None);
+
+                if (!lockFileExists)
+                {
+                    PackagesLockFileFormat.Write(lockFilePath, projectLockFileEquivilent);
+                    return null;
+                }
+                else
+                {
+                    var lockFile = PackagesLockFileFormat.Read(lockFilePath);
+                    var comparisonResult = PackagesLockFileUtilities.IsLockFileStillValid(projectLockFileEquivilent, lockFile);
+                    if (comparisonResult.lockFileStillValid)
+                    {
+                        // check sha hashes
+                        var allShasMatch = comparisonResult.matchedDependencies.All(pair => pair.Key.ContentHash == pair.Value.ContentHash);
+                        if (allShasMatch)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            var errors = new List<IRestoreLogMessage>();
+                            foreach (var difference in comparisonResult.matchedDependencies.Where(kvp => kvp.Key.ContentHash != kvp.Value.ContentHash))
+                            {
+                                var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageValidationFailed, difference.Key.Id + "." + difference.Key.ResolvedVersion);
+                                var log = RestoreLogMessage.CreateError(NuGetLogCode.NU1403, message, packagesConfigFile);
+                                log.ProjectPath = projectFile ?? packagesConfigFile;
+                                errors.Add(log);
+                            }
+                            return errors;
+                        }
+                    }
+                    else
+                    {
+                        if (lockedMode)
+                        {
+                            var errors = new List<IRestoreLogMessage>();
+                            var log = RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode, packagesConfigFile);
+                            log.ProjectPath = projectFile ?? packagesConfigFile;
+                            errors.Add(log);
+                            return errors;
+                        }
+                        else
+                        {
+                            PackagesLockFileFormat.Write(lockFilePath, projectLockFileEquivilent);
+                            return null;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
 
         private static bool? IsRestorePackagesWithLockFileEnabled(MSBuildNuGetProject msbuildProject)
         {
@@ -145,7 +225,7 @@ namespace NuGet.PackageManagement.Utility
                 actionsList.Where(a => a.NuGetProjectActionType == NuGetProjectActionType.Install),
                 contentHashUtil,
                 token);
-            ArrayList.Adapter((IList)lockFile.Targets[0].Dependencies).Sort(_dependencyComparer);
+            ArrayList.Adapter((IList)lockFile.Targets[0].Dependencies).Sort(Comparer);
         }
 
         private static void RemoveUninstalledPackages(PackagesLockFile lockFile, IEnumerable<NuGetProjectAction> actionsList)

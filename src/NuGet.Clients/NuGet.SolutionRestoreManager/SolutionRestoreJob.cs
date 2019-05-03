@@ -16,8 +16,10 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
@@ -498,6 +500,8 @@ namespace NuGet.SolutionRestoreManager
                     // Mark that work is being done during this restore
                     _status = NuGetOperationStatus.Succeeded;
                 }
+
+                await ValidatePackagesConfigLockFiles();
             }
             else if (restoreSource == RestoreOperationSource.Explicit)
             {
@@ -511,6 +515,41 @@ namespace NuGet.SolutionRestoreManager
             await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(
                 solutionDirectory,
                 token);
+        }
+
+        private async Task ValidatePackagesConfigLockFiles()
+        {
+            var allProjects = await _solutionManager.GetNuGetProjectsAsync();
+            var pcProjects = allProjects.Where(p => p.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig).ToList();
+
+            foreach (MSBuildNuGetProject project in pcProjects)
+            {
+                var projectFile = project.MSBuildProjectPath;
+                var pcFile = project.PackagesConfigNuGetProject.FullPath;
+                var projectName = (string)project.GetMetadataOrNull("Name");
+                var lockFileName = (string)project.GetMetadataOrNull("NuGetLockFilePath");
+                var restorePackagesWithLockFile = (string)project.GetMetadataOrNull("RestorePackagesWithLockFile");
+                var projectTfm = (NuGetFramework)project.GetMetadataOrNull("TargetFramework");
+                var lockedMode = MSBuildStringUtility.GetBoolean((string)project.GetMetadataOrNull("LockedMode")) ?? false;
+
+                var validationLogs = PackagesConfigLockFileUtility.ValidatePackagesConfigLockFiles(
+                    projectFile,
+                    pcFile,
+                    projectName,
+                    lockFileName,
+                    restorePackagesWithLockFile,
+                    projectTfm,
+                    project.FolderNuGetProject.Root,
+                    lockedMode);
+
+                if (validationLogs != null)
+                {
+                    foreach (var logItem in validationLogs)
+                    {
+                        _logger.Log(logItem);
+                    }
+                }
+            }
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -98,6 +98,16 @@ namespace NuGet.ProjectManagement
             }
 
             return false;
+        }
+
+        public object GetMetadataOrNull(string key)
+        {
+            if (Metadata.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+
+            return null;
         }
 
         public Task SaveAsync(CancellationToken token)

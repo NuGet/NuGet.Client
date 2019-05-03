@@ -376,6 +376,24 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package {0} sha512 validation failed. The package is different than the last restore..
+        /// </summary>
+        internal static string Error_PackageValidationFailed {
+            get {
+                return ResourceManager.GetString("Error_PackageValidationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The packages lock file is inconsistent with the project dependencies so restore can&apos;t be run in locked mode. Please disable RestoreLockedMode MSBuild property or pass explicit --force-evaluate flag to run restore to update the lock file..
+        /// </summary>
+        internal static string Error_RestoreInLockedMode {
+            get {
+                return ResourceManager.GetString("Error_RestoreInLockedMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred while reading file &apos;{0}&apos;: {1}.
         /// </summary>
         internal static string ErrorLoadingPackagesConfig {

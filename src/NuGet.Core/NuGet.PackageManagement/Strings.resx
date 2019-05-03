@@ -495,4 +495,11 @@
     <value>Invalid restore input where RestorePackagesWithLockFile property is set to false but a packages lock file exists at {0}.</value>
     <comment>{0} - packages lock file path</comment>
   </data>
+  <data name="Error_PackageValidationFailed" xml:space="preserve">
+    <value>The package {0} sha512 validation failed. The package is different than the last restore.</value>
+    <comment>{0} - package id and version</comment>
+  </data>
+  <data name="Error_RestoreInLockedMode" xml:space="preserve">
+    <value>The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Please disable RestoreLockedMode MSBuild property or pass explicit --force-evaluate flag to run restore to update the lock file.</value>
+  </data>
 </root>

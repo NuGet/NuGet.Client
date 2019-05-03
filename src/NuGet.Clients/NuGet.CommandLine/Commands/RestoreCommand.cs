@@ -110,12 +110,12 @@ namespace NuGet.CommandLine
             // packages.config
             if (hasPackagesConfigFiles)
             {
-                var v2RestoreResult = await PerformNuGetV2RestoreAsync(restoreInputs);
-                restoreSummaries.Add(v2RestoreResult);
+                var v2RestoreResults = await PerformNuGetV2RestoreAsync(restoreInputs);
+                restoreSummaries.AddRange(v2RestoreResults);
 
-                if (!v2RestoreResult.Success)
+                foreach (var restoreResult in v2RestoreResults.Where(r=> !r.Success))
                 {
-                    v2RestoreResult
+                    restoreResult
                         .Errors
                         .Where(l => l.Level == LogLevel.Warning)
                         .ForEach(l => Console.LogWarning(l.FormatWithCode()));
@@ -242,7 +242,7 @@ namespace NuGet.CommandLine
             SetDefaultCredentialProvider(MsBuildDirectory);
         }
 
-        private async Task<RestoreSummary> PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
+        private async Task<List<RestoreSummary>> PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
         {
             ReadSettings(packageRestoreInputs);
             var packagesFolderPath = GetPackagesFolder(packageRestoreInputs);
@@ -300,12 +300,24 @@ namespace NuGet.CommandLine
 
                 Console.LogMinimal(message);
 
-                var results = ValidatePackagesConfigLockFiles(
+                var validationResults = ValidatePackagesConfigLockFiles(
                     packageRestoreInputs.PackagesConfigFiles,
                     packageRestoreInputs.ProjectReferenceLookup.Projects,
                     packagesFolderPath);
 
-                return new RestoreSummary(true);
+                var restoreSummaries = new List<RestoreSummary>();
+                restoreSummaries.Add(new RestoreSummary(true));
+
+                if (validationResults != null && validationResults.Count > 0)
+                {
+                    foreach (var group in validationResults.GroupBy(r=>r.ProjectPath))
+                    {
+                        var success = group.All(r => r.Level != LogLevel.Error);
+                        restoreSummaries.Add(new RestoreSummary(success, group.Key, new List<string>(), new List<string>(), 0, group));
+                    }
+                }
+
+                return restoreSummaries;
             }
 
             var packageRestoreData = missingPackageReferences.Select(reference =>
@@ -375,18 +387,35 @@ namespace NuGet.CommandLine
                     GetDownloadResultUtility.CleanUpDirectDownloads(downloadContext);
                 }
 
-                var validationResult = ValidatePackagesConfigLockFiles(
-                    packageRestoreInputs.PackagesConfigFiles,
-                    packageRestoreInputs.ProjectReferenceLookup.Projects,
-                    packagesFolderPath);
+                var restoreSummaries = new List<RestoreSummary>()
+                {
+                    new RestoreSummary(
+                        result.Restored,
+                        "packages.config projects",
+                        Settings.GetConfigFilePaths(),
+                        packageSources.Select(x => x.Source),
+                        installCount,
+                        collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)))
+                };
 
-                return new RestoreSummary(
-                    result.Restored,
-                    "packages.config projects",
-                    Settings.GetConfigFilePaths(),
-                    packageSources.Select(x => x.Source),
-                    installCount,
-                    collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)));
+                if (result.Restored)
+                {
+                    var validationResults = ValidatePackagesConfigLockFiles(
+                        packageRestoreInputs.PackagesConfigFiles,
+                        packageRestoreInputs.ProjectReferenceLookup.Projects,
+                        packagesFolderPath);
+
+                    if (validationResults != null && validationResults.Count > 0)
+                    {
+                        foreach (var group in validationResults.GroupBy(r => r.ProjectPath))
+                        {
+                            var success = group.All(r => r.Level != LogLevel.Error);
+                            restoreSummaries.Add(new RestoreSummary(success, group.Key, new List<string>(), new List<string>(), 0, group));
+                        }
+                    }
+                }
+
+                return restoreSummaries;
             }
         }
 
@@ -878,66 +907,35 @@ namespace NuGet.CommandLine
             }
         }
 
-        private object ValidatePackagesConfigLockFiles(List<string> packagesConfigFiles, IReadOnlyList<PackageSpec> projects, string packagesFolderPath)
+        private List<IRestoreLogMessage> ValidatePackagesConfigLockFiles(List<string> packagesConfigFiles, IReadOnlyList<PackageSpec> projects, string packagesFolderPath)
         {
+            var errors = new List<IRestoreLogMessage>();
+
             foreach (var pcFile in packagesConfigFiles)
             {
                 var dgSpec = projects?.FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.RestoreMetadata.PackagesConfigPath, pcFile));
 
-                var lockFilePath = PackagesConfigLockFileUtility.GetPackagesLockFilePath(
-                    Path.GetDirectoryName(pcFile),
+                var projectFile = dgSpec?.FilePath;
+                var projectTfm = dgSpec?.TargetFrameworks.FirstOrDefault()?.FrameworkName ?? NuGetFramework.AnyFramework;
+                var lockedMode = dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestoreLockedMode ?? false;
+
+                var result = PackagesConfigLockFileUtility.ValidatePackagesConfigLockFiles(
+                    projectFile,
+                    pcFile,
+                    dgSpec?.Name,
                     dgSpec?.RestoreMetadata?.RestoreLockProperties?.NuGetLockFilePath,
-                    dgSpec?.Name);
-                var lockFileExists = File.Exists(lockFilePath);
-                var restorePackagesWithLockFile = MSBuildStringUtility.GetBoolean(dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestorePackagesWithLockFile);
-                var useLockFile = restorePackagesWithLockFile == true || lockFileExists;
+                    dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestorePackagesWithLockFile,
+                    projectTfm,
+                    packagesFolderPath,
+                    lockedMode);
 
-                if (restorePackagesWithLockFile == false && lockFileExists)
+                if (result != null)
                 {
-                    // error
-                }
-                else if (useLockFile)
-                {
-                    var projectTfm = dgSpec?.TargetFrameworks.FirstOrDefault()?.FrameworkName ?? NuGetFramework.AnyFramework;
-                    var projectLockFileEquivilent = PackagesConfigLockFileUtility.FromPackagesConfigFile(pcFile,
-                        projectTfm,
-                        packagesFolderPath,
-                        CancellationToken.None);
-
-                    if (!lockFileExists)
-                    {
-                        PackagesLockFileFormat.Write(lockFilePath, projectLockFileEquivilent);
-                    }
-                    else
-                    {
-                        var lockFile = PackagesLockFileFormat.Read(lockFilePath);
-                        var lockedMode = dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestoreLockedMode ?? false;
-                        var comparisonResult = PackagesLockFileUtilities.IsLockFileStillValid(projectLockFileEquivilent, lockFile);
-                        if (comparisonResult.lockFileStillValid)
-                        {
-                            // check sha hashes
-                            var AllShasMatch = false;
-                            if (!AllShasMatch)
-                            {
-                                // error
-                            }
-                        }
-                        else
-                        {
-                            if (lockedMode)
-                            {
-                                // error
-                            }
-                            else
-                            {
-                                PackagesLockFileFormat.Write(lockFilePath, projectLockFileEquivilent);
-                            }
-                        }
-                    }
+                    errors.AddRange(result);
                 }
             }
 
-            return null;
+            return errors;
          }
 
         private class PackageRestoreInputs
