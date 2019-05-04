@@ -87,5 +87,6 @@ namespace NuGet.Commands
 
             return lockFile;
         }
+
     }
 }
