@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -144,11 +146,9 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public async Task ConnectAsync_HandshakeNegotiatesProtocolVersionForIdenticalVersionRanges()
         {
-            using (var test = new ConnectAsyncTest(ConnectionOptions.CreateDefault(), ConnectionOptions.CreateDefault()))
+            using (var test = new ConnectAsyncTest())
             {
-                await Task.WhenAll(
-                    test.RemoteToLocalConnection.ConnectAsync(test.CancellationToken),
-                    test.LocalToRemoteConnection.ConnectAsync(test.CancellationToken));
+                await test.ConnectAsync();
 
                 Assert.NotNull(test.RemoteToLocalConnection.ProtocolVersion);
                 Assert.NotNull(test.LocalToRemoteConnection.ProtocolVersion);
@@ -172,9 +172,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
             using (var test = new ConnectAsyncTest(localToRemoteOptions, remoteToLocalOptions))
             {
-                await Task.WhenAll(
-                    test.RemoteToLocalConnection.ConnectAsync(test.CancellationToken),
-                    test.LocalToRemoteConnection.ConnectAsync(test.CancellationToken));
+                await test.ConnectAsync();
 
                 Assert.NotNull(test.RemoteToLocalConnection.ProtocolVersion);
                 Assert.NotNull(test.LocalToRemoteConnection.ProtocolVersion);
@@ -275,11 +273,9 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public async Task Close_SetsStateToClosed()
         {
-            using (var test = new ConnectAsyncTest(ConnectionOptions.CreateDefault(), ConnectionOptions.CreateDefault()))
+            using (var test = new ConnectAsyncTest())
             {
-                await Task.WhenAll(
-                    test.RemoteToLocalConnection.ConnectAsync(test.CancellationToken),
-                    test.LocalToRemoteConnection.ConnectAsync(test.CancellationToken));
+                await test.ConnectAsync();
 
                 Assert.Equal(ConnectionState.Connected, test.LocalToRemoteConnection.State);
 
@@ -292,11 +288,9 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public async Task Faulted_RaisedForProtocolError()
         {
-            using (var test = new ConnectAsyncTest(ConnectionOptions.CreateDefault(), ConnectionOptions.CreateDefault()))
+            using (var test = new ConnectAsyncTest())
             {
-                await Task.WhenAll(
-                    test.RemoteToLocalConnection.ConnectAsync(test.CancellationToken),
-                    test.LocalToRemoteConnection.ConnectAsync(test.CancellationToken));
+                await test.ConnectAsync();
 
                 using (var faultedEvent = new ManualResetEventSlim(initialState: false))
                 {
@@ -335,11 +329,9 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public async Task MessageReceived_RaisedForInboundMessage()
         {
-            using (var test = new ConnectAsyncTest(ConnectionOptions.CreateDefault(), ConnectionOptions.CreateDefault()))
+            using (var test = new ConnectAsyncTest())
             {
-                await Task.WhenAll(
-                    test.RemoteToLocalConnection.ConnectAsync(test.CancellationToken),
-                    test.LocalToRemoteConnection.ConnectAsync(test.CancellationToken));
+                await test.ConnectAsync();
 
                 using (var messageReceivedEvent = new ManualResetEventSlim(initialState: false))
                 {
@@ -448,11 +440,9 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public async Task SendRequestAndReceiveResponseAsync_ThrowsIfCancelled()
         {
-            using (var test = new ConnectAsyncTest(ConnectionOptions.CreateDefault(), ConnectionOptions.CreateDefault()))
+            using (var test = new ConnectAsyncTest())
             {
-                await Task.WhenAll(
-                    test.RemoteToLocalConnection.ConnectAsync(test.CancellationToken),
-                    test.LocalToRemoteConnection.ConnectAsync(test.CancellationToken));
+                await test.ConnectAsync();
 
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => test.LocalToRemoteConnection.SendRequestAndReceiveResponseAsync<LogRequest, LogResponse>(
@@ -497,20 +487,30 @@ namespace NuGet.Protocol.Plugins.Tests
 
             internal Connection RemoteToLocalConnection { get; }
             internal Connection LocalToRemoteConnection { get; }
+            internal TestPluginLogger Logger { get; }
             internal CancellationToken CancellationToken { get; }
+
+            internal ConnectAsyncTest()
+                : this(CreateOptions(), CreateOptions())
+            {
+            }
 
             internal ConnectAsyncTest(ConnectionOptions localToRemoteOptions, ConnectionOptions remoteToLocalOptions)
             {
+                Logger = new TestPluginLogger();
+                var localLogger = Logger.CreateLogger("A");
                 _combinedCancellationTokenSource = new CancellationTokenSource();
                 _simulatedIpc = SimulatedIpc.Create(_combinedCancellationTokenSource.Token);
                 _remoteSender = new Sender(_simulatedIpc.RemoteStandardOutputForRemote);
                 _remoteReceiver = new StandardInputReceiver(_simulatedIpc.RemoteStandardInputForRemote);
-                _remoteDispatcher = new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator());
-                LocalToRemoteConnection = new Connection(_remoteDispatcher, _remoteSender, _remoteReceiver, localToRemoteOptions);
+                _remoteDispatcher = new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator(), localLogger);
+                LocalToRemoteConnection = new Connection(_remoteDispatcher, _remoteSender, _remoteReceiver, localToRemoteOptions, localLogger);
+
+                var remoteLogger = Logger.CreateLogger("B");
                 _localSender = new Sender(_simulatedIpc.RemoteStandardInputForLocal);
                 _localReceiver = new StandardInputReceiver(_simulatedIpc.RemoteStandardOutputForLocal);
-                _localDispatcher = new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator());
-                RemoteToLocalConnection = new Connection(_localDispatcher, _localSender, _localReceiver, remoteToLocalOptions);
+                _localDispatcher = new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator(), remoteLogger);
+                RemoteToLocalConnection = new Connection(_localDispatcher, _localSender, _localReceiver, remoteToLocalOptions, remoteLogger);
                 CancellationToken = _combinedCancellationTokenSource.Token;
             }
 
@@ -532,9 +532,34 @@ namespace NuGet.Protocol.Plugins.Tests
                     // Other IDisposable fields should be disposed by the connections.
                 }
 
-                GC.SuppressFinalize(this);
-
                 _isDisposed = true;
+            }
+
+            internal async Task ConnectAsync()
+            {
+                try
+                {
+                    await Task.WhenAll(
+                        RemoteToLocalConnection.ConnectAsync(CancellationToken),
+                        LocalToRemoteConnection.ConnectAsync(CancellationToken));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    Console.WriteLine();
+                    Console.WriteLine(Logger.Log);
+
+                    throw;
+                }
+            }
+
+            private static ConnectionOptions CreateOptions()
+            {
+                return new ConnectionOptions(
+                    protocolVersion: ProtocolConstants.CurrentVersion,
+                    minimumProtocolVersion: ProtocolConstants.Version100,
+                    handshakeTimeout: TimeSpan.FromSeconds(30),
+                    requestTimeout: ProtocolConstants.RequestTimeout);
             }
         }
 
@@ -633,6 +658,70 @@ namespace NuGet.Protocol.Plugins.Tests
                 CancellationToken cancellationToken)
             {
                 return responseHandler.SendResponseAsync(request, _payload, cancellationToken);
+            }
+        }
+
+        private sealed class TestPluginLogger
+        {
+            private readonly object _lockObject;
+            private readonly StringBuilder _log;
+            private readonly DateTimeOffset _startTime;
+            private readonly Stopwatch _stopwatch;
+
+            public bool IsEnabled => true;
+            public string Log => _log.ToString();
+            public DateTimeOffset Now => _startTime.AddTicks(_stopwatch.ElapsedTicks);
+
+            internal TestPluginLogger()
+            {
+                _lockObject = new object();
+                _log = new StringBuilder();
+                _startTime = DateTimeOffset.UtcNow;
+                _stopwatch = Stopwatch.StartNew();
+
+                Write(new AssemblyLogMessage(Now).ToString());
+                Write(new MachineLogMessage(Now).ToString());
+                Write(new EnvironmentVariablesLogMessage(Now).ToString());
+                Write(new ProcessLogMessage(Now).ToString());
+                Write(new ThreadPoolLogMessage(Now).ToString());
+            }
+
+            internal IPluginLogger CreateLogger(string tagName)
+            {
+                return new PluginLogger(this, tagName);
+            }
+
+            private void Write(string message)
+            {
+                lock (_lockObject)
+                {
+                    _log.AppendLine(message);
+                }
+            }
+
+            private sealed class PluginLogger : IPluginLogger
+            {
+                private readonly TestPluginLogger _pluginLogger;
+                private readonly string _tagName;
+
+                public bool IsEnabled => _pluginLogger.IsEnabled;
+
+                public DateTimeOffset Now => _pluginLogger.Now;
+
+                internal PluginLogger(TestPluginLogger pluginLogger, string tagName)
+                {
+                    _pluginLogger = pluginLogger;
+                    _tagName = tagName;
+                }
+
+                public void Dispose()
+                {
+                }
+
+                public void Write(IPluginLogMessage message)
+                {
+                    _pluginLogger.Write($"{_tagName}:  {message.ToString()}");
+                }
             }
         }
     }
