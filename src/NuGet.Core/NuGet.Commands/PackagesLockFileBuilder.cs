@@ -72,7 +72,7 @@ namespace NuGet.Commands
                 {
                     var dependency = new LockFileDependency()
                     {
-                        Id = projectReference.Name,
+                        Id = projectReference.Name.ToLowerInvariant(),
                         Dependencies = projectReference.Dependencies,
                         Type = PackageDependencyType.Project
                     };
