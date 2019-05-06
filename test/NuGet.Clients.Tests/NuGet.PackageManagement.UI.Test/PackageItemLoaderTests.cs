@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -44,7 +45,7 @@ namespace NuGet.PackageManagement.UI.Test
             var loader = new PackageItemLoader(context, packageFeed, "nuget");
 
             var loaded = new List<PackageItemListViewModel>();
-            foreach(var page in Enumerable.Range(0, 5))
+            foreach (var page in Enumerable.Range(0, 5))
             {
                 await loader.LoadNextAsync(null, CancellationToken.None);
                 while (loader.State.LoadingStatus == LoadingStatus.Loading)
@@ -60,7 +61,7 @@ namespace NuGet.PackageManagement.UI.Test
                 {
                     break;
                 }
-            } 
+            }
 
             // All items should not have a prefix reserved because the feed is multisource
             foreach (var item in loaded)
@@ -82,10 +83,10 @@ namespace NuGet.PackageManagement.UI.Test
                 .Returns(solutionManager);
 
             var telemetryService = new Mock<INuGetTelemetryService>();
-            var events = new List<TelemetryEvent>();
+            var eventsQueue = new ConcurrentQueue<TelemetryEvent>();
             telemetryService
                 .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
-                .Callback<TelemetryEvent>(e => events.Add(e));
+                .Callback<TelemetryEvent>(e => eventsQueue.Enqueue(e));
 
             var source = new Configuration.PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
 
@@ -102,7 +103,8 @@ namespace NuGet.PackageManagement.UI.Test
             await loader.LoadNextAsync(null, CancellationToken.None);
 
             // Assert
-            Assert.Equal(4, events.Count);
+            var events = eventsQueue.ToArray();
+            Assert.Equal(4, events.Length);
 
             var search = events[0];
             Assert.Equal("Search", search.Name);
