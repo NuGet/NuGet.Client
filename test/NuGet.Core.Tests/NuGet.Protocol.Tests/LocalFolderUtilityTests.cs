@@ -1029,7 +1029,6 @@ namespace NuGet.Protocol.Tests
             yield return "1.0.0";
             yield return "0.0.1";
             yield return "1.0.0-BETA";
-            yield return "1.0.0";
             yield return "1.0";
             yield return "1.0.0.0";
             yield return "1.0.1";

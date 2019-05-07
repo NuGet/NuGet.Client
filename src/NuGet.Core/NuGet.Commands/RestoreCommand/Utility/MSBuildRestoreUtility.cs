@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -560,10 +559,8 @@ namespace NuGet.Commands
             return false;
         }
 
-
         private static bool AddDependencyIfNotExist(PackageSpec spec, LibraryDependency dependency)
         {
-
             foreach (var framework in spec.TargetFrameworks.Select(e => e.FrameworkName))
             {
                 AddDependencyIfNotExist(spec, framework, dependency);
@@ -633,16 +630,15 @@ namespace NuGet.Commands
         {
             foreach (var item in GetItemByType(items, "DownloadDependency"))
             {
-
                 var id = item.GetProperty("Id");
                 var versionRange = GetVersionRange(item);
-                if(!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
+
+                if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
                 }
 
                 var downloadDependency = new DownloadDependency(id, versionRange);
-                
                 var frameworks = GetFrameworks(item);
 
                 foreach (var framework in frameworks)
@@ -881,25 +877,6 @@ namespace NuGet.Commands
             return StringComparer.OrdinalIgnoreCase.Equals(item.GetProperty(propertyName), bool.TrueString);
         }
 
-        private static readonly Lazy<bool> _isPersistDGSet = new Lazy<bool>(() => IsPersistDGSet());
-
-        /// <summary>
-        /// True if NUGET_PERSIST_DG is set to true.
-        /// </summary>
-        private static bool IsPersistDGSet()
-        {
-            var settingValue = Environment.GetEnvironmentVariable("NUGET_PERSIST_DG");
-
-            bool val;
-            if (!string.IsNullOrEmpty(settingValue)
-                && bool.TryParse(settingValue, out val))
-            {
-                return val;
-            }
-
-            return false;
-        }
-
         /// <summary>
         /// Function used to display errors and warnings at the end of restore operation.
         /// The errors and warnings are read from the assets file based on restore result.
@@ -908,7 +885,7 @@ namespace NuGet.Commands
         /// <param name="logger">Logger used to display warnings and errors.</param>
         public static Task ReplayWarningsAndErrorsAsync(LockFile lockFile, ILogger logger)
         {
-            var logMessages = lockFile?.LogMessages?.Select(m => m.AsRestoreLogMessage()) ?? 
+            var logMessages = lockFile?.LogMessages?.Select(m => m.AsRestoreLogMessage()) ??
                 Enumerable.Empty<RestoreLogMessage>();
 
             return logger.LogMessagesAsync(logMessages);
