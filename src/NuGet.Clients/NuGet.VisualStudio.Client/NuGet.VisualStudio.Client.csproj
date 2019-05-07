@@ -293,6 +293,7 @@
       <!-- This is important because otherwise the VSSDK will include the unsigned version coming from the global packages folder instead of the in-place signed one from the bootstrapped packages folder -->
       <ExcludeAssets>all</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" />
   </ItemGroup>
   <Target Name="AfterBuild" DependsOnTargets="PublishVS" />
   <Target Name="PublishVS">

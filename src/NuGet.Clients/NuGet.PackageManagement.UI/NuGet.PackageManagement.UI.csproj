@@ -532,6 +532,9 @@
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" />
+  </ItemGroup>
   <PropertyGroup>
     <IncludeContentInPack>false</IncludeContentInPack>
   </PropertyGroup>

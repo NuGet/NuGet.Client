@@ -122,6 +122,9 @@
       <Name>NuGet.Versioning</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" />
+  </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
