@@ -15,8 +15,6 @@ namespace NuGet.PackageManagement.Telemetry
     /// </summary>
     public class SearchPageTelemetryEvent : TelemetryEvent
     {
-        private StringBuilder _stringBuilder = new StringBuilder();
-
         public SearchPageTelemetryEvent(
             Guid parentId,
             int pageIndex,
@@ -37,20 +35,20 @@ namespace NuGet.PackageManagement.Telemetry
 
         private string ToJsonArray(IEnumerable<TimeSpan> sourceTimings)
         {
-            _stringBuilder.Clear();
-            _stringBuilder.Append("[");
+            var sb = new StringBuilder();
+            sb.Append("[");
             foreach (var item in sourceTimings)
             {
-                _stringBuilder.Append(item.TotalSeconds);
-                _stringBuilder.Append(",");
+                sb.Append(item.TotalSeconds);
+                sb.Append(",");
             }
-            if (_stringBuilder[_stringBuilder.Length - 1] == ',')
+            if (sb[sb.Length - 1] == ',')
             {
-                _stringBuilder.Length--;
+                sb.Length--;
             }
-            _stringBuilder.Append("]");
+            sb.Append("]");
 
-            return _stringBuilder.ToString();
+            return sb.ToString();
         }
     }
 }
