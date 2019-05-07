@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 
@@ -16,7 +15,7 @@ namespace NuGet.PackageManagement.Telemetry
     /// </summary>
     public class SearchPageTelemetryEvent : TelemetryEvent
     {
-        private StringBuilder _stringBuilder;
+        private StringBuilder _stringBuilder = new StringBuilder();
 
         public SearchPageTelemetryEvent(
             Guid parentId,
@@ -38,30 +37,20 @@ namespace NuGet.PackageManagement.Telemetry
 
         private string ToJsonArray(IEnumerable<TimeSpan> sourceTimings)
         {
-            var sb = Interlocked.Exchange(ref _stringBuilder, null);
-            if (sb == null)
-            {
-                sb = new StringBuilder();
-            }
-            else
-            {
-                sb.Clear();
-            }
-
-            sb.Append("[");
+            _stringBuilder.Clear();
+            _stringBuilder.Append("[");
             foreach (var item in sourceTimings)
             {
-                sb.Append(item.TotalSeconds);
+                _stringBuilder.Append(item.TotalSeconds);
+                _stringBuilder.Append(",");
             }
-            if (sb[sb.Length - 1] == ',')
+            if (_stringBuilder[_stringBuilder.Length - 1] == ',')
             {
-                sb.Length--;
+                _stringBuilder.Length--;
             }
-            sb.Append("]");
+            _stringBuilder.Append("]");
 
-            var result = sb.ToString();
-            Interlocked.Exchange(ref _stringBuilder, sb);
-            return result;
+            return _stringBuilder.ToString();
         }
     }
 }
