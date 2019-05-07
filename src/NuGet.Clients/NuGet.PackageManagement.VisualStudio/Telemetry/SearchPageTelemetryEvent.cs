@@ -43,6 +43,10 @@ namespace NuGet.PackageManagement.Telemetry
             {
                 sb = new StringBuilder();
             }
+            else
+            {
+                sb.Clear();
+            }
 
             sb.Append("[");
             foreach (var item in sourceTimings)
