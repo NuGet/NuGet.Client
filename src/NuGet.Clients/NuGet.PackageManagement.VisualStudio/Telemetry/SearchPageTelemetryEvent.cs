@@ -3,8 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json;
+using System.Text;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 
@@ -29,9 +28,27 @@ namespace NuGet.PackageManagement.Telemetry
             base["PageIndex"] = pageIndex;
             base["ResultCount"] = resultCount;
             base["Duration"] = duration.TotalSeconds;
-            base["IndividualSourceDurations"] = JsonConvert.SerializeObject(sourceTimings.Select(e => e.TotalSeconds));
+            base["IndividualSourceDurations"] = ToJsonArray(sourceTimings);
             base["ResultsAggregationDuration"] = aggregationTime.TotalSeconds;
             base["LoadingStatus"] = loadingStatus.ToString();
+        }
+
+        private static string ToJsonArray(IEnumerable<TimeSpan> sourceTimings)
+        {
+            var sb = new StringBuilder();
+            sb.Append("[");
+            foreach (var item in sourceTimings)
+            {
+                sb.Append(item.TotalSeconds);
+                sb.Append(",");
+            }
+            if (sb[sb.Length - 1] == ',')
+            {
+                sb.Length--;
+            }
+            sb.Append("]");
+
+            return sb.ToString();
         }
     }
 }
