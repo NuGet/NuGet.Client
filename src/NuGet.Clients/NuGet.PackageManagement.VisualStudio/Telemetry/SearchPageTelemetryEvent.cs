@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.Telemetry
             base["LoadingStatus"] = loadingStatus.ToString();
         }
 
-        private string ToJsonArray(IEnumerable<TimeSpan> sourceTimings)
+        private static string ToJsonArray(IEnumerable<TimeSpan> sourceTimings)
         {
             var sb = new StringBuilder();
             sb.Append("[");
