@@ -257,6 +257,33 @@ EndGlobal";
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void DotnetRestore_PackageDownloadSupported_IsSet()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, "proj");
+
+                var projPath = Path.Combine(pathContext.SolutionRoot, "proj", "proj.csproj");
+                var doc = XDocument.Parse(File.ReadAllText(projPath));
+                var errorText = "PackageDownload is available!";
+
+                doc.Root.Add(new XElement(XName.Get("Target"),
+                    new XAttribute(XName.Get("Name"), "ErrorIfPackageDownloadIsSupported"),
+                    new XAttribute(XName.Get("BeforeTargets"), "Restore"),
+                    new XAttribute(XName.Get("Condition"), "'$(PackageDownloadSupported)' == 'true' "),
+                    new XElement(XName.Get("Error"),
+                        new XAttribute(XName.Get("Text"), errorText))));
+                File.Delete(projPath);
+                File.WriteAllText(projPath, doc.ToString());
+
+                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"msbuild /t:restore {projPath}", ignoreExitCode: true);
+
+                result.ExitCode.Should().Be(1, because: "error text should be displayed");
+                result.AllOutput.Should().Contain(errorText);
+            }
+        }
+
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
