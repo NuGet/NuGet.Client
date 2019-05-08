@@ -101,7 +101,7 @@ namespace NuGet.LibraryModel
         /// </summary>
         public static LibraryIncludeFlags GetFlags(string flags, LibraryIncludeFlags defaultFlags)
         {
-            LibraryIncludeFlags result = defaultFlags;
+            var result = defaultFlags;
 
             if (!string.IsNullOrEmpty(flags))
             {

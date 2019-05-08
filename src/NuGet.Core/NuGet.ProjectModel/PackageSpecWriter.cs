@@ -504,11 +504,19 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void SetFrameworkReferences(IObjectWriter writer, ISet<string> frameworkReferences)
+        private static void SetFrameworkReferences(IObjectWriter writer, ISet<FrameworkDependency> frameworkReferences)
         {
             if (frameworkReferences?.Any() == true)
             {
-                writer.WriteNameArray("frameworkReferences", frameworkReferences.OrderBy(e => e));
+                writer.WriteObjectStart("frameworkReferences");
+
+                foreach (var dependency in frameworkReferences.OrderBy(dep => dep))
+                {
+                    writer.WriteObjectStart(dependency.Name);
+                    SetValue(writer, "privateAssets", FrameworkDependencyFlagsUtils.GetFlagString(dependency.PrivateAssets));
+                    writer.WriteObjectEnd();
+                }
+                writer.WriteObjectEnd();
             }
         }
 

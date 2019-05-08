@@ -661,7 +661,6 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Logger = new TestLogger(),
                     SymbolPackageFormat = "symbols.nupkg",
                     FrameworkAssemblyReferences = new MSBuildItem[] { },
-                    FrameworkReferences = new MSBuildItem[] { },
                 };
             }
 
@@ -703,7 +702,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 if (!File.Exists(fullpath))
                 {
                     // Create a file to write to.
-                    using (StreamWriter sw = File.CreateText(fullpath))
+                    using (var sw = File.CreateText(fullpath))
                     {
                         sw.WriteLine(content);
                     }

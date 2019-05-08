@@ -1384,10 +1384,14 @@ namespace NuGet.SolutionRestoreManager.Test
                     ""version"": ""5.1.0""
                 },
             },
-            ""frameworkReferences"": [
-                ""Microsoft.WindowsDesktop.App|WPF"",
-                ""Microsoft.WindowsDesktop.App|WinForms""
-            ]
+            ""frameworkReferences"": {
+                ""Microsoft.WindowsDesktop.App|WPF"" : {
+                    ""privateAssets"" : ""none""
+                },
+                ""Microsoft.WindowsDesktop.App|WinForms"" : {
+                    ""privateAssets"" : ""all""
+                }
+            }
             }
         }
     }";
@@ -1420,8 +1424,8 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal(expectedFramework, actualTfi.FrameworkName);
 
             AssertFrameworkReferences(actualTfi,
-                "Microsoft.WindowsDesktop.App|WPF",
-                "Microsoft.WindowsDesktop.App|WinForms");
+                "Microsoft.WindowsDesktop.App|WinForms:all",
+                "Microsoft.WindowsDesktop.App|WPF:none");
         }
 
         [Fact]
@@ -1436,10 +1440,14 @@ namespace NuGet.SolutionRestoreManager.Test
                     ""version"": ""5.1.0""
                 },
             },
-            ""frameworkReferences"": [
-                ""Microsoft.WindowsDesktop.App|WinForms"",
-                ""Microsoft.WindowsDesktop.App|WINFORMS""
-            ]
+            ""frameworkReferences"": {
+                ""Microsoft.WindowsDesktop.App|WinForms"" : {
+                    ""privateAssets"" : ""none""
+                },
+                ""Microsoft.WindowsDesktop.App|WINFORMS"" : {
+                    ""privateAssets"" : ""none""
+                }
+            }
             }
         }
     }";
@@ -1472,7 +1480,7 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal(expectedFramework, actualTfi.FrameworkName);
 
             AssertFrameworkReferences(actualTfi,
-                "Microsoft.WindowsDesktop.App|WinForms");
+                "Microsoft.WindowsDesktop.App|WinForms:none");
         }
 
         [Fact]
@@ -1481,15 +1489,21 @@ namespace NuGet.SolutionRestoreManager.Test
             var consoleAppProjectJson = @"{
     ""frameworks"": {
         ""netcoreapp3.0"": {
-            ""frameworkReferences"": [
-                ""Microsoft.WindowsDesktop.App|WPF"",
-                ""Microsoft.WindowsDesktop.App|WinForms""
-            ]
+            ""frameworkReferences"": {
+                ""Microsoft.WindowsDesktop.App|WPF"" : {
+                    ""privateAssets"" : ""none""
+                }, 
+                ""Microsoft.WindowsDesktop.App|WinForms"" : {
+                    ""privateAssets"" : ""none""
+                }
+            }
         },
          ""netcoreapp3.1"": {
-            ""frameworkReferences"": [
-                ""Microsoft.ASPNetCore.App""
-            ]
+            ""frameworkReferences"": {
+                ""Microsoft.ASPNetCore.App"" : {
+                    ""privateAssets"" : ""none""
+                }
+            }
             }
         }
         },
@@ -1524,15 +1538,15 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal(expectedFramework, tfi.FrameworkName);
 
             AssertFrameworkReferences(tfi,
-                "Microsoft.WindowsDesktop.App|WPF",
-                "Microsoft.WindowsDesktop.App|WinForms");
+                "Microsoft.WindowsDesktop.App|WinForms:none",
+                "Microsoft.WindowsDesktop.App|WPF:none");
 
             tfi = actualProjectSpec.TargetFrameworks.Last();
             expectedFramework = NuGetFramework.Parse("netcoreapp3.1");
             Assert.Equal(expectedFramework, tfi.FrameworkName);
 
             AssertFrameworkReferences(tfi,
-                "Microsoft.ASPNetCore.App");
+                "Microsoft.ASPNetCore.App:none");
         }
 
         [Theory]
@@ -1725,7 +1739,11 @@ namespace NuGet.SolutionRestoreManager.Test
 
         private static void AssertFrameworkReferences(TargetFrameworkInformation actualTfi, params string[] expectedPackages)
         {
-            Assert.Equal(expectedPackages, actualTfi.FrameworkReferences);
+            Assert.Equal(expectedPackages,
+                actualTfi.FrameworkReferences
+                .OrderBy(e => e)
+                .Select(e => e.Name + ":" + FrameworkDependencyFlagsUtils.GetFlagString(e.PrivateAssets))
+                .ToArray());
         }
 
         private class TestContext

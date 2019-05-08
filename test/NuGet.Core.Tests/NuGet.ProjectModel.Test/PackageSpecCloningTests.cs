@@ -610,8 +610,8 @@ namespace NuGet.ProjectModel.Test
             originalTargetFrameworkInformation.AssetTargetFallback = false;
             originalTargetFrameworkInformation.Imports = new List<NuGetFramework>() { imports };
             originalTargetFrameworkInformation.DownloadDependencies.Add(new DownloadDependency("X", VersionRange.Parse("1.0.0")));
-            originalTargetFrameworkInformation.FrameworkReferences.Add("frameworkRef");
-            originalTargetFrameworkInformation.FrameworkReferences.Add("FrameworkReference");
+            originalTargetFrameworkInformation.FrameworkReferences.Add(new FrameworkDependency("frameworkRef", FrameworkDependencyFlags.All));
+            originalTargetFrameworkInformation.FrameworkReferences.Add(new FrameworkDependency("FrameworkReference", FrameworkDependencyFlags.None));
 
             return originalTargetFrameworkInformation;
         }
@@ -667,8 +667,8 @@ namespace NuGet.ProjectModel.Test
             //Setup
             var cloneToTestFrameworkReferenceEquality = originalTargetFrameworkInformation.Clone();
             cloneToTestFrameworkReferenceEquality.FrameworkReferences.Clear();
-            cloneToTestFrameworkReferenceEquality.FrameworkReferences.Add("frameworkRef");
-            cloneToTestFrameworkReferenceEquality.FrameworkReferences.Add("frameworkReference");
+            cloneToTestFrameworkReferenceEquality.FrameworkReferences.Add(new FrameworkDependency("frameworkRef", FrameworkDependencyFlags.All));
+            cloneToTestFrameworkReferenceEquality.FrameworkReferences.Add(new FrameworkDependency("frameworkReference", FrameworkDependencyFlags.None));
 
             // Assert
             Assert.Equal(originalTargetFrameworkInformation, cloneToTestFrameworkReferenceEquality);

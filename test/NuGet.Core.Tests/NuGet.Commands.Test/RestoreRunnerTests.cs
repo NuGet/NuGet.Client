@@ -1572,9 +1572,11 @@ namespace NuGet.Commands.Test
                     ""dependencies"": {
                         ""x"": ""1.0.0""
                     },
-                    ""frameworkReferences"": [
-                        ""a""
-                    ]
+                    ""frameworkReferences"": {
+                        ""a"" : {
+                            ""privateAssets"" : ""none""
+                        }
+                    }
                 }
               }
             }";
@@ -1632,7 +1634,8 @@ namespace NuGet.Commands.Test
                     Assert.Equal(1, lockFile.Libraries.Count); // Only X is written in the libraries section.
                     Assert.Equal("x", lockFile.Targets.First().Libraries.First().Name);
                     Assert.Equal(0, lockFile.LogMessages.Count);
-                    Assert.Equal("a", lockFile.PackageSpec.TargetFrameworks.First().FrameworkReferences.Single());
+                    Assert.Equal("a", lockFile.PackageSpec.TargetFrameworks.First().FrameworkReferences.Single().Name);
+                    Assert.Equal("none", FrameworkDependencyFlagsUtils.GetFlagString(lockFile.PackageSpec.TargetFrameworks.First().FrameworkReferences.Single().PrivateAssets));
                     Assert.True(File.Exists(targetsPath));
                     Assert.True(File.Exists(propsPath));
                 }
@@ -1766,9 +1769,11 @@ namespace NuGet.Commands.Test
                     ""dependencies"": {
                         ""x"": ""1.0.0""
                     },
-                    ""frameworkReferences"": [
-                        ""Microsoft.WindowsDesktop.App|WPF""
-                    ]
+                    ""frameworkReferences"": {
+                        ""Microsoft.WindowsDesktop.App|WPF"" : {
+                            ""privateAssets"" : ""none""
+                        }
+                    }
                 }
               }
             }";
@@ -1858,7 +1863,7 @@ namespace NuGet.Commands.Test
                     Assert.Equal("x", xTarget2.Name);
                     Assert.Equal("Microsoft.WindowsDesktop.App|WinForms", xTarget2.FrameworkReferences.Single());
                     Assert.Equal(0, lockFile.LogMessages.Count);
-                    Assert.Equal("Microsoft.WindowsDesktop.App|WPF", lockFile.PackageSpec.TargetFrameworks.Single().FrameworkReferences.Single());
+                    Assert.Equal("Microsoft.WindowsDesktop.App|WPF", lockFile.PackageSpec.TargetFrameworks.Single().FrameworkReferences.Single().Name);
                     Assert.True(File.Exists(targetsPath2));
                     Assert.True(File.Exists(propsPath2));
 

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -678,20 +677,26 @@ namespace NuGet.Commands
                 var frameworkReference = item.GetProperty("Id");
                 var frameworks = GetFrameworks(item);
 
+                var privateAssets = item.GetProperty("PrivateAssets");
+
                 foreach (var framework in frameworks)
                 {
-                    AddDependencyIfNotExist(spec, framework, frameworkReference);
+                    AddFrameworkReferenceIfNotExists(spec, framework, frameworkReference, privateAssets);
                 }
             }
         }
 
-        private static bool AddDependencyIfNotExist(PackageSpec spec, NuGetFramework framework, string frameworkReference)
+        private static bool AddFrameworkReferenceIfNotExists(PackageSpec spec, NuGetFramework framework, string frameworkReference, string privateAssetsValue)
         {
             var frameworkInfo = spec.GetTargetFramework(framework);
 
-            if (!frameworkInfo.FrameworkReferences.Contains(frameworkReference))
+            if (!frameworkInfo
+                .FrameworkReferences
+                .Select(f => f.Name)
+                .Contains(frameworkReference, ComparisonUtility.FrameworkReferenceNameComparer))
             {
-                frameworkInfo.FrameworkReferences.Add(frameworkReference);
+                var privateAssets = FrameworkDependencyFlagsUtils.GetFlags(MSBuildStringUtility.Split(privateAssetsValue));
+                frameworkInfo.FrameworkReferences.Add(new FrameworkDependency(frameworkReference, privateAssets));
                 return true;
             }
             return false;
@@ -879,25 +884,6 @@ namespace NuGet.Commands
         private static bool IsPropertyTrue(IMSBuildItem item, string propertyName)
         {
             return StringComparer.OrdinalIgnoreCase.Equals(item.GetProperty(propertyName), bool.TrueString);
-        }
-
-        private static readonly Lazy<bool> _isPersistDGSet = new Lazy<bool>(() => IsPersistDGSet());
-
-        /// <summary>
-        /// True if NUGET_PERSIST_DG is set to true.
-        /// </summary>
-        private static bool IsPersistDGSet()
-        {
-            var settingValue = Environment.GetEnvironmentVariable("NUGET_PERSIST_DG");
-
-            bool val;
-            if (!string.IsNullOrEmpty(settingValue)
-                && bool.TryParse(settingValue, out val))
-            {
-                return val;
-            }
-
-            return false;
         }
 
         /// <summary>

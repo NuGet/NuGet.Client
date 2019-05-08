@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 
 namespace NuGet.Packaging.Core
@@ -168,7 +169,7 @@ namespace NuGet.Packaging.Core
 
         private static IEnumerable<string> GetFrameworkReferences(IEnumerable<XElement> nodes)
         {
-            return new HashSet<string>(nodes.Select(e => GetAttributeValue(e, Name)), Packaging.FrameworkReference.FrameworkReferenceNameComparer);
+            return new HashSet<string>(nodes.Select(e => GetAttributeValue(e, Name)), ComparisonUtility.FrameworkReferenceNameComparer);
         }
 
         private static string GetAttributeValue(XElement element, string attributeName)

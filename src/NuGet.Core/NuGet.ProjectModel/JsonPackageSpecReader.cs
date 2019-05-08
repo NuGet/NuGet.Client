@@ -797,7 +797,8 @@ namespace NuGet.ProjectModel
             PopulateFrameworkReferences(
                 targetFrameworkInformation.FrameworkReferences,
                 properties,
-                "frameworkReferences"
+                "frameworkReferences",
+                packageSpec.FilePath
                 );
             frameworkAssemblies.ForEach(d => targetFrameworkInformation.Dependencies.Add(d));
 
@@ -806,16 +807,32 @@ namespace NuGet.ProjectModel
             return true;
         }
 
-        private static void PopulateFrameworkReferences(ISet<string> frameworkReferences, JObject properties, string frameworkReferenceName)
+        private static void PopulateFrameworkReferences(ISet<FrameworkDependency> frameworkReferences, JObject properties, string frameworkReferenceName, string packageSpecPath)
         {
-            var frameworkRefProperty = properties[frameworkReferenceName];
+            var frameworkRefs = properties[frameworkReferenceName] as JObject;
 
-            if (frameworkRefProperty != null)
+            if (frameworkRefs != null)
             {
-                IEnumerable<string> frameworkRefArray;
-                if (TryGetStringEnumerableFromJArray(frameworkRefProperty, out frameworkRefArray))
+                foreach (var frameworkReference in frameworkRefs)
                 {
-                    frameworkReferences.AddRange(frameworkRefArray);
+                    if (string.IsNullOrEmpty(frameworkReference.Key))
+                    {
+                        throw FileFormatException.Create(
+                                   "Unable to resolve frameworkReference.",
+                                   frameworkReference.Value,
+                                   packageSpecPath);
+                    }
+
+                    var privateAssets = FrameworkDependencyFlagsUtils.Default;
+
+                    if (frameworkReference.Value is JObject frameworkReferenceToken)
+                    {
+                        if (TryGetStringEnumerable(frameworkReferenceToken["privateAssets"], out var strings))
+                        {
+                            privateAssets = FrameworkDependencyFlagsUtils.GetFlags(strings);
+                        }
+                    }
+                    frameworkReferences.Add(new FrameworkDependency(frameworkReference.Key, privateAssets));
                 }
             }
         }

@@ -21,7 +21,6 @@ namespace NuGet.Build.Tasks.Pack
         public string Description { get; set; }
         public bool DevelopmentDependency { get; set; }
         public IMSBuildItem[] FrameworkAssemblyReferences { get; set; }
-        public IMSBuildItem[] FrameworkReferences { get; set; }
         public string IconUrl { get; set; }
         public bool IncludeBuildOutput { get; set; }
         public bool IncludeSource { get; set; }
