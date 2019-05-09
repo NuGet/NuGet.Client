@@ -61,6 +61,7 @@ namespace NuGet.Build.Tasks
                 {
                     properties.Add("TargetFrameworks", TargetFrameworks);
                 }
+                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "PrivateAssets");
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
             }

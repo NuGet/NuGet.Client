@@ -56,7 +56,6 @@ namespace NuGet.Build.Tasks.Pack
         public string MinClientVersion { get; set; }
         public bool Serviceable { get; set; }
         public ITaskItem[] FrameworkAssemblyReferences { get; set; }
-        public ITaskItem[] FrameworkReferences { get; set; }
         public bool ContinuePackingAfterGeneratingNuspec { get; set; }
         public bool NoDefaultExcludes { get; set; }
         public string NuspecOutputPath { get; set; }
@@ -167,7 +166,6 @@ namespace NuGet.Build.Tasks.Pack
                 Description = MSBuildStringUtility.TrimAndGetNullForEmpty(Description),
                 DevelopmentDependency = DevelopmentDependency,
                 FrameworkAssemblyReferences = MSBuildUtility.WrapMSBuildItem(FrameworkAssemblyReferences),
-                FrameworkReferences = MSBuildUtility.WrapMSBuildItem(FrameworkReferences),
                 FrameworksWithSuppressedDependencies = MSBuildUtility.WrapMSBuildItem(FrameworksWithSuppressedDependencies),
                 IconUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(IconUrl),
                 IncludeBuildOutput = IncludeBuildOutput,

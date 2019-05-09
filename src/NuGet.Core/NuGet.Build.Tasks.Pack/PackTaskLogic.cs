@@ -226,7 +226,7 @@ namespace NuGet.Build.Tasks.Pack
                 frameworksWithSuppressedDependencies);
 
             PopulateFrameworkAssemblyReferences(builder, request);
-            PopulateFrameworkReferences(builder, request);
+            PopulateFrameworkReferences(builder, assetsFile);
 
             return builder;
         }
@@ -347,21 +347,23 @@ namespace NuGet.Build.Tasks.Pack
                             )));
         }
 
-        private void PopulateFrameworkReferences(PackageBuilder builder, IPackTaskRequest<IMSBuildItem> request)
+        private void PopulateFrameworkReferences(PackageBuilder builder, LockFile assetsFile)
         {
             var tfmSpecificRefs = new Dictionary<string, ISet<string>>();
 
-            foreach (var tfmRef in request.FrameworkReferences)
+            foreach (var framework in assetsFile.PackageSpec.TargetFrameworks)
             {
-                var targetFramework = tfmRef.GetProperty("TargetFramework");
-
-                if (tfmSpecificRefs.ContainsKey(targetFramework))
+                var frameworkShortFolderName = framework.FrameworkName.GetShortFolderName();
+                foreach (var frameworkRef in framework.FrameworkReferences.Where(e => e.PrivateAssets != FrameworkDependencyFlags.All))
                 {
-                    tfmSpecificRefs[targetFramework].Add(tfmRef.Identity);
-                }
-                else
-                {
-                    tfmSpecificRefs.Add(targetFramework, new HashSet<string>(FrameworkReference.FrameworkReferenceNameComparer) { tfmRef.Identity });
+                    if (tfmSpecificRefs.TryGetValue(frameworkShortFolderName, out var frameworkRefNames))
+                    {
+                        frameworkRefNames.Add(frameworkRef.Name);
+                    }
+                    else
+                    {
+                        tfmSpecificRefs.Add(frameworkShortFolderName, new HashSet<string>(ComparisonUtility.FrameworkReferenceNameComparer) { frameworkRef.Name });
+                    }
                 }
             }
 

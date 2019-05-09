@@ -3820,7 +3820,7 @@ namespace ClassLibrary
                         var properties = new Dictionary<string, string>();
                         if (!frameworkRef.Value)
                         {
-                            attributes["Pack"] = "false";
+                            attributes["PrivateAssets"] = "all";
                         }
                         ProjectFileUtils.AddItem(
                             xml,

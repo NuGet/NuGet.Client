@@ -414,10 +414,14 @@ namespace NuGet.ProjectModel.Test
                             {""name"" : ""c"", ""version"" : ""[2.0.0]""},
                             {""name"" : ""d"", ""version"" : ""[2.0.0]""},
                        ],
-                       ""frameworkReferences"" : [
-                            ""b"",
-                            ""a""
-                       ]
+                       ""frameworkReferences"" : {
+                            ""b"": {
+                                ""privateAssets"": ""none"",
+                            },
+                            ""a"": {
+                                ""privateAssets"": ""none"",
+                            }
+                        }
                     }
                   }
                 }";
@@ -437,10 +441,14 @@ namespace NuGet.ProjectModel.Test
                             {""name"" : ""c"", ""version"" : ""[2.0.0, 2.0.0]""},
                             {""name"" : ""d"", ""version"" : ""[2.0.0, 2.0.0]""},
                        ],
-                      ""frameworkReferences"" : [
-                          ""a"",
-                          ""b""
-                      ]
+                      ""frameworkReferences"" : {
+                            ""a"": {
+                                ""privateAssets"": ""none"",
+                            },
+                            ""b"": {
+                                ""privateAssets"": ""none"",
+                            }
+                        }
                     }
                   }
                 }";
@@ -504,10 +512,14 @@ namespace NuGet.ProjectModel.Test
                                 ""autoReferenced"": true
                             }
                         },
-                        ""frameworkReferences"": [
-                            ""Microsoft.WindowsDesktop.App|WinForms"",
-                            ""Microsoft.WindowsDesktop.App|WPF""
-                        ]
+                        ""frameworkReferences"": {
+                            ""Microsoft.WindowsDesktop.App|WinForms"" : {
+                                ""privateAssets"" : ""none""
+                            },
+                            ""Microsoft.WindowsDesktop.App|WPF"" : {
+                                ""privateAssets"" : ""none""
+                            }
+                        }
                     }
                   }
                 }";

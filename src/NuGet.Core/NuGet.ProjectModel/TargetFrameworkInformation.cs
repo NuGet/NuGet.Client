@@ -41,7 +41,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// A set of unique FrameworkReferences
         /// </summary>
-        public ISet<string> FrameworkReferences { get; } = new HashSet<string>(FrameworkReference.FrameworkReferenceNameComparer);
+        public ISet<FrameworkDependency> FrameworkReferences { get; } = new HashSet<FrameworkDependency>();
 
         public override string ToString()
         {
@@ -84,7 +84,7 @@ namespace NuGet.ProjectModel
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
                    AssetTargetFallback == other.AssetTargetFallback &&
                    DownloadDependencies.OrderedEquals(other.DownloadDependencies, dep => dep) &&
-                   FrameworkReferences.OrderedEquals(other.FrameworkReferences, keySelector: e => e, orderComparer: StringComparer.OrdinalIgnoreCase, sequenceComparer: StringComparer.OrdinalIgnoreCase);
+                   FrameworkReferences.OrderedEquals(other.FrameworkReferences, fr => fr);
         }
 
         public TargetFrameworkInformation Clone()

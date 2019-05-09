@@ -170,7 +170,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .DownloadDependencies
                 .Select(ToPackageDownload);
 
-            var frameworkReferences = tfm.FrameworkReferences.Select(e => new VsReferenceItem(e, new VsReferenceProperties()));
+            var frameworkReferences = tfm.FrameworkReferences.Select(ToFrameworkReference);
 
             var projectProperties = new VsProjectProperties
             {
@@ -187,6 +187,14 @@ namespace NuGet.SolutionRestoreManager.Test
                 packageDownloads,
                 frameworkReferences,
                 projectProperties.Concat(globalProperties));
+        }
+
+        private static IVsReferenceItem ToFrameworkReference(FrameworkDependency frameworkDependency)
+        {
+            var properties = new VsReferenceProperties(
+                new[] { new VsReferenceProperty("PrivateAssets", FrameworkDependencyFlagsUtils.GetFlagString(frameworkDependency.PrivateAssets)) }
+            );
+            return new VsReferenceItem(frameworkDependency.Name, properties);
         }
 
         private static IVsReferenceItem ToPackageReference(LibraryDependency library)

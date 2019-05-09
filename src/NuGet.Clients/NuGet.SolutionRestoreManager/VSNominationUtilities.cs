@@ -129,10 +129,7 @@ namespace NuGet.SolutionRestoreManager
 
                 if (targetFrameworkInfo2.FrameworkReferences != null)
                 {
-                    tfi.FrameworkReferences.AddRange(
-                        targetFrameworkInfo2.FrameworkReferences
-                            .Cast<IVsReferenceItem>()
-                            .Select(e => e.Name));
+                    PopulateFrameworkDependencies(tfi, targetFrameworkInfo2);
                 }
             }
 
@@ -361,6 +358,23 @@ namespace NuGet.SolutionRestoreManager
             return downloadDependency;
         }
 
+        private static void PopulateFrameworkDependencies(TargetFrameworkInformation tfi, IVsTargetFrameworkInfo2 targetFrameworkInfo2)
+        {
+            foreach (var item in targetFrameworkInfo2.FrameworkReferences.Cast<IVsReferenceItem>())
+            {
+                if (!tfi.FrameworkReferences.Any(e => ComparisonUtility.FrameworkReferenceNameComparer.Equals(e.Name, item.Name)))
+                {
+                    tfi.FrameworkReferences.Add(ToFrameworkDependency(item));
+                }
+            }
+        }
+
+        private static FrameworkDependency ToFrameworkDependency(IVsReferenceItem item)
+        {
+            var privateAssets = GetFrameworkDependencyFlags(item, ProjectBuildProperties.PrivateAssets);
+            return new FrameworkDependency(item.Name, privateAssets);
+        }
+
         private static ProjectRestoreReference ToProjectRestoreReference(IVsReferenceItem item, string projectDirectory)
         {
             // The path may be a relative path, to match the project unique name as a
@@ -393,6 +407,16 @@ namespace NuGet.SolutionRestoreManager
             }
 
             return VersionRange.All;
+        }
+
+        /// <summary>
+        /// Get the frameworkdependencyflag based on the name.
+        /// </summary>
+        private static FrameworkDependencyFlags GetFrameworkDependencyFlags(IVsReferenceItem item, string name)
+        {
+            var flags = GetPropertyValueOrNull(item, name);
+            
+            return FrameworkDependencyFlagsUtils.GetFlags(flags);
         }
 
         /// <summary>

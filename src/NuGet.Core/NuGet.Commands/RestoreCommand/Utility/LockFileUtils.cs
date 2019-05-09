@@ -591,7 +591,10 @@ namespace NuGet.Commands
                 KnownLibraryProperties.FrameworkReferences,
                 out frameworkReferencesObject))
             {
-                projectLib.FrameworkReferences.AddRange((IEnumerable<string>)frameworkReferencesObject);
+                projectLib.FrameworkReferences.AddRange(
+                    ((ISet<FrameworkDependency>)frameworkReferencesObject)
+                        .Where(e => e.PrivateAssets != FrameworkDependencyFlags.All)
+                        .Select(f => f.Name));
             }
 
             // Exclude items
