@@ -238,34 +238,33 @@ namespace Dotnet.Integration.Test
 
             var nupkgsToCopy = new List<string> { "NuGet.Build.Tasks", "NuGet.Versioning", "NuGet.Protocol", "NuGet.ProjectModel", "NuGet.Packaging", "NuGet.LibraryModel", "NuGet.Frameworks", "NuGet.DependencyResolver.Core", "NuGet.Configuration", "NuGet.Common", "NuGet.Commands", "NuGet.CommandLine.XPlat", "NuGet.Credentials" };
 
-            foreach (var pathToSdkInCli in Directory.GetDirectories(Path.Combine(cliDirectory, "sdk")))
+            var pathToSdkInCli = Path.Combine(
+                    Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
+                        .First());
+            using (var nupkg = new PackageArchiveReader(pathToPackNupkg))
             {
-                using (var nupkg = new PackageArchiveReader(pathToPackNupkg))
+                var pathToPackSdk = Path.Combine(pathToSdkInCli, "Sdks", "NuGet.Build.Tasks.Pack");
+                var files = nupkg.GetFiles()
+                .Where(fileName => fileName.StartsWith("Desktop")
+                                || fileName.StartsWith("CoreCLR")
+                                || fileName.StartsWith("CoreCLR_3.x")
+                                || fileName.StartsWith("build")
+                                || fileName.StartsWith("buildCrossTargeting"));
+
+                DeleteDirectory(pathToPackSdk);
+                CopyNupkgFilesToTarget(nupkg, pathToPackSdk, files);
+            }
+
+
+            foreach (var nupkgName in nupkgsToCopy) {
+                using (var nupkg = new PackageArchiveReader(FindMostRecentNupkg(nupkgsDirectory, nupkgName)))
                 {
-                    var pathToPackSdk = Path.Combine(pathToSdkInCli, "Sdks", "NuGet.Build.Tasks.Pack");
                     var files = nupkg.GetFiles()
-                    .Where(fileName => fileName.StartsWith("Desktop")
-                                    || fileName.StartsWith("CoreCLR")
-                                    || fileName.StartsWith("CoreCLR_3.x")
-                                    || fileName.StartsWith("build")
-                                    || fileName.StartsWith("buildCrossTargeting"));
+                    .Where(fileName => fileName.StartsWith("lib/netstandard")
+                                    || fileName.StartsWith("lib/netcoreapp")
+                                    || fileName.Contains("NuGet.targets"));
 
-                    DeleteDirectory(pathToPackSdk);
-                    CopyNupkgFilesToTarget(nupkg, pathToPackSdk, files);
-                }
-
-
-                foreach (var nupkgName in nupkgsToCopy)
-                {
-                    using (var nupkg = new PackageArchiveReader(FindMostRecentNupkg(nupkgsDirectory, nupkgName)))
-                    {
-                        var files = nupkg.GetFiles()
-                        .Where(fileName => fileName.StartsWith("lib/netstandard")
-                                        || fileName.StartsWith("lib/netcoreapp")
-                                        || fileName.Contains("NuGet.targets"));
-
-                        CopyFlatlistOfFilesToTarget(nupkg, pathToSdkInCli, files);
-                    }
+                    CopyFlatlistOfFilesToTarget(nupkg, pathToSdkInCli, files);
                 }
             }
         }
