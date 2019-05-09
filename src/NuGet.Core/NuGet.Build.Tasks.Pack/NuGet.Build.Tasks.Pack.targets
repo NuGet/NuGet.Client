@@ -14,7 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Load NuGet.Build.Tasks.Pack.dll, this can be overridden to use a different version with $(NuGetPackTaskAssemblyFile) -->
   <PropertyGroup Condition="$(NuGetPackTaskAssemblyFile) == ''">
     <NuGetPackTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core' AND $(NETCoreSdkVersion.Split('.')[0]) >= 3 ">..\CoreCLR_3.x\NuGet.Build.Tasks.Pack.dll</NuGetPackTaskAssemblyFile>
-    <NuGetPackTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core' AND $(NETCoreSdkVersion.Split('.')[0]) &lt; 3 ">..\CoreCLR\NuGet.Build.Tasks.Pack.dll</NuGetPackTaskAssemblyFile>
+    <NuGetPackTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core' AND $(NETCoreSdkVersion.Split('.')[0]) < 3 ">..\CoreCLR\NuGet.Build.Tasks.Pack.dll</NuGetPackTaskAssemblyFile>
     <NuGetPackTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">..\Desktop\NuGet.Build.Tasks.Pack.dll</NuGetPackTaskAssemblyFile>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
