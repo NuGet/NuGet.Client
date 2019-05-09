@@ -247,7 +247,6 @@ namespace Dotnet.Integration.Test
                 var files = nupkg.GetFiles()
                 .Where(fileName => fileName.StartsWith("Desktop")
                                 || fileName.StartsWith("CoreCLR")
-                                || fileName.StartsWith("CoreCLR_3.x")
                                 || fileName.StartsWith("build")
                                 || fileName.StartsWith("buildCrossTargeting"));
 
