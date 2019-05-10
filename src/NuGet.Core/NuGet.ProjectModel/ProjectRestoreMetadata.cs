@@ -141,6 +141,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(SkipContentFileWrite);
             hashCode.AddObject(ProjectWideWarningProperties);
             hashCode.AddObject(RestoreLockProperties);
+            hashCode.AddObject(PackagesConfigPath);
 
             return hashCode.CombinedHash;
         }
@@ -180,7 +181,8 @@ namespace NuGet.ProjectModel
                    SkipContentFileWrite == other.SkipContentFileWrite &&
                    EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files) &&
                    EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties) &&
-                   EqualityUtility.EqualsWithNullCheck(RestoreLockProperties, other.RestoreLockProperties);
+                   EqualityUtility.EqualsWithNullCheck(RestoreLockProperties, other.RestoreLockProperties) &&
+                   PathUtility.GetStringComparerBasedOnOS().Equals(PackagesConfigPath, other.PackagesConfigPath);
         }
 
         public ProjectRestoreMetadata Clone()
@@ -206,7 +208,8 @@ namespace NuGet.ProjectModel
                 TargetFrameworks = TargetFrameworks?.Select(c => c.Clone()).ToList(),
                 Files = Files?.Select(c => c.Clone()).ToList(),
                 ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone(),
-                RestoreLockProperties = RestoreLockProperties?.Clone()
+                RestoreLockProperties = RestoreLockProperties?.Clone(),
+                PackagesConfigPath = PackagesConfigPath
             };
         }
     }

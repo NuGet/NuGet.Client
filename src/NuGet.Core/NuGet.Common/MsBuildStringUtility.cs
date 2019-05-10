@@ -100,22 +100,11 @@ namespace NuGet.Common
             }
         }
 
-        public static bool? GetBoolean(string value)
+        public static bool? GetBooleanOrNull(string value)
         {
-            var trimmed = TrimAndGetNullForEmpty(value);
-            if (trimmed == null)
+            if (bool.TryParse(value, out var result))
             {
-                return null;
-            }
-
-            if (bool.TrueString.Equals(trimmed, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (bool.FalseString.Equals(trimmed, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
+                return result;
             }
 
             return null;

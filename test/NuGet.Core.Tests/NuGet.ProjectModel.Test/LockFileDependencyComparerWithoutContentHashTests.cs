@@ -11,7 +11,7 @@ namespace NuGet.ProjectModel.Test
     public class LockFileDependencyComparerWithoutContentHashTests
     {
         [Fact]
-        public void NullReferencesAreEqual()
+        public void Equals_WhenBothArgumentsAreNull_ReturnsTrue()
         {
             LockFileDependency x = null;
             LockFileDependency y = null;
@@ -22,7 +22,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void OneNullReferenceIsNotEqual()
+        public void Equals_WhenOneArgumentIsNull_ReturnsFalse()
         {
             LockFileDependency isNull = null;
             var notNull = new LockFileDependencyBuilder().Build();
@@ -35,7 +35,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void SameReferenceIsEqual()
+        public void Equals_WhenSameReference_ReturnsTrue()
         {
             var dep = new LockFileDependencyBuilder().Build();
 
@@ -45,7 +45,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependenciesWithSameValuesAreEqual()
+        public void Equals_WhenSameValue_ReturnsTrue()
         {
             var x = new LockFileDependencyBuilder().Build();
             var y = new LockFileDependencyBuilder().Build();
@@ -58,7 +58,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependenciesWithDifferentContentHashValuesAreEqual()
+        public void Equals_WhenContentHashIsDifferent_ReturnsTrue()
         {
             var x = new LockFileDependencyBuilder().Build();
             var y = new LockFileDependencyBuilder()
@@ -75,7 +75,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependenciesWithDifferentIdsAreNotEqual()
+        public void Equals_WhenPackageIdIsDifferent_ReturnsFalse()
         {
             var x = new LockFileDependencyBuilder().Build();
             var y = new LockFileDependencyBuilder()
@@ -92,7 +92,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependenciesWithDifferentResolvedVersionsAreNotEqual()
+        public void Equals_WhenResolvedVersionsAreDifferent_ReturnsFalse()
         {
             var x = new LockFileDependencyBuilder().Build();
             var y = new LockFileDependencyBuilder()
@@ -109,7 +109,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependenciesWithDifferentRequestedRangesAreNotEqual()
+        public void Equals_WhenRequestedVersionsAreDifferent_ReturnsFalse()
         {
             var x = new LockFileDependencyBuilder().Build();
             var y = new LockFileDependencyBuilder()
@@ -126,7 +126,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependenciesWithDifferentTypesAreNotEqual()
+        public void Equals_WhenDependencyTypesAreDifferent_ReturnFalse()
         {
             var x = new LockFileDependencyBuilder().Build();
             var y = new LockFileDependencyBuilder()

@@ -376,7 +376,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package {0} sha512 validation failed. The package is different than the last restore..
+        ///   Looks up a localized string similar to The package {0} SHA512 validation failed. The package is different than the last restore..
         /// </summary>
         internal static string Error_PackageValidationFailed {
             get {
@@ -385,7 +385,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The packages lock file is inconsistent with the project dependencies so restore can&apos;t be run in locked mode. Please disable RestoreLockedMode MSBuild property or pass explicit --force-evaluate flag to run restore to update the lock file..
+        ///   Looks up a localized string similar to The packages lock file is inconsistent with the project dependencies so restore can&apos;t be run in locked mode. Please disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file..
         /// </summary>
         internal static string Error_RestoreInLockedMode {
             get {

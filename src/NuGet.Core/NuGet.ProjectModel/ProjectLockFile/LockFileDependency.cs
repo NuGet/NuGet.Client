@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Shared;
 using NuGet.Versioning;
@@ -27,22 +25,45 @@ namespace NuGet.ProjectModel
 
         public bool Equals(LockFileDependency other)
         {
-            if (other == null)
-            {
-                return false;
-            }
+            return Equals(this, other, ComparisonType.Full);
+        }
 
-            if (ReferenceEquals(this, other))
+        internal static bool Equals(LockFileDependency x, LockFileDependency y, ComparisonType comparisonType)
+        {
+            if (ReferenceEquals(x, y))
             {
                 return true;
             }
 
-            return StringComparer.OrdinalIgnoreCase.Equals(Id, other.Id) &&
-                EqualityUtility.EqualsWithNullCheck(ResolvedVersion, other.ResolvedVersion) &&
-                EqualityUtility.EqualsWithNullCheck(RequestedVersion, other.RequestedVersion) &&
-                EqualityUtility.SequenceEqualWithNullCheck(Dependencies, other.Dependencies) &&
-                ContentHash == other.ContentHash &&
-                Type == other.Type;
+            if (x == null || y == null)
+            {
+                return false;
+            }
+
+            switch (comparisonType)
+            {
+                case ComparisonType.IdVersion:
+                    return StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id) &&
+                        EqualityUtility.EqualsWithNullCheck(x.ResolvedVersion, y.ResolvedVersion);
+
+                case ComparisonType.ExcludeContentHash:
+                    return StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id) &&
+                        EqualityUtility.EqualsWithNullCheck(x.ResolvedVersion, y.ResolvedVersion) &&
+                        EqualityUtility.EqualsWithNullCheck(x.RequestedVersion, y.RequestedVersion) &&
+                        EqualityUtility.SequenceEqualWithNullCheck(x.Dependencies, y.Dependencies) &&
+                        x.Type == y.Type;
+
+                case ComparisonType.Full:
+                    return StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id) &&
+                        EqualityUtility.EqualsWithNullCheck(x.ResolvedVersion, y.ResolvedVersion) &&
+                        EqualityUtility.EqualsWithNullCheck(x.RequestedVersion, y.RequestedVersion) &&
+                        EqualityUtility.SequenceEqualWithNullCheck(x.Dependencies, y.Dependencies) &&
+                        x.ContentHash == y.ContentHash &&
+                        x.Type == y.Type;
+
+                default:
+                    throw new ArgumentException("Unknown ComparisonType value", nameof(comparisonType));
+            }
         }
 
         public override bool Equals(object obj)
@@ -52,16 +73,49 @@ namespace NuGet.ProjectModel
 
         public override int GetHashCode()
         {
+            return GetHashCode(this, ComparisonType.Full);
+        }
+
+        internal static int GetHashCode(LockFileDependency obj, ComparisonType comparisonType)
+        {
             var combiner = new HashCodeCombiner();
 
-            combiner.AddObject(Id);
-            combiner.AddObject(ResolvedVersion);
-            combiner.AddObject(RequestedVersion);
-            combiner.AddSequence(Dependencies);
-            combiner.AddObject(ContentHash);
-            combiner.AddObject(Type);
+            switch (comparisonType)
+            {
+                case ComparisonType.IdVersion:
+                    combiner.AddObject(obj.Id);
+                    combiner.AddObject(obj.ResolvedVersion);
+                    break;
+
+                case ComparisonType.ExcludeContentHash:
+                    combiner.AddObject(obj.Id);
+                    combiner.AddObject(obj.ResolvedVersion);
+                    combiner.AddObject(obj.RequestedVersion);
+                    combiner.AddSequence(obj.Dependencies);
+                    combiner.AddObject(obj.Type);
+                    break;
+
+                case ComparisonType.Full:
+                    combiner.AddObject(obj.Id);
+                    combiner.AddObject(obj.ResolvedVersion);
+                    combiner.AddObject(obj.RequestedVersion);
+                    combiner.AddSequence(obj.Dependencies);
+                    combiner.AddObject(obj.ContentHash);
+                    combiner.AddObject(obj.Type);
+                    break;
+
+                default:
+                    throw new ArgumentException("Unknown ComparisonType value", nameof(comparisonType));
+            }
 
             return combiner.CombinedHash;
+        }
+
+        internal enum ComparisonType
+        {
+            IdVersion,
+            ExcludeContentHash,
+            Full
         }
     }
 }

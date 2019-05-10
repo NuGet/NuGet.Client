@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.Utility
 {
     public static class PackagesConfigLockFileUtility
     {
-        private static readonly IComparer Comparer = new DependencyComparer();
+        private static readonly IComparer _comparer = new DependencyComparer();
 
         internal static void UpdateLockFile(
             MSBuildNuGetProject msbuildProject,
@@ -83,11 +83,20 @@ namespace NuGet.PackageManagement.Utility
             return PackagesLockFileUtilities.GetNuGetLockFilePath(projectPath, projectName);
         }
 
-        public static List<IRestoreLogMessage> ValidatePackagesConfigLockFiles(string projectFile, string packagesConfigFile, string projectName, string nuGetLockFilePath, string restorePackagesWithLockFile, NuGetFramework projectTfm, string packagesFolderPath, bool lockedMode)
+        public static IReadOnlyList<IRestoreLogMessage> ValidatePackagesConfigLockFiles(
+            string projectFile,
+            string packagesConfigFile,
+            string projectName,
+            string nuGetLockFilePath,
+            string restorePackagesWithLockFile,
+            NuGetFramework projectTfm,
+            string packagesFolderPath,
+            bool lockedMode,
+            CancellationToken token)
         {
             var lockFilePath = GetPackagesLockFilePath(Path.GetDirectoryName(packagesConfigFile), nuGetLockFilePath, projectName);
             var lockFileExists = File.Exists(lockFilePath);
-            var lockFileOptIn = MSBuildStringUtility.GetBoolean(restorePackagesWithLockFile);
+            var lockFileOptIn = MSBuildStringUtility.GetBooleanOrNull(restorePackagesWithLockFile);
             var useLockFile = lockFileOptIn == true || lockFileExists;
 
             if (lockFileOptIn == false && lockFileExists)
@@ -102,24 +111,24 @@ namespace NuGet.PackageManagement.Utility
 
             if (useLockFile)
             {
-                var projectLockFileEquivilent = PackagesConfigLockFileUtility.FromPackagesConfigFile(packagesConfigFile,
+                var projectLockFileEquivalent = PackagesConfigLockFileUtility.FromPackagesConfigFile(packagesConfigFile,
                     projectTfm,
                     packagesFolderPath,
-                    CancellationToken.None);
+                    token);
 
                 if (!lockFileExists)
                 {
-                    PackagesLockFileFormat.Write(lockFilePath, projectLockFileEquivilent);
+                    PackagesLockFileFormat.Write(lockFilePath, projectLockFileEquivalent);
                     return null;
                 }
                 else
                 {
                     var lockFile = PackagesLockFileFormat.Read(lockFilePath);
-                    var comparisonResult = PackagesLockFileUtilities.IsLockFileStillValid(projectLockFileEquivilent, lockFile);
-                    if (comparisonResult.lockFileStillValid)
+                    var comparisonResult = PackagesLockFileUtilities.IsLockFileStillValid(projectLockFileEquivalent, lockFile);
+                    if (comparisonResult.IsValid)
                     {
                         // check sha hashes
-                        var allShasMatch = comparisonResult.matchedDependencies.All(pair => pair.Key.ContentHash == pair.Value.ContentHash);
+                        var allShasMatch = comparisonResult.MatchedDependencies.All(pair => pair.Key.ContentHash == pair.Value.ContentHash);
                         if (allShasMatch)
                         {
                             return null;
@@ -127,7 +136,7 @@ namespace NuGet.PackageManagement.Utility
                         else
                         {
                             var errors = new List<IRestoreLogMessage>();
-                            foreach (var difference in comparisonResult.matchedDependencies.Where(kvp => kvp.Key.ContentHash != kvp.Value.ContentHash))
+                            foreach (var difference in comparisonResult.MatchedDependencies.Where(kvp => kvp.Key.ContentHash != kvp.Value.ContentHash))
                             {
                                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageValidationFailed, difference.Key.Id + "." + difference.Key.ResolvedVersion);
                                 var log = RestoreLogMessage.CreateError(NuGetLogCode.NU1403, message, packagesConfigFile);
@@ -149,7 +158,7 @@ namespace NuGet.PackageManagement.Utility
                         }
                         else
                         {
-                            PackagesLockFileFormat.Write(lockFilePath, projectLockFileEquivilent);
+                            PackagesLockFileFormat.Write(lockFilePath, projectLockFileEquivalent);
                             return null;
                         }
                     }
@@ -225,7 +234,7 @@ namespace NuGet.PackageManagement.Utility
                 actionsList.Where(a => a.NuGetProjectActionType == NuGetProjectActionType.Install),
                 contentHashUtil,
                 token);
-            ArrayList.Adapter((IList)lockFile.Targets[0].Dependencies).Sort(Comparer);
+            ArrayList.Adapter((IList)lockFile.Targets[0].Dependencies).Sort(_comparer);
         }
 
         private static void RemoveUninstalledPackages(PackagesLockFile lockFile, IEnumerable<NuGetProjectAction> actionsList)
@@ -258,11 +267,13 @@ namespace NuGet.PackageManagement.Utility
             {
                 Debug.Assert(toInstall.NuGetProjectActionType == NuGetProjectActionType.Install);
 
+                const bool includeMinVersion = true;
+                const bool includeMaxVersion = true;
                 var newDependency = new LockFileDependency
                 {
                     Id = toInstall.PackageIdentity.Id,
                     ContentHash = contentHashUtil.GetContentHash(toInstall.PackageIdentity, token),
-                    RequestedVersion = new VersionRange(toInstall.PackageIdentity.Version, true, toInstall.PackageIdentity.Version, true),
+                    RequestedVersion = new VersionRange(toInstall.PackageIdentity.Version, includeMinVersion, toInstall.PackageIdentity.Version, includeMaxVersion),
                     ResolvedVersion = toInstall.PackageIdentity.Version,
                     Type = PackageDependencyType.Direct
                 };
@@ -277,11 +288,26 @@ namespace NuGet.PackageManagement.Utility
             string packagesFolderPath,
             CancellationToken token)
         {
-            if (pcFile == null) throw new ArgumentNullException(nameof(pcFile));
-            if (!File.Exists(pcFile)) throw new ArgumentException("packages.config file does not exist");
-            if (projectTfm == null) throw new ArgumentNullException(nameof(projectTfm));
-            if (packagesFolderPath == null) throw new ArgumentNullException(nameof(packagesFolderPath));
-            if (!Directory.Exists(packagesFolderPath)) throw new ArgumentException("Packages directory does not exist");
+            if (pcFile == null)
+            {
+                throw new ArgumentNullException(nameof(pcFile));
+            }
+            if (!File.Exists(pcFile))
+            {
+                throw new FileNotFoundException("packages.config file does not exist", pcFile);
+            }
+            if (projectTfm == null)
+            {
+                throw new ArgumentNullException(nameof(projectTfm));
+            }
+            if (packagesFolderPath == null)
+            {
+                throw new ArgumentNullException(nameof(packagesFolderPath));
+            }
+            if (!Directory.Exists(packagesFolderPath))
+            {
+                throw new DirectoryNotFoundException("Packages directory does not exist");
+            }
 
             var lockFile = new PackagesLockFile();
             var target = new PackagesLockFileTarget();
@@ -295,11 +321,13 @@ namespace NuGet.PackageManagement.Utility
                 var reader = new PackagesConfigReader(stream);
                 foreach (var package in reader.GetPackages(true))
                 {
+                    const bool includeMinVersion = true;
+                    const bool includeMaxVersion = true;
                     var dependency = new LockFileDependency
                     {
                         Id = package.PackageIdentity.Id,
                         ContentHash = contentHashUtil.GetContentHash(package.PackageIdentity, token),
-                        RequestedVersion = new VersionRange(package.PackageIdentity.Version, true, package.PackageIdentity.Version, true),
+                        RequestedVersion = new VersionRange(package.PackageIdentity.Version, includeMinVersion, package.PackageIdentity.Version, includeMaxVersion),
                         ResolvedVersion = package.PackageIdentity.Version,
                         Type = PackageDependencyType.Direct
                     };

@@ -177,21 +177,27 @@ namespace NuGet.ProjectModel
         /// than SHA hash), and matches dependencies so the caller can easily compare SHA hashes.</summary>
         /// <param name="expected">The expected lock file structure. Usuaully generated from the project.</param>
         /// <param name="actual">The lock file that was loaded from the file on disk.</param>
-        /// <returns>A ValueTuple containing two fields. First, a boolean to represent whether the lock file is still
-        /// valid (structure of the two lock files are the same). Second, a list of matched dependencies if the lock
-        /// file is still valid, otherwise null.</returns>
-        public static (bool lockFileStillValid, List<KeyValuePair<LockFileDependency, LockFileDependency>> matchedDependencies)
-            IsLockFileStillValid(PackagesLockFile expected, PackagesLockFile actual)
+        /// <returns>A <see cref="LockFileValidityWithMatchedResults"/>.</returns>
+        public static LockFileValidityWithMatchedResults IsLockFileStillValid(PackagesLockFile expected, PackagesLockFile actual)
         {
+            if (expected == null)
+            {
+                throw new ArgumentNullException(nameof(expected));
+            }
+            if (actual == null)
+            {
+                throw new ArgumentNullException(nameof(actual));
+            }
+
             // do quick checks for obvious structure differences
             if (expected.Version != actual.Version)
             {
-                return (false, null);
+                return LockFileValidityWithMatchedResults.Invalid;
             }
 
             if (expected.Targets.Count != actual.Targets.Count)
             {
-                return (false, null);
+                return LockFileValidityWithMatchedResults.Invalid;
             }
 
             foreach (var expectedTarget in expected.Targets)
@@ -209,36 +215,37 @@ namespace NuGet.ProjectModel
                         else
                         {
                             // more than 1? possible bug or bad hand edited lock file.
-                            return (false, null);
+                            return LockFileValidityWithMatchedResults.Invalid;
                         }
                     }
 
                     if (actualTarget == null)
                     {
-                        return (false, null);
+                        return LockFileValidityWithMatchedResults.Invalid;
                     }
 
                     if (actualTarget.Dependencies.Count != expectedTarget.Dependencies.Count)
                     {
-                        return (false, null);
+                        return LockFileValidityWithMatchedResults.Invalid;
                     }
                 }
             }
 
             // no obvious structure difference, so start trying to match individual dependencies
             var matchedDependencies = new List<KeyValuePair<LockFileDependency, LockFileDependency>>();
-            var lockFileStillValid = true;
+            var isLockFileStillValid = true;
             var dependencyComparer = LockFileDependencyComparerWithoutContentHash.Default;
 
             foreach (var expectedTarget in expected.Targets)
             {
-                var actualTarget = actual.Targets.Single(t => t.TargetFramework == expectedTarget.TargetFramework);
+#pragma warning disable IDE0007 // Use implicit type
+                PackagesLockFileTarget actualTarget = actual.Targets.Single(t => t.TargetFramework == expectedTarget.TargetFramework);
+#pragma warning restore IDE0007 // Use implicit type
 
                 // Duplicate dependencies list so we can remove matches to validate that all dependencies were matched
                 var actualDependencies = new Dictionary<LockFileDependency, LockFileDependency>(
                     actualTarget.Dependencies.Count, 
-                    dependencyComparer
-                    );
+                    dependencyComparer);
                 foreach (var actualDependency in actualTarget.Dependencies)
                 {
                     actualDependencies.Add(actualDependency, actualDependency);
@@ -253,17 +260,17 @@ namespace NuGet.ProjectModel
                     }
                     else
                     {
-                        return (false, null);
+                        return LockFileValidityWithMatchedResults.Invalid;
                     }
                 }
 
                 if (actualDependencies.Count != 0)
                 {
-                    return (false, null);
+                    return LockFileValidityWithMatchedResults.Invalid;
                 }
             }
 
-            return (lockFileStillValid, matchedDependencies);
+            return new LockFileValidityWithMatchedResults(isLockFileStillValid, matchedDependencies);
         }
 
         private static bool HasProjectDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<LockFileDependency> lockFileDependencies)
@@ -336,5 +343,29 @@ namespace NuGet.ProjectModel
             return false;
         }
 
+        /// <summary>
+        /// A class to resturn information about lock file validity
+        /// </summary>
+        public class LockFileValidityWithMatchedResults
+        {
+            /// <summary>
+            /// True if the lock file had the expected structure (all values expected, other than content hash)
+            /// </summary>
+            public bool IsValid { get; }
+
+            /// <summary>
+            /// A list of matched dependencies, so content sha can easily be checked.
+            /// </summary>
+            public IReadOnlyList<KeyValuePair<LockFileDependency, LockFileDependency>> MatchedDependencies { get; }
+
+            public LockFileValidityWithMatchedResults(bool isValid, IReadOnlyList<KeyValuePair<LockFileDependency, LockFileDependency>> matchedDependencies)
+            {
+                IsValid = isValid;
+                MatchedDependencies = matchedDependencies;
+            }
+
+            public static readonly LockFileValidityWithMatchedResults Invalid =
+                new LockFileValidityWithMatchedResults(isValid: false, matchedDependencies: null);
+        }
     }
 }

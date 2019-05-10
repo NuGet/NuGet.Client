@@ -501,7 +501,7 @@ namespace NuGet.SolutionRestoreManager
                     _status = NuGetOperationStatus.Succeeded;
                 }
 
-                await ValidatePackagesConfigLockFiles();
+                await ValidatePackagesConfigLockFilesAsync(token);
             }
             else if (restoreSource == RestoreOperationSource.Explicit)
             {
@@ -517,7 +517,7 @@ namespace NuGet.SolutionRestoreManager
                 token);
         }
 
-        private async Task ValidatePackagesConfigLockFiles()
+        private async Task ValidatePackagesConfigLockFilesAsync(CancellationToken token)
         {
             var allProjects = await _solutionManager.GetNuGetProjectsAsync();
             var pcProjects = allProjects.Where(p => p.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig).ToList();
@@ -530,7 +530,7 @@ namespace NuGet.SolutionRestoreManager
                 var lockFileName = (string)project.GetMetadataOrNull("NuGetLockFilePath");
                 var restorePackagesWithLockFile = (string)project.GetMetadataOrNull("RestorePackagesWithLockFile");
                 var projectTfm = (NuGetFramework)project.GetMetadataOrNull("TargetFramework");
-                var lockedMode = MSBuildStringUtility.GetBoolean((string)project.GetMetadataOrNull("LockedMode")) ?? false;
+                var lockedMode = MSBuildStringUtility.GetBooleanOrNull((string)project.GetMetadataOrNull("LockedMode")) ?? false;
 
                 var validationLogs = PackagesConfigLockFileUtility.ValidatePackagesConfigLockFiles(
                     projectFile,
@@ -540,7 +540,8 @@ namespace NuGet.SolutionRestoreManager
                     restorePackagesWithLockFile,
                     projectTfm,
                     project.FolderNuGetProject.Root,
-                    lockedMode);
+                    lockedMode,
+                    token);
 
                 if (validationLogs != null)
                 {

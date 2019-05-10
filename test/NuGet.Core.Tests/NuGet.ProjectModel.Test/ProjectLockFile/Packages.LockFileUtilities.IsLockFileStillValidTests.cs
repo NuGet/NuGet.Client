@@ -1,10 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Linq;
-using NuGet.Commands;
-using NuGet.ProjectModel.Test.Builders;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
 using PackagesLockFileBuilder = NuGet.ProjectModel.Test.Builders.PackagesLockFileBuilder;
@@ -24,10 +21,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                     .Build();
 
                 var actual = PackagesLockFileUtilities.IsLockFileStillValid(x, y);
-                Assert.False(actual.lockFileStillValid);
+                Assert.False(actual.IsValid);
 
                 actual = PackagesLockFileUtilities.IsLockFileStillValid(y, x);
-                Assert.False(actual.lockFileStillValid);
+                Assert.False(actual.IsValid);
             }
 
             [Fact]
@@ -42,10 +39,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                     .Build();
 
                 var actual = PackagesLockFileUtilities.IsLockFileStillValid(x, y);
-                Assert.False(actual.lockFileStillValid);
+                Assert.False(actual.IsValid);
 
                 actual = PackagesLockFileUtilities.IsLockFileStillValid(y, x);
-                Assert.False(actual.lockFileStillValid);
+                Assert.False(actual.IsValid);
             }
 
             [Fact]
@@ -59,10 +56,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                     .Build();
 
                 var actual = PackagesLockFileUtilities.IsLockFileStillValid(x, y);
-                Assert.False(actual.lockFileStillValid);
+                Assert.False(actual.IsValid);
 
                 actual = PackagesLockFileUtilities.IsLockFileStillValid(y, x);
-                Assert.False(actual.lockFileStillValid);
+                Assert.False(actual.IsValid);
             }
 
             [Fact]
@@ -71,22 +68,20 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 var x = new PackagesLockFileBuilder()
                     .WithTarget(target => target
                         .WithFramework(CommonFrameworks.NetStandard20)
-                        .WithDependency(dep => dep.WithId("PackageA"))
-                    )
+                        .WithDependency(dep => dep.WithId("PackageA")))
                     .Build();
                 var y = new PackagesLockFileBuilder()
                     .WithTarget(target => target
                         .WithFramework(CommonFrameworks.NetStandard20)
                         .WithDependency(dep => dep.WithId("PackageA"))
-                        .WithDependency(dep => dep.WithId("PackageB"))
-                    )
+                        .WithDependency(dep => dep.WithId("PackageB")))
                     .Build();
 
                 var actual = PackagesLockFileUtilities.IsLockFileStillValid(x, y);
-                Assert.False(actual.lockFileStillValid);
+                Assert.False(actual.IsValid);
 
                 actual = PackagesLockFileUtilities.IsLockFileStillValid(y, x);
-                Assert.False(actual.lockFileStillValid);
+                Assert.False(actual.IsValid);
             }
 
             [Fact]
@@ -95,21 +90,19 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 var x = new PackagesLockFileBuilder()
                     .WithTarget(target => target
                         .WithFramework(CommonFrameworks.NetStandard20)
-                        .WithDependency(dep => dep.WithId("PackageA"))
-                    )
+                        .WithDependency(dep => dep.WithId("PackageA")))
                     .Build();
                 var y = new PackagesLockFileBuilder()
                     .WithTarget(target => target
                         .WithFramework(CommonFrameworks.NetStandard20)
-                        .WithDependency(dep => dep.WithId("PackageB"))
-                    )
+                        .WithDependency(dep => dep.WithId("PackageB")))
                     .Build();
 
                 var actual = PackagesLockFileUtilities.IsLockFileStillValid(x, y);
-                Assert.False(actual.lockFileStillValid);
+                Assert.False(actual.IsValid);
 
                 actual = PackagesLockFileUtilities.IsLockFileStillValid(y, x);
-                Assert.False(actual.lockFileStillValid);
+                Assert.False(actual.IsValid);
             }
 
             [Fact]
@@ -123,8 +116,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                             .WithContentHash("ABC"))
                         .WithDependency(dep => dep
                             .WithId("PackageB")
-                            .WithContentHash("123"))
-                    )
+                            .WithContentHash("123")))
                     .Build();
                 var y = new PackagesLockFileBuilder()
                     .WithTarget(target => target
@@ -134,29 +126,28 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                             .WithContentHash("XYZ"))
                         .WithDependency(dep => dep
                             .WithId("PackageB")
-                            .WithContentHash("890"))
-                    )
+                            .WithContentHash("890")))
                     .Build();
 
                 var actual = PackagesLockFileUtilities.IsLockFileStillValid(x, y);
-                Assert.True(actual.lockFileStillValid);
-                Assert.NotNull(actual.matchedDependencies);
-                Assert.Equal(2, actual.matchedDependencies.Count);
-                var depKvp = actual.matchedDependencies.Single(d => d.Key.Id == "PackageA");
+                Assert.True(actual.IsValid);
+                Assert.NotNull(actual.MatchedDependencies);
+                Assert.Equal(2, actual.MatchedDependencies.Count);
+                var depKvp = actual.MatchedDependencies.Single(d => d.Key.Id == "PackageA");
                 Assert.Equal("ABC", depKvp.Key.ContentHash);
                 Assert.Equal("XYZ", depKvp.Value.ContentHash);
-                depKvp = actual.matchedDependencies.Single(d => d.Key.Id == "PackageB");
+                depKvp = actual.MatchedDependencies.Single(d => d.Key.Id == "PackageB");
                 Assert.Equal("123", depKvp.Key.ContentHash);
                 Assert.Equal("890", depKvp.Value.ContentHash);
 
                 actual = PackagesLockFileUtilities.IsLockFileStillValid(y, x);
-                Assert.True(actual.lockFileStillValid);
-                Assert.NotNull(actual.matchedDependencies);
-                Assert.Equal(2, actual.matchedDependencies.Count);
-                depKvp = actual.matchedDependencies.Single(d => d.Key.Id == "PackageA");
+                Assert.True(actual.IsValid);
+                Assert.NotNull(actual.MatchedDependencies);
+                Assert.Equal(2, actual.MatchedDependencies.Count);
+                depKvp = actual.MatchedDependencies.Single(d => d.Key.Id == "PackageA");
                 Assert.Equal("ABC", depKvp.Value.ContentHash);
                 Assert.Equal("XYZ", depKvp.Key.ContentHash);
-                depKvp = actual.matchedDependencies.Single(d => d.Key.Id == "PackageB");
+                depKvp = actual.MatchedDependencies.Single(d => d.Key.Id == "PackageB");
                 Assert.Equal("123", depKvp.Value.ContentHash);
                 Assert.Equal("890", depKvp.Key.ContentHash);
             }

@@ -113,7 +113,7 @@ namespace NuGet.CommandLine
                 var v2RestoreResults = await PerformNuGetV2RestoreAsync(restoreInputs);
                 restoreSummaries.AddRange(v2RestoreResults);
 
-                foreach (var restoreResult in v2RestoreResults.Where(r=> !r.Success))
+                foreach (var restoreResult in v2RestoreResults.Where(r => !r.Success))
                 {
                     restoreResult
                         .Errors
@@ -242,7 +242,7 @@ namespace NuGet.CommandLine
             SetDefaultCredentialProvider(MsBuildDirectory);
         }
 
-        private async Task<List<RestoreSummary>> PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
+        private async Task<IReadOnlyList<RestoreSummary>> PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
         {
             ReadSettings(packageRestoreInputs);
             var packagesFolderPath = GetPackagesFolder(packageRestoreInputs);
@@ -306,14 +306,14 @@ namespace NuGet.CommandLine
                     packagesFolderPath);
 
                 var restoreSummaries = new List<RestoreSummary>();
-                restoreSummaries.Add(new RestoreSummary(true));
+                restoreSummaries.Add(new RestoreSummary(success: true));
 
                 if (validationResults != null && validationResults.Count > 0)
                 {
-                    foreach (var group in validationResults.GroupBy(r=>r.ProjectPath))
+                    foreach (var resultsByProject in validationResults.GroupBy(r => r.ProjectPath))
                     {
-                        var success = group.All(r => r.Level != LogLevel.Error);
-                        restoreSummaries.Add(new RestoreSummary(success, group.Key, new List<string>(), new List<string>(), 0, group));
+                        var success = resultsByProject.All(r => r.Level != LogLevel.Error);
+                        restoreSummaries.Add(new RestoreSummary(success, resultsByProject.Key, Array.Empty<string>(), Array.Empty<string>(), installCount: 0, errors: resultsByProject));
                     }
                 }
 
@@ -407,10 +407,10 @@ namespace NuGet.CommandLine
 
                     if (validationResults != null && validationResults.Count > 0)
                     {
-                        foreach (var group in validationResults.GroupBy(r => r.ProjectPath))
+                        foreach (var resultsByProject in validationResults.GroupBy(r => r.ProjectPath))
                         {
-                            var success = group.All(r => r.Level != LogLevel.Error);
-                            restoreSummaries.Add(new RestoreSummary(success, group.Key, new List<string>(), new List<string>(), 0, group));
+                            var success = resultsByProject.All(r => r.Level != LogLevel.Error);
+                            restoreSummaries.Add(new RestoreSummary(success, resultsByProject.Key, Array.Empty<string>(), Array.Empty<string>(), installCount: 0, errors: resultsByProject));
                         }
                     }
                 }
@@ -907,7 +907,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private List<IRestoreLogMessage> ValidatePackagesConfigLockFiles(List<string> packagesConfigFiles, IReadOnlyList<PackageSpec> projects, string packagesFolderPath)
+        private IReadOnlyList<IRestoreLogMessage> ValidatePackagesConfigLockFiles(IReadOnlyList<string> packagesConfigFiles, IReadOnlyList<PackageSpec> projects, string packagesFolderPath)
         {
             var errors = new List<IRestoreLogMessage>();
 
@@ -927,7 +927,8 @@ namespace NuGet.CommandLine
                     dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestorePackagesWithLockFile,
                     projectTfm,
                     packagesFolderPath,
-                    lockedMode);
+                    lockedMode,
+                    CancellationToken.None);
 
                 if (result != null)
                 {
@@ -936,7 +937,7 @@ namespace NuGet.CommandLine
             }
 
             return errors;
-         }
+        }
 
         private class PackageRestoreInputs
         {

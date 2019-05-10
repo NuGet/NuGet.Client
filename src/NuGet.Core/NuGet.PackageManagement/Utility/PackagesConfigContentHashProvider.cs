@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement
             if (!result.Found)
             {
                 var contentHash = GetContentHashFromNupkg(nupkgPath, token);
-                result = new Result(true, contentHash);
+                result = new Result(found: true, contentHash: contentHash);
 
                 WriteNupkgMetadata(nupkgPath, result.ContentHash);
             }
@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement
             if (File.Exists(metadataPath))
             {
                 var metadata = NupkgMetadataFileFormat.Read(metadataPath);
-                return new Result(true, metadata.ContentHash);
+                return new Result(found: true, contentHash: metadata.ContentHash);
             }
 
             return Result.NotFound;
@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement
 
         private struct Result
         {
-            public static readonly Result NotFound = new Result(false, null);
+            public static readonly Result NotFound = new Result(found: false, contentHash: null);
 
             public Result(bool found, string contentHash)
             {
