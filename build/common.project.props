@@ -31,6 +31,7 @@
     <ILMergeExePath>$(SolutionPackagesFolder)ILMerge.3.0.21\tools\net452\ILMerge.exe</ILMergeExePath>
     <XunitXmlLoggerDirectory>$(SolutionPackagesFolder)XunitXml.TestLogger.2.0.0\build\_common</XunitXmlLoggerDirectory>
     <NuGetBuildTasksPackTargets Condition="Exists('$(SolutionPackagesFolder)NuGet.Build.Tasks.Pack.4.9.2\build\NuGet.Build.Tasks.Pack.targets')">$(SolutionPackagesFolder)NuGet.Build.Tasks.Pack.4.9.2\build\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
+    <NuGetBuildTasksPackProject Condition="Exists('$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj')">$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj</NuGetBuildTasksPackProject>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>

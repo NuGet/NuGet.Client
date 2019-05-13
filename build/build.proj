@@ -226,7 +226,17 @@
              Projects="@(SolutionProjects)"
              Targets="PackProjects"
              Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+                         VisualStudioVersion=$(VisualStudioVersion);
+                         Create2ndNupkg=false" />
+
+    <Message Text="Packing for 2nd NuGet.Build.Tasks.pack  $(NuGetBuildTasksPackProject)" Importance="high" />
+
+    <MSBuild BuildInParallel="false"
+             Projects="$(NuGetBuildTasksPackProject)"
+             Targets="PackProjects"
+             Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=$(VisualStudioVersion);
+                         Create2ndNupkg=true" />
   </Target>
 
   <!--
@@ -241,7 +251,16 @@
              Projects="@(XPLATProjects)"
              Targets="PackProjects"
              Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+                         VisualStudioVersion=$(VisualStudioVersion);
+                         Create2ndNupkg=false" />
+
+    <Message Text="Packing for 2nd NuGet.Build.Tasks.pack   $(NuGetBuildTasksPackProject)" Importance="high" />
+    <MSBuild BuildInParallel="false"
+             Projects="$(NuGetBuildTasksPackProject)"
+             Targets="PackProjects"
+             Properties="$(CommonMSBuildProperties);
+                         VisualStudioVersion=$(VisualStudioVersion);
+                         Create2ndNupkg=true" />
   </Target>
 
   <!--
