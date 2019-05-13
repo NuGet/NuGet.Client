@@ -86,7 +86,7 @@ phases:
   - task: PowerShell@1
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
-      arguments: "-Force"
+      arguments: "-Force -CleanCache"
     displayName: "Run Configure.ps1"
 
   - task: PowerShell@1
