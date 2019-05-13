@@ -24,7 +24,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.IsPackableFalseWarningTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
 
   <PropertyGroup>
-    <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
+    <PackageId Condition=" '$(PackageId)' == '' AND '$(Create2ndNupkg)' == 'false''">$(AssemblyName)</PackageId>
+    <PackageId Condition=" '$(PackageId)' == '' AND '$(Create2ndNupkg)' == 'true''">$(AssemblyName).netstandard2.1</PackageId>
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
     <IncludeContentInPack Condition="'$(IncludeContentInPack)'==''">true</IncludeContentInPack>
     <GenerateNuspecDependsOn>_LoadPackInputItems; _GetTargetFrameworksOutput; _WalkEachTargetPerFramework; _GetPackageFiles; $(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
