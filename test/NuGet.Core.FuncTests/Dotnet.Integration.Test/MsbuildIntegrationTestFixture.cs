@@ -39,10 +39,7 @@ namespace Dotnet.Integration.Test
             MsBuildSdksPath = Path.Combine(
              sdkPaths.Where(path => path.Split('\\').Last().StartsWith("2")).First()
              , "Sdks");
-#endif
-            MsBuildSdksPath = Path.Combine(Directory.GetDirectories
-                (Path.Combine(_cliDirectory, "sdk"))
-                .First(), "Sdks");
+#endif        
             _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
             _processEnvVars.Add("UseSharedCompilation", "false");
             _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
@@ -289,7 +286,7 @@ namespace Dotnet.Integration.Test
                                     || fileName.StartsWith("lib/netcoreapp3.0")
                                     || fileName.Contains("NuGet.targets"));
                     if (files == null) {
-                        var files = nupkg.GetFiles()
+                        files = nupkg.GetFiles()
                         .Where(fileName => fileName.StartsWith("lib/netstandard2.0")
                                     || fileName.StartsWith("lib/netcoreapp2.1")
                                     || fileName.Contains("NuGet.targets"));
