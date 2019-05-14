@@ -76,41 +76,50 @@ namespace NuGet.Protocol.Plugins
         {
             if (OperationClaims != null)
             {
-                // Make sure the cache file directory is created before writing a file to it.
-                DirectoryUtility.CreateSharedDirectory(RootFolder);
-
-                // The update of a cached file is divided into two steps:
-                // 1) Delete the old file.
-                // 2) Create a new file with the same name.
-                using (var fileStream = new FileStream(
-                    NewCacheFileName,
-                    FileMode.Create,
-                    FileAccess.ReadWrite,
-                    FileShare.None,
-                    CachingUtility.BufferSize))
+                try
                 {
-                    var json = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(OperationClaims, Formatting.Indented));
-                    await fileStream.WriteAsync(json, 0, json.Length);
-                }
+                    // Make sure the cache file directory is created before writing a file to it.
+                    DirectoryUtility.CreateSharedDirectory(RootFolder);
 
-                if (File.Exists(CacheFileName))
-                {
-                    // Process B can perform deletion on an opened file if the file is opened by process A
-                    // with FileShare.Delete flag. However, the file won't be actually deleted until A close it.
-                    // This special feature can cause race condition, so we never delete an opened file.
-                    if (!CachingUtility.IsFileAlreadyOpen(CacheFileName))
+                    // The update of a cached file is divided into two steps:
+                    // 1) Delete the old file.
+                    // 2) Create a new file with the same name.
+                    using (var fileStream = new FileStream(
+                        NewCacheFileName,
+                        FileMode.Create,
+                        FileAccess.ReadWrite,
+                        FileShare.None,
+                        CachingUtility.BufferSize))
                     {
-                        File.Delete(CacheFileName);
+                        var json = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(OperationClaims, Formatting.Indented));
+                        await fileStream.WriteAsync(json, 0, json.Length);
+                    }
+
+                    if (File.Exists(CacheFileName))
+                    {
+                        // Process B can perform deletion on an opened file if the file is opened by process A
+                        // with FileShare.Delete flag. However, the file won't be actually deleted until A close it.
+                        // This special feature can cause race condition, so we never delete an opened file.
+                        if (!CachingUtility.IsFileAlreadyOpen(CacheFileName))
+                        {
+                            File.Delete(CacheFileName);
+                        }
+                    }
+
+                    // If the destination file doesn't exist, we can safely perform moving operation.
+                    // Otherwise, moving operation will fail.
+                    if (!File.Exists(CacheFileName))
+                    {
+                        File.Move(
+                            NewCacheFileName,
+                            CacheFileName);
                     }
                 }
-
-                // If the destination file doesn't exist, we can safely perform moving operation.
-                // Otherwise, moving operation will fail.
-                if (!File.Exists(CacheFileName))
+                catch (Exception)
                 {
-                    File.Move(
-                        NewCacheFileName,
-                        CacheFileName);
+                    // This cache is a performance optimization. Failing to write to it is unfortunate, but shouldn't cause the
+                    // entire application to fail.
+                    // TODO: This exception should probably be logged if verbose logging is enabled. Unfortunately, this interface is public and doesn't currently take a logger
                 }
             }
         }
