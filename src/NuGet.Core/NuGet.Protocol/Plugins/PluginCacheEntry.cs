@@ -119,6 +119,8 @@ namespace NuGet.Protocol.Plugins
                 {
                     // This cache is a performance optimization. Failing to write to it is unfortunate, but shouldn't cause the
                     // entire application to fail.
+                    // For instance, access to cache files is not behind a system mutex or serialized across processes. This means access exceptions are likely
+                    // when multiple NuGet processes are active.
                     // TODO: This exception should probably be logged if verbose logging is enabled. Unfortunately, this interface is public and doesn't currently take a logger
                 }
             }
