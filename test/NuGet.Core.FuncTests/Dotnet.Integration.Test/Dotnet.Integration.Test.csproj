@@ -7,6 +7,10 @@
     <TestProject>true</TestProject>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
+    <DefineConstants>$(DefineConstants);IS_NETCORE30</DefineConstants>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
     <EmbeddedResource Include="compiler\resources\*" />

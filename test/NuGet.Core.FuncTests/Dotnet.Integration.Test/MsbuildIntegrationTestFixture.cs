@@ -28,6 +28,17 @@ namespace Dotnet.Integration.Test
         {
             var cliDirectory = CopyLatestCliForPack();
             TestDotnetCli = Path.Combine(cliDirectory, "dotnet.exe");
+
+            var sdkPaths = Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"));
+#if IS_NETCORE30
+            MsBuildSdksPath = Path.Combine(
+             sdkPaths.Where(path => path.Split('\\').Last().StartsWith("3")).First()
+             , "Sdks");
+#else
+            MsBuildSdksPath = Path.Combine(
+             sdkPaths.Where(path => path.Split('\\').Last().StartsWith("2")).First()
+             , "Sdks");
+#endif
             MsBuildSdksPath = Path.Combine(Directory.GetDirectories
                 (Path.Combine(cliDirectory, "sdk"))
                 .First(), "Sdks");            
@@ -234,13 +245,24 @@ namespace Dotnet.Integration.Test
         private void UpdateCliWithLatestNuGetAssemblies(string cliDirectory)
         {
             var nupkgsDirectory = DotnetCliUtil.GetNupkgDirectoryInRepo();
+#if IS_NETCORE30
+            var pathToPackNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks.Pack.netstandard2.1");
+#else
             var pathToPackNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks.Pack");
+#endif
 
             var nupkgsToCopy = new List<string> { "NuGet.Build.Tasks", "NuGet.Versioning", "NuGet.Protocol", "NuGet.ProjectModel", "NuGet.Packaging", "NuGet.LibraryModel", "NuGet.Frameworks", "NuGet.DependencyResolver.Core", "NuGet.Configuration", "NuGet.Common", "NuGet.Commands", "NuGet.CommandLine.XPlat", "NuGet.Credentials" };
 
-            var pathToSdkInCli = Path.Combine(
-                    Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
-                        .First());
+            var sdkPaths = Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"));
+
+#if IS_NETCORE30
+            var pathToSdkInCli = sdkPaths.Where(path => path.Split('\\').Last().StartsWith("3")).First();
+#else
+            var pathToSdkInCli = sdkPaths.Where(path => path.Split('\\').Last().StartsWith("2")).First();
+#endif
+          //  var pathToSdkInCli = Path.Combine(
+          //          Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
+          //              .First());
             using (var nupkg = new PackageArchiveReader(pathToPackNupkg))
             {
                 var pathToPackSdk = Path.Combine(pathToSdkInCli, "Sdks", "NuGet.Build.Tasks.Pack");
@@ -258,10 +280,24 @@ namespace Dotnet.Integration.Test
             foreach (var nupkgName in nupkgsToCopy) {
                 using (var nupkg = new PackageArchiveReader(FindMostRecentNupkg(nupkgsDirectory, nupkgName)))
                 {
-                    var files = nupkg.GetFiles()
-                    .Where(fileName => fileName.StartsWith("lib/netstandard")
-                                    || fileName.StartsWith("lib/netcoreapp")
+#if IS_NETCORE30
+                     var files = nupkg.GetFiles()
+                    .Where(fileName => fileName.StartsWith("lib/netstandard2.1")
+                                    || fileName.StartsWith("lib/netcoreapp3.0")
                                     || fileName.Contains("NuGet.targets"));
+                    if (files == null) {
+                        var files = nupkg.GetFiles()
+                        .Where(fileName => fileName.StartsWith("lib/netstandard2.0")
+                                    || fileName.StartsWith("lib/netcoreapp2.1")
+                                    || fileName.Contains("NuGet.targets"));
+
+                    }
+#else
+                    var files = nupkg.GetFiles()
+                    .Where(fileName => fileName.StartsWith("lib/netstandard2.0")
+                                    || fileName.StartsWith("lib/netcoreapp2.1")
+                                    || fileName.Contains("NuGet.targets"));
+#endif
 
                     CopyFlatlistOfFilesToTarget(nupkg, pathToSdkInCli, files);
                 }
