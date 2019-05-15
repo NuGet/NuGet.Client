@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.VisualStudio;
@@ -16,6 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio
     public class VSSettings : ISettings
     {
         private const string NuGetSolutionSettingsFolder = ".nuget";
+        private string _oldRoot;
 
         // to initialize SolutionSettings first time outside MEF constructor
         private ISettings _solutionSettings;
@@ -70,7 +74,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                _solutionSettings = Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await TaskScheduler.Default;
+                    _solutionSettings = Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
+                });
             }
             catch (NuGetConfigurationException ex)
             {
@@ -80,6 +88,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (_solutionSettings == null)
             {
                 _solutionSettings = NullSettings.Instance;
+                _oldRoot = null;
             }
         }
 

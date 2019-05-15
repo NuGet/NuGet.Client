@@ -80,7 +80,7 @@ namespace NuGetVSExtension
             ProjectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
+                    ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger), // This is on the UI thread unnecessarily
                     adapterLogger);
 
             return new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLogger);

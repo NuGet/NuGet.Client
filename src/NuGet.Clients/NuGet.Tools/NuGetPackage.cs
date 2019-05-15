@@ -691,7 +691,7 @@ namespace NuGetVSExtension
             }
 
             // pass empty array of NuGetProject
-            var uiController = UIFactory.Value.Create(projects);
+            var uiController = UIFactory.Value.Create(projects); // This accesses the settings.
 
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
 

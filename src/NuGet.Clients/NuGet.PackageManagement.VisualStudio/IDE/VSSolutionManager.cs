@@ -887,7 +887,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region IVsSelectionEvents
 
-        public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
+        public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive) // Does this come on the UI thread.
         {
             if (dwCmdUICookie == _solutionLoadedUICookie
                 && fActive == 1)
