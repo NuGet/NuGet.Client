@@ -628,7 +628,7 @@ namespace NuGet.ProjectManagement
             {
                 // Assembly name can be ended as ".resources" by itself. 
                 // We should check full name + resources.dll postfix here.
-                if (filePath.EndsWith(packageIdentity.Id+Constants.ResourceAssemblyExtension, StringComparison.OrdinalIgnoreCase))
+                if (filePath.EndsWith(packageIdentity.Id + Constants.ResourceAssemblyExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
