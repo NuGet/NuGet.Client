@@ -16,7 +16,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetsForTfmSpecificContentInPackage Condition=" '$(Create2ndNupkg)' == 'false'">$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg</TargetsForTfmSpecificContentInPackage>
     <TargetsForTfmSpecificContentInPackage Condition=" '$(Create2ndNupkg)' == 'true'">$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg2X</TargetsForTfmSpecificContentInPackage>
-    <PackageId Condition=" '$(Create2ndNupkg)' == 'true'">$(AssemblyName).netstandard2.1</PackageId>
+    <PackageId Condition=" '$(Create2ndNupkg)' == 'false'">$(AssemblyName).Sdk2x</PackageId>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
     <PackageDescription>NuGet pack for dotnet CLI.</PackageDescription>
@@ -27,7 +27,10 @@
   <ItemGroup>
     <Compile Include="..\NuGet.Build.Tasks\Common\MSBuildLogger.cs" />
     <Compile Include="..\NuGet.Build.Tasks\GetProjectTargetFrameworksTask.cs" />
-    <Content Include="NuGet.Build.Tasks.Pack.targets" Pack="true" PackagePath="build;buildCrossTargeting">
+    <Content Include="NuGet.Build.Tasks.Pack.targets" Pack="true" PackagePath="build;buildCrossTargeting"  >
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="NuGet.Build.Tasks.Pack.Sdk2x.targets" Pack="true" PackagePath="build;buildCrossTargeting" Condition=" '$(Create2ndNupkg)' == 'false'" >
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
