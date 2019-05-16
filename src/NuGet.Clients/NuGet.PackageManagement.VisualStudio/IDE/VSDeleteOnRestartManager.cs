@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -66,6 +66,8 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (SolutionManager.SolutionDirectory != null)
                 {
+
+                    // ui thread.
                     _packagesFolderPath =
                         PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings);
                 }
@@ -193,7 +195,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         else
                         {
                             projectContext.Log(
-                                ProjectManagement.MessageLevel.Warning,
+                                MessageLevel.Warning,
                                 string.Format(
                                     CultureInfo.CurrentCulture,
                                     Strings.Warning_FailedToDeleteMarkedPackageDirectory,

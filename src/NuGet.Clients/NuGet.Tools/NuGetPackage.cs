@@ -457,9 +457,9 @@ namespace NuGetVSExtension
             // load packages.config. This makes sure that an exception will get thrown if there
             // are problems with packages.config, such as duplicate packages. When an exception
             // is thrown, an error dialog will pop up and this doc window will not be created.
-            var installedPackages = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
+            _ = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
-            var uiController = UIFactory.Value.Create(nugetProject);
+            var uiController = await UIFactory.Value.CreateAsync(nugetProject);
 
             var model = new PackageManagerModel(
                 uiController,
@@ -549,7 +549,8 @@ namespace NuGetVSExtension
             windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
 
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
-            var uiController = ServiceLocator.GetInstance<INuGetUIFactory>().Create(nuGetProject);
+            var uiController = await ServiceLocator.GetInstance<INuGetUIFactory>().CreateAsync(nuGetProject);
+            // TODO NK - Why? 
             var settings = uiController.UIContext.UserSettingsManager.GetSettings(GetProjectSettingsKey(nuGetProject));
 
             await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject);
@@ -691,7 +692,7 @@ namespace NuGetVSExtension
             }
 
             // pass empty array of NuGetProject
-            var uiController = UIFactory.Value.Create(projects); // This accesses the settings.
+            var uiController = await UIFactory.Value.CreateAsync(projects); // This accesses the settings.
 
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
 

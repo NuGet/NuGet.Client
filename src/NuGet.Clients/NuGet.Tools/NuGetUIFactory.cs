@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
@@ -72,7 +73,7 @@ namespace NuGetVSExtension
         /// <summary>
         /// Returns the UI for the project or given set of projects.
         /// </summary>
-        public INuGetUI Create(params NuGetProject[] projects)
+        public Task<INuGetUI> CreateAsync(params NuGetProject[] projects)
         {
             var uiContext = CreateUIContext(projects);
 
@@ -80,10 +81,10 @@ namespace NuGetVSExtension
             ProjectContext.PackageExtractionContext = new PackageExtractionContext(
                     PackageSaveMode.Defaultv2,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger), // This is on the UI thread unnecessarily
+                    ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
                     adapterLogger);
 
-            return new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLogger);
+            return Task.FromResult<INuGetUI>(new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLogger));
         }
 
         private INuGetUIContext CreateUIContext(params NuGetProject[] projects)

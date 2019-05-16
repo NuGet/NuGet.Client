@@ -472,7 +472,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            SolutionOpening?.Invoke(this, EventArgs.Empty);
+            SolutionOpening?.Invoke(this, EventArgs.Empty); // on UI thread causing a delay x2
 
             // although the SolutionOpened event fires, the solution may be only in memory (e.g. when
             // doing File - New File). In that case, we don't want to act on the event.
@@ -490,10 +490,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnAfterClosing()
         {
-            if (SolutionClosed != null)
-            {
-                SolutionClosed(this, EventArgs.Empty);
-            }
+            SolutionClosed?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnBeforeClosing()

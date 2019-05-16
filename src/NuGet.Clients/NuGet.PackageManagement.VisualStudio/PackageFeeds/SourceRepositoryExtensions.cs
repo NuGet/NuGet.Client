@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 throw new InvalidOperationException("Invalid token");
             }
-
+            // How is this on the UI thread? Dafuq?
             var searchResource = await sourceRepository.GetResourceAsync<PackageSearchResource>(cancellationToken);
 
             var searchResults = await searchResource?.SearchAsync(
