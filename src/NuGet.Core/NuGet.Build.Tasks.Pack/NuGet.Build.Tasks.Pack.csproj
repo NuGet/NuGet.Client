@@ -27,10 +27,10 @@
   <ItemGroup>
     <Compile Include="..\NuGet.Build.Tasks\Common\MSBuildLogger.cs" />
     <Compile Include="..\NuGet.Build.Tasks\GetProjectTargetFrameworksTask.cs" />
-    <Content Include="NuGet.Build.Tasks.Pack.targets" Pack="true" PackagePath="build;buildCrossTargeting"  >
+    <Content Include="NuGet.Build.Tasks.Pack.targets" Pack="true" PackagePath="build;buildCrossTargeting">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="NuGet.Build.Tasks.Pack.Sdk2x.targets" Pack="true" PackagePath="build;buildCrossTargeting" Condition=" '$(Create2ndNupkg)' != 'true'" >
+    <Content Include="NuGet.Build.Tasks.Pack.Sdk2x.targets" Pack="true" PackagePath="build;buildCrossTargeting" Condition=" '$(Create2ndNupkg)' != 'true'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -181,7 +181,7 @@
     </ItemGroup>    
   </Target>
 
-   <!--These targets help get files for pack the second NuGet.Build.Tasks.Pack package, for netstandard2.1.-->
+   <!--These targets help get files for packing the second NuGet.Build.Tasks.Pack package, for netstandard2.1.-->
    <Target Name="CreatePackNupkg2X">
     <PropertyGroup>
       <!-- Build from source can't use ILMerge. -->

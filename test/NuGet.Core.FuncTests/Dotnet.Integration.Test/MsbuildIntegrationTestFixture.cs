@@ -285,10 +285,9 @@ namespace Dotnet.Integration.Test
                     .Where(fileName => fileName.StartsWith("lib/netstandard2.1")
                                     || fileName.StartsWith("lib/netcoreapp3.0")
                                     || fileName.Contains("NuGet.targets"));
-                    if (files == null) {
+                    if (!files.Any()) {
                         files = nupkg.GetFiles()
                         .Where(fileName => fileName.StartsWith("lib/netstandard2.0")
-                                    || fileName.StartsWith("lib/netcoreapp2.1")
                                     || fileName.Contains("NuGet.targets"));
 
                     }
@@ -300,6 +299,7 @@ namespace Dotnet.Integration.Test
 #endif
 
                     CopyFlatlistOfFilesToTarget(nupkg, pathToSdkInCli, files);
+
                 }
             }
         }
