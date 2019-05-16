@@ -46,7 +46,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        // verify that assemblies ended with "resources" still processed.
+        // verify that assemblies titles ended up with the "resources.dll" are still processed.
         [Fact]
         public void PackagesEndedWithResourcesShouldBeProcessed()
         {

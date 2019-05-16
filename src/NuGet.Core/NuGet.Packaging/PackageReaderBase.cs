@@ -26,7 +26,7 @@ namespace NuGet.Packaging
     public abstract class PackageReaderBase : IPackageCoreReader, IPackageContentReader, IAsyncPackageCoreReader, IAsyncPackageContentReader, ISignedPackageReader
     {
         private NuspecReader _nuspecReader;
-
+        private static readonly Regex _resourceDllRegex = new Regex(@"[\\\/](\w{2}|\w{2}[-]\w{2})[\\\/].+[.]resources[.]dll$", RegexOptions.IgnoreCase);
         protected IFrameworkNameProvider FrameworkProvider { get; set; }
         protected IFrameworkCompatibilityProvider CompatibilityProvider { get; set; }
 
@@ -503,7 +503,7 @@ namespace NuGet.Packaging
             {
                 // Resource assembly suppose to be located in the culture folder.
                 // In other case proper assemblies that are ended with "resources" can be filtered.
-                if (!Regex.IsMatch(path, @"[\\\/](\w{2}|\w{2}[-]\w{2})[\\\/].+[.]resources[.]dll$", RegexOptions.IgnoreCase))
+                if (!_resourceDllRegex.IsMatch(path))
                 {
                     result = true;
                 }
