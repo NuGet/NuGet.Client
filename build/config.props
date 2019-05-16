@@ -19,7 +19,7 @@
     <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">release/2.2.4xx;release/2.1.8xx</SdkTargetBranches>
     <!-- We need to update this netcoreassembly build number with every insertion into VS to workaround any breaking api
     changes we might have made.-->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">2</NetCoreAssemblyBuildNumber>
     <!-- Check the VS schedule and manually enter a preview number here that makes sense. -->
     <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview2</ReleaseLabel>
   </PropertyGroup>
