@@ -11,5 +11,5 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project>
-  <Import Project="NuGet.Build.Tasks.Pack.Target" />
+  <Import Project="NuGet.Build.Tasks.Pack.targets" />
 </Project>
