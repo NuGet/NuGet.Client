@@ -14,8 +14,8 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <XPLATProject>true</XPLATProject>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <TargetsForTfmSpecificContentInPackage Condition=" '$(Create2ndNupkg)' != 'true'">$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg</TargetsForTfmSpecificContentInPackage>
-    <TargetsForTfmSpecificContentInPackage Condition=" '$(Create2ndNupkg)' == 'true'">$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg2X</TargetsForTfmSpecificContentInPackage>
+    <TargetsForTfmSpecificContentInPackage Condition=" '$(Create2ndNupkg)' != 'true'">$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg2X</TargetsForTfmSpecificContentInPackage>
+    <TargetsForTfmSpecificContentInPackage Condition=" '$(Create2ndNupkg)' == 'true'">$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg</TargetsForTfmSpecificContentInPackage>
     <PackageId Condition=" '$(Create2ndNupkg)' != 'true'">$(AssemblyName).Sdk2x</PackageId>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
