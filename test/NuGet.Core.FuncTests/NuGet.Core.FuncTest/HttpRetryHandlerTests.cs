@@ -100,7 +100,7 @@ namespace NuGet.Core.FuncTest
             }
             else
             {
-                Assert.Equal("No connection could be made because the target machine actively refused it", exception.InnerException.Message);
+                Assert.Equal("No connection could be made because the target machine actively refused it.", exception.InnerException.Message);
             }
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
@@ -154,7 +154,7 @@ namespace NuGet.Core.FuncTest
             }
             else
             {
-                Assert.Equal("No such host is known", exception.InnerException.Message);
+                Assert.Equal("No such host is known.", exception.InnerException.Message);
             }
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
