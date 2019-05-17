@@ -170,7 +170,7 @@ Invoke-BuildStep 'Packing RTM' {
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
     Trace-Log ". `"$MSBuildExe`" build\build.proj /t:BuildVS`;Pack /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:BuildVS`;Pack /p:Configuration=$Configuration /p:BuildRTM=true  /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1 /bl
+    & $MSBuildExe build\build.proj /t:BuildVS`;Pack /p:Configuration=$Configuration /p:BuildRTM=true  /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1
 
     if (-not $?)
     {
