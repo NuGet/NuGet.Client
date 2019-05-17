@@ -8,9 +8,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -150,7 +154,7 @@ namespace NuGet.PackageManagement.VisualStudio
             catch (Exception e)
             {
                 projectContext.Log(
-                    ProjectManagement.MessageLevel.Warning,
+                    MessageLevel.Warning,
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Warning_FailedToMarkPackageDirectoryForDeletion,
@@ -169,49 +173,49 @@ namespace NuGet.PackageManagement.VisualStudio
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",
             Justification = "We want to log an exception as a warning and move on")]
-        public void DeleteMarkedPackageDirectories(INuGetProjectContext projectContext)
+        public async Task DeleteMarkedPackageDirectories(INuGetProjectContext projectContext)
         {
-            if (PackagesFolderPath == null)
-            {
-                return;
-            }
+            await TaskScheduler.Default;
 
-            try
+            if (PackagesFolderPath != null)
             {
-                var packages = GetPackageDirectoriesMarkedForDeletion();
-                foreach (var package in packages)
+                try
                 {
-                    try
+                    var packages = GetPackageDirectoriesMarkedForDeletion();
+                    foreach (var package in packages)
                     {
-                        FileSystemUtility.DeleteDirectorySafe(package, true, projectContext);
-                    }
-                    finally
-                    {
-                        if (!Directory.Exists(package))
+                        try
                         {
-                            var deleteMeFilePath = package.TrimEnd('\\') + DeletionMarkerSuffix;
-                            FileSystemUtility.DeleteFile(deleteMeFilePath, projectContext);
+                            FileSystemUtility.DeleteDirectorySafe(package, true, projectContext);
                         }
-                        else
+                        finally
                         {
-                            projectContext.Log(
-                                MessageLevel.Warning,
-                                string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.Warning_FailedToDeleteMarkedPackageDirectory,
-                                    package));
+                            if (!Directory.Exists(package))
+                            {
+                                var deleteMeFilePath = package.TrimEnd('\\') + DeletionMarkerSuffix;
+                                FileSystemUtility.DeleteFile(deleteMeFilePath, projectContext);
+                            }
+                            else
+                            {
+                                projectContext.Log(
+                                    MessageLevel.Warning,
+                                    string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.Warning_FailedToDeleteMarkedPackageDirectory,
+                                        package));
+                            }
                         }
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                projectContext.Log(
-                               ProjectManagement.MessageLevel.Warning,
-                               string.Format(
-                                   CultureInfo.CurrentCulture,
-                                   Strings.Warning_FailedToDeleteMarkedPackageDirectories,
-                                   e.Message));
+                catch (Exception e)
+                {
+                    projectContext.Log(
+                                   MessageLevel.Warning,
+                                   string.Format(
+                                       CultureInfo.CurrentCulture,
+                                       Strings.Warning_FailedToDeleteMarkedPackageDirectories,
+                                       e.Message));
+                }
             }
         }
 
@@ -222,7 +226,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
             // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-            DeleteMarkedPackageDirectories(SolutionManager.NuGetProjectContext);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await DeleteMarkedPackageDirectories(SolutionManager.NuGetProjectContext));
         }
     }
 }

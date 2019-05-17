@@ -152,7 +152,7 @@ namespace NuGet.PackageManagement.UI
         public async Task LoadNextAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
             ActivityCorrelationId.StartNew();
-
+            // Should we have a different thread here?
             cancellationToken.ThrowIfCancellationRequested();
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
@@ -174,6 +174,7 @@ namespace NuGet.PackageManagement.UI
         public async Task UpdateStateAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            // Should this move off of the UI thread?
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
 
@@ -194,6 +195,7 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
+            await TaskScheduler.Default;
             // check if there is already a running initialization task for SolutionManager. If yes,
             // search should wait until this is completed. This would usually happen when opening manager
             //ui is the first nuget operation under LSL mode where it might take some time to initialize.
