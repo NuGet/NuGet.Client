@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -31,6 +31,9 @@ namespace NuGet.Common
             }
 
             _msbuildDirectory = msbuildDirectory;
+            Console.WriteLine(string.Join("## msbuildDirectory is", msbuildDirectory));
+            var testMsbuildDirectory = Directory.GetFiles(msbuildDirectory);
+            Console.WriteLine(string.Join("## it includes files: ", testMsbuildDirectory));
             _msbuildAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.dll"));
             _frameworkAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.Framework.dll"));
 
