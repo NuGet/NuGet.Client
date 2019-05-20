@@ -198,7 +198,8 @@ namespace NuGetVSExtension
             // delete them now.
             if (SolutionManager.Value.IsSolutionOpen)
             {
-                await DeleteOnRestartManager.Value.DeleteMarkedPackageDirectories(ProjectContext.Value); // Is this a good idea. Should initialize MEFAsync ever go off of the UI thread.
+                await DeleteOnRestartManager.Value.DeleteMarkedPackageDirectoriesAsync(ProjectContext.Value);
+                // Is this a good idea. Should initialize MEFAsync ever go off of the UI thread.
             }
 
             ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager.Value, this, componentModel);
@@ -692,7 +693,7 @@ namespace NuGetVSExtension
             }
 
             // pass empty array of NuGetProject
-            var uiController = await UIFactory.Value.CreateAsync(projects); // This accesses the settings.
+            var uiController = await UIFactory.Value.CreateAsync(projects);
 
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
 

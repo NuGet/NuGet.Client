@@ -152,7 +152,7 @@ namespace NuGet.PackageManagement.UI
         public async Task LoadNextAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
             ActivityCorrelationId.StartNew();
-            // Should we have a different thread here?
+
             cancellationToken.ThrowIfCancellationRequested();
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
@@ -174,7 +174,6 @@ namespace NuGet.PackageManagement.UI
         public async Task UpdateStateAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            // Should this move off of the UI thread?
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
 

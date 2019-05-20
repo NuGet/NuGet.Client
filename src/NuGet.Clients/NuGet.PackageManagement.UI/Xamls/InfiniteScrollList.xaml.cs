@@ -173,7 +173,7 @@ namespace NuGet.PackageManagement.UI
 
         private void LoadItems(PackageItemListViewModel selectedPackageItem, CancellationToken token)
         {
-            // If there is another async loading process - cancel it. - This is on the UI thread.
+            // If there is another async loading process - cancel it.
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 

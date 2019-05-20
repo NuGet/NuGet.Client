@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement
         /// Attempts to remove marked package directories that were unable to be fully deleted during the original
         /// uninstall.
         /// </summary>
-        Task DeleteMarkedPackageDirectories(INuGetProjectContext projectContext);
+        Task DeleteMarkedPackageDirectoriesAsync(INuGetProjectContext projectContext);
 
         /// <summary>
         /// Occurs when it is detected that the one or more packages are marked for deletion in the current solution.

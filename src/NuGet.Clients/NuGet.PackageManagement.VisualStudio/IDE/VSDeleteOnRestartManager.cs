@@ -171,7 +171,7 @@ namespace NuGet.PackageManagement.VisualStudio
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",
             Justification = "We want to log an exception as a warning and move on")]
-        public async Task DeleteMarkedPackageDirectories(INuGetProjectContext projectContext)
+        public async Task DeleteMarkedPackageDirectoriesAsync(INuGetProjectContext projectContext)
         {
             await TaskScheduler.Default;
 
@@ -224,7 +224,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
             // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await DeleteMarkedPackageDirectories(SolutionManager.NuGetProjectContext));
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await DeleteMarkedPackageDirectoriesAsync(SolutionManager.NuGetProjectContext));
         }
     }
 }

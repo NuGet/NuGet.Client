@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
-using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.Frameworks;
