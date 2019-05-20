@@ -472,7 +472,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            SolutionOpening?.Invoke(this, EventArgs.Empty); // on UI thread causing a delay x2
+            SolutionOpening?.Invoke(this, EventArgs.Empty); // on UI thread causing a delay x2, consider removing this event and communicating a reload in different ways
 
             // although the SolutionOpened event fires, the solution may be only in memory (e.g. when
             // doing File - New File). In that case, we don't want to act on the event.
@@ -884,7 +884,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region IVsSelectionEvents
 
-        public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive) // Does this come on the UI thread.
+        public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive) // Does this come on the UI thread. - When does this come?
         {
             if (dwCmdUICookie == _solutionLoadedUICookie
                 && fActive == 1)

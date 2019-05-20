@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Shared;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -18,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string NuGetSolutionSettingsFolder = ".nuget";
 
         // to initialize SolutionSettings first time outside MEF constructor
-        private ISettings _solutionSettings;
+        private Tuple<string, ISettings> _solutionSettings;
 
         private ISettings SolutionSettings
         {
@@ -27,10 +28,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (_solutionSettings == null)
                 {
                     // first time set _solutionSettings via ResetSolutionSettings API call.
-                    ResetSolutionSettings();
+                    ResetSolutionSettingsIfNeeded();
                 }
 
-                return _solutionSettings;
+                return _solutionSettings.Item2;
             }
         }
 
@@ -54,7 +55,12 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
         }
 
-        private void ResetSolutionSettings()
+        // This functions as a performance optimization.
+        // The solution load/unload events are called in the UI thread and are used to reset the settings.
+        // In some cases there's a synchronous dependency between the invocation of the Solution event and the settings being reset.
+        // In the open PM UI scenario (no restore run), there is an asynchrnous invocation of this code path. This optimization makes sure that the synchronus calls that come after the asynchrnous calls don't do duplicate work.
+
+        private bool ResetSolutionSettingsIfNeeded()
         {
             string root;
             if (SolutionManager == null
@@ -69,9 +75,15 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             try
-            {
-                // There are way too many loads of the settings here.
-                _solutionSettings = Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
+            {                
+                if (!EqualityUtility.EqualsWithNullCheck(root, _solutionSettings?.Item1))
+                {
+                    _solutionSettings = new Tuple<string, ISettings>(
+                        item1: root,
+                        item2: Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings)
+                        );
+                    return true;
+                }
             }
             catch (NuGetConfigurationException ex)
             {
@@ -80,16 +92,22 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (_solutionSettings == null)
             {
-                _solutionSettings = NullSettings.Instance;
+                _solutionSettings = new Tuple<string, ISettings>(null, NullSettings.Instance);
+                return true;
             }
+
+            return false;
         }
 
-        private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
+        private void OnSolutionOpenedOrClosed(object sender, EventArgs e) // Should we refresh asynchronously
         {
-            ResetSolutionSettings();
+            var changed = ResetSolutionSettingsIfNeeded();
 
             // raises event SettingsChanged
-            SettingsChanged?.Invoke(this, EventArgs.Empty);
+            if (changed)
+            {
+                SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public SettingSection GetSection(string sectionName)
