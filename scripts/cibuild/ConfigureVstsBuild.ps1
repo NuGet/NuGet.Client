@@ -121,10 +121,12 @@ $lsRemoteOpts = 'ls-remote', 'origin', $currentNuGetBranch
 Write-Host "Looking for branch '$currentNuGetBranch' in NuGet.Build.Localization"
 $lsResult = & git -C $NuGetLocalization $lsRemoteOpts
 
-if ($lsResult) {
+if ($lsResult)
+{
     $NuGetLocalizationRepoBranch = $currentNuGetBranch
 }
-else {
+else
+{
     $NuGetLocalizationRepoBranch = 'dev'
 }
 Write-Host "NuGet.Build.Localization Branch: $NuGetLocalizationRepoBranch"
