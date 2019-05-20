@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.UI
     {
         public const string LogEntrySource = "NuGet Package Manager";
 
-        private readonly NuGetUIProjectContext _projectContext; // Can this be lazy?
+        private readonly NuGetUIProjectContext _projectContext;
 
         public NuGetUI(
             ICommonOperations commonOperations,

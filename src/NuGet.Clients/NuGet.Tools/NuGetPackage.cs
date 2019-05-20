@@ -550,7 +550,7 @@ namespace NuGetVSExtension
 
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
             var uiController = await ServiceLocator.GetInstance<INuGetUIFactory>().CreateAsync(nuGetProject);
-            // TODO NK - Why? 
+            // TODO NK - Why get the settings if we are not gonna use them? Maybe we do, but this needs to be on the UI thread. 
             var settings = uiController.UIContext.UserSettingsManager.GetSettings(GetProjectSettingsKey(nuGetProject));
 
             await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject);

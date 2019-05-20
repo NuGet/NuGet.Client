@@ -75,6 +75,7 @@ namespace NuGetVSExtension
         /// </summary>
         public Task<INuGetUI> CreateAsync(params NuGetProject[] projects)
         {
+            // This is only async, it does not mean that it's not doing work on the UI thread. Maybe we need to switch explicitly.
             var uiContext = CreateUIContext(projects);
 
             var adapterLogger = new LoggerAdapter(ProjectContext);

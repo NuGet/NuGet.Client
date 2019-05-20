@@ -70,8 +70,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (SolutionManager.SolutionDirectory != null)
                 {
-
-                    // ui thread.
                     _packagesFolderPath =
                         PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings);
                 }
