@@ -32,9 +32,9 @@
     <MoqVersion>4.10.1</MoqVersion>
     <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
 
-    <MSBuildFrameworkPackageVersion>16.0.461</MSBuildFrameworkPackageVersion>
-    <MSBuildTasksCorePackageVersion>16.0.461</MSBuildTasksCorePackageVersion>
-    <MSBuildUtilitiesCorePackageVersion>16.0.461</MSBuildUtilitiesCorePackageVersion>
+    <MicrosoftBuildFrameworkPackageVersion>16.0.461</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildTasksCorePackageVersion>16.0.461</MicrosoftBuildTasksCorePackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>16.0.461</MicrosoftBuildUtilitiesCorePackageVersion>
 
   </PropertyGroup>
 

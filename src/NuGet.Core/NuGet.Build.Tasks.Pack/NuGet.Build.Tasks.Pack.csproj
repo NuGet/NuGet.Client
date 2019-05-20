@@ -40,9 +40,9 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
-    <PackageReference Include="Microsoft.Build.Framework" Version="$(MSBuildFrameworkPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MSBuildTasksCorePackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MSBuildUtilitiesCorePackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCorePackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
