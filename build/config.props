@@ -38,7 +38,7 @@
 
   </PropertyGroup>
 
-  <!-- Override isolated build dependency versions with versions from Repo API. -->
+  <!-- Special project import for dotnet source build -->
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
 
   <!-- Config -->
