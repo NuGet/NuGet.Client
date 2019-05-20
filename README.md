@@ -37,7 +37,9 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
     `.\configure.ps1`
 
-4. Build with
+4. Clone the Powershell window and open a new one. 
+
+5. Build with
 
     `.\build.ps1 -SkipUnitTest`
     
