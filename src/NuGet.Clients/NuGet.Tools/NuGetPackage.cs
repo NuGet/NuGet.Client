@@ -459,7 +459,7 @@ namespace NuGetVSExtension
             // is thrown, an error dialog will pop up and this doc window will not be created.
             _ = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
-            var uiController = await UIFactory.Value.CreateAsync(nugetProject);
+            var uiController = UIFactory.Value.Create(nugetProject);
 
             var model = new PackageManagerModel(
                 uiController,
@@ -549,7 +549,7 @@ namespace NuGetVSExtension
             windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
 
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
-            var uiController = await ServiceLocator.GetInstance<INuGetUIFactory>().CreateAsync(nuGetProject);
+            var uiController = ServiceLocator.GetInstance<INuGetUIFactory>().Create(nuGetProject);
             var settings = uiController.UIContext.UserSettingsManager.GetSettings(GetProjectSettingsKey(nuGetProject));
 
             await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, nuGetProject);
@@ -691,7 +691,7 @@ namespace NuGetVSExtension
             }
 
             // pass empty array of NuGetProject
-            var uiController = await UIFactory.Value.CreateAsync(projects);
+            var uiController = UIFactory.Value.Create(projects);
 
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
 
