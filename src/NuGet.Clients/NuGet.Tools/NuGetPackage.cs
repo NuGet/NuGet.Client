@@ -199,7 +199,6 @@ namespace NuGetVSExtension
             if (SolutionManager.Value.IsSolutionOpen)
             {
                 await DeleteOnRestartManager.Value.DeleteMarkedPackageDirectoriesAsync(ProjectContext.Value);
-                // Is this a good idea. Should initialize MEFAsync ever go off of the UI thread.
             }
 
             ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager.Value, this, componentModel);

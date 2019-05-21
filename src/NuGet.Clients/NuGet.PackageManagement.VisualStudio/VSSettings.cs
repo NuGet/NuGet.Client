@@ -55,11 +55,6 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
         }
 
-        // This functions as a performance optimization.
-        // The solution load/unload events are called in the UI thread and are used to reset the settings.
-        // In some cases there's a synchronous dependency between the invocation of the Solution event and the settings being reset.
-        // In the open PM UI scenario (no restore run), there is an asynchrnous invocation of this code path. This optimization makes sure that the synchronus calls that come after the asynchrnous calls don't do duplicate work.
-
         private bool ResetSolutionSettingsIfNeeded()
         {
             string root;
@@ -75,7 +70,12 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             try
-            {                
+            {
+                // This is a performance optimization.
+                // The solution load/unload events are called in the UI thread and are used to reset the settings.
+                // In some cases there's a synchronous dependency between the invocation of the Solution event and the settings being reset.
+                // In the open PM UI scenario (no restore run), there is an asynchronous invocation of this code path. This changes ensures that
+                // the synchronus calls that come after the asynchrnous calls don't do duplicate work.
                 if (!EqualityUtility.EqualsWithNullCheck(root, _solutionSettings?.Item1))
                 {
                     _solutionSettings = new Tuple<string, ISettings>(
