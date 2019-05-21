@@ -41,7 +41,6 @@
     <TestSDKVersion>15.5.0</TestSDKVersion>
     <MoqVersion>4.10.1</MoqVersion>
     <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
-
     <MicrosoftBuildPackageVersion Condition="$(MicrosoftBuildPackageVersion) == ''">16.0.461</MicrosoftBuildPackageVersion>
   </PropertyGroup>
 
@@ -78,6 +77,6 @@
     <Message Text="$(SdkTargetBranches)" Importance="High"/>
   </Target>
   <Target Name="GetCliBranchForTesting">
-    <Message Text="$(CliBranchForTesting)" Importance="High"/>
+      <Message Text="$(CliBranchForTesting)" Importance="High"/>
   </Target>
 </Project>
