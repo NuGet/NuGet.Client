@@ -33,7 +33,6 @@
   -->
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
 
-
   <!-- Dependency versions -->
   <PropertyGroup>
     <NewtonsoftJsonVersionCore>9.0.1</NewtonsoftJsonVersionCore>
