@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Utilities;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
@@ -16,6 +17,7 @@ using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGetVSExtension
 {
@@ -73,8 +75,11 @@ namespace NuGetVSExtension
         /// <summary>
         /// Returns the UI for the project or given set of projects.
         /// </summary>
-        public Task<INuGetUI> CreateAsync(params NuGetProject[] projects)
+        public async Task<INuGetUI> CreateAsync(params NuGetProject[] projects)
         {
+            // This accesses the settings and takes at least 50ms
+            // At this points the settings should've been loaded so there should be no disk access.
+            await TaskScheduler.Default;
             var uiContext = CreateUIContext(projects);
 
             var adapterLogger = new LoggerAdapter(ProjectContext);
@@ -84,7 +89,7 @@ namespace NuGetVSExtension
                     ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
                     adapterLogger);
 
-            return Task.FromResult<INuGetUI>(new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLogger));
+            return new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLogger);
         }
 
         private INuGetUIContext CreateUIContext(params NuGetProject[] projects)

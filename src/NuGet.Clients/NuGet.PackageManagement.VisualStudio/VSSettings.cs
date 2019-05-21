@@ -76,6 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // In some cases there's a synchronous dependency between the invocation of the Solution event and the settings being reset.
                 // In the open PM UI scenario (no restore run), there is an asynchronous invocation of this code path. This changes ensures that
                 // the synchronus calls that come after the asynchrnous calls don't do duplicate work.
+                // That however is not the case for solution close and  same session close -> open events. Those will be on the UI thread.
                 if (!EqualityUtility.EqualsWithNullCheck(root, _solutionSettings?.Item1))
                 {
                     _solutionSettings = new Tuple<string, ISettings>(
@@ -99,7 +100,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return false;
         }
 
-        private void OnSolutionOpenedOrClosed(object sender, EventArgs e) // Should we refresh asynchronously
+        private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
         {
             var changed = ResetSolutionSettingsIfNeeded();
 

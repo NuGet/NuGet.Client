@@ -5,13 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft;
@@ -22,7 +20,6 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
-using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -472,7 +469,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            SolutionOpening?.Invoke(this, EventArgs.Empty); // on UI thread causing a delay x2, consider removing this event and communicating a reload in different ways
+            SolutionOpening?.Invoke(this, EventArgs.Empty);
 
             // although the SolutionOpened event fires, the solution may be only in memory (e.g. when
             // doing File - New File). In that case, we don't want to act on the event.
@@ -884,7 +881,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region IVsSelectionEvents
 
-        public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive) // Does this come on the UI thread. - When does this come?
+        public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
         {
             if (dwCmdUICookie == _solutionLoadedUICookie
                 && fActive == 1)
