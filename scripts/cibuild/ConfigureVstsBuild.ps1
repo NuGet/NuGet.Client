@@ -109,14 +109,30 @@ DisableStrongNameVerification -publicKeyToken '31bf3856ad364e35' # NuGet
 $regKeyFileSystem = "HKLM:SYSTEM\CurrentControlSet\Control\FileSystem"
 $enableLongPathSupport = "LongPathsEnabled"
 
-# update submodule NuGet.Build.Localization
 $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
 $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 
+# NuGet.Build.Localization repository set-up
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
-$NuGetLocalizationRepoBranch = 'master'
-$updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
 
+# Check if there is a localization branch associated with this branch repo 
+$currentNuGetBranch = $env:BUILD_SOURCEBRANCHNAME
+$lsRemoteOpts = 'ls-remote', 'origin', $currentNuGetBranch
+Write-Host "Looking for branch '$currentNuGetBranch' in NuGet.Build.Localization"
+$lsResult = & git -C $NuGetLocalization $lsRemoteOpts
+
+if ($lsResult)
+{
+    $NuGetLocalizationRepoBranch = $currentNuGetBranch
+}
+else
+{
+    $NuGetLocalizationRepoBranch = 'dev'
+}
+Write-Host "NuGet.Build.Localization Branch: $NuGetLocalizationRepoBranch"
+
+# update submodule NuGet.Build.Localization
+$updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
 & git -C $NuGetLocalization $updateOpts 2>&1 | Write-Host
 # Get the commit of the localization repository that will be used for this build.
