@@ -42,11 +42,7 @@
     <MoqVersion>4.10.1</MoqVersion>
     <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
 
-    <MicrosoftBuildPackageVersion>16.0.461</MicrosoftBuildPackageVersion>
-
-    <MicrosoftBuildFrameworkPackageVersion Condition="$(MicrosoftBuildFrameworkPackageVersion) == ''">$(MicrosoftBuildPackageVersion)</MicrosoftBuildFrameworkPackageVersion>
-    <MicrosoftBuildTasksCorePackageVersion Condition="$(MicrosoftBuildTasksCorePackageVersion) == ''">$(MicrosoftBuildPackageVersion)</MicrosoftBuildTasksCorePackageVersion>
-    <MicrosoftBuildUtilitiesCorePackageVersion Condition="$(MicrosoftBuildUtilitiesCorePackageVersion) == ''">$(MicrosoftBuildPackageVersion)</MicrosoftBuildUtilitiesCorePackageVersion>
+    <MicrosoftBuildPackageVersion Condition="$(MicrosoftBuildPackageVersion) == ''">16.0.461</MicrosoftBuildPackageVersion>
   </PropertyGroup>
 
   <!-- Config -->
@@ -83,15 +79,5 @@
   </Target>
   <Target Name="GetCliBranchForTesting">
     <Message Text="$(CliBranchForTesting)" Importance="High"/>
-  </Target>
-
-  <Target Name="CheckMicrosoftBuildVersions" BeforeTargets="GetSemanticVersion">
-    <Warning 
-      Text="Microsoft.Build package versions differ: 
-      Framework=$(MicrosoftBuildFrameworkPackageVersion) 
-      Tasks.Core=$(MicrosoftBuildTasksCorePackageVersion) 
-      Utilities.Core=$(MicrosoftBuildUtilitiesCorePackageVersion)"
-      Condition="$(MicrosoftBuildFrameworkPackageVersion) != $(MicrosoftBuildTasksCorePackageVersion) 
-      OR $(MicrosoftBuildFrameworkPackageVersion) != $(MicrosoftBuildUtilitiesCorePackageVersion)" />
   </Target>
 </Project>
