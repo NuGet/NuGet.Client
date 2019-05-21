@@ -24,6 +24,16 @@
     <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview2</ReleaseLabel>
   </PropertyGroup>
 
+  <!-- Special project import for dotnet source build
+
+  The dotnet-source Repo API overrides *PackageVersion properties with versions that were built before.
+  Those paackages are injected in this props file
+
+  See: https://github.com/dotnet/source-build/blob/master/Documentation/auto-dependency-flow/api.md#-pdotnetpackageversionpropspathpath
+  -->
+  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
+
+
   <!-- Dependency versions -->
   <PropertyGroup>
     <NewtonsoftJsonVersionCore>9.0.1</NewtonsoftJsonVersionCore>
@@ -32,14 +42,12 @@
     <MoqVersion>4.10.1</MoqVersion>
     <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
 
-    <MicrosoftBuildFrameworkPackageVersion>16.0.461</MicrosoftBuildFrameworkPackageVersion>
-    <MicrosoftBuildTasksCorePackageVersion>16.0.461</MicrosoftBuildTasksCorePackageVersion>
-    <MicrosoftBuildUtilitiesCorePackageVersion>16.0.461</MicrosoftBuildUtilitiesCorePackageVersion>
+    <MicrosoftBuildPackageVersion>16.0.461</MicrosoftBuildPackageVersion>
 
+    <MicrosoftBuildFrameworkPackageVersion Condition="$(MicrosoftBuildFrameworkPackageVersion) == ''">$(MicrosoftBuildPackageVersion)</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildTasksCorePackageVersion Condition="$(MicrosoftBuildTasksCorePackageVersion) == ''">$(MicrosoftBuildPackageVersion)</MicrosoftBuildTasksCorePackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion Condition="$(MicrosoftBuildUtilitiesCorePackageVersion) == ''">$(MicrosoftBuildPackageVersion)</MicrosoftBuildUtilitiesCorePackageVersion>
   </PropertyGroup>
-
-  <!-- Special project import for dotnet source build -->
-  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
 
   <!-- Config -->
   <PropertyGroup>
@@ -74,6 +82,16 @@
     <Message Text="$(SdkTargetBranches)" Importance="High"/>
   </Target>
   <Target Name="GetCliBranchForTesting">
-      <Message Text="$(CliBranchForTesting)" Importance="High"/>
+    <Message Text="$(CliBranchForTesting)" Importance="High"/>
+  </Target>
+
+  <Target Name="CheckMicrosoftBuildVersions" BeforeTargets="GetSemanticVersion">
+    <Warning 
+      Text="Microsoft.Build package versions differ: 
+      Framework=$(MicrosoftBuildFrameworkPackageVersion) 
+      Tasks.Core=$(MicrosoftBuildTasksCorePackageVersion) 
+      Utilities.Core=$(MicrosoftBuildUtilitiesCorePackageVersion)"
+      Condition="$(MicrosoftBuildFrameworkPackageVersion) != $(MicrosoftBuildTasksCorePackageVersion) 
+      OR $(MicrosoftBuildFrameworkPackageVersion) != $(MicrosoftBuildUtilitiesCorePackageVersion)" />
   </Target>
 </Project>
