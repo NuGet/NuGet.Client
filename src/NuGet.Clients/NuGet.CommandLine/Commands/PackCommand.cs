@@ -110,12 +110,12 @@ namespace NuGet.CommandLine
             packArgs.BasePath = BasePath;
             packArgs.MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console).Value.Path);
 
-            if (!String.IsNullOrEmpty(PackagesDirectory))
+            if (!string.IsNullOrEmpty(PackagesDirectory))
             {
                 packArgs.PackagesDirectory = Path.GetFullPath(PackagesDirectory);
             }
 
-            if (!String.IsNullOrEmpty(SolutionDirectory))
+            if (!string.IsNullOrEmpty(SolutionDirectory))
             {
                 packArgs.SolutionDirectory = Path.GetFullPath(SolutionDirectory);
             }

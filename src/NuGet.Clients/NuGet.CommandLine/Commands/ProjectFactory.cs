@@ -1019,7 +1019,7 @@ namespace NuGet.CommandLine
             var references = packagesProject.GetInstalledPackagesAsync(CancellationToken.None).Result;
 
             string packagesFolderPath;
-            if (!String.IsNullOrEmpty(PackagesDirectory))
+            if (!string.IsNullOrEmpty(PackagesDirectory))
             {
                 packagesFolderPath = PackagesDirectory;
             }
@@ -1191,7 +1191,7 @@ namespace NuGet.CommandLine
 
         private string GetSolutionDir()
         {
-            if (!String.IsNullOrEmpty(SolutionDirectory))
+            if (!string.IsNullOrEmpty(SolutionDirectory))
             {
                 return SolutionDirectory;
             }
