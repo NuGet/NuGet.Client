@@ -33,7 +33,7 @@ namespace Test.Utility
 
         public Task DeleteMarkedPackageDirectoriesAsync(INuGetProjectContext projectContext)
         {
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
     }
 }

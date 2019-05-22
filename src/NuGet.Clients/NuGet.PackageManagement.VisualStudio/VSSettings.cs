@@ -75,14 +75,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 // The solution load/unload events are called in the UI thread and are used to reset the settings.
                 // In some cases there's a synchronous dependency between the invocation of the Solution event and the settings being reset.
                 // In the open PM UI scenario (no restore run), there is an asynchronous invocation of this code path. This changes ensures that
-                // the synchronus calls that come after the asynchrnous calls don't do duplicate work.
+                // the synchronous calls that come after the asynchrnous calls don't do duplicate work.
                 // That however is not the case for solution close and  same session close -> open events. Those will be on the UI thread.
-                if (!EqualityUtility.EqualsWithNullCheck(root, _solutionSettings?.Item1))
+                if (!string.Equals(root, _solutionSettings?.Item1))
                 {
                     _solutionSettings = new Tuple<string, ISettings>(
                         item1: root,
-                        item2: Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings)
-                        );
+                        item2: Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings));
                     return true;
                 }
             }
@@ -102,10 +101,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
         {
-            var changed = ResetSolutionSettingsIfNeeded();
+            var hasChanged = ResetSolutionSettingsIfNeeded();
 
-            // raises event SettingsChanged
-            if (changed)
+            if (hasChanged)
             {
                 SettingsChanged?.Invoke(this, EventArgs.Empty);
             }

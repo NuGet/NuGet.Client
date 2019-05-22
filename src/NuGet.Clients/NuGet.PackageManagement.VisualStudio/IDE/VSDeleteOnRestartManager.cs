@@ -44,18 +44,8 @@ namespace NuGet.PackageManagement.VisualStudio
             Configuration.ISettings settings,
             ISolutionManager solutionManager)
         {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            if (solutionManager == null)
-            {
-                throw new ArgumentNullException(nameof(solutionManager));
-            }
-
-            Settings = settings;
-            SolutionManager = solutionManager;
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            SolutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             SolutionManager.SolutionOpened += OnSolutionOpenedOrClosed;
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
         }
@@ -84,19 +74,21 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Gets the directories marked for deletion. Returns empty is <see cref="PackagesFolderPath"/> is <![CDATA[null]]>
+        /// Gets the directories marked for deletion. Returns empty is <see cref="PackagesFolderPath"/> is <c>null</c> >
         /// </summary>
         public IReadOnlyList<string> GetPackageDirectoriesMarkedForDeletion()
         {
-            if (PackagesFolderPath == null)
+            // PackagesFolderPath reads the configs, reference the local variable to avoid reading the configs continously
+            var packagesFolderPath = PackagesFolderPath;
+            if (packagesFolderPath == null)
             {
-                return new List<string>();
+                return Array.Empty<string>();
             }
 
             var candidates = FileSystemUtility
-                .GetFiles(PackagesFolderPath, path: "", filter: DeletionMarkerFilter, recursive: false)
+                .GetFiles(packagesFolderPath, path: "", filter: DeletionMarkerFilter, recursive: false)
                 // strip the DeletionMarkerFilter at the end of the path to get the package path.
-                .Select(path => Path.Combine(PackagesFolderPath, Path.ChangeExtension(path, null)))
+                .Select(path => Path.Combine(packagesFolderPath, Path.ChangeExtension(path, null)))
                 .ToList();
 
             var filesWithoutFolders = candidates.Where(path => !Directory.Exists(path));
