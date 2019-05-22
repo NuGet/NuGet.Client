@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Gets the directories marked for deletion.
+        /// Gets the directories marked for deletion. Returns empty is <see cref="PackagesFolderPath"/> is <![CDATA[null]]>
         /// </summary>
         public IReadOnlyList<string> GetPackageDirectoriesMarkedForDeletion()
         {
@@ -175,45 +175,42 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await TaskScheduler.Default;
 
-            if (PackagesFolderPath != null)
+            try
             {
-                try
+                var packages = GetPackageDirectoriesMarkedForDeletion(); // returns empty if PackagesFolderPath is null. No need to check again.
+                foreach (var package in packages)
                 {
-                    var packages = GetPackageDirectoriesMarkedForDeletion();
-                    foreach (var package in packages)
+                    try
                     {
-                        try
+                        FileSystemUtility.DeleteDirectorySafe(package, true, projectContext);
+                    }
+                    finally
+                    {
+                        if (!Directory.Exists(package))
                         {
-                            FileSystemUtility.DeleteDirectorySafe(package, true, projectContext);
+                            var deleteMeFilePath = package.TrimEnd('\\') + DeletionMarkerSuffix;
+                            FileSystemUtility.DeleteFile(deleteMeFilePath, projectContext);
                         }
-                        finally
+                        else
                         {
-                            if (!Directory.Exists(package))
-                            {
-                                var deleteMeFilePath = package.TrimEnd('\\') + DeletionMarkerSuffix;
-                                FileSystemUtility.DeleteFile(deleteMeFilePath, projectContext);
-                            }
-                            else
-                            {
-                                projectContext.Log(
-                                    MessageLevel.Warning,
-                                    string.Format(
-                                        CultureInfo.CurrentCulture,
-                                        Strings.Warning_FailedToDeleteMarkedPackageDirectory,
-                                        package));
-                            }
+                            projectContext.Log(
+                                MessageLevel.Warning,
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.Warning_FailedToDeleteMarkedPackageDirectory,
+                                    package));
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    projectContext.Log(
-                                   MessageLevel.Warning,
-                                   string.Format(
-                                       CultureInfo.CurrentCulture,
-                                       Strings.Warning_FailedToDeleteMarkedPackageDirectories,
-                                       e.Message));
-                }
+            }
+            catch (Exception e)
+            {
+                projectContext.Log(
+                               MessageLevel.Warning,
+                               string.Format(
+                                   CultureInfo.CurrentCulture,
+                                   Strings.Warning_FailedToDeleteMarkedPackageDirectories,
+                                   e.Message));
             }
         }
 
