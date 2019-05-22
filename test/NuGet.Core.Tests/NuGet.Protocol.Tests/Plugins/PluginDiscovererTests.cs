@@ -15,6 +15,12 @@ namespace NuGet.Protocol.Plugins.Tests
 {
     public class PluginDiscovererTests
     {
+#if IS_DESKTOP
+        private const string _extension = ".exe";
+#else
+        private const string _extension = ".dll";
+#endif        
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -52,7 +58,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var pluginPath = Path.Combine(testDirectory.Path, "a");
+                var pluginPath = Path.Combine(testDirectory.Path, $"a{_extension}");
 
                 File.WriteAllText(pluginPath, string.Empty);
 
@@ -83,7 +89,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var pluginPath = Path.Combine(testDirectory.Path, "a");
+                var pluginPath = Path.Combine(testDirectory.Path, $"a{_extension}");
 
                 File.WriteAllText(pluginPath, string.Empty);
 
@@ -118,7 +124,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var pluginPath = Path.Combine(testDirectory.Path, "a");
+                var pluginPath = Path.Combine(testDirectory.Path, $"a{_extension}");
 
                 File.WriteAllText(pluginPath, string.Empty);
 
@@ -148,19 +154,20 @@ namespace NuGet.Protocol.Plugins.Tests
             using (var testDirectory = TestDirectory.Create())
             {
                 var pluginPaths = new[] { "a", "b", "c", "d" }
-                    .Select(fileName => Path.Combine(testDirectory.Path, fileName))
+                    .Select(fileName => Path.Combine(testDirectory.Path, fileName+_extension))
                     .ToArray();
 
                 File.WriteAllText(pluginPaths[1], string.Empty);
                 File.WriteAllText(pluginPaths[2], string.Empty);
 
+                var pluginE = $"e{_extension}";
                 var responses = new Dictionary<string, bool>()
                 {
                     { pluginPaths[0], false },
                     { pluginPaths[1], false },
                     { pluginPaths[2], true },
                     { pluginPaths[3], false },
-                    { "e", true }
+                    { pluginE, true }
                 };
                 var verifierStub = new EmbeddedSignatureVerifierStub(responses);
                 var rawPluginPaths = string.Join(";", responses.Keys);
@@ -187,9 +194,9 @@ namespace NuGet.Protocol.Plugins.Tests
                     Assert.Equal(PluginFileState.NotFound, results[3].PluginFile.State.Value);
                     Assert.Equal($"A plugin was not found at path '{pluginPaths[3]}'.", results[3].Message);
 
-                    Assert.Equal("e", results[4].PluginFile.Path);
+                    Assert.Equal(pluginE, results[4].PluginFile.Path);
                     Assert.Equal(PluginFileState.InvalidFilePath, results[4].PluginFile.State.Value);
-                    Assert.Equal($"The plugin file path 'e' is invalid.", results[4].Message);
+                    Assert.Equal($"The plugin file path '{pluginE}' is invalid.", results[4].Message);
                 }
             }
         }
@@ -201,6 +208,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData(@"..\a")]
         public async Task DiscoverAsync_DisallowsNonRootedFilePaths(string pluginPath)
         {
+            pluginPath += _extension;
             var responses = new Dictionary<string, bool>() { { pluginPath, true } };
             var verifierStub = new EmbeddedSignatureVerifierStub(responses);
 
@@ -215,11 +223,40 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task DiscoverAsync_RemovesIrrelevantPluginsForFramework()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var pluginPaths = new[] { $"a{_extension}", "b.xxx", $"c{_extension}" }
+                    .Select(fileName => Path.Combine(testDirectory.Path, fileName))
+                    .ToArray();
+
+                var responses = new Dictionary<string, bool>();
+                foreach (var path in pluginPaths)
+                {
+                    File.WriteAllText(path, string.Empty);
+                    responses[path] = true;
+                }
+
+                var verifierStub = new EmbeddedSignatureVerifierStub(responses);
+                var pluginPath = string.Join(";", pluginPaths);
+                using (var discoverer = new PluginDiscoverer(pluginPath, verifierStub))
+                {
+                    var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
+
+                    Assert.Equal(2, results.Length);
+                    Assert.Equal(pluginPaths[0], results[0].PluginFile.Path);
+                    Assert.Equal(pluginPaths[2], results[1].PluginFile.Path);
+                }
+            }
+        }
+
+        [Fact]
         public async Task DiscoverAsync_IsIdempotent()
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var pluginPath = Path.Combine(testDirectory.Path, "a");
+                var pluginPath = Path.Combine(testDirectory.Path, $"a{_extension}");
 
                 File.WriteAllText(pluginPath, string.Empty);
 

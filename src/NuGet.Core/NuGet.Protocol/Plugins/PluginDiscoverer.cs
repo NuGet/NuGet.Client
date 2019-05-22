@@ -154,7 +154,10 @@ namespace NuGet.Protocol.Plugins
                 return PluginDiscoveryUtility.GetConventionBasedPlugins(directories);
             }
 
-            return _rawPluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            // even if there are no relevant plugins, we will not fall back to built-ins
+            // to maintain some typo-guard consistency with the previous no-filter flow
+            return _rawPluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Where(PluginDiscoveryUtility.IsPluginRelevant);
         }
     }
 }

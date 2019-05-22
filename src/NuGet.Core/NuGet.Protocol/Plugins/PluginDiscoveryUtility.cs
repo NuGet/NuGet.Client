@@ -95,5 +95,14 @@ namespace NuGet.Protocol.Plugins
             }
             return paths;
         }
+
+        public static bool IsPluginRelevant(string path)
+        {
+#if IS_DESKTOP
+           return path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
+#else
+           return path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase);
+#endif
+        }
     }
 }
