@@ -100,13 +100,17 @@ namespace NuGet.Core.FuncTest
             }
             else
             {
+#if IS_NETCORE30
                 Assert.Equal("No connection could be made because the target machine actively refused it.", exception.InnerException.Message);
+#else
+                Assert.Equal("No connection could be made because the target machine actively refused it", exception.InnerException.Message);
+#endif
             }
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
             Assert.Equal(WebExceptionStatus.ConnectFailure, innerException.Status);
 #endif
-        }
+            }
 
         [Fact]
         public async Task HttpRetryHandler_HandlesInvalidProtocol()
@@ -154,7 +158,11 @@ namespace NuGet.Core.FuncTest
             }
             else
             {
+#if IS_NETCORE30
                 Assert.Equal("No such host is known.", exception.InnerException.Message);
+#else
+                Assert.Equal("No such host is known", exception.InnerException.Message);
+#endif
             }
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
