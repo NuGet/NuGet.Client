@@ -67,8 +67,8 @@ namespace Dotnet.Integration.Test
             if (!Directory.Exists(workingDirectory))
             {
                 Directory.CreateDirectory(workingDirectory);
-                CreateTempGlobalJson(solutionRoot);
             }
+            CreateTempGlobalJson(solutionRoot);
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"new {args}",
@@ -81,21 +81,19 @@ namespace Dotnet.Integration.Test
         }
         internal void CreateTempGlobalJson(string solutionRoot)
         {
-#if IS_NETCORE30
+            if (File.Exists(solutionRoot + "\\global.json"))
+            {
+                return;
+            }
+
+            var sdkVersion = MsBuildSdksPath.Split('\\').ElementAt(MsBuildSdksPath.Split('\\').Count() - 2);
+
             var globalJsonFile =
-             @"{
-                ""sdk"": {
-                            ""version"": ""3.0.100-preview""
-                          }
-              }";
-#else
-            var globalJsonFile =
-             @"{
-                ""sdk"": {
-                            ""version"": ""2.2.300-preview""
-                          }
-              }";
-#endif
+@"{
+    ""sdk"": {
+              ""version"": """  + sdkVersion + @"""
+             }
+}";
 
             using (var outputFile = new StreamWriter(Path.Combine(solutionRoot, "global.json")))
             {
