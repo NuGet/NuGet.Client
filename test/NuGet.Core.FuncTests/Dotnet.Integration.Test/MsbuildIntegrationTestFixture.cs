@@ -68,7 +68,9 @@ namespace Dotnet.Integration.Test
             {
                 Directory.CreateDirectory(workingDirectory);
             }
+ 
             CreateTempGlobalJson(solutionRoot);
+
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"new {args}",
@@ -79,9 +81,13 @@ namespace Dotnet.Integration.Test
             Assert.True(result.Item1 == 0, $"Creating project failed with following log information :\n {result.AllOutput}");
             Assert.True(string.IsNullOrWhiteSpace(result.Item3), $"Creating project failed with following message in error stream :\n {result.AllOutput}");
         }
+
+        //create a global.json file in temperary testing folder, to make sure testing with the correct sdk when there're multiple of them in CLI folder.
         internal void CreateTempGlobalJson(string solutionRoot)
         {
-            if (File.Exists(solutionRoot + "\\global.json"))
+            //put the global.json at one level up to solutionRoot path
+            var pathToPlaceGlobalJsonFile = solutionRoot.Substring(0, solutionRoot.Length - 1 - solutionRoot.Split("\\").Last().Length);
+            if (File.Exists(pathToPlaceGlobalJsonFile + "\\global.json"))
             {
                 return;
             }
@@ -95,7 +101,7 @@ namespace Dotnet.Integration.Test
              }
 }";
 
-            using (var outputFile = new StreamWriter(Path.Combine(solutionRoot, "global.json")))
+            using (var outputFile = new StreamWriter(Path.Combine(pathToPlaceGlobalJsonFile, "global.json")))
             {
                 outputFile.WriteLine(globalJsonFile);
                 outputFile.Close();
