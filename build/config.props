@@ -36,7 +36,7 @@
 
   <!-- Special project import for dotnet source build
 
-  The dotnet-source Repo API overrides *PackageVersion properties with versions that were built before.
+  The dotnet source-build Repo API overrides *PackageVersion properties with versions that were built before.
   Those paackages are injected in this props file
 
   See: https://github.com/dotnet/source-build/blob/master/Documentation/auto-dependency-flow/api.md#-pdotnetpackageversionpropspathpath
