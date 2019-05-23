@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)Microsoft.Build.NuGetSdkResolver\Microsoft.Build.NuGetSdkResolver.csproj" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.6.85" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
