@@ -555,11 +555,11 @@ namespace Dotnet.Integration.Test
                         libItems[0].Items);
 #else
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp22, libItems[0].TargetFramework);
-#endif
                     Assert.Equal(
                         new[]
                         {"lib/netcoreapp2.2/ClassLibrary1.dll", "lib/netcoreapp2.2/ClassLibrary1.runtimeconfig.json"},
                         libItems[0].Items);
+#endif
                 }
             }
         }
