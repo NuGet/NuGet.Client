@@ -528,8 +528,13 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1,
                         dependencyGroups.Count);
 
+#if IS_NETCORE30
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp30,
+                        dependencyGroups[0].TargetFramework);
+#else
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp22,
                         dependencyGroups[0].TargetFramework);
+#endif
                     var packagesA = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1,
                         packagesA.Count);
