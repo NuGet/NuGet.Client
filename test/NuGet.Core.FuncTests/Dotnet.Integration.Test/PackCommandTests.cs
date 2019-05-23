@@ -549,6 +549,10 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1, libItems.Count);
 #if IS_NETCORE30
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp30, libItems[0].TargetFramework);
+                    Assert.Equal(
+                        new[]
+                        {"lib/netcoreapp3.0/ClassLibrary1.dll", "lib/netcoreapp3.0/ClassLibrary1.runtimeconfig.json"},
+                        libItems[0].Items);
 #else
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp22, libItems[0].TargetFramework);
 #endif
