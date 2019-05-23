@@ -3788,6 +3788,7 @@ namespace ClassLibrary
             }
         }
 
+        [Fact(Skip = "waiting for getting knownFrameworkReference, https://github.com/NuGet/Home/issues/8155")]
         [PlatformTheory(Platform.Windows)]
         [InlineData("Microsoft.NETCore.App", "true", "netstandard1.4;net461", "", "net461")]
         [InlineData("Microsoft.NETCore.App", "false", "netstandard1.4;net461", "", "net461")]
