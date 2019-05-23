@@ -547,7 +547,11 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
+#if IS_NETCORE30
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp30, libItems[0].TargetFramework);
+#else
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp22, libItems[0].TargetFramework);
+#endif
                     Assert.Equal(
                         new[]
                         {"lib/netcoreapp2.2/ClassLibrary1.dll", "lib/netcoreapp2.2/ClassLibrary1.runtimeconfig.json"},
