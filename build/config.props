@@ -24,6 +24,15 @@
     <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview2</ReleaseLabel>
   </PropertyGroup>
 
+  <!-- Special project import for dotnet source build
+
+  The dotnet source-build Repo API overrides *PackageVersion properties with versions that were built before.
+  Those paackages are injected in this props file
+
+  See: https://github.com/dotnet/source-build/blob/master/Documentation/auto-dependency-flow/api.md#-pdotnetpackageversionpropspathpath
+  -->
+  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
+
   <!-- Dependency versions -->
   <PropertyGroup>
     <NewtonsoftJsonVersionCore>9.0.1</NewtonsoftJsonVersionCore>
@@ -33,15 +42,6 @@
     <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
     <MicrosoftBuildPackageVersion>16.0.461</MicrosoftBuildPackageVersion>
   </PropertyGroup>
-
-  <!-- Special project import for dotnet source build
-
-  The dotnet source-build Repo API overrides *PackageVersion properties with versions that were built before.
-  Those paackages are injected in this props file
-
-  See: https://github.com/dotnet/source-build/blob/master/Documentation/auto-dependency-flow/api.md#-pdotnetpackageversionpropspathpath
-  -->
-  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
 
   <!-- Config -->
   <PropertyGroup>
