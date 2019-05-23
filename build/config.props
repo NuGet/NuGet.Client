@@ -40,7 +40,7 @@
     <TestSDKVersion>15.5.0</TestSDKVersion>
     <MoqVersion>4.10.1</MoqVersion>
     <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
-    <MicrosoftBuildPackageVersion>16.0.461</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion Condition="$(MicrosoftBuildPackageVersion) == ''">16.0.461</MicrosoftBuildPackageVersion>
   </PropertyGroup>
 
   <!-- Config -->
