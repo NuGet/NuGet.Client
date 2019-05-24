@@ -5,13 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft;
@@ -22,7 +20,6 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
-using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -490,10 +487,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnAfterClosing()
         {
-            if (SolutionClosed != null)
-            {
-                SolutionClosed(this, EventArgs.Empty);
-            }
+            SolutionClosed?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnBeforeClosing()

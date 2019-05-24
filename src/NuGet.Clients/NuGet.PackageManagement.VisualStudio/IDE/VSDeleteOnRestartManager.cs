@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,9 +8,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -40,18 +44,8 @@ namespace NuGet.PackageManagement.VisualStudio
             Configuration.ISettings settings,
             ISolutionManager solutionManager)
         {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            if (solutionManager == null)
-            {
-                throw new ArgumentNullException(nameof(solutionManager));
-            }
-
-            Settings = settings;
-            SolutionManager = solutionManager;
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            SolutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             SolutionManager.SolutionOpened += OnSolutionOpenedOrClosed;
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
         }
@@ -80,19 +74,21 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Gets the directories marked for deletion.
+        /// Gets the directories marked for deletion. Returns empty is <see cref="PackagesFolderPath"/> is <c>null</c> >
         /// </summary>
         public IReadOnlyList<string> GetPackageDirectoriesMarkedForDeletion()
         {
-            if (PackagesFolderPath == null)
+            // PackagesFolderPath reads the configs, reference the local variable to avoid reading the configs continously
+            var packagesFolderPath = PackagesFolderPath;
+            if (packagesFolderPath == null)
             {
-                return new List<string>();
+                return Array.Empty<string>();
             }
 
             var candidates = FileSystemUtility
-                .GetFiles(PackagesFolderPath, path: "", filter: DeletionMarkerFilter, recursive: false)
+                .GetFiles(packagesFolderPath, path: "", filter: DeletionMarkerFilter, recursive: false)
                 // strip the DeletionMarkerFilter at the end of the path to get the package path.
-                .Select(path => Path.Combine(PackagesFolderPath, Path.ChangeExtension(path, null)))
+                .Select(path => Path.Combine(packagesFolderPath, Path.ChangeExtension(path, null)))
                 .ToList();
 
             var filesWithoutFolders = candidates.Where(path => !Directory.Exists(path));
@@ -148,7 +144,7 @@ namespace NuGet.PackageManagement.VisualStudio
             catch (Exception e)
             {
                 projectContext.Log(
-                    ProjectManagement.MessageLevel.Warning,
+                    MessageLevel.Warning,
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Warning_FailedToMarkPackageDirectoryForDeletion,
@@ -167,16 +163,13 @@ namespace NuGet.PackageManagement.VisualStudio
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",
             Justification = "We want to log an exception as a warning and move on")]
-        public void DeleteMarkedPackageDirectories(INuGetProjectContext projectContext)
+        public async Task DeleteMarkedPackageDirectoriesAsync(INuGetProjectContext projectContext)
         {
-            if (PackagesFolderPath == null)
-            {
-                return;
-            }
+            await TaskScheduler.Default;
 
             try
             {
-                var packages = GetPackageDirectoriesMarkedForDeletion();
+                var packages = GetPackageDirectoriesMarkedForDeletion(); // returns empty if PackagesFolderPath is null. No need to check again.
                 foreach (var package in packages)
                 {
                     try
@@ -193,7 +186,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         else
                         {
                             projectContext.Log(
-                                ProjectManagement.MessageLevel.Warning,
+                                MessageLevel.Warning,
                                 string.Format(
                                     CultureInfo.CurrentCulture,
                                     Strings.Warning_FailedToDeleteMarkedPackageDirectory,
@@ -205,7 +198,7 @@ namespace NuGet.PackageManagement.VisualStudio
             catch (Exception e)
             {
                 projectContext.Log(
-                               ProjectManagement.MessageLevel.Warning,
+                               MessageLevel.Warning,
                                string.Format(
                                    CultureInfo.CurrentCulture,
                                    Strings.Warning_FailedToDeleteMarkedPackageDirectories,
@@ -220,7 +213,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
             // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-            DeleteMarkedPackageDirectories(SolutionManager.NuGetProjectContext);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await DeleteMarkedPackageDirectoriesAsync(SolutionManager.NuGetProjectContext));
         }
     }
 }

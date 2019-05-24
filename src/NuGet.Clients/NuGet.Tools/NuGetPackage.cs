@@ -198,7 +198,7 @@ namespace NuGetVSExtension
             // delete them now.
             if (SolutionManager.Value.IsSolutionOpen)
             {
-                DeleteOnRestartManager.Value.DeleteMarkedPackageDirectories(ProjectContext.Value);
+                await DeleteOnRestartManager.Value.DeleteMarkedPackageDirectoriesAsync(ProjectContext.Value);
             }
 
             ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager.Value, this, componentModel);
@@ -457,7 +457,7 @@ namespace NuGetVSExtension
             // load packages.config. This makes sure that an exception will get thrown if there
             // are problems with packages.config, such as duplicate packages. When an exception
             // is thrown, an error dialog will pop up and this doc window will not be created.
-            var installedPackages = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
+            _ = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
             var uiController = UIFactory.Value.Create(nugetProject);
 
