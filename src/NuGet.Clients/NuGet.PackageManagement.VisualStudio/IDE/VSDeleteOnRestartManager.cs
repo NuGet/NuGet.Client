@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",
             Justification = "We want to log an exception as a warning and move on")]
-        public void MarkPackageDirectoryForDeletion(
+        public void c(
             PackageIdentity package,
             string packageDirectory,
             INuGetProjectContext projectContext)
