@@ -28,7 +28,7 @@ namespace NuGet.XPlat.FuncTest
             XPlatBuildRelativePath = Path.Combine(
                 "artifacts",
                 "NuGet.CommandLine.XPlat",
-                "15.0",
+                "16.0",
                 "bin",
 #if DEBUG
                 "Debug",
