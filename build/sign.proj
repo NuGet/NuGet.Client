@@ -26,7 +26,7 @@
       <FilesToSign Include="$(SolutionPackagesFolder)newtonsoft.json\9.0.1\lib\net45\Newtonsoft.Json.dll">
         <Authenticode>3PartySHA2</Authenticode>
       </FilesToSign>
-      <FilesToSign Include="$(ArtifactsDirectory)microsoft.web.xdt\2.1.2\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll">
+      <FilesToSign Include="$(ArtifactsDirectory)microsoft.web.xdt\3.0.0\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll">
         <Authenticode>Microsoft400</Authenticode>
         <StrongName>67</StrongName>
       </FilesToSign>
