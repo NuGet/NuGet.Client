@@ -20,6 +20,9 @@ Indicates the build script is invoked from CI
 .PARAMETER PackageEndToEnd
 Indicates whether to create the end to end package.
 
+.PARAMETER SkipDelaySign
+Indicates whether to skip delay signing.  The default is false; assemblies will be delay signed.
+
 .EXAMPLE
 .\build.ps1
 To run full clean build, e.g after switching branches
@@ -47,7 +50,8 @@ param (
     [Alias('f')]
     [switch]$Fast,
     [switch]$CI,
-    [switch]$PackageEndToEnd
+    [switch]$PackageEndToEnd,
+    [switch]$SkipDelaySign
 )
 
 . "$PSScriptRoot\build\common.ps1"
@@ -110,9 +114,19 @@ Invoke-BuildStep 'Running Restore' {
 
 Invoke-BuildStep $VSMessage {
 
+    $args = 'build\build.proj', "/t:$VSTarget", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", '/v:m', '/m:1'
+
+    If (!$SkipDelaySign)
+    {
+        $keysDirectoryPath = [System.IO.Path]::Combine($PSScriptRoot, 'keys')
+
+        $args += "/p:MS_PFX_PATH=$keysDirectoryPath\35MSSharedLib1024.snk"
+        $args += "/p:NUGET_PFX_PATH=$keysDirectoryPath\NuGetKey.snk"
+    }
+
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:$VSTarget /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:$VSTarget /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
+    Trace-Log ". `"$MSBuildExe`" $args"
+    & $MSBuildExe @args
 
     if (-not $?)
     {

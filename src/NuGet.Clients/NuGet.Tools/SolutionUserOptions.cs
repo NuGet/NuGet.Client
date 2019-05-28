@@ -3,8 +3,6 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Serialization.Formatters.Binary;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -22,9 +20,10 @@ namespace NuGetVSExtension
     [PartCreationPolicy(CreationPolicy.Shared)]
     internal sealed class SolutionUserOptions : IUserSettingsManager, IVsPersistSolutionOpts
     {
-        private const string NuGetOptionsStreamKey = "nuget";
+        private const string _nuGetOptionsStreamKey = "nuget";
 
         private readonly IServiceProvider _serviceProvider;
+        private readonly NuGetSettingsSerializer _serializer;
         private NuGetSettings _settings = new NuGetSettings();
 
         [ImportingConstructor]
@@ -32,12 +31,8 @@ namespace NuGetVSExtension
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider serviceProvider)
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            _serviceProvider = serviceProvider;
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            _serializer = new NuGetSettingsSerializer();
         }
 
         public UserSettings GetSettings(string key)
@@ -60,7 +55,7 @@ namespace NuGetVSExtension
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var uiShell = _serviceProvider.GetService<SVsUIShell,IVsUIShell>();
+            var uiShell = _serviceProvider.GetService<SVsUIShell, IVsUIShell>();
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
                 var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
@@ -85,7 +80,7 @@ namespace NuGetVSExtension
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
-            if (solutionPersistence.LoadPackageUserOpts(this, NuGetOptionsStreamKey) != VSConstants.S_OK)
+            if (solutionPersistence.LoadPackageUserOpts(this, _nuGetOptionsStreamKey) != VSConstants.S_OK)
             {
                 return false;
             }
@@ -98,7 +93,7 @@ namespace NuGetVSExtension
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
-            if (solutionPersistence.SavePackageUserOpts(this, NuGetOptionsStreamKey) != VSConstants.S_OK)
+            if (solutionPersistence.SavePackageUserOpts(this, _nuGetOptionsStreamKey) != VSConstants.S_OK)
             {
                 return false;
             }
@@ -113,7 +108,7 @@ namespace NuGetVSExtension
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            pPersistence.LoadPackageUserOpts(this, NuGetOptionsStreamKey);
+            pPersistence.LoadPackageUserOpts(this, _nuGetOptionsStreamKey);
             return VSConstants.S_OK;
         }
 
@@ -127,11 +122,11 @@ namespace NuGetVSExtension
             {
                 using (var stream = new DataStreamFromComStream(pOptionsStream))
                 {
-                    var serializer = new BinaryFormatter();
-                    var obj = serializer.Deserialize(stream) as NuGetSettings;
-                    if (obj != null)
+                    NuGetSettings settings = _serializer.Deserialize(stream);
+
+                    if (settings != null)
                     {
-                        _settings = obj;
+                        _settings = settings;
                     }
                 }
             }
@@ -148,7 +143,7 @@ namespace NuGetVSExtension
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            pPersistence.SavePackageUserOpts(this, NuGetOptionsStreamKey);
+            pPersistence.SavePackageUserOpts(this, _nuGetOptionsStreamKey);
             return VSConstants.S_OK;
         }
 
@@ -159,8 +154,7 @@ namespace NuGetVSExtension
             {
                 using (var stream = new DataStreamFromComStream(pOptionsStream))
                 {
-                    var serializer = new BinaryFormatter();
-                    serializer.Serialize(stream, _settings);
+                    _serializer.Serialize(stream, _settings);
                 }
             }
             catch

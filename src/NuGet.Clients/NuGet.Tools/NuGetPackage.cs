@@ -45,7 +45,6 @@ namespace NuGetVSExtension
     [ProvideOptionPage(typeof(PackageSourceOptionsPage), "NuGet Package Manager", "Package Sources", 113, 114, true)]
     [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)]
     [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
-    [ProvideBindingPath] // Definition dll needs to be on VS binding path
     // UI Context rule for a project that could be upgraded to PackageReference from packages.config based project.
     // Only exception is this UI context doesn't get enabled for right-click on Reference since there is no extension point on references
     // to know if there is packages.config file in this project hierarchy. So first-time right click on reference in a new VS instance
