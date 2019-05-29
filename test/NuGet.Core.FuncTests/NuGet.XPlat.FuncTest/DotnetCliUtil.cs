@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -16,28 +15,7 @@ namespace NuGet.XPlat.FuncTest
         private const string DotnetCliBinary = "dotnet";
         private const string DotnetCliExe = "dotnet.exe";
         private const string XPlatDll = "NuGet.CommandLine.XPlat.dll";
-        private static readonly string XPlatBuildRelativePath;
-        private static readonly string BuildOutputDirectory;
         private static readonly string[] TestFileNames = new string[] { "file1.txt", "file2.txt" };
-
-        static DotnetCliUtil()
-        {
-            var assemblyLocation = typeof(DotnetCliUtil).GetTypeInfo().Assembly.Location;
-            BuildOutputDirectory = Path.GetDirectoryName(assemblyLocation);
-
-            XPlatBuildRelativePath = Path.Combine(
-                "artifacts",
-                "NuGet.CommandLine.XPlat",
-                "15.0",
-                "bin",
-#if DEBUG
-                "Debug",
-#else
-                "Release",
-#endif
-                "netcoreapp2.1",
-                XPlatDll);
-        }
 
         /// <summary>
         /// Provides the path to dotnet cli on the test machine.
@@ -140,14 +118,31 @@ namespace NuGet.XPlat.FuncTest
         public static string GetXplatDll()
         {
             var dir = ParentDirectoryLookup()
-                .FirstOrDefault(d => DirectoryContains(d, "src"));
+               .FirstOrDefault(d => DirectoryContains(d, "src"));
 
             if (dir != null)
             {
-                var xplatDll = Path.Combine(dir.FullName, XPlatBuildRelativePath);
-                if (File.Exists(xplatDll))
+                const string configuration =
+#if DEBUG
+                "Debug";
+#else
+                "Release";
+#endif
+
+                var relativePaths = new string[]
                 {
-                    return xplatDll;
+                    Path.Combine("artifacts", "NuGet.CommandLine.XPlat", "16.0", "bin", configuration, "netcoreapp2.1", XPlatDll),
+                    Path.Combine("artifacts", "NuGet.CommandLine.XPlat", "15.0", "bin", configuration, "netcoreapp2.1", XPlatDll)
+                };
+
+                foreach (var relativePath in relativePaths)
+                {
+                    var filePath = Path.Combine(dir.FullName, relativePath);
+
+                    if (File.Exists(filePath))
+                    {
+                        return filePath;
+                    }
                 }
             }
 
