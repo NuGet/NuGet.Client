@@ -21,7 +21,7 @@ Indicates the build script is invoked from CI
 Indicates whether to create the end to end package.
 
 .PARAMETER SkipDelaySign
-Indicates whether to skip delay signing.  The default is false; assemblies will be delay signed.
+Indicates whether to skip delay signing.  By default assemblies will be delay signed.
 
 .EXAMPLE
 .\build.ps1
