@@ -35,6 +35,6 @@ If ($startIndex -ne -1)
 
 $ManifestModuleDestinationFile = [System.IO.FileInfo]::new($ManifestModuleDestinationFilePath)
 
-[System.IO.Directory]::CreateDirectory($ManifestModuleDestinationFile.DirectoryName)
+[System.IO.Directory]::CreateDirectory($ManifestModuleDestinationFile.DirectoryName) | Out-Null
 
 [System.IO.File]::WriteAllText($ManifestModuleDestinationFilePath, $manifestModuleFileContents)

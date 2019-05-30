@@ -70,27 +70,27 @@
       <Link>Lucene.Net.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\Add-WrapperMembers.ps1">
+    <Content Include="$(ArtifactsDirectory)\Scripts\Add-WrapperMembers.ps1">
       <Link>Modules\NuGet\Add-WrapperMembers.ps1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\NuGet.Format.ps1xml">
+    <Content Include="$(ArtifactsDirectory)\Scripts\NuGet.Format.ps1xml">
       <Link>Modules\NuGet\NuGet.Format.ps1xml</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="$(BaseIntermediateOutputPath)$(Configuration)\NuGet.psd1">
+    <Content Include="$(ArtifactsDirectory)\Scripts\NuGet.psd1">
       <Link>Modules\NuGet\NuGet.psd1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\nuget.psm1">
+    <Content Include="$(ArtifactsDirectory)\Scripts\nuget.psm1">
       <Link>Modules\NuGet\nuget.psm1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\NuGet.Types.ps1xml">
+    <Content Include="$(ArtifactsDirectory)\Scripts\NuGet.Types.ps1xml">
       <Link>Modules\NuGet\NuGet.Types.ps1xml</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\NuGetConsole.Host.PowerShell\Scripts\Profile.ps1">
+    <Content Include="$(ArtifactsDirectory)\Scripts\Profile.ps1">
       <Link>Modules\NuGet\Profile.ps1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -273,10 +273,6 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(IsXplat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' " />
   <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.targets" Condition="'$(IsXplat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' " />
-
-  <Target Name="BeforeBuild">
-    <Exec Command="powershell.exe -ExecutionPolicy Bypass &quot;$(ProjectDir)UpdateNuGetModuleManifest.ps1&quot; -NuGetPackageManagementPowerShellCmdletsFilePath &quot;$(ArtifactsDirectory)NuGet.PackageManagement.PowerShellCmdlets\$(VisualStudioVersion)\bin\$(Configuration)\NuGet.PackageManagement.PowerShellCmdlets.dll&quot; -ManifestModuleSourceFilePath &quot;$(ProjectDir)..\NuGetConsole.Host.PowerShell\Scripts\NuGet.psd1&quot; -ManifestModuleDestinationFilePath &quot;$(BaseIntermediateOutputPath)$(Configuration)\NuGet.psd1&quot;" />
-  </Target>
 
   <Target Name="FindSourceVsixManifest">
     <ItemGroup>

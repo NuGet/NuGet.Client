@@ -150,9 +150,18 @@
     <LocTargets>$(LocTargets);GetPowerShellCmdletsHelpFile</LocTargets>
     <GetLocalizedFilesForVsixDependsOn>GetLocalizedPowerShellCmdletHelpFile</GetLocalizedFilesForVsixDependsOn>
   </PropertyGroup>
+
+  <Target Name="BeforeBuild">
+    <ItemGroup>
+      <PowerShellScripts Include="$(MSBuildProjectDirectory)\Scripts\*.ps*" Exclude="$(MSBuildProjectDirectory)\Scripts\NuGet.psd1" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PowerShellScripts)"
+          DestinationFolder="$(ArtifactsDirectory)Scripts" />
+    <Exec Command="powershell.exe -ExecutionPolicy Bypass &quot;$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\UpdateNuGetModuleManifest.ps1&quot; -NuGetPackageManagementPowerShellCmdletsFilePath &quot;$(ArtifactsDirectory)NuGet.PackageManagement.PowerShellCmdlets\$(VisualStudioVersion)\bin\$(Configuration)\NuGet.PackageManagement.PowerShellCmdlets.dll&quot; -ManifestModuleSourceFilePath &quot;$(MSBuildProjectDirectory)\Scripts\NuGet.psd1&quot; -ManifestModuleDestinationFilePath &quot;$(ArtifactsDirectory)Scripts\NuGet.psd1&quot;" />
+  </Target>
   <Target Name="GetScriptsForSigning" Returns="@(ScriptsToSign)">
     <ItemGroup>
-      <ScriptsToSign Include="$(MSBuildProjectDirectory)\Scripts\*.ps*">
+      <ScriptsToSign Include="$(ArtifactsDirectory)Scripts\*.ps*">
         <Authenticode>Microsoft402</Authenticode>
       </ScriptsToSign>
     </ItemGroup>
