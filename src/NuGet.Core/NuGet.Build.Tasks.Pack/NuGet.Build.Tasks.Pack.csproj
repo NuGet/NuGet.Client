@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyName>NuGet.Build.Tasks.Pack</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
