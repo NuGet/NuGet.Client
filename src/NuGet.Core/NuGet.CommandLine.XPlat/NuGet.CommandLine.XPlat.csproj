@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -6,7 +6,7 @@
     <Description>NuGet wrapper for dotnet.exe.</Description>
     <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
     <RuntimeIdentifier Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">win7-x86</RuntimeIdentifier>
-    <NoWarn>$(NoWarn);CS1591;CS1701;NU5104</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CS1701</NoWarn>
     <OutputType>Exe</OutputType>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
@@ -19,8 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
-    <!-- This causes a NU5104 warning. When upgrading to a stable version of this package, remove the no warn -->
-    <PackageReference Include="Microsoft.Build.Runtime" Version="16.0.0-preview.256" />
+    <PackageReference Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="$(SystemPackagesVersion)" />
   </ItemGroup>
   

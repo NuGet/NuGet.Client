@@ -511,12 +511,13 @@ namespace NuGet.CommandLine.XPlat
         private static IEnumerable<InstalledPackageReference> GetPackageReferencesFromTargets(string projectPath,
            string libraryName, string framework)
         {
+            var collectPackageReference = "CollectPackageReferences";
             var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 { { "TargetFramework", framework } };
             var newProject = new ProjectInstance(projectPath, globalProperties, null);
-            newProject.Build(new[] { "CollectPackageReferences" }, new List<Microsoft.Build.Framework.ILogger> { }, out var targetOutputs);
+            newProject.Build(new[] { collectPackageReference }, new List<Microsoft.Build.Framework.ILogger> { }, out var targetOutputs);
 
-            return targetOutputs.Single().Value.Items.Select(p =>
+            return targetOutputs.First(e => e.Key.Equals(collectPackageReference)).Value.Items.Select(p =>
                 new InstalledPackageReference(p.ItemSpec) {
                     OriginalRequestedVersion = p.GetMetadata("version"),
                 });

@@ -29,22 +29,17 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         public static int MainInternal(string[] args, CommandOutputLogger log)
         {
-#if DEBUG
-            if (args.Contains(DebugOption))
+            args = args.Where(arg => !StringComparer.OrdinalIgnoreCase.Equals(arg, DebugOption)).ToArray();
+
+            Console.WriteLine("Waiting for debugger to attach.");
+            Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+
+            while (!Debugger.IsAttached)
             {
-                args = args.Where(arg => !StringComparer.OrdinalIgnoreCase.Equals(arg, DebugOption)).ToArray();
-
-                Console.WriteLine("Waiting for debugger to attach.");
-                Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
-
-                while (!Debugger.IsAttached)
-                {
-                    System.Threading.Thread.Sleep(100);
-                }
-
-                Debugger.Break();
+                System.Threading.Thread.Sleep(100);
             }
-#endif
+
+            Debugger.Break();
 
             // Optionally disable localization.
             if (args.Any(arg => string.Equals(arg, CommandConstants.ForceEnglishOutputOption, StringComparison.OrdinalIgnoreCase)))
