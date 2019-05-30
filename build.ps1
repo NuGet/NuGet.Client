@@ -20,7 +20,7 @@ Indicates the build script is invoked from CI
 .PARAMETER PackageEndToEnd
 Indicates whether to create the end to end package.
 
-.PARAMETER SkipDelaySign
+.PARAMETER SkipDelaySigning
 Indicates whether to skip delay signing.  By default assemblies will be delay signed.
 
 .EXAMPLE
@@ -51,7 +51,7 @@ param (
     [switch]$Fast,
     [switch]$CI,
     [switch]$PackageEndToEnd,
-    [switch]$SkipDelaySign
+    [switch]$SkipDelaySigning
 )
 
 . "$PSScriptRoot\build\common.ps1"
@@ -116,12 +116,10 @@ Invoke-BuildStep $VSMessage {
 
     $args = 'build\build.proj', "/t:$VSTarget", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", '/v:m', '/m:1'
 
-    If (!$SkipDelaySign)
+    If ($SkipDelaySigning)
     {
-        $keysDirectoryPath = [System.IO.Path]::Combine($PSScriptRoot, 'keys')
-
-        $args += "/p:MS_PFX_PATH=$keysDirectoryPath\35MSSharedLib1024.snk"
-        $args += "/p:NUGET_PFX_PATH=$keysDirectoryPath\NuGetKey.snk"
+        $args += "/p:MS_PFX_PATH="
+        $args += "/p:NUGET_PFX_PATH="
     }
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS

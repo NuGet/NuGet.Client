@@ -20,7 +20,7 @@ namespace NuGetVSExtension
     [PartCreationPolicy(CreationPolicy.Shared)]
     internal sealed class SolutionUserOptions : IUserSettingsManager, IVsPersistSolutionOpts
     {
-        private const string _nuGetOptionsStreamKey = "nuget";
+        private const string NuGetOptionsStreamKey = "nuget";
 
         private readonly IServiceProvider _serviceProvider;
         private readonly NuGetSettingsSerializer _serializer;
@@ -80,7 +80,7 @@ namespace NuGetVSExtension
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
-            if (solutionPersistence.LoadPackageUserOpts(this, _nuGetOptionsStreamKey) != VSConstants.S_OK)
+            if (solutionPersistence.LoadPackageUserOpts(this, NuGetOptionsStreamKey) != VSConstants.S_OK)
             {
                 return false;
             }
@@ -93,7 +93,7 @@ namespace NuGetVSExtension
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var solutionPersistence = Package.GetGlobalService(typeof(SVsSolutionPersistence)) as IVsSolutionPersistence;
-            if (solutionPersistence.SavePackageUserOpts(this, _nuGetOptionsStreamKey) != VSConstants.S_OK)
+            if (solutionPersistence.SavePackageUserOpts(this, NuGetOptionsStreamKey) != VSConstants.S_OK)
             {
                 return false;
             }
@@ -108,7 +108,7 @@ namespace NuGetVSExtension
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            pPersistence.LoadPackageUserOpts(this, _nuGetOptionsStreamKey);
+            pPersistence.LoadPackageUserOpts(this, NuGetOptionsStreamKey);
             return VSConstants.S_OK;
         }
 
@@ -143,7 +143,7 @@ namespace NuGetVSExtension
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            pPersistence.SavePackageUserOpts(this, _nuGetOptionsStreamKey);
+            pPersistence.SavePackageUserOpts(this, NuGetOptionsStreamKey);
             return VSConstants.S_OK;
         }
 

@@ -17,7 +17,7 @@ namespace NuGet.Tools.Test
         [Fact]
         public void NuGetSettings_WhenSerializing_FieldCountIsExpected()
         {
-            var fields = GetSerializableFields<NuGetSettings>();
+            IReadOnlyList<FieldInfo> fields = GetSerializableFields<NuGetSettings>();
 
             Assert.Equal(0, fields.Count);
         }
@@ -25,7 +25,7 @@ namespace NuGet.Tools.Test
         [Fact]
         public void NuGetSettings_WhenSerializing_PropertyCountIsExpected()
         {
-            var properties = GetSerializableProperties<NuGetSettings>();
+            IReadOnlyList<PropertyInfo> properties = GetSerializableProperties<NuGetSettings>();
 
             Assert.Equal(1, properties.Count);
         }
@@ -33,7 +33,7 @@ namespace NuGet.Tools.Test
         [Fact]
         public void UserSettings_WhenSerializing_FieldCountIsExpected()
         {
-            var fields = GetSerializableFields<UserSettings>();
+            IReadOnlyList<FieldInfo> fields = GetSerializableFields<UserSettings>();
 
             Assert.Equal(0, fields.Count);
         }
@@ -41,7 +41,7 @@ namespace NuGet.Tools.Test
         [Fact]
         public void UserSettings_WhenSerializing_PropertyCountIsExpected()
         {
-            var properties = GetSerializableProperties<UserSettings>();
+            IReadOnlyList<PropertyInfo> properties = GetSerializableProperties<UserSettings>();
 
             Assert.Equal(12, properties.Count);
         }
