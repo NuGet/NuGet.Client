@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Xml.Linq;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
@@ -283,6 +284,49 @@ namespace Dotnet.Integration.Test
 
                 Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, $"packageX{currentVersion}{currentVersion}{expectedVersion}"));
 
+            }
+        }
+
+        // We read the original PackageReference items by calling the CollectPackageReference target.
+        // If a project has InitialTargets we need to deal with the response properly in the C# based invocation.
+        [PlatformFact(Platform.Windows)]
+        public async void DotnetListPackage_ProjectWithInitialTargets_Succeeds()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+
+                var doc = XDocument.Parse(File.ReadAllText(projectA.ProjectPath));
+
+                doc.Root.Add(new XAttribute("InitialTargets", "FirstTarget"));
+
+                doc.Root.Add(new XElement(XName.Get("Target"),
+                    new XAttribute(XName.Get("Name"), "FirstTarget"),
+                    new XElement(XName.Get("Message"),
+                        new XAttribute(XName.Get("Text"), "I am the first target invoked every time a target is called on this project!"))));
+
+                File.WriteAllText(projectA.ProjectPath, doc.ToString());
+
+                var packageX = XPlatTestUtils.CreatePackage();
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var addResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} package packageX --version 1.0.0 --no-restore");
+                Assert.True(addResult.Success);
+
+                var restoreResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"restore {projectA.ProjectName}.csproj");
+                Assert.True(restoreResult.Success);
+
+                var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package");
+
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageX1.0.01.0.0"));
             }
         }
 
