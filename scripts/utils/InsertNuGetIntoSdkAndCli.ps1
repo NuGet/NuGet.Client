@@ -1,9 +1,9 @@
 ﻿<#
 .SYNOPSIS
-Script to insert NuGet into CLI and SDK. 
+Script to insert NuGet into CLI, SDK, and TOOLSET
 
 .DESCRIPTION
-Uses the Personal Access Token of NuGetLurker to automate the insertion process into CLI and SDK
+Uses the Personal Access Token of NuGetLurker to automate the insertion process into CLI, SDK, and TOOLSET
 Note - This script can only be used from a VSTS Release Definition because of the env variables it
 depends on.
 
@@ -11,7 +11,7 @@ depends on.
 PersonalAccessToken of the NuGetLurker account
 
 .PARAMETER RepositoryName
-The Repository to insert into (SDK or CLI)
+The Repository to insert into (SDK, CLI, or TOOLSET)
 
 .PARAMETER BranchName
 Semicolon separated list of the repository's branches to insert into
@@ -38,31 +38,10 @@ param
     [Parameter(Mandatory=$True)]
     [string]$NuGetTag,
     [Parameter(Mandatory=$True)]
-    [string]$BuildOutputPath
+    [string]$BuildOutputPath,
+    [Parameter(Mandatory=$False)]
+    [string]$AlternativeFilePath
 )
-
-# Set security protocol to tls1.2 for Invoke-RestMethod powershell cmdlet
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-$repoOwner = "dotnet"
-$Base64Token = [System.Convert]::ToBase64String([char[]]$PersonalAccessToken)
-
-$Headers= @{
-    Authorization='Basic {0}' -f $Base64Token;
-}
-
-$Build = ${env:BUILD_BUILDNUMBER}
-$Branch = ${env:BUILD_SOURCEBRANCHNAME}
-$AttemptNum = ${env:RELEASE_ATTEMPTNUMBER}
-$Release = ${env:RELEASE_RELEASENAME}
-$NuGetExePath = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'artifacts', 'VS15', "NuGet.exe")
-
-$ProductVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).ProductVersion
-$index = $ProductVersion.LastIndexOf('+')
-if($index -ne '-1')
-{
-    $ProductVersion = $ProductVersion.Substring(0,$index).Trim()
-}
 
 Function UpdateNuGetVersionInXmlFile {
     param(
@@ -211,10 +190,43 @@ $PullRequestsUrl | Set-Content $mdFile
 Write-Host "##vso[task.addattachment type=Distributedtask.Core.Summary;name=$RepositoryName Pull Requests Url;]$mdFile"  
 }
 
+## This is where the script logic beings.
+
+# Set security protocol to tls1.2 for Invoke-RestMethod powershell cmdlet
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+$repoOwner = "dotnet"
+$Base64Token = [System.Convert]::ToBase64String([char[]]$PersonalAccessToken)
+
+$Headers= @{
+    Authorization='Basic {0}' -f $Base64Token;
+}
+
+$Build = ${env:BUILD_BUILDNUMBER}
+$Branch = ${env:BUILD_SOURCEBRANCHNAME}
+$AttemptNum = ${env:RELEASE_ATTEMPTNUMBER}
+$Release = ${env:RELEASE_RELEASENAME}
+$NuGetExePath = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'artifacts', 'VS15', "NuGet.exe")
+
+$ProductVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).ProductVersion
+$index = $ProductVersion.LastIndexOf('+')
+if($index -ne '-1')
+{
+    $ProductVersion = $ProductVersion.Substring(0,$index).Trim()
+}
+
 $BranchesToInsert = $BranchName.Split(';')
 $AllPullRequestsUrls = ""
 ForEach ($Branch in $BranchesToInsert) {
-    $xml = GetDependencyVersionPropsFile -RepositoryName $RepositoryName -BranchName $Branch -FilePath $FilePath
+
+    $VersionsFilePath = $FilePath
+    # Hack to allow us to specify the arcade version props location if the branch is 3.0 or later. 
+    # We can remove this when we stop inserting into 2.x
+    if((-not [string]::IsNullOrEmpty($AlternativeFilePath)) -and ($Branch.StartsWith("master") -or $Branch.StartsWith("release/3"))){
+        $VersionsFilePath = $AlternativeFilePath
+    } 
+
+    $xml = GetDependencyVersionPropsFile -RepositoryName $RepositoryName -BranchName $Branch -FilePath $VersionsFilePath
     Write-Host $xml
     
     $updatedXml = UpdateNuGetVersionInXmlFile -XmlContents $xml -NuGetVersion $ProductVersion -NuGetTag $NuGetTag
@@ -222,7 +234,7 @@ ForEach ($Branch in $BranchesToInsert) {
     $CreatedBranchName = "$Release-$Branch-$AttemptNum"
     
     CreateBranchForPullRequest -RepositoryName $RepositoryName -Headers $Headers -BranchName $Branch -BranchNameToCreate $CreatedBranchName
-    UpdateFileContent -RepositoryName $RepositoryName -Headers $Headers -FilePath $FilePath -FileContent $updatedXml -CreatedBranchName $CreatedBranchName
+    UpdateFileContent -RepositoryName $RepositoryName -Headers $Headers -FilePath $VersionsFilePath -FileContent $updatedXml -CreatedBranchName $CreatedBranchName
     $PullRequestUrl = CreatePullRequest -RepositoryName $RepositoryName -Headers $Headers -CreatedBranchName $CreatedBranchName -BaseBranch $Branch
     $AllPullRequestsUrls = $AllPullRequestsUrls + "$PullRequestUrl`n"
 }
