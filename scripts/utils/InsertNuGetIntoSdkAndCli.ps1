@@ -38,9 +38,7 @@ param
     [Parameter(Mandatory=$True)]
     [string]$NuGetTag,
     [Parameter(Mandatory=$True)]
-    [string]$BuildOutputPath,
-    [Parameter(Mandatory=$False)]
-    [string]$AlternativeFilePath
+    [string]$BuildOutputPath
 )
 
 Function UpdateNuGetVersionInXmlFile {
@@ -222,8 +220,8 @@ ForEach ($Branch in $BranchesToInsert) {
     $VersionsFilePath = $FilePath
     # Hack to allow us to specify the arcade version props location if the branch is 3.0 or later. 
     # We can remove this when we stop inserting into 2.x
-    if((-not [string]::IsNullOrEmpty($AlternativeFilePath)) -and ($Branch.StartsWith("master") -or $Branch.StartsWith("release/3"))){
-        $VersionsFilePath = $AlternativeFilePath
+    if($Branch.StartsWith("master") -or $Branch.StartsWith("release/3")){
+        $VersionsFilePath = "eng/Versions.props"
     } 
 
     $xml = GetDependencyVersionPropsFile -RepositoryName $RepositoryName -BranchName $Branch -FilePath $VersionsFilePath
