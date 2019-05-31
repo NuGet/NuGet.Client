@@ -58,11 +58,11 @@
               ItemName="TestAssemblyPath" />
     </MSBuild>
 
-    <Message Text="#### start: running powershell after core func test" Importance="high" />
     <Exec
         Command="powershell -NoProfile -NoLogo -command &quot;Get-WmiObject Win32_Process | Where CommandLine | Select ProcessId,CommandLine | out-string -Width 500&quot;"
         IgnoreExitCode="true"
         IgnoreStandardErrorWarningFormat="true"
+        ContinueOnError="true"
     />
     <Message Text="#### end: running powershell after core func test" Importance="high" />
   </Target>
