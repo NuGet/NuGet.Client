@@ -8201,5 +8201,48 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("1.1.0", packageX.Version.ToString());
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_PackagesLockFile_EmptyLockFile_ErrorsInLockedMode()
+        {
+            // A -> X
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var tfm = "net45";
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(tfm));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile($"lib/{tfm}/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX);
+
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                solution.Projects.Add(projectA);
+
+                solution.Create(pathContext.SolutionRoot);
+
+                File.WriteAllText(projectA.NuGetLockFileOutputPath, "");
+
+                // Act
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU1004");
+            }
+        }
     }
 }

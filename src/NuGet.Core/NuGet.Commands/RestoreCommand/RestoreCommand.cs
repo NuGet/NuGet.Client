@@ -465,7 +465,7 @@ namespace NuGet.Commands
                 packagesLockFile = PackagesLockFileFormat.Read(packagesLockFilePath, _logger);
                 lockFileTelemetry.EndIntervalMeasure(ReadLockFileDuration);
 
-                if (_request.DependencyGraphSpec != null && packagesLockFile.Targets.Count > 0)
+                if (_request.DependencyGraphSpec != null)
                 {
                     // check if lock file is out of sync with project data
                     lockFileTelemetry.StartIntervalMeasure();
