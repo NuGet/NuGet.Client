@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-Script to insert NuGet into CLI, SDK, and TOOLSET
+Script to insert NuGet into dotnet; CLI, SDK, and TOOLSET repos
 
 .DESCRIPTION
 Uses the Personal Access Token of NuGetLurker to automate the insertion process into CLI, SDK, and TOOLSET
