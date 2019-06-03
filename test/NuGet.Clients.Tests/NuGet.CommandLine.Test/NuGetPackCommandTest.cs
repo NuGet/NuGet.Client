@@ -8,7 +8,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using NuGet.Commands;
 using NuGet.Common;
@@ -282,7 +281,7 @@ namespace NuGet.CommandLine.Test
             using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
-                string id = Path.GetFileName(workingDirectory);
+                var id = Path.GetFileName(workingDirectory);
 
                 Util.CreateFile(
                     Path.Combine(workingDirectory, "ref", "uap10.0"),
@@ -459,12 +458,8 @@ namespace NuGet.CommandLine.Test
                 using (var package = new PackageArchiveReader(path))
                 using (var symbolPackage = new PackageArchiveReader(symbolPath))
                 {
-                    var files = package.GetFiles()
-                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
-                    .ToArray();
-                    var symbolFiles = symbolPackage.GetFiles()
-                        .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
-                        .ToArray();
+                    var files = package.GetNonPackageDefiningFiles();
+                    var symbolFiles = symbolPackage.GetNonPackageDefiningFiles();
                     Array.Sort(files);
                     Array.Sort(symbolFiles);
 
@@ -549,12 +544,8 @@ namespace NuGet.CommandLine.Test
                 using (var package = new PackageArchiveReader(path))
                 using (var symbolPackage = new PackageArchiveReader(symbolPath))
                 {
-                    var files = package.GetFiles()
-                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
-                    .ToArray();
-                    var symbolFiles = symbolPackage.GetFiles()
-                        .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
-                        .ToArray();
+                    var files = package.GetNonPackageDefiningFiles();
+                    var symbolFiles = symbolPackage.GetNonPackageDefiningFiles();
                     Array.Sort(files);
                     Array.Sort(symbolFiles);
 
@@ -638,12 +629,8 @@ namespace NuGet.CommandLine.Test
                 using (var package = new PackageArchiveReader(path))
                 using (var symbolPackage = new PackageArchiveReader(symbolPath))
                 {
-                    var files = package.GetFiles()
-                        .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
-                        .ToArray();
-                    var symbolFiles = symbolPackage.GetFiles()
-                        .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
-                        .ToArray();
+                    var files = package.GetNonPackageDefiningFiles();
+                    var symbolFiles = symbolPackage.GetNonPackageDefiningFiles();
                     Array.Sort(files);
                     Array.Sort(symbolFiles);
 
@@ -4194,7 +4181,7 @@ namespace Proj2
             var projectDirectory = Path.Combine(baseDirectory, projectName);
             Directory.CreateDirectory(projectDirectory);
 
-            string reference = string.Empty;
+            var reference = string.Empty;
             if (referencedProject != null && referencedProject.Length > 0)
             {
                 var sb = new StringBuilder();
@@ -5431,11 +5418,12 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     }
 
                     var files = symbolsReader.GetFiles()
-                  .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))
-                  .ToArray();
+                        .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))
+                        .ToArray();
                     Array.Sort(files);
                     var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
                         {
+
                          $"{packageName}.nuspec",
                          $"lib/net40/{packageName}.dll",
                          $"lib/net40/{packageName}.pdb",
@@ -5627,6 +5615,17 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             {
                 Assert.NotNull(Packaging.Manifest.ReadFrom(nuspecStream, validateSchema: true));
             }
+        }
+    }
+
+    internal static class PackageArchiveReaderTestExtensions
+    {
+
+        public static string[] GetNonPackageDefiningFiles(this PackageArchiveReader package)
+        {
+            return package.GetFiles()
+                .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
+                .ToArray();
         }
     }
 }
