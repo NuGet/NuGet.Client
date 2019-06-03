@@ -1,4 +1,4 @@
-﻿; EditorConfig to support per-solution formatting.
+; EditorConfig to support per-solution formatting.
 ; Use the EditorConfig VS add-in to make this work.
 ; http://editorconfig.org/
 
@@ -59,7 +59,7 @@ dotnet_style_null_propagation = true:suggestion
 ; IDE0007 Prefer "var" everywhere
 csharp_style_var_for_built_in_types = true:warning
 csharp_style_var_when_type_is_apparent = true:warning
-csharp_style_var_elsewhere = true:warning
+csharp_style_var_elsewhere = false:warning
 
 ; Prefer method-like constructs to have a block body
 csharp_style_expression_bodied_methods = false:none
