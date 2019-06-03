@@ -179,7 +179,7 @@ Function Install-NuGet {
     # Display nuget info
     & $NuGetExe locals all -list -verbosity detailed
 
-    if (not(Test-PATH $Handle)) {
+    if (-not(Test-PATH $Handle)) {
         Trace-Log 'Downloading handle.zip'
         New-Item -ItemType Directory -Force -Path $Handle | Out-Null
         wget https://download.sysinternals.com/files/Handle.zip -OutFile $HandleZip
