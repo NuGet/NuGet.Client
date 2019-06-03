@@ -26,14 +26,13 @@ namespace Dotnet.Integration.Test
         internal readonly string MsBuildSdksPath;
         private readonly Dictionary<string, string> _processEnvVars = new Dictionary<string, string>();
 
-        private readonly ITestOutputHelper logger;
+        public ITestOutputHelper logger;
         private readonly string HandleExe;
         private readonly string Handle64Exe;
         private string NuGetClient;
 
-        public MsbuildIntegrationTestFixture(ITestOutputHelper logger)
+        public MsbuildIntegrationTestFixture()
         {
-            this.logger = logger;
             var paths = _dotnetCli.Split('\\');
             var len = paths.Length;
             var len1 = paths.ElementAt(len - 1).Length;
@@ -42,8 +41,8 @@ namespace Dotnet.Integration.Test
             var handleFolder = Path.Combine(NuGetClient, "Handle");
             HandleExe = Path.Combine(handleFolder, "handle.exe");
             Handle64Exe = Path.Combine(handleFolder, "handle64.exe");
-            logger.WriteLine("%%%%handleExe : ", HandleExe);
-            logger.WriteLine("%%%%handle64Exe : ", Handle64Exe);
+            //logger.WriteLine("%%%%handleExe : ", HandleExe);
+            //logger.WriteLine("%%%%handle64Exe : ", Handle64Exe);
 
             var cliDirectory = CopyLatestCliForPack();
             TestDotnetCli = Path.Combine(cliDirectory, "dotnet.exe");
@@ -452,9 +451,16 @@ namespace Dotnet.Integration.Test
             var handleArgs = " /accepteula hostfxr.dll";
             RunDotnet(Path.GetDirectoryName(TestDotnetCli), "build-server shutdown");
             KillDotnetExe(TestDotnetCli);
-            RunHandle(_dotnetCli, handleArgs, true);
+            if (logger != null)
+            {
+                RunHandle(_dotnetCli, handleArgs, true);
+            }
+            
             DeleteDirectory(Path.GetDirectoryName(TestDotnetCli));
-            RunHandle(_dotnetCli, handleArgs, false);
+            if (logger != null)
+            {
+                RunHandle(_dotnetCli, handleArgs, false);
+            }
         }
 
         private static void KillDotnetExe(string pathToDotnetExe)
