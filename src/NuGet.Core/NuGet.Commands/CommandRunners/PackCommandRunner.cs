@@ -905,9 +905,9 @@ namespace NuGet.Commands
             {
                 symbolsBuilder.PackageTypes.Clear();
                 symbolsBuilder.PackageTypes.Add(PackageType.SymbolsPackage);
-                symbolsBuilder.PackageAssemblyReferences.Clear();
                 // Remove the references when building the symbols package.
                 // They are not relevant for the symbols packages (snupkgs specifically).
+                symbolsBuilder.PackageAssemblyReferences.Clear();
             }
 
             // remove unnecessary files when building the symbols package
