@@ -87,10 +87,14 @@ namespace NuGet.Commands
             }
 
             var downloadDependencyResolutionResults = await Task.WhenAll(downloadDependencyResolutionTasks);
-            
+
             telemetryActivity.EndIntervalMeasure(EvaluateDownloadDependenciesDuration);
 
-            success &= await InstallPackagesAsync(graphs,
+            var uniquePackages = new HashSet<LibraryIdentity>();
+
+            success &= await InstallPackagesAsync(
+                uniquePackages,
+                graphs,
                 downloadDependencyResolutionResults,
                 userPackageFolder,
                 token);
@@ -141,7 +145,9 @@ namespace NuGet.Commands
                 telemetryActivity.EndIntervalMeasure(WalkRuntimeDependencyDuration);
 
                 // Install runtime-specific packages
-                success &= await InstallPackagesAsync(runtimeGraphs,
+                success &= await InstallPackagesAsync(
+                    uniquePackages,
+                    runtimeGraphs,
                     Array.Empty<DownloadDependencyResolutionResult>(),
                     userPackageFolder,
                     token);
@@ -161,7 +167,7 @@ namespace NuGet.Commands
             return Tuple.Create(success, graphs, allRuntimes);
         }
 
-        private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependencies(RemoteWalkContext context, ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange,RemoteMatch>>> downloadDependenciesCache, ProjectModel.TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
+        private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependencies(RemoteWalkContext context, ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange, RemoteMatch>>> downloadDependenciesCache, ProjectModel.TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
         {
             var packageDownloadTasks = targetFrameworkInformation.DownloadDependencies.Select(downloadDependency => ResolverUtility.FindPackageLibraryMatchCachedAsync(
                     downloadDependenciesCache, downloadDependency, context.RemoteLibraryProviders, context.LocalLibraryProviders, context.CacheContext, _logger, token));
@@ -256,20 +262,20 @@ namespace NuGet.Commands
             return graphSuccess && ddSuccess;
         }
 
-        private async Task<bool> InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs,
+        private async Task<bool> InstallPackagesAsync(
+            HashSet<LibraryIdentity> uniquePackages,
+            IEnumerable<RestoreTargetGraph> graphs,
             IList<DownloadDependencyResolutionResult> downloadDependencyInformations,
             NuGetv3LocalRepository userPackageFolder,
             CancellationToken token)
         {
-            var uniquePackages = new HashSet<LibraryIdentity>();
-
             var packagesToInstall = graphs
                 .SelectMany(g => g.Install.Where(match => uniquePackages.Add(match.Library))).ToList();
 
-            packagesToInstall.AddRange( 
+            packagesToInstall.AddRange(
                 downloadDependencyInformations.
                     SelectMany(ddi => ddi.Install.Where(match => uniquePackages.Add(match.Library))));
-            
+
             var success = true;
 
             if (packagesToInstall.Count > 0)
