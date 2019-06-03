@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using NuGet.Commands;
 using NuGet.Common;
@@ -441,6 +442,94 @@ namespace NuGet.CommandLine.Test
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec -symbols -SymbolPackageFormat snupkg",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
+                var symbolPath = Path.Combine(workingDirectory, "packageA.1.0.0.snupkg");
+                var package = new PackageArchiveReader(path);
+                var symbolPackage = new PackageArchiveReader(symbolPath);
+                var files = package.GetFiles()
+                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
+                    .ToArray();
+                var symbolFiles = symbolPackage.GetFiles()
+                    .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package") && !t.EndsWith("nuspec"))
+                    .ToArray();
+                Array.Sort(files);
+                Array.Sort(symbolFiles);
+
+                Assert.Equal(
+                    new string[]
+                    {
+                        "contentFiles/any/any/image.jpg",
+                        "contentFiles/cs/net45/code.cs",
+                        Path.Combine("lib", "uap10.0", "packageA.dll").Replace('\\', '/'),
+                    },
+                    files);
+                Assert.Equal(
+                    new string[]
+                    {
+                        Path.Combine("lib", "uap10.0", "packageA.pdb").Replace('\\','/'),
+                    },
+                    symbolFiles);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_SymbolPackageWithNuspecFileAndReference()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "lib", "uap10.0"),
+                    "packageA.dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "lib", "uap10.0"),
+                    "packageA.pdb",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles", "any", "any"),
+                    "image.jpg",
+                    "");
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles", "cs", "net45"),
+                    "code.cs",
+                    "");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <references>
+        <group targetFramework=""uap10.0"">
+            <reference file=""packageA.dll"" />
+        </group>
+    </references>
   </metadata>
 </package>");
 
