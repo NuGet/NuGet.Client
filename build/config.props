@@ -63,6 +63,11 @@
     <PackageIconUrl>https://raw.githubusercontent.com/NuGet/Media/master/Images/MainLogo/256x256/nuget_256.png</PackageIconUrl>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NUGET_PFX_PATH>$(MSBuildThisFileDirectory)\..\keys\NuGetKey.snk</NUGET_PFX_PATH>
+    <MS_PFX_PATH>$(MSBuildThisFileDirectory)\..\keys\35MSSharedLib1024.snk</MS_PFX_PATH>
+  </PropertyGroup>
+
   <Target Name="GetSemanticVersion">
     <Message Text="$(SemanticVersion)" Importance="High"/>
   </Target>

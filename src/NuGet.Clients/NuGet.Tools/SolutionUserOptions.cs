@@ -3,8 +3,6 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Serialization.Formatters.Binary;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -25,6 +23,7 @@ namespace NuGetVSExtension
         private const string NuGetOptionsStreamKey = "nuget";
 
         private readonly IServiceProvider _serviceProvider;
+        private readonly NuGetSettingsSerializer _serializer;
         private NuGetSettings _settings = new NuGetSettings();
 
         [ImportingConstructor]
@@ -32,12 +31,8 @@ namespace NuGetVSExtension
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider serviceProvider)
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            _serviceProvider = serviceProvider;
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            _serializer = new NuGetSettingsSerializer();
         }
 
         public UserSettings GetSettings(string key)
@@ -60,7 +55,7 @@ namespace NuGetVSExtension
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var uiShell = _serviceProvider.GetService<SVsUIShell,IVsUIShell>();
+            var uiShell = _serviceProvider.GetService<SVsUIShell, IVsUIShell>();
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
                 var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
@@ -127,11 +122,11 @@ namespace NuGetVSExtension
             {
                 using (var stream = new DataStreamFromComStream(pOptionsStream))
                 {
-                    var serializer = new BinaryFormatter();
-                    var obj = serializer.Deserialize(stream) as NuGetSettings;
-                    if (obj != null)
+                    NuGetSettings settings = _serializer.Deserialize(stream);
+
+                    if (settings != null)
                     {
-                        _settings = obj;
+                        _settings = settings;
                     }
                 }
             }
@@ -159,8 +154,7 @@ namespace NuGetVSExtension
             {
                 using (var stream = new DataStreamFromComStream(pOptionsStream))
                 {
-                    var serializer = new BinaryFormatter();
-                    serializer.Serialize(stream, _settings);
+                    _serializer.Serialize(stream, _settings);
                 }
             }
             catch
