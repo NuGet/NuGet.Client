@@ -12,6 +12,67 @@
     </CommonMSBuildProperties>
   </PropertyGroup>
 
+  <UsingTask TaskName="GetTimeStamp" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup><TimeStamp ParameterType="System.Int64" Output="true" /></ParameterGroup>
+    <Task>
+      <Using Namespace="System.Diagnostics" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[ TimeStamp = System.Diagnostics.Stopwatch.GetTimestamp(); ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <UsingTask TaskName="GetElapsedTimeSpan" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <ElapsedTimeSpan ParameterType="System.String" Output="true" />
+      <StartTicks ParameterType="System.Int64" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Diagnostics" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+
+        // We can get the current timestamp and then calculate the elapsed ticks. To improve
+        // accuracy of the benchmark, you could expose another task parameter to allow passing in the
+        // current ticks, so that the overhead of calling this task isn't included in the elapsed
+        // calculation.
+        var currentTicks = Stopwatch.GetTimestamp();
+        var elapsedTicks = currentTicks - StartTicks;
+
+        // This code is taken from a combination of the static constructor and private GetElapsedDateTimeTicks method in Stopwatch.
+        if (Stopwatch.IsHighResolution)
+        {
+            var tickFrequency = 10000000.0d / (double) Stopwatch.Frequency;
+            elapsedTicks = (long) ((double) elapsedTicks * tickFrequency);
+        }
+
+        // Now we can get a more human-readable elapsed time. Unfortunately we can't return the TimeSpan
+        // as a parameter, as it doesn't implement IConvertible. So we'll just convert it to a string.
+        // If you really want to do more with the resulting TimeSpan, you could always refactor this to return the ticks,
+        // and create the TimeSpan using property functions as in the DateTime example (the Elapsed property).
+        ElapsedTimeSpan = TimeSpan.FromTicks(elapsedTicks).ToString();
+
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+
+  <Target Name="BenchmarkStart">
+    <GetTimeStamp>
+      <Output PropertyName="StartTimeStamp" TaskParameter="TimeStamp" />
+    </GetTimeStamp>
+
+    <Message Text="Starting timestamp: $(StartTimeStamp)"/>
+  </Target>
+  <Target Name="BenchmarkEnd">
+    <GetElapsedTimeSpan StartTicks="$(StartTimeStamp)">
+        <Output PropertyName="EndTimeSpan" TaskParameter="ElapsedTimeSpan" />
+      </GetElapsedTimeSpan>
+
+      <Message Text="Elapsed time: $(EndTimeSpan)"/>
+  </Target>
+
   <!--
     ============================================================
     Get XPLAT projects
@@ -131,7 +192,9 @@
     ============================================================
   -->
   <Target Name="RunVS"  DependsOnTargets="BuildVS;Pack;CoreUnitTests;UnitTestsVS">
+  <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Running NuGet Build for VS $(VisualStudioVersion)" Importance="high" />
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
   <!--
@@ -140,7 +203,9 @@
     ============================================================
   -->
   <Target Name="BuildVS"  Condition=" '$(IsXPlat)' != 'true' " >
+    <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Building for VS $(VisualStudioVersion)" Importance="high" />
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
     <!--
@@ -149,7 +214,9 @@
     ============================================================
   -->
   <Target Name="BuildXPLAT" DependsOnTargets="GetXPLATProjects">
+    <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Building XPLAT" Importance="high" />
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
   <!--
@@ -158,12 +225,14 @@
     ============================================================
   -->
   <Target Name="BuildNoVSIX" AfterTargets="BuildVS" Condition=" '$(IsXPlat)' != 'true' ">
+    <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Building for VS $(VisualStudioVersion)" Importance="high" />
 
     <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=$(VisualStudioVersion);" />
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
   <!--
@@ -172,12 +241,14 @@
     ============================================================
   -->
   <Target Name="BuildXPLATProjects" AfterTargets="BuildXPLAT">
+    <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Building XPLAT" Importance="high" />
 
     <MSBuild Projects="@(XPLATProjects)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=$(VisualStudioVersion);" />
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
   <!--
@@ -188,6 +259,7 @@
     ============================================================
   -->
   <Target Name="BuildVSIX" AfterTargets= "BuildVS" Condition=" '$(IsXPlat)' != 'true' AND '$(BuildRTM)' != 'true'">
+   <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Building the VSIX for VS $(VisualStudioVersion)" Importance="high" />
 
     <MSBuild Projects="$(VSIXProject)"
@@ -196,6 +268,7 @@
                          BuildProjectReferences=false;
                          IsVsixBuild=true;
                          VisualStudioVersion=$(VisualStudioVersion);" />
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
   <!--
@@ -204,6 +277,7 @@
     ============================================================
   -->
   <Target Name="Clean">
+    <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Cleaning" Importance="high" />
 
     <!-- Clean -->
@@ -212,6 +286,7 @@
              Targets="Clean"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=$(VisualStudioVersion);" />
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
   <!--
@@ -220,6 +295,7 @@
     ============================================================
   -->
   <Target Name="Pack">
+    <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Packing for Visual Studio $(VisualStudioVersion)" Importance="high" />
 
     <MSBuild BuildInParallel="false"
@@ -227,6 +303,7 @@
              Targets="PackProjects"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=$(VisualStudioVersion);" />
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
   <!--
@@ -235,6 +312,7 @@
     ============================================================
   -->
   <Target Name="PackXPLAT" DependsOnTargets="GetXPLATProjects">
+    <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Packing for XPLAT" Importance="high" />
 
     <MSBuild BuildInParallel="false"
@@ -242,6 +320,7 @@
              Targets="PackProjects"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=$(VisualStudioVersion);" />
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
   <!--
@@ -250,6 +329,7 @@
     ============================================================
   -->
   <Target Name="Restore">
+    <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Restoring for Visual Studio $(VisualStudioVersion)" Importance="high" />
 
     <!-- Convert list of projects to a property -->
@@ -264,6 +344,7 @@
                   $(CommonMSBuildProperties);
                   VisualStudioVersion=$(VisualStudioVersion)">
     </MSBuild>
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
   <!--
@@ -272,12 +353,14 @@
     ============================================================
   -->
   <Target Name="RestoreVS">
+    <CallTarget Targets="BenchmarkStart"/>  
     <MSBuild
       Projects="$(MSBuildThisFileFullPath)"
       Targets="Restore"
       Properties="$(CommonMSBuildProperties);
                   VisualStudioVersion=$(VisualStudioVersion)">
     </MSBuild>
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
   <!--
@@ -286,6 +369,7 @@
     ============================================================
   -->
   <Target Name="RestoreXPLAT" DependsOnTargets="GetXPLATProjects">
+  <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Restoring for XPLAT" Importance="high" />
     
     <PropertyGroup>
@@ -299,6 +383,7 @@
                   $(CommonMSBuildProperties);
                   VisualStudioVersion=$(VisualStudioVersion)">
     </MSBuild>
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
   <!--
@@ -307,6 +392,7 @@
     ============================================================
   -->
   <Target Name="RestoreApex">
+    <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Restoring Apex projects" Importance="high" />
 
     <PropertyGroup>
@@ -320,6 +406,7 @@
                   $(CommonMSBuildProperties);
                   VisualStudioVersion=$(VisualStudioVersion)">
     </MSBuild>
+    <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 
   <!--
@@ -330,6 +417,7 @@
     ============================================================
   -->
   <Target Name="RunTestsOnProjects">
+    <CallTarget Targets="BenchmarkStart"/>  
     <Message Text="Running $(TestResultsFileName)" Importance="high" />
 
     <ItemGroup>
@@ -369,25 +457,27 @@
       <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
       <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit) $(Verbosity)</DesktopTestCommand>
     </PropertyGroup>
-
+<Message Text="Starting DesktopTest...$([System.DateTime]::Now)"/>
     <!-- Desktop -->
     <Exec Command="$(DesktopTestCommand)"
           ContinueOnError="true"
           Condition=" '$(DesktopInputTestAssemblies)' != '' AND '$(SkipDesktopTests)' != 'true' ">
       <Output TaskParameter="ExitCode" PropertyName="DesktopTestErrorCode"/>
     </Exec>
-
+<Message Text="Done with DesktopTest... $([System.DateTime]::Now)"/>
+<Message Text="Starting VSTest... $([System.DateTime]::Now)"/>
     <!-- VSTest/NETCore -->
     <Exec Command="$(VSTestCommand)"
           ContinueOnError="true"
           Condition=" '$(CoreInputTestAssemblies)' != '' AND '$(SkipCoreTests)' != 'true' ">
       <Output TaskParameter="ExitCode" PropertyName="VSTestErrorCode"/>
     </Exec>
-
+<Message Text="Done with VSTest..."/>
     <Error Text="Desktop $(TestResultsFileName) tests failed! Results: $(TestResultsXunit)" Condition=" '$(DesktopTestErrorCode)' != '0' AND '$(DesktopTestErrorCode)' != '' " />
     <Error Text="NETCore $(TestResultsFileName) tests failed! Results: $(TestResultsVsts)" Condition=" '$(VSTestErrorCode)' != '0' AND '$(VSTestErrorCode)' != '' " />
 
     <Message Text="Desktop $(TestResultsFileName) tests passed! Results: $(TestResultsXunit)" Condition=" '$(DesktopTestErrorCode)' == '0' " Importance="High" />
     <Message Text="NETCore $(TestResultsFileName) tests passed! Results: $(TestResultsVsts)" Condition=" '$(VSTestErrorCode)' == '0' " Importance="High" />
+  <CallTarget Targets="BenchmarkEnd"/>
   </Target>
 </Project>
