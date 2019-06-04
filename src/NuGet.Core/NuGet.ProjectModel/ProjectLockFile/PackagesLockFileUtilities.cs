@@ -115,13 +115,15 @@ namespace NuGet.ProjectModel
                             // The package spec not found in the dg spec. This could mean that the project does not exist anymore.
                             if (p2pSpec != null)
                             {
+                                // This does not consider ATF.
                                 var p2pSpecTarget = NuGetFrameworkUtility.GetNearest(p2pSpec.TargetFrameworks, framework.FrameworkName, e => e.FrameworkName);
 
                                 // No compatible framework found
                                 if (p2pSpecTarget != null)
                                 {
+                                    // We need to use the exact framework comparer (no fallback)
                                     var p2pSpecProjectRefTarget = p2pSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(
-                                        t => EqualityUtility.EqualsWithNullCheck(p2pSpecTarget.FrameworkName, t.FrameworkName));
+                                        t => NuGetFramework.Comparer.Equals(p2pSpecTarget.FrameworkName, t.FrameworkName));
 
                                     if (p2pSpecProjectRefTarget != null) // This should never happen.
                                     {
