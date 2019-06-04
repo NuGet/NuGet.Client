@@ -201,6 +201,7 @@ else
     $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
     $CliTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranches
     $SdkTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranches
+    $ToolsetTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetToolsetTargetBranches
     Write-Host $VsTargetBranch
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
@@ -211,6 +212,7 @@ else
         VsTargetBranch = $VsTargetBranch.Trim()
         CliTargetBranches = $CliTargetBranches.Trim()
         SdkTargetBranches = $SdkTargetBranches.Trim()
+        ToolsetTargetBranches = $ToolsetTargetBranches.Trim()
     }
 
     New-Item $BuildInfoJsonFile -Force
