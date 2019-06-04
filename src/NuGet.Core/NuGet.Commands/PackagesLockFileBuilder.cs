@@ -46,7 +46,7 @@ namespace NuGet.Commands
 
                     var dependency = new LockFileDependency()
                     {
-                        Id = library.Name.ToLowerInvariant(),
+                        Id = library.Name,
                         ResolvedVersion = library.Version,
                         ContentHash = libraryLookup[identity].Sha512,
                         Dependencies = library.Dependencies

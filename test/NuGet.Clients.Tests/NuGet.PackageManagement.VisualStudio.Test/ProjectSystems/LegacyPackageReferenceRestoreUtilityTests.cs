@@ -256,9 +256,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     Assert.Equal(".NETFramework,Version=v4.5", lockFile.Targets[0].Name);
                     Assert.Equal(3, lockFile.Targets[0].Dependencies.Count);
-                    Assert.Equal("packagea", lockFile.Targets[0].Dependencies[0].Id);
+                    Assert.Equal("packageA", lockFile.Targets[0].Dependencies[0].Id);
                     Assert.Equal(PackageDependencyType.Direct, lockFile.Targets[0].Dependencies[0].Type);
-                    Assert.Equal("packageb", lockFile.Targets[0].Dependencies[1].Id);
+                    Assert.Equal("packageB", lockFile.Targets[0].Dependencies[1].Id);
                     Assert.Equal(PackageDependencyType.Transitive, lockFile.Targets[0].Dependencies[1].Type);
                     Assert.Equal("project2", lockFile.Targets[0].Dependencies[2].Id);
                     Assert.Equal(PackageDependencyType.Project, lockFile.Targets[0].Dependencies[2].Type);
@@ -1633,7 +1633,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     Assert.Equal(".NETFramework,Version=v4.6.1", lockFile.Targets[0].Name);
                     Assert.Equal(2, lockFile.Targets[0].Dependencies.Count);
-                    Assert.Equal("packagea", lockFile.Targets[0].Dependencies[0].Id);
+                    Assert.Equal("packageA", lockFile.Targets[0].Dependencies[0].Id);
                     Assert.Equal(PackageDependencyType.Direct, lockFile.Targets[0].Dependencies[0].Type);
                     Assert.Equal("project2", lockFile.Targets[0].Dependencies[1].Id);
                     Assert.Equal(PackageDependencyType.Project, lockFile.Targets[0].Dependencies[1].Type);
