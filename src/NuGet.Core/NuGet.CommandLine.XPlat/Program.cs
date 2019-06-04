@@ -30,7 +30,9 @@ namespace NuGet.CommandLine.XPlat
         public static int MainInternal(string[] args, CommandOutputLogger log)
         {
 #if DEBUG
-            if (args.Contains(DebugOption))
+            var debugNuGetXPlat = Environment.GetEnvironmentVariable("DEBUG_NUGET_XPLAT");
+
+            if (args.Contains(DebugOption) || string.Equals(bool.TrueString, debugNuGetXPlat, StringComparison.OrdinalIgnoreCase))
             {
                 args = args.Where(arg => !StringComparer.OrdinalIgnoreCase.Equals(arg, DebugOption)).ToArray();
 

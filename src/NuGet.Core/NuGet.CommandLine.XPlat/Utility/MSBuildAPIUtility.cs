@@ -31,7 +31,8 @@ namespace NuGet.CommandLine.XPlat
         private const string REMOVE_OPERATION = "Remove";
         private const string IncludeAssets = "IncludeAssets";
         private const string PrivateAssets = "PrivateAssets";
-        
+        private const string CollectPackageReferences = "CollectPackageReferences";
+
         public ILogger Logger { get; }
 
         public MSBuildAPIUtility(ILogger logger)
@@ -397,7 +398,7 @@ namespace NuGet.CommandLine.XPlat
 
                 //The packages for the framework that were retrieved with GetRequestedVersions
                 var frameworkDependencies = tfmInformation.Dependencies;
-                var projPackages = GetPackageReferencesFromTargets(projectPath, "", tfmInformation.ToString());
+                var projPackages = GetPackageReferencesFromTargets(projectPath, tfmInformation.ToString());
                 var topLevelPackages = new List<InstalledPackageReference>();
                 var transitivePackages = new List<InstalledPackageReference>();
 
@@ -504,20 +505,19 @@ namespace NuGet.CommandLine.XPlat
         /// Returns all package references after invoking the target CollectPackageReferences.
         /// </summary>
         /// <param name="projectPath"> Path to the project for which the package references have to be obtained.</param>
-        /// <param name="libraryName">Dependency of the package. If null, all references are returned</param>
         /// <param name="framework">Framework to get reference(s) for</param>
         /// <returns>List of Items containing the package reference for the package.
         /// If the libraryDependency is null then it returns all package references</returns>
-        private static IEnumerable<InstalledPackageReference> GetPackageReferencesFromTargets(string projectPath,
-           string libraryName, string framework)
+        private static IEnumerable<InstalledPackageReference> GetPackageReferencesFromTargets(string projectPath, string framework)
         {
             var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 { { "TargetFramework", framework } };
             var newProject = new ProjectInstance(projectPath, globalProperties, null);
-            newProject.Build(new[] { "CollectPackageReferences" }, new List<Microsoft.Build.Framework.ILogger> { }, out var targetOutputs);
+            newProject.Build(new[] { CollectPackageReferences }, new List<Microsoft.Build.Framework.ILogger> { }, out var targetOutputs);
 
-            return targetOutputs.Single().Value.Items.Select(p =>
-                new InstalledPackageReference(p.ItemSpec) {
+            return targetOutputs.First(e => e.Key.Equals(CollectPackageReferences)).Value.Items.Select(p =>
+                new InstalledPackageReference(p.ItemSpec)
+                {
                     OriginalRequestedVersion = p.GetMetadata("version"),
                 });
         }
