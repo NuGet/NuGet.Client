@@ -466,15 +466,15 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(
                         new string[]
                         {
-                        "contentFiles/any/any/image.jpg",
-                        "contentFiles/cs/net45/code.cs",
-                        Path.Combine("lib", "uap10.0", "packageA.dll").Replace('\\', '/'),
+                            "contentFiles/any/any/image.jpg",
+                            "contentFiles/cs/net45/code.cs",
+                            "lib/uap10.0/packageA.dll",
                         },
                         files);
                     Assert.Equal(
                         new string[]
                         {
-                        Path.Combine("lib", "uap10.0", "packageA.pdb").Replace('\\','/'),
+                            "lib/uap10.0/packageA.pdb",
                         },
                         symbolFiles);
                 }
@@ -552,15 +552,15 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(
                         new string[]
                         {
-                        "contentFiles/any/any/image.jpg",
-                        "contentFiles/cs/net45/code.cs",
-                        Path.Combine("lib", "uap10.0", "packageA.dll").Replace('\\', '/'),
+                            "contentFiles/any/any/image.jpg",
+                            "contentFiles/cs/net45/code.cs",
+                            "lib/uap10.0/packageA.dll",
                         },
                         files);
                     Assert.Equal(
                         new string[]
                         {
-                        Path.Combine("lib", "uap10.0", "packageA.pdb").Replace('\\','/'),
+                            "lib/uap10.0/packageA.pdb",
                         },
                         symbolFiles);
                 }
@@ -641,15 +641,15 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(
                         new string[]
                         {
-                        "contentFiles/any/any/image.jpg",
-                        "contentFiles/cs/net45/code.cs",
-                        Path.Combine("lib", "uap10.0", "packageA.dll").Replace('\\', '/'),
+                            "contentFiles/any/any/image.jpg",
+                            "contentFiles/cs/net45/code.cs",
+                            "lib/uap10.0/packageA.dll",
                         },
                         files);
                     Assert.Equal(
                         new string[]
                         {
-                        Path.Combine("lib", "uap10.0", "packageA.pdb").Replace('\\','/'),
+                            "lib/uap10.0/packageA.pdb",
                         },
                         symbolFiles);
                 }
@@ -1106,22 +1106,23 @@ namespace Proj2
                         .Where(t => !t.StartsWith("[Content_Types]") && !t.StartsWith("_rels") && !t.StartsWith("package"))
                         .ToArray();
                     Array.Sort(files);
-                    var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
+                    var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ?
+                        new string[]
                         {
-                        Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj1.pdb"),
-                        Path.Combine("lib", "net40", "proj2.dll"),
-                        Path.Combine("lib", "net40", "proj2.pdb"),
-                        "proj2.nuspec",
-                        Path.Combine("src", "proj1", "proj1_file1.cs"),
-                        Path.Combine("src", "proj2", "proj2_file1.cs"),
+                            Path.Combine("content", "proj1_file2.txt"),
+                            Path.Combine("lib", "net40", "proj1.dll"),
+                            Path.Combine("lib", "net40", "proj1.pdb"),
+                            Path.Combine("lib", "net40", "proj2.dll"),
+                            Path.Combine("lib", "net40", "proj2.pdb"),
+                            "proj2.nuspec",
+                            Path.Combine("src", "proj1", "proj1_file1.cs"),
+                            Path.Combine("src", "proj2", "proj2_file1.cs"),
                         }
                         : new string[]
                         {
-                        Path.Combine("lib", "net40", "proj1.pdb"),
-                        Path.Combine("lib", "net40", "proj2.pdb"),
-                        "proj2.nuspec"
+                            Path.Combine("lib", "net40", "proj1.pdb"),
+                            Path.Combine("lib", "net40", "proj2.pdb"),
+                            "proj2.nuspec"
                         };
                     actual = actual.Select(t => NuGet.Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
                     Assert.Equal(actual, files);
