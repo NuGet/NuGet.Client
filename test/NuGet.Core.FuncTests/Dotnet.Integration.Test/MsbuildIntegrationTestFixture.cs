@@ -489,9 +489,17 @@ namespace Dotnet.Integration.Test
             {
                 DeleteDirectory(directory);
             }
-
+            var resultbefore = "";
             try
             {
+                var result = RunHandle(handleArgs);
+                var result64 = RunHandle64(handleArgs);
+                resultbefore = "@@@@before delete : \n" + "The path is : " + path + "\n" +
+                                 "  @@@@The reuslts of running handle.exe is : \n" +
+                                                 result.AllOutput + "\n" +
+                                 "  @@@@The reuslts of running handle64.exe is : \n" +
+                                                 result64.AllOutput + "\n\n";
+
                 Directory.Delete(path, true);
             }
             catch (IOException)
@@ -508,7 +516,7 @@ namespace Dotnet.Integration.Test
                 {
                     var result = RunHandle(handleArgs);
                     var result64 = RunHandle64(handleArgs);
-                    throw new UnauthorizedAccessException("throw unauthorizedAccessException customized by Heng : \n" +
+                    throw new UnauthorizedAccessException(resultbefore + "throw unauthorizedAccessException customized by Heng : \n" +
                                                  "The path is : " + path + "\n" +
                                                  "  %%%%The reuslts of running handle.exe is : \n" +
                                                  result.AllOutput + "\n" +
