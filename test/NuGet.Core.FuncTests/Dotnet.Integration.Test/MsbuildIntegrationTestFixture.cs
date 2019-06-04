@@ -508,21 +508,14 @@ namespace Dotnet.Integration.Test
             }
             catch (UnauthorizedAccessException)
             {
-                try
-                {
-                    Directory.Delete(path, true);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    var result = RunHandle(handleArgs);
-                    var result64 = RunHandle64(handleArgs);
-                    throw new UnauthorizedAccessException(resultbefore + "throw unauthorizedAccessException customized by Heng : \n" +
+                var result = RunHandle(handleArgs);
+                var result64 = RunHandle64(handleArgs);
+                throw new UnauthorizedAccessException(resultbefore + "throw unauthorizedAccessException customized by Heng : \n" +
                                                  "The path is : " + path + "\n" +
                                                  "  %%%%The reuslts of running handle.exe is : \n" +
                                                  result.AllOutput + "\n" +
                                                  "  %%%%The reuslts of running handle64.exe is : \n" +
                                                  result64.AllOutput + "\n");
-                }
             }
             catch
             {
