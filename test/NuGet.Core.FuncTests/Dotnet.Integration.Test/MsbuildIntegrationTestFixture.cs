@@ -27,8 +27,8 @@ namespace Dotnet.Integration.Test
         private readonly Dictionary<string, string> _processEnvVars = new Dictionary<string, string>();
 
         private string NuGetClient;
-        private string HandleExe;
-        private string Handle64Exe;
+        private  string HandleExe;
+        private  string Handle64Exe;
 
     public MsbuildIntegrationTestFixture()
         {
@@ -221,7 +221,7 @@ namespace Dotnet.Integration.Test
 
             return result;
         }
-        internal CommandRunnerResult RunHandle(string args)
+        internal  CommandRunnerResult RunHandle(string args)
         {
             var result = CommandRunner.Run(HandleExe,
                                             NuGetClient,
@@ -230,7 +230,7 @@ namespace Dotnet.Integration.Test
             return result;
         }
 
-        internal CommandRunnerResult RunHandle64(string args)
+        internal  CommandRunnerResult RunHandle64(string args)
         {
             var result = CommandRunner.Run(Handle64Exe,
                                             NuGetClient,
@@ -282,7 +282,7 @@ namespace Dotnet.Integration.Test
 
         private void CopyLatestCliToTestDirectory(string destinationDir)
         {
-            var cliDir = Path.GetDirectoryName(_dotnetCli);
+            var cliDir = Path.GetDirectoryName(NuGetClient);
 
             //Create sub-directory structure in destination
             foreach (var directory in Directory.GetDirectories(cliDir, "*", SearchOption.AllDirectories))
