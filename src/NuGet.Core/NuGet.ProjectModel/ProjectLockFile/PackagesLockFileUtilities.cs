@@ -121,7 +121,7 @@ namespace NuGet.ProjectModel
                                 // No compatible framework found
                                 if (p2pSpecTargetFrameworkInformation != null)
                                 {
-                                    // We need to use the exact framework comparer (no fallback)
+                                    // We need to compare the main framework only. Ignoring fallbacks.
                                     var p2pSpecProjectRestoreMetadataFrameworkInfo = p2pSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(
                                         t => NuGetFramework.Comparer.Equals(p2pSpecTargetFrameworkInformation.FrameworkName, t.FrameworkName));
 
