@@ -1,7 +1,5 @@
 ### Constants ###
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
-$HandleZip = Join-Path $NuGetClientRoot 'Handle.zip'
-$Handle = Join-Path $NuGetClientRoot 'Handle'
 $CLIRoot = Join-Path $NuGetClientRoot cli
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $Nupkgs = Join-Path $Artifacts nupkgs
@@ -180,13 +178,6 @@ Function Install-NuGet {
 
     # Display nuget info
     & $NuGetExe locals all -list -verbosity detailed
-
-    Trace-Log 'Downloading handle.zip'
-    New-Item -ItemType Directory -Force -Path $Handle | Out-Null
-    wget https://download.sysinternals.com/files/Handle.zip -OutFile $HandleZip
-    Add-Type -AssemblyName System.IO.Compression.FileSystem 
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($HandleZip, $Handle)
-
 }
 
 Function Install-DotnetCLI {
