@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0">
-
-  <!-- Special project import for dotnet source build
-  The dotnet source-build Repo API overrides *PackageVersion properties with versions that were built before.
-  Those paackages are injected in this props file
-  See: https://github.com/dotnet/source-build/blob/master/Documentation/auto-dependency-flow/api.md#-pdotnetpackageversionpropspathpath
-  -->
-  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
-
   <!-- Version -->
   <PropertyGroup>
     <IsEscrowMode>false</IsEscrowMode>
@@ -22,17 +14,24 @@
     <!-- This branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d16.$(MinorNuGetVersion)</VsTargetBranch>
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
-    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">release/2.2.4xx;release/2.1.8xx;release/3.0.1xx</CliTargetBranches>
+    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">release/2.2.4xx;release/2.1.8xx</CliTargetBranches>
     <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</SdkTargetBranches>
-    <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">release/2.2.4xx;release/2.1.8xx;release/3.0.1xx</SdkTargetBranches>
-    <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' != ''">$(OverrideToolsetTargetBranches)</ToolsetTargetBranches>
-    <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' == ''">release/3.0.1xx</ToolsetTargetBranches>
+    <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">release/2.2.4xx;release/2.1.8xx</SdkTargetBranches>
     <!-- We need to update this netcoreassembly build number with every insertion into VS to workaround any breaking api
     changes we might have made.-->
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">2</NetCoreAssemblyBuildNumber>
     <!-- Check the VS schedule and manually enter a preview number here that makes sense. -->
     <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview2</ReleaseLabel>
   </PropertyGroup>
+
+  <!-- Special project import for dotnet source build
+
+  The dotnet source-build Repo API overrides *PackageVersion properties with versions that were built before.
+  Those paackages are injected in this props file
+
+  See: https://github.com/dotnet/source-build/blob/master/Documentation/auto-dependency-flow/api.md#-pdotnetpackageversionpropspathpath
+  -->
+  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
 
   <!-- Dependency versions -->
   <PropertyGroup>
@@ -65,8 +64,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <NUGET_PFX_PATH Condition="'$(NUGET_PFX_PATH)' != ''">$(MSBuildThisFileDirectory)\..\keys\NuGetKey.snk</NUGET_PFX_PATH>
-    <MS_PFX_PATH Condition="'$(MS_PFX_PATH)' != ''">$(MSBuildThisFileDirectory)\..\keys\35MSSharedLib1024.snk</MS_PFX_PATH>
+    <NUGET_PFX_PATH>$(MSBuildThisFileDirectory)\..\keys\NuGetKey.snk</NUGET_PFX_PATH>
+    <MS_PFX_PATH>$(MSBuildThisFileDirectory)\..\keys\35MSSharedLib1024.snk</MS_PFX_PATH>
   </PropertyGroup>
 
   <Target Name="GetSemanticVersion">
@@ -80,9 +79,6 @@
   </Target>
   <Target Name="GetSdkTargetBranches">
     <Message Text="$(SdkTargetBranches)" Importance="High"/>
-  </Target>
-  <Target Name="GetToolsetTargetBranches">
-    <Message Text="$(ToolsetTargetBranches)" Importance="High"/>
   </Target>
   <Target Name="GetCliBranchForTesting">
       <Message Text="$(CliBranchForTesting)" Importance="High"/>
