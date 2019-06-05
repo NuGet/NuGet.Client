@@ -483,7 +483,7 @@ namespace Dotnet.Integration.Test
         /// </summary>
         private void DeleteDirectory(string path)
         {
-            var handleArgs = " /accepteula " + path;
+            var handleArgs = " /accepteula hostfxr.dll";
             foreach (string directory in Directory.GetDirectories(path))
             {
                 DeleteDirectory(directory);
@@ -499,25 +499,18 @@ namespace Dotnet.Integration.Test
             }
             catch (UnauthorizedAccessException)
             {
-                try
-                {
-                    Directory.Delete(path, true);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    var result = RunHandle(handleArgs);
-                    var result64 = RunHandle64(handleArgs);
-                    throw new UnauthorizedAccessException("throw unauthorizedAccessException customized by Heng : \n" +
-                                                 "The path is : " + path + "\n" +
-                                                 "  %%%%The reuslts of running handle.exe is : \n" +
-                                                 result.AllOutput + "\n" +
-                                                 "  %%%%The reuslts of running handle64.exe is : \n" +
-                                                 result64.AllOutput + "\n");
-                }
+                var result = RunHandle(handleArgs);
+                var result64 = RunHandle64(handleArgs);
+                throw new UnauthorizedAccessException("throw unauthorizedAccessException customized by Heng : \n" +
+                                             "The path is : " + path + "\n" +
+                                             "  %%%%The reuslts of running handle.exe is : \n" +
+                                             result.AllOutput + "\n" +
+                                             "  %%%%The reuslts of running handle64.exe is : \n" +
+                                             result64.AllOutput + "\n");
             }
             catch
             {
-                
+
             }
         }
     }
