@@ -2424,16 +2424,6 @@ namespace NuGet.Commands.FuncTest
                 .ToList();
         }
 
-        private static void AddRuntime(PackageSpec spec, string rid)
-        {
-            spec.RuntimeGraph = RuntimeGraph.Merge(
-                spec.RuntimeGraph,
-                new RuntimeGraph(new[]
-                {
-                    new RuntimeDescription(rid)
-                }));
-        }
-
         private static void AddDependency(PackageSpec spec, string id, string version)
         {
             var target = new LibraryDependency()

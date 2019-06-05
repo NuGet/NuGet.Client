@@ -2078,6 +2078,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The runtime.json specified in the project &apos;{0}&apos; could not be found. Only the package supplied runtime.json will be used..
+        /// </summary>
+        internal static string Warning_ProjectRuntimeJsonNotFound {
+            get {
+                return ResourceManager.GetString("Warning_ProjectRuntimeJsonNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; was included in the project but the path could not be resolved. Skipping....
         /// </summary>
         internal static string Warning_UnresolvedFilePath {

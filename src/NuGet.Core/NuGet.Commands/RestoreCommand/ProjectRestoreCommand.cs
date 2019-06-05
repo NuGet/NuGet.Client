@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
+using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 
@@ -116,11 +118,11 @@ namespace NuGet.Commands
 
                 var runtimeGraphs = new List<RestoreTargetGraph>();
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
-
+                var projectSuppliedRuntimeGraph = new Lazy<RuntimeGraph>(() => GetProjectRuntimeGraph(_request.Project.ProjectSuppliedRuntimeGraph));
                 foreach (var graph in graphs)
                 {
                     // Get the runtime graph for this specific tfm graph
-                    var runtimeGraph = GetRuntimeGraph(graph, localRepositories);
+                    var runtimeGraph = GetRuntimeGraph(graph, localRepositories, projectSuppliedRuntimeGraph);
                     var runtimeIds = runtimesByFramework[graph.Framework];
 
                     // Merge all runtimes for the output
@@ -167,7 +169,30 @@ namespace NuGet.Commands
             return Tuple.Create(success, graphs, allRuntimes);
         }
 
-        private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependencies(RemoteWalkContext context, ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange, RemoteMatch>>> downloadDependenciesCache, ProjectModel.TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
+        private RuntimeGraph GetProjectRuntimeGraph(string projectRuntimeGraphPath)
+        {
+            // use the runtime graph of the project itself if one exists. This should be lazy. Multiple rid graphs might need the same runtime graph.
+            if (string.IsNullOrEmpty(projectRuntimeGraphPath) && File.Exists(projectRuntimeGraphPath))
+            {
+                using (var stream = File.OpenRead(projectRuntimeGraphPath))
+                {
+                    return JsonRuntimeFormat.ReadRuntimeGraph(stream);
+                }
+            }
+            else
+            {
+                _logger.Log(
+                    RestoreLogMessage.CreateWarning(
+                        NuGetLogCode.NU1702,
+                        string.Format(CultureInfo.CurrentCulture,
+                            Strings.Warning_ProjectRuntimeJsonNotFound,
+                            projectRuntimeGraphPath)));
+
+                return RuntimeGraph.Empty;
+            }
+        }
+
+        private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependencies(RemoteWalkContext context, ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange, RemoteMatch>>> downloadDependenciesCache, TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
         {
             var packageDownloadTasks = targetFrameworkInformation.DownloadDependencies.Select(downloadDependency => ResolverUtility.FindPackageLibraryMatchCachedAsync(
                     downloadDependenciesCache, downloadDependency, context.RemoteLibraryProviders, context.LocalLibraryProviders, context.CacheContext, _logger, token));
@@ -401,10 +426,10 @@ namespace NuGet.Commands
         /// <summary>
         /// Merge all runtime.json found in the flattened graph.
         /// </summary>
-        private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, IReadOnlyList<NuGetv3LocalRepository> localRepositories)
+        private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, IReadOnlyList<NuGetv3LocalRepository> localRepositories, Lazy<RuntimeGraph> projectRuntimeGraph)
         {
             _logger.LogVerbose(Strings.Log_ScanningForRuntimeJson);
-            var runtimeGraph = RuntimeGraph.Empty;
+            var runtimeGraph = projectRuntimeGraph.Value;
 
             // Find runtime.json files using the flattened graph which is unique per id.
             // Using the flattened graph ensures that only accepted packages will be used.
