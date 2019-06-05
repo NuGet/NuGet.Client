@@ -8244,5 +8244,76 @@ namespace NuGet.CommandLine.Test
                 r.AllOutput.Should().Contain("NU1004");
             }
         }
+
+        [Fact]
+        public async Task RestoreNetCore_PackagesLockFile_AssetTargetFallback_DoesNotBreakLockedMode()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var tfm = "netcoreapp2.0";
+                var fallbackTfm = "net46";
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(tfm));
+                projectA.Properties.Add("AssetTargetFallback", fallbackTfm);
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                   "b",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(tfm));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile($"lib/{fallbackTfm}/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX);
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.AddPackageToFramework(tfm, packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var result = Util.RestoreSolution(pathContext);
+
+                // Assert 
+                result.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectB.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+                Assert.False(File.Exists(projectB.NuGetLockFileOutputPath));
+                var packagesLockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+
+                // Assert that the project name is the project custom name.
+                Assert.Equal(packagesLockFile.Targets.First().Dependencies.Count, 2);
+                Assert.Equal(packagesLockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id, "b");
+
+                // Setup - Enable locked mode
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Save();
+                File.Delete(projectA.AssetsFileOutputPath);
+
+                // Act
+                result = Util.RestoreSolution(pathContext);
+
+                // Assert
+                result.Success.Should().BeTrue();
+            }
+        }
     }
 }
