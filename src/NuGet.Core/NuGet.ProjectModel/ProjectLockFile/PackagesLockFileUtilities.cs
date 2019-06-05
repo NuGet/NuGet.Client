@@ -125,7 +125,7 @@ namespace NuGet.ProjectModel
                                     var p2pSpecProjectRestoreMetadataFrameworkInfo = p2pSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(
                                         t => NuGetFramework.Comparer.Equals(p2pSpecTargetFrameworkInformation.FrameworkName, t.FrameworkName));
 
-                                    if (p2pSpecProjectRestoreMetadataFrameworkInfo != null) // This should never happen.
+                                    if (p2pSpecProjectRestoreMetadataFrameworkInfo != null)
                                     {
                                         if (HasP2PDependencyChanged(p2pSpecTargetFrameworkInformation.Dependencies, p2pSpecProjectRestoreMetadataFrameworkInfo.ProjectReferences, projectDependency, dgSpec))
                                         {
@@ -142,7 +142,7 @@ namespace NuGet.ProjectModel
                                             }
                                         }
                                     }
-                                    else
+                                    else // This should never happen.
                                     {
                                         return false;
                                     }
