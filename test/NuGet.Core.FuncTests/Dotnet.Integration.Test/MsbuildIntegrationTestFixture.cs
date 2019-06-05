@@ -35,7 +35,7 @@ namespace Dotnet.Integration.Test
             var len = paths.Length;
             var len1 = paths.ElementAt(len - 1).Length;
             var len2 = paths.ElementAt(len - 2).Length;
-            NuGetClient = _dotnetCli.Substring(0, _dotnetCli.Length - (len1 + len2 + 1));
+            NuGetClient = _dotnetCli.Substring(0, NuGetClient.Length - (len1 + len2 + 1));
             HandleExe = Path.Combine(NuGetClient, "Handle", "handle.exe");
             Handle64Exe = Path.Combine(NuGetClient, "Handle", "handle64.exe");
 
