@@ -39,14 +39,6 @@
       <TestResultsFileName>CoreFuncTests</TestResultsFileName>
     </PropertyGroup>
 
-    <Message Text="@@@@@ start: running powershell before core func test" Importance="high" />
-    <Exec
-        Command="powershell -NoProfile -NoLogo -command &quot;Get-WmiObject Win32_Process | Where CommandLine | Select ProcessId,CommandLine | out-string -Width 500&quot;"
-        IgnoreExitCode="true"
-        IgnoreStandardErrorWarningFormat="true"
-    />
-    <Message Text="@@@@@ end: running powershell before core func test" Importance="high" />
-
     <!-- Run tests as a batch -->
     <MSBuild
         Projects="$(MSBuildThisFileFullPath)"
@@ -57,14 +49,6 @@
       <Output TaskParameter="TargetOutputs"
               ItemName="TestAssemblyPath" />
     </MSBuild>
-
-    <Message Text="#### start: running powershell after core func test" Importance="high" />
-    <Exec
-        Command="powershell -NoProfile -NoLogo -command &quot;Get-WmiObject Win32_Process | Where CommandLine | Select ProcessId,CommandLine | out-string -Width 500&quot;"
-        IgnoreExitCode="true"
-        IgnoreStandardErrorWarningFormat="true"
-    />
-    <Message Text="#### end: running powershell after core func test" Importance="high" />
   </Target>
 
   <!--
