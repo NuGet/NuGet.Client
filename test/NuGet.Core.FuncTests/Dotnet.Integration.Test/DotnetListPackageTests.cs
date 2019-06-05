@@ -8,7 +8,6 @@ using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -19,10 +18,9 @@ namespace Dotnet.Integration.Test
 
         private readonly MsbuildIntegrationTestFixture _fixture;
 
-        public DotnetListPackageTests(MsbuildIntegrationTestFixture fixture, ITestOutputHelper logger)
+        public DotnetListPackageTests(MsbuildIntegrationTestFixture fixture)
         {
             _fixture = fixture;
-            _fixture.logger = logger;
         }
 
 
