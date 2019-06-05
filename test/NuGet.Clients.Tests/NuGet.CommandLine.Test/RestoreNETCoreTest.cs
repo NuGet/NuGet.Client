@@ -8267,6 +8267,7 @@ namespace NuGet.CommandLine.Test
                    "b",
                    pathContext.SolutionRoot,
                    NuGetFramework.Parse(tfm));
+                projectB.Properties.Add("AssetTargetFallback", fallbackTfm); // This is the important ATF.
 
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -8306,7 +8307,7 @@ namespace NuGet.CommandLine.Test
                 // Setup - Enable locked mode
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Save();
-                File.Delete(projectA.AssetsFileOutputPath);
+                File.Delete(projectA.CacheFileOutputPath);
 
                 // Act
                 result = Util.RestoreSolution(pathContext);
