@@ -48,7 +48,7 @@ Function Get-Version {
         $finalVersion = "$major.0.$((-join ($versionParts | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"    
     
         Write-Host "The new VSIX Version is: $finalVersion"
-        return $finalVersion    
+        return $finalVersion
 }
 
 Function Update-VsixVersion {
@@ -78,33 +78,11 @@ Function Update-VsixVersion {
     Write-Host "Updated the VSIX version [$oldVersion] => [$($root.Metadata.Identity.Version)]"
 }
 
-Function DisableStrongNameVerification(
-    [Parameter(Mandatory = $False)] [string] $assemblyName = '*',
-    [Parameter(Mandatory = $True)]  [string] $publicKeyToken)
-{
-    $regKey = "HKLM:SOFTWARE\Microsoft\StrongName\Verification\$assemblyName,$publicKeyToken"
-    $regKey32 = "HKLM:SOFTWARE\Wow6432Node\Microsoft\StrongName\Verification\$assemblyName,$publicKeyToken"
-    $has32BitNode = Test-Path "HKLM:SOFTWARE\Wow6432Node"
-
-    If (-Not (Test-Path $regKey) -Or ($has32BitNode -And -Not (Test-Path $regKey32)))
-    {
-        Write-Host "Disabling .NET strong name verification for public key token $publicKeyToken so that test-signed binaries can be used on the build machine."
-
-        New-Item -Path (Split-Path $regKey) -Name (Split-Path -Leaf $regKey) -Force | Out-Null
-
-        If ($has32BitNode)
-        {
-            New-Item -Path (Split-Path $regKey32) -Name (Split-Path -Leaf $regKey32) -Force | Out-Null
-        }
-    }
-}
-
 $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
 
-# Turn off strong name verification for common DevDiv public keys so that people can execute things against
-# test-signed assemblies. One example would be running unit tests on a test-signed assembly during the build.
-DisableStrongNameVerification -publicKeyToken 'b03f5f7f11d50a3a' # Microsoft
-DisableStrongNameVerification -publicKeyToken '31bf3856ad364e35' # NuGet
+# Disable strong name verification of common public keys so that scenarios like building the VSIX or running unit tests
+# will not fail because of strong name verification errors.
+. "$PSScriptRoot\..\utils\DisableStrongNameVerification.ps1"
 
 $regKeyFileSystem = "HKLM:SYSTEM\CurrentControlSet\Control\FileSystem"
 $enableLongPathSupport = "LongPathsEnabled"
