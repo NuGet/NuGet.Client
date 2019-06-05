@@ -14,7 +14,7 @@
     <DefaultStrongNameCert>MsSharedLib72</DefaultStrongNameCert>
   </PropertyGroup>
 
-  <PropertyGroup Condition = " Exists($(StrongNameKey)) ">
+  <PropertyGroup Condition = "$(SkipDelaySigning) != 'true' and Exists($(StrongNameKey)) ">
     <SignAssembly>true</SignAssembly>
     <DelaySign Condition="'$(IsXplat)' != 'true'">true</DelaySign>
     <PublicSign Condition="'$(IsXplat)' == 'true'">true</PublicSign>
