@@ -53,8 +53,7 @@
         Targets="RunTestsOnProjects"
         Properties="$(CommonMSBuildProperties);
                     TestResultsFileName=$(TestResultsFileName);
-                    TestProjectPaths=$(TestProjectPaths)"
-        ContinueOnError="true">
+                    TestProjectPaths=$(TestProjectPaths)">
       <Output TaskParameter="TargetOutputs"
               ItemName="TestAssemblyPath" />
     </MSBuild>
