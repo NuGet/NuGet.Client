@@ -65,8 +65,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <NUGET_PFX_PATH>$(MSBuildThisFileDirectory)\..\keys\NuGetKey.snk</NUGET_PFX_PATH>
-    <MS_PFX_PATH>$(MSBuildThisFileDirectory)\..\keys\35MSSharedLib1024.snk</MS_PFX_PATH>
+    <NUGET_PFX_PATH Condition="'$(NUGET_PFX_PATH)' != ''">$(MSBuildThisFileDirectory)\..\keys\NuGetKey.snk</NUGET_PFX_PATH>
+    <MS_PFX_PATH Condition="'$(MS_PFX_PATH)' != ''">$(MSBuildThisFileDirectory)\..\keys\35MSSharedLib1024.snk</MS_PFX_PATH>
   </PropertyGroup>
 
   <Target Name="GetSemanticVersion">
