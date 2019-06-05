@@ -11,17 +11,6 @@ phases:
 
   steps:
   - task: PowerShell@1
-    displayName: "Official only branch checks"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        $needOfficialBuild = $Env:BUILD_SOURCEBRANCHNAME -eq 'dev' -or $Env:BUILD_SOURCEBRANCHNAME.StartsWith('release-')
-        if ($needOfficialBuild -and -not $IsOfficialBuild)
-        {
-          throw [System.Exception] ($Env:BUILD_SOURCEBRANCHNAME + ' should only be built from the official build definition')
-        }
-
-  - task: PowerShell@1
     displayName: "Initialize Git Commit Status on GitHub"
     inputs:
       scriptType: "inlineScript"
