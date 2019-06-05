@@ -25,19 +25,23 @@ namespace Dotnet.Integration.Test
         internal readonly string MsBuildSdksPath;
         private readonly Dictionary<string, string> _processEnvVars = new Dictionary<string, string>();
 
+        public ITestOutputHelper logger;
+        private readonly string HandleExe;
+        private readonly string Handle64Exe;
         private string NuGetClient;
-        private  string HandleExe;
-        private  string Handle64Exe;
 
-    public MsbuildIntegrationTestFixture()
+        public MsbuildIntegrationTestFixture()
         {
             var paths = _dotnetCli.Split('\\');
             var len = paths.Length;
             var len1 = paths.ElementAt(len - 1).Length;
             var len2 = paths.ElementAt(len - 2).Length;
-            NuGetClient = _dotnetCli.Substring(0, NuGetClient.Length - (len1 + len2 + 1));
-            HandleExe = Path.Combine(NuGetClient, "Handle", "handle.exe");
-            Handle64Exe = Path.Combine(NuGetClient, "Handle", "handle64.exe");
+            NuGetClient = _dotnetCli.Substring(0, _dotnetCli.Length - (len1 + len2 + 1));
+            var handleFolder = Path.Combine(NuGetClient, "Handle");
+            HandleExe = Path.Combine(handleFolder, "handle.exe");
+            Handle64Exe = Path.Combine(handleFolder, "handle64.exe");
+            //logger.WriteLine("%%%%handleExe : ", HandleExe);
+            //logger.WriteLine("%%%%handle64Exe : ", Handle64Exe);
 
             var cliDirectory = CopyLatestCliForPack();
             TestDotnetCli = Path.Combine(cliDirectory, "dotnet.exe");
@@ -218,26 +222,30 @@ namespace Dotnet.Integration.Test
 
             return result;
         }
-        internal  CommandRunnerResult RunHandle(string args)
+        internal void RunHandle(string workingDirectory, string args, bool beforeDeletion)
         {
+
             var result = CommandRunner.Run(HandleExe,
                                             NuGetClient,
                                             args,
                                             waitForExit: true);
-            return result;
+            var phase = beforeDeletion ? "Before Del" : "After Del";
+            logger.WriteLine(phase + " %%%% running handle.exe : exitcode = " + result.ExitCode);
+            logger.WriteLine(result.AllOutput);
+            logger.WriteLine(phase + " %%%% end handle.exe : exitcode = " + result.ExitCode);
+
+            var result64 = CommandRunner.Run(Handle64Exe,
+                                             NuGetClient,
+                                             args,
+                                             waitForExit: true);
+
+            logger.WriteLine(phase + "%%%% 64 running handle.exe : exitcode = " + result.ExitCode);
+            logger.WriteLine(result64.AllOutput);
+            logger.WriteLine(phase + "%%%% 64 end handle.exe : exitcode = " + result.ExitCode);
         }
 
-        internal  CommandRunnerResult RunHandle64(string args)
-        {
-            var result = CommandRunner.Run(Handle64Exe,
-                                            NuGetClient,
-                                            args,
-                                            waitForExit: true);
-            return result;
-        }
 
-
-        internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath = "obj", bool validateSuccess = true)
+    internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath = "obj", bool validateSuccess = true)
             => PackProjectOrSolution(workingDirectory, $"{projectName}.csproj", args, nuspecOutputPath, validateSuccess);
 
         internal CommandRunnerResult PackSolution(string workingDirectory, string solutionName, string args, string nuspecOutputPath = "obj", bool validateSuccess = true)
@@ -279,7 +287,7 @@ namespace Dotnet.Integration.Test
 
         private void CopyLatestCliToTestDirectory(string destinationDir)
         {
-            var cliDir = Path.GetDirectoryName(NuGetClient);
+            var cliDir = Path.GetDirectoryName(_dotnetCli);
 
             //Create sub-directory structure in destination
             foreach (var directory in Directory.GetDirectories(cliDir, "*", SearchOption.AllDirectories))
@@ -438,11 +446,19 @@ namespace Dotnet.Integration.Test
 
         public void Dispose()
         {
-            
+            var handleArgs = " /accepteula hostfxr.dll";
             RunDotnet(Path.GetDirectoryName(TestDotnetCli), "build-server shutdown");
             KillDotnetExe(TestDotnetCli);
-            DeleteDirectory(Path.GetDirectoryName(TestDotnetCli));
+            if (logger != null)
+            {
+                RunHandle(_dotnetCli, handleArgs, true);
+            }
             
+            DeleteDirectory(Path.GetDirectoryName(TestDotnetCli));
+            if (logger != null)
+            {
+                RunHandle(_dotnetCli, handleArgs, false);
+            }
         }
 
         private static void KillDotnetExe(string pathToDotnetExe)
@@ -481,9 +497,8 @@ namespace Dotnet.Integration.Test
         /// Depth-first recursive delete, with handling for descendant 
         /// directories open in Windows Explorer or used by another process
         /// </summary>
-        private void DeleteDirectory(string path)
+        private static void DeleteDirectory(string path)
         {
-            var handleArgs = " /accepteula hostfxr.dll";
             foreach (string directory in Directory.GetDirectories(path))
             {
                 DeleteDirectory(directory);
@@ -499,14 +514,7 @@ namespace Dotnet.Integration.Test
             }
             catch (UnauthorizedAccessException)
             {
-                var result = RunHandle(handleArgs);
-                var result64 = RunHandle64(handleArgs);
-                throw new UnauthorizedAccessException("throw unauthorizedAccessException customized by Heng : \n" +
-                                             "The path is : " + path + "\n" +
-                                             "  %%%%The reuslts of running handle.exe is : \n" +
-                                             result.AllOutput + "\n" +
-                                             "  %%%%The reuslts of running handle64.exe is : \n" +
-                                             result64.AllOutput + "\n");
+                Directory.Delete(path, true);
             }
             catch
             {

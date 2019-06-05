@@ -19,9 +19,10 @@ namespace Dotnet.Integration.Test
 
         private readonly MsbuildIntegrationTestFixture _fixture;
 
-        public DotnetListPackageTests(MsbuildIntegrationTestFixture fixture)
+        public DotnetListPackageTests(MsbuildIntegrationTestFixture fixture, ITestOutputHelper logger)
         {
             _fixture = fixture;
+            _fixture.logger = logger;
         }
 
 
