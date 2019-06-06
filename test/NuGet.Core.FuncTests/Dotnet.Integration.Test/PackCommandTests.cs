@@ -15,6 +15,8 @@ using NuGet.Packaging.Licenses;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using NuGet.XPlat.FuncTest;
+
 
 
 namespace Dotnet.Integration.Test
@@ -3989,5 +3991,94 @@ namespace ClassLibrary
                 Assert.True(result.Success);
             }
         }
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackAsMsbuildTargets()
+        {
+            
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                // Set up solution, project, program.cs and package
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                // Set up project.csproj
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference("nonSDKprojectA",
+                                                                                      pathContext.SolutionRoot,
+                                                                                      net461);
+                projectA.Properties.Add("PackageOutputPath", ".\\");
+                projectA.Properties.Add("Authors", "someone");
+                projectA.Save();
+
+                var projectPath = projectA.ProjectPath;
+                var projectFolder = projectPath.Substring(0, projectPath.Length - projectPath.Split('\\').Last().Length - 1);
+
+                using (var stream = new FileStream(projectPath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    var properties = new Dictionary<string, string>();
+                    properties["Version"] = "4.0.0-aaa";
+                    properties["IncludeAssets"] = "runtime; build; native; contentfiles; analyzers; buildtransitive";
+                    properties["PrivateAssets"] = "all";
+                    ProjectFileUtils.AddItem(xml,
+                                            "PackageReference",
+                                            "NuGet.Build.Tasks.Pack.Sdk2x",
+                                            string.Empty,
+                                            properties,
+                                            new Dictionary<string, string>());
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // Set up program.cs
+                var programContents = @"
+using System;
+
+namespace nonSDKprojectA
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine(""Hello World!"");
+        }
     }
+}";
+                var programPath = Path.Combine(projectFolder, "Program.cs");
+                File.WriteAllText(programPath, programContents);
+
+                // Copy the NuGet.Build.Tasks.Pack.Sdk2x package to nupkgSourcePath
+                var nupkgsDirectory = DotnetCliUtil.GetNupkgDirectoryInRepo();
+                var nupkgSourcePath = Directory.GetFiles(nupkgsDirectory, "NuGet.Build.Tasks.Pack.Sdk2x.*").First();
+                var nupkgFileName = nupkgSourcePath.Split("\\").Last();
+                var nupkgDestPath = pathContext.PackageSource + "\\" + nupkgFileName;
+                File.Copy(nupkgSourcePath, nupkgDestPath);
+
+          
+                var msBuildDirectory = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin";
+                var msBuildExe = Path.Combine(msBuildDirectory, "MSBuild.exe");
+
+                var restoreResult = CommandRunner.Run(msBuildExe,
+                                               projectFolder,
+                                               $"/t:restore",
+                                               waitForExit: true);
+                Assert.True(restoreResult.Item1 == 0, $"Restore project failed with following log information :\n {restoreResult.AllOutput}");
+                Assert.True(string.IsNullOrWhiteSpace(restoreResult.Item3), $"restore project failed with following message in error stream :\n {restoreResult.AllOutput}");
+
+                // Act
+                var packResult = CommandRunner.Run(msBuildExe,
+                                               projectFolder,
+                                               $"/t:pack",
+                                               waitForExit: true);
+
+                // Assert
+                Assert.True(packResult.Item1 == 0, $"Pack project failed with following log information :\n {packResult.AllOutput}");
+                Assert.True(string.IsNullOrWhiteSpace(packResult.Item3), $"Pack project failed with following message in error stream :\n {packResult.AllOutput}");
+
+            }
+        }
+    }
+
 }
