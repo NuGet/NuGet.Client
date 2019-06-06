@@ -115,23 +115,25 @@ namespace NuGet.ProjectModel
                             // The package spec not found in the dg spec. This could mean that the project does not exist anymore.
                             if (p2pSpec != null)
                             {
-                                var p2pSpecTarget = NuGetFrameworkUtility.GetNearest(p2pSpec.TargetFrameworks, framework.FrameworkName, e => e.FrameworkName);
+                                // This does not consider ATF.
+                                var p2pSpecTargetFrameworkInformation = NuGetFrameworkUtility.GetNearest(p2pSpec.TargetFrameworks, framework.FrameworkName, e => e.FrameworkName);
 
                                 // No compatible framework found
-                                if (p2pSpecTarget != null)
+                                if (p2pSpecTargetFrameworkInformation != null)
                                 {
-                                    var p2pSpecProjectRefTarget = p2pSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(
-                                        t => EqualityUtility.EqualsWithNullCheck(p2pSpecTarget.FrameworkName, t.FrameworkName));
+                                    // We need to compare the main framework only. Ignoring fallbacks.
+                                    var p2pSpecProjectRestoreMetadataFrameworkInfo = p2pSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(
+                                        t => NuGetFramework.Comparer.Equals(p2pSpecTargetFrameworkInformation.FrameworkName, t.FrameworkName));
 
-                                    if (p2pSpecProjectRefTarget != null) // This should never happen.
+                                    if (p2pSpecProjectRestoreMetadataFrameworkInfo != null)
                                     {
-                                        if (HasP2PDependencyChanged(p2pSpecTarget.Dependencies, p2pSpecProjectRefTarget.ProjectReferences, projectDependency, dgSpec))
+                                        if (HasP2PDependencyChanged(p2pSpecTargetFrameworkInformation.Dependencies, p2pSpecProjectRestoreMetadataFrameworkInfo.ProjectReferences, projectDependency, dgSpec))
                                         {
                                             // P2P transitive package dependencies have changed
                                             return false;
                                         }
 
-                                        foreach (var reference in p2pSpecProjectRefTarget.ProjectReferences)
+                                        foreach (var reference in p2pSpecProjectRestoreMetadataFrameworkInfo.ProjectReferences)
                                         {
                                             if (visitedP2PReference.Add(reference.ProjectUniqueName))
                                             {
@@ -140,7 +142,7 @@ namespace NuGet.ProjectModel
                                             }
                                         }
                                     }
-                                    else
+                                    else // This should never happen.
                                     {
                                         return false;
                                     }
