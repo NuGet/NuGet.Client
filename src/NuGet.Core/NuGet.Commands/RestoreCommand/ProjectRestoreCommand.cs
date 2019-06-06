@@ -118,10 +118,17 @@ namespace NuGet.Commands
 
                 var runtimeGraphs = new List<RestoreTargetGraph>();
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
-                var projectSuppliedRuntimeGraph = new Lazy<RuntimeGraph>(() => GetProjectRuntimeGraph(_request.Project.ProjectRuntimeGraphPath));
                 foreach (var graph in graphs)
                 {
                     // Get the runtime graph for this specific tfm graph
+                    // TODO NK - Don't read the same graph twice.
+
+                    var projectSuppliedRuntimeGraph = new Lazy<RuntimeGraph>(() =>
+                        GetProjectRuntimeGraph(
+                        _request.Project.TargetFrameworks.
+                        FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, graph.Framework))
+                        .RuntimeIdentifierGraphPath));
+
                     var runtimeGraph = GetRuntimeGraph(graph, localRepositories, projectSuppliedRuntimeGraph);
                     var runtimeIds = runtimesByFramework[graph.Framework];
 
@@ -171,7 +178,6 @@ namespace NuGet.Commands
 
         private RuntimeGraph GetProjectRuntimeGraph(string projectRuntimeGraphPath)
         {
-            // use the runtime graph of the project itself if one exists. This should be lazy. Multiple rid graphs might need the same runtime graph.
             if (string.IsNullOrEmpty(projectRuntimeGraphPath) && File.Exists(projectRuntimeGraphPath))
             {
                 using (var stream = File.OpenRead(projectRuntimeGraphPath))
@@ -181,6 +187,7 @@ namespace NuGet.Commands
             }
             else
             {
+                // TODO NK - Make this an error.
                 _logger.Log(
                     RestoreLogMessage.CreateWarning(
                         NuGetLogCode.NU1702,

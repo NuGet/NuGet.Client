@@ -247,6 +247,9 @@ namespace NuGet.Commands
                     // Add RIDs and Supports
                     result.RuntimeGraph = GetRuntimeGraph(specItem);
 
+                    // Add Target Framework Specific Properties
+                    AddTargetFrameworkSpecificProperties(result, items);
+
                     // Add PackageTargetFallback
                     AddPackageTargetFallbacks(result, items);
 
@@ -443,6 +446,16 @@ namespace NuGet.Commands
                     // Update the framework appropriately
                     AssetTargetFallbackUtility.ApplyFramework(targetFrameworkInfo, packageTargetFallback, assetTargetFallback);
                 }
+            }
+        }
+
+        private static void AddTargetFrameworkSpecificProperties(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        {
+            foreach (var item in GetItemByType(items, "TargetFrameworkProperties"))
+            {
+                var frameworkString = item.GetProperty("TargetFramework");
+                var targetFrameworkInformation = spec.GetTargetFramework(NuGetFramework.Parse(frameworkString));
+                targetFrameworkInformation.RuntimeIdentifierGraphPath = item.GetProperty("RuntimeIdentifierGraphPath");
             }
         }
 
@@ -742,18 +755,6 @@ namespace NuGet.Commands
             spec.RestoreMetadata.ProjectName = specItem.GetProperty("ProjectName");
 
             return spec;
-        }
-
-        private static HashSet<NuGetFramework> GetFrameworks(IMSBuildItem item, PackageSpec spec)
-        {
-            var frameworks = GetFrameworks(item);
-
-            if (frameworks.Count == 0)
-            {
-                frameworks.UnionWith(spec.TargetFrameworks.Select(e => e.FrameworkName));
-            }
-
-            return frameworks;
         }
 
         private static HashSet<NuGetFramework> GetFrameworks(IMSBuildItem item)

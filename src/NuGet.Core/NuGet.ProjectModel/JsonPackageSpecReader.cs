@@ -772,7 +772,8 @@ namespace NuGet.ProjectModel
                 Imports = importFrameworks,
                 Warn = GetWarnSetting(properties),
                 AssetTargetFallback = assetTargetFallback,
-            };
+                RuntimeIdentifierGraphPath = GetRuntimeIdentifierGraphPath(properties)
+        };
 
             PopulateDependencies(
                 packageSpec.FilePath,
@@ -919,6 +920,18 @@ namespace NuGet.ProjectModel
 
             return frameworks;
         }
+        private static string GetRuntimeIdentifierGraphPath(JObject properties)
+        {
+            var runtimeIdentifierGraphPath = properties["runtimeIdentifierGraphPath"];
+
+            if (runtimeIdentifierGraphPath != null)
+            {
+                return runtimeIdentifierGraphPath.ToObject<string>();
+            }
+
+            return null;
+        }
+
 
         private static bool GetWarnSetting(JObject properties)
         {

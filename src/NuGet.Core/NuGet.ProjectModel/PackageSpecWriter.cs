@@ -496,7 +496,7 @@ namespace NuGet.ProjectModel
                     SetValueIfTrue(writer, "warn", framework.Warn);
                     SetDownloadDependencies(writer, framework.DownloadDependencies);
                     SetFrameworkReferences(writer, framework.FrameworkReferences);
-
+                    SetValueIfNotNull(writer, "runtimeIdentifierGraphPath", framework.RuntimeIdentifierGraphPath);
                     writer.WriteObjectEnd();
                 }
 
@@ -523,6 +523,14 @@ namespace NuGet.ProjectModel
         private static void SetValueIfTrue(IObjectWriter writer, string name, bool value)
         {
             if (value)
+            {
+                writer.WriteNameValue(name, value);
+            }
+        }
+
+        private static void SetValueIfNotNull(IObjectWriter writer, string name, string value)
+        {
+            if (!string.IsNullOrEmpty(value))
             {
                 writer.WriteNameValue(name, value);
             }

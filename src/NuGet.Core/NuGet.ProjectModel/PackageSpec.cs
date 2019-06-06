@@ -93,11 +93,6 @@ namespace NuGet.ProjectModel
 
         public RuntimeGraph RuntimeGraph { get; set; } = new RuntimeGraph();
 
-       /// <summary>
-       /// The project supplied runtime.json
-       /// </summary>
-        public string ProjectRuntimeGraphPath { get; set; }
-
         /// <summary>
         /// Project Settings is used to pass settings like HideWarningsAndErrors down to lower levels.
         /// Currently they do not include any settings that affect the final result of restore.

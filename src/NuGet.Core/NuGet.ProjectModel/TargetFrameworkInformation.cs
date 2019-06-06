@@ -43,6 +43,11 @@ namespace NuGet.ProjectModel
         /// </summary>
         public ISet<FrameworkDependency> FrameworkReferences { get; } = new HashSet<FrameworkDependency>();
 
+        /// <summary>
+        /// The project supplied runtime.json
+        /// </summary>
+        public string RuntimeIdentifierGraphPath { get; set; }
+
         public override string ToString()
         {
             return FrameworkName.GetShortFolderName();
@@ -58,7 +63,7 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(Imports);
             hashCode.AddSequence(DownloadDependencies);
             hashCode.AddSequence(FrameworkReferences);
-
+            hashCode.AddObject(RuntimeIdentifierGraphPath);
             return hashCode.CombinedHash;
         }
 
@@ -84,7 +89,8 @@ namespace NuGet.ProjectModel
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
                    AssetTargetFallback == other.AssetTargetFallback &&
                    DownloadDependencies.OrderedEquals(other.DownloadDependencies, dep => dep) &&
-                   FrameworkReferences.OrderedEquals(other.FrameworkReferences, fr => fr);
+                   FrameworkReferences.OrderedEquals(other.FrameworkReferences, fr => fr) &&
+                   string.Equals(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath);
         }
 
         public TargetFrameworkInformation Clone()
@@ -97,6 +103,7 @@ namespace NuGet.ProjectModel
             clonedObject.Warn = Warn;
             clonedObject.DownloadDependencies.AddRange(DownloadDependencies.Select(item => item.Clone()));
             clonedObject.FrameworkReferences.AddRange(FrameworkReferences);
+            clonedObject.RuntimeIdentifierGraphPath = RuntimeIdentifierGraphPath;
             return clonedObject;
         }
     }
