@@ -96,7 +96,7 @@ namespace NuGet.ProjectModel
        /// <summary>
        /// The project supplied runtime.json
        /// </summary>
-        public string ProjectSuppliedRuntimeGraph { get; set; }
+        public string ProjectRuntimeGraphPath { get; set; }
 
         /// <summary>
         /// Project Settings is used to pass settings like HideWarningsAndErrors down to lower levels.

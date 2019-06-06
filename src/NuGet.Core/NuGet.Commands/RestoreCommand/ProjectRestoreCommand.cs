@@ -118,7 +118,7 @@ namespace NuGet.Commands
 
                 var runtimeGraphs = new List<RestoreTargetGraph>();
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
-                var projectSuppliedRuntimeGraph = new Lazy<RuntimeGraph>(() => GetProjectRuntimeGraph(_request.Project.ProjectSuppliedRuntimeGraph));
+                var projectSuppliedRuntimeGraph = new Lazy<RuntimeGraph>(() => GetProjectRuntimeGraph(_request.Project.ProjectRuntimeGraphPath));
                 foreach (var graph in graphs)
                 {
                     // Get the runtime graph for this specific tfm graph
