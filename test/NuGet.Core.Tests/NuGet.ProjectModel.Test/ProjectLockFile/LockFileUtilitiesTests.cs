@@ -8,7 +8,7 @@ using PackagesLockFileBuilder = NuGet.ProjectModel.Test.Builders.PackagesLockFil
 
 namespace NuGet.ProjectModel.Test.ProjectLockFile
 {
-    public partial class LockFileUtilitiesTests
+    public class LockFileUtilitiesTests
     {
         [Fact]
         public void IsLockFileStillValid_DifferentVersions_AreNotEqual()

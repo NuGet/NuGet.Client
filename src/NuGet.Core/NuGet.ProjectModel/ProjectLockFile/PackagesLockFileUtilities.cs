@@ -236,22 +236,20 @@ namespace NuGet.ProjectModel
             var isLockFileStillValid = true;
             var dependencyComparer = LockFileDependencyComparerWithoutContentHash.Default;
 
-            foreach (var expectedTarget in expected.Targets)
+            foreach (PackagesLockFileTarget expectedTarget in expected.Targets)
             {
-#pragma warning disable IDE0007 // Use implicit type
                 PackagesLockFileTarget actualTarget = actual.Targets.Single(t => t.TargetFramework == expectedTarget.TargetFramework);
-#pragma warning restore IDE0007 // Use implicit type
 
                 // Duplicate dependencies list so we can remove matches to validate that all dependencies were matched
                 var actualDependencies = new Dictionary<LockFileDependency, LockFileDependency>(
                     actualTarget.Dependencies.Count, 
                     dependencyComparer);
-                foreach (var actualDependency in actualTarget.Dependencies)
+                foreach (LockFileDependency actualDependency in actualTarget.Dependencies)
                 {
                     actualDependencies.Add(actualDependency, actualDependency);
                 }
 
-                foreach (var expectedDependency in expectedTarget.Dependencies)
+                foreach (LockFileDependency expectedDependency in expectedTarget.Dependencies)
                 {
                     if (actualDependencies.TryGetValue(expectedDependency, out var actualDependency))
                     {

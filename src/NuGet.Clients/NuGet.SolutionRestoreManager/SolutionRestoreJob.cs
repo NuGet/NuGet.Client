@@ -167,7 +167,7 @@ namespace NuGet.SolutionRestoreManager
 
                 // Get the projects from the SolutionManager
                 // Note that projects that are not supported by NuGet, will not show up in this list
-                projects = await _solutionManager.GetNuGetProjectsAsync();
+                projects = (await _solutionManager.GetNuGetProjectsAsync()).ToList();
 
                 if (projects.Any() && solutionDirectory == null)
                 {
@@ -187,6 +187,7 @@ namespace NuGet.SolutionRestoreManager
                 if (projects.Any(project => !(project is INuGetIntegratedProject)))
                 {
                     await RestorePackagesOrCheckForMissingPackagesAsync(
+                        projects,
                         solutionDirectory,
                         isSolutionAvailable,
                         restoreSource,
@@ -447,6 +448,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         private async Task RestorePackagesOrCheckForMissingPackagesAsync(
+            IEnumerable<NuGetProject> allProjects,
             string solutionDirectory,
             bool isSolutionAvailable,
             RestoreOperationSource restoreSource,
@@ -501,7 +503,7 @@ namespace NuGet.SolutionRestoreManager
                     _status = NuGetOperationStatus.Succeeded;
                 }
 
-                await ValidatePackagesConfigLockFilesAsync(token);
+                ValidatePackagesConfigLockFiles(allProjects, token);
             }
             else if (restoreSource == RestoreOperationSource.Explicit)
             {
@@ -517,10 +519,9 @@ namespace NuGet.SolutionRestoreManager
                 token);
         }
 
-        private async Task ValidatePackagesConfigLockFilesAsync(CancellationToken token)
+        private void ValidatePackagesConfigLockFiles(IEnumerable<NuGetProject> allProjects, CancellationToken token)
         {
-            var allProjects = await _solutionManager.GetNuGetProjectsAsync();
-            var pcProjects = allProjects.Where(p => p.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig).ToList();
+            var pcProjects = allProjects.Where(p => p.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig);
 
             foreach (MSBuildNuGetProject project in pcProjects)
             {
@@ -530,7 +531,7 @@ namespace NuGet.SolutionRestoreManager
                 var lockFileName = (string)project.GetMetadataOrNull("NuGetLockFilePath");
                 var restorePackagesWithLockFile = (string)project.GetMetadataOrNull("RestorePackagesWithLockFile");
                 var projectTfm = (NuGetFramework)project.GetMetadataOrNull("TargetFramework");
-                var lockedMode = MSBuildStringUtility.GetBooleanOrNull((string)project.GetMetadataOrNull("LockedMode")) ?? false;
+                var restoreLockedMode = MSBuildStringUtility.GetBooleanOrNull((string)project.GetMetadataOrNull("LockedMode")) ?? false;
 
                 var validationLogs = PackagesConfigLockFileUtility.ValidatePackagesConfigLockFiles(
                     projectFile,
@@ -540,7 +541,7 @@ namespace NuGet.SolutionRestoreManager
                     restorePackagesWithLockFile,
                     projectTfm,
                     project.FolderNuGetProject.Root,
-                    lockedMode,
+                    restoreLockedMode,
                     token);
 
                 if (validationLogs != null)

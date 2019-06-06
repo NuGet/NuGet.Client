@@ -367,6 +367,24 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Directory {0} does not exist..
+        /// </summary>
+        internal static string Error_DirectoryDoesNotExist {
+            get {
+                return ResourceManager.GetString("Error_DirectoryDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File {0} does not exist..
+        /// </summary>
+        internal static string Error_FileDoesNotExist {
+            get {
+                return ResourceManager.GetString("Error_FileDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid restore input where RestorePackagesWithLockFile property is set to false but a packages lock file exists at {0}..
         /// </summary>
         internal static string Error_InvalidLockFileInput {
@@ -376,7 +394,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package {0} SHA512 validation failed. The package is different than the last restore..
+        ///   Looks up a localized string similar to The package {0} content hash validation failed. The package is different than the last restore..
         /// </summary>
         internal static string Error_PackageValidationFailed {
             get {
@@ -385,11 +403,11 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The packages lock file is inconsistent with the project dependencies so restore can&apos;t be run in locked mode. Please disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file..
+        ///   Looks up a localized string similar to The packages lock file is inconsistent with the project dependencies so restore can&apos;t be run in locked mode. Please run restore without using restore locked mode to update the lock file..
         /// </summary>
-        internal static string Error_RestoreInLockedMode {
+        internal static string Error_RestoreInLockedModePackagesConfig {
             get {
-                return ResourceManager.GetString("Error_RestoreInLockedMode", resourceCulture);
+                return ResourceManager.GetString("Error_RestoreInLockedModePackagesConfig", resourceCulture);
             }
         }
         

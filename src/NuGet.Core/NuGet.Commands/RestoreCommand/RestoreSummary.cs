@@ -61,15 +61,15 @@ namespace NuGet.Commands
         public RestoreSummary(
             bool success,
             string inputPath,
-            IEnumerable<string> configFiles,
-            IEnumerable<string> feedsUsed,
+            IReadOnlyList<string> configFiles,
+            IReadOnlyList<string> feedsUsed,
             int installCount,
             IEnumerable<IRestoreLogMessage> errors)
         {
             Success = success;
             InputPath = inputPath;
-            ConfigFiles = configFiles.ToList().AsReadOnly();
-            FeedsUsed = feedsUsed.ToList().AsReadOnly();
+            ConfigFiles = configFiles;
+            FeedsUsed = feedsUsed;
             InstallCount = installCount;
             Errors = errors.ToArray();
         }

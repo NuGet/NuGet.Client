@@ -719,7 +719,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
         <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
         <PackagesConfigPath Condition="Exists('$(MSBuildProjectDirectory)\packages.$(MSBuildProjectName).config')">$(MSBuildProjectDirectory)\packages.$(MSBuildProjectName).config</PackagesConfigPath>
-        <PackagesConfigPath Condition="'$(PackagesConfigPath)' == '' And Exists('$(MSBuildProjectDirectory)\packages.config')">$(MSBuildProjectDirectory)\packages.config</PackagesConfigPath>
+        <PackagesConfigPath Condition="Exists('$(MSBuildProjectDirectory)\packages.config')">$(MSBuildProjectDirectory)\packages.config</PackagesConfigPath>
         <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>
         <RestoreLockedMode>$(RestoreLockedMode)</RestoreLockedMode>

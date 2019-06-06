@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.Utility
 {
     public static class PackagesConfigLockFileUtility
     {
-        private static readonly IComparer _comparer = new DependencyComparer();
+        private static readonly IComparer _dependencyComparer = new DependencyComparer();
 
         internal static void UpdateLockFile(
             MSBuildNuGetProject msbuildProject,
@@ -91,7 +91,7 @@ namespace NuGet.PackageManagement.Utility
             string restorePackagesWithLockFile,
             NuGetFramework projectTfm,
             string packagesFolderPath,
-            bool lockedMode,
+            bool restoreLockedMode,
             CancellationToken token)
         {
             var lockFilePath = GetPackagesLockFilePath(Path.GetDirectoryName(packagesConfigFile), nuGetLockFilePath, projectName);
@@ -148,10 +148,10 @@ namespace NuGet.PackageManagement.Utility
                     }
                     else
                     {
-                        if (lockedMode)
+                        if (restoreLockedMode)
                         {
                             var errors = new List<IRestoreLogMessage>();
-                            var log = RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedMode, packagesConfigFile);
+                            var log = RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedModePackagesConfig, packagesConfigFile);
                             log.ProjectPath = projectFile ?? packagesConfigFile;
                             errors.Add(log);
                             return errors;
@@ -234,7 +234,7 @@ namespace NuGet.PackageManagement.Utility
                 actionsList.Where(a => a.NuGetProjectActionType == NuGetProjectActionType.Install),
                 contentHashUtil,
                 token);
-            ArrayList.Adapter((IList)lockFile.Targets[0].Dependencies).Sort(_comparer);
+            ArrayList.Adapter((IList)lockFile.Targets[0].Dependencies).Sort(_dependencyComparer);
         }
 
         private static void RemoveUninstalledPackages(PackagesLockFile lockFile, IEnumerable<NuGetProjectAction> actionsList)
@@ -294,7 +294,7 @@ namespace NuGet.PackageManagement.Utility
             }
             if (!File.Exists(pcFile))
             {
-                throw new FileNotFoundException("packages.config file does not exist", pcFile);
+                throw new FileNotFoundException(string.Format(Strings.Error_FileDoesNotExist, pcFile));
             }
             if (projectTfm == null)
             {
@@ -306,7 +306,7 @@ namespace NuGet.PackageManagement.Utility
             }
             if (!Directory.Exists(packagesFolderPath))
             {
-                throw new DirectoryNotFoundException("Packages directory does not exist");
+                throw new DirectoryNotFoundException(string.Format(Strings.Error_DirectoryDoesNotExist, packagesFolderPath));
             }
 
             var lockFile = new PackagesLockFile();
@@ -319,7 +319,7 @@ namespace NuGet.PackageManagement.Utility
                 var contentHashUtil = new PackagesConfigContentHashProvider(new FolderNuGetProject(packagesFolderPath));
 
                 var reader = new PackagesConfigReader(stream);
-                foreach (var package in reader.GetPackages(true))
+                foreach (var package in reader.GetPackages(allowDuplicatePackageIds: true))
                 {
                     const bool includeMinVersion = true;
                     const bool includeMaxVersion = true;

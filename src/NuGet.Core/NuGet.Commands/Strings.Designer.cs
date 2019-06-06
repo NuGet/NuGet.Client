@@ -421,7 +421,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package {0} SHA512 validation failed. The package is different than the last restore..
+        ///   Looks up a localized string similar to The package {0} content hash validation failed. The package is different than the last restore..
         /// </summary>
         internal static string Error_PackageValidationFailed {
             get {
