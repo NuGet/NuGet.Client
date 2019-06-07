@@ -405,6 +405,9 @@ namespace NuGet.Protocol.Core.Types
                  AdvertiseAvailableOptionToIgnore(response.StatusCode, logger);
 #endif
             }
+
+            //No exception to the rule specified.
+            response.EnsureSuccessStatusCode();
             return null;
         }
 
@@ -466,7 +469,7 @@ namespace NuGet.Protocol.Core.Types
                     break;
 
                 default: break; //Not a supported response code.
-            }
+            } 
 
             if (advertiseDescription != null)
             {

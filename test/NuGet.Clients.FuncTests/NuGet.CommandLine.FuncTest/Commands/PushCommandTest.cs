@@ -18,7 +18,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private const string MESSAGE_PACKAGE_PUSHED = "Your package was pushed.";
         private const string TEST_PACKAGE_SHOULD_NOT_PUSH = "The package should not have been pushed";
         private const string TEST_PACKAGE_SHOULD_PUSH = "The package should have been pushed";
-        private const string ADVERTISE_CONTINUE_OPTION = "See help for push option to automatically skip duplicates.";
+        private const string ADVERTISE_SKIPDUPLICATE_OPTION = "See help for push option to automatically skip duplicates.";
 
         /// <summary>
         /// 100 seconds is significant because that is the default timeout on <see cref="HttpClient"/>.
@@ -114,7 +114,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public void PushCommand_Server_ContinueOn_NotSpecified_PushHalts()
+        public void PushCommand_Server_SkipDuplicate_NotSpecified_PushHalts()
         {
             // Arrange
             using (var packageDirectory = TestDirectory.Create())
@@ -128,7 +128,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 using (var server = new MockServer())
                 {
-                    SetupMockServerForContinueOnError(server,
+                    SetupMockServerForSkipDuplicate(server,
                                                       FuncOutputPath_SwitchesOnThirdPush(outputPath, outputPath2),
                                                       FuncStatusDuplicate_OccursOnSecondPush());
 
@@ -170,14 +170,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     Assert.False(0 == result2.Item1, result2.AllOutput);
                     Assert.Contains(MESSAGE_RESPONSE_NO_SUCCESS, result2.AllOutput);
                     Assert.DoesNotContain(MESSAGE_EXISTING_PACKAGE, result2.AllOutput);
-                    Assert.Contains(ADVERTISE_CONTINUE_OPTION, result2.AllOutput);
+                    Assert.Contains(ADVERTISE_SKIPDUPLICATE_OPTION, result2.AllOutput);
                     Assert.Equal(File.ReadAllBytes(sourcePath), File.ReadAllBytes(outputPath));
                 }
             }
         }
 
         [Fact]
-        public void PushCommand_Server_ContinueOn_Duplicate_PushProceeds()
+        public void PushCommand_Server_SkipDuplicate_IsSpecified_PushProceeds()
         {
             // Arrange
             using (var packageDirectory = TestDirectory.Create())
@@ -191,7 +191,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 using (var server = new MockServer())
                 {
-                    SetupMockServerForContinueOnError(server,
+                    SetupMockServerForSkipDuplicate(server,
                                                       FuncOutputPath_SwitchesOnThirdPush(outputPath, outputPath2),
                                                       FuncStatusDuplicate_OccursOnSecondPush());
 
@@ -205,7 +205,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         waitForExit: true,
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
 
-                    //Run again so that it will be a duplicate push but use the option to continue on errors.
+                    //Run again so that it will be a duplicate push but use the option to skip duplicate packages.
                     var result2 = CommandRunner.Run(
                         nuget,
                         packageDirectory,
@@ -235,7 +235,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     Assert.Contains(MESSAGE_EXISTING_PACKAGE, result2.AllOutput);
                     Assert.DoesNotContain(MESSAGE_RESPONSE_NO_SUCCESS, result2.AllOutput);
 
-                    // Third run after a duplicate should be successful with the ContinueOnError flag.
+                    // Third run after a duplicate should be successful with the SkipDuplicate flag.
                     Assert.True(0 == result3.Item1, $"{result3.Item2} {result3.Item3}");
                     Assert.Contains(MESSAGE_PACKAGE_PUSHED, result3.AllOutput);
                     Assert.True(File.Exists(outputPath2), TEST_PACKAGE_SHOULD_PUSH);
@@ -253,7 +253,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         /// <param name="server">Server object to modify.</param>
         /// <param name="outputPathFunc">Function to determine path to output package.</param>
         /// <param name="responseCodeFunc">Function to determine which HttpStatusCode to return.</param>
-        private static void SetupMockServerForContinueOnError(MockServer server,
+        private static void SetupMockServerForSkipDuplicate(MockServer server,
                                                               Func<int, string> outputPathFunc,
                                                               Func<int, HttpStatusCode> responseCodeFunc)
         {
