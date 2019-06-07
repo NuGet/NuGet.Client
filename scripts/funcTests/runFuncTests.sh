@@ -55,6 +55,7 @@ do
 
 	# Display current version
 	$DOTNET --version
+	dotnet --info
 done
 echo "================="
 
@@ -81,7 +82,7 @@ fi
 
 # restore packages
 echo "dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
-$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1
