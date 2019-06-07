@@ -50,7 +50,8 @@ DOTNET_BRANCHES="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBran
 for DOTNET_BRANCH in $(echo $DOTNET_BRANCHES | tr ";" "\n")
 do
 	echo $DOTNET_BRANCH
-	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH
+	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH -NoPath
+
 
 	# Display current version
 	$DOTNET --version
