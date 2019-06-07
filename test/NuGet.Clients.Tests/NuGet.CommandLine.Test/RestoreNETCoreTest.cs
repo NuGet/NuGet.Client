@@ -7830,7 +7830,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert that the project name is the project custom name.
                 Assert.Equal(lockFile.Targets.First().Dependencies.Count, 2);
-                Assert.Equal("customname", lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id);
+                Assert.Equal("CustomName", lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id);
 
                  // Setup - Enable locked mode
                 projectA.Properties.Add("RestoreLockedMode", "true");
@@ -7903,7 +7903,7 @@ namespace NuGet.CommandLine.Test
 
                  // Assert that the project name is the custom name.
                 Assert.Equal(lockFile.Targets.First().Dependencies.Count, 2);
-                Assert.Equal("customname", lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id);
+                Assert.Equal("CustomName", lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id);
 
                  // Setup - Enable locked mode
                 projectA.Properties.Add("RestoreLockedMode", "true");

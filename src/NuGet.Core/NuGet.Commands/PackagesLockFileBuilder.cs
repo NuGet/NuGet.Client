@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
@@ -70,9 +71,14 @@ namespace NuGet.Commands
 
                 foreach (var projectReference in libraries.Where(e => e.Type == LibraryType.Project || e.Type == LibraryType.ExternalProject))
                 {
+                    var projectLibrary = assetsFile.Libraries.Single(a => a.Name == projectReference.Name && a.Version == projectReference.Version);
+                    var id = string.Equals(Path.GetFileNameWithoutExtension(projectLibrary.MSBuildProject), projectReference.Name, StringComparison.OrdinalIgnoreCase)
+                        ? projectReference.Name.ToLowerInvariant()
+                        : projectReference.Name;
+
                     var dependency = new LockFileDependency()
                     {
-                        Id = projectReference.Name.ToLowerInvariant(),
+                        Id = id,
                         Dependencies = projectReference.Dependencies,
                         Type = PackageDependencyType.Project
                     };
