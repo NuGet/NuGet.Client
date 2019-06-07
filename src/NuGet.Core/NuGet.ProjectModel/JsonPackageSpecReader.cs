@@ -920,6 +920,7 @@ namespace NuGet.ProjectModel
 
             return frameworks;
         }
+
         private static string GetRuntimeIdentifierGraphPath(JObject properties)
         {
             var runtimeIdentifierGraphPath = properties["runtimeIdentifierGraphPath"];

@@ -991,5 +991,32 @@ namespace NuGet.ProjectModel.Test
             Assert.NotNull(metadata);
             Assert.NotNull(warningProperties);
         }
+
+        [Fact]
+        public void PackageSpecReader_RuntimeIdentifierPathNullIfEmpty()
+        {
+            // Arrange
+            var json = @"{
+                            ""frameworks"": {
+                                ""net46"": {
+                                    ""dependencies"": {
+                                        ""packageA"": {
+                                        ""target"": ""package"",
+                                        ""version"": ""1.0.0"",
+                                        ""noWarn"": [
+                                            ""NU1500""
+                                        ]
+                                     }
+                                  }
+                                }
+                            }
+                        }";
+
+            // Act
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            Assert.Null(spec.TargetFrameworks.First().RuntimeIdentifierGraphPath);
+        }
     }
 }

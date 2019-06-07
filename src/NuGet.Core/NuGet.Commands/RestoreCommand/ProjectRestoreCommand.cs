@@ -120,14 +120,10 @@ namespace NuGet.Commands
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
                 foreach (var graph in graphs)
                 {
-                    // Get the runtime graph for this specific tfm graph
-                    // TODO NK - Don't read the same graph twice.
-
-                    var projectSuppliedRuntimeGraph = new Lazy<RuntimeGraph>(() =>
-                        GetProjectRuntimeGraph(
-                        _request.Project.TargetFrameworks.
-                        FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, graph.Framework))
-                        .RuntimeIdentifierGraphPath));
+                    // PCL Projects with Supports have a runtime graph but no matching framework.
+                    var projectSuppliedRuntimeGraph = new Lazy<RuntimeGraph>(() => GetProjectRuntimeGraph(_request.Project.TargetFrameworks.
+                            FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, graph.Framework))?
+                            .RuntimeIdentifierGraphPath));
 
                     var runtimeGraph = GetRuntimeGraph(graph, localRepositories, projectSuppliedRuntimeGraph);
                     var runtimeIds = runtimesByFramework[graph.Framework];
@@ -178,25 +174,28 @@ namespace NuGet.Commands
 
         private RuntimeGraph GetProjectRuntimeGraph(string projectRuntimeGraphPath)
         {
-            if (string.IsNullOrEmpty(projectRuntimeGraphPath) && File.Exists(projectRuntimeGraphPath))
+            if (!string.IsNullOrEmpty(projectRuntimeGraphPath)) // Which doesn't clean it if it is whitespace.
             {
-                using (var stream = File.OpenRead(projectRuntimeGraphPath))
+                if (File.Exists(projectRuntimeGraphPath))
                 {
-                    return JsonRuntimeFormat.ReadRuntimeGraph(stream);
+                    using (var stream = File.OpenRead(projectRuntimeGraphPath))
+                    {
+                        return JsonRuntimeFormat.ReadRuntimeGraph(stream);
+                    }
+                }
+                else
+                {
+                    // TODO NK - Make this an error.
+                    _logger.Log(
+                        RestoreLogMessage.CreateWarning(
+                            NuGetLogCode.NU1702, // TODO NK - add an actual error code.
+                            string.Format(CultureInfo.CurrentCulture,
+                                Strings.Warning_ProjectRuntimeJsonNotFound,
+                                projectRuntimeGraphPath)));
+
                 }
             }
-            else
-            {
-                // TODO NK - Make this an error.
-                _logger.Log(
-                    RestoreLogMessage.CreateWarning(
-                        NuGetLogCode.NU1702,
-                        string.Format(CultureInfo.CurrentCulture,
-                            Strings.Warning_ProjectRuntimeJsonNotFound,
-                            projectRuntimeGraphPath)));
-
-                return RuntimeGraph.Empty;
-            }
+            return RuntimeGraph.Empty;
         }
 
         private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependencies(RemoteWalkContext context, ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange, RemoteMatch>>> downloadDependenciesCache, TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
