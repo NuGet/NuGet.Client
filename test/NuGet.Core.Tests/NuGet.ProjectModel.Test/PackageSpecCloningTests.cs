@@ -612,6 +612,7 @@ namespace NuGet.ProjectModel.Test
             originalTargetFrameworkInformation.DownloadDependencies.Add(new DownloadDependency("X", VersionRange.Parse("1.0.0")));
             originalTargetFrameworkInformation.FrameworkReferences.Add(new FrameworkDependency("frameworkRef", FrameworkDependencyFlags.All));
             originalTargetFrameworkInformation.FrameworkReferences.Add(new FrameworkDependency("FrameworkReference", FrameworkDependencyFlags.None));
+            originalTargetFrameworkInformation.RuntimeIdentifierGraphPath = @"path/to/dotnet/sdk/3.0.100/runtime.json";
 
             return originalTargetFrameworkInformation;
         }
@@ -674,7 +675,6 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(originalTargetFrameworkInformation, cloneToTestFrameworkReferenceEquality);
             Assert.False(ReferenceEquals(originalTargetFrameworkInformation, cloneToTestFrameworkReferenceEquality));
 
-
             //Act
             var cloneToTestFrameworkReferences = originalTargetFrameworkInformation.Clone();
 
@@ -688,6 +688,15 @@ namespace NuGet.ProjectModel.Test
             //Assert
             Assert.NotEqual(originalTargetFrameworkInformation, cloneToTestFrameworkReferences);
             Assert.Equal(2, cloneToTestFrameworkReferences.FrameworkReferences.Count);
+
+
+            var cloneToTestRuntimeIdentifierGraphPath = originalTargetFrameworkInformation.Clone();
+
+            // Act
+            originalTargetFrameworkInformation.RuntimeIdentifierGraphPath = "new/path/to/runtime.json";
+
+            //Assert
+            Assert.NotEqual(originalTargetFrameworkInformation, cloneToTestRuntimeIdentifierGraphPath);
         }
 
         [Fact]

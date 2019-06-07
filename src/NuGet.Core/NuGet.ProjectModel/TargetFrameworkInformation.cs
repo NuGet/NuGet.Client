@@ -44,7 +44,7 @@ namespace NuGet.ProjectModel
         public ISet<FrameworkDependency> FrameworkReferences { get; } = new HashSet<FrameworkDependency>();
 
         /// <summary>
-        /// The project supplied runtime.json
+        /// The project provided runtime.json
         /// </summary>
         public string RuntimeIdentifierGraphPath { get; set; }
 
