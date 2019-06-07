@@ -38,7 +38,7 @@ curl -o cli/dotnet-install.sh https://dot.net/v1/dotnet-install.sh
 chmod +x cli/dotnet-install.sh
 
 # Get recommended version for bootstrapping testing version
-cli/dotnet-install.sh -i cli
+cli/dotnet-install.sh -i cli -NoPath
 
 DOTNET="$(pwd)/cli/dotnet"
 
